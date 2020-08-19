@@ -1,0 +1,3 @@
+[submodule "tmtc"]
+	path = tmtc
+	url = https://git.ksat-stuttgart.de/source/tmtc.git
