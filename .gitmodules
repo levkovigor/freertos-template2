@@ -1,3 +1,9 @@
 [submodule "tmtc"]
 	path = tmtc
 	url = https://git.ksat-stuttgart.de/source/tmtc.git
+[submodule "src_obsw_private"]
+	path = privlib
+	url = https://git.ksat-stuttgart.de/source/src_obsw_private.git
+[submodule "fsfw"]
+	path = fsfw
+	url = https://egit.irs.uni-stuttgart.de/KSat/fsfw.git
