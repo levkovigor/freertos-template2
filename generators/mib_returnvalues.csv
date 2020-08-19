@@ -1,0 +1,383 @@
+0x0;OK;System-wide code for ok.;RETURN_OK;HasReturnvaluesIF.h;HasReturnvaluesIF
+0x1;Failed;Unspecified system-wide code for failed.;RETURN_FAILED;HasReturnvaluesIF.h;HasReturnvaluesIF
+0x4401;HKS_SidAlreadyExists;P1: SID;SID_ALREADY_EXISTS;../mission/pus/Service3HousekeepingPSB.h;PUS_SERVICE_3
+0x4402;HKS_SizeMissmatch; ;SIZE_MISSMATCH;../mission/pus/Service3HousekeepingPSB.h;PUS_SERVICE_3
+0x2f01;POS_InPowerTransition; ;IN_POWER_TRANSITION;../framework/power/PowerSwitcher.h;POWER_SWITCHER
+0x2f02;POS_SwitchStateMismatch; ;SWITCH_STATE_MISMATCH;../framework/power/PowerSwitcher.h;POWER_SWITCHER
+0x501;PS_SwitchOn; ;SWITCH_ON;../framework/power/PowerSwitchIF.h;POWER_SWITCH_IF
+0x500;PS_SwitchOff; ;SWITCH_OFF;../framework/power/PowerSwitchIF.h;POWER_SWITCH_IF
+0x502;PS_SwitchTimeout; ;SWITCH_TIMEOUT;../framework/power/PowerSwitchIF.h;POWER_SWITCH_IF
+0x503;PS_FuseOn; ;FUSE_ON;../framework/power/PowerSwitchIF.h;POWER_SWITCH_IF
+0x504;PS_FuseOff; ;FUSE_OFF;../framework/power/PowerSwitchIF.h;POWER_SWITCH_IF
+0x201;OM_InsertionFailed; ;INSERTION_FAILED;../framework/objectmanager/ObjectManagerIF.h;OBJECT_MANAGER_IF
+0x202;OM_NotFound; ;NOT_FOUND;../framework/objectmanager/ObjectManagerIF.h;OBJECT_MANAGER_IF
+0x203;OM_ChildInitFailed; ;CHILD_INIT_FAILED;../framework/objectmanager/ObjectManagerIF.h;OBJECT_MANAGER_IF
+0x204;OM_InternalErrReporterUninit; ;INTERNAL_ERR_REPORTER_UNINIT;../framework/objectmanager/ObjectManagerIF.h;OBJECT_MANAGER_IF
+0x1701;HHI_ObjectNotHealthy; ;OBJECT_NOT_HEALTHY;../framework/health/HasHealthIF.h;HAS_HEALTH_IF
+0x1702;HHI_InvalidHealthState; ;INVALID_HEALTH_STATE;../framework/health/HasHealthIF.h;HAS_HEALTH_IF
+0xe01;HM_InvalidMode; ;INVALID_MODE;../framework/modes/HasModesIF.h;HAS_MODES_IF
+0xe02;HM_TransNotAllowed; ;TRANS_NOT_ALLOWED;../framework/modes/HasModesIF.h;HAS_MODES_IF
+0xe03;HM_InTransition; ;IN_TRANSITION;../framework/modes/HasModesIF.h;HAS_MODES_IF
+0xe04;HM_InvalidSubmode; ;INVALID_SUBMODE;../framework/modes/HasModesIF.h;HAS_MODES_IF
+0x2500;FDI_YourFault; ;YOUR_FAULT;../framework/fdir/ConfirmsFailuresIF.h;HANDLES_FAILURES_IF
+0x2501;FDI_MyFault; ;MY_FAULT;../framework/fdir/ConfirmsFailuresIF.h;HANDLES_FAILURES_IF
+0x2502;FDI_ConfirmLater; ;CONFIRM_LATER;../framework/fdir/ConfirmsFailuresIF.h;HANDLES_FAILURES_IF
+0x1501;FM_KeyAlreadyExists; ;KEY_ALREADY_EXISTS;../framework/container/FixedMap.h;FIXED_MAP
+0x1502;FM_MapFull; ;MAP_FULL;../framework/container/FixedMap.h;FIXED_MAP
+0x1503;FM_KeyDoesNotExist; ;KEY_DOES_NOT_EXIST;../framework/container/FixedMap.h;FIXED_MAP
+0x1101;AL_Full; ;FULL;../framework/container/ArrayList.h;ARRAY_LIST
+0x1801;FF_Full; ;FULL;../framework/container/FIFOBase.h;FIFO_CLASS
+0x1802;FF_Empty; ;EMPTY;../framework/container/FIFOBase.h;FIFO_CLASS
+0x1601;FMM_KeyAlreadyExists; ;KEY_ALREADY_EXISTS;../framework/container/FixedOrderedMultimap.h;FIXED_MULTIMAP
+0x1602;FMM_MapFull; ;MAP_FULL;../framework/container/FixedOrderedMultimap.h;FIXED_MULTIMAP
+0x1603;FMM_KeyDoesNotExist; ;KEY_DOES_NOT_EXIST;../framework/container/FixedOrderedMultimap.h;FIXED_MULTIMAP
+0x1401;SE_BufferTooShort; ;BUFFER_TOO_SHORT;../framework/serialize/SerializeIF.h;SERIALIZE_IF
+0x1402;SE_StreamTooShort; ;STREAM_TOO_SHORT;../framework/serialize/SerializeIF.h;SERIALIZE_IF
+0x1403;SE_TooManyElements; ;TOO_MANY_ELEMENTS;../framework/serialize/SerializeIF.h;SERIALIZE_IF
+0x2701;SM_DataTooLarge;This return code indicates that the data to be stored is too large for the store.;DATA_TOO_LARGE;../framework/storagemanager/StorageManagerIF.h;STORAGE_MANAGER_IF
+0x2702;SM_DataStorageFull;This return code indicates that a data storage is full.;DATA_STORAGE_FULL;../framework/storagemanager/StorageManagerIF.h;STORAGE_MANAGER_IF
+0x2703;SM_IllegalStorageId;This return code indicates that data was requested with an illegal storage ID.;ILLEGAL_STORAGE_ID;../framework/storagemanager/StorageManagerIF.h;STORAGE_MANAGER_IF
+0x2704;SM_DataDoesNotExist;This return code indicates that the requested ID was valid, but no data is stored there.;DATA_DOES_NOT_EXIST;../framework/storagemanager/StorageManagerIF.h;STORAGE_MANAGER_IF
+0x2705;SM_IllegalAddress; ;ILLEGAL_ADDRESS;../framework/storagemanager/StorageManagerIF.h;STORAGE_MANAGER_IF
+0x2706;SM_PoolTooLarge;Pool size too large on initialization.;POOL_TOO_LARGE;../framework/storagemanager/StorageManagerIF.h;STORAGE_MANAGER_IF
+0xc02;MS_InvalidEntry; ;INVALID_ENTRY;../framework/subsystem/modes/ModeStoreIF.h;MODE_STORE_IF
+0xc03;MS_TooManyElements; ;TOO_MANY_ELEMENTS;../framework/subsystem/modes/ModeStoreIF.h;MODE_STORE_IF
+0xc04;MS_CantStoreEmpty; ;CANT_STORE_EMPTY;../framework/subsystem/modes/ModeStoreIF.h;MODE_STORE_IF
+0xd01;SS_SequenceAlreadyExists; ;SEQUENCE_ALREADY_EXISTS;../framework/subsystem/Subsystem.h;SUBSYSTEM
+0xd02;SS_TableAlreadyExists; ;TABLE_ALREADY_EXISTS;../framework/subsystem/Subsystem.h;SUBSYSTEM
+0xd03;SS_TableDoesNotExist; ;TABLE_DOES_NOT_EXIST;../framework/subsystem/Subsystem.h;SUBSYSTEM
+0xd04;SS_TableOrSequenceLengthInvalid; ;TABLE_OR_SEQUENCE_LENGTH_INVALID;../framework/subsystem/Subsystem.h;SUBSYSTEM
+0xd05;SS_SequenceDoesNotExist; ;SEQUENCE_DOES_NOT_EXIST;../framework/subsystem/Subsystem.h;SUBSYSTEM
+0xd06;SS_TableContainsInvalidObjectId; ;TABLE_CONTAINS_INVALID_OBJECT_ID;../framework/subsystem/Subsystem.h;SUBSYSTEM
+0xd07;SS_FallbackSequenceDoesNotExist; ;FALLBACK_SEQUENCE_DOES_NOT_EXIST;../framework/subsystem/Subsystem.h;SUBSYSTEM
+0xd08;SS_NoTargetTable; ;NO_TARGET_TABLE;../framework/subsystem/Subsystem.h;SUBSYSTEM
+0xd09;SS_SequenceOrTableTooLong; ;SEQUENCE_OR_TABLE_TOO_LONG;../framework/subsystem/Subsystem.h;SUBSYSTEM
+0xd0b;SS_IsFallbackSequence; ;IS_FALLBACK_SEQUENCE;../framework/subsystem/Subsystem.h;SUBSYSTEM
+0xd0c;SS_AccessDenied; ;ACCESS_DENIED;../framework/subsystem/Subsystem.h;SUBSYSTEM
+0xd0e;SS_TableInUse; ;TABLE_IN_USE;../framework/subsystem/Subsystem.h;SUBSYSTEM
+0xda1;SS_TargetTableNotReached; ;TARGET_TABLE_NOT_REACHED;../framework/subsystem/Subsystem.h;SUBSYSTEM
+0xda2;SS_TableCheckFailed; ;TABLE_CHECK_FAILED;../framework/subsystem/Subsystem.h;SUBSYSTEM
+0xb01;SB_ChildNotFound; ;CHILD_NOT_FOUND;../framework/subsystem/SubsystemBase.h;SUBSYSTEM_BASE
+0xb02;SB_ChildInfoUpdated; ;CHILD_INFO_UPDATED;../framework/subsystem/SubsystemBase.h;SUBSYSTEM_BASE
+0xb03;SB_ChildDoesntHaveModes; ;CHILD_DOESNT_HAVE_MODES;../framework/subsystem/SubsystemBase.h;SUBSYSTEM_BASE
+0xb04;SB_CouldNotInsertChild; ;COULD_NOT_INSERT_CHILD;../framework/subsystem/SubsystemBase.h;SUBSYSTEM_BASE
+0xb05;SB_TableContainsInvalidObjectId; ;TABLE_CONTAINS_INVALID_OBJECT_ID;../framework/subsystem/SubsystemBase.h;SUBSYSTEM_BASE
+0x4e1;RMP_CommandNoDescriptorsAvailabl;no descriptors available for sending command; command was not sent;COMMAND_NO_DESCRIPTORS_AVAILABLE;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4e2;RMP_CommandBufferFull;no receiver buffer available for expected len; command was not sent;COMMAND_BUFFER_FULL;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4e3;RMP_CommandChannelOutOfRange;The cookie points to an invalid channel; command was not sent;COMMAND_CHANNEL_OUT_OF_RANGE;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4e6;RMP_CommandChannelDeactivated;the channel has no port set;COMMAND_CHANNEL_DEACTIVATED;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4e7;RMP_CommandPortOutOfRange;The specified port is not valid;COMMAND_PORT_OUT_OF_RANGE;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4e8;RMP_CommandPortInUse;The specified port is already in use;COMMAND_PORT_IN_USE;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4e9;RMP_CommandNoChannel;The cookie to work with has no channel assigned.;COMMAND_NO_CHANNEL;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4ea;RMP_NoHwCrc;The SpW port does not support HW CRC generation, which is unsupported;NO_HW_CRC;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4d0;RMP_ReplyNoReply;no reply was received;REPLY_NO_REPLY;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4d1;RMP_ReplyNotSent;command was not sent, implies no reply;REPLY_NOT_SENT;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4d2;RMP_ReplyNotYetSent;command is still waiting to be sent;REPLY_NOT_YET_SENT;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4d3;RMP_ReplyMissmatch;a read command was issued, but get_write_rply called, or other way round;REPLY_MISSMATCH;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4d4;RMP_ReplyTimeout;timeout;REPLY_TIMEOUT;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4c0;RMP_ReplyInterfaceBusy;Interface is busy (transmission buffer still being processed);REPLY_INTERFACE_BUSY;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4c1;RMP_ReplyTransmissionError;Interface encountered errors during last operation, data could not be processed. (transmission error);REPLY_TRANSMISSION_ERROR;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4c2;RMP_ReplyInvalidData;Invalid data (amount / value);REPLY_INVALID_DATA;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4c3;RMP_ReplyNotSupported; ;REPLY_NOT_SUPPORTED;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4f0;RMP_LinkDown;The spw link is down;LINK_DOWN;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4f1;RMP_SpwCredit; ;SPW_CREDIT;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4f2;RMP_SpwEscape; ;SPW_ESCAPE;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4f3;RMP_SpwDisconnect; ;SPW_DISCONNECT;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4f4;RMP_SpwParity; ;SPW_PARITY;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4f5;RMP_SpwWriteSync; ;SPW_WRITE_SYNC;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4f6;RMP_SpwInvalidAddress; ;SPW_INVALID_ADDRESS;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4f7;RMP_SpwEarlyEop; ;SPW_EARLY_EOP;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4f8;RMP_SpwDma; ;SPW_DMA;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x4f9;RMP_SpwLinkError; ;SPW_LINK_ERROR;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x400;RMP_ReplyOk; ;REPLY_OK;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x401;RMP_ReplyGeneralErrorCode;The detected error does not fit into the other;REPLY_GENERAL_ERROR_CODE;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x402;RMP_ReplyUnusedPacketTypeOrComma;The Header CRC was decoded correctly but;REPLY_UNUSED_PACKET_TYPE_OR_COMMAND_CODE;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x403;RMP_ReplyInvalidKey;The Header CRC was decoded correctly but;REPLY_INVALID_KEY;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x404;RMP_ReplyInvalidDataCrc;Error in the CRC of the data field;REPLY_INVALID_DATA_CRC;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x405;RMP_ReplyEarlyEop;EOP marker detected before the end of the data;REPLY_EARLY_EOP;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x406;RMP_ReplyTooMuchData;More than the expected amount of data in a;REPLY_TOO_MUCH_DATA;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x407;RMP_ReplyEep;EEP marker detected immediately after the;REPLY_EEP;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x408;RMP_ReplyReserved;Reserved;REPLY_RESERVED;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x409;RMP_ReplyVerifyBufferOverrun;The verify before write bit of the command;REPLY_VERIFY_BUFFER_OVERRUN;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x40a;RMP_ReplyCommandNotImplementedOr;The target user application did not authorise;REPLY_COMMAND_NOT_IMPLEMENTED_OR_NOT_AUTHORISED;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x40b;RMP_ReplyRmwDataLengthError;The amount of data in a RMW command is;REPLY_RMW_DATA_LENGTH_ERROR;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x40c;RMP_ReplyInvalidTargetLogicalAdd;The Header CRC was decoded correctly but;REPLY_INVALID_TARGET_LOGICAL_ADDRESS;../framework/rmap/RMAP.h;RMAP_CHANNEL
+0x26a0;DHI_NoCommandData;If no command data was given when expected.;NO_COMMAND_DATA;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26a1;DHI_CommandNotSupported;Command ID not in commandMap. Checked in DHB;COMMAND_NOT_SUPPORTED;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26a2;DHI_CommandAlreadySent;Command was already executed. Checked in DHB;COMMAND_ALREADY_SENT;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26a3;DHI_CommandWasNotSent; ;COMMAND_WAS_NOT_SENT;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26a4;DHI_CantSwitchAddress; ;CANT_SWITCH_ADDRESS;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26a5;DHI_WrongModeForCommand; ;WRONG_MODE_FOR_COMMAND;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26a6;DHI_Timeout; ;TIMEOUT;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26a7;DHI_Busy; ;BUSY;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26a8;DHI_NoReplyExpected;Used to indicate that this is a command-only command.;NO_REPLY_EXPECTED;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26a9;DHI_NonOpTemperature; ;NON_OP_TEMPERATURE;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26aa;DHI_CommandNotImplemented; ;COMMAND_NOT_IMPLEMENTED;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26b0;DHI_ChecksumError; ;CHECKSUM_ERROR;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26b1;DHI_LengthMissmatch; ;LENGTH_MISSMATCH;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26b2;DHI_InvalidData; ;INVALID_DATA;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26b3;DHI_ProtocolError; ;PROTOCOL_ERROR;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26c0;DHI_DeviceDidNotExecute;the device reported, that it did not execute the command;DEVICE_DID_NOT_EXECUTE;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26c1;DHI_DeviceReportedError; ;DEVICE_REPORTED_ERROR;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26c2;DHI_UnknowDeviceReply;the deviceCommandId reported by scanforReply is unknown;UNKNOW_DEVICE_REPLY;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26c3;DHI_DeviceReplyInvalid;syntax etc is correct but still not ok, eg parameters where none are expected;DEVICE_REPLY_INVALID;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26d0;DHI_InvalidCommandParameter; ;INVALID_COMMAND_PARAMETER;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x26d1;DHI_InvalidNumberOrLengthOfParam; ;INVALID_NUMBER_OR_LENGTH_OF_PARAMETERS;../framework/devicehandlers/DeviceHandlerIF.h;DEVICE_HANDLER_IF
+0x1201;AB_NeedSecondStep; ;NEED_SECOND_STEP;../framework/devicehandlers/AssemblyBase.h;ASSEMBLY_BASE
+0x1202;AB_NeedToReconfigure; ;NEED_TO_RECONFIGURE;../framework/devicehandlers/AssemblyBase.h;ASSEMBLY_BASE
+0x1203;AB_ModeFallback; ;MODE_FALLBACK;../framework/devicehandlers/AssemblyBase.h;ASSEMBLY_BASE
+0x1204;AB_ChildNotCommandable; ;CHILD_NOT_COMMANDABLE;../framework/devicehandlers/AssemblyBase.h;ASSEMBLY_BASE
+0x1205;AB_NeedToChangeHealth; ;NEED_TO_CHANGE_HEALTH;../framework/devicehandlers/AssemblyBase.h;ASSEMBLY_BASE
+0x12a1;AB_NotEnoughChildrenInCorrectSta; ;NOT_ENOUGH_CHILDREN_IN_CORRECT_STATE;../framework/devicehandlers/AssemblyBase.h;ASSEMBLY_BASE
+0x3a0;DHB_InvalidChannel; ;INVALID_CHANNEL;../framework/devicehandlers/DeviceHandlerBase.h;DEVICE_HANDLER_BASE
+0x3b0;DHB_AperiodicReply;This is used to specify for replies from a device which are not replies to requests;APERIODIC_REPLY;../framework/devicehandlers/DeviceHandlerBase.h;DEVICE_HANDLER_BASE
+0x3b1;DHB_IgnoreReplyData;Ignore parts of the received packet;IGNORE_REPLY_DATA;../framework/devicehandlers/DeviceHandlerBase.h;DEVICE_HANDLER_BASE
+0x3b2;DHB_IgnoreFullPacket;Ignore full received packet;IGNORE_FULL_PACKET;../framework/devicehandlers/DeviceHandlerBase.h;DEVICE_HANDLER_BASE
+0x3c0;DHB_NothingToSend;Return this if no command sending in required;NOTHING_TO_SEND;../framework/devicehandlers/DeviceHandlerBase.h;DEVICE_HANDLER_BASE
+0x3c2;DHB_CommandMapError; ;COMMAND_MAP_ERROR;../framework/devicehandlers/DeviceHandlerBase.h;DEVICE_HANDLER_BASE
+0x3d0;DHB_NoSwitch; ;NO_SWITCH;../framework/devicehandlers/DeviceHandlerBase.h;DEVICE_HANDLER_BASE
+0x3e0;DHB_ChildTimeout; ;CHILD_TIMEOUT;../framework/devicehandlers/DeviceHandlerBase.h;DEVICE_HANDLER_BASE
+0x3e1;DHB_SwitchFailed; ;SWITCH_FAILED;../framework/devicehandlers/DeviceHandlerBase.h;DEVICE_HANDLER_BASE
+0x3301;DC_NoReplyReceived; ;NO_REPLY_RECEIVED;../framework/devicehandlers/DeviceCommunicationIF.h;DEVICE_COMMUNICATION_IF
+0x3302;DC_ProtocolError; ;PROTOCOL_ERROR;../framework/devicehandlers/DeviceCommunicationIF.h;DEVICE_COMMUNICATION_IF
+0x3303;DC_Nullpointer; ;NULLPOINTER;../framework/devicehandlers/DeviceCommunicationIF.h;DEVICE_COMMUNICATION_IF
+0x3304;DC_InvalidCookieType; ;INVALID_COOKIE_TYPE;../framework/devicehandlers/DeviceCommunicationIF.h;DEVICE_COMMUNICATION_IF
+0x3305;DC_NotActive; ;NOT_ACTIVE;../framework/devicehandlers/DeviceCommunicationIF.h;DEVICE_COMMUNICATION_IF
+0x3306;DC_TooMuchData; ;TOO_MUCH_DATA;../framework/devicehandlers/DeviceCommunicationIF.h;DEVICE_COMMUNICATION_IF
+0x1b00;TCC_IllegalApid; ;ILLEGAL_APID;../framework/tcdistribution/TcPacketCheck.h;TC_PACKET_CHECK
+0x1b01;TCC_IncompletePacket; ;INCOMPLETE_PACKET;../framework/tcdistribution/TcPacketCheck.h;TC_PACKET_CHECK
+0x1b02;TCC_IncorrectChecksum; ;INCORRECT_CHECKSUM;../framework/tcdistribution/TcPacketCheck.h;TC_PACKET_CHECK
+0x1b03;TCC_IllegalPacketType; ;ILLEGAL_PACKET_TYPE;../framework/tcdistribution/TcPacketCheck.h;TC_PACKET_CHECK
+0x1b04;TCC_IllegalPacketSubtype; ;ILLEGAL_PACKET_SUBTYPE;../framework/tcdistribution/TcPacketCheck.h;TC_PACKET_CHECK
+0x1b05;TCC_IncorrectPrimaryHeader; ;INCORRECT_PRIMARY_HEADER;../framework/tcdistribution/TcPacketCheck.h;TC_PACKET_CHECK
+0x1b06;TCC_IncorrectSecondaryHeader; ;INCORRECT_SECONDARY_HEADER;../framework/tcdistribution/TcPacketCheck.h;TC_PACKET_CHECK
+0x1c01;TCD_PacketLost; ;PACKET_LOST;../framework/tcdistribution/TcDistributor.h;PACKET_DISTRIBUTION
+0x1c02;TCD_DestinationNotFound; ;DESTINATION_NOT_FOUND;../framework/tcdistribution/TcDistributor.h;PACKET_DISTRIBUTION
+0x1a01;TRC_NotEnoughSensors; ;NOT_ENOUGH_SENSORS;../framework/monitoring/TriplexMonitor.h;TRIPLE_REDUNDACY_CHECK
+0x1a02;TRC_LowestValueOol; ;LOWEST_VALUE_OOL;../framework/monitoring/TriplexMonitor.h;TRIPLE_REDUNDACY_CHECK
+0x1a03;TRC_HighestValueOol; ;HIGHEST_VALUE_OOL;../framework/monitoring/TriplexMonitor.h;TRIPLE_REDUNDACY_CHECK
+0x1a04;TRC_BothValuesOol; ;BOTH_VALUES_OOL;../framework/monitoring/TriplexMonitor.h;TRIPLE_REDUNDACY_CHECK
+0x1a05;TRC_DuplexOol; ;DUPLEX_OOL;../framework/monitoring/TriplexMonitor.h;TRIPLE_REDUNDACY_CHECK
+0x3001;LIM_Unchecked; ;UNCHECKED;../framework/monitoring/MonitoringIF.h;LIMITS_IF
+0x3002;LIM_Invalid; ;INVALID;../framework/monitoring/MonitoringIF.h;LIMITS_IF
+0x3003;LIM_Unselected; ;UNSELECTED;../framework/monitoring/MonitoringIF.h;LIMITS_IF
+0x3004;LIM_BelowLowLimit; ;BELOW_LOW_LIMIT;../framework/monitoring/MonitoringIF.h;LIMITS_IF
+0x3005;LIM_AboveHighLimit; ;ABOVE_HIGH_LIMIT;../framework/monitoring/MonitoringIF.h;LIMITS_IF
+0x3006;LIM_UnexpectedValue; ;UNEXPECTED_VALUE;../framework/monitoring/MonitoringIF.h;LIMITS_IF
+0x3007;LIM_OutOfRange; ;OUT_OF_RANGE;../framework/monitoring/MonitoringIF.h;LIMITS_IF
+0x30a0;LIM_FirstSample; ;FIRST_SAMPLE;../framework/monitoring/MonitoringIF.h;LIMITS_IF
+0x30e0;LIM_InvalidSize; ;INVALID_SIZE;../framework/monitoring/MonitoringIF.h;LIMITS_IF
+0x30e1;LIM_WrongType; ;WRONG_TYPE;../framework/monitoring/MonitoringIF.h;LIMITS_IF
+0x30e2;LIM_WrongPid; ;WRONG_PID;../framework/monitoring/MonitoringIF.h;LIMITS_IF
+0x30e3;LIM_WrongLimitId; ;WRONG_LIMIT_ID;../framework/monitoring/MonitoringIF.h;LIMITS_IF
+0x30ee;LIM_MonitorNotFound; ;MONITOR_NOT_FOUND;../framework/monitoring/MonitoringIF.h;LIMITS_IF
+0x3801;MQI_Empty; ;EMPTY;../framework/ipc/MessageQueueIF.h;MESSAGE_QUEUE_IF
+0x3802;MQI_Full; ;FULL;../framework/ipc/MessageQueueIF.h;MESSAGE_QUEUE_IF
+0x3803;MQI_NoReplyPartner; ;NO_REPLY_PARTNER;../framework/ipc/MessageQueueIF.h;MESSAGE_QUEUE_IF
+0x3804;MQI_DestinvationInvalid; ;DESTINVATION_INVALID;../framework/ipc/MessageQueueIF.h;MESSAGE_QUEUE_IF
+0x3701;MUX_NotEnoughResources; ;NOT_ENOUGH_RESOURCES;../framework/ipc/MutexIF.h;MUTEX_IF
+0x3702;MUX_InsufficientMemory; ;INSUFFICIENT_MEMORY;../framework/ipc/MutexIF.h;MUTEX_IF
+0x3703;MUX_NoPrivilege; ;NO_PRIVILEGE;../framework/ipc/MutexIF.h;MUTEX_IF
+0x3704;MUX_WrongAttributeSetting; ;WRONG_ATTRIBUTE_SETTING;../framework/ipc/MutexIF.h;MUTEX_IF
+0x3705;MUX_MutexAlreadyLocked; ;MUTEX_ALREADY_LOCKED;../framework/ipc/MutexIF.h;MUTEX_IF
+0x3706;MUX_MutexNotFound; ;MUTEX_NOT_FOUND;../framework/ipc/MutexIF.h;MUTEX_IF
+0x3707;MUX_MutexMaxLocks; ;MUTEX_MAX_LOCKS;../framework/ipc/MutexIF.h;MUTEX_IF
+0x3708;MUX_CurrThreadAlreadyOwnsMutex; ;CURR_THREAD_ALREADY_OWNS_MUTEX;../framework/ipc/MutexIF.h;MUTEX_IF
+0x3709;MUX_CurrThreadDoesNotOwnMutex; ;CURR_THREAD_DOES_NOT_OWN_MUTEX;../framework/ipc/MutexIF.h;MUTEX_IF
+0x370a;MUX_MutexTimeout; ;MUTEX_TIMEOUT;../framework/ipc/MutexIF.h;MUTEX_IF
+0x370b;MUX_MutexInvalidId; ;MUTEX_INVALID_ID;../framework/ipc/MutexIF.h;MUTEX_IF
+0x370c;MUX_MutexDestroyedWhileWaiting; ;MUTEX_DESTROYED_WHILE_WAITING;../framework/ipc/MutexIF.h;MUTEX_IF
+0xf01;CM_UnknownCommand; ;UNKNOWN_COMMAND;../framework/ipc/CommandMessageIF.h;COMMAND_MESSAGE
+0x2001;TMB_Busy; ;BUSY;../framework/tmstorage/TmStoreBackendIF.h;TM_STORE_BACKEND_IF
+0x2002;TMB_Full; ;FULL;../framework/tmstorage/TmStoreBackendIF.h;TM_STORE_BACKEND_IF
+0x2003;TMB_Empty; ;EMPTY;../framework/tmstorage/TmStoreBackendIF.h;TM_STORE_BACKEND_IF
+0x2004;TMB_NullRequested; ;NULL_REQUESTED;../framework/tmstorage/TmStoreBackendIF.h;TM_STORE_BACKEND_IF
+0x2005;TMB_TooLarge; ;TOO_LARGE;../framework/tmstorage/TmStoreBackendIF.h;TM_STORE_BACKEND_IF
+0x2006;TMB_NotReady; ;NOT_READY;../framework/tmstorage/TmStoreBackendIF.h;TM_STORE_BACKEND_IF
+0x2007;TMB_DumpError; ;DUMP_ERROR;../framework/tmstorage/TmStoreBackendIF.h;TM_STORE_BACKEND_IF
+0x2008;TMB_CrcError; ;CRC_ERROR;../framework/tmstorage/TmStoreBackendIF.h;TM_STORE_BACKEND_IF
+0x2009;TMB_Timeout; ;TIMEOUT;../framework/tmstorage/TmStoreBackendIF.h;TM_STORE_BACKEND_IF
+0x200a;TMB_IdlePacketFound; ;IDLE_PACKET_FOUND;../framework/tmstorage/TmStoreBackendIF.h;TM_STORE_BACKEND_IF
+0x200b;TMB_TelecommandFound; ;TELECOMMAND_FOUND;../framework/tmstorage/TmStoreBackendIF.h;TM_STORE_BACKEND_IF
+0x200c;TMB_NoPusATm; ;NO_PUS_A_TM;../framework/tmstorage/TmStoreBackendIF.h;TM_STORE_BACKEND_IF
+0x200d;TMB_TooSmall; ;TOO_SMALL;../framework/tmstorage/TmStoreBackendIF.h;TM_STORE_BACKEND_IF
+0x200e;TMB_BlockNotFound; ;BLOCK_NOT_FOUND;../framework/tmstorage/TmStoreBackendIF.h;TM_STORE_BACKEND_IF
+0x200f;TMB_InvalidRequest; ;INVALID_REQUEST;../framework/tmstorage/TmStoreBackendIF.h;TM_STORE_BACKEND_IF
+0x2101;TMF_Busy; ;BUSY;../framework/tmstorage/TmStoreFrontendIF.h;TM_STORE_FRONTEND_IF
+0x2102;TMF_LastPacketFound; ;LAST_PACKET_FOUND;../framework/tmstorage/TmStoreFrontendIF.h;TM_STORE_FRONTEND_IF
+0x2103;TMF_StopFetch; ;STOP_FETCH;../framework/tmstorage/TmStoreFrontendIF.h;TM_STORE_FRONTEND_IF
+0x2104;TMF_Timeout; ;TIMEOUT;../framework/tmstorage/TmStoreFrontendIF.h;TM_STORE_FRONTEND_IF
+0x2105;TMF_TmChannelFull; ;TM_CHANNEL_FULL;../framework/tmstorage/TmStoreFrontendIF.h;TM_STORE_FRONTEND_IF
+0x2106;TMF_NotStored; ;NOT_STORED;../framework/tmstorage/TmStoreFrontendIF.h;TM_STORE_FRONTEND_IF
+0x2107;TMF_AllDeleted; ;ALL_DELETED;../framework/tmstorage/TmStoreFrontendIF.h;TM_STORE_FRONTEND_IF
+0x2108;TMF_InvalidData; ;INVALID_DATA;../framework/tmstorage/TmStoreFrontendIF.h;TM_STORE_FRONTEND_IF
+0x2109;TMF_NotReady; ;NOT_READY;../framework/tmstorage/TmStoreFrontendIF.h;TM_STORE_FRONTEND_IF
+0x2801;TC_InvalidTargetState; ;INVALID_TARGET_STATE;../framework/thermal/ThermalComponentIF.h;THERMAL_COMPONENT_IF
+0x28f1;TC_AboveOperationalLimit; ;ABOVE_OPERATIONAL_LIMIT;../framework/thermal/ThermalComponentIF.h;THERMAL_COMPONENT_IF
+0x28f2;TC_BelowOperationalLimit; ;BELOW_OPERATIONAL_LIMIT;../framework/thermal/ThermalComponentIF.h;THERMAL_COMPONENT_IF
+0x3e00;PUS_NoPacketFound; ;NO_PACKET_FOUND;../framework/tmtcservices/PusParser.h;PUS_PARSER
+0x3e01;PUS_SplitPacket; ;SPLIT_PACKET;../framework/tmtcservices/PusParser.h;PUS_PARSER
+0x1f01;CSB_ExecutionComplete; ;EXECUTION_COMPLETE;../framework/tmtcservices/CommandingServiceBase.h;COMMAND_SERVICE_BASE
+0x1f02;CSB_NoStepMessage; ;NO_STEP_MESSAGE;../framework/tmtcservices/CommandingServiceBase.h;COMMAND_SERVICE_BASE
+0x1f03;CSB_ObjectBusy; ;OBJECT_BUSY;../framework/tmtcservices/CommandingServiceBase.h;COMMAND_SERVICE_BASE
+0x1f04;CSB_Busy; ;BUSY;../framework/tmtcservices/CommandingServiceBase.h;COMMAND_SERVICE_BASE
+0x1f05;CSB_InvalidTc; ;INVALID_TC;../framework/tmtcservices/CommandingServiceBase.h;COMMAND_SERVICE_BASE
+0x1f06;CSB_InvalidObject; ;INVALID_OBJECT;../framework/tmtcservices/CommandingServiceBase.h;COMMAND_SERVICE_BASE
+0x1f07;CSB_InvalidReply; ;INVALID_REPLY;../framework/tmtcservices/CommandingServiceBase.h;COMMAND_SERVICE_BASE
+0x1d01;PUS_ActivityStarted;is this used anywhere or can it be removed?;ACTIVITY_STARTED;../framework/tmtcservices/AcceptsTelecommandsIF.h;ACCEPTS_TELECOMMANDS_IF
+0x1d02;PUS_InvalidSubservice; ;INVALID_SUBSERVICE;../framework/tmtcservices/AcceptsTelecommandsIF.h;ACCEPTS_TELECOMMANDS_IF
+0x1d03;PUS_IllegalApplicationData; ;ILLEGAL_APPLICATION_DATA;../framework/tmtcservices/AcceptsTelecommandsIF.h;ACCEPTS_TELECOMMANDS_IF
+0x1d04;PUS_SendTmFailed; ;SEND_TM_FAILED;../framework/tmtcservices/AcceptsTelecommandsIF.h;ACCEPTS_TELECOMMANDS_IF
+0x1d05;PUS_Timeout; ;TIMEOUT;../framework/tmtcservices/AcceptsTelecommandsIF.h;ACCEPTS_TELECOMMANDS_IF
+0x2901;IEC_NoConfigurationTable; ;NO_CONFIGURATION_TABLE;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x2902;IEC_NoCpuTable; ;NO_CPU_TABLE;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x2903;IEC_InvalidWorkspaceAddress; ;INVALID_WORKSPACE_ADDRESS;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x2904;IEC_TooLittleWorkspace; ;TOO_LITTLE_WORKSPACE;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x2905;IEC_WorkspaceAllocation; ;WORKSPACE_ALLOCATION;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x2906;IEC_InterruptStackTooSmall; ;INTERRUPT_STACK_TOO_SMALL;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x2907;IEC_ThreadExitted; ;THREAD_EXITTED;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x2908;IEC_InconsistentMpInformation; ;INCONSISTENT_MP_INFORMATION;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x2909;IEC_InvalidNode; ;INVALID_NODE;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x290a;IEC_NoMpci; ;NO_MPCI;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x290b;IEC_BadPacket; ;BAD_PACKET;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x290c;IEC_OutOfPackets; ;OUT_OF_PACKETS;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x290d;IEC_OutOfGlobalObjects; ;OUT_OF_GLOBAL_OBJECTS;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x290e;IEC_OutOfProxies; ;OUT_OF_PROXIES;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x290f;IEC_InvalidGlobalId; ;INVALID_GLOBAL_ID;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x2910;IEC_BadStackHook; ;BAD_STACK_HOOK;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x2911;IEC_BadAttributes; ;BAD_ATTRIBUTES;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x2912;IEC_ImplementationKeyCreateIncon; ;IMPLEMENTATION_KEY_CREATE_INCONSISTENCY;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x2913;IEC_ImplementationBlockingOperat; ;IMPLEMENTATION_BLOCKING_OPERATION_CANCEL;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x2914;IEC_MutexObtainFromBadState; ;MUTEX_OBTAIN_FROM_BAD_STATE;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x2915;IEC_UnlimitedAndMaximumIs0; ;UNLIMITED_AND_MAXIMUM_IS_0;../framework/osal/InternalErrorCodes.h;INTERNAL_ERROR_CODES
+0x601;PP_DoItMyself; ;DO_IT_MYSELF;../framework/memory/HasMemoryIF.h;HAS_MEMORY_IF
+0x602;PP_PointsToVariable; ;POINTS_TO_VARIABLE;../framework/memory/HasMemoryIF.h;HAS_MEMORY_IF
+0x603;PP_PointsToMemory; ;POINTS_TO_MEMORY;../framework/memory/HasMemoryIF.h;HAS_MEMORY_IF
+0x604;PP_ActivityCompleted; ;ACTIVITY_COMPLETED;../framework/memory/HasMemoryIF.h;HAS_MEMORY_IF
+0x605;PP_PointsToVectorUint8; ;POINTS_TO_VECTOR_UINT8;../framework/memory/HasMemoryIF.h;HAS_MEMORY_IF
+0x606;PP_PointsToVectorUint16; ;POINTS_TO_VECTOR_UINT16;../framework/memory/HasMemoryIF.h;HAS_MEMORY_IF
+0x607;PP_PointsToVectorUint32; ;POINTS_TO_VECTOR_UINT32;../framework/memory/HasMemoryIF.h;HAS_MEMORY_IF
+0x608;PP_PointsToVectorFloat; ;POINTS_TO_VECTOR_FLOAT;../framework/memory/HasMemoryIF.h;HAS_MEMORY_IF
+0x6a0;PP_DumpNotSupported; ;DUMP_NOT_SUPPORTED;../framework/memory/HasMemoryIF.h;HAS_MEMORY_IF
+0x6e0;PP_InvalidSize; ;INVALID_SIZE;../framework/memory/HasMemoryIF.h;HAS_MEMORY_IF
+0x6e1;PP_InvalidAddress; ;INVALID_ADDRESS;../framework/memory/HasMemoryIF.h;HAS_MEMORY_IF
+0x6e2;PP_InvalidContent; ;INVALID_CONTENT;../framework/memory/HasMemoryIF.h;HAS_MEMORY_IF
+0x6e3;PP_UnalignedAccess; ;UNALIGNED_ACCESS;../framework/memory/HasMemoryIF.h;HAS_MEMORY_IF
+0x6e4;PP_WriteProtected; ;WRITE_PROTECTED;../framework/memory/HasMemoryIF.h;HAS_MEMORY_IF
+0x13e0;MH_UnknownCmd; ;UNKNOWN_CMD;../framework/memory/MemoryHelper.h;MEMORY_HELPER
+0x13e1;MH_InvalidAddress; ;INVALID_ADDRESS;../framework/memory/MemoryHelper.h;MEMORY_HELPER
+0x13e2;MH_InvalidSize; ;INVALID_SIZE;../framework/memory/MemoryHelper.h;MEMORY_HELPER
+0x13e3;MH_StateMismatch; ;STATE_MISMATCH;../framework/memory/MemoryHelper.h;MEMORY_HELPER
+0x2d01;HPA_InvalidMatrixId; ;INVALID_MATRIX_ID;../framework/parameters/HasParametersIF.h;HAS_PARAMETERS_IF
+0x2d02;HPA_InvalidDomainId; ;INVALID_DOMAIN_ID;../framework/parameters/HasParametersIF.h;HAS_PARAMETERS_IF
+0x2d03;HPA_InvalidValue; ;INVALID_VALUE;../framework/parameters/HasParametersIF.h;HAS_PARAMETERS_IF
+0x2d05;HPA_ReadOnly; ;READ_ONLY;../framework/parameters/HasParametersIF.h;HAS_PARAMETERS_IF
+0x2c01;PAW_UnknowDatatype; ;UNKNOW_DATATYPE;../framework/parameters/ParameterWrapper.h;PARAMETER_WRAPPER
+0x2c02;PAW_DatatypeMissmatch; ;DATATYPE_MISSMATCH;../framework/parameters/ParameterWrapper.h;PARAMETER_WRAPPER
+0x2c03;PAW_Readonly; ;READONLY;../framework/parameters/ParameterWrapper.h;PARAMETER_WRAPPER
+0x2c04;PAW_TooBig; ;TOO_BIG;../framework/parameters/ParameterWrapper.h;PARAMETER_WRAPPER
+0x2c05;PAW_SourceNotSet; ;SOURCE_NOT_SET;../framework/parameters/ParameterWrapper.h;PARAMETER_WRAPPER
+0x2c06;PAW_OutOfBounds; ;OUT_OF_BOUNDS;../framework/parameters/ParameterWrapper.h;PARAMETER_WRAPPER
+0x2c07;PAW_NotSet; ;NOT_SET;../framework/parameters/ParameterWrapper.h;PARAMETER_WRAPPER
+0x2b01;CCS_BcIsSetVrCommand;A value to describe a BC frame.;BC_IS_SET_VR_COMMAND;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2b02;CCS_BcIsUnlockCommand;A value to describe a BC frame.;BC_IS_UNLOCK_COMMAND;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2bb0;CCS_BcIllegalCommand;A value to describe an illegal BC frame.;BC_ILLEGAL_COMMAND;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2bb1;CCS_BoardReadingNotFinished;The CCSDS Board is not yet finished reading, it requires another cycle.;BOARD_READING_NOT_FINISHED;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2bf0;CCS_NsPositiveW;NS is in the positive window;NS_POSITIVE_W;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2bf1;CCS_NsNegativeW;NS is in the negative window;NS_NEGATIVE_W;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2bf2;CCS_NsLockout;NS is in lockout state;NS_LOCKOUT;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2bf3;CCS_FarmInLockout;FARM-1 is currently in lockout state;FARM_IN_LOCKOUT;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2bf4;CCS_FarmInWait;FARM-1 is currently in wait state;FARM_IN_WAIT;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2be0;CCS_WrongSymbol;An error code in the FrameFinder.;WRONG_SYMBOL;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2be1;CCS_DoubleStart;An error code in the FrameFinder.;DOUBLE_START;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2be2;CCS_StartSymbolMissed;An error code in the FrameFinder.;START_SYMBOL_MISSED;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2be3;CCS_EndWithoutStart;An error code in the FrameFinder.;END_WITHOUT_START;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2be4;CCS_TooLarge;An error code for a frame.;TOO_LARGE;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2be5;CCS_TooShort;An error code for a frame.;TOO_SHORT;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2be6;CCS_WrongTfVersion;An error code for a frame.;WRONG_TF_VERSION;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2be7;CCS_WrongSpacecraftId;An error code for a frame.;WRONG_SPACECRAFT_ID;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2be8;CCS_NoValidFrameType;An error code for a frame.;NO_VALID_FRAME_TYPE;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2be9;CCS_CrcFailed;An error code for a frame.;CRC_FAILED;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2bea;CCS_VcNotFound;An error code for a frame.;VC_NOT_FOUND;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2beb;CCS_ForwardingFailed;An error code for a frame.;FORWARDING_FAILED;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2bec;CCS_ContentTooLarge;An error code for a frame.;CONTENT_TOO_LARGE;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2bed;CCS_ResidualData;An error code for a frame.;RESIDUAL_DATA;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2bee;CCS_DataCorrupted;An error code for a frame.;DATA_CORRUPTED;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2bef;CCS_IllegalSegmentationFlag;An error code for a frame.;ILLEGAL_SEGMENTATION_FLAG;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2bd0;CCS_IllegalFlagCombination;An error code for a frame.;ILLEGAL_FLAG_COMBINATION;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2bd1;CCS_ShorterThanHeader;An error code for a frame.;SHORTER_THAN_HEADER;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2bd2;CCS_TooShortBlockedPacket;An error code for a frame.;TOO_SHORT_BLOCKED_PACKET;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x2bd3;CCS_TooShortMapExtraction;An error code for a frame.;TOO_SHORT_MAP_EXTRACTION;../framework/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
+0x3c00;HKM_PoolEntryNotFound; ;POOL_ENTRY_NOT_FOUND;../framework/datapoollocal/LocalDataPoolManager.h;HOUSEKEEPING_MANAGER
+0x3c01;HKM_PoolEntryTypeConflict; ;POOL_ENTRY_TYPE_CONFLICT;../framework/datapoollocal/LocalDataPoolManager.h;HOUSEKEEPING_MANAGER
+0x3c02;HKM_QueueOrDestinationNotSet; ;QUEUE_OR_DESTINATION_NOT_SET;../framework/datapoollocal/LocalDataPoolManager.h;HOUSEKEEPING_MANAGER
+0x2401;EV_ListenerNotFound; ;LISTENER_NOT_FOUND;../framework/events/EventManagerIF.h;EVENT_MANAGER_IF
+0x3101;CF_ObjectHasNoFunctions; ;OBJECT_HAS_NO_FUNCTIONS;../framework/action/CommandsActionsIF.h;COMMANDS_ACTIONS_IF
+0x3102;CF_AlreadyCommanding; ;ALREADY_COMMANDING;../framework/action/CommandsActionsIF.h;COMMANDS_ACTIONS_IF
+0x3201;HF_IsBusy; ;IS_BUSY;../framework/action/HasActionsIF.h;HAS_ACTIONS_IF
+0x3202;HF_InvalidParameters; ;INVALID_PARAMETERS;../framework/action/HasActionsIF.h;HAS_ACTIONS_IF
+0x3203;HF_ExecutionFinished; ;EXECUTION_FINISHED;../framework/action/HasActionsIF.h;HAS_ACTIONS_IF
+0x3204;HF_InvalidActionId; ;INVALID_ACTION_ID;../framework/action/HasActionsIF.h;HAS_ACTIONS_IF
+0x3901;SPH_SemaphoreTimeout; ;SEMAPHORE_TIMEOUT;../framework/tasks/SemaphoreIF.h;SEMAPHORE_IF
+0x3902;SPH_SemaphoreNotOwned; ;SEMAPHORE_NOT_OWNED;../framework/tasks/SemaphoreIF.h;SEMAPHORE_IF
+0x3903;SPH_SemaphoreInvalid; ;SEMAPHORE_INVALID;../framework/tasks/SemaphoreIF.h;SEMAPHORE_IF
+0x3501;TSI_BadTimestamp; ;BAD_TIMESTAMP;../framework/timemanager/TimeStamperIF.h;TIME_STAMPER_IF
+0x1000;TIM_UnsupportedTimeFormat; ;UNSUPPORTED_TIME_FORMAT;../framework/timemanager/CCSDSTime.h;CCSDS_TIME_HELPER_CLASS
+0x1001;TIM_NotEnoughInformationForTarge; ;NOT_ENOUGH_INFORMATION_FOR_TARGET_FORMAT;../framework/timemanager/CCSDSTime.h;CCSDS_TIME_HELPER_CLASS
+0x1002;TIM_LengthMismatch; ;LENGTH_MISMATCH;../framework/timemanager/CCSDSTime.h;CCSDS_TIME_HELPER_CLASS
+0x1003;TIM_InvalidTimeFormat; ;INVALID_TIME_FORMAT;../framework/timemanager/CCSDSTime.h;CCSDS_TIME_HELPER_CLASS
+0x1004;TIM_InvalidDayOfYear; ;INVALID_DAY_OF_YEAR;../framework/timemanager/CCSDSTime.h;CCSDS_TIME_HELPER_CLASS
+0x1005;TIM_TimeDoesNotFitFormat; ;TIME_DOES_NOT_FIT_FORMAT;../framework/timemanager/CCSDSTime.h;CCSDS_TIME_HELPER_CLASS
+0x901;DPR_IncorrectSize; ;INCORRECT_SIZE;../framework/datapoolglob/PoolRawAccess.h;POOL_RAW_ACCESS_CLASS
+0x902;DPR_DataPoolAccessFailed; ;DATA_POOL_ACCESS_FAILED;../framework/datapoolglob/PoolRawAccess.h;POOL_RAW_ACCESS_CLASS
+0x903;DPR_ReadTypeTooLarge; ;READ_TYPE_TOO_LARGE;../framework/datapoolglob/PoolRawAccess.h;POOL_RAW_ACCESS_CLASS
+0x904;DPR_ReadIndexTooLarge; ;READ_INDEX_TOO_LARGE;../framework/datapoolglob/PoolRawAccess.h;POOL_RAW_ACCESS_CLASS
+0x905;DPR_ReadEntryNonExistent; ;READ_ENTRY_NON_EXISTENT;../framework/datapoolglob/PoolRawAccess.h;POOL_RAW_ACCESS_CLASS
+0x801;DPS_InvalidParameterDefinition; ;INVALID_PARAMETER_DEFINITION;../framework/datapool/DataSetIF.h;DATA_SET_CLASS
+0x802;DPS_SetWasAlreadyRead; ;SET_WAS_ALREADY_READ;../framework/datapool/DataSetIF.h;DATA_SET_CLASS
+0x803;DPS_CommitingWithoutReading; ;COMMITING_WITHOUT_READING;../framework/datapool/DataSetIF.h;DATA_SET_CLASS
+0x804;DPS_DataSetUninitialised; ;DATA_SET_UNINITIALISED;../framework/datapool/DataSetIF.h;DATA_SET_CLASS
+0x805;DPS_DataSetFull; ;DATA_SET_FULL;../framework/datapool/DataSetIF.h;DATA_SET_CLASS
+0x806;DPS_PoolVarNull; ;POOL_VAR_NULL;../framework/datapool/DataSetIF.h;DATA_SET_CLASS
+0x3ba0;PVA_InvalidReadWriteMode; ;INVALID_READ_WRITE_MODE;../framework/datapool/PoolVariableIF.h;POOL_VARIABLE_IF
+0x2301;MT_TooDetailedRequest; ;TOO_DETAILED_REQUEST;../framework/globalfunctions/matching/MatchTree.h;MATCH_TREE_CLASS
+0x2302;MT_TooGeneralRequest; ;TOO_GENERAL_REQUEST;../framework/globalfunctions/matching/MatchTree.h;MATCH_TREE_CLASS
+0x2303;MT_NoMatch; ;NO_MATCH;../framework/globalfunctions/matching/MatchTree.h;MATCH_TREE_CLASS
+0x2304;MT_Full; ;FULL;../framework/globalfunctions/matching/MatchTree.h;MATCH_TREE_CLASS
+0x2305;MT_NewNodeCreated; ;NEW_NODE_CREATED;../framework/globalfunctions/matching/MatchTree.h;MATCH_TREE_CLASS
+0x3d01;DLE_StreamTooShort; ;STREAM_TOO_SHORT;../framework/globalfunctions/DleEncoder.h;DLE_ENCODER
+0x3d02;DLE_DecodingError; ;DECODING_ERROR;../framework/globalfunctions/DleEncoder.h;DLE_ENCODER
+0x2e01;ASC_TooLongForTargetType; ;TOO_LONG_FOR_TARGET_TYPE;../framework/globalfunctions/AsciiConverter.h;ASCII_CONVERTER
+0x2e02;ASC_InvalidCharacters; ;INVALID_CHARACTERS;../framework/globalfunctions/AsciiConverter.h;ASCII_CONVERTER
+0x2e03;ASC_BufferTooSmall; ;BUFFER_TOO_SMALL;../framework/globalfunctions/AsciiConverter.h;ASCII_CONVERTER
+0x36a1;SGP_InvalidEccentricity; ;INVALID_ECCENTRICITY;../framework/coordinates/Sgp4Propagator.h;SGP4PROPAGATOR_CLASS
+0x36a2;SGP_InvalidMeanMotion; ;INVALID_MEAN_MOTION;../framework/coordinates/Sgp4Propagator.h;SGP4PROPAGATOR_CLASS
+0x36a3;SGP_InvalidPerturbationElements; ;INVALID_PERTURBATION_ELEMENTS;../framework/coordinates/Sgp4Propagator.h;SGP4PROPAGATOR_CLASS
+0x36a4;SGP_InvalidSemiLatusRectum; ;INVALID_SEMI_LATUS_RECTUM;../framework/coordinates/Sgp4Propagator.h;SGP4PROPAGATOR_CLASS
+0x36a5;SGP_InvalidEpochElements; ;INVALID_EPOCH_ELEMENTS;../framework/coordinates/Sgp4Propagator.h;SGP4PROPAGATOR_CLASS
+0x36a6;SGP_SatelliteHasDecayed; ;SATELLITE_HAS_DECAYED;../framework/coordinates/Sgp4Propagator.h;SGP4PROPAGATOR_CLASS
+0x36b1;SGP_TleTooOld; ;TLE_TOO_OLD;../framework/coordinates/Sgp4Propagator.h;SGP4PROPAGATOR_CLASS
+0x36b2;SGP_TleNotInitialized; ;TLE_NOT_INITIALIZED;../framework/coordinates/Sgp4Propagator.h;SGP4PROPAGATOR_CLASS
+0x4101;I2C_I2cDriverError; ;I2C_DRIVER_ERROR;../sam9g20/comIF/I2cDeviceComIF.h;I2C_CHANNEL
+0x41a1;I2C_I2cQueueCreationFailure; ;I2C_QUEUE_CREATION_FAILURE;../sam9g20/comIF/I2cDeviceComIF.h;I2C_CHANNEL
+0x41a2;I2C_I2cPeripheralInitFailure; ;I2C_PERIPHERAL_INIT_FAILURE;../sam9g20/comIF/I2cDeviceComIF.h;I2C_CHANNEL
+0x41a3;I2C_I2cTaskCreationFailure; ;I2C_TASK_CREATION_FAILURE;../sam9g20/comIF/I2cDeviceComIF.h;I2C_CHANNEL
+0x41b1;I2C_I2cInvalidTransferParameters; ;I2C_INVALID_TRANSFER_PARAMETERS;../sam9g20/comIF/I2cDeviceComIF.h;I2C_CHANNEL
+0x41b2;I2C_I2cQueueTransferInitFailure; ;I2C_QUEUE_TRANSFER_INIT_FAILURE;../sam9g20/comIF/I2cDeviceComIF.h;I2C_CHANNEL
+0x41c1;I2C_I2cWriteSemaphoreBlocked; ;I2C_WRITE_SEMAPHORE_BLOCKED;../sam9g20/comIF/I2cDeviceComIF.h;I2C_CHANNEL
+0x41c2;I2C_I2cReadError; ;I2C_READ_ERROR;../sam9g20/comIF/I2cDeviceComIF.h;I2C_CHANNEL
+0x41c3;I2C_I2cWriteError; ;I2C_WRITE_ERROR;../sam9g20/comIF/I2cDeviceComIF.h;I2C_CHANNEL
+0x41c4;I2C_I2cTransferGeneralError; ;I2C_TRANSFER_GENERAL_ERROR;../sam9g20/comIF/I2cDeviceComIF.h;I2C_CHANNEL
+0x41c5;I2C_I2cTransferTimeoutError; ;I2C_TRANSFER_TIMEOUT_ERROR;../sam9g20/comIF/I2cDeviceComIF.h;I2C_CHANNEL
+0x41d1;I2C_I2cUnknownError; ;I2C_UNKNOWN_ERROR;../sam9g20/comIF/I2cDeviceComIF.h;I2C_CHANNEL
+0x41e1;I2C_I2cInvalidAddress; ;I2C_INVALID_ADDRESS;../sam9g20/comIF/I2cDeviceComIF.h;I2C_CHANNEL
+0x41e2;I2C_I2cAddressNotInReceiveMap; ;I2C_ADDRESS_NOT_IN_RECEIVE_MAP;../sam9g20/comIF/I2cDeviceComIF.h;I2C_CHANNEL
+0x4000;RS232_OpeningError;could not configure and start RS232 connection;OPENING_ERROR;../sam9g20/comIF/RS232DeviceComIF.h;RS232_CHANNEL
+0x4201;SPI_SpiInitFailure; ;SPI_INIT_FAILURE;../sam9g20/comIF/SpiDeviceComIF.h;SPI_CHANNEL
+0x4202;SPI_SpiCommunicationTimeout; ;SPI_COMMUNICATION_TIMEOUT;../sam9g20/comIF/SpiDeviceComIF.h;SPI_CHANNEL
+0x4203;SPI_SpiBlockedOnWrite; ;SPI_BLOCKED_ON_WRITE;../sam9g20/comIF/SpiDeviceComIF.h;SPI_CHANNEL
+0x42a1;SPI_SpiTransferSemaphoreBlocked; ;SPI_TRANSFER_SEMAPHORE_BLOCKED;../sam9g20/comIF/SpiDeviceComIF.h;SPI_CHANNEL
+0x42a2;SPI_SpiTransferInvalidTransferSt; ;SPI_TRANSFER_INVALID_TRANSFER_STRUCT;../sam9g20/comIF/SpiDeviceComIF.h;SPI_CHANNEL
+0x42a3;SPI_SpiTransferInvalidDriverPara; ;SPI_TRANSFER_INVALID_DRIVER_PARAMS;../sam9g20/comIF/SpiDeviceComIF.h;SPI_CHANNEL
+0x42a4;SPI_SpiTransferQueueInitFailure; ;SPI_TRANSFER_QUEUE_INIT_FAILURE;../sam9g20/comIF/SpiDeviceComIF.h;SPI_CHANNEL
+0x42e1;SPI_SpiInvalidAddress; ;SPI_INVALID_ADDRESS;../sam9g20/comIF/SpiDeviceComIF.h;SPI_CHANNEL

@@ -1,0 +1,67 @@
+ReturnValue_t TestTask::performStorageHelperAndUniquePointerTesting() {
+	ReturnValue_t result = RETURN_FAILED;
+	uint16_t numberOfElements[1] = {1};
+	uint16_t sizeofElements[1] = {10};
+	LocalPool<1> testPool = LocalPool<1>(0, sizeofElements, numberOfElements);
+	std::array<uint8_t, 20> testDataArray;
+	store_address_t testStoreId;
+	for(size_t i = 0; i < testDataArray.size(); i++) {
+		testDataArray[i] = i;
+	}
+	size_t size = 10;
+
+	// Storage Helper Tests
+	// performHelperTest(&testStoreId, &testPool, size, testDataArray);
+
+	// Unique Pointer Tests
+	testPool.addData(&testStoreId, testDataArray.data(), size);
+	auto storagePtr = std::make_unique<StorageHelper>(testStoreId, &testPool);
+	uniquePointerTest(std::move(storagePtr));
+
+	result = testPool.addData(&testStoreId, testDataArray.data(), size);
+	if(result != RETURN_OK) {
+		std::cout << "TestTask: Error, this should've worked" << std::endl;
+	}
+
+	storagePtr = std::make_unique<StorageHelper>(testStoreId, &testPool);
+	CommandMessage testMessage;
+	sif::info << "Setting message" << std::endl;
+	sif::info << sizeof(void*) << std::endl;
+
+	TestAutoDeleteMessage::setTestMessage(&testMessage, testStoreId, &testPool);
+	auto unique_ptr = TestAutoDeleteMessage::getUniquePtr(&testMessage);
+	unique_ptr.reset();
+	return RETURN_OK;
+}
+
+
+
+void TestTask::performHelperTest(store_address_t * testStoreId,
+    		StorageManagerIF* testPool, size_t size,
+			std::array<uint8_t, 20> & testDataArray) {
+	ReturnValue_t result = RETURN_FAILED;
+	testPool->addData(testStoreId, testDataArray.data(), size);
+	StorageHelper testHelper = StorageHelper(*testStoreId, testPool);
+	testHelper.deleteData();
+	result = testPool->addData(testStoreId, testDataArray.data(), size);
+	if(result != RETURN_OK) {
+		std::cout << "TestTask: Error, data should have been added!" << std::endl;
+	}
+
+	result = testPool->deleteData(*testStoreId);
+	if(result != RETURN_OK) {
+		std::cout << "TestTask: Error, should have been deleted!" << std::endl;
+	}
+
+	result = testPool->addData(testStoreId, testDataArray.data(), size);
+	if(result != RETURN_OK) {
+		std::cout << "TestTask: Error, this should've worked" << std::endl;
+	}
+	scopedHelperTest(testStoreId, testPool);
+
+	result = testPool->addData(testStoreId, testDataArray.data(), size);
+	if(result != RETURN_OK) {
+		std::cout << "TestTask: Error, this should've worked" << std::endl;
+	}
+
+}

@@ -1,0 +1,321 @@
+#include "serialreceiver.h"
+#include <main.h>
+
+#include <utility/dle_encoder.h>
+#include <blloader/tmtcpacket/TcPacketBase.h>
+#include <blloader/tmtcpacket/TcPacketCheck.h>
+
+#include <AT91SAM9G20.h>
+#include <peripherals/usart/usart_at91.h>
+#include <peripherals/pmc/pmc.h>
+#include <peripherals/aic/aic.h>
+#include <utility/trace.h>
+
+#include <string.h>
+#include <stdbool.h>
+
+uint8_t uart_buffer[2][UART_READ_SIZE];
+volatile bool uart_slot = false;
+
+volatile uint8_t bytes_received = 0;
+volatile uint16_t reception_buffer_position = 0;
+
+
+
+/* Private functions */
+static void handle_lead_packet(uint8_t* packet_ptr,
+        binary_type_t* bin_type, uint32_t* binary_size,
+        uint16_t * number_of_packets, uint32_t* hamming_code_offset);
+static bool receive_packet(size_t* size_received);
+void usart0_isr(void);
+
+void configure_usart0(bool use_interrupt, uint32_t baud_rate,
+        uint16_t timeout) {
+    unsigned int mode = AT91C_US_USMODE_NORMAL
+            | AT91C_US_CLKS_CLOCK
+            | AT91C_US_CHRL_8_BITS
+            | AT91C_US_PAR_NONE
+            | AT91C_US_NBSTOP_1_BIT
+            | AT91C_US_CHMODE_NORMAL;
+
+    // Enable the peripheral clock in the PMC
+    PMC_EnablePeripheral(AT91C_ID_US0);
+
+    // Configure the USART in the desired mode @115200 bauds
+    USART_Configure(AT91C_BASE_US0, mode, 115200, BOARD_MCK);
+
+    if(use_interrupt) {
+        AIC_ConfigureIT(AT91C_ID_US0, AT91C_AIC_PRIOR_LOWEST + 2, usart0_isr);
+        AIC_EnableIT(AT91C_ID_US0);
+
+        AT91C_BASE_US0->US_RTOR = timeout;
+        AT91C_BASE_US0->US_IER = AT91C_US_RXBUFF | AT91C_US_TIMEOUT | AT91C_US_ENDRX;
+
+        // Configure the RXBUFF interrupt
+        // todo: higher priority for interrupt!
+        AIC_ConfigureIT(AT91C_ID_US0, 0, usart0_isr);
+        AIC_EnableIT(AT91C_ID_US0);
+
+        // Start receiving data and start timer
+        //USART_ReadBuffer(AT91C_BASE_US0, uart_buffer, UART_READ_SIZE);
+        AT91C_BASE_US0->US_RCR = UART_READ_SIZE;
+        AT91C_BASE_US0->US_RPR = (uint32_t) uart_buffer[uart_slot];
+
+        AT91C_BASE_US0->US_RNCR = UART_READ_SIZE;
+        AT91C_BASE_US0->US_RNPR = (uint32_t) uart_buffer[!uart_slot];
+    }
+
+    // Enable receiver & transmitter
+    USART_SetTransmitterEnabled(AT91C_BASE_US0, 1);
+    USART_SetReceiverEnabled(AT91C_BASE_US0, 1);
+}
+
+void usart0_isr() {
+    unsigned int status;
+
+    // Read USART status
+    status = AT91C_BASE_US0->US_CSR;
+
+    // Receive buffer is full (pointer register is also 0)
+    // This should never happen!
+    if ((status & AT91C_US_RXBUFF) == AT91C_US_RXBUFF) {
+        TRACE_WARNING("usart0_isr: RXBUFF full!\r\n");
+        bytes_received = 2 * UART_READ_SIZE;
+
+        memcpy(reception_buffer + reception_buffer_position,
+                                uart_buffer[uart_slot], UART_READ_SIZE);
+        memcpy(reception_buffer + reception_buffer_position,
+                               uart_buffer[!uart_slot], UART_READ_SIZE);
+        reception_buffer_position += bytes_received;
+        // This should fill the next PDC bank
+        AT91C_BASE_US0->US_RPR = (uint32_t) uart_buffer[uart_slot];
+        AT91C_BASE_US0->US_RCR = UART_READ_SIZE;
+        AT91C_BASE_US0->US_RNPR = (uint32_t) uart_buffer[!uart_slot];
+        AT91C_BASE_US0->US_RNCR = UART_READ_SIZE;
+
+        uart_slot = !uart_slot;
+        if ((status & AT91C_US_TIMEOUT) == AT91C_US_TIMEOUT) {
+            AT91C_BASE_US0->US_CR = AT91C_US_STTTO;
+        }
+    }
+    // PDC transfer complete (US_RCR is 0)
+    else if ((status & AT91C_US_ENDRX) == AT91C_US_ENDRX) {
+        bytes_received = UART_READ_SIZE;
+        memcpy(reception_buffer + reception_buffer_position,
+                uart_buffer[uart_slot], UART_READ_SIZE);
+        reception_buffer_position += bytes_received;
+
+        if(AT91C_BASE_US0->US_RNCR != 0 && AT91C_BASE_US0->US_RNPR != 0) {
+            AT91C_BASE_US0->US_RPR = AT91C_BASE_US0->US_RNCR;
+            AT91C_BASE_US0->US_RNCR = UART_READ_SIZE;
+            AT91C_BASE_US0->US_RPR = AT91C_BASE_US0->US_RNPR;
+            AT91C_BASE_US0->US_RNPR = (uint32_t) uart_buffer[uart_slot];
+        }
+        else {
+            // RNPR and RNCR (next transfer banks) should have already been set
+            //AT91C_BASE_US0->US_RPR = (uint32_t) uart_buffer[uart_slot];
+            //AT91C_BASE_US0->US_RCR = UART_READ_SIZE;
+            AT91C_BASE_US0->US_RNPR = (uint32_t) uart_buffer[uart_slot];
+            AT91C_BASE_US0->US_RNCR = UART_READ_SIZE;
+        }
+        uart_slot = !uart_slot;
+        if ((status & AT91C_US_TIMEOUT) == AT91C_US_TIMEOUT) {
+            AT91C_BASE_US0->US_CR |= AT91C_US_STTTO;
+        }
+    }
+    else if ((status & AT91C_US_TIMEOUT) == AT91C_US_TIMEOUT) {
+
+        bytes_received = UART_READ_SIZE - AT91C_BASE_US0->US_RCR;
+        if(bytes_received == 0) {
+            // Set timeout flag
+            AT91C_BASE_US0->US_CR |= AT91C_US_STTTO;
+            return;
+        }
+
+        memcpy(reception_buffer + reception_buffer_position,
+                uart_buffer[uart_slot], bytes_received);
+        reception_buffer_position += bytes_received;
+        if(AT91C_BASE_US0->US_RNCR != 0 && AT91C_BASE_US0->US_RNPR != 0) {
+            AT91C_BASE_US0->US_RCR = AT91C_BASE_US0->US_RNCR;
+            AT91C_BASE_US0->US_RNCR = UART_READ_SIZE;
+            AT91C_BASE_US0->US_RPR = AT91C_BASE_US0->US_RNPR;
+            AT91C_BASE_US0->US_RNPR = (uint32_t) uart_buffer[uart_slot];
+        }
+        else {
+            AT91C_BASE_US0->US_RPR = (uint32_t) uart_buffer[uart_slot];
+            AT91C_BASE_US0->US_RCR = UART_READ_SIZE;
+            AT91C_BASE_US0->US_RNPR = (uint32_t) uart_buffer[!uart_slot];
+            AT91C_BASE_US0->US_RNCR = UART_READ_SIZE;
+        }
+
+        uart_slot = !uart_slot;
+        // Set timeout flag
+        AT91C_BASE_US0->US_CR |= AT91C_US_STTTO;
+    }
+}
+
+void handle_binary_reception() {
+    bool binaryReceived = false;
+    binary_type_t bin_type = BOOTLOADER;
+    uint16_t packetIndex = 0;
+    uint32_t hamming_code_offset = 0;
+    uint32_t binary_size = 0;
+    uint16_t number_of_packets = 0;
+    uint8_t decoding_buffer[RECEPTION_BUFFER_SIZE];
+    while(!binaryReceived) {
+        size_t size_received = 0;
+        size_t packet_size = 0;
+        // maybe interrupt based reception would be better..
+        // This function reads uses STX + ETX chars to find packets in a stream.
+        if(!receive_packet(&size_received)) {
+            // Something went wrong
+            continue;
+        }
+
+        // Decode the DLE encoded packet.
+        dle_returncodes_t decode_result = decode_dle(reception_buffer,
+                size_received, NULL, decoding_buffer,
+                RECEPTION_BUFFER_SIZE, &packet_size);
+        if(decode_result != DLE_OK) {
+            // Something went wrong
+            continue;
+        }
+
+        if(packetIndex == 0) {
+            handle_lead_packet(decoding_buffer, &bin_type, &binary_size,
+                    &number_of_packets, &hamming_code_offset);
+            packetIndex++;
+        }
+        else if(packetIndex == number_of_packets) {
+            // should be the last packet. verify by checking subservice
+        }
+        else {
+            // verify subservice
+        }
+
+        // handle lead packet and cache expected number of packets, binary
+        // size and start position of hamming code.
+
+    }
+}
+
+
+bool receive_packet(size_t* size_received) {
+    uint32_t lastDotPrint = u32_ms_counter;
+    uint8_t packetIndex = 0;
+    bool stxReceived = false;
+    for(;;) {
+
+        if(!stxReceived && u32_ms_counter - lastDotPrint >= 2000) {
+            TRACE_INFO_WP(".");
+            lastDotPrint = u32_ms_counter;
+        }
+
+        if(USART_IsDataAvailable(AT91C_BASE_US0)) {
+            char recvChar = USART_Read(AT91C_BASE_US0, 0);
+            // start of packet detected
+            if(recvChar == STX_CHAR) {
+                if(!stxReceived) {
+                    reception_buffer[packetIndex] = recvChar;
+                    stxReceived = true;
+                    packetIndex++;
+                }
+                else {
+                    return false;
+                }
+            }
+            // End of packet detected
+            else if(recvChar == ETX_CHAR) {
+                if(stxReceived) {
+                    reception_buffer[packetIndex] = recvChar;
+                    packetIndex++;
+                    *size_received = packetIndex;
+                    return true;
+                }
+            }
+            // Regular char of packet
+            else if(stxReceived) {
+                reception_buffer[packetIndex] = recvChar;
+                packetIndex++;
+            }
+        }
+
+        if(packetIndex == sizeof(reception_buffer)) {
+            // This should not happen!
+            // Send NACK
+            return false;
+        }
+    }
+    return true;
+}
+
+void handle_lead_packet(uint8_t* packet_ptr, binary_type_t* bin_type,
+        uint32_t* binary_size, uint16_t * number_of_packets,
+        uint32_t* hamming_code_offset) {
+    // check packet format / validity. Assign expected number
+    // of packets, binary size and start position of hamming code
+    // verify subservice
+
+    // TC packet
+    TcPacketPointer* tc_packet = (TcPacketPointer*) packet_ptr;
+    tc_check_retcode_t tc_check = checkPacket(tc_packet);
+    if(tc_check != TC_CHECK_OK) {
+        // failure
+    }
+
+    // now verify subservice
+
+    const uint8_t* lead_packet_data = get_application_data(tc_packet);
+    size_t lead_packet_data_size = get_application_data_size(tc_packet);
+    if(lead_packet_data_size != sizeof(lead_packet_data_t)) {
+        // data invalid
+
+    }
+
+    size_t deserialized_size = 0;
+    *bin_type = lead_packet_data[0];
+    // check whether bin type is valid.
+    if(*bin_type != BOOTLOADER) {
+        // does only support bootloader for now
+    }
+
+    deserialized_size += sizeof(*bin_type);
+
+    uint16_t numer_of_packet_le = 0;
+    memcpy(&number_of_packets, lead_packet_data + deserialized_size,
+            sizeof(number_of_packets));
+    *number_of_packets = __builtin_bswap16(numer_of_packet_le);
+    deserialized_size += sizeof(numer_of_packet_le);
+    // add sanity check for size (should be less than ~ 970kB / 256)
+    // and even smaller if binary type is bootloader)
+
+    uint32_t binary_size_le = 0;
+    memcpy(&binary_size_le, lead_packet_data + deserialized_size,
+            sizeof(binary_size_le));
+    *binary_size = __builtin_bswap32(binary_size_le);
+    deserialized_size += sizeof(binary_size_le);
+    // add sanity check for size (should be less than ~ 970 kB
+    // and even smaller if binary type is bootloader)
+    if(binary_size){}
+
+    uint32_t hamming_code_offset_le = 0;
+    memcpy(&hamming_code_offset_le,
+            lead_packet_data + deserialized_size,
+            sizeof(hamming_code_offset_le));
+    *hamming_code_offset = __builtin_bswap32(hamming_code_offset_le);
+    deserialized_size += sizeof(hamming_code_offset_le);
+    // add sanity check for offset (should be at the end of
+    // the designated memory, so less than binary_size)
+
+    // if all three variables are ok, write them into
+    // into the FRAM.
+
+
+
+
+    // send NACK, packet invalid.
+
+    // send ACK to sender
+}
+
+

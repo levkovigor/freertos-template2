@@ -1,0 +1,48 @@
+void Serial_PollingTask::handlePacketReading() {
+	recvSize = UART_getPrevBytesRead(bus0_uart);
+	if(recvSize == PUS_HEADER_SIZE) {
+		ReturnValue_t result = readPusPacket();
+		if (result == RETURN_OK) {
+			handlePusPacket();
+		}
+	}
+}
+
+ReturnValue_t Serial_PollingTask::readPusPacket() {
+	//info << "Serial Bridge: Read " << (int) recvSize << " bytes." << std::endl;
+	uint16_t packetSize = (recvBuffer[4] << 8 | recvBuffer[5]) + 7;
+	if(packetSize > sizeof(this->recvBuffer)) {
+		debug << "Serial Polling: Packet too large for Recv Buffer Size" << std::endl;
+		// TODO: If mass memory / SD card storing has been implemented, large packets (too large
+		// for tmtc store, e.g. > 1024 bytes, e.g. software image) should be split up/stored here
+		return RETURN_FAILED;
+	}
+	uint8_t * recvBuffer = this->recvBuffer + 6;
+	ReturnValue_t result = UART_read(bus0_uart, recvBuffer, sizeof(this->recvBuffer));
+	if (result != RETURN_OK) {
+		error << "Serial Polling: Read error with code " << std::dec << (int) result << " on bus 0" << std::endl;
+		return RETURN_FAILED;
+	}
+	recvSize += UART_getPrevBytesRead(bus0_uart);
+	if(packetSize != recvSize) {
+		error << "Serial Polling: Config Error, size missmatch. Check timeout value too." << std::endl;
+		return RETURN_FAILED;
+	}
+
+	return RETURN_OK;
+}
+
+// Pass packet to the software bus by storing it in TC store and sending a TMTC message.
+void Serial_PollingTask::handlePusPacket() {
+	store_address_t storeId;
+	ReturnValue_t result = tcStore->addData(&storeId,recvBuffer, recvSize);
+	if (result != RETURN_OK) {
+		debug << "Serial Polling: Data storage failed" << std::endl;
+		return;
+	}
+	TmTcMessage message(storeId);
+	if (TcReceptionQueue->sendToDefault(&message) != RETURN_OK) {
+		error << "Serial Polling: Sending message to queue failed" << std::endl;
+		tcStore->deleteData(storeId);
+	}
+}

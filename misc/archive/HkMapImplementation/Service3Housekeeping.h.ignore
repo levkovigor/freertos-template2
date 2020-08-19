@@ -1,0 +1,159 @@
+/**
+ * @file
+ * 	Service3Housekeeping.h
+ * @brief
+ * 	Used to manage housekeeping data reports
+ * @date
+ * 	02.11.2019
+ */
+
+#ifndef MISSION_PUS_SERVICE3HOUSEKEEPING_H_
+#define MISSION_PUS_SERVICE3HOUSEKEEPING_H_
+
+#include <fsfw/tmtcservices/PusServiceBase.h>
+#include <config/dataPool/GPSPool.h>
+#include <config/hk/sid.h>
+#include <map>
+#include <fsfw/storagemanager/LocalPool.h>
+#include <fsfw/container/FixedMap.h>
+
+typedef std::map<uint32_t, struct sid::hkStructMapEntry> HousekeepingMap;
+typedef std::pair<uint32_t, struct sid::hkStructMapEntry> HkMapEntry;
+typedef HousekeepingMap::iterator HkIterator;
+typedef std::pair<HkIterator,bool> HkMapReturnValue;
+
+typedef FixedMap<uint32_t, store_address_t> SidToStoreIdMap;
+typedef std::pair<uint32_t,store_address_t> SidToStoreIdMapEntry;
+typedef SidToStoreIdMap::Iterator SidToStoreIdIterator;
+
+
+class Service3Housekeeping: public PusServiceBase{
+public:
+	Service3Housekeeping(object_id_t objectId_,  GpsInit::navDataIdStruct gps0_,
+			GpsInit::navDataIdStruct gps1_);
+	virtual ~Service3Housekeeping();
+	virtual ReturnValue_t performService();
+	virtual ReturnValue_t handleRequest();
+
+	/**
+	 * Initialized Service 3 specific elements and calls default PusServiceBase initialize afterwards
+	 * @return
+	 */
+	virtual ReturnValue_t initialize();
+
+	enum Subservice {
+		ADD_HK_REPORT_STRUCTURE = 1, //!< [EXPORT] : [TC] Add a new structure to the housekeeping reports
+		ADD_DIAGNOSTICS_REPORT_STRUCTURE = 2, //!< [EXPORT] : [TC] Add a new structure to the diagnostics reports
+
+		DELETE_HK_REPORT_STRUCTURE = 3,
+		DELETE_DIAGNOSTICS_REPORT_STRUCTURE = 4,
+
+		ENABLE_PERIODIC_HK_REPORT_GENERATION = 5,
+		DISABLE_PERIODIC_HK_REPORT_GENERATION = 6,
+
+		ENABLE_PERIODIC_DIAGNOSTICS_REPORT_GENERATION = 7,
+		DISABLE_PERIODIC_DIAGNOSTICS_REPORT_GENERATION = 8,
+
+		REPORT_HK_REPORT_STRUCTURES = 9,
+		REPORT_DIAGNOSTICS_REPORT_STRUCTURES = 11,
+
+		HK_DEFINITIONS_REPORT = 10,
+		DIAGNOSTICS_DEFINITION_REPORT = 12,
+
+		HK_REPORT = 25,
+		DIAGNOSTICS_REPORT = 26,
+
+		/* PUS-C */
+		GENERATE_ONE_PARAMETER_REPORT = 27,
+		GENERATE_ONE_DIAGNOSTICS_REPORT = 28,
+
+		APPEND_PARAMETER_TO_PARAMETER_REPORT_STRUCTURE = 29,
+		APPEND_PARAMETER_TO_DIAGNOSTICS_REPORT_STRUCTURE = 30,
+
+		MODIFY_PARAMETER_REPORT_COLLECTION_INTERVALL = 31,
+		MODIFY_DIAGNOSTICS_REPORT_COLLECTION_INTERVALL = 32,
+
+		/* not used for now */
+		// APPLY_FUNCTIONAL_REPORTING_CONFIGURATION = 37
+	};
+
+private:
+	const bool storeMode = 0; // 0 for map, 1 for store
+
+	/* PUS + FSFW */
+	MessageQueueIF* tmQueue;
+	InternalErrorReporterIF* errorReporter;
+	uint16_t packetSubCounter;
+
+	/* Initialization functions */
+
+	/* Map Implementation will propably not be used, still keep to check speed */
+	ReturnValue_t initializeExistingHkDefinitionsAsMap();
+	ReturnValue_t addHkPacketDefinitionToMap(uint32_t sid,uint32_t collectionInterval_ms,
+			uint32_t idListSize,uint32_t* parameterIdList, bool enableHkEntry);
+	ReturnValue_t addDiagnosticsPacketDefinitionToMap(uint32_t sid,uint32_t collectionInterval_ms,
+			uint32_t idListSize,uint32_t* parameterIdList, bool enableHkEntry);
+	void prepareHkStruct(struct sid::hkStructMapEntry *,uint32_t collectionInterval_ms, uint32_t idListSize,
+				uint32_t *parameterIdList, bool enableHkEntry);
+	ReturnValue_t retrieveHkPacketDefinitionFromMap(uint32_t sid, sid::hkStructMapEntry *);
+	ReturnValue_t retrieveDiagnosticsPacketDefinitionFromMap(uint32_t sid);
+
+	/* This implementation will propably be used */
+	ReturnValue_t initializeExistingHkDefinitionsAsStore();
+	ReturnValue_t addHkPacketDefinitionToStore(uint32_t sid,uint32_t collectionInterval_ms,
+			uint32_t idListSize,uint32_t* parameterIdList, bool enableHkEntry);
+	ReturnValue_t retrieveHkPacketDefinitionFromStore(uint32_t sid);
+
+	/* HK Packet generation */
+	ReturnValue_t generateAllHkPackets();
+
+	ReturnValue_t handleHkPacketGeneration(uint32_t sid, sid::hkStructMapEntry * hkStruct);
+	ReturnValue_t generateHkPacket(uint32_t sid, sid::hkStructMapEntry * hkStruct);
+
+	ReturnValue_t handleHkPacketGeneration(uint32_t sid, uint8_t * hkBuffer);
+	ReturnValue_t generateHkPacket(uint32_t sid, uint8_t * hkBuffer);
+
+
+	ReturnValue_t checkSubservice(uint8_t subservice);
+
+	static const uint16_t MAX_HK_DATA_SIZE = sid::MAX_LARGE_HK_BUFFER_SIZE;
+	uint8_t sendBuffer[MAX_HK_DATA_SIZE];
+
+	/* Local HK Pool to store HK data */
+	const uint16_t numberOfHkElements[3] = {sid::MAX_NUMBER_OF_LARGE_HK_DEFINITIONS,
+											sid::MAX_NUMBER_OF_SMALL_HK_DEFINITIONS,
+											sid::MAX_NUMBER_OF_DIAGNOSTICS_DEFINITIONS};
+	const uint16_t sizeofHkElements[3] = {sid::MAX_LARGE_HK_BUFFER_SIZE,
+									      sid::MAX_SMALL_HK_BUFFER_SIZE,
+										  sid::MAX_DIAGNOSTICS_BUFFER_SIZE};
+	LocalPool<3> HkPool;
+	/*
+	 * Maps which store all required HK packet information and use
+	 * the unique structure ID (SID) as a key.
+	 * These maps need a preallocated memory with size 50 * 4 + 4 * 2 + 2 = 210 bytes
+	 * TODO: Check wheter store or map is faster for periodic checking !
+	 */
+	HousekeepingMap hkMap;
+	HousekeepingMap diagnosticsMap;
+	HkMapReturnValue hkMapReturnValue;
+
+	/*
+	 * HK Store as alternative.
+	 * TODO: Check wheter store or map is faster for periodic checking !
+	 */
+	SidToStoreIdMap sidHkMap;
+	SidToStoreIdMap sidDiagnosticsMap;
+	uint8_t hkBuffer[sid::MAX_LARGE_HK_BUFFER_SIZE];
+	uint8_t ** pHkBuffer;
+
+	/* GPS HK Packets */
+	static const uint16_t GPS_COLLECTION_INTERVAL_MS = 1000;
+	GpsInit::navDataIdStruct gps0;
+	GpsInit::navDataIdStruct gps1;
+	uint32_t * gps0idBuffer;
+	uint32_t * gps1idBuffer;
+	uint8_t gpsIdBufferEntries;
+};
+
+
+#endif /* MISSION_PUS_SERVICE3HOUSEKEEPING_H_ */

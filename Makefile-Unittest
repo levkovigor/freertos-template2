@@ -1,0 +1,329 @@
+#-------------------------------------------------------------------------------
+# Makefile  for FSFW Test
+#-------------------------------------------------------------------------------
+#		User-modifiable options
+#-------------------------------------------------------------------------------
+
+# Chip & board used for compilation
+# (can be overriden by adding CHIP=chip and BOARD=board to the command-line)
+# Unit Test can only be run on host machine for now (Linux)
+BOARD_FILE_ROOT = hosted
+BOARD = unittest
+OS_FSFW = linux
+CUSTOM_DEFINES += -D$(OS_FSFW)
+
+UNIT_TEST = 1
+# General folder paths
+FRAMEWORK_PATH = framework
+TEST_PATH = test
+MISSION_PATH = mission
+
+UNIT_TEST_PATH = unittest
+# Board specific paths
+BSP_PATH = $(BOARD_FILE_ROOT)
+BOARDTEST_PATH = $(BOARD_FILE_ROOT)/boardtest
+CONFIG_PATH = $(BOARD_FILE_ROOT)/config
+
+# Output file basename
+BASENAME = sourceobsw
+BINARY_NAME := $(BASENAME)-$(BOARD)
+# Output files will be put in this directory inside
+OUTPUT_FOLDER = $(OS_FSFW)
+
+# Optimization level. Optimized for debugging.
+OPTIMIZATION = -O0
+
+ifdef GCOV
+CUSTOM_DEFINES += -DGCOV
+endif
+
+# Output directories
+BUILDPATH = _bin
+DEPENDPATH = _dep
+OBJECTPATH = _obj
+ifeq ($(MAKECMDGOALS),release)
+BUILD_FOLDER = mission
+else 
+BUILD_FOLDER = devel
+endif
+
+DEPENDDIR = $(DEPENDPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)
+OBJDIR = $(OBJECTPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)
+BINDIR = $(BUILDPATH)
+
+CLEANDEP = $(DEPENDPATH)/$(OUTPUT_FOLDER)
+CLEANOBJ = $(OBJECTPATH)/$(OUTPUT_FOLDER)
+CLEANBIN = $(BUILDPATH)
+#-------------------------------------------------------------------------------
+#		Tools and Includes
+#-------------------------------------------------------------------------------
+
+# Tool suffix when cross-compiling
+CROSS_COMPILE =
+
+# C Compiler
+CC = $(CROSS_COMPILE)gcc
+
+# C++ compiler
+CXX = $(CROSS_COMPILE)g++
+
+# Additional Tools
+SIZE = $(CROSS_COMPILE)size
+STRIP = $(CROSS_COMPILE)strip
+CP = $(CROSS_COMPILE)objcopy
+
+HEXCOPY = $(CP) -O ihex
+BINCOPY = $(CP) -O binary
+# files to be compiled, will be filled in by include makefiles
+# := assignment is neccessary so we get all paths right
+# https://www.gnu.org/software/make/manual/html_node/Flavors.html
+CSRC := 
+CXXSRC := 
+ASRC := 
+INCLUDES := 
+
+# Directories where $(directoryname).mk files should be included from
+SUBDIRS :=  $(FRAMEWORK_PATH) $(TEST_PATH) $(BSP_PATH) $(UNIT_TEST_PATH) \
+			$(CONFIG_PATH) $(MISSION_PATH)
+
+# ETL library include.
+ETL_PATH = etl/include
+I_INCLUDES += -I$(ETL_PATH)
+
+I_INCLUDES += $(addprefix -I, $(INCLUDES))
+
+# This is a hack from http://make.mad-scientist.net/the-eval-function/
+#
+# The problem is, that included makefiles should be aware of their relative path
+# but not need to guess or hardcode it. So we set $(CURRENTPATH) for them. If
+# we do this globally and the included makefiles want to include other makefiles as
+# well, they would overwrite $(CURRENTPATH), screwing the include after them.
+#
+# By using a for-loop with an eval'd macro, we can generate the code to include all
+# sub-makefiles (with the correct $(CURRENTPATH) set) before actually evaluating
+# (and by this possibly changing $(CURRENTPATH)) them.
+#
+# This works recursively, if an included makefile wants to include, it can safely set 
+# $(SUBDIRS) (which has already been evaluated here) and do
+# "$(foreach S,$(SUBDIRS),$(eval $(INCLUDE_FILE)))"
+# $(SUBDIRS) must be relative to the project root, so to include subdir foo, set
+# $(SUBDIRS) = $(CURRENTPATH)/foo.
+define INCLUDE_FILE
+CURRENTPATH := $S
+include $(S)/$(notdir $S).mk
+endef
+$(foreach S,$(SUBDIRS),$(eval $(INCLUDE_FILE)))
+
+# Test framework provides main.
+ifndef NO_TEST_FW
+CXXSRC := $(filter-out $(wildcard */main.cpp), $(CXXSRC))
+CXXSRC := $(filter-out $(wildcard */InitMission.cpp), $(CXXSRC))
+endif
+
+#-------------------------------------------------------------------------------
+#		Source Files
+#-------------------------------------------------------------------------------
+
+# All source files which are not includes by the .mk files are added here
+# Please ensure that no files are included by both .mk file and here !
+
+# if a target is not listed in the current directory, 
+# make searches in the directories specified with VPATH
+
+# All C Sources included by .mk files are assigned here
+# Add the objects to sources so dependency handling works
+C_OBJECTS += $(CSRC:.c=.o)
+
+# Objects built from Assembly source files
+ASM_OBJECTS = $(ASRC:.S=.o)
+
+# Objects built from C++ source files
+CXX_OBJECTS +=  $(CXXSRC:.cpp=.o)
+
+#-------------------------------------------------------------------------------
+#		Build Configuration + Output
+#-------------------------------------------------------------------------------
+
+TARGET = Unit Test
+DEBUG_MESSAGE = Off
+OPTIMIZATION_MESSAGE = Off
+
+# Define Messages
+MSG_LINKING = Linking:
+MSG_COMPILING = Compiling:
+MSG_ASSEMBLING = Assembling:
+MSG_DEPENDENCY = Collecting dependencies for:
+MSG_BINARY = Generate binary: 
+MSG_OPTIMIZATION = Optimization: $(OPTIMIZATION), $(OPTIMIZATION_MESSAGE)
+MSG_TARGET = Target Build: $(TARGET)
+MSG_DEBUG = FSFW Debugging: $(DEBUG_MESSAGE)
+
+# See https://stackoverflow.com/questions/6687630/how-to-remove-unused-c-c-symbols-with-gcc-and-ld
+# Used to throw away unused code. Reduces code size significantly !
+# -Wl,--gc-sections: needs to be passed to the linker to throw aways unused code
+ifdef KEEP_UNUSED_CODE
+PROTOTYPE_OPTIMIZATION = 
+DEAD_CODE_REMOVAL = 
+else
+PROTOTYPE_OPTIMIZATION = -ffunction-sections -fdata-sections
+DEAD_CODE_REMOVAL = -Wl,--gc-sections
+# Link time optimization
+# See https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html for reference
+# Link time is larger and size of object files can not be retrieved
+# but resulting binary is smaller. Could be used in mission/deployment build
+# Requires -ffunction-section in linker call
+LINK_TIME_OPTIMIZATION = -flto
+OPTIMIZATION += $(PROTOTYPE_OPTIMIZATION) 
+endif 
+
+# Dependency Flags
+# These flags tell the compiler to build dependencies
+# See: https://www.gnu.org/software/make/manual/html_node/Automatic-Prerequisites.html
+# Using following guide: http://make.mad-scientist.net/papers/advanced-auto-dependency-generation/#combine
+DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPENDDIR)/$*.d
+
+# Flags for the compiler call
+# - std: Which C++ version to use. Common versions: c++11, c++14 and c++17
+# - Wall: enable all warnings
+# - Wextra: enable extra warnings
+# - g: defines debug level
+# - fmessage-length: to control the formatting algorithm for diagnostic messages;
+#    =0 means  no line-wrapping is done; each error message appears on a single line
+# - fno-exceptions: stops generating extra code needed to propagate exceptions, 
+#    which can produce significant data size overhead
+CUSTOM_DEFINES += -DUNIT_TEST
+CDEFINES := $(CUSTOM_DEFINES)
+CFLAGS += 
+CXXFLAGS += -I. -g3  -Wall $(DEPFLAGS) -fPIC -fmessage-length=0  \
+			$(OPTIMIZATION) $(I_INCLUDES) $(CDEFINES)
+CPPFLAGS +=  -std=c++17  
+
+# Flags for the linker call
+# LINK_INCLUDES specify the path to used libraries and the linker script
+# LINK_LIBRARIES: Link real time support
+LDFLAGS = -g3 -pthread $(DEAD_CODE_REMOVAL) $(OPTIMIZATION) 
+LINK_INCLUDES = 
+LINK_LIBRARIES = -lrt
+
+# Gnu Coverage Tools Flags
+ifdef GCOV
+GCOV_CXXFLAGS = -fprofile-arcs -ftest-coverage
+CXXFLAGS += $(GCOV_CXXFLAGS)
+GCOV_LINKER_LIBS = -lgcov -fprofile-arcs -ftest-coverage
+LINK_LIBRARIES += $(GCOV_LINKER_LIBS)
+endif
+
+#-------------------------------------------------------------------------------
+#		Rules
+#-------------------------------------------------------------------------------
+# the call function assigns parameters to temporary variables
+# https://www.gnu.org/software/make/manual/make.html#Call-Function
+# $(1) = Memory names
+# Rules are called for each memory type
+# Two Expansion Symbols $$ are equal to secondary expansion
+# See: https://www.gnu.org/software/make/manual/html_node/Secondary-Expansion.html
+
+# Cleans all files 
+hardclean: 
+	-rm -rf $(BUILDPATH)
+	-rm -rf $(OBJECTPATH)
+	-rm -rf $(DEPENDPATH)
+
+# Only clean files for current build
+clean:
+	-rm -rf $(CLEANOBJ)
+	-rm -rf $(CLEANBIN)
+	-rm -rf $(CLEANDEP)
+
+# Only clean binaries. Useful for changing the binary type when object files 
+# are already compiled so complete rebuild is not necessary
+cleanbin:
+	-rm -rf $(CLEANBIN)
+
+# In this section, the binaries are built for all selected memories
+# notestfw: all
+all: executable 
+
+# Build target configuration
+release: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION) $(LINK_TIME_OPTIMIZATION)
+release: LINK_TIME_OPTIMIZATION = -flto
+release: TARGET = Mission and Integration Testing
+release: OPTIMIZATION_MESSAGE = On with Link Time Optimization
+
+debug: CDEFINES += -DDEBUG
+debug: TARGET = Debug
+debug: DEBUG_MESSAGE = On
+
+ifndef KEEP_UNUSED_CODE
+debug release: OPTIMIZATION_MESSAGE = Off with unused code removal
+else
+debug release: OPTIMIZATION_MESSAGE = Off
+endif
+
+debug release notestfw: executable
+# executable: $(BINDIR)/$(BINARY_NAME).bin	
+executable: $(BINDIR)/$(BINARY_NAME).elf	
+
+C_OBJECTS_PREFIXED = $(addprefix $(OBJDIR)/, $(C_OBJECTS))
+CXX_OBJECTS_PREFIXED = $(addprefix $(OBJDIR)/, $(CXX_OBJECTS))
+ASM_OBJECTS_PREFIXED = $(addprefix $(OBJDIR)/, $(ASM_OBJECTS))
+ALL_OBJECTS = $(ASM_OBJECTS_PREFIXED) $(C_OBJECTS_PREFIXED) $(CXX_OBJECTS_PREFIXED) 
+
+# can be used for makefile "debugging"
+# $(info $${CXX_OBJECTS} is [${CXX_OBJECTS}])
+# $(info $${CXXSRC} is [${CXXSRC}])
+
+$(BINDIR)/$(BINARY_NAME).hex: $(BINDIR)/$(BINARY_NAME).elf
+	@echo
+	@echo $(MSG_BINARY)
+	@mkdir -p $(@D)
+	$(HEXCOPY) $< $@
+
+# Link with required libraries: HAL (Hardware Abstraction Layer) and HCC (File System Library)
+# $(BINDIR)/$(BINARY_NAME).elf: $(ALL_OBJECTS)
+$(BINDIR)/$(BINARY_NAME).elf: $(ALL_OBJECTS)
+	@echo
+	@echo $(MSG_LINKING) Target $@
+	@mkdir -p $(@D)
+	@$(CXX) $(LDFLAGS) $(LINK_INCLUDES) -o $@ $^ $(LINK_LIBRARIES)
+ifeq ($(BUILD_FOLDER), mission)
+# With Link Time Optimization, section size is not available
+	$(SIZE) $@
+else
+	$(SIZE) $^ $@
+endif
+
+# Build new objects for changed dependencies. 
+$(OBJDIR)/%.o: %.cpp
+$(OBJDIR)/%.o: %.cpp $(DEPENDDIR)/%.d | $(DEPENDDIR)
+	@echo 
+	@echo $(MSG_COMPILING) $<
+	@mkdir -p $(@D)
+	@$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+
+$(OBJDIR)/%.o: %.c 
+$(OBJDIR)/%.o: %.c $(DEPENDDIR)/%.d | $(DEPENDDIR) 
+	@echo 
+	@echo $(MSG_COMPILING) $<
+	@mkdir -p $(@D)
+	@$(CC)  $(CXXFLAGS) $(CFLAGS) -c -o $@ $<
+
+#-------------------------------------------------------------------------------
+#		Dependency Handling
+#-------------------------------------------------------------------------------
+
+# Dependency Handling according to following guide:
+# http://make.mad-scientist.net/papers/advanced-auto-dependency-generation/
+$(DEPENDDIR):
+	@mkdir -p $(@D)
+DEPENDENCY_RELATIVE = $(CSRC:.c=.d) $(CXXSRC:.cpp=.d)
+# This is the list of all dependencies
+DEPFILES = $(addprefix $(DEPENDDIR)/, $(DEPENDENCY_RELATIVE))
+# Create subdirectories for dependencies
+$(DEPFILES):
+	@mkdir -p $(@D)
+# Include all dependencies
+include $(wildcard $(DEPFILES))
+	
+# .PHONY tells make that these targets aren't files
+.PHONY: clean release debug all hardclean cleanbin

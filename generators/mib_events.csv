@@ -1,0 +1,84 @@
+1000;GPS_STARTUP_FAILED;LOW;Startup failed. P1=0 -> doStartup() function bool problem P2=0;../../mission/devices/GPSHandler.h
+1001;GPS_FIX;INFO; ;../../mission/devices/GPSHandler.h
+1002;GPS_LOST_FIX;INFO; ;../../mission/devices/GPSHandler.h
+2200;STORE_SEND_WRITE_FAILED;LOW;Initiating sending data to store failed. Low, par1: returnCode, par2: integer (debug info);../../framework/tmstorage/TmStoreBackendIF.h
+2201;STORE_WRITE_FAILED;LOW;Data was sent, but writing failed. Low, par1: returnCode, par2: 0;../../framework/tmstorage/TmStoreBackendIF.h
+2202;STORE_SEND_READ_FAILED;LOW;Initiating reading data from store failed. Low, par1: returnCode, par2: 0;../../framework/tmstorage/TmStoreBackendIF.h
+2203;STORE_READ_FAILED;LOW;Data was requested, but access failed. Low, par1: returnCode, par2: 0;../../framework/tmstorage/TmStoreBackendIF.h
+2204;UNEXPECTED_MSG;LOW;An unexpected TM packet or data message occurred. Low, par1: 0, par2: integer (debug info);../../framework/tmstorage/TmStoreBackendIF.h
+2205;STORING_FAILED;LOW;Storing data failed. May simply be a full store. Low, par1: returnCode, par2: integer (sequence count of failed packet).;../../framework/tmstorage/TmStoreBackendIF.h
+2206;TM_DUMP_FAILED;LOW;Dumping retrieved data failed. Low, par1: returnCode, par2: integer (sequence count of failed packet).;../../framework/tmstorage/TmStoreBackendIF.h
+2207;STORE_INIT_FAILED;LOW;Corrupted init data or read error. Low, par1: returnCode, par2: integer (debug info);../../framework/tmstorage/TmStoreBackendIF.h
+2208;STORE_INIT_EMPTY;INFO;Store was not initialized. Starts empty. Info, parameters both zero.;../../framework/tmstorage/TmStoreBackendIF.h
+2209;STORE_CONTENT_CORRUPTED;LOW;Data was read out, but it is inconsistent. Low par1: Memory address of corruption, par2: integer (debug info);../../framework/tmstorage/TmStoreBackendIF.h
+2210;STORE_INITIALIZE;INFO;Info event indicating the store will be initialized, either at boot or after IOB switch. Info. pars: 0;../../framework/tmstorage/TmStoreBackendIF.h
+2211;INIT_DONE;INFO;Info event indicating the store was successfully initialized, either at boot or after IOB switch. Info. pars: 0;../../framework/tmstorage/TmStoreBackendIF.h
+2212;DUMP_FINISHED;INFO;Info event indicating that dumping finished successfully. par1: Number of dumped packets. par2: APID/SSC (16bits each);../../framework/tmstorage/TmStoreBackendIF.h
+2213;DELETION_FINISHED;INFO;Info event indicating that deletion finished successfully. par1: Number of deleted packets. par2: APID/SSC (16bits each);../../framework/tmstorage/TmStoreBackendIF.h
+2214;DELETION_FAILED;LOW;Info event indicating that something went wrong during deletion. pars: 0;../../framework/tmstorage/TmStoreBackendIF.h
+2215;AUTO_CATALOGS_SENDING_FAILED;INFO;Info that the a auto catalog report failed;../../framework/tmstorage/TmStoreBackendIF.h
+2600;GET_DATA_FAILED;LOW; ;../../framework/storagemanager/StorageManagerIF.h
+2601;STORE_DATA_FAILED;LOW; ;../../framework/storagemanager/StorageManagerIF.h
+2800;DEVICE_BUILDING_COMMAND_FAILED;LOW; ;../../framework/devicehandlers/DeviceHandlerIF.h
+2801;DEVICE_SENDING_COMMAND_FAILED;LOW; ;../../framework/devicehandlers/DeviceHandlerIF.h
+2802;DEVICE_REQUESTING_REPLY_FAILED;LOW; ;../../framework/devicehandlers/DeviceHandlerIF.h
+2803;DEVICE_READING_REPLY_FAILED;LOW; ;../../framework/devicehandlers/DeviceHandlerIF.h
+2804;DEVICE_INTERPRETING_REPLY_FAILED;LOW; ;../../framework/devicehandlers/DeviceHandlerIF.h
+2805;DEVICE_MISSED_REPLY;LOW; ;../../framework/devicehandlers/DeviceHandlerIF.h
+2806;DEVICE_UNKNOWN_REPLY;LOW; ;../../framework/devicehandlers/DeviceHandlerIF.h
+2807;DEVICE_UNREQUESTED_REPLY;LOW; ;../../framework/devicehandlers/DeviceHandlerIF.h
+2808;INVALID_DEVICE_COMMAND;LOW;Indicates a SW bug in child class.;../../framework/devicehandlers/DeviceHandlerIF.h
+2809;MONITORING_LIMIT_EXCEEDED;LOW; ;../../framework/devicehandlers/DeviceHandlerIF.h
+2810;MONITORING_AMBIGUOUS;HIGH; ;../../framework/devicehandlers/DeviceHandlerIF.h
+4201;FUSE_CURRENT_HIGH;LOW;PSS detected that current on a fuse is totally out of bounds.;../../framework/power/Fuse.h
+4202;FUSE_WENT_OFF;LOW;PSS detected a fuse that went off.;../../framework/power/Fuse.h
+4204;POWER_ABOVE_HIGH_LIMIT;LOW;PSS detected a fuse that violates its limits.;../../framework/power/Fuse.h
+4205;POWER_BELOW_LOW_LIMIT;LOW;PSS detected a fuse that violates its limits.;../../framework/power/Fuse.h
+4300;SWITCH_WENT_OFF;LOW;Someone detected that a switch went off which shouldn't. Severity: Low, Parameter1: switchId1, Parameter2: switchId2;../../framework/power/PowerSwitchIF.h
+5000;HEATER_ON;INFO; ;../../framework/thermal/Heater.h
+5001;HEATER_OFF;INFO; ;../../framework/thermal/Heater.h
+5002;HEATER_TIMEOUT;LOW; ;../../framework/thermal/Heater.h
+5003;HEATER_STAYED_ON;LOW; ;../../framework/thermal/Heater.h
+5004;HEATER_STAYED_OFF;LOW; ;../../framework/thermal/Heater.h
+5200;TEMP_SENSOR_HIGH;LOW; ;../../framework/thermal/AbstractTemperatureSensor.h
+5201;TEMP_SENSOR_LOW;LOW; ;../../framework/thermal/AbstractTemperatureSensor.h
+5202;TEMP_SENSOR_GRADIENT;LOW; ;../../framework/thermal/AbstractTemperatureSensor.h
+5901;COMPONENT_TEMP_LOW;LOW; ;../../framework/thermal/ThermalComponentIF.h
+5902;COMPONENT_TEMP_HIGH;LOW; ;../../framework/thermal/ThermalComponentIF.h
+5903;COMPONENT_TEMP_OOL_LOW;LOW; ;../../framework/thermal/ThermalComponentIF.h
+5904;COMPONENT_TEMP_OOL_HIGH;LOW; ;../../framework/thermal/ThermalComponentIF.h
+5905;TEMP_NOT_IN_OP_RANGE;LOW;Is thrown when a device should start-up, but the temperature is out of OP range. P1: thermalState of the component, P2: 0;../../framework/thermal/ThermalComponentIF.h
+7101;FDIR_CHANGED_STATE;INFO;FDIR has an internal state, which changed from par2 (oldState) to par1 (newState).;../../framework/fdir/FailureIsolationBase.h
+7102;FDIR_STARTS_RECOVERY;MEDIUM;FDIR tries to restart device. Par1: event that caused recovery.;../../framework/fdir/FailureIsolationBase.h
+7103;FDIR_TURNS_OFF_DEVICE;MEDIUM;FDIR turns off device. Par1: event that caused recovery.;../../framework/fdir/FailureIsolationBase.h
+7201;MONITOR_CHANGED_STATE;LOW; ;../../framework/monitoring/MonitoringIF.h
+7202;VALUE_BELOW_LOW_LIMIT;LOW; ;../../framework/monitoring/MonitoringIF.h
+7203;VALUE_ABOVE_HIGH_LIMIT;LOW; ;../../framework/monitoring/MonitoringIF.h
+7204;VALUE_OUT_OF_RANGE;LOW; ;../../framework/monitoring/MonitoringIF.h
+7301;SWITCHING_TM_FAILED;LOW;Commanding the HK Service failed, p1: error code, p2 action: 0 disable / 1 enable;../../framework/datapool/HkSwitchHelper.h
+7400;CHANGING_MODE;INFO;An object announces changing the mode. p1: target mode. p2: target submode;../../framework/modes/HasModesIF.h
+7401;MODE_INFO;INFO;An Object announces its mode; parameter1 is mode, parameter2 is  submode;../../framework/modes/HasModesIF.h
+7402;FALLBACK_FAILED;HIGH; ;../../framework/modes/HasModesIF.h
+7403;MODE_TRANSITION_FAILED;LOW; ;../../framework/modes/HasModesIF.h
+7404;CANT_KEEP_MODE;HIGH; ;../../framework/modes/HasModesIF.h
+7405;OBJECT_IN_INVALID_MODE;LOW;Indicates a bug or configuration failure: Object is in a mode it should never be in.;../../framework/modes/HasModesIF.h
+7406;FORCING_MODE;MEDIUM;The mode is changed, but for some reason, the change is forced, i.e. EXTERNAL_CONTROL ignored. p1: target mode. p2: target submode;../../framework/modes/HasModesIF.h
+7407;MODE_CMD_REJECTED;LOW;A mode command was rejected by the called object. Par1: called object id, Par2: return code.;../../framework/modes/HasModesIF.h
+7506;HEALTH_INFO;INFO; ;../../framework/health/HasHealthIF.h
+7507;CHILD_CHANGED_HEALTH;INFO; ;../../framework/health/HasHealthIF.h
+7508;CHILD_PROBLEMS;LOW; ;../../framework/health/HasHealthIF.h
+7509;OVERWRITING_HEALTH;LOW;Assembly overwrites health information of children to keep satellite alive.;../../framework/health/HasHealthIF.h
+7510;TRYING_RECOVERY;MEDIUM;Someone starts a recovery of a component (typically power-cycle). No parameters.;../../framework/health/HasHealthIF.h
+7511;RECOVERY_STEP;MEDIUM;Recovery is ongoing. Comes twice during recovery. P1: 0 for the first, 1 for the second event. P2: 0;../../framework/health/HasHealthIF.h
+7512;RECOVERY_DONE;MEDIUM;Recovery was completed. Not necessarily successful. No parameters.;../../framework/health/HasHealthIF.h
+7900;RF_AVAILABLE;INFO;A RF available signal was detected. P1: raw RFA state, P2: 0;../../framework/datalinklayer/DataLinkLayer.h
+7901;RF_LOST;INFO;A previously found RF available signal was lost. P1: raw RFA state, P2: 0;../../framework/datalinklayer/DataLinkLayer.h
+7902;BIT_LOCK;INFO;A Bit Lock signal. Was detected. P1: raw BLO state, P2: 0;../../framework/datalinklayer/DataLinkLayer.h
+7903;BIT_LOCK_LOST;INFO;A previously found Bit Lock signal was lost. P1: raw BLO state, P2: 0;../../framework/datalinklayer/DataLinkLayer.h
+7905;FRAME_PROCESSING_FAILED;LOW;The CCSDS Board could not interpret a TC;../../framework/datalinklayer/DataLinkLayer.h
+8000;TEST_EVENT_SERVICE_1;INFO; ;../../mission/pus/Service1TelecommandVerification.h
+8200;TEST;INFO; ;../../mission/pus/Service17Test.h
+8300;POOL_ENTRY_DISABLED;LOW;P1: SID, P2: Last return code;../../mission/pus/Service3HousekeepingPSB.h
+8301;SID_NOT_FOUND;LOW;SID not found. P1: SID, P2: Subservice;../../mission/pus/Service3HousekeepingPSB.h
+8900;CLOCK_SET;INFO;Clock has been set. P1: New Uptime. P2: Old Uptime;../../mission/pus/Service9TimeManagement.h
+9100;TEST2;INFO; ;../../mission/pus/Service23FileManagement.h

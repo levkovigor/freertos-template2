@@ -1,0 +1,10 @@
+#include <hosted/config/ipc/missionMessageTypes.h>
+
+void messagetypes::clearMissionMessage(CommandMessage* message) {
+	switch(message->getMessageType()) {
+	default:
+		break;
+	}
+}
+
+

@@ -1,0 +1,23 @@
+/**
+ * \file Factory.h
+ *
+ *  Created on: 21.11.2012
+ *      Author: baetz
+ */
+
+#ifndef FACTORY_H_
+#define FACTORY_H_
+
+#include <fsfw/objectmanager/SystemObjectIF.h>
+
+namespace Factory {
+	/**
+	 * \brief Creates all SystemObject elements which are persistent during execution.
+	 */
+	void produce();
+	void setStaticFrameworkObjectIds();
+
+}
+
+
+#endif /* FACTORY_H_ */

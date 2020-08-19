@@ -1,0 +1,14 @@
+/**
+ * \file ThermalController.h
+ *
+ * \date 30.10.2019
+ */
+
+#ifndef MISSION_CONTROLLER_THERMALCONTROLLER_H_
+#define MISSION_CONTROLLER_THERMALCONTROLLER_H_
+
+
+
+
+
+#endif /* MISSION_CONTROLLER_THERMALCONTROLLER_H_ */

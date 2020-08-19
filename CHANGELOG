@@ -1,0 +1,41 @@
+# Version Tags before repository was restructured
+
+## v1.0
+First version tag!
+
+## v1.1
+- Major merge with full history. 
+- PUS Service 3
+- Serial Bridge
+- TMTC/MIB parser changes
+- a lot of bugfixes and much more 
+
+## v1.2
+- I2C Comm Interface 
+- SPI Comm Interface 
+- Form corrections
+- C++11 features applied / introduced 
+
+## v1.3 
+- ETL library integrated 
+- FreeRTOS upgrade to v10.3.1
+- TC injector 
+- ThermalSensorHandler continued
+- STM32 folder streamlined
+- More Unittests
+
+## v1.4
+- First version of local data pool backend working
+- Host OSAL
+- A lot more unittests / tests
+- General structure improved
+- A lot of bugfixes
+
+## v1.5
+- Some PUS services moved to Framework
+- A lot of new features and API changes in framework (e.g. new SerializeIF)
+- Makefile fixes
+- A lot of code improvements / refactoring / renaming
+- Linux build extended greatly. New TmTc UDP bridge to allow TMTC commanding.
+- Commanding can be done with the TMTC software now, if the script is run with 
+the -c 3 flag to use UDP datagrams (run configurations have been updated accordingly)

@@ -1,0 +1,158 @@
+Call arm-none-eabi-nm sam9g20/hal/lib/libHAL.a to get a list of 
+called FreeRTOS functions of the HAL library (also possible for HCC)
+
+///////////////////////
+FreeRTOS V10.3.1 //////
+///////////////////////
+
+Following Functions are called by the HAL library.
+The HCC library calls a subset, so checking the API change of these
+functions is sufficient.
+
+queue.h:
+vQueueDelete
+xQueueCreateMutex
+xQueueGenericReceive
+xQueueGenericSend
+xQueueGenericCreate
+xQueueGenericSendFromISR
+uxQueueMessagesWaiting
+
+task.h:
+vTaskDelay
+vTaskSwitchContext
+xTaskGenericCreate
+xTaskGetCurrentTaskHandle
+xTaskGetSchedulerState
+xTaskGetTickCount
+
+configENABLE_BACKWARD_COMPATIBILITY should be set to 1!
+
+vQeueueDelete: 
+API same.
+
+xQueueCreateMutex:
+Internal function, no API changes
+
+xQueueGenericReceive:
+Old API: 
+BaseType_t xQueueGenericReceive( QueueHandle_t xQueue, void * const pvBuffer,
+		TickType_t xTicksToWait, portBASE_TYPE xJustPeek);	
+New API: Function does not exist anymore, has been implemented
+manually:
+BaseType_t xQueueGenericReceive(QueueHandle_t xQueue, void * const pvBuffer,
+		TickType_t xTicksToWait, portBASE_TYPE xJustPeek) {
+	//printf("ISIS DEBUGGING:  xQueueGenericReceive called\n\r");
+	assert(xJustPeek == pdFALSE);
+	return xQueueReceive(xQueue, pvBuffer, xTicksToWait);
+}
+
+xQueueGenericSend:
+No API changes, const correctness changes.
+
+xQueueGenericCreate:
+No API changes, const correctness changes.
+
+xQueueGenericSendFromISR:
+No API changes, const correctness changes.
+
+uxQueueMessagesWaiting:
+No API changes, const correctness change.
+
+vTaskDelay:
+No API changes.
+vTaskSwitchContext:
+No API changes.
+
+xTaskGenericCreate:
+Old API:
+signed portBASE_TYPE xTaskGenericCreate( pdTASK_CODE pxTaskCode, 
+		const signed char * const pcName, unsigned short usStackDepth, 
+		void *pvParameters, unsigned portBASE_TYPE uxPriority, 
+		xTaskHandle *pxCreatedTask, portSTACK_TYPE *puxStackBuffer, 
+		const xMemoryRegion * const xRegions )
+Does not exist in new API, forwarding function implemented:
+BaseType_t xTaskGenericCreate(	TaskFunction_t pxTaskCode,
+			const char * const pcName,		/*lint !e971 Unqualified char types are allowed for strings and single characters only. */
+			const configSTACK_DEPTH_TYPE usStackDepth,
+			void * const pvParameters,
+			UBaseType_t uxPriority,
+			TaskHandle_t * const pxCreatedTask,
+			portSTACK_TYPE *puxStackBuffer,
+			const void * const xRegions) {
+		//printf("ISIS DEBUGGING:  xTaskGenericCreate called\n\r");
+		assert(puxStackBuffer == NULL);
+		assert(xRegions == NULL);
+		return xTaskCreate(pxTaskCode, pcName, usStackDepth, pvParameters, uxPriority, pxCreatedTask);
+}
+
+xTaskGetCurrentTaskHandle:
+No API changes.
+
+xTaskGetSchedulerState:
+No API changes.
+
+xTaskGetTickCount:
+No API changes.
+
+Following wrappers/forwarder function calls have been implemented:
+Added in portmacro.h:
+/* Changes for V10.3.1 */
+typedef unsigned long UBaseType_t;
+typedef portSTACK_TYPE StackType_t;
+
+
+
+
+
+///////////////////////
+FreeRTOS V7.5.3 ///////
+///////////////////////
+Folgende Anpassungen in FreeRTOS Files waren nötig damit das Framework mit der 
+FreeRTOS Version V7.5.3 verwendet werden kann.
+-> in projdefs.h
+	--> folgendes eingef�gt
+		/* Defines the prototype to which task functions must conform. */
+		typedef void (*pdTASK_CODE)( void * );
+-> in semphr.h
+	--> folgendes eingef�gt
+		typedef QueueHandle_t SemaphoreHandle_t;
+-> in queue.h
+	--> folgendes eingefügt
+		typedef void * QueueHandle_t;
+-> in portmacro.h
+	--> folgendes eingefügt
+		typedef long BaseType_t;
+-> in task.h 
+	--> folgendes eingef�gt
+	typedef void * TaskHandle_t;
+	--> für den Parameter pcName eine Datentypumwandlung eingef�gt
+	(ursprünglich) #define xTaskCreate( pvTaskCode, pcName, usStackDepth, pvParameters, uxPriority, pxCreatedTask ) xTaskGenericCreate( ( pvTaskCode ), ( pcName ), ( usStackDepth ), ( pvParameters ), ( uxPriority ), ( pxCreatedTask ), ( NULL ), ( NULL ) )
+	(geändert zu) #define xTaskCreate( pvTaskCode, pcName, usStackDepth, pvParameters, uxPriority, pxCreatedTask ) xTaskGenericCreate( ( pvTaskCode ), (const signed char * const)( pcName ), ( usStackDepth ), ( pvParameters ), ( uxPriority ), ( pxCreatedTask ), ( NULL ), ( NULL ) )
+	hier Datentypumwandlung eingefügt: (const signed char * const)( pcName ) in xTaskGenericCreate
+-> in FreeRTOS.h
+	--> eingefügt
+	#ifndef mtCOVERAGE_TEST_MARKER
+		#define mtCOVERAGE_TEST_MARKER()
+	#endif
+	
+Änderungen in ISIS files:
+-> stdio.c 
+	--> folgendes auskommentiert
+		die Funktion ist schon in der libg_nano.a definiert
+		signed int snprintf(char *pString, size_t length, const char *pFormat, ...)
+		{
+			va_list    ap;
+			signed int rc;
+
+			va_start(ap, pFormat);
+			rc = vsnprintf(pString, length, pFormat, ap);
+			va_end(ap);
+
+			return rc;
+		}
+	-->  auch auskommentiert
+		ebenfalls schon in der libg_nano.a definiert
+		struct _reent r = {0, (FILE *) 0, (FILE *) 1, (FILE *) 0};
+		struct _reent *_impure_ptr = &r;
+-> board_cstarupt.S und Linker Skript sdram.lds sind nicht von ISIS (C++ betreffende Anpassungen waren hier erforderlich)

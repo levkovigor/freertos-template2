@@ -1,0 +1,399 @@
+/**
+ * @file
+ * 	Service3Housekeeping.cpp
+ * @brief
+ *  Used to manage housekeeping data reports
+ * @date
+ * 	22.11.2019
+ */
+
+#include <mission/pus/Service3Housekeeping.h>
+#include <mission/pus/ServicePacketDefinitions/Service3Packets.h>
+
+#include <config/tmtc/apid.h>
+#include <config/tmtc/PusIds.hpp>
+
+#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serialize/SerializeAdapter.h>
+#include <fsfw/datapool/PoolRawAccess.h>
+#include <fsfw/tmtcpacket/pus/TmPacketStored.h>
+#include <fsfw/ipc/QueueFactory.h>
+#include <fsfw/tmtcservices/AcceptsTelemetryIF.h>
+
+#include <cstring>
+#include <cmath>
+
+Service3Housekeeping::Service3Housekeeping(object_id_t objectId_, GpsInit::navDataIdStruct gps0_,
+		GpsInit::navDataIdStruct gps1_):
+	PusServiceBase(objectId_,apid::SOURCE_OBSW,PUS::PUS_SERVICE_3),
+	errorReporter(NULL),packetSubCounter(0),
+	HkPool(objectId_,sizeofHkElements,numberOfHkElements),
+	sidHkMap(sid::MAX_NUMBER_OF_HK_DEFINITIONS),
+	sidDiagnosticsMap(sid::MAX_NUMBER_OF_DIAGNOSTICS_DEFINITIONS),
+	pHkBuffer(NULL), gps0(gps0_), gps1(gps1_),
+	gps0idBuffer(reinterpret_cast<uint32_t *>(&gps0)),
+	gps1idBuffer(reinterpret_cast<uint32_t *>(&gps1)),
+	gpsIdBufferEntries(sizeof(GpsInit::navDataIdStruct)/4) {
+	// create new TM message queue for service
+	tmQueue = QueueFactory::instance()->createMessageQueue();
+}
+
+Service3Housekeeping::~Service3Housekeeping() {
+}
+
+ReturnValue_t Service3Housekeeping::performService() {
+	// All HK definitions are checked once per cycle
+	// ReturnValue_t result = generateAllHkPackets();
+	//return result;
+	return RETURN_OK;
+}
+
+ReturnValue_t Service3Housekeeping::generateAllHkPackets() {
+	// iterate through each store entry and report all enabled housekeeping packets
+	HkIterator hkIterator;
+	ReturnValue_t result;
+	for(hkIterator=hkMap.begin();hkIterator!=hkMap.end();hkIterator++) {
+		result = handleHkPacketGeneration(hkIterator->first, &hkIterator->second);
+		if(result != RETURN_OK) {
+			error << "Service 3: Error handling HK packet" << std::endl;
+		}
+	}
+
+	debug << "Service 3: Regular HK packets generated, generating diagnostics..." << std::endl;
+
+	for(hkIterator = diagnosticsMap.begin();hkIterator!=diagnosticsMap.end();hkIterator++) {
+		result = handleHkPacketGeneration(hkIterator->first, &hkIterator->second);
+		if(result != RETURN_OK) {
+			error << "Service 3: Error handling HK diagnostics" << std::endl;
+		}
+	}
+	// TODO: iterate through store and report all enabled Housekeeping definitions, if store is used.
+	SidToStoreIdIterator sidIterator;
+	for(sidIterator=sidHkMap.begin();sidIterator!=sidHkMap.end();sidIterator ++) {
+
+	}
+	return RETURN_OK;
+}
+
+// check whether hk packer generation is actually necessary first
+ReturnValue_t Service3Housekeeping::handleHkPacketGeneration(uint32_t sid,
+		sid::hkStructMapEntry * hkStruct) {
+	ReturnValue_t result;
+	if(hkStruct->hkReportingEnabled && hkStruct->cycleNumber > hkStruct->collectionInterval) {
+		 result = generateHkPacket(sid, hkStruct);
+		 if(result == RETURN_OK) {
+			 hkStruct->cycleNumber = 0;
+			 info << "Service 3: HK packet generated !" << std::endl;
+		 }
+		 else {
+			 error << "Service 3: Error generating HK packet" << std::endl;
+		 }
+	}
+	else if(hkStruct->hkReportingEnabled) {
+		hkStruct->cycleNumber++;
+	}
+	return RETURN_OK;
+}
+
+ReturnValue_t Service3Housekeeping::generateHkPacket(uint32_t sid,
+		sid::hkStructMapEntry * hkStruct) {
+	uint32_t currentPoolId;
+	// instantiate pointers to buffers as required by deSerialization tools.
+	const uint8_t ** pPoolIdBuffer = NULL;
+	const uint8_t ** pHkDataBuffer = NULL;
+	*pPoolIdBuffer = reinterpret_cast<uint8_t *>(hkStruct->parameters);
+	*pHkDataBuffer = reinterpret_cast<uint8_t *>(sendBuffer);
+	int32_t poolIdSize = sizeof(currentPoolId);
+	// size of parameters is stored in this variable and calculated automatically by deSerialize
+	uint32_t hkDataSize = 0;
+
+	// loop through parameter ID list and deSerialize actual data with these IDs
+	for(int i=0;i<hkStruct->numberOfParameters;i++) {
+		ReturnValue_t result = AutoSerializeAdapter::deSerialize(&currentPoolId,
+				pPoolIdBuffer,&poolIdSize,true);
+		if (result != RETURN_OK) {
+			error << "Service 3: Error deSerializing pool ID list" << std::endl;
+		}
+		// using PoolRawAccess because type of data (PoolVariable,PoolVector?) is unknown
+		PoolRawAccess * myRawPoolAccess = new PoolRawAccess(currentPoolId,0,NULL,PoolVariableIF::VAR_READ);
+		result = myRawPoolAccess->deSerialize(pHkDataBuffer,reinterpret_cast<int32_t *>(&hkDataSize),true);
+		if (result != RETURN_OK) {
+			error << "Service 3: Error deSerializing pool data into HK buffer" << std::endl;
+		}
+	}
+
+	// Initiate the dummy HK packet and correct endianness of SID before sending packet.
+	HkParameterReport hkPacket(sid,sendBuffer);
+	hkPacket.sid = EndianSwapper::swap<uint32_t>(hkPacket.sid);
+	TmPacketStored tmPacket(apid::SOURCE_OBSW, PUS::PUS_SERVICE_3, Subservice::HK_REPORT, packetSubCounter ++,
+			                hkPacket.parameterBuffer, hkDataSize, reinterpret_cast<const uint8_t *>(&sid),sizeof(sid));
+	ReturnValue_t result = tmPacket.sendPacket(tmQueue->getDefaultDestination(),tmQueue->getId());
+	if(result != HasReturnvaluesIF::RETURN_OK){
+		errorReporter->queueMessageNotSent();
+	}
+	return RETURN_OK;
+}
+
+ReturnValue_t Service3Housekeeping::generateHkPacket(uint32_t sid, uint8_t * hkBuffer) {
+	return RETURN_OK;
+}
+
+
+ReturnValue_t Service3Housekeeping::handleRequest() {
+	uint8_t subservice = currentPacket.getSubService();
+	ReturnValue_t result = checkSubservice(subservice);
+	if (result != RETURN_OK) {
+		return result;
+	}
+
+	switch(subservice) {
+	case(ADD_HK_REPORT_STRUCTURE):
+	case(ADD_DIAGNOSTICS_REPORT_STRUCTURE):
+	case(DELETE_HK_REPORT_STRUCTURE):
+	case(DELETE_DIAGNOSTICS_REPORT_STRUCTURE):
+	case(ENABLE_PERIODIC_HK_REPORT_GENERATION):
+	case(DISABLE_PERIODIC_HK_REPORT_GENERATION):
+	case(ENABLE_PERIODIC_DIAGNOSTICS_REPORT_GENERATION):
+	case(DISABLE_PERIODIC_DIAGNOSTICS_REPORT_GENERATION):
+	case(REPORT_HK_REPORT_STRUCTURES):
+	case(REPORT_DIAGNOSTICS_REPORT_STRUCTURES):
+	case(GENERATE_ONE_PARAMETER_REPORT):
+	case(GENERATE_ONE_DIAGNOSTICS_REPORT):
+	case(APPEND_PARAMETER_TO_PARAMETER_REPORT_STRUCTURE):
+	case(APPEND_PARAMETER_TO_DIAGNOSTICS_REPORT_STRUCTURE):
+	case(MODIFY_PARAMETER_REPORT_COLLECTION_INTERVALL):
+	case(MODIFY_DIAGNOSTICS_REPORT_COLLECTION_INTERVALL):
+	default:
+		return RETURN_FAILED;
+	};
+	return result;
+}
+
+ReturnValue_t Service3Housekeeping::checkSubservice(uint8_t subservice) {
+	switch(currentPacket.getSubService()) {
+	case(ADD_HK_REPORT_STRUCTURE):
+	case(ADD_DIAGNOSTICS_REPORT_STRUCTURE):
+	case(DELETE_HK_REPORT_STRUCTURE):
+	case(DELETE_DIAGNOSTICS_REPORT_STRUCTURE):
+	case(ENABLE_PERIODIC_HK_REPORT_GENERATION):
+	case(DISABLE_PERIODIC_HK_REPORT_GENERATION):
+	case(ENABLE_PERIODIC_DIAGNOSTICS_REPORT_GENERATION):
+	case(DISABLE_PERIODIC_DIAGNOSTICS_REPORT_GENERATION):
+	case(REPORT_HK_REPORT_STRUCTURES):
+	case(REPORT_DIAGNOSTICS_REPORT_STRUCTURES):
+	case(GENERATE_ONE_PARAMETER_REPORT):
+	case(GENERATE_ONE_DIAGNOSTICS_REPORT):
+	case(APPEND_PARAMETER_TO_PARAMETER_REPORT_STRUCTURE):
+	case(APPEND_PARAMETER_TO_DIAGNOSTICS_REPORT_STRUCTURE):
+	case(MODIFY_PARAMETER_REPORT_COLLECTION_INTERVALL):
+	case(MODIFY_DIAGNOSTICS_REPORT_COLLECTION_INTERVALL):
+		return RETURN_OK;
+	default:
+		return AcceptsTelecommandsIF::INVALID_SUBSERVICE;
+	}
+}
+
+
+ReturnValue_t Service3Housekeeping::initialize() {
+	ReturnValue_t result;
+	// assign default TM destination
+	AcceptsTelemetryIF* funnel = objectManager->get<AcceptsTelemetryIF>(objects::PUS_FUNNEL);
+	if(funnel == NULL){
+		return RETURN_FAILED;
+	}
+	tmQueue->setDefaultDestination(funnel->getReportReceptionQueue());
+
+	// assign internal error reporter
+	errorReporter = objectManager->get<InternalErrorReporterIF>(objects::INTERNAL_ERROR_REPORTER);
+	if(errorReporter == NULL){
+		return RETURN_FAILED;
+	}
+
+	// create all pre-defined housekeeping structures
+	if(storeMode==0) {
+		result = initializeExistingHkDefinitionsAsMap();
+	}
+	else {
+		result = initializeExistingHkDefinitionsAsStore();
+	}
+	if(result != RETURN_OK) {
+		return result;
+	}
+	else {
+		return PusServiceBase::initialize();
+	}
+}
+
+
+/* First way: Use Map */
+// Add all pre-defined Housekeeping packets to store or map
+ReturnValue_t Service3Housekeeping::initializeExistingHkDefinitionsAsMap() {
+	ReturnValue_t result;
+	uint32_t testBuffer[9];
+	memcpy(testBuffer,gps0idBuffer,gpsIdBufferEntries*4);
+	result = addHkPacketDefinitionToMap(sid::GPS0_NAV_DATA,
+			GPS_COLLECTION_INTERVAL_MS,gpsIdBufferEntries,gps0idBuffer,true);
+	if(result != RETURN_OK) {
+		error << "Service 3: Error adding GPS0 packet definition" << std::endl;
+		return RETURN_FAILED;
+	}
+
+	result = addHkPacketDefinitionToMap(sid::GPS1_NAV_DATA,
+			GPS_COLLECTION_INTERVAL_MS,gpsIdBufferEntries,gps1idBuffer,true);
+	if(result != RETURN_OK) {
+		error << "Service 3: Error adding GPS1 packet definition" << std::endl;
+		return RETURN_FAILED;
+	}
+	return result;
+}
+
+ReturnValue_t Service3Housekeeping::addHkPacketDefinitionToMap(uint32_t sid,
+		uint32_t collectionInterval_ms, uint32_t idListSize,
+		uint32_t *parameterIdList, bool enableHkEntry) {
+	sid::hkStructMapEntry hkStruct;
+	ReturnValue_t result;
+	// Housekeeping definition is stored as a struct in map with SID as unique key
+	prepareHkStruct(&hkStruct,collectionInterval_ms,idListSize,
+			parameterIdList,enableHkEntry);
+	hkMapReturnValue = hkMap.insert(HkMapEntry(sid,hkStruct));
+	if(hkMapReturnValue.second != RETURN_OK) {
+		error << "Service 3: Adding HK Packet to Map failed" <<std::endl;
+		return RETURN_FAILED;
+	}
+
+	// Retrieval testing
+	result = retrieveHkPacketDefinitionFromMap(sid, &hkStruct);
+	return result;
+}
+
+ReturnValue_t Service3Housekeeping::addDiagnosticsPacketDefinitionToMap(uint32_t sid,
+		uint32_t collectionInterval_ms, uint32_t idListSize,
+		uint32_t *parameterIdList, bool enableHkEntry) {
+	sid::hkStructMapEntry hkStruct;
+	// Diagnostics definition is stored as a struct in map with SID as unique key
+	prepareHkStruct(&hkStruct,collectionInterval_ms,idListSize,
+				parameterIdList,enableHkEntry);
+	hkMapReturnValue = diagnosticsMap.insert(HkMapEntry(sid,hkStruct));
+	if(hkMapReturnValue.second != RETURN_OK) {
+		return RETURN_OK;
+	}
+	else {
+		return RETURN_FAILED;
+	}
+}
+
+ReturnValue_t Service3Housekeeping::retrieveHkPacketDefinitionFromMap(uint32_t sid, sid::hkStructMapEntry *) {
+	HkIterator hkIterator;
+	hkIterator = hkMap.find(sid);
+	sid::hkStructMapEntry hkStruct;
+	if(hkIterator == hkMap.end()) {
+		info << "Service 3: No Housekeeping Struct for SID found" << std::endl;
+	}
+	else {
+		hkStruct = hkIterator->second;
+		debug << "Service 3: Retrieved data. Collection Interval: "
+			 << std::dec << hkStruct.collectionInterval << std::endl;
+		uint32_t mapTest;
+		memcpy(&mapTest,hkStruct.parameters,4);
+		debug << "Service 3: Retrieved data. First Param ID: "
+			 << std::hex << mapTest << std::endl;
+	}
+	return RETURN_OK;
+}
+
+void Service3Housekeeping::prepareHkStruct(struct sid::hkStructMapEntry * hkStruct,
+		uint32_t collectionInterval_ms, uint32_t idListSize,
+		uint32_t *parameterIdList, bool enableHkEntry) {
+	// calculate collection interval as factor of smallest sampling time
+	uint32_t collectionInterval = collectionInterval_ms/sid::DIAG_MIN_INTERV_DIAGNOSTICS_MS;
+	hkStruct->collectionInterval = collectionInterval;
+	hkStruct->numberOfParameters = idListSize;
+	memcpy(hkStruct->parameters,parameterIdList,idListSize*4);
+	hkStruct->hkReportingEnabled = enableHkEntry;
+	hkStruct->cycleNumber = 0;
+}
+
+
+/* Second way: Use Store */
+ReturnValue_t Service3Housekeeping::initializeExistingHkDefinitionsAsStore() {
+	ReturnValue_t result;
+	result = addHkPacketDefinitionToStore(sid::GPS0_NAV_DATA,
+			GPS_COLLECTION_INTERVAL_MS,gpsIdBufferEntries,gps0idBuffer,true);
+	if(result != RETURN_OK) {
+		error << "Service 3: Error adding GPS0 packet definition" << std::endl;
+		return RETURN_FAILED;
+	}
+	return RETURN_OK;
+}
+
+
+ReturnValue_t Service3Housekeeping::addHkPacketDefinitionToStore(uint32_t sid,
+		uint32_t collectionInterval_ms, uint32_t idListSize,
+		uint32_t *parameterIdList, bool enableHkEntry) {
+	ReturnValue_t result;
+	*pHkBuffer = this->hkBuffer;
+	// the serialization should be done in own class propably
+	// calculate collection interval as factor of smallest sampling time
+	uint32_t collectionInterval = collectionInterval_ms/sid::DIAG_MIN_INTERV_DIAGNOSTICS_MS;
+	// Create a generic hkPacketDefinition packet
+	HkPacketDefinition hkPacketDefinition(collectionInterval,idListSize,parameterIdList,enableHkEntry);
+	uint32_t size = 0;
+	hkPacketDefinition.serialize(pHkBuffer ,&size, static_cast<uint32_t>(MAX_HK_DATA_SIZE),true);
+	store_address_t storeId;
+	debug << "Service 3: HK Packet with size: " << std::dec << size << " serialized" << std::endl;
+	result = HkPool.addData(&storeId,const_cast<const uint8_t *>(hkBuffer),size);
+	if(result != RETURN_OK) {
+		error << "Service 3: Error adding to store" << std::endl;
+	}
+
+	// Add (SID,StoreID) pair to map so the storeID can be retrieved later
+	result = sidHkMap.insert(SidToStoreIdMapEntry(sid,storeId));
+	if(result != RETURN_OK) {
+		error << "Service 3: Error adding SID to Storage Map" << std::endl;
+	}
+
+	// Data retrieval test
+	result = retrieveHkPacketDefinitionFromStore(sid);
+	if(result != RETURN_OK) {
+		error << "Service 3: Error retrieving data from store" << std::endl;
+	}
+	return result;
+}
+
+
+ReturnValue_t Service3Housekeeping::retrieveHkPacketDefinitionFromStore(uint32_t sid) {
+	// Data retrieval test
+	ReturnValue_t result;
+	store_address_t storeId;
+	SidToStoreIdIterator sidIterator;
+	*pHkBuffer = this->hkBuffer;
+
+	// Retrieve store ID with SID
+	sidIterator = sidHkMap.find(sid);
+	uint32_t size = 0;
+	if(sidIterator == sidHkMap.end()) {
+		info << "Service 3: No Store ID for SID found" << std::endl;
+	}
+	else {
+		storeId = sidIterator.value->second;
+	}
+
+	// Retrieve data with store ID
+	result = HkPool.getData(storeId,const_cast<const uint8_t **>(pHkBuffer),&size);
+	if(result != RETURN_OK) {
+		error << "Service 3: Error retrieving from store" << std::endl;
+	}
+
+	// test printouts. uint datatypes need to be swapped.
+	uint32_t storeBufferTest;
+	memcpy(&storeBufferTest,hkBuffer + 5,4);
+	info << std::hex <<storeBufferTest << std::endl;
+	memcpy(&storeBufferTest,hkBuffer,4);
+	storeBufferTest = EndianSwapper::swap(storeBufferTest);
+	info << std::dec << storeBufferTest << std::endl;
+	return result;
+}
+
+
+
+

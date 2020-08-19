@@ -1,0 +1,290 @@
+#-------------------------------------------------------------------------------
+# Makefile  for SOURCE OBSW
+#-------------------------------------------------------------------------------
+#		User-modifiable options
+#-------------------------------------------------------------------------------
+
+BOARD = stm32
+ROOT_PATH = $(BOARD)
+
+# General folder paths
+FRAMEWORK_PATH = framework
+MISSION_PATH = mission
+CONFIG_PATH = $(ROOT_PATH)/config
+TEST_PATH = test
+UNITTEST_PATH = unittest
+
+# Board specific paths
+BOARD_TEST_PATH = $(ROOT_PATH)/boardtest
+BSP_PATH = $(ROOT_PATH)/bsp
+COMIF_PATH = $(ROOT_PATH)/comIF
+TMTCBRIDGE_PATH = $(ROOT_PATH)/tmtcbridge
+
+BASENAME = sourceobsw
+
+OS_FSFW = freeRTOS
+BINARY_NAME = $(BASENAME)-stm32h743zit6
+
+# Output Directories
+BUILDPATH = _bin
+DEPENDPATH = _dep
+OBJECTPATH = _obj
+BUILDDIR = $(BUILDPATH)/$(BOARD)
+DEPENDDIR = $(DEPENDPATH)/$(BOARD)
+OBJECTDIR = $(OBJECTPATH)/$(BOARD)
+
+# OBSW with debug output for events / returnvalues
+ifdef DEBUG
+DEBUG_DEFINE = -DDEBUG
+endif
+
+# Toolchain Settings
+CROSS_COMPILE = arm-none-eabi-
+
+
+ifdef WINDOWS
+CC = $(CROSS_COMPILE)gcc.exe
+CXX = $(CROSS_COMPILE)g++.exe
+AS = $(CROSS_COMPILE)as.exe
+# Additional Tools
+SIZE = $(CROSS_COMPILE)size.exe
+STRIP = $(CROSS_COMPILE)strip.exe
+CP = $(CROSS_COMPILE)objcopy.exe
+else
+# C Compiler
+CC = $(CROSS_COMPILE)gcc
+
+# C++ compiler
+CXX = $(CROSS_COMPILE)g++
+
+#Assembler 
+AS = $(CROSS_COMPILE)as
+# Additional Tools
+SIZE = $(CROSS_COMPILE)size
+STRIP = $(CROSS_COMPILE)strip
+CP = $(CROSS_COMPILE)objcopy
+endif
+
+HEXCOPY = $(CP) -O ihex
+BINCOPY = $(CP) -O binary -S
+
+# files to be compiled, will be filled in by include makefiles
+# := assignment is neccessary so we get all paths right
+# https://www.gnu.org/software/make/manual/html_node/Flavors.html
+CXXSRC := 
+CSRC := 
+ASRC := 
+INCLUDES := 
+
+# Main
+# CXXSRC += $(ROOT_PATH)/main.cpp
+# CXXSRC += $(ROOT_PATH)/init_mission.cpp
+
+# Directories where $(directoryname).mk files should be included from
+
+SUBDIRS := $(ROOT_PATH)/Middlewares/LwIP $(FRAMEWORK_PATH) $(ROOT_PATH)/Drivers $(BSP_PATH) \
+           $(CONFIG_PATH) $(TEST_PATH) $(BOARD_TEST_PATH) $(COMIF_PATH) $(TMTCBRIDGE_PATH) \
+           $(UNITTEST_PATH) $(MISSION_PATH) $(ROOT_PATH)
+
+SRC_PATH = $(ROOT_PATH)/Src
+DRIVER_PATH = $(ROOT_PATH)/Drivers
+MIDDLEWARES_PATH = $(ROOT_PATH)/Middlewares
+FREERTOS_PATH = $(ROOT_PATH)/freertos
+#------------------------------------------------------------------------------------------------------------------------------------------------
+# C sources
+C_SOURCES =  \
+$(SRC_PATH)/freertos.c \
+$(SRC_PATH)/stm32h7xx_it.c \
+$(SRC_PATH)/stm32h7xx_hal_timebase_tim.c \
+$(SRC_PATH)/system_stm32h7xx.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim_ex.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rcc_ex.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_flash.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_flash_ex.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_gpio.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_hsem.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dma.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dma_ex.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_mdma.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pwr.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pwr_ex.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c_ex.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_eth.c \
+$(DRIVER_PATH)/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_adc.c \
+
+# ASM sources. Startup assembler in included by Bsp.mk for now
+ASM_SOURCES = 
+
+ASRC += $(ASM_SOURCES)
+
+CSRC += $(C_SOURCES)
+
+# AS includes
+AS_INCLUDES =  \
+-I$(ROOT_PATH)/Inc
+
+C_INCLUDES =  \
+-I$(ROOT_PATH)/Inc \
+-I$(ROOT_PATH)/Drivers/STM32H7xx_HAL_Driver/Inc \
+-I$(ROOT_PATH)/Drivers/STM32H7xx_HAL_Driver/Inc/Legacy \
+-I$(ROOT_PATH)/Drivers/CMSIS/Device/ST/STM32H7xx/Include \
+-I$(ROOT_PATH)/Drivers/CMSIS/Include \
+-I$(ROOT_PATH)/Bsp/ \
+-I$(ROOT_PATH)/Bsp/config \
+-I$(ROOT_PATH)/Drivers/Components/Include \
+-I$(ROOT_PATH)/Drivers/Components/Include/Common \
+-I$(ROOT_PATH)/Middlewares/Includes/LwIP \
+-I$(ROOT_PATH)/Middlewares/Includes
+
+
+
+# This is a hack from http://make.mad-scientist.net/the-eval-function/
+#
+# The problem is, that included makefiles should be aware of their relative path
+# but not need to guess or hardcode it. So we set $(CURRENTPATH) for them. If
+# we do this globally and the included makefiles want to include other makefiles as
+# well, they would overwrite $(CURRENTPATH), screwing the include after them.
+#
+# By using a for-loop with an eval'd macro, we can generate the code to include all
+# sub-makefiles (with the correct $(CURRENTPATH) set) before actually evaluating
+# (and by this possibly changing $(CURRENTPATH)) them.
+#
+# This works recursively, if an included makefile wants to include, it can safely set 
+# $(SUBDIRS) (which has already been evaluated here) and do
+# "$(foreach S,$(SUBDIRS),$(eval $(INCLUDE_FILE)))"
+# $(SUBDIRS) must be relative to the project root, so to include subdir foo, set
+# $(SUBDIRS) = $(CURRENTPATH)/foo.
+define INCLUDE_FILE
+CURRENTPATH := $S
+include $(S)/$(notdir $S).mk
+endef
+$(foreach S,$(SUBDIRS),$(eval $(INCLUDE_FILE)))
+
+I_INCLUDES = $(addprefix -I, $(INCLUDES))
+
+ETL_PATH = etl/include
+I_INCLUDES += -I$(ETL_PATH)
+
+# cpu
+CPU = -mcpu=cortex-m7
+
+# fpu
+FPU = -mfpu=fpv5-d16
+
+# float-abi 
+FLOAT-ABI = -mfloat-abi=hard
+
+# mcu
+MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
+
+LIBS = -lc -lm -lnosys 
+
+
+# Flags
+
+# Dependency Flags
+# These flags tell the compiler to build dependencies
+# See: https://www.gnu.org/software/make/manual/html_node/Automatic-Prerequisites.html
+# Using following guide: 
+# http://make.mad-scientist.net/papers/advanced-auto-dependency-generation/
+DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPENDDIR)/$*.d
+
+CXXDEFINES = $(DEBUG_DEFINE) -D$(BOARD) -DAPI=FREE_RTOS_API
+CDEFINES = -DUSE_HAL_DRIVER -DSTM32H743xx 
+CXXWARNINGS = -Wimplicit-fallthrough=2 -Wall -Wextra -Wno-unused-parameter
+# Flags for c only
+CFLAGS = $(CDEFINES)
+# Flags for c++ only
+CPPFLAGS = -std=c++17 -fno-exceptions 
+# Flags for both
+CXXFLAGS = $(MCU) -g3 -I. -Istm32/ $(I_INCLUDES) -fmessage-length=0 $(CXXDEFINES) \
+$(CXXWARNINGS) $(C_INCLUDES) $(DEPFLAGS)
+
+# Object File Definitions
+OBJ = $(CSRC:.c=.o) $(CXXSRC:.cpp=.o) $(ASRC:.s=.o)
+
+# Define Messages
+MSG_LINKING = Linking:
+MSG_COMPILING = Compiling:
+MSG_ASSEMBLING = Assembling:
+MSG_DEPENDENCY = Collecting dependencies for:
+MSG_BINARY = Generate binary:
+
+# including the dependency files
+# make will rebuild included makefiles if it can.
+# As we supplied a rule for the dependency files
+# it will rebuild them before including them
+
+.PHONY: clean all
+#-------------------------------------------------------------------------------
+#		Rules
+#-------------------------------------------------------------------------------
+
+# building the binary
+all: $(BUILDDIR)/$(BINARY_NAME).bin
+
+#$(BUILDDIR) $(DEPENDDIR):
+#	mkdir $@
+clean:
+	-rm -rf $(BUILDPATH)/$(BOARD)
+	-rm -rf $(DEPENDPATH)/$(BOARD)
+	-rm -rf $(OBJECTPATH)/$(BOARD)
+
+$(BUILDDIR)/$(BINARY_NAME).bin: $(BUILDDIR)/$(BINARY_NAME).elf
+	@echo
+	@echo $(MSG_BINARY)
+	@mkdir -p $(@D)
+	$(BINCOPY) $< $@	
+
+$(BUILDDIR)/$(BINARY_NAME).hex: $(BUILDDIR)/$(BINARY_NAME).elf
+	$(HEXCOPY) $< $@
+
+$(BUILDDIR)/$(BINARY_NAME).elf: $(addprefix $(OBJECTDIR)/, $(OBJ))
+	@echo
+	@echo $(MSG_LINKING)
+	@mkdir -p $(@D)
+	@$(CXX) -Wl,-L, -specs=nosys.specs $(MCU) -T "$(BSP_PATH)/linker.ld" $(LIBS) -o $@ $^
+	@echo $@ was generated.
+
+$(OBJECTDIR)/%.o : %.cpp
+$(OBJECTDIR)/%.o : %.cpp $(DEPENDDIR)/%.d | $(DEPENDDIR) 
+	@echo
+	@echo $(MSG_COMPILING) $<
+	@mkdir -p $(@D)
+	@$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $(<:.d=.cpp)
+
+$(OBJECTDIR)/%.o : %.c
+$(OBJECTDIR)/%.o : %.c $(DEPENDDIR)/%.d | $(DEPENDDIR)
+	@echo
+	@echo $(MSG_COMPILING) $<
+	@mkdir -p $(@D)
+	@$(CC) $(CXXFLAGS) $(CFLAGS) -c -o $@ $(<:.d=.c)
+
+$(OBJECTDIR)/%.o : %.s 
+	@echo
+	@echo $(MSG_ASSEMBLING) $<
+	@mkdir -p $(@D)
+	@$(AS) $(CPUFLAG) -c -o $@ $<
+
+#-------------------------------------------------------------------------------
+#		Dependency Handling
+#-------------------------------------------------------------------------------
+
+# Dependency Handling according to following guide:
+# http://make.mad-scientist.net/papers/advanced-auto-dependency-generation/
+$(DEPENDDIR):
+	@mkdir -p $(@D)
+DEPENDENCY_RELATIVE = $(CSRC:.c=.d) $(CXXSRC:.cpp=.d)
+# This is the list of all dependencies
+DEPFILES = $(addprefix $(DEPENDDIR)/, $(DEPENDENCY_RELATIVE))
+# Create subdirectories for dependencies
+$(DEPFILES):
+	@mkdir -p $(@D)
+# Include all dependencies
+include $(wildcard $(DEPFILES))
