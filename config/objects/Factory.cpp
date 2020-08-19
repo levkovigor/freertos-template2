@@ -146,7 +146,7 @@ void Factory::produce(void) {
 	        pus::PUS_SERVICE_5);
 	new Service9TimeManagement(objects::PUS_SERVICE_9);
 	new Service17CustomTest(objects::PUS_SERVICE_17, apid::SOURCE_OBSW,
-	        pus::PUS_SERVICE_5);
+	        pus::PUS_SERVICE_17);
 	new Service23FileManagement(objects::PUS_SERVICE_23);
 
 	/* PUS Gateway Services using CommandingServiceBase */
