@@ -1,10 +1,19 @@
+#include <board.h>
+#include <AT91SAM9G20.h>
+
 #include "main.h"
+
+// The AT91SAM9G20-EK does not have a pre-installed NOR-Flash. Therefore,
+// we only include the NorFlash boot header for iOBC projects.
+#ifdef ISIS_OBC_G20
 #include <core/bootNorFlash.h>
+#else
+#include <core/bootNandFlash.h>
+#endif
+
 #include <core/timer.h>
 #include <core/watchdog.h>
 
-#include <board.h>
-#include <AT91SAM9G20.h>
 #include <cp15/cp15.h>
 #include <utility/trace.h>
 #include <peripherals/dbgu/dbgu.h>
@@ -41,7 +50,7 @@ int main()
 
     TRACE_INFO_WP("\n\r");
     TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
-    TRACE_INFO_WP("-- %s\n\r", BOARD_NAME);
+    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME);
     TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 
     //-------------------------------------------------------------------------

@@ -81,7 +81,7 @@
 #include "AT91SAM9G20.h"
 /* Processor constants. */
 #include <at91/commons.h>
-#include <at91/boards/ISIS_OBC_G20/board.h>
+#include <board.h>
 #include <at91/peripherals/aic/aic.h>
 #include <at91/peripherals/pit/pit.h>
 
