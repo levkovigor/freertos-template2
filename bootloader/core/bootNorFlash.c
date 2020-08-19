@@ -19,11 +19,9 @@ int copy_norflash_binary_to_sdram(char* binary_name, size_t binary_size)
     //-------------------------------------------------------------------------
 
     // TODO: Copy in 255 byte buckets and verify a CRC checksum.
-#ifdef ISIS_OBC_G20
     TRACE_INFO("Copying \"%s\" (%d bytes) from NOR 0x%lx to SDRAM 0x%09x\n\r",
                 binary_name, binary_size, BINARY_BASE_ADDRESS_READ,
                 (int) BOARD_SDRAM_BASE_ADDRESS);
-#endif
 
     uint8_t bucket_size = 255;
     // It is assumed that a sanity check of the binary size was already
