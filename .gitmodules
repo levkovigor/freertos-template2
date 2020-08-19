@@ -1,0 +1,12 @@
+[submodule "tmtc"]
+	path = tmtc
+	url = https://git.ksat-stuttgart.de/source/tmtc.git
+[submodule "etl"]
+	path = etl
+	url = https://github.com/ETLCPP/etl.git
+[submodule "privlib"]
+	path = privlib
+	url = https://git.ksat-stuttgart.de/source/src_obsw_private.git
+[submodule "fsfw"]
+	path = fsfw
+	url = https://egit.irs.uni-stuttgart.de/KSat/fsfw.git
