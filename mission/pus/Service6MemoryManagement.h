@@ -26,7 +26,8 @@ public:
 	static constexpr uint8_t NUM_PARALLEL_COMMANDS = 4;
 	static constexpr uint16_t COMMAND_TIMEOUT_SECONDS = 60;
 
-	Service6MemoryManagement(object_id_t objectId_);
+	Service6MemoryManagement(object_id_t objectId, uint16_t apid,
+	        uint8_t serviceId);
 	virtual ~Service6MemoryManagement();
 protected:
 	//! CommandingServiceBase (CSB) abstract functions. See CSB documentation.

@@ -1,15 +1,13 @@
-#include <apid.h>
-#include <pusIds.h>
-#include <systemObjectList.h>
+#include "Service6MemoryManagement.h"
 
-#include <mission/pus/Service6MemoryManagement.h>
 #include <fsfw/memory/AcceptsMemoryMessagesIF.h>
 #include <fsfw/globalfunctions/CRC.h>
 #include <fsfw/tmtcpacket/pus/TmPacketStored.h>
 #include <mission/pus/servicepackets/Service6Packets.h>
 
-Service6MemoryManagement::Service6MemoryManagement(object_id_t objectId):
-	CommandingServiceBase(objectId, apid::SOURCE_OBSW, pus::PUS_SERVICE_6,
+Service6MemoryManagement::Service6MemoryManagement(object_id_t objectId,
+        uint16_t apid, uint8_t serviceId):
+	CommandingServiceBase(objectId, apid, serviceId,
 			NUM_PARALLEL_COMMANDS, COMMAND_TIMEOUT_SECONDS) {}
 
 Service6MemoryManagement::~Service6MemoryManagement() {}
@@ -68,9 +66,9 @@ ReturnValue_t Service6MemoryManagement::prepareCommand(
 ReturnValue_t Service6MemoryManagement::prepareMemoryLoadCommand(
 		CommandMessage* message, const uint8_t * tcData, size_t size) {
 	LoadToMemoryCommand loadCommand;
-	// Copy TC application data into LoadToMemoryCommand instance by using a
-	// deserialization adapter. This can be used to easily access application
-	// data
+	/* Copy TC application data into LoadToMemoryCommand instance by using a
+	deserialization adapter. This can be used to easily access application
+	data */
 	ReturnValue_t result = loadCommand.deSerialize(&tcData,&size,
 	        SerializeIF::Endianness::BIG);
 	if(result != HasReturnvaluesIF::RETURN_OK){
@@ -167,7 +165,7 @@ ReturnValue_t Service6MemoryManagement::sendMemoryCheckPacket(
 	checkPacket.setLength(MemoryMessage::getLength(reply));
 	checkPacket.setChecksum(MemoryMessage::getCrc(reply));
 
-	TmPacketStored tmPacket(apid::SOURCE_OBSW, pus::PUS_SERVICE_6,
+	TmPacketStored tmPacket(apid, service,
 			static_cast<uint8_t>(Subservice::MEMORY_CHECK_REPORT),
 			packetSubCounter++, &checkPacket);
 	sendTmPacket(static_cast<uint8_t>(Subservice::MEMORY_CHECK_REPORT),

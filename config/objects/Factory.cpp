@@ -152,7 +152,8 @@ void Factory::produce(void) {
 	/* PUS Gateway Services using CommandingServiceBase */
 	new Service2DeviceAccess(objects::PUS_SERVICE_2, apid::SOURCE_OBSW,
 	        pus::PUS_SERVICE_2);
-	new Service6MemoryManagement(objects::PUS_SERVICE_6);
+	new Service6MemoryManagement(objects::PUS_SERVICE_6, apid::SOURCE_OBSW,
+	        pus::PUS_SERVICE_6);
 	new Service20ParameterManagement(objects::PUS_SERVICE_20);
 	new Service8FunctionManagement(objects::PUS_SERVICE_8, apid::SOURCE_OBSW,
 			pus::PUS_SERVICE_8);
