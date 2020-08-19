@@ -12,6 +12,10 @@ Used development boards and environments:
 - Linux
 - QEMU
 
+Additional Note: The AT91 and the ISIS library are not public because
+they are not open source. They have to be added manually and the includes
+and source files have to be setup and included accordingly!
+
 ## Reference
 [Prerequisites](#prerequisites)<br>
 [Building the software](#building-the-software)<br>
