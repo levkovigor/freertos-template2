@@ -46,6 +46,7 @@ BOARD_NAME = at91ek
 # ROM-Boot will copy it and execute it in SRAM.
 # This works as long as the binary size is smaller than 16kB.
 MEMORY_TYPE = nandflash
+CUSTOM_DEFINES = -DOP_BOOTSTRAP_on
 endif
 
 
