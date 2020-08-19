@@ -7,3 +7,6 @@
 [submodule "fsfw"]
 	path = fsfw
 	url = https://egit.irs.uni-stuttgart.de/KSat/fsfw.git
+[submodule "etl"]
+	path = etl
+	url = https://github.com/ETLCPP/etl.git
