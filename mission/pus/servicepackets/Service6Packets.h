@@ -12,14 +12,14 @@
 
 
 /**
- * \brief Subservice 2
- * \ingroup spacepackets
+ * @brief   Subservice 2
+ * @ingroup spacepackets
  */
+template <size_t MAX_DATA_SIZE>
 class LoadToMemoryCommand: public SerialLinkedListAdapter<SerializeIF> { //!< [EXPORT] : [SUBSERVICE] 2
 public:
 	typedef uint8_t dataBufferType; //!< [EXPORT] : [IGNORE]
 	typedef uint16_t typeOfMaxData; //!< [EXPORT] : [IGNORE]
-	static const typeOfMaxData MAX_DATA_LENGTH = 1024; // in bytes
 
 	LoadToMemoryCommand() {
 		address.setNext(&data);
@@ -43,17 +43,15 @@ public:
 	}
 
 private:
-	//Forbid copying because of next pointer to member
-	LoadToMemoryCommand(const LoadToMemoryCommand &command);
 	SerializeElement<uint32_t> address;
-	SerializeElement<SerialFixedArrayListAdapter<dataBufferType, MAX_DATA_LENGTH,typeOfMaxData>> data; //!< [EXPORT] : [SIZEFIELD] uint16_t [BUFFERTYPE] uint8_t
+	SerializeElement<SerialFixedArrayListAdapter<dataBufferType, MAX_DATA_SIZE,typeOfMaxData>> data; //!< [EXPORT] : [SIZEFIELD] uint16_t [BUFFERTYPE] uint8_t
 	SerializeElement<uint16_t> checksum;
 };
 
 
 /**
- * \brief Subservice 5
- * \ingroup spacepackets
+ * @brief   Subservice 5
+ * @ingroup spacepackets
  */
 class DumpMemoryCommand: public SerialLinkedListAdapter<SerializeIF> { //!< [EXPORT] : [SUBSERVICE] 5
 public:
@@ -71,16 +69,14 @@ public:
 	}
 
 private:
-	//Forbid copying because of next pointer to member
-	DumpMemoryCommand(const DumpMemoryCommand &command);
 	SerializeElement<uint32_t> address;
 	SerializeElement<uint32_t> dumpLength;
 };
 
 
 /**
- * \brief Subservice 9
- * \ingroup spacepackets
+ * @brief   Subservice 9
+ * @ingroup spacepackets
  */
 class CheckMemoryCommand: public SerialLinkedListAdapter<SerializeIF> { //!< [EXPORT] : [SUBSERVICE] 9
 public:
@@ -98,16 +94,14 @@ public:
 	}
 
 private:
-	//Forbid copying because of next pointer to member
-	CheckMemoryCommand(const CheckMemoryCommand &command);
 	SerializeElement<uint32_t> address;
 	SerializeElement<uint32_t> checkLength;
 };
 
 
 /**
- * \brief Subservice 6
- * \ingroup spacepackets
+ * @brief   Subservice 6
+ * @ingroup spacepackets
  */
 class MemoryDumpPacket : public SerializeIF { //!< [EXPORT] : [SUBSERVICE] 6
 public:
@@ -175,8 +169,8 @@ private:
 };
 
 /**
- * \brief Subservice 10
- * \ingroup spacepackets
+ * @brief   Subservice 10
+ * @ingroup spacepackets
  */
 class MemoryCheckPacket : public SerialLinkedListAdapter<SerializeIF> { //!< [EXPORT] : [SUBSERVICE] 10
 public:
@@ -214,8 +208,6 @@ public:
 	}
 
 private:
-	//Forbid copying because of next pointer to member
-	MemoryCheckPacket(const MemoryCheckPacket &command);
 	SerializeElement<uint32_t> address;
 	SerializeElement<uint32_t> length;
 	SerializeElement<uint16_t> checksum;

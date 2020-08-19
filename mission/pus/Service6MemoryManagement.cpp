@@ -65,7 +65,8 @@ ReturnValue_t Service6MemoryManagement::prepareCommand(
 
 ReturnValue_t Service6MemoryManagement::prepareMemoryLoadCommand(
 		CommandMessage* message, const uint8_t * tcData, size_t size) {
-	LoadToMemoryCommand loadCommand;
+    // Todo: make max data size configurable
+	LoadToMemoryCommand<1024> loadCommand;
 	/* Copy TC application data into LoadToMemoryCommand instance by using a
 	deserialization adapter. This can be used to easily access application
 	data */
