@@ -45,9 +45,7 @@ protected:
 private:
 	uint16_t packetSubCounter = 0;
 
-	ReturnValue_t checkAndAcquireTargetID(object_id_t* objectIdToSet,
-			const uint8_t* tcData, size_t tcDataLen);
-	ReturnValue_t checkInterfaceValidityAndAcquireMessageQueue(
+	ReturnValue_t checkInterfaceAndAcquireMessageQueue(
 	        MessageQueueId_t* messageQueueToSet, object_id_t* objectId);
 
 	ReturnValue_t prepareMemoryLoadCommand(CommandMessage* message,

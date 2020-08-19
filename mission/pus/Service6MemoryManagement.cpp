@@ -26,34 +26,27 @@ ReturnValue_t Service6MemoryManagement::isValidSubservice(uint8_t subservice) {
 }
 
 ReturnValue_t Service6MemoryManagement::getMessageQueueAndObject(
-		uint8_t subservice, const uint8_t* tcData, size_t tcDataLen,
-		MessageQueueId_t* id, object_id_t* objectId) {
-	if(auto result = checkAndAcquireTargetID(objectId,tcData,tcDataLen);
-			result != RETURN_OK) {
-		return result;
-	}
-	return checkInterfaceValidityAndAcquireMessageQueue(id,objectId);
+        uint8_t subservice, const uint8_t *tcData, size_t tcDataLen,
+        MessageQueueId_t *id, object_id_t *objectId) {
+    if(tcDataLen < sizeof(object_id_t)) {
+        return CommandingServiceBase::INVALID_TC;
+    }
+    SerializeAdapter::deSerialize(objectId, &tcData, &tcDataLen,
+            SerializeIF::Endianness::BIG);
+
+    return checkInterfaceAndAcquireMessageQueue(id,objectId);
 }
 
-ReturnValue_t Service6MemoryManagement::checkAndAcquireTargetID(
-		object_id_t *objectIdToSet, const uint8_t *tcData, size_t tcDataLen) {
-	if(SerializeAdapter::deSerialize(objectIdToSet, &tcData,
-			&tcDataLen, SerializeIF::Endianness::BIG) != RETURN_OK) {
-		return CommandingServiceBase::INVALID_TC;
-	}
-	return HasReturnvaluesIF::RETURN_OK;
-}
+ReturnValue_t Service6MemoryManagement::checkInterfaceAndAcquireMessageQueue(
+        MessageQueueId_t* messageQueueToSet, object_id_t* objectId) {
+    AcceptsMemoryMessagesIF * destination = objectManager->
+            get<AcceptsMemoryMessagesIF>(*objectId);
+    if(destination == nullptr) {
+        return CommandingServiceBase::INVALID_OBJECT;
+    }
 
-ReturnValue_t Service6MemoryManagement::checkInterfaceValidityAndAcquireMessageQueue(
-		MessageQueueId_t *messageQueueToSet, object_id_t *objectId) {
-	// Check AcceptsMemoryMessagesIF property of target
-	AcceptsMemoryMessagesIF* possibleTarget = objectManager->
-			get<AcceptsMemoryMessagesIF>(*objectId);
-	if(possibleTarget == nullptr){
-		return HasMemoryIF::INVALID_ADDRESS;
-	}
-	*messageQueueToSet = possibleTarget->getCommandQueue();
-	return HasReturnvaluesIF::RETURN_OK;
+    *messageQueueToSet = destination->getCommandQueue();
+    return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t Service6MemoryManagement::prepareCommand(
