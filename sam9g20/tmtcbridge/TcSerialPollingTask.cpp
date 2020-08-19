@@ -13,7 +13,7 @@
 
 TcSerialPollingTask::TcSerialPollingTask(object_id_t objectId,
 		object_id_t tcBridge, size_t frameSize, object_id_t sharedRingBufferId,
-		float serialTimeout):
+		uint16_t serialTimeoutBaudticks):
 		SystemObject(objectId), tcBridge(tcBridge),
 		sharedRingBufferId(sharedRingBufferId) {
 
@@ -31,13 +31,7 @@ TcSerialPollingTask::TcSerialPollingTask(object_id_t objectId,
 	recvBuffer.reserve(this->frameSize);
 	recvBuffer.resize(this->frameSize);
 
-	if(serialTimeout < 0) {
-		this->serialTimeout = DEFAULT_SERIAL_TIMEOUT_SECONDS;
-	}
-	else {
-		this->serialTimeout = serialTimeout;
-	}
-	setTimeout(this->serialTimeout);
+	configBus0.rxtimeout = serialTimeoutBaudticks;
 }
 
 TcSerialPollingTask::~TcSerialPollingTask() {}
@@ -70,10 +64,6 @@ ReturnValue_t TcSerialPollingTask::initialize() {
 	return result;
 }
 
-void TcSerialPollingTask::setTimeout(float timeoutSeconds) {
-	configBus0.rxtimeout = static_cast<unsigned short>(
-			timeoutSeconds * configBus0.baudrate);
-}
 
 ReturnValue_t TcSerialPollingTask::performOperation(uint8_t operationCode) {
 	while(true) {

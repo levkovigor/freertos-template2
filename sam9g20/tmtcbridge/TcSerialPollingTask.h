@@ -40,7 +40,7 @@ public:
     /** The frame size will be set to this value if no other value is
      *  supplied in the constructor. */
     static constexpr uint16_t MAX_RECEPTION_BUFFER_SIZE = 2048;
-    static constexpr float DEFAULT_SERIAL_TIMEOUT_SECONDS = 0.00005;
+    static constexpr float DEFAULT_SERIAL_TIMEOUT_BAUDTICKS = 20;
     //! 12 bytes is minimal size of a PUS packet, which is used in the ctor
     //! to calculate this value.
     size_t maxNumberOfStoredPackets;
@@ -53,11 +53,13 @@ public:
      * @param frameSize
      * Optional frame size which can be used if fixed TC
      * packet frames are used
+     * @param serialTimeoutBaudticks Timeout in baudticks. Maxiumum uint16_t
+     * value is reserved for the dafault timeout
      */
 	TcSerialPollingTask(object_id_t objectId, object_id_t tcBridge,
 			size_t frameSize = 0,
 			object_id_t sharedRingBufferId = objects::NO_OBJECT,
-			float serialTimeout = -1);
+			uint16_t serialTimeoutBaudticks = DEFAULT_SERIAL_TIMEOUT_BAUDTICKS);
 
 	virtual ~TcSerialPollingTask();
 
@@ -81,7 +83,7 @@ private:
 	/** Will be used in read call to driver to determine how many bytes
 	 * are read. Do not change after initialization! */
 	size_t frameSize;
-	float serialTimeout;
+
 	UARTconfig configBus0 = { .mode = AT91C_US_USMODE_NORMAL |
 			AT91C_US_CLKS_CLOCK | AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE |
 			AT91C_US_OVER_16 | AT91C_US_NBSTOP_1_BIT, .baudrate = 115200,
@@ -90,7 +92,6 @@ private:
 	PusParser* pusParser = nullptr;
 
 	MessageQueueId_t targetTcDestination = MessageQueueIF::NO_QUEUE;
-	void setTimeout(float timeoutSeconds);
 
 	/**
 	 * @brief 	This function handles reading UART data.
@@ -126,7 +127,7 @@ private:
 
 	void ringBufferPrototypePoll();
 	object_id_t sharedRingBufferId;
-	SharedRingBuffer* sharedRingBuffer;
+	SharedRingBuffer* sharedRingBuffer = nullptr;
 };
 
 #endif /* SAM9G20_TMTCBRIDGE_SERIALPOLLINGTASK_H_ */
