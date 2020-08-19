@@ -25,15 +25,16 @@
 #include <fsfw/tmtcservices/PusServiceBase.h>
 #include <fsfw/pus/Service1TelecommandVerification.h>
 #include <fsfw/pus/Service2DeviceAccess.h>
-#include <mission/pus/Service3HousekeepingPSB.h>
+#include <fsfw/pus/CService201HealthCommanding.h>
 #include <fsfw/pus/Service5EventReporting.h>
 #include <fsfw/pus/Service8FunctionManagement.h>
+#include <mission/pus/Service3HousekeepingPSB.h>
 #include <mission/pus/Service6MemoryManagement.h>
 #include <mission/pus/Service9TimeManagement.h>
-#include <mission/pus/Service17Test.h>
+#include <mission/pus/Service17CustomTest.h>
 #include <mission/pus/Service20ParameterManagement.h>
 #include <mission/pus/Service23FileManagement.h>
-#include <mission/pus/CService201HealthCommanding.h>
+
 #include <mission/fdir/PCDUFailureIsolation.h>
 #include <mission/utility/TimeStamper.h>
 #include <mission/utility/TmFunnel.h>
@@ -144,7 +145,8 @@ void Factory::produce(void) {
 	new Service5EventReporting(objects::PUS_SERVICE_5, apid::SOURCE_OBSW,
 	        pus::PUS_SERVICE_5);
 	new Service9TimeManagement(objects::PUS_SERVICE_9);
-	new Service17Test(objects::PUS_SERVICE_17);
+	new Service17CustomTest(objects::PUS_SERVICE_17, apid::SOURCE_OBSW,
+	        pus::PUS_SERVICE_5);
 	new Service23FileManagement(objects::PUS_SERVICE_23);
 
 	/* PUS Gateway Services using CommandingServiceBase */
@@ -156,7 +158,8 @@ void Factory::produce(void) {
 			pus::PUS_SERVICE_8);
 	new CService200ModeCommanding(objects::PUS_SERVICE_200, apid::SOURCE_OBSW,
 	        pus::PUS_SERVICE_200);
-	new CService201HealthCommanding(objects::PUS_SERVICE_201);
+	new CService201HealthCommanding(objects::PUS_SERVICE_201, apid::SOURCE_OBSW,
+	        pus::PUS_SERVICE_201);
 
 	/*
 	 * Device Handlers using DeviceHandlerBase.
