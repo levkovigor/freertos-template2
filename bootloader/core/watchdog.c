@@ -3,7 +3,7 @@
 /**
  * Note: This is a special include of a header which was newly created to avoid
  * including FreeRTOS.
- * It only include WDT_start() and WDT_forceKick() are needed.
+ * Only include WDT_start() and WDT_forceKick() are needed.
  */
 #include <hal/Timing/WatchDogTimerNoOS.h>
 
