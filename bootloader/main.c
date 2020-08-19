@@ -1,5 +1,7 @@
 #include "main.h"
 #include <core/bootNorFlash.h>
+#include <core/timer.h>
+#include <core/watchdog.h>
 
 #include <board.h>
 #include <AT91SAM9G20.h>
@@ -7,7 +9,6 @@
 #include <utility/trace.h>
 #include <peripherals/dbgu/dbgu.h>
 #include <peripherals/pio/pio.h>
-#include <peripherals/pit/pit.h>
 #include <peripherals/aic/aic.h>
 #include <peripherals/pio/pio.h>
 
@@ -16,7 +17,6 @@
 
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
 
-
 /**
  * @brief	Bootloader which will copy the primary software to SDRAM and
  * 			execute it
@@ -24,6 +24,16 @@ void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
  */
 int main()
 {
+    //-------------------------------------------------------------------------
+    // Initiate periodic MS interrupt
+    //-------------------------------------------------------------------------
+    setup_timer_interrupt();
+
+    //-------------------------------------------------------------------------
+    // Initiate watchdog for iOBC
+    //-------------------------------------------------------------------------
+    initiate_external_watchdog();
+
     //-------------------------------------------------------------------------
     // Configure traces
     //-------------------------------------------------------------------------
@@ -39,9 +49,9 @@ int main()
     //-------------------------------------------------------------------------
     CP15_Enable_I_Cache();
 
+    feed_watchdog_if_necessary();
     // verify hamming code of image in sdram. code size is either written in
     // memory or extracted from FRAM.
-
     // if successfull, copy norflash to sdram
 //    int result = copy_norflash_binary_to_sdram("Test", 256);
 //    if(result != 0) {
