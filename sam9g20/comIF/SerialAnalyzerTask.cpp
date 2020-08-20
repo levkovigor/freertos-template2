@@ -1,7 +1,7 @@
 #include "SerialAnalyzerTask.h"
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/globalfunctions/DleEncoder.h>
-
+#include <cstring>
 
 SerialAnalyzerTask::SerialAnalyzerTask(SharedRingBuffer *ringBuffer,
 		AnalyzerModes mode):
@@ -27,6 +27,9 @@ ReturnValue_t SerialAnalyzerTask::checkForPackets(uint8_t* receptionBuffer,
 		return NO_PACKET_FOUND;
 	}
 
+	// Todo: instead of copying data over and over if no STX and ETX are found,
+	// we should just copy new data to the end of the analysis vector.
+	// we have to cache the current position for that.
 	ReturnValue_t result = ringBuffer->readData(analysisVector.data(),
 			dataToRead);
 	if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -36,15 +39,16 @@ ReturnValue_t SerialAnalyzerTask::checkForPackets(uint8_t* receptionBuffer,
 	ringBuffer->unlockRingBufferMutex();
 
 	if(mode == AnalyzerModes::DLE_ENCODING) {
+		size_t readSize = 0;
 		result = parseForDleEncodedPackets(dataToRead, receptionBuffer,
-				maxSize, packetSize);
+				maxSize, packetSize, &readSize);
 		if(result == HasReturnvaluesIF::RETURN_OK) {
 			// Packet found, advance read pointer.
-			ringBuffer->deleteData(*packetSize);
+			ringBuffer->deleteData(readSize);
 		}
 		else if(result == POSSIBLE_PACKET_LOSS) {
 			// ETX found which might be a hint for a possibly lost packet
-			ringBuffer->deleteData(*packetSize);
+			ringBuffer->deleteData(readSize);
 		}
 		// If no packets were found,  we don't do anything.
 	}
@@ -53,27 +57,27 @@ ReturnValue_t SerialAnalyzerTask::checkForPackets(uint8_t* receptionBuffer,
 
 ReturnValue_t SerialAnalyzerTask::parseForDleEncodedPackets(
 		size_t bytesToRead, uint8_t* receptionBuffer,
-		size_t maxSize, size_t* packetSize) {
+		size_t maxSize, size_t* packetSize, size_t* readSize) {
 	for(size_t vectorIdx = 0; vectorIdx < bytesToRead; vectorIdx ++) {
 		if(analysisVector[vectorIdx] == DleEncoder::STX_CHAR) {
-			size_t packetFoundSize = 0;
 			ReturnValue_t result = DleEncoder::decode(
 					&analysisVector[vectorIdx],
-					bytesToRead - vectorIdx, nullptr,
-					receptionBuffer, maxSize, &packetFoundSize);
+					bytesToRead - vectorIdx, readSize,
+					receptionBuffer, maxSize, packetSize);
 			if(result == HasReturnvaluesIF::RETURN_OK) {
-				// packet found
-				*packetSize = packetFoundSize;
 				return HasReturnvaluesIF::RETURN_OK;
+			}
+			else if(result == DleEncoder::DECODING_ERROR) {
+				// should not happen
 			}
 			else {
 				return NO_PACKET_FOUND;
 			}
 		}
-
-		if(analysisVector[vectorIdx] == DleEncoder::ETX_CHAR) {
+		else if(analysisVector[vectorIdx] == DleEncoder::ETX_CHAR) {
 			// might be lost packet, so we should advance the read pointer
-			*packetSize = vectorIdx;
+			*readSize = ++vectorIdx;
+			// std::memset(analysisVector.data(), 0, vectorIdx);
 			return POSSIBLE_PACKET_LOSS;
 		}
 	}

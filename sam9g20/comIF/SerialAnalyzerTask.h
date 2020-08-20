@@ -47,7 +47,8 @@ private:
 	bool dataInAnalysisVectorLeft = false;
 
 	ReturnValue_t parseForDleEncodedPackets(size_t bytesToRead,
-			uint8_t* receptionBuffer, size_t maxSize, size_t* packetSize);
+			uint8_t* receptionBuffer, size_t maxSize, size_t* packetSize,
+			size_t* readSize);
 };
 
 
