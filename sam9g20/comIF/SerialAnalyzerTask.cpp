@@ -1,6 +1,7 @@
 #include "SerialAnalyzerTask.h"
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/globalfunctions/DleEncoder.h>
+#include <fsfw/ipc/MutexHelper.h>
 #include <cstring>
 
 SerialAnalyzerTask::SerialAnalyzerTask(SharedRingBuffer *ringBuffer,
@@ -15,56 +16,76 @@ SerialAnalyzerTask::SerialAnalyzerTask(SharedRingBuffer *ringBuffer,
 }
 
 ReturnValue_t SerialAnalyzerTask::checkForPackets(uint8_t* receptionBuffer,
-		size_t maxSize, size_t* packetSize) {
+		size_t maxData, size_t* packetSize) {
 	if(receptionBuffer == nullptr or packetSize == nullptr) {
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
 
-	ringBuffer->lockRingBufferMutex(MutexIF::TimeoutType::WAITING, 10);
-	size_t dataToRead = ringBuffer->getAvailableReadData();
-	if(dataToRead == 0) {
-		ringBuffer->unlockRingBufferMutex();
-		return NO_PACKET_FOUND;
-	}
-
-	// Todo: instead of copying data over and over if no STX and ETX are found,
-	// we should just copy new data to the end of the analysis vector.
-	// we have to cache the current position for that.
-	ReturnValue_t result = ringBuffer->readData(analysisVector.data(),
-			dataToRead);
-	if(result != HasReturnvaluesIF::RETURN_OK) {
-		ringBuffer->unlockRingBufferMutex();
+	ReturnValue_t result = readRingBuffer();
+	if(result == NO_PACKET_FOUND) {
 		return result;
 	}
-	ringBuffer->unlockRingBufferMutex();
+	else if(result != HasReturnvaluesIF::RETURN_OK) {
+		return result;
+	}
 
 	if(mode == AnalyzerModes::DLE_ENCODING) {
-		size_t readSize = 0;
-		result = parseForDleEncodedPackets(dataToRead, receptionBuffer,
-				maxSize, packetSize, &readSize);
-		if(result == HasReturnvaluesIF::RETURN_OK) {
-			// Packet found, advance read pointer.
-			ringBuffer->deleteData(readSize);
-		}
-		else if(result == POSSIBLE_PACKET_LOSS) {
-			// ETX found which might be a hint for a possibly lost packet
-			ringBuffer->deleteData(readSize);
-		}
-		else if(result == HasReturnvaluesIF::RETURN_FAILED) {
-			// decoding error
-			return result;
-		}
-		// If no packets were found,  we don't do anything.
+		result = handleDleParsing(receptionBuffer, maxData, packetSize);
 	}
 	return result;
 }
 
+ReturnValue_t SerialAnalyzerTask::readRingBuffer() {
+	ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
+	MutexHelper lock(ringBuffer->getMutexHandle(),
+			MutexIF::TimeoutType::WAITING, 5);
+	size_t dataToRead = ringBuffer->getAvailableReadData();
+	if(dataToRead == 0) {
+		return NO_PACKET_FOUND;
+	}
+
+	if(dataToRead > currentBytesRead) {
+		currentBytesRead = dataToRead;
+		result = ringBuffer->readData(analysisVector.data(),
+				currentBytesRead);
+		if(result != HasReturnvaluesIF::RETURN_OK) {
+			return result;
+		}
+	}
+	else {
+		// no new data.
+		return NO_PACKET_FOUND;
+	}
+	return result;
+}
+
+ReturnValue_t SerialAnalyzerTask::handleDleParsing(uint8_t* receptionBuffer,
+		size_t maxSize, size_t* packetSize) {
+	size_t readSize = 0;
+	ReturnValue_t result = parseForDleEncodedPackets(currentBytesRead,
+			receptionBuffer, maxSize, packetSize, &readSize);
+	if(result == HasReturnvaluesIF::RETURN_OK) {
+		// Packet found, advance read pointer.
+		currentBytesRead = 0;
+		ringBuffer->deleteData(readSize);
+	}
+	else if(result == POSSIBLE_PACKET_LOSS) {
+		// STX or ETX found at wrong placer
+		// which might be a hint for a possibly lost packet.
+		currentBytesRead = 0;
+		ringBuffer->deleteData(readSize);
+	}
+	// If no packets were found,  we don't do anything.
+	return result;
+}
+
 ReturnValue_t SerialAnalyzerTask::parseForDleEncodedPackets(
-		size_t bytesToRead, uint8_t* receptionBuffer,
-		size_t maxSize, size_t* packetSize, size_t* readSize) {
+		size_t bytesToRead, uint8_t* receptionBuffer, size_t maxSize,
+		size_t* packetSize, size_t* readSize) {
 	bool stxFound = false;
 	size_t stxIdx = 0;
 	for(size_t vectorIdx = 0; vectorIdx < bytesToRead; vectorIdx ++) {
+		// handle STX char
 		if(analysisVector[vectorIdx] == DleEncoder::STX_CHAR) {
 			if(not stxFound) {
 				stxFound = true;
@@ -72,12 +93,15 @@ ReturnValue_t SerialAnalyzerTask::parseForDleEncodedPackets(
 			}
 			else {
 				// might be lost packet, so we should advance the read pointer
+				// without skipping the STX
 				*readSize = vectorIdx;
 				return POSSIBLE_PACKET_LOSS;
 			}
 		}
+		// handle ETX char
 		if(analysisVector[vectorIdx] == DleEncoder::ETX_CHAR) {
 			if(stxFound) {
+				// This is propably a packet, so we decode it.
 				ReturnValue_t result = DleEncoder::decode(
 						&analysisVector[stxIdx],
 						bytesToRead - stxIdx, readSize,
@@ -86,9 +110,7 @@ ReturnValue_t SerialAnalyzerTask::parseForDleEncodedPackets(
 					return HasReturnvaluesIF::RETURN_OK;
 				}
 				else {
-					// This should not happen!!!
-					sif::error << "SerialAnalyzerTask::parseForDleEncodedPackets:"
-							" Configuration error!" << std::endl;
+					// invalid packet, skip.
 					*readSize = ++vectorIdx;
 					return POSSIBLE_PACKET_LOSS;
 				}

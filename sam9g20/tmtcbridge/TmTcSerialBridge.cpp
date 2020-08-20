@@ -40,12 +40,11 @@ ReturnValue_t TmTcSerialBridge::handleTc() {
 			tcPacketIdx++) {
 		size_t packetFoundLen = 0;
 		ReturnValue_t result = analyzerTask->checkForPackets(tcArray.data(),
-				TC_FRAME_MAX_LEN + 10, &packetFoundLen);
+				TC_FRAME_MAX_LEN * 2, &packetFoundLen);
 		if(result == HasReturnvaluesIF::RETURN_OK) {
 			result = handleTcReception(packetFoundLen);
 			if(result != HasReturnvaluesIF::RETURN_OK) {
-				sif::error << "TmTcSerialBridge::handleTc: TC reception failed!"
-						<< std::endl;
+				return result;
 			}
 		}
 		else if(result == SerialAnalyzerTask::POSSIBLE_PACKET_LOSS) {
@@ -61,7 +60,6 @@ ReturnValue_t TmTcSerialBridge::handleTc() {
 }
 
 ReturnValue_t TmTcSerialBridge::handleTcReception(size_t foundLen) {
-	//TcPacketStored tcPacket(tcArray.data(), packetFoundLen);
 	store_address_t storeId;
 	ReturnValue_t result = tcStore->addData(&storeId,
 			tcArray.data(), foundLen);

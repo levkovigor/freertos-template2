@@ -37,19 +37,24 @@ public:
 	 * -@c NO_PACKET_FOUND if no packet was found.
 	 * -@c POSSIBLE_LOST_PACKET if there is a possiblity of a lost packet
 	 *     (end marker found without start marker). Read pointer is incremented.
-	 * -@c DleEncoder::DECODING_ERROR if there was an decoding issue
 	 */
 	ReturnValue_t checkForPackets(uint8_t* buffer,
-			size_t maxSize, size_t* packetSize);
+			size_t maxData, size_t* packetSize);
+
 private:
 	AnalyzerModes mode;
 	SharedRingBuffer* ringBuffer;
 	std::vector<uint8_t> analysisVector;
 	bool dataInAnalysisVectorLeft = false;
 
+	size_t currentBytesRead = 0;
+
+	ReturnValue_t readRingBuffer();
+	ReturnValue_t handleDleParsing(uint8_t* receptionBuffer, size_t maxSize,
+				size_t* packetSize);
 	ReturnValue_t parseForDleEncodedPackets(size_t bytesToRead,
-			uint8_t* receptionBuffer, size_t maxSize, size_t* packetSize,
-			size_t* readSize);
+			uint8_t* receptionBuffer, size_t maxSize,
+			size_t* packetSize, size_t* readSize);
 };
 
 

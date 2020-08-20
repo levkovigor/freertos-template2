@@ -14,6 +14,7 @@ extern "C" {
 #include <hal/Drivers/UART.h>
 }
 
+#include <config/tmtc/tmtcSize.h>
 #include <utility>
 #include <vector>
 
@@ -37,7 +38,8 @@ public:
     static constexpr uint8_t TC_RECEPTION_QUEUE_DEPTH = 10;
     /** The frame size will be set to this value if no other value is
      *  supplied in the constructor. */
-    static constexpr uint16_t SERIAL_FRAME_MAX_SIZE = 1500;
+    static constexpr uint16_t SERIAL_FRAME_MAX_SIZE =
+    		tmtcsize::MAX_SERIAL_FRAME_SIZE;
     static constexpr float DEFAULT_SERIAL_TIMEOUT_BAUDTICKS = 5;
 
     /**
