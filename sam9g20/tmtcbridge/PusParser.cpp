@@ -1,5 +1,5 @@
-#include "../tmtcservices/PusParser.h"
-#include "../serviceinterface/ServiceInterfaceStream.h"
+#include "PusParser.h"
+#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 
 PusParser::PusParser(uint16_t maxExpectedPusPackets,
 		bool storeSplitPackets): indexSizePairFIFO(maxExpectedPusPackets) {

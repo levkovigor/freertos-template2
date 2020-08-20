@@ -1,7 +1,7 @@
 #ifndef FRAMEWORK_TMTCSERVICES_PUSPARSER_H_
 #define FRAMEWORK_TMTCSERVICES_PUSPARSER_H_
 
-#include "../container/DynamicFIFO.h"
+#include <fsfw/container/DynamicFIFO.h>
 #include <utility>
 #include <cstdint>
 
