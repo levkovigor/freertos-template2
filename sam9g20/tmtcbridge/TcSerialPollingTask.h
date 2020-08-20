@@ -8,7 +8,7 @@
 #include <fsfw/container/SimpleRingBuffer.h>
 #include <fsfw/container/FIFO.h>
 #include <fsfw/container/SharedRingBuffer.h>
-#include <fsfw/tmtcservices/PusParser.h>
+#include <sam9g20/tmtcbridge/PusParser.h>
 
 extern "C" {
 #include <board.h>
@@ -39,11 +39,12 @@ public:
     static constexpr uint8_t TC_RECEPTION_QUEUE_DEPTH = 10;
     /** The frame size will be set to this value if no other value is
      *  supplied in the constructor. */
-    static constexpr uint16_t MAX_RECEPTION_BUFFER_SIZE = 2048;
+//    static constexpr uint16_t MAX_RECEPTION_BUFFER_SIZE = 2048;
+    static constexpr uint16_t DMA_BUCKET_READ_SIZE = 20;
     static constexpr float DEFAULT_SERIAL_TIMEOUT_BAUDTICKS = 20;
     //! 12 bytes is minimal size of a PUS packet, which is used in the ctor
     //! to calculate this value.
-    size_t maxNumberOfStoredPackets;
+    //size_t maxNumberOfStoredPackets;
 
     /**
      * Default ctor.
@@ -78,36 +79,22 @@ protected:
 private:
 	object_id_t tcBridge = objects::NO_OBJECT;
 
-	//! Variable sized container to have flexible frame sizes.
-	std::vector<uint8_t> recvBuffer;
-	/** Will be used in read call to driver to determine how many bytes
-	 * are read. Do not change after initialization! */
-	size_t frameSize;
-
 	UARTconfig configBus0 = { .mode = AT91C_US_USMODE_NORMAL |
 			AT91C_US_CLKS_CLOCK | AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE |
 			AT91C_US_OVER_16 | AT91C_US_NBSTOP_1_BIT, .baudrate = 115200,
 			.timeGuard = 1, .busType = rs232_uart, .rxtimeout = 0xFFFF };
 
-	PusParser* pusParser = nullptr;
-
-	MessageQueueId_t targetTcDestination = MessageQueueIF::NO_QUEUE;
-
 	/**
-	 * @brief 	This function handles reading UART data.
+	 * @brief 	This function handles reading UART data in a permanent loop
 	 * @details
-	 * Calls the UART_read() function which blocks the task until the
-	 * specified transfer is done.
-	 *
-	 * If TC packets are found, they are  forwarded to the internal software bus
-	 * and the next UART_read() call is called immediately, so there
-	 * should be a break large enough between telecommands so the software can
-	 * call the next UART_read() in time.
 	 */
 	void pollUart();
 	ReturnValue_t pollTc();
-	void handleSuccessfulTcRead();
 
+
+	void ringBufferPrototypePoll();
+	object_id_t sharedRingBufferId;
+	SharedRingBuffer* sharedRingBuffer = nullptr;
 
 	/**
 	 * Overrun error. Packet was still read. Maybe implement reading,
@@ -116,18 +103,23 @@ private:
 	 */
 	ReturnValue_t handleOverrunError();
 
-	/**
-	 * This function forwards the found PUS packets to the FSFW software bus.
-	 * Critical section because the next read function should be called ASAP.
-	 */
-	void handleTc();
-	void transferPusToSoftwareBus(uint16_t recvBufferIndex,
-			uint16_t packetSize);
-	void printTelecommand(uint8_t* tcPacket, uint16_t packetSize);
+//	//! Variable sized container to have flexible frame sizes.
+//	std::vector<uint8_t> recvBuffer;
+//	/** Will be used in read call to driver to determine how many bytes
+//	 * are read. Do not change after initialization! */
+//	size_t frameSize;
+	//MessageQueueId_t targetTcDestination = MessageQueueIF::NO_QUEUE;
+	//PusParser* pusParser = nullptr;
+	//	void handleSuccessfulTcRead();
+//	/**
+//	 * This function forwards the found PUS packets to the FSFW software bus.
+//	 * Critical section because the next read function should be called ASAP.
+//	 */
+//	void handleTc();
+//	void transferPusToSoftwareBus(uint16_t recvBufferIndex,
+//			uint16_t packetSize);
+//	void printTelecommand(uint8_t* tcPacket, uint16_t packetSize);
 
-	void ringBufferPrototypePoll();
-	object_id_t sharedRingBufferId;
-	SharedRingBuffer* sharedRingBuffer = nullptr;
 };
 
 #endif /* SAM9G20_TMTCBRIDGE_SERIALPOLLINGTASK_H_ */

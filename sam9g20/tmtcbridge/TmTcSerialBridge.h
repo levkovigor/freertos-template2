@@ -21,7 +21,8 @@ public:
     static constexpr uint16_t SERIAL_FRAME_LEN = 256;
 
 	TmTcSerialBridge(object_id_t objectId_, object_id_t tcDistributor,
-			object_id_t tmStoreId, object_id_t tcStoreId);
+			object_id_t tmStoreId, object_id_t tcStoreId,
+			object_id_t sharedRingBufferId);
 	virtual ~TmTcSerialBridge();
 
 	ReturnValue_t initialize() override;
@@ -32,6 +33,7 @@ public:
 	 */
 	ReturnValue_t performOperation(uint8_t operationCode = 0) override;
 
+	ReturnValue_t handleTc() override;
 	ReturnValue_t handleTmQueue() override;
 	ReturnValue_t handleStoredTm() override;
 

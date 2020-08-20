@@ -8,7 +8,7 @@
 
 TmTcSerialBridge::TmTcSerialBridge(object_id_t objectId,
 		object_id_t tcDestination, object_id_t tmStoreId,
-		object_id_t tcStoreId):
+		object_id_t tcStoreId, object_id_t sharedRingBufferId):
 		TmTcBridge(objectId, tcDestination, tmStoreId, tcStoreId) {
     TmTcBridge::setNumberOfSentPacketsPerCycle(3);
 }
@@ -28,6 +28,10 @@ ReturnValue_t TmTcSerialBridge::initialize() {
 ReturnValue_t TmTcSerialBridge::performOperation(uint8_t operationCode) {
 	TmTcBridge::performOperation();
 	return RETURN_OK;
+}
+
+ReturnValue_t TmTcSerialBridge::handleTc() {
+	return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t TmTcSerialBridge::handleTmQueue() {
@@ -131,3 +135,5 @@ ReturnValue_t TmTcSerialBridge::sendTm(const uint8_t *data, size_t dataLen) {
 	}
 	return result;
 }
+
+
