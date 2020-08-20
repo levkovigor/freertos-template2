@@ -79,7 +79,7 @@ ReturnValue_t TmTcSerialBridge::handleTcReception(size_t foundLen) {
 	store_address_t storeId;
 	ReturnValue_t result = tcStore->addData(&storeId,
 			tcArray.data(), foundLen);
-	if(result != HasReturnvaluesIF::RETURN_FAILED) {
+	if(result == HasReturnvaluesIF::RETURN_FAILED) {
 		return result;
 	}
 	TmTcMessage tcMessage(storeId);
