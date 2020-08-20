@@ -5,6 +5,7 @@ CSRC += $(wildcard $(CURRENTPATH)/tmtcpacket/*.c)
 CSRC += $(wildcard $(CURRENTPATH)/utility/*.c)
 CXXSRC += $(wildcard $(CURRENTPATH)/utility/*.cpp)
 CSRC += $(wildcard $(CURRENTPATH)/core/*.c)
+CXXSRC += $(wildcard $(CURRENTPATH)/core/*.cpp)
 
 ifeq ($(OS_APP), None)
 CSRC := $(filter-out $(CURRENTPATH)/utility/hooks.c, $(CSRC))
