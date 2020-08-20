@@ -19,7 +19,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="09f3962e-32aa-4719-ba50-627f09d5d8be" name="Default Changelist" comment="" />
+    <list default="true" id="09f3962e-32aa-4719-ba50-627f09d5d8be" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../tmtc" beforeDir="false" afterPath="$PROJECT_DIR$/../tmtc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tmtc/tmtc_core/comIF/obsw_serial_com_if.py" beforeDir="false" afterPath="$PROJECT_DIR$/../tmtc/tmtc_core/comIF/obsw_serial_com_if.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -122,6 +125,7 @@
       <workItem from="1593172503303" duration="106000" />
       <workItem from="1594069062264" duration="623000" />
       <workItem from="1596529409717" duration="864000" />
+      <workItem from="1597955460058" duration="608000" />
     </task>
     <servers />
   </component>
