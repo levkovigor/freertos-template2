@@ -50,6 +50,10 @@ ReturnValue_t SerialAnalyzerTask::checkForPackets(uint8_t* receptionBuffer,
 			// ETX found which might be a hint for a possibly lost packet
 			ringBuffer->deleteData(readSize);
 		}
+		else if(result == HasReturnvaluesIF::RETURN_FAILED) {
+			// decoding error
+			return result;
+		}
 		// If no packets were found,  we don't do anything.
 	}
 	return result;
@@ -58,27 +62,42 @@ ReturnValue_t SerialAnalyzerTask::checkForPackets(uint8_t* receptionBuffer,
 ReturnValue_t SerialAnalyzerTask::parseForDleEncodedPackets(
 		size_t bytesToRead, uint8_t* receptionBuffer,
 		size_t maxSize, size_t* packetSize, size_t* readSize) {
+	bool stxFound = false;
+	size_t stxIdx = 0;
 	for(size_t vectorIdx = 0; vectorIdx < bytesToRead; vectorIdx ++) {
 		if(analysisVector[vectorIdx] == DleEncoder::STX_CHAR) {
-			ReturnValue_t result = DleEncoder::decode(
-					&analysisVector[vectorIdx],
-					bytesToRead - vectorIdx, readSize,
-					receptionBuffer, maxSize, packetSize);
-			if(result == HasReturnvaluesIF::RETURN_OK) {
-				return HasReturnvaluesIF::RETURN_OK;
-			}
-			else if(result == DleEncoder::DECODING_ERROR) {
-				// should not happen
+			if(not stxFound) {
+				stxFound = true;
+				stxIdx = vectorIdx;
 			}
 			else {
-				return NO_PACKET_FOUND;
+				// might be lost packet, so we should advance the read pointer
+				*readSize = vectorIdx;
+				return POSSIBLE_PACKET_LOSS;
 			}
 		}
-		else if(analysisVector[vectorIdx] == DleEncoder::ETX_CHAR) {
-			// might be lost packet, so we should advance the read pointer
-			*readSize = ++vectorIdx;
-			// std::memset(analysisVector.data(), 0, vectorIdx);
-			return POSSIBLE_PACKET_LOSS;
+		if(analysisVector[vectorIdx] == DleEncoder::ETX_CHAR) {
+			if(stxFound) {
+				ReturnValue_t result = DleEncoder::decode(
+						&analysisVector[stxIdx],
+						bytesToRead - stxIdx, readSize,
+						receptionBuffer, maxSize, packetSize);
+				if(result == HasReturnvaluesIF::RETURN_OK) {
+					return HasReturnvaluesIF::RETURN_OK;
+				}
+				else {
+					// This should not happen!!!
+					sif::error << "SerialAnalyzerTask::parseForDleEncodedPackets:"
+							" Configuration error!" << std::endl;
+					*readSize = ++vectorIdx;
+					return POSSIBLE_PACKET_LOSS;
+				}
+			}
+			else {
+				// might be lost packet, so we should advance the read pointer
+				*readSize = ++vectorIdx;
+				return POSSIBLE_PACKET_LOSS;
+			}
 		}
 	}
 	return NO_PACKET_FOUND;

@@ -37,6 +37,7 @@ public:
 	 * -@c NO_PACKET_FOUND if no packet was found.
 	 * -@c POSSIBLE_LOST_PACKET if there is a possiblity of a lost packet
 	 *     (end marker found without start marker). Read pointer is incremented.
+	 * -@c DleEncoder::DECODING_ERROR if there was an decoding issue
 	 */
 	ReturnValue_t checkForPackets(uint8_t* buffer,
 			size_t maxSize, size_t* packetSize);
