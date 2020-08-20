@@ -50,7 +50,6 @@ public:
 	 */
 	ReturnValue_t sendTm(const uint8_t * data, size_t dataLen) override;
 private:
-	StorageManagerIF* tcStore = nullptr;
 	std::array<uint8_t, TC_FRAME_MAX_LEN> tcArray;
 	object_id_t sharedRingBufferId;
 	SerialAnalyzerTask* analyzerTask = nullptr;

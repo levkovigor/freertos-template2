@@ -21,15 +21,12 @@ ReturnValue_t SerialAnalyzerTask::checkForPackets(uint8_t* receptionBuffer,
 	}
 
 	ringBuffer->lockRingBufferMutex(MutexIF::TimeoutType::WAITING, 10);
-	size_t excessBytes = ringBuffer->getExcessBytes();
-	if(excessBytes > 0) {
-		ringBuffer->moveExcessBytesToStart();
-	}
 	size_t dataToRead = ringBuffer->getAvailableReadData();
 	if(dataToRead == 0) {
 		ringBuffer->unlockRingBufferMutex();
 		return NO_PACKET_FOUND;
 	}
+
 	ReturnValue_t result = ringBuffer->readData(analysisVector.data(),
 			dataToRead);
 	if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -62,8 +59,8 @@ ReturnValue_t SerialAnalyzerTask::parseForDleEncodedPackets(
 			size_t packetFoundSize = 0;
 			ReturnValue_t result = DleEncoder::decode(
 					&analysisVector[vectorIdx],
-					bytesToRead - vectorIdx, &packetFoundSize,
-					receptionBuffer, maxSize, packetSize);
+					bytesToRead - vectorIdx, nullptr,
+					receptionBuffer, maxSize, &packetFoundSize);
 			if(result == HasReturnvaluesIF::RETURN_OK) {
 				// packet found
 				*packetSize = packetFoundSize;

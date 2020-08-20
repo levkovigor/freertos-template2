@@ -4,6 +4,7 @@
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/tmtcpacket/pus/TcPacketStored.h>
+#include <fsfw/globalfunctions/arrayprinter.h>
 
 #include <cmath>
 
@@ -25,13 +26,7 @@ ReturnValue_t TmTcSerialBridge::initialize() {
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
 	analyzerTask = new SerialAnalyzerTask(ringBuffer,AnalyzerModes::DLE_ENCODING);
-
-	ReturnValue_t result = TmTcBridge::initialize();
-	if (result != RETURN_OK) {
-		sif::error << "Serial Bridge: Init error." << std::endl;
-	}
-
-	return result;
+	return TmTcBridge::initialize();
 }
 
 
@@ -52,6 +47,7 @@ ReturnValue_t TmTcSerialBridge::handleTc() {
 		// trigger event
 	}
 	else if(result == HasReturnvaluesIF::RETURN_OK) {
+		arrayprinter::print(tcArray.data(), packetFoundLen);
 		result = handleTcReception(packetFoundLen);
 		if(result != HasReturnvaluesIF::RETURN_OK) {
 			sif::error << "TmTcSerialBridge::handleTc: TC reception failed!"

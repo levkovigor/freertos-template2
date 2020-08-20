@@ -12,8 +12,8 @@
 
 
 TcSerialPollingTask::TcSerialPollingTask(object_id_t objectId,
-		object_id_t tcBridge, size_t frameSize, object_id_t sharedRingBufferId,
-		uint16_t serialTimeoutBaudticks):
+		object_id_t tcBridge, object_id_t sharedRingBufferId,
+		uint16_t serialTimeoutBaudticks, size_t frameSize):
 		SystemObject(objectId), tcBridge(tcBridge),
 		sharedRingBufferId(sharedRingBufferId) {
 
@@ -62,6 +62,8 @@ ReturnValue_t TcSerialPollingTask::initialize() {
 
 	sharedRingBuffer = objectManager->get<SharedRingBuffer>(sharedRingBufferId);
 	if(sharedRingBuffer == nullptr) {
+		sif::error << "TcSerialPollingTask::initialize: Passed ring buffer"
+				" invalid !" << std::endl;
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
 	return result;
@@ -98,6 +100,8 @@ void TcSerialPollingTask::ringBufferPrototypePoll() {
 	    return;
 	}
 
+	// Increment write pointer from previous transfer
+	sharedRingBuffer->confirmBytesWritten(DMA_BUCKET_READ_SIZE);
 	result = sharedRingBuffer->getFreeElement(&writePtr, DMA_BUCKET_READ_SIZE);
 	if(result != HasReturnvaluesIF::RETURN_OK) {
 		// not enough data available. trigger event or overwrite data?
@@ -111,6 +115,7 @@ void TcSerialPollingTask::ringBufferPrototypePoll() {
 	if(result != HasReturnvaluesIF::RETURN_OK) {
 		// handle driver errors here
 	}
+
 
 	// zero out bytes in case of timeout.
 	size_t prevBytesRead = UART_getPrevBytesRead(bus0_uart);

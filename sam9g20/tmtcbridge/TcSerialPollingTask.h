@@ -58,9 +58,9 @@ public:
      * value is reserved for the dafault timeout
      */
 	TcSerialPollingTask(object_id_t objectId, object_id_t tcBridge,
-			size_t frameSize = 0,
-			object_id_t sharedRingBufferId = objects::NO_OBJECT,
-			uint16_t serialTimeoutBaudticks = DEFAULT_SERIAL_TIMEOUT_BAUDTICKS);
+			object_id_t sharedRingBufferId,
+			uint16_t serialTimeoutBaudticks = DEFAULT_SERIAL_TIMEOUT_BAUDTICKS,
+			size_t frameSize = 0);
 
 	virtual ~TcSerialPollingTask();
 
