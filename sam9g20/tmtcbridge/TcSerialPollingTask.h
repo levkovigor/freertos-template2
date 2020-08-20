@@ -8,7 +8,7 @@
 #include <fsfw/container/SimpleRingBuffer.h>
 #include <fsfw/container/FIFO.h>
 #include <fsfw/container/SharedRingBuffer.h>
-#include <fsfw/tmtcservices/PusParser.h>
+#include <sam9g20/tmtcbridge/PusParser.h>
 
 extern "C" {
 #include <board.h>
