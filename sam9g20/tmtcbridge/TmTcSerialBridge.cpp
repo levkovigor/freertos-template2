@@ -36,40 +36,26 @@ ReturnValue_t TmTcSerialBridge::performOperation(uint8_t operationCode) {
 }
 
 ReturnValue_t TmTcSerialBridge::handleTc() {
-	size_t packetFoundLen = 0;
-
-	ReturnValue_t result = analyzerTask->checkForPackets(tcArray.data(),
-						TC_FRAME_MAX_LEN + 10, &packetFoundLen);
-	if(result == SerialAnalyzerTask::NO_PACKET_FOUND) {
-		return HasReturnvaluesIF::RETURN_OK;
-	}
-	else if(result == SerialAnalyzerTask::POSSIBLE_PACKET_LOSS) {
-		// trigger event
-	}
-	else if(result == HasReturnvaluesIF::RETURN_OK) {
-		//arrayprinter::print(tcArray.data(), packetFoundLen);
-		result = handleTcReception(packetFoundLen);
-		if(result != HasReturnvaluesIF::RETURN_OK) {
-			sif::error << "TmTcSerialBridge::handleTc: TC reception failed!"
-					<< std::endl;
+	for(uint8_t tcPacketIdx = 0; tcPacketIdx < MAX_TC_PACKETS_HANDLED;
+			tcPacketIdx++) {
+		size_t packetFoundLen = 0;
+		ReturnValue_t result = analyzerTask->checkForPackets(tcArray.data(),
+				TC_FRAME_MAX_LEN + 10, &packetFoundLen);
+		if(result == HasReturnvaluesIF::RETURN_OK) {
+			result = handleTcReception(packetFoundLen);
+			if(result != HasReturnvaluesIF::RETURN_OK) {
+				sif::error << "TmTcSerialBridge::handleTc: TC reception failed!"
+						<< std::endl;
+			}
+		}
+		else if(result == SerialAnalyzerTask::POSSIBLE_PACKET_LOSS) {
+			// trigger event?
+			continue;
+		}
+		else if(result == SerialAnalyzerTask::NO_PACKET_FOUND) {
+			return HasReturnvaluesIF::RETURN_OK;
 		}
 	}
-
-//	for(uint8_t tcPacketIdx = 1; tcPacketIdx < MAX_TC_PACKETS_HANDLED;
-//			tcPacketIdx++) {
-//		ReturnValue_t result = analyzerTask->checkForPackets(tcArray.data(),
-//				TC_FRAME_MAX_LEN + 10, &packetFoundLen);
-//		if(result == HasReturnvaluesIF::RETURN_OK) {
-//			continue;
-//		}
-//		else if(result == SerialAnalyzerTask::POSSIBLE_PACKET_LOSS) {
-//			// trigger event
-//			continue;
-//		}
-//		else if(result == SerialAnalyzerTask::NO_PACKET_FOUND) {
-//			return result;
-//		}
-//	}
 
 	return HasReturnvaluesIF::RETURN_OK;
 }
