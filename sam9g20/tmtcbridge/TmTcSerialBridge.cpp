@@ -3,13 +3,15 @@
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/timemanager/Stopwatch.h>
+#include <fsfw/tmtcpacket/pus/TcPacketStored.h>
 
 #include <cmath>
 
 TmTcSerialBridge::TmTcSerialBridge(object_id_t objectId,
 		object_id_t tcDestination, object_id_t tmStoreId,
 		object_id_t tcStoreId, object_id_t sharedRingBufferId):
-		TmTcBridge(objectId, tcDestination, tmStoreId, tcStoreId) {
+		TmTcBridge(objectId, tcDestination, tmStoreId, tcStoreId),
+		sharedRingBufferId(sharedRingBufferId) {
     TmTcBridge::setNumberOfSentPacketsPerCycle(3);
 }
 
@@ -17,10 +19,18 @@ TmTcSerialBridge::~TmTcSerialBridge() {
 }
 
 ReturnValue_t TmTcSerialBridge::initialize() {
+	SharedRingBuffer* ringBuffer =
+			objectManager->get<SharedRingBuffer>(sharedRingBufferId);
+	if(ringBuffer == nullptr) {
+		return HasReturnvaluesIF::RETURN_FAILED;
+	}
+	analyzerTask = new SerialAnalyzerTask(ringBuffer,AnalyzerModes::DLE_ENCODING);
+
 	ReturnValue_t result = TmTcBridge::initialize();
 	if (result != RETURN_OK) {
 		sif::error << "Serial Bridge: Init error." << std::endl;
 	}
+
 	return result;
 }
 
@@ -31,7 +41,54 @@ ReturnValue_t TmTcSerialBridge::performOperation(uint8_t operationCode) {
 }
 
 ReturnValue_t TmTcSerialBridge::handleTc() {
+	size_t packetFoundLen = 0;
+
+	ReturnValue_t result = analyzerTask->checkForPackets(tcArray.data(),
+						TC_FRAME_MAX_LEN + 10, &packetFoundLen);
+	if(result == SerialAnalyzerTask::NO_PACKET_FOUND) {
+		return HasReturnvaluesIF::RETURN_OK;
+	}
+	else if(result == SerialAnalyzerTask::POSSIBLE_PACKET_LOSS) {
+		// trigger event
+	}
+	else if(result == HasReturnvaluesIF::RETURN_OK) {
+		result = handleTcReception(packetFoundLen);
+		if(result != HasReturnvaluesIF::RETURN_OK) {
+			sif::error << "TmTcSerialBridge::handleTc: TC reception failed!"
+					<< std::endl;
+		}
+	}
+
+	for(uint8_t tcPacketIdx = 0; tcPacketIdx < MAX_TC_PACKETS_HANDLED;
+			tcPacketIdx++) {
+		ReturnValue_t result = analyzerTask->checkForPackets(tcArray.data(),
+				TC_FRAME_MAX_LEN + 10, &packetFoundLen);
+		if(result == HasReturnvaluesIF::RETURN_OK) {
+			continue;
+		}
+		else if(result == SerialAnalyzerTask::POSSIBLE_PACKET_LOSS) {
+			// trigger event
+			continue;
+		}
+		else {
+			return result;
+		}
+	}
+
 	return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t TmTcSerialBridge::handleTcReception(size_t foundLen) {
+	//TcPacketStored tcPacket(tcArray.data(), packetFoundLen);
+	store_address_t storeId;
+	ReturnValue_t result = tcStore->addData(&storeId,
+			tcArray.data(), foundLen);
+	if(result != HasReturnvaluesIF::RETURN_FAILED) {
+		return result;
+	}
+	TmTcMessage tcMessage(storeId);
+	return MessageQueueSenderIF::sendMessage(getRequestQueue(),
+			&tcMessage);
 }
 
 ReturnValue_t TmTcSerialBridge::handleTmQueue() {

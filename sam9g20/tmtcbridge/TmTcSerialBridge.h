@@ -3,12 +3,15 @@
 
 #include <fsfw/tmtcservices/TmTcBridge.h>
 #include <fsfw/tmtcservices/AcceptsTelecommandsIF.h>
+#include <sam9g20/comIF/SerialAnalyzerTask.h>
 
 extern "C" {
-	#include "board.h"
-	#include "AT91SAM9G20.h"
+	#include <board.h>
+	#include <AT91SAM9G20.h>
 	#include <hal/Drivers/UART.h>
 }
+
+#include <array>
 
 /**
  * @brief 	Handles  TM downlink via the serial interface, using the ISIS UART
@@ -19,6 +22,8 @@ class TmTcSerialBridge : public TmTcBridge {
     friend class TcSerialPollingTask;
 public:
     static constexpr uint16_t SERIAL_FRAME_LEN = 256;
+    static constexpr size_t TC_FRAME_MAX_LEN = 1500;
+    static constexpr uint8_t MAX_TC_PACKETS_HANDLED = 5;
 
 	TmTcSerialBridge(object_id_t objectId_, object_id_t tcDistributor,
 			object_id_t tmStoreId, object_id_t tcStoreId,
@@ -45,6 +50,12 @@ public:
 	 */
 	ReturnValue_t sendTm(const uint8_t * data, size_t dataLen) override;
 private:
+	StorageManagerIF* tcStore = nullptr;
+	std::array<uint8_t, TC_FRAME_MAX_LEN> tcArray;
+	object_id_t sharedRingBufferId;
+	SerialAnalyzerTask* analyzerTask = nullptr;
+
+	ReturnValue_t handleTcReception(size_t foundLen);
 
 };
 
