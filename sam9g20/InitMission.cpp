@@ -125,7 +125,7 @@ void initMission(void) {
 #else
     /* Serial Polling Task */
     TmTcPollingTask = TaskFactory::instance()->
-            createPeriodicTask("SERIAL_TC_POLLING", 9, 3096 * 4, 0.1, nullptr);
+            createPeriodicTask("SERIAL_TC_POLLING", 8, 3096 * 4, 0.1, nullptr);
     result = TmTcPollingTask ->addComponent(objects::SERIAL_POLLING_TASK);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "Add component Serial Polling Task failed" << std::endl;
