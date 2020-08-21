@@ -78,41 +78,47 @@ ReturnValue_t TmTcSerialBridge::handleTmQueue() {
     size_t tmSize = 0;
     uint16_t framePosition = 0;
     uint8_t counter = 0;
+    ReturnValue_t status = HasReturnvaluesIF::RETURN_OK;
+    // todo: send DLE encoded data instead of frames. maybe insert tiny
+    // delay between sending? then we can use super class implementation
     std::array<uint8_t, SERIAL_FRAME_LEN> serialFrame = {};
     for (ReturnValue_t result = tmTcReceptionQueue->receiveMessage(&message);
-         result == RETURN_OK;
-         result = tmTcReceptionQueue->receiveMessage(&message))
+    		result == RETURN_OK;
+    		result = tmTcReceptionQueue->receiveMessage(&message))
     {
         if(communicationLinkUp == false) {
-            result = storeDownlinkData(&message);
-            return result;
+            storeDownlinkData(&message);
+            continue;
         }
 
         result = tmStore->getData(message.getStorageId(), &data, &tmSize);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+        	sif::error << "TmTcSerialBridge::handleTmQueue: Invalid store ID!"
+        			<< std::endl;
+        	status = result;
+        	continue;
+        }
 
         if(framePosition + tmSize < SERIAL_FRAME_LEN) {
             std::copy(data, data + tmSize, serialFrame.data() + framePosition);
             framePosition += tmSize;
             result = tmStore->deleteData(message.getStorageId());
             if(result != RETURN_OK) {
-                sif::error << "TmTcSerialBridge: Deletion of TM data not possible!"
-                      << std::endl;
+                sif::error << "TmTcSerialBridge: Deletion of TM data not "
+                		<< "possible!" << std::endl;
             }
         }
         else {
-            tmFifo.insert(message.getStorageId());
-            break;
+        	storeDownlinkData(&message);
+        	continue;
         }
         counter ++;
     }
 
     if(counter > 0) {
-        //stopwatch.displayOnDestruction = true;
-        //info << "TmTcSerialBridge: Sending "
-        //     << static_cast<int>(counter) << " packets" << std::endl;
         return sendTm(serialFrame.data(), SERIAL_FRAME_LEN);
     }
-    return RETURN_OK;
+    return status;
 }
 
 
@@ -130,6 +136,13 @@ ReturnValue_t TmTcSerialBridge::handleStoredTm() {
 
         tmFifo.peek(&storeId);
         result = tmStore->getData(storeId, &data, &tmSize);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+        	tmFifo.pop();
+        	sif::error << "TmTcSerialBridge::handleStoredTm: Invalid store "
+        			"ID!" << std::endl;
+        	continue;
+        }
+
         if(framePosition + tmSize < SERIAL_FRAME_LEN) {
             std::copy(data, data + tmSize, serialFrame.data() + framePosition);
             framePosition += tmSize;
