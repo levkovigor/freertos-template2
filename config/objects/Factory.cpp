@@ -125,7 +125,8 @@ void Factory::produce(void) {
 #endif
 
 	/* Serial TmTc Bridge */
-	new SharedRingBuffer(objects::SERIAL_RING_BUFFER, 2048, true, 30);
+	// 6 kB for shared ring buffer now.
+	new SharedRingBuffer(objects::SERIAL_RING_BUFFER, 6144, true, 30);
 	new TmTcSerialBridge(objects::SERIAL_TMTC_BRIDGE,
 			objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
 			objects::TC_STORE, objects::SERIAL_RING_BUFFER);
