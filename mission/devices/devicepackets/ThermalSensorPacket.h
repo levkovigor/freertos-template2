@@ -13,13 +13,12 @@ class ThermalSensorDataset:
         public StaticLocalDataSet<sizeof(float) + sizeof(uint8_t)> {
 public:
 
-
-    ThermalSensorDataset(object_id_t ownerId):
-            StaticLocalDataSet(ownerId),
-            temperatureCelcius(ThermalSensorPoolIds::TEMPERATURE_C, ownerId),
-            errorByte(ThermalSensorPoolIds::FAULT_BYTE, ownerId) {
-        this->registerVariable(&temperatureCelcius);
-        this->registerVariable(&errorByte);
+    ThermalSensorDataset(sid_t sid):
+            StaticLocalDataSet(sid),
+            temperatureCelcius(ThermalSensorPoolIds::TEMPERATURE_C,
+            		sid.objectId, pool_rwm_t::VAR_READ_WRITE, this),
+            errorByte(ThermalSensorPoolIds::FAULT_BYTE,
+            		sid.objectId, pool_rwm_t::VAR_READ_WRITE, this) {
     }
 
     lp_var_t<float> temperatureCelcius;

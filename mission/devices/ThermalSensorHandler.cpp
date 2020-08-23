@@ -5,7 +5,9 @@
 ThermalSensorHandler::ThermalSensorHandler(object_id_t objectId,
 		object_id_t comIF, CookieIF *comCookie, uint8_t switchId):
 		DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId),
-		sensorDataset(objectId) {
+		sensorDatasetSid(objectId, THERMAL_SENSOR_ID),
+		sensorDataset(sensorDatasetSid) {
+
 }
 
 ThermalSensorHandler::~ThermalSensorHandler() {

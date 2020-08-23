@@ -80,6 +80,11 @@ private:
 		RUNNING,
 		REQUEST_FAULT_BYTE
 	};
+
+	enum SetIds {
+		THERMAL_SENSOR_ID = 0
+	};
+
 	InternalState internalState = InternalState::NONE;
 	bool commandExecuted = false;
 
@@ -92,6 +97,7 @@ private:
 	static constexpr DeviceCommandId_t REQUEST_RTD = 0x01;
 	static constexpr DeviceCommandId_t REQUEST_FAULT_BYTE = 0x07;
 
+	sid_t sensorDatasetSid;
 	ThermalSensorDataset sensorDataset;
 
 	uint8_t counter = 0;
