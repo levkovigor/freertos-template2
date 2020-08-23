@@ -1,4 +1,4 @@
-//#include <fsfw/datapool/PoolDataSetBase.h>
+#include <fsfw/datapool/PoolDataSetBase.h>
 #include <fsfw/datapoollocal/LocalDataSet.h>
 #include <fsfw/datapoollocal/LocalPoolVariable.h>
 #include <fsfw/datapoollocal/LocalPoolVector.h>
@@ -344,34 +344,34 @@ ReturnValue_t TestDevice::initializePoolEntries(
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
-//void TestDevice::testLocalDataPool() {
-//	lp_bool_t testBool(static_cast<lp_id_t>(PoolIds::TEST_VAR_1), this);
-//	lp_vec_t<float,3> testFloatVec(static_cast<lp_id_t>(
-//			PoolIds::TEST_VEC_1), this);
-//	lp_vec_t<uint32_t,3> testUint32Vec(static_cast<lp_id_t>(
-//			PoolIds::TEST_VEC_2), this);
-//	LocalDataSet testDataSet(this, 3);
-//	testDataSet.registerVariable(&testBool);
-//	testDataSet.registerVariable(&testFloatVec);
-//	testDataSet.registerVariable(&testUint32Vec);
-//	// First, I want to access a variable without a dataset. This should
-//	// be possible.
-//	auto res = testBool.read();
-//	if(res != RETURN_OK) {
-//		sif::error.print("NO");
-//	}
-//	sif::info << "Read test bool: " <<  (int) testBool.value << std::endl;
-//	testBool.value = true;
-//	res = testBool.commit();
-//	if(res != RETURN_OK) {
-//		sif::error.print("NO");
-//	}
-//	res = testBool.read();
-//	if(res != RETURN_OK) {
-//		sif::error.print("NO");
-//	}
-//	sif::info << "Read test bool: " <<  (int) testBool.value << std::endl;
-//
-//	testUint32Vec.read(MutexIF::POLLING);
-//	sif::info << std::dec <<testUint32Vec << std::endl;
-//}
+void TestDevice::testLocalDataPool() {
+	lp_bool_t testBool(static_cast<lp_id_t>(PoolIds::TEST_VAR_1), this);
+	lp_vec_t<float,3> testFloatVec(static_cast<lp_id_t>(
+			PoolIds::TEST_VEC_1), this);
+	lp_vec_t<uint32_t,3> testUint32Vec(static_cast<lp_id_t>(
+			PoolIds::TEST_VEC_2), this);
+	LocalDataSet testDataSet(this, 3);
+	testDataSet.registerVariable(&testBool);
+	testDataSet.registerVariable(&testFloatVec);
+	testDataSet.registerVariable(&testUint32Vec);
+	// First, I want to access a variable without a dataset. This should
+	// be possible.
+	auto res = testBool.read();
+	if(res != RETURN_OK) {
+		sif::error.print("NO");
+	}
+	sif::info << "Read test bool: " <<  (int) testBool.value << std::endl;
+	testBool.value = true;
+	res = testBool.commit();
+	if(res != RETURN_OK) {
+		sif::error.print("NO");
+	}
+	res = testBool.read();
+	if(res != RETURN_OK) {
+		sif::error.print("NO");
+	}
+	sif::info << "Read test bool: " <<  (int) testBool.value << std::endl;
+
+	testUint32Vec.read(MutexIF::POLLING);
+	sif::info << std::dec <<testUint32Vec << std::endl;
+}
