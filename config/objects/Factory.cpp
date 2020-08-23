@@ -273,7 +273,7 @@ void Factory::setStaticFrameworkObjectIds() {
 
 	DeviceHandlerBase::powerSwitcherId = objects::PCDU_HANDLER;
 	DeviceHandlerBase::rawDataReceiverId = objects::PUS_SERVICE_2;
-	DeviceHandlerBase::defaultHkDestination = objects::PUS_SERVICE_3;
+	LocalDataPoolManager::defaultHkDestination = objects::PUS_SERVICE_3;
 
 	DeviceHandlerFailureIsolation::powerConfirmationId = objects::PCDU_HANDLER;
 
