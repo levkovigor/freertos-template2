@@ -145,7 +145,7 @@ private:
 	ReturnValue_t initializePoolEntries(
 			LocalDataPool& localDataPoolMap) override;
 
-	void testLocalDataPool();
+	//void testLocalDataPool();
 
 	int counter = 0;
 };

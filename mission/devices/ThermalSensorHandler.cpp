@@ -4,7 +4,8 @@
 
 ThermalSensorHandler::ThermalSensorHandler(object_id_t objectId,
 		object_id_t comIF, CookieIF *comCookie, uint8_t switchId):
-		DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId) {
+		DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId),
+		sensorDataset(objectId) {
 }
 
 ThermalSensorHandler::~ThermalSensorHandler() {
@@ -216,12 +217,43 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
         }
         counter ++;
 
+        ReturnValue_t result = sensorDataset.read(10);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            // todo: should propably be event
+            sif::debug << "ThermalSensorHandler::interpretDeviceReply:"
+                    << "Error reading dataset!" << std::endl;
+        }
+
+        sensorDataset.temperatureCelcius = approxTemp;
+
+        result = sensorDataset.commit(10);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            // todo: should propably be event
+            sif::debug << "ThermalSensorHandler::interpretDeviceReply:"
+                    << "Error commiting dataset!" << std::endl;
+        }
         break;
     }
     case(REQUEST_FAULT_BYTE): {
         faultByte = packet[1];
         sif::info << "ThermalSensorHandler::interpretDeviceReply: Fault byte"
                 " is: 0b" << std::bitset<8>(faultByte) << std::endl;
+        ReturnValue_t result = sensorDataset.read(10);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            // todo: should propably be event
+            sif::debug << "ThermalSensorHandler::interpretDeviceReply:"
+                    << "Error reading dataset!" << std::endl;
+        }
+
+        sensorDataset.errorByte = faultByte;
+
+        result = sensorDataset.commit(10);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            // todo: should propably be event
+            sif::debug << "ThermalSensorHandler::interpretDeviceReply:"
+                    << "Commiting dataset!" << std::endl;
+        }
+
         break;
     }
     default:
@@ -252,7 +284,17 @@ void ThermalSensorHandler::doTransition(Mode_t modeFrom,
     DeviceHandlerBase::doTransition(modeFrom, subModeFrom);
 }
 
+ReturnValue_t ThermalSensorHandler::initializePoolEntries(
+        LocalDataPool &localDataPoolMap) {
+    localDataPoolMap.emplace(ThermalSensorPoolIds::TEMPERATURE_C,
+            new PoolEntry<float>({0}, 1, true));
+    localDataPoolMap.emplace(ThermalSensorPoolIds::FAULT_BYTE,
+            new PoolEntry<uint8_t>({0}));
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
 ReturnValue_t ThermalSensorHandler::initialize() {
     setMode(_MODE_START_UP);
     return DeviceHandlerBase::initialize();
 }
+
