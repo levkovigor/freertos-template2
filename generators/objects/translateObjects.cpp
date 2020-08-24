@@ -1,6 +1,6 @@
 /** 
- * @brief	Auto-generated object translation file. Contains 82 translations. 
- * Generated on: 2020-07-28 17:00:20
+ * @brief	Auto-generated object translation file. Contains 86 translations. 
+ * Generated on: 2020-08-25 00:57:14
  **/ 
 #include "translateObjects.h"
 
@@ -11,6 +11,7 @@ const char *ARDUINO_2_STRING = "ARDUINO_2";
 const char *ARDUINO_3_STRING = "ARDUINO_3";
 const char *ARDUINO_4_STRING = "ARDUINO_4";
 const char *AT91_I2C_TEST_TASK_STRING = "AT91_I2C_TEST_TASK";
+const char *LED_TASK_STRING = "LED_TASK";
 const char *TEST_TASK_STRING = "TEST_TASK";
 const char *PCDU_HANDLER_STRING = "PCDU_HANDLER";
 const char *DUMMY_HANDLER_STRING = "DUMMY_HANDLER";
@@ -26,6 +27,7 @@ const char *PT1000_SuS1_DEC1_O3_STRING = "PT1000_SuS1_DEC1_O3";
 const char *PT1000_SuS2_DEC1_O4_STRING = "PT1000_SuS2_DEC1_O4";
 const char *PT1000_SuS3_DEC1_O5_STRING = "PT1000_SuS3_DEC1_O5";
 const char *PT1000_PVHC_DEC1_O6_STRING = "PT1000_PVHC_DEC1_O6";
+const char *SPI_Test_Gyro_STRING = "SPI_Test_Gyro";
 const char *PT1000_CCSDS1_DEC2_STRING = "PT1000_CCSDS1_DEC2";
 const char *PT1000_MGT1_DEC2_STRING = "PT1000_MGT1_DEC2";
 const char *PT1000_SuS4_DEC2_STRING = "PT1000_SuS4_DEC2";
@@ -57,6 +59,7 @@ const char *PUS_PACKET_DISTRIBUTOR_STRING = "PUS_PACKET_DISTRIBUTOR";
 const char *UDP_TMTC_BRIDGE_STRING = "UDP_TMTC_BRIDGE";
 const char *EMAC_POLLING_TASK_STRING = "EMAC_POLLING_TASK";
 const char *SERIAL_TMTC_BRIDGE_STRING = "SERIAL_TMTC_BRIDGE";
+const char *SERIAL_RING_BUFFER_STRING = "SERIAL_RING_BUFFER";
 const char *SERIAL_POLLING_TASK_STRING = "SERIAL_POLLING_TASK";
 const char *PUS_SERVICE_1_STRING = "PUS_SERVICE_1";
 const char *PUS_SERVICE_2_STRING = "PUS_SERVICE_2";
@@ -67,6 +70,7 @@ const char *PUS_SERVICE_6_STRING = "PUS_SERVICE_6";
 const char *PUS_SERVICE_8_STRING = "PUS_SERVICE_8";
 const char *PUS_SERVICE_9_STRING = "PUS_SERVICE_9";
 const char *PUS_SERVICE_17_STRING = "PUS_SERVICE_17";
+const char *PUS_SERVICE_20_STRING = "PUS_SERVICE_20";
 const char *PUS_SERVICE_23_STRING = "PUS_SERVICE_23";
 const char *PUS_SERVICE_200_STRING = "PUS_SERVICE_200";
 const char *PUS_SERVICE_201_STRING = "PUS_SERVICE_201";
@@ -103,6 +107,8 @@ const char* translateObject(object_id_t object){
 			return ARDUINO_4_STRING;
 		case 0x12345678:
 			return AT91_I2C_TEST_TASK_STRING;
+		case 0x12345777:
+			return LED_TASK_STRING;
 		case 0x42694269:
 			return TEST_TASK_STRING;
 		case 0x44003200:
@@ -133,6 +139,8 @@ const char* translateObject(object_id_t object){
 			return PT1000_SuS3_DEC1_O5_STRING;
 		case 0x44115407:
 			return PT1000_PVHC_DEC1_O6_STRING;
+		case 0x44115500:
+			return SPI_Test_Gyro_STRING;
 		case 0x44125401:
 			return PT1000_CCSDS1_DEC2_STRING;
 		case 0x44125403:
@@ -195,6 +203,8 @@ const char* translateObject(object_id_t object){
 			return EMAC_POLLING_TASK_STRING;
 		case 0x50000500:
 			return SERIAL_TMTC_BRIDGE_STRING;
+		case 0x50000550:
+			return SERIAL_RING_BUFFER_STRING;
 		case 0x50000600:
 			return SERIAL_POLLING_TASK_STRING;
 		case 0x51000100:
@@ -215,6 +225,8 @@ const char* translateObject(object_id_t object){
 			return PUS_SERVICE_9_STRING;
 		case 0x51001700:
 			return PUS_SERVICE_17_STRING;
+		case 0x51002000:
+			return PUS_SERVICE_20_STRING;
 		case 0x51002300:
 			return PUS_SERVICE_23_STRING;
 		case 0x51020000:

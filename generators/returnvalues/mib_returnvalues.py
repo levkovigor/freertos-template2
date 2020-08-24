@@ -31,9 +31,9 @@ CSV_RETVAL_FILENAME = "mib_returnvalues.csv"
 CSV_MOVE_DESTINATION = "../"
 FILE_SEPARATOR = ';'
 MAX_STRING_LENGTH = 32
-INTERFACE_DEFINITION_FILES = ["../../framework/returnvalues/FwClassIds.h",
+INTERFACE_DEFINITION_FILES = ["../../fsfw/returnvalues/FwClassIds.h",
                               "../../config/returnvalues/classIds.h"]
-RETURNVALUE_DESTINATIONS = ["../../mission/", "../../framework/", "../../config/", "../../sam9g20/"]
+RETURNVALUE_DESTINATIONS = ["../../mission/", "../../fsfw/", "../../config/", "../../sam9g20/"]
 
 SQL_DELETE_RETURNVALUES_CMD = """
     DROP TABLE IF EXISTS Returnvalues
@@ -63,8 +63,9 @@ def main():
         if MOVE_CSV_FILE:
             handle_file_move(CSV_MOVE_DESTINATION)
     if EXPORT_TO_SQL:
-        print("ReturnvalueParser: Exporting to SQL")
-        sql_retval_exporter(returnvalue_table)
+        pass
+        # print("ReturnvalueParser: Exporting to SQL")
+        # sql_retval_exporter(returnvalue_table)
 
 
 def parse_returnvalues():
@@ -265,7 +266,6 @@ class ReturnValueParser(FileParser):
         if description == '':
             description = ' '
         return description
-
 
 
 def return_number_from_string(a_string):

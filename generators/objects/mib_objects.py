@@ -34,7 +34,7 @@ CSV_OBJECT_FILENAME = "mib_objects.csv"
 FILE_SEPARATOR = ";"
 
 SUBSYSTEM_DEFINITION_DESTINATION = "../../config/objects/systemObjectList.h"
-FRAMEWORK_SUBSYSTEM_DEFINITION_DESTINATION = "../../framework/objectmanager/frameworkObjects.h"
+FRAMEWORK_SUBSYSTEM_DEFINITION_DESTINATION = "../../fsfw/objectmanager/frameworkObjects.h"
 OBJECTS_DEFINITIONS = [SUBSYSTEM_DEFINITION_DESTINATION, FRAMEWORK_SUBSYSTEM_DEFINITION_DESTINATION]
 
 SQL_DELETE_OBJECTS_CMD = """
@@ -94,7 +94,7 @@ class ObjectDefinitionParser(FileParser):
         super().__init__(file_list)
 
     def _handle_file_parsing(self, file_name: str, *args, **kwargs):
-        file = open(file_name, "r")
+        file = open(file_name, "r", encoding="utf-8")
         for line in file.readlines():
             match = re.search('([\w]*)[\s]*=[\s]*(0[xX][0-9a-fA-F]+)', line)
             if match:

@@ -40,14 +40,14 @@ def main():
 
 def parseOBSW():
     idSubsystemDefinitions = parseSubsystemDefinitionFile("../../config/tmtc/subsystemIdRanges.h")
-    tempList = parseSubsystemDefinitionFile("../../framework/events/fwSubsystemIdRanges.h")
+    tempList = parseSubsystemDefinitionFile("../../fsfw/events/fwSubsystemIdRanges.h")
     idSubsystemDefinitions.update(tempList)
     print(len(idSubsystemDefinitions))
     # print ("Dictionary size is " + str(len(idInterfaceDefinitions)) )
     # for entry in idSubsystemDefinitions:
     # 	print(entry)
     myHeaderList = getHeaderFileList("../../mission/")
-    myHeaderList = myHeaderList + getHeaderFileList("../../framework/")
+    myHeaderList = myHeaderList + getHeaderFileList("../../fsfw/")
     myEventList = parseHeaderFiles(idSubsystemDefinitions, myHeaderList)
     listItems = sorted(myEventList.items())
 
