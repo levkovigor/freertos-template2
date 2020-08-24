@@ -1,4 +1,4 @@
-/**
+                                                                                    /**
  * @file 	InitMission.cpp
  * @brief 	Includes mission and board specific code initialisation,
  *        	starts all services and initializes mission.
@@ -331,6 +331,8 @@ void initMission(void) {
     SDcardTask -> startTask();
 
     /* Task Monitor can be used to track stack usage of tasks */
+    // todo: will be replaced and performed for each task by using freeRTOS
+    // functionality
     FreeRTOSStackMonitor* TaskMonitor = objectManager->
             get<FreeRTOSStackMonitor>(objects::FREERTOS_TASK_MONITOR);
     TaskMonitor->insertPeriodicTask(objects::SERIAL_POLLING_TASK,
