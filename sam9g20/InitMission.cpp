@@ -205,7 +205,7 @@ void initMission(void) {
 
     PeriodicTaskIF* PusService03 = TaskFactory::instance()-> createPeriodicTask(
     		"PUS_HOUSEKEEPING_3", 4, 2048 * 4, 0.2, nullptr);
-    result = PusService03->addComponent(objects::PUS_SERVICE_3_PSB);
+    result = PusService03->addComponent(objects::PUS_SERVICE_3/*_PSB*/);
     if(result != HasReturnvaluesIF::RETURN_OK){
         sif::error << "Add component PUS Housekeeping Service 3 failed" << std::endl;
     }
@@ -439,7 +439,7 @@ void boardTestTaskInit() {
 
     sif::info << "Starting test tasks.." << std::endl;
 
-    //PollingSequenceTableTaskTest -> startTask ();
+    PollingSequenceTableTaskTest -> startTask ();
     //SPITask -> startTask();
     //I2CTask -> startTask();
     //UART2Task -> startTask();

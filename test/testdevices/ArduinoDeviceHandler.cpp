@@ -81,7 +81,7 @@ void ArduinoHandler::fillCommandAndReplyMap() {
 	for(awesomeMapIter = ArduinoHandler::awesomeMap.begin();
 			awesomeMapIter != awesomeMap.end(); awesomeMapIter ++) {
 		insertInCommandAndReplyMap(awesomeMapIter->first,3,
-				awesomeMapIter->second.size());
+				nullptr, awesomeMapIter->second.size());
 	}
 }
 

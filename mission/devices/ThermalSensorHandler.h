@@ -66,9 +66,10 @@ protected:
 
 	void doTransition(Mode_t modeFrom, Submode_t subModeFrom) override;
 
-	ReturnValue_t initializePoolEntries(
-	        LocalDataPool& localDataPoolMap) override;
+	ReturnValue_t initializeLocalDataPool(LocalDataPool& localDataPoolMap,
+	        LocalDataPoolManager& poolManager) override;
 	ReturnValue_t initialize() override;
+	//ReturnValue_t getDataSetHandle(sid_t sid) override;
 private:
 	const uint8_t switchId;
 
@@ -81,9 +82,9 @@ private:
 		REQUEST_FAULT_BYTE
 	};
 
-	enum SetIds {
-		THERMAL_SENSOR_ID = 0
-	};
+//	enum SetIds {
+//		THERMAL_SENSOR_ID = 0
+//	};
 
 	InternalState internalState = InternalState::NONE;
 	bool commandExecuted = false;

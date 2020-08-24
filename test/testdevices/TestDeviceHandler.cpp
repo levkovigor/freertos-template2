@@ -328,8 +328,8 @@ uint32_t TestDevice::getTransitionDelayMs(Mode_t modeFrom, Mode_t modeTo) {
 	return 5000;
 }
 
-ReturnValue_t TestDevice::initializePoolEntries(
-		LocalDataPool& localDataPoolMap) {
+ReturnValue_t TestDevice::initializeLocalDataPool(LocalDataPool& localDataPoolMap,
+	    LocalDataPoolManager& poolManager) {
 	// This will initialize a uint8_t pool entry with a length of one (uint8_t).
 	localDataPoolMap.emplace(static_cast<lp_id_t>(PoolIds::TEST_VAR_1),
 			new PoolEntry<uint8_t>());

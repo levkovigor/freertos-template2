@@ -5,7 +5,7 @@
 ThermalSensorHandler::ThermalSensorHandler(object_id_t objectId,
 		object_id_t comIF, CookieIF *comCookie, uint8_t switchId):
 		DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId),
-		sensorDatasetSid(objectId, THERMAL_SENSOR_ID),
+		sensorDatasetSid(objectId, REQUEST_RTD),
 		sensorDataset(sensorDatasetSid) {
 
 }
@@ -135,7 +135,7 @@ ReturnValue_t ThermalSensorHandler::buildCommandFromCommand(
 void ThermalSensorHandler::fillCommandAndReplyMap() {
     insertInCommandAndReplyMap(CONFIG_CMD, 3);
     insertInCommandAndReplyMap(REQUEST_CONFIG, 3);
-    insertInCommandAndReplyMap(REQUEST_RTD, 3);
+    insertInCommandAndReplyMap(REQUEST_RTD, 3, &sensorDataset);
     insertInCommandAndReplyMap(REQUEST_FAULT_BYTE, 3);
 }
 
@@ -286,12 +286,14 @@ void ThermalSensorHandler::doTransition(Mode_t modeFrom,
     DeviceHandlerBase::doTransition(modeFrom, subModeFrom);
 }
 
-ReturnValue_t ThermalSensorHandler::initializePoolEntries(
-        LocalDataPool &localDataPoolMap) {
+ReturnValue_t ThermalSensorHandler::initializeLocalDataPool(
+        LocalDataPool& localDataPoolMap, LocalDataPoolManager& poolManager) {
     localDataPoolMap.emplace(ThermalSensorPoolIds::TEMPERATURE_C,
             new PoolEntry<float>({0}, 1, true));
     localDataPoolMap.emplace(ThermalSensorPoolIds::FAULT_BYTE,
             new PoolEntry<uint8_t>({0}));
+    poolManager.subscribeForPeriodicPacket(sensorDatasetSid,
+            true, 4.0, false);
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -300,3 +302,8 @@ ReturnValue_t ThermalSensorHandler::initialize() {
     return DeviceHandlerBase::initialize();
 }
 
+//ReturnValue_t ThermalSensorHandler::getDataSetHandle(sid_t sid) {
+//    if(sid.ownerSetId == SetIds::THERMAL_SENSOR_ID) {
+//        return &sesn
+//    }
+//}
