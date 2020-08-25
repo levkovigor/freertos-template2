@@ -31,9 +31,9 @@ CSV_RETVAL_FILENAME = "mib_returnvalues.csv"
 CSV_MOVE_DESTINATION = "../"
 FILE_SEPARATOR = ';'
 MAX_STRING_LENGTH = 32
-INTERFACE_DEFINITION_FILES = ["../../framework/returnvalues/FwClassIds.h",
+INTERFACE_DEFINITION_FILES = ["../../fsfw/returnvalues/FwClassIds.h",
                               "../../config/returnvalues/classIds.h"]
-RETURNVALUE_DESTINATIONS = ["../../mission/", "../../framework/", "../../config/", "../../sam9g20/"]
+RETURNVALUE_DESTINATIONS = ["../../mission/", "../../fsfw/", "../../config/", "../../sam9g20/"]
 
 SQL_DELETE_RETURNVALUES_CMD = """
     DROP TABLE IF EXISTS Returnvalues
