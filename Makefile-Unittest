@@ -14,7 +14,7 @@ CUSTOM_DEFINES += -D$(OS_FSFW)
 
 UNIT_TEST = 1
 # General folder paths
-FRAMEWORK_PATH = framework
+FRAMEWORK_PATH = fsfw
 TEST_PATH = test
 MISSION_PATH = mission
 
