@@ -37,8 +37,8 @@ TEST_CASE("Ring Buffer Test" , "[RingBufferTest]") {
 		REQUIRE(ringBuffer.getFreeElement(&testPtr, 5) ==  retval::CATCH_OK);
 		REQUIRE(ringBuffer.getExcessBytes() == 3);
 		std::memcpy(testPtr, testData, 5);
-		ringBuffer.moveExcessBytesToStart();
-		REQUIRE(ringBuffer.availableReadData() == 5);
+		ringBuffer.confirmBytesWritten(5);
+		REQUIRE(ringBuffer.getAvailableReadData() == 5);
 		ringBuffer.readData(readBuffer, 5, true);
 		for(uint8_t i = 0; i< 5; i++) {
 			CHECK(readBuffer[i] == i);
