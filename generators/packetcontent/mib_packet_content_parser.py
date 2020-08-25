@@ -12,7 +12,7 @@ from utility.mib_csv_writer import CsvWriter
 from utility.mib_printer import Printer
 
 PACKET_CONTENT_DEFINITION_DESTINATION = ["../../mission/pus/servicepackets/",
-                                         "../../framework/pus/servicepackets/"]
+                                         "../../fsfw/pus/servicepackets/"]
 PACKET_CONTENT_CSV_NAME = "mib_packet_data_content.csv"
 PACKET_CONTENT_HEADER_COLUMN = ["Service", "Subservice", "Packet Name", "Datatype", "Name",
                                 "Size [Bytes]", "Comment"]
