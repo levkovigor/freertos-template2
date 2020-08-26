@@ -74,6 +74,7 @@ ReturnValue_t TmTcSerialBridge::handleTcReception(size_t foundLen) {
 }
 
 ReturnValue_t TmTcSerialBridge::sendTm(const uint8_t *data, size_t dataLen) {
+    //Stopwatch stopwatch;
     size_t encodedLen = 0;
     ReturnValue_t result = DleEncoder::encode(data, dataLen, tmArray.data(),
             tmArray.size(), &encodedLen, true);
