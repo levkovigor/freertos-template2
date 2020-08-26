@@ -125,11 +125,13 @@ void Factory::produce(void) {
 #endif
 
 	/* Serial TmTc Bridge */
+	// 6 kB for shared ring buffer now.
+	new SharedRingBuffer(objects::SERIAL_RING_BUFFER, 6144, true, 30);
 	new TmTcSerialBridge(objects::SERIAL_TMTC_BRIDGE,
 			objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
-			objects::TC_STORE);
+			objects::TC_STORE, objects::SERIAL_RING_BUFFER);
 	new TcSerialPollingTask(objects::SERIAL_POLLING_TASK,
-			objects::SERIAL_TMTC_BRIDGE);
+			objects::SERIAL_TMTC_BRIDGE, objects::SERIAL_RING_BUFFER);
 
 	/* TM Destination */
 	new TmFunnel(objects::PUS_FUNNEL);
@@ -146,7 +148,7 @@ void Factory::produce(void) {
 	        pus::PUS_SERVICE_5);
 	new Service9TimeManagement(objects::PUS_SERVICE_9);
 	new Service17CustomTest(objects::PUS_SERVICE_17, apid::SOURCE_OBSW,
-	        pus::PUS_SERVICE_5);
+	        pus::PUS_SERVICE_17);
 	new Service23FileManagement(objects::PUS_SERVICE_23);
 
 	/* PUS Gateway Services using CommandingServiceBase */

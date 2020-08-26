@@ -6,7 +6,7 @@
 
 #include <test/testinterfaces/DummyEchoComIF.h>
 
-#include <mission/pus/Service17Test.h>
+#include <mission/pus/Service17CustomTest.h>
 #include <mission/utility/TimeStamper.h>
 #include <mission/utility/TmFunnel.h>
 
@@ -81,7 +81,8 @@ void Factory::produce(void) {
 
 	new Service5EventReporting(objects::PUS_SERVICE_5, apid::SOURCE_OBSW,
 			pus::PUS_SERVICE_5);
-	new Service17Test(objects::PUS_SERVICE_17);
+	new Service17CustomTest(objects::PUS_SERVICE_17, apid::SOURCE_OBSW,
+			pus::PUS_SERVICE_17);
 
 	/* Commanding Service Base Services */
 	new Service2DeviceAccess(objects::PUS_SERVICE_2, apid::SOURCE_OBSW,

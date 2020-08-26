@@ -2,42 +2,25 @@
 #include <sam9g20/tmtcbridge/TmTcSerialBridge.h>
 
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
-#include <fsfw/tmtcservices/AcceptsTelecommandsIF.h>
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/tmtcservices/TmTcMessage.h>
-#include <fsfw/globalfunctions/arrayprinter.h>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
+#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
+#include <fsfw/osal/FreeRTOS/TaskManagement.h>
+
+
+volatile uint8_t TcSerialPollingTask::transfer1bytesReceived = 0;
+volatile uint8_t TcSerialPollingTask::transfer2bytesReceived = 0;
 
 TcSerialPollingTask::TcSerialPollingTask(object_id_t objectId,
-		object_id_t tcBridge, size_t frameSize, object_id_t sharedRingBufferId,
-		float serialTimeout):
+		object_id_t tcBridge, object_id_t sharedRingBufferId,
+		uint16_t serialTimeoutBaudticks, size_t frameSize):
 		SystemObject(objectId), tcBridge(tcBridge),
 		sharedRingBufferId(sharedRingBufferId) {
-
-	if(frameSize == 0) {
-		// Default value: Set maximum reception buffer size.
-		this->frameSize = MAX_RECEPTION_BUFFER_SIZE;
-	}
-	else if(frameSize < MAX_RECEPTION_BUFFER_SIZE) {
-		this->frameSize = frameSize;
-	}
-
-	maxNumberOfStoredPackets = this->frameSize / 12;
-	pusParser = new PusParser(maxNumberOfStoredPackets, false);
-
-	recvBuffer.reserve(this->frameSize);
-	recvBuffer.resize(this->frameSize);
-
-	if(serialTimeout < 0) {
-		this->serialTimeout = DEFAULT_SERIAL_TIMEOUT_SECONDS;
-	}
-	else {
-		this->serialTimeout = serialTimeout;
-	}
-	setTimeout(this->serialTimeout);
+	configBus0.rxtimeout = serialTimeoutBaudticks;
 }
 
 TcSerialPollingTask::~TcSerialPollingTask() {}
@@ -58,7 +41,7 @@ ReturnValue_t TcSerialPollingTask::initialize() {
 				<< std::endl;
 		return RETURN_FAILED;
 	}
-	targetTcDestination = tcTarget->getRequestQueue();
+	//targetTcDestination = tcTarget->getRequestQueue();
 	configBus0.baudrate = BAUD_RATE;
 	ReturnValue_t result = UART_start(bus0_uart,configBus0);
 	if (result != RETURN_OK) {
@@ -66,64 +49,89 @@ ReturnValue_t TcSerialPollingTask::initialize() {
 				(int) result << std::endl;
 	}
 
-	//sharedRingBuffer = objectManager->get<SharedRingBuffer>(sharedRingBufferId);
+	sharedRingBuffer = objectManager->get<SharedRingBuffer>(sharedRingBufferId);
+	if(sharedRingBuffer == nullptr) {
+		sif::error << "TcSerialPollingTask::initialize: Passed ring buffer"
+				" invalid !" << std::endl;
+		return HasReturnvaluesIF::RETURN_FAILED;
+	}
 	return result;
 }
 
-void TcSerialPollingTask::setTimeout(float timeoutSeconds) {
-	configBus0.rxtimeout = static_cast<unsigned short>(
-			timeoutSeconds * configBus0.baudrate);
-}
 
 ReturnValue_t TcSerialPollingTask::performOperation(uint8_t operationCode) {
+	initiateUartTransfers();
 	while(true) {
 		pollUart();
 	}
-
 	return RETURN_OK; // This should never be reached
 }
 
+void TcSerialPollingTask::initiateUartTransfers() {
+	uartTransfer1.bus = bus0_uart;
+	uartTransfer1.callback = uart1Callback;
+	uartTransfer1.direction = read_uartDir;
+	uartTransfer1.postTransferDelay = 0;
+	uartTransfer1.readData = readBuffer1.data();
+	uartTransfer1.readSize = SERIAL_FRAME_MAX_SIZE;
+	uartTransfer1.result = &transfer1Status;
+	uartSemaphore1.acquire();
+	uartTransfer1.semaphore = uartSemaphore1.getSemaphore();
+
+	uartTransfer2.bus = bus0_uart;
+	uartTransfer2.callback = uart2Callback;
+	uartTransfer2.direction = read_uartDir;
+	uartTransfer2.postTransferDelay = 0;
+	uartTransfer2.readData = readBuffer2.data();
+	uartTransfer2.readSize = SERIAL_FRAME_MAX_SIZE;
+	uartTransfer2.result = &transfer2Status;
+	uartSemaphore2.acquire();
+	uartTransfer2.semaphore = uartSemaphore2.getSemaphore();
+
+	int result = UART_queueTransfer(&uartTransfer1);
+	if(result != 0) {
+		// config error
+		sif::error << "TcSerialPollingTask::initiateUartTransfers: Config error"
+				<< std::endl;
+	}
+	result = UART_queueTransfer(&uartTransfer2);
+	if(result != 0) {
+		sif::error << "TcSerialPollingTask::initiateUartTransfers: Config error"
+				<< std::endl;
+		// config error
+	}
+}
+
 void TcSerialPollingTask::pollUart() {
-	ReturnValue_t result = pollTc();
-	if(result == RETURN_OK) {
-		handleTc();
+	ReturnValue_t result = uartSemaphore1.acquire();
+	if(result == HasReturnvaluesIF::RETURN_OK) {
+		sharedRingBuffer->lockRingBufferMutex(MutexIF::TimeoutType::WAITING, 2);
+		sharedRingBuffer->writeData(readBuffer1.data(), transfer1bytesReceived);
+		sharedRingBuffer->unlockRingBufferMutex();
+		if(transfer1Status != done_uart) {
+			// handle error here
+		}
+		int retval = UART_queueTransfer(&uartTransfer1);
+		if(retval != 0) {
+			//config error
+		}
+	}
+
+	result = uartSemaphore2.acquire();
+	if(result == HasReturnvaluesIF::RETURN_OK) {
+		sharedRingBuffer->lockRingBufferMutex(MutexIF::TimeoutType::WAITING, 2);
+		sharedRingBuffer->writeData(readBuffer2.data(), transfer2bytesReceived);
+		sharedRingBuffer->unlockRingBufferMutex();
+		if(transfer2Status != done_uart) {
+			// handle error here
+		}
+		int retval = UART_queueTransfer(&uartTransfer2);
+		if(retval != 0) {
+			//config error
+		}
 	}
 }
 
-ReturnValue_t TcSerialPollingTask::pollTc() {
-	// TODO: Non-Blocking IO would be nice. Could be done by utilising
-	// queueTransfer which uses DMA. Data propably needs to be stored
-	// in a ring buffer then, and fixed sized frames should be used.
-	// Right now, the read function is timeout based, so it depends
-	// on data being sent either packed or with enough break between the packets
-	// to handle tranfer to the last packet to the software bus
-
-	// When using non-blocking IO and a ring buffer, a callback is used to
-	// notify the task of packets to handle. The reception would propably still
-	// be timeout based. next queueTransfer needs to be called from callback
-
-	// Actually, that would require a lot of static variables, because
-	// no arguments can be passed to the callback..
-	ReturnValue_t result = UART_read(bus0_uart, recvBuffer.data(), frameSize);
-	taskENTER_CRITICAL(); // @suppress("Function cannot be resolved")
-	if(result == RETURN_OK) {
-		handleSuccessfulTcRead();
-	}
-	else if(result == 16) {
-		result = handleOverrunError();
-	}
-	else {
-		sif::error << "Serial Polling: Error with code " << std::dec
-				   << (int) result << " on bus 0" << std::endl;
-	}
-	taskEXIT_CRITICAL(); // @suppress("Function cannot be resolved")
-	return result;
-}
-
-void TcSerialPollingTask::handleSuccessfulTcRead() {
-	size_t recvSize = UART_getPrevBytesRead(bus0_uart);
-	pusParser->parsePusPackets(recvBuffer.data(), recvSize);
-}
 
 ReturnValue_t TcSerialPollingTask::handleOverrunError() {
 	sif::error << "Serial Polling: Overrun error on bus 0" << std::endl;
@@ -131,89 +139,42 @@ ReturnValue_t TcSerialPollingTask::handleOverrunError() {
 	sif::error << "Read " << recvSize << " bytes." << std::endl;
 	sif::error << "Packet not read for now. Consider still reading the packet !"
 			<< std::endl;
-	uint16_t packetSize = (recvBuffer[4] << 8 | recvBuffer[5]) + 7;
-	sif::error << "First packet size :" << (int) packetSize << std::endl;
 	// use RETURN_OK to enable packet handling if packet is still read.
+	// todo: if this occurs too often, disable printout and maybe restart bus?
 	return RETURN_FAILED;
 }
 
+void TcSerialPollingTask::uart1Callback(SystemContext context,
+		xSemaphoreHandle sem) {
+	transfer1bytesReceived = UART_getPrevBytesRead(bus0_uart);
+	genericUartCallback(context, sem);
+}
 
-void TcSerialPollingTask::handleTc() {
-	auto fifo = pusParser->fifo();
-	if(fifo->empty()) {
-		return;
+void TcSerialPollingTask::uart2Callback(SystemContext context,
+		xSemaphoreHandle sem) {
+	transfer2bytesReceived = UART_getPrevBytesRead(bus0_uart);
+	genericUartCallback(context, sem);
+}
+
+void TcSerialPollingTask::genericUartCallback(SystemContext context,
+		xSemaphoreHandle sem) {
+	BaseType_t higherPriorityTaskAwoken = pdFALSE;
+	if(context == SystemContext::task_context) {
+		BinarySemaphore::release(sem);
 	}
-
-	TmTcSerialBridge * tmtcBridge =
-			objectManager->get<TmTcSerialBridge>(tcBridge);
-	if(tmtcBridge == nullptr) {
-		sif::error << "SerialPollingTask: TmTcBridge invalid!" << std::endl;
-		return;
+	else {
+		BinarySemaphore::releaseFromISR(sem,
+				&higherPriorityTaskAwoken);
 	}
-	tmtcBridge->registerCommConnect();
-
-	while(not fifo->empty()) {
-		PusParser::indexSizePair indexSizePair = pusParser->getNextFifoPair();
-		transferPusToSoftwareBus(indexSizePair.first, indexSizePair.second);
+	if(context == SystemContext::isr_context and
+			higherPriorityTaskAwoken == pdPASS) {
+		// After some research, I have found out that each interrupt causes
+		// a higher priority task to awaken. I assume that the ISR is called
+		// from a separate driver internal task/queue. I assume this
+		// is expected behaviour as this task has a relatively high
+		// priority and has blocking elements.
+		TaskManagement::requestContextSwitch(CallContext::ISR);
 	}
 }
 
-void TcSerialPollingTask::transferPusToSoftwareBus(uint16_t recvBufferIndex,
-		uint16_t packetSize) {
-	store_address_t storeId = 0;
-	ReturnValue_t result = tcStore->addData(&storeId,
-			recvBuffer.data() + recvBufferIndex, packetSize);
-	// printTelecommand(recvBuffer + recvBufferIndex, packetSize);
-	if (result != RETURN_OK) {
-		sif::debug << "TcSerialPollingTask::transferPusToSoftwareBus: Data "
-				"storage failed" << std::endl;
-		sif::debug << "Packet size: " << packetSize << std::endl;
-		return;
-	}
-	TmTcMessage message(storeId);
-	result  = MessageQueueSenderIF::sendMessage(targetTcDestination, &message);
-	if (result != RETURN_OK) {
-		sif::error << "Serial Polling: Sending message to queue failed"
-				<< std::endl;
-		tcStore->deleteData(storeId);
-	}
-}
 
-void TcSerialPollingTask::printTelecommand(uint8_t* tcPacket,
-		uint16_t packetSize) {
-	arrayprinter::print(tcPacket, packetSize);
-}
-
-// prototype for RS485 polling task. it won't do anything else other than
-// polling serial data.
-void TcSerialPollingTask::ringBufferPrototypePoll() {
-	// with 10 bytes as "bucket" size
-	uint8_t* writePtr = nullptr;
-	ReturnValue_t result = sharedRingBuffer->
-	        lockRingBufferMutex(MutexIF::TimeoutType::WAITING, 20);
-	if(result != HasReturnvaluesIF::RETURN_OK) {
-	    // mutex might be blocked, config error?
-	    return;
-	}
-
-	result = sharedRingBuffer->getFreeElement(&writePtr, 10);
-	if(result != HasReturnvaluesIF::RETURN_OK) {
-		// not enough data available. trigger event or overwrite data?
-	    // in any case, don't forget to unlock the mutex if the function returns
-	    // here!
-	}
-	sharedRingBuffer->unlockRingBufferMutex();
-
-	// blocking read.
-	result = UART_read(bus0_uart, writePtr, 10);
-	if(result != HasReturnvaluesIF::RETURN_OK) {
-		// handle driver errors here
-	}
-
-	// zero out bytes in case of timeout.
-	size_t prevBytesRead = UART_getPrevBytesRead(bus0_uart);
-	if(prevBytesRead < 10) {
-		size_t bytesToZeroOut = 10 - prevBytesRead;
-		std::memset(writePtr + prevBytesRead, 0, bytesToZeroOut);
-	}
-}

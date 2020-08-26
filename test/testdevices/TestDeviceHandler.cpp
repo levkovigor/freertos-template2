@@ -1,4 +1,4 @@
-#include <fsfw/datapool/DataSetBase.h>
+#include <fsfw/datapool/PoolDataSetBase.h>
 #include <fsfw/datapoollocal/LocalDataSet.h>
 #include <fsfw/datapoollocal/LocalPoolVariable.h>
 #include <fsfw/datapoollocal/LocalPoolVector.h>
@@ -41,7 +41,7 @@ void TestDevice::performOperationHook() {
 }
 
 void TestDevice::doStartUp() {
-	sif::debug << "DummyDevice: Switching On" << std::endl;
+	//sif::debug << "DummyDevice: Switching On" << std::endl;
 	setMode(_MODE_TO_ON);
 	return;
 }
@@ -60,17 +60,17 @@ ReturnValue_t TestDevice::buildNormalDeviceCommand(DeviceCommandId_t* id) {
 
 ReturnValue_t TestDevice::buildTransitionDeviceCommand(DeviceCommandId_t* id) {
 	if(mode == _MODE_TO_ON) {
-		sif::debug << "DummyDevice: buildTransitionDeviceCommand() "
-				"was called from _MODE_TO_ON mode" << std::endl;
+//		sif::debug << "DummyDevice: buildTransitionDeviceCommand() "
+//				"was called from _MODE_TO_ON mode" << std::endl;
 	}
 	if(mode == _MODE_TO_NORMAL) {
-		sif::debug << "DummyDevice: buildTransitionDeviceCommand() "
-				"was called from _MODE_TO_NORMAL mode" << std::endl;
+//		sif::debug << "DummyDevice: buildTransitionDeviceCommand() "
+//				"was called from _MODE_TO_NORMAL mode" << std::endl;
 		setMode(MODE_NORMAL);
 	}
 	if(mode == _MODE_SHUT_DOWN) {
-		sif::debug << "DummyDevice: buildTransitionDeviceCommand() "
-				"was called from _MODE_SHUT_DOWN mode" << std::endl;
+//		sif::debug << "DummyDevice: buildTransitionDeviceCommand() "
+//				"was called from _MODE_SHUT_DOWN mode" << std::endl;
 		setMode(MODE_OFF);
 	}
 	return NOTHING_TO_SEND;

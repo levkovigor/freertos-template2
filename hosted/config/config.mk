@@ -6,6 +6,7 @@ CXXSRC += $(wildcard $(CURRENTPATH)/events/*.cpp)
 
 INCLUDES += $(CURRENTPATH)
 INCLUDES += $(CURRENTPATH)/objects
+INCLUDES += $(CURRENTPATH)/ipc
 INCLUDES += $(CURRENTPATH)/pollingsequence
 INCLUDES += $(CURRENTPATH)/returnvalues
 INCLUDES += $(CURRENTPATH)/tmtc

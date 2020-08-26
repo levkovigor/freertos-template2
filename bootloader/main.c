@@ -69,7 +69,9 @@ int main()
 
     // otherwise, try to copy SDCard binary to SDRAM
 
-    for(;;);
+    for(;;) {
+        feed_watchdog_if_necessary();
+    }
 }
 
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)

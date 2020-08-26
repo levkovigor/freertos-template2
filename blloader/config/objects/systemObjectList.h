@@ -6,6 +6,7 @@
 // The objects will be instantiated in the ID order
 namespace objects {
 	enum sourceObjects: uint32_t {
+		SERIAL_RECEIVER_TASK  = 1
 	};
 }
 

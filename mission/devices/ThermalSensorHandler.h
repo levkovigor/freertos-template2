@@ -2,6 +2,7 @@
 #define MISSION_DEVICES_THERMALSENSORHANDLER_H_
 
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
+#include <mission/devices/devicepackets/ThermalSensorPacket.h>
 #include <array>
 #include <cstdint>
 
@@ -64,6 +65,9 @@ protected:
 			uint8_t *numberOfSwitches) override;
 
 	void doTransition(Mode_t modeFrom, Submode_t subModeFrom) override;
+
+	ReturnValue_t initializePoolEntries(
+	        LocalDataPool& localDataPoolMap) override;
 	ReturnValue_t initialize() override;
 private:
 	const uint8_t switchId;
@@ -88,7 +92,10 @@ private:
 	static constexpr DeviceCommandId_t REQUEST_RTD = 0x01;
 	static constexpr DeviceCommandId_t REQUEST_FAULT_BYTE = 0x07;
 
+	ThermalSensorDataset sensorDataset;
+
 	uint8_t counter = 0;
 };
 
 #endif /* MISSION_THERMALSENSORHANDLER_H_ */
+

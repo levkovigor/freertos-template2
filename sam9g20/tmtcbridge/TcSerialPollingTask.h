@@ -5,10 +5,9 @@
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/ipc/MessageQueueIF.h>
 #include <fsfw/storagemanager/StorageManagerIF.h>
-#include <fsfw/container/SimpleRingBuffer.h>
-#include <fsfw/container/FIFO.h>
 #include <fsfw/container/SharedRingBuffer.h>
-#include <fsfw/tmtcservices/PusParser.h>
+#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
+
 
 extern "C" {
 #include <board.h>
@@ -16,6 +15,7 @@ extern "C" {
 #include <hal/Drivers/UART.h>
 }
 
+#include <config/tmtc/tmtcSize.h>
 #include <utility>
 #include <vector>
 
@@ -39,11 +39,9 @@ public:
     static constexpr uint8_t TC_RECEPTION_QUEUE_DEPTH = 10;
     /** The frame size will be set to this value if no other value is
      *  supplied in the constructor. */
-    static constexpr uint16_t MAX_RECEPTION_BUFFER_SIZE = 2048;
-    static constexpr float DEFAULT_SERIAL_TIMEOUT_SECONDS = 0.00005;
-    //! 12 bytes is minimal size of a PUS packet, which is used in the ctor
-    //! to calculate this value.
-    size_t maxNumberOfStoredPackets;
+    static constexpr uint16_t SERIAL_FRAME_MAX_SIZE =
+    		tmtcsize::MAX_SERIAL_FRAME_SIZE;
+    static constexpr float DEFAULT_SERIAL_TIMEOUT_BAUDTICKS = 5;
 
     /**
      * Default ctor.
@@ -53,11 +51,13 @@ public:
      * @param frameSize
      * Optional frame size which can be used if fixed TC
      * packet frames are used
+     * @param serialTimeoutBaudticks Timeout in baudticks. Maxiumum uint16_t
+     * value is reserved for the dafault timeout
      */
 	TcSerialPollingTask(object_id_t objectId, object_id_t tcBridge,
-			size_t frameSize = 0,
-			object_id_t sharedRingBufferId = objects::NO_OBJECT,
-			float serialTimeout = -1);
+			object_id_t sharedRingBufferId,
+			uint16_t serialTimeoutBaudticks = DEFAULT_SERIAL_TIMEOUT_BAUDTICKS,
+			size_t frameSize = 0);
 
 	virtual ~TcSerialPollingTask();
 
@@ -76,37 +76,38 @@ protected:
 private:
 	object_id_t tcBridge = objects::NO_OBJECT;
 
-	//! Variable sized container to have flexible frame sizes.
-	std::vector<uint8_t> recvBuffer;
-	/** Will be used in read call to driver to determine how many bytes
-	 * are read. Do not change after initialization! */
-	size_t frameSize;
-	float serialTimeout;
 	UARTconfig configBus0 = { .mode = AT91C_US_USMODE_NORMAL |
 			AT91C_US_CLKS_CLOCK | AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE |
 			AT91C_US_OVER_16 | AT91C_US_NBSTOP_1_BIT, .baudrate = 115200,
-			.timeGuard = 1, .busType = rs232_uart, .rxtimeout = 0xFFFF };
+			.timeGuard = 0, .busType = rs232_uart, .rxtimeout = 0xFFFF };
 
-	PusParser* pusParser = nullptr;
+	bool started = false;
 
-	MessageQueueId_t targetTcDestination = MessageQueueIF::NO_QUEUE;
-	void setTimeout(float timeoutSeconds);
+	UARTgenericTransfer uartTransfer1;
+	static volatile uint8_t transfer1bytesReceived;
+	BinarySemaphore uartSemaphore1;
+	UARTtransferStatus transfer1Status = done_uart;
+	std::array<uint8_t, SERIAL_FRAME_MAX_SIZE> readBuffer1;
+
+	BinarySemaphore uartSemaphore2;
+	static volatile uint8_t transfer2bytesReceived;
+	UARTgenericTransfer uartTransfer2;
+	UARTtransferStatus transfer2Status = done_uart;
+	std::array<uint8_t, SERIAL_FRAME_MAX_SIZE> readBuffer2;
+
 
 	/**
-	 * @brief 	This function handles reading UART data.
+	 * @brief 	This function handles reading UART data in a permanent loop
 	 * @details
-	 * Calls the UART_read() function which blocks the task until the
-	 * specified transfer is done.
-	 *
-	 * If TC packets are found, they are  forwarded to the internal software bus
-	 * and the next UART_read() call is called immediately, so there
-	 * should be a break large enough between telecommands so the software can
-	 * call the next UART_read() in time.
 	 */
+	void initiateUartTransfers();
 	void pollUart();
 	ReturnValue_t pollTc();
-	void handleSuccessfulTcRead();
 
+
+	void ringBufferPrototypePoll();
+	object_id_t sharedRingBufferId;
+	SharedRingBuffer* sharedRingBuffer = nullptr;
 
 	/**
 	 * Overrun error. Packet was still read. Maybe implement reading,
@@ -115,18 +116,11 @@ private:
 	 */
 	ReturnValue_t handleOverrunError();
 
-	/**
-	 * This function forwards the found PUS packets to the FSFW software bus.
-	 * Critical section because the next read function should be called ASAP.
-	 */
-	void handleTc();
-	void transferPusToSoftwareBus(uint16_t recvBufferIndex,
-			uint16_t packetSize);
-	void printTelecommand(uint8_t* tcPacket, uint16_t packetSize);
-
-	void ringBufferPrototypePoll();
-	object_id_t sharedRingBufferId;
-	SharedRingBuffer* sharedRingBuffer;
+	static void uart1Callback(SystemContext context, xSemaphoreHandle sem);
+	static void uart2Callback(SystemContext context, xSemaphoreHandle sem);
+	static void genericUartCallback(SystemContext context,
+			xSemaphoreHandle sem);
 };
+
 
 #endif /* SAM9G20_TMTCBRIDGE_SERIALPOLLINGTASK_H_ */

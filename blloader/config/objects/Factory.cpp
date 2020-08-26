@@ -1,5 +1,7 @@
 #include "Factory.h"
 
+#include <systemObjectList.h>
+#include <blloader/core/SerialReceiverTask.h>
 #include <fsfw/storagemanager/PoolManager.h>
 #include <cstdint>
 
@@ -22,6 +24,8 @@ void Factory::produce(void) {
 	uint16_t numberOfElements[4] = {100, 30, 20, 10};
 	uint16_t sizeofElements[4] = {32, 64, 128, 265};
 	new PoolManager<4>(objects::TC_STORE,sizeofElements, numberOfElements);
+
+	new SerialReceiverTask(objects::SERIAL_RECEIVER_TASK);
 }
 
 void Factory::setStaticFrameworkObjectIds() {
