@@ -180,14 +180,13 @@ ReturnValue_t TmTcSerialBridge::sendTm(const uint8_t *data, size_t dataLen) {
     if(result != HasReturnvaluesIF::RETURN_OK) {
         return result;
     }
-    //arrayprinter::print(tmArray.data(), encodedLen);
     result = UART_write(bus0_uart, tmArray.data(), encodedLen);
 	//sif::info << "TmTcSerialBridge::sendTm: Sending telemetry." << std::endl;
 	if(result != RETURN_OK) {
 		sif::error << "Serial Bridge: Send error with code "
 		      << (int) result << "on bus 0." << std::endl;
 	}
-	TaskFactory::delayTask(1);
+	//TaskFactory::delayTask(1);
 	return result;
 }
 
