@@ -40,8 +40,6 @@ public:
 	ReturnValue_t performOperation(uint8_t operationCode = 0) override;
 
 	ReturnValue_t handleTc() override;
-	ReturnValue_t handleTmQueue() override;
-	ReturnValue_t handleStoredTm() override;
 
 	/**
 	 * TM Send implementation uses ISIS UART driver
