@@ -328,8 +328,8 @@ uint32_t TestDevice::getTransitionDelayMs(Mode_t modeFrom, Mode_t modeTo) {
 	return 5000;
 }
 
-ReturnValue_t TestDevice::initializePoolEntries(
-		LocalDataPool& localDataPoolMap) {
+ReturnValue_t TestDevice::initializeLocalDataPool(LocalDataPool& localDataPoolMap,
+	    LocalDataPoolManager& poolManager) {
 	// This will initialize a uint8_t pool entry with a length of one (uint8_t).
 	localDataPoolMap.emplace(static_cast<lp_id_t>(PoolIds::TEST_VAR_1),
 			new PoolEntry<uint8_t>());
@@ -350,7 +350,7 @@ void TestDevice::testLocalDataPool() {
 			PoolIds::TEST_VEC_1), this);
 	lp_vec_t<uint32_t,3> testUint32Vec(static_cast<lp_id_t>(
 			PoolIds::TEST_VEC_2), this);
-	LocalDataSet testDataSet(this, 3);
+	LocalDataSet testDataSet(this, 0, 3);
 	testDataSet.registerVariable(&testBool);
 	testDataSet.registerVariable(&testFloatVec);
 	testDataSet.registerVariable(&testUint32Vec);

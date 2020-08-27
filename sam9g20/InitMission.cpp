@@ -1,4 +1,4 @@
-/**
+                                                                                    /**
  * @file 	InitMission.cpp
  * @brief 	Includes mission and board specific code initialisation,
  *        	starts all services and initializes mission.
@@ -205,7 +205,7 @@ void initMission(void) {
 
     PeriodicTaskIF* PusService03 = TaskFactory::instance()-> createPeriodicTask(
     		"PUS_HOUSEKEEPING_3", 4, 2048 * 4, 0.2, nullptr);
-    result = PusService03->addComponent(objects::PUS_SERVICE_3_PSB);
+    result = PusService03->addComponent(objects::PUS_SERVICE_3/*_PSB*/);
     if(result != HasReturnvaluesIF::RETURN_OK){
         sif::error << "Add component PUS Housekeeping Service 3 failed" << std::endl;
     }
@@ -348,6 +348,8 @@ void initMission(void) {
     CoreController->startTask();
 
     /* Task Monitor can be used to track stack usage of tasks */
+    // todo: will be replaced and performed for each task by using freeRTOS
+    // functionality
     FreeRTOSStackMonitor* TaskMonitor = objectManager->
             get<FreeRTOSStackMonitor>(objects::FREERTOS_TASK_MONITOR);
     TaskMonitor->insertPeriodicTask(objects::SERIAL_POLLING_TASK,

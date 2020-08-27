@@ -142,8 +142,8 @@ private:
 	ReturnValue_t interpretingReply2(DeviceCommandId_t id, const uint8_t* packet);
 	ReturnValue_t interpretingReply3(DeviceCommandId_t id, const uint8_t* packet);
 
-	ReturnValue_t initializePoolEntries(
-			LocalDataPool& localDataPoolMap) override;
+	ReturnValue_t initializeLocalDataPool(LocalDataPool& localDataPoolMap,
+	        LocalDataPoolManager& poolManager) override;
 
 	void testLocalDataPool();
 

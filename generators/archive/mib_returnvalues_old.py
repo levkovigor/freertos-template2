@@ -39,13 +39,13 @@ def main():
 
 def parseOBSW():
     idInterfaceDefinitions = \
-        parseInterfaceDefinitionFile("../../framework/returnvalues/FwClassIds.h",
+        parseInterfaceDefinitionFile("../../fsfw/returnvalues/FwClassIds.h",
                                      "../../config/returnvalues/classIds.h")
     print("Found interface definitions: ")
     pp.pprint(idInterfaceDefinitions)
 
     myHeaderList = getHeaderFileList("../../mission/")
-    myHeaderList = myHeaderList + getHeaderFileList("../../framework/")
+    myHeaderList = myHeaderList + getHeaderFileList("../../fsfw/")
     myHeaderList = myHeaderList + getHeaderFileList("../../config/")
     myHeaderList = myHeaderList + getHeaderFileList("../../sam9g20/")
     mySecondList = parseHeaderFiles(idInterfaceDefinitions, myHeaderList)

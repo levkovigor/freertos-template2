@@ -63,8 +63,9 @@ def main():
         if MOVE_CSV_FILE:
             handle_file_move(CSV_MOVE_DESTINATION)
     if EXPORT_TO_SQL:
-        print("ReturnvalueParser: Exporting to SQL")
-        sql_retval_exporter(returnvalue_table)
+        pass
+        # print("ReturnvalueParser: Exporting to SQL")
+        # sql_retval_exporter(returnvalue_table)
 
 
 def parse_returnvalues():
@@ -265,7 +266,6 @@ class ReturnValueParser(FileParser):
         if description == '':
             description = ' '
         return description
-
 
 
 def return_number_from_string(a_string):
