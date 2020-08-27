@@ -297,6 +297,21 @@ void initMission(void) {
         sif::error << "Add component SDCardHandler to SDCardTask failed" << std::endl;
     }
 
+    /* Core Controller task */
+    PeriodicTaskIF* SystemStateTask = TaskFactory::instance()->
+            createPeriodicTask("SYSTEM_STATE_TSK", 2, 2048 * 4, 10, nullptr);
+    result = SystemStateTask->addComponent(objects::SYSTEM_STATE_TASK);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        sif::error << "Add component Core Controller failed" << std::endl;
+    }
+
+    PeriodicTaskIF* CoreController = TaskFactory::instance()->
+            createPeriodicTask("CORE_CONTROLLER", 6, 2048 * 4, 1, nullptr);
+    result = CoreController->addComponent(objects::CORE_CONTROLLER);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        sif::error << "Add component Core Controller failed" << std::endl;
+    }
+
     /* SPI Communication Interface*/
     PeriodicTaskIF* SpiComTask = TaskFactory::instance()->
             createPeriodicTask("SPI_COM_IF", 8, 1024 * 4, 0.4, nullptr);
@@ -329,6 +344,8 @@ void initMission(void) {
     TestTask -> startTask();
     SpiComTask->startTask();
     SDcardTask -> startTask();
+    SystemStateTask -> startTask();
+    CoreController->startTask();
 
     /* Task Monitor can be used to track stack usage of tasks */
     FreeRTOSStackMonitor* TaskMonitor = objectManager->
@@ -369,9 +386,11 @@ void initMission(void) {
 
     sif::info << "Remaining heap size: " << std::dec
             << xPortGetFreeHeapSize() << std::endl;
-    sif::info << "Factory Task: Remaining stack size: "
-            << TaskManagement::getTaskStackHighWatermark()
-    		<< " bytes" << std::endl;
+    size_t remainingFactoryStack = TaskManagement::getTaskStackHighWatermark();
+    if(remainingFactoryStack < 3000) {
+        sif::warning << "Factory Task: Remaining stack size: "
+                << remainingFactoryStack << " bytes" << std::endl;
+    }
 
     sif::info << "Tasks started." << std::endl;
 }
@@ -437,7 +456,7 @@ void boardTestTaskInit() {
 
     sif::info << "Starting test tasks.." << std::endl;
 
-    //PollingSequenceTableTaskTest -> startTask ();
+    PollingSequenceTableTaskTest -> startTask ();
     //SPITask -> startTask();
     //I2CTask -> startTask();
     //UART2Task -> startTask();

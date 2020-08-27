@@ -34,8 +34,9 @@
 #include <mission/pus/Service17CustomTest.h>
 #include <mission/pus/Service20ParameterManagement.h>
 #include <mission/pus/Service23FileManagement.h>
+#include <mission/pus/Service3Housekeeping.h>
 
-#include <mission/fdir/PCDUFailureIsolation.h>
+/* Utility */
 #include <mission/utility/TimeStamper.h>
 #include <mission/utility/TmFunnel.h>
 #include <mission/memory/SDCardHandler.h>
@@ -43,6 +44,11 @@
 /* Devices */
 #include <mission/devices/PCDUHandler.h>
 #include <mission/devices/GPSHandler.h>
+#include <mission/devices/ThermalSensorHandler.h>
+#include <mission/devices/GyroHandler.h>
+#include <mission/controller/CoreController.h>
+#include <mission/controller/SystemStateTask.h>
+#include <mission/fdir/PCDUFailureIsolation.h>
 
 /* Test files */
 #include <test/testinterfaces/DummyEchoComIF.h>
@@ -63,11 +69,8 @@
 #include <sam9g20/comIF/GpioDeviceComIF.h>
 #include <sam9g20/comIF/RS232DeviceComIF.h>
 #include <sam9g20/comIF/SpiDeviceComIF.h>
-#include <misc/archive/SpiPollingTask.h>
-#include <mission/devices/GyroHandler.h>
-#include <mission/devices/ThermalSensorHandler.h>
-#include <mission/pus/Service3Housekeeping.h>
 #include <sam9g20/utility/FreeRTOSStackMonitor.h>
+
 #include <test/testdevices/TestDeviceHandler.h>
 
 #if defined(ETHERNET)
@@ -188,6 +191,8 @@ void Factory::produce(void) {
 	hk::initHkStruct(&hkIdStruct, gps0, gps1, test);
 	hk::hkInit(housekeepingServicePSB, hkIdStruct);
 
+	new SystemStateTask(objects::SYSTEM_STATE_TASK);
+	new CoreController(objects::CORE_CONTROLLER);
 	DummyCookie * dummyCookie2 = new DummyCookie(addresses::DUMMY_GPS0);
 #if defined(VIRTUAL_BUILD)
 	new GPSHandler(objects::GPS0_HANDLER, objects::DUMMY_GPS_COM_IF, dummyCookie2,

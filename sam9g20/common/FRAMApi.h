@@ -21,34 +21,53 @@
  */
 typedef struct __attribute__((__packed__))  _FRAMCriticalData {
 	uint16_t reboot_counter;
+	//! To copy software update from the SD card into the SDRAM at restart.
+	bool software_update_available;
 
 	size_t nor_flash_binary_size;
 	size_t nor_flash_hamming_code_offset;
+	uint8_t nor_flash_reboot_counter;
 
 	char sd_card1_slot1_binary_file_name [32];
 	char sd_card1_slot1_hamming_code_file_name [32];
+	uint8_t sdc1sl1_reboot_counter;
+
 	char sd_card1_slot2_file_name [32];
 	char sd_card1_slot2_hamming_code_file_name [32];
+	uint8_t sc_card1_slot2_reboot_counter;
 
 	char sd_card2_slot1_binary_file_name [32];
 	char sd_card2_slot1_hamming_code_file_name [32];
+	uint8_t sc_card2_slot1_reboot_counter;
+
 	char sd_card2_slot2_binary_file_name [32];
 	char sd_card2_slot2_hamming_code_file_name[32];
+	uint8_t sc_card2_slot2_reboot_counter;
 
 	bool bootloader_faulty;
+
+    uint16_t number_of_active_tasks;
 } FRAMCriticalData;
 
-static const uint32_t REBOOT_COUNTER_ADDRESS =
+static const uint32_t REBOOT_COUNTER_ADDR =
 		offsetof(FRAMCriticalData, reboot_counter);
+static const uint32_t SOFTWARE_UPDATE_BOOL_ADDR =
+        offsetof(FRAMCriticalData, software_update_available);
+
 static const uint32_t NOR_FLASH_BINARY_SIZE_ADDRESS =
 		offsetof(FRAMCriticalData, nor_flash_binary_size);
 static const uint32_t NOR_FLASH_HAMMING_CODE_OFFSET_ADDRESS =
 		offsetof(FRAMCriticalData, nor_flash_hamming_code_offset);
+static const uint32_t NOR_FLASH_REBOOT_COUNTER_ADDRESS =
+        offsetof(FRAMCriticalData, nor_flash_reboot_counter);
 
-static const uint32_t sdCard1Slot1BinaryFileNameAddress =
+static const uint32_t SDC1SL1_FILE_NAME_ADDR =
 		offsetof(FRAMCriticalData, sd_card1_slot1_binary_file_name);
-static const uint32_t sdCard1Slot1HammingCodeFileNameAddress =
+static const uint32_t SDC1SL1_HAMM_CODE_NAME_ADDR =
 		offsetof(FRAMCriticalData, sd_card1_slot1_hamming_code_file_name);
+static const uint32_t SDC1SL1_REBOOT_COUNTER_ADDR =
+        offsetof(FRAMCriticalData, sdc1sl1_reboot_counter);
+
 static const uint32_t sdCard1Slot2FileNameAddress =
 		offsetof(FRAMCriticalData, sd_card1_slot2_file_name);
 static const uint32_t sdCard1Slot2HammingCodeFileNameAddress =
@@ -58,6 +77,7 @@ static const uint32_t sdCard2Slot1BinaryFileNameAddress =
 		offsetof(FRAMCriticalData, sd_card2_slot1_binary_file_name);
 static const uint32_t sdCard2Slot1HammingCodeFileName =
 		offsetof(FRAMCriticalData, sd_card2_slot1_hamming_code_file_name);
+
 static const uint32_t sdCard2Slot2FileNameAddress =
 		offsetof(FRAMCriticalData, sd_card2_slot2_binary_file_name);
 static const uint32_t sdCard2Slot2HammingCodeFileNameAddress =
@@ -65,12 +85,21 @@ static const uint32_t sdCard2Slot2HammingCodeFileNameAddress =
 
 static const uint32_t BOOTLOADER_FAULTY_ADDRESS =
 		offsetof(FRAMCriticalData, bootloader_faulty);
+static const uint32_t NUMBER_OF_ACTIVE_TASKS_ADDRESS =
+        offsetof(FRAMCriticalData, number_of_active_tasks);
 
 int increment_reboot_counter();
 int read_reboot_counter(uint16_t* reboot_counter);
 
 int write_nor_flash_binary_info(size_t binary_size, size_t hamming_code_offset);
 int read_nor_flash_binary_info(size_t* binary_size, size_t* hamming_code_offset);
+int increment_nor_flash_reboot_counter();
+int read_nor_flash_reboot_counter(uint8_t* nor_flash_reboot_counter);
+int reset_nor_flash_reboot_counter();
+
+int increment_sdc1sl1_reboot_counter();
+int read_sdc1sl1_reboot_counter(uint8_t* sdc1sl1_reboot_counter);
+int reset_sdc1sl1_reboot_counter();
 
 int set_bootloader_faulty(bool faulty);
 int is_bootloader_faulty(bool* faulty);

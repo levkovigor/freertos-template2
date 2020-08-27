@@ -10,12 +10,12 @@ int increment_reboot_counter() {
 
 	current_counter++;
 	return FRAM_writeAndVerify((unsigned char*) &current_counter,
-			REBOOT_COUNTER_ADDRESS, sizeof(current_counter));
+			REBOOT_COUNTER_ADDR, sizeof(current_counter));
 }
 
 int read_reboot_counter(uint16_t* reboot_counter) {
 	return FRAM_read((unsigned char*) reboot_counter,
-			REBOOT_COUNTER_ADDRESS, sizeof(reboot_counter));
+			REBOOT_COUNTER_ADDR, sizeof(reboot_counter));
 }
 
 int write_nor_flash_binary_info(size_t binary_size, size_t hamming_code_offset) {
@@ -52,4 +52,50 @@ int set_bootloader_faulty(bool faulty) {
 int is_bootloader_faulty(bool *faulty) {
 	return FRAM_read((unsigned char*)faulty, BOOTLOADER_FAULTY_ADDRESS,
 			sizeof(((FRAMCriticalData*)0)->bootloader_faulty));
+}
+
+int increment_nor_flash_reboot_counter() {
+    uint8_t nor_flash_reboot_counter;
+    int result = read_nor_flash_reboot_counter(&nor_flash_reboot_counter);
+    if(result != 0) {
+        return result;
+    }
+    nor_flash_reboot_counter ++;
+    return FRAM_writeAndVerify((unsigned char*) &nor_flash_reboot_counter,
+            NOR_FLASH_REBOOT_COUNTER_ADDRESS, sizeof(nor_flash_reboot_counter));
+}
+
+int read_nor_flash_reboot_counter(uint8_t *nor_flash_reboot_counter) {
+    return FRAM_read((unsigned char*)nor_flash_reboot_counter,
+            NOR_FLASH_REBOOT_COUNTER_ADDRESS,
+            sizeof(((FRAMCriticalData*)0)->nor_flash_reboot_counter));
+}
+
+int reset_nor_flash_reboot_counter() {
+    uint8_t new_reboot_counter = 0;
+    return FRAM_writeAndVerify((unsigned char*) &new_reboot_counter,
+            NOR_FLASH_REBOOT_COUNTER_ADDRESS, sizeof(new_reboot_counter));
+}
+
+int increment_sdc1sl1_reboot_counter() {
+    uint8_t sdc1sl1_reboot_counter;
+    int result = read_sdc1sl1_reboot_counter(&sdc1sl1_reboot_counter);
+    if(result != 0) {
+        return result;
+    }
+    sdc1sl1_reboot_counter ++;
+    return FRAM_writeAndVerify((unsigned char*) &sdc1sl1_reboot_counter,
+            SDC1SL1_REBOOT_COUNTER_ADDR, sizeof(sdc1sl1_reboot_counter));
+}
+
+int read_sdc1sl1_reboot_counter(uint8_t *sdc1sl1_reboot_counter) {
+    return FRAM_read((unsigned char*)sdc1sl1_reboot_counter,
+            SDC1SL1_REBOOT_COUNTER_ADDR,
+            sizeof(((FRAMCriticalData*)0)->sdc1sl1_reboot_counter));
+}
+
+int reset_sdc1sl1_reboot_counter() {
+    uint8_t new_reboot_counter = 0;
+    return FRAM_writeAndVerify((unsigned char*) &new_reboot_counter,
+            SDC1SL1_REBOOT_COUNTER_ADDR, sizeof(new_reboot_counter));
 }

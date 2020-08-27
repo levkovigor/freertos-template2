@@ -59,6 +59,7 @@ int main(void)
 
     // Core Task. Custom interrupts should be configured inside a task.
     xTaskCreate(initTask, (const char*)"InitTask", 3072, nullptr, 1, nullptr);
+    TRACE_INFO("Starting FreeRTOS task scheduler..");
     vTaskStartScheduler();
     // This should never be reached.
     for(;;) {}
