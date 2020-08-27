@@ -14,22 +14,6 @@ ReturnValue_t CoreController::handleCommandMessage(CommandMessage *message) {
 }
 
 void CoreController::performControlOperation() {
-    if(not numberOfTasksCached) {
-        numberOfTasks = uxTaskGetNumberOfTasks();
-        numberOfTasksCached = true;
-        taskStatArray.reserve(numberOfTasks);
-        taskStatArray.resize(numberOfTasks);
-        systemStateTask = objectManager->
-                get<SystemStateTask>(objects::SYSTEM_STATE_TASK);
-        if(systemStateTask != nullptr) {
-            systemStateTask->assignStatusWritePtr(taskStatArray.data(),
-                    numberOfTasks);
-        }
-        else {
-            sif::error << "CoreController::performControlOperation:"
-                    "System state task invalid!" << std::endl;
-        }
-    }
 
     // First task: get supervisor state
 #ifdef ISIS_OBC_G20
@@ -49,17 +33,13 @@ void CoreController::performControlOperation() {
     // a 48 or 64bit counter.
 
     // do this in low priority task which is unblocked.
-    systemStateTask->readSystemState();
+    //systemStateTask->readSystemState();
 
-//    MutexIF* systemStateLock = systemStateTask->getMutexHandle();
-//    systemStateLock->lockMutex(MutexIF::WAITING, 100);
 //    if(systemStateTask -> filledOnce) {
 //        for(auto &task: taskStatArray) {
 //            sif::info << task.pcTaskName << std::endl;
 //        }
 //    }
-//    systemStateLock->unlockMutex();
-    oneShot = false;
 }
 
 ReturnValue_t CoreController::checkModeCommand(Mode_t mode, Submode_t submode,
@@ -73,5 +53,22 @@ MessageQueueId_t CoreController::getCommandQueue() const {
 
 ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t CoreController::initializeAfterTaskCreation() {
+    numberOfTasks = uxTaskGetNumberOfTasks();
+    taskStatArray.reserve(numberOfTasks);
+    taskStatArray.resize(numberOfTasks);
+    systemStateTask = objectManager->
+            get<SystemStateTask>(objects::SYSTEM_STATE_TASK);
+    if(systemStateTask != nullptr) {
+        systemStateTask->assignStatusWritePtr(taskStatArray.data(),
+                numberOfTasks);
+    }
+    else {
+        sif::error << "CoreController::performControlOperation:"
+                "System state task invalid!" << std::endl;
+    }
     return HasReturnvaluesIF::RETURN_OK;
 }

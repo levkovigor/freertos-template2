@@ -32,9 +32,9 @@ public:
 	ReturnValue_t executeAction(ActionId_t actionId,
 	            MessageQueueId_t commandedBy, const uint8_t* data,
 	            size_t size) override;
+	ReturnValue_t initializeAfterTaskCreation() override;
 private:
 	ActionHelper actionHelper;
-	bool numberOfTasksCached = false;
 	uint16_t numberOfTasks = 0;
 	bool oneShot = true;
 
