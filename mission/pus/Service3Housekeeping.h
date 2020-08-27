@@ -95,6 +95,7 @@ private:
 			MessageQueueId_t* messageQueueToSet, object_id_t* objectId);
 
 	ReturnValue_t generateHkReport(const CommandMessage* hkMessage);
+	void handleUnrequestedReply(CommandMessage* reply) override;
 };
 
 

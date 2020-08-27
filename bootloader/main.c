@@ -1,5 +1,6 @@
 #include <board.h>
 #include <AT91SAM9G20.h>
+#include <board_memories.h>
 
 #include "main.h"
 
@@ -57,6 +58,12 @@ int main()
     // Enable I-Cache
     //-------------------------------------------------------------------------
     CP15_Enable_I_Cache();
+
+    //-------------------------------------------------------------------------
+    // Configure SDRAM
+    //-------------------------------------------------------------------------
+    TRACE_INFO("Initiating SDRAM\n\r");
+    BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
 
     feed_watchdog_if_necessary();
     // verify hamming code of image in sdram. code size is either written in

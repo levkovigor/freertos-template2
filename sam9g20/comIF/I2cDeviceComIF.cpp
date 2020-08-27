@@ -177,7 +177,8 @@ ReturnValue_t I2cDeviceComIF::requestReply(I2cCookie * i2cCookie,
 		return result;
 	}
 	// Take the semaphore, should have been released by the callback.
-	result = i2cCookie->getSemaphoreObjectHandle().acquire(10);
+	result = i2cCookie->getSemaphoreObjectHandle().acquire(
+	        SemaphoreIF::TimeoutType::WAITING, 10);
 	if(result == SemaphoreIF::SEMAPHORE_TIMEOUT) {
 		sif::error << "I2cDeviceComIF::requestReply: Possible configuration"
 				"error, semaphore timeout!" << std::endl;

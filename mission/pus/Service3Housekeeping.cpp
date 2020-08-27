@@ -125,6 +125,11 @@ ReturnValue_t Service3Housekeeping::handleReply(const CommandMessage* reply,
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
+void Service3Housekeeping::handleUnrequestedReply(
+        CommandMessage* reply) {
+    sif::info << "Unrequested reply received!" << std::endl;
+}
+
 MessageQueueId_t Service3Housekeeping::getHkQueue() const {
 	return commandQueue->getId();
 }

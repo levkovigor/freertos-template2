@@ -46,7 +46,7 @@ int main(void)
 {
     // DBGU output configuration
     TRACE_CONFIGURE(DBGU_STANDARD, 115200, BOARD_MCK);
-    printf("-- Source On Board Software --\n\r");
+    printf("-- Source On-Board Software --\n\r");
     printf("-- %s --\n\r", BOARD_NAME);
     printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 
@@ -59,6 +59,7 @@ int main(void)
 
     // Core Task. Custom interrupts should be configured inside a task.
     xTaskCreate(initTask, (const char*)"InitTask", 3072, nullptr, 1, nullptr);
+    printf("-- Starting FreeRTOS task scheduler --\n\r");
     vTaskStartScheduler();
     // This should never be reached.
     for(;;) {}

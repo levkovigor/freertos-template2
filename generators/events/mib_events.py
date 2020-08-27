@@ -32,7 +32,7 @@ CPP_COPY_DESTINATION = "../../config/events/"
 
 FILE_SEPARATOR = ";"
 SUBSYSTEM_DEFINITION_DESTINATIONS = ["../../config/tmtc/subsystemIdRanges.h",
-                                     "../../framework/events/fwSubsystemIdRanges.h"]
+                                     "../../fsfw/events/fwSubsystemIdRanges.h"]
 HEADER_DEFINITION_DESTINATIONS = ["../../mission/", "../../framework/"]
 
 

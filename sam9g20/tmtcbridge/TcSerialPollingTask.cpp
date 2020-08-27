@@ -105,29 +105,31 @@ void TcSerialPollingTask::initiateUartTransfers() {
 void TcSerialPollingTask::pollUart() {
 	ReturnValue_t result = uartSemaphore1.acquire();
 	if(result == HasReturnvaluesIF::RETURN_OK) {
+	    // todo: handle lock error
 		sharedRingBuffer->lockRingBufferMutex(MutexIF::TimeoutType::WAITING, 2);
 		sharedRingBuffer->writeData(readBuffer1.data(), transfer1bytesReceived);
 		sharedRingBuffer->unlockRingBufferMutex();
 		if(transfer1Status != done_uart) {
-			// handle error here
+			// todo: handle error here
 		}
 		int retval = UART_queueTransfer(&uartTransfer1);
 		if(retval != 0) {
-			//config error
+			// todo: config error debug output
 		}
 	}
 
 	result = uartSemaphore2.acquire();
 	if(result == HasReturnvaluesIF::RETURN_OK) {
+	    // todo: handle lock error
 		sharedRingBuffer->lockRingBufferMutex(MutexIF::TimeoutType::WAITING, 2);
 		sharedRingBuffer->writeData(readBuffer2.data(), transfer2bytesReceived);
 		sharedRingBuffer->unlockRingBufferMutex();
 		if(transfer2Status != done_uart) {
-			// handle error here
+		    // todo: handle error here
 		}
 		int retval = UART_queueTransfer(&uartTransfer2);
 		if(retval != 0) {
-			//config error
+		    // todo: config error debug output
 		}
 	}
 }

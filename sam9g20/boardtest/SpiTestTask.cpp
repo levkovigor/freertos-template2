@@ -377,7 +377,8 @@ void SpiTestTask::performNonBlockingSpiTest(SPIslave slave, uint8_t bufferPositi
 
 
 	BinarySemaphore binarySemaphore = BinarySemaphore();
-	ReturnValue_t result = binarySemaphore.acquireWithTickTimeout(10);
+	ReturnValue_t result = binarySemaphore.acquireWithTickTimeout(
+	        SemaphoreIF::TimeoutType::WAITING, 10);
 	spiTransfer.semaphore  = binarySemaphore.getSemaphore();
 
 	if(result == RETURN_FAILED) {
@@ -392,7 +393,8 @@ void SpiTestTask::performNonBlockingSpiTest(SPIslave slave, uint8_t bufferPositi
 	else {
 		// Block on the semaphore waiting for the transfer to finish
 		// timeout 10 ticks
-		result = binarySemaphore.acquireWithTickTimeout(10);
+		result = binarySemaphore.acquireWithTickTimeout(
+		        SemaphoreIF::TimeoutType::WAITING, 10);
 		if(result == RETURN_FAILED) {
 			sif::warning << "SPI Test: xSemaphoreTake failed" << std::endl;
 			return;

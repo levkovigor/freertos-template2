@@ -224,7 +224,7 @@ void GPSHandler::fillCommandAndReplyMap() {
 	insertInCommandAndReplyMap(SET_GPS_NMEA_OUTPUT,8);
 	insertInCommandAndReplyMap(SET_GPS_MESSAGE_TYPE,8);
 	insertInCommandAndReplyMap(SET_GPS_UPDATE_RATE,8);
-	insertInReplyMap(NAVIGATION_DATA_MESSAGE,4,true);
+	insertInReplyMap(NAVIGATION_DATA_MESSAGE, 4, nullptr, true);
 }
 
 

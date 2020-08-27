@@ -37,6 +37,8 @@ namespace objects {
 		/* 0x44 ('D') for Device Handlers **/
 		/* Second Byte: ComIF -> 0x00: UART,0x10 SPI,0x20: I2C,30: GPIO,40: PWM */
 		/* Third Byte: Device ID */
+		CORE_CONTROLLER = 0x4002000,
+		SYSTEM_STATE_TASK = 0x4002005,
 		PCDU_HANDLER = 0x44003200,
 		GPS0_HANDLER = 0x44101F00,
 		GPS1_HANDLER = 0x44202000,
