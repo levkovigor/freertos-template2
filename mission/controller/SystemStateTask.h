@@ -16,13 +16,10 @@ public:
     void assignStatusWritePtr(TaskStatus_t* writePtr, uint16_t numberOfTasks);
     ReturnValue_t performOperation(uint8_t opCode) override;
     void readSystemState();
-    MutexIF* getMutexHandle();
 
     ReturnValue_t initializeAfterTaskCreation() override;
-    bool filledOnce = false;
 private:
     BinarySemaphoreUsingTask* semaphore = nullptr;
-    //MutexIF* mutex;
 
     TaskStatus_t* taskStatusWritePtr = nullptr;
     uint16_t numberOfTasks = 0;
