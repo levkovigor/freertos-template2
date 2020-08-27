@@ -18,7 +18,8 @@ TEST_CASE("Binary Semaphore Test" , "[BinSemaphore]") {
 				retval::CATCH_OK);
 		{
 			Stopwatch stopwatch(false);
-			REQUIRE(binSemaph->acquire(5) == SemaphoreIF::SEMAPHORE_TIMEOUT);
+			REQUIRE(binSemaph->acquire(SemaphoreIF::TimeoutType::WAITING, 5) ==
+					SemaphoreIF::SEMAPHORE_TIMEOUT);
 			dur_millis_t time = stopwatch.stop();
 			CHECK(time == 5);
 		}

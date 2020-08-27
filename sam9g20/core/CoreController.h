@@ -1,9 +1,10 @@
 #ifndef MISSION_DEVICES_COREHANDLER_H_
 #define MISSION_DEVICES_COREHANDLER_H_
 
+#include "SystemStateTask.h"
 #include <fsfw/action/HasActionsIF.h>
-#include <mission/controller/SystemStateTask.h>
 #include <fsfw/controller/ControllerBase.h>
+
 
 extern "C" {
 #include <hal/supervisor.h>

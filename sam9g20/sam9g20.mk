@@ -9,6 +9,9 @@ CSRC += $(wildcard $(CURRENTPATH)/boardconfig/*.c)
 CXXSRC += $(wildcard $(CURRENTPATH)/boardtest/*.cpp)
 CSRC += $(wildcard $(CURRENTPATH)/boardtest/*.c)
 
+CXXSRC += $(wildcard $(CURRENTPATH)/core/*.cpp)
+CSRC += $(wildcard $(CURRENTPATH)/core/*.c)
+
 CXXSRC += $(wildcard $(CURRENTPATH)/comIF/*.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/comIF/cookies/*.cpp)
 

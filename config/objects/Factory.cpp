@@ -46,8 +46,6 @@
 #include <mission/devices/GPSHandler.h>
 #include <mission/devices/ThermalSensorHandler.h>
 #include <mission/devices/GyroHandler.h>
-#include <mission/controller/CoreController.h>
-#include <mission/controller/SystemStateTask.h>
 #include <mission/fdir/PCDUFailureIsolation.h>
 
 /* Test files */
@@ -69,6 +67,8 @@
 #include <sam9g20/comIF/GpioDeviceComIF.h>
 #include <sam9g20/comIF/RS232DeviceComIF.h>
 #include <sam9g20/comIF/SpiDeviceComIF.h>
+#include <sam9g20/core/CoreController.h>
+#include <sam9g20/core/SystemStateTask.h>
 #include <sam9g20/utility/FreeRTOSStackMonitor.h>
 
 #include <test/testdevices/TestDeviceHandler.h>

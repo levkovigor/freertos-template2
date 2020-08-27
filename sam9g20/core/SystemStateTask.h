@@ -1,5 +1,5 @@
-#ifndef MISSION_CONTROLLER_SYSTEMSTATETASK_H_
-#define MISSION_CONTROLLER_SYSTEMSTATETASK_H_
+#ifndef SAM9G20_SYSTEMSTATETASK_H_
+#define SAM9G20_SYSTEMSTATETASK_H_
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/osal/FreeRTOS/BinSemaphUsingTask.h>
@@ -27,4 +27,4 @@ private:
 };
 
 
-#endif /* MISSION_CONTROLLER_SYSTEMSTATETASK_H_ */
+#endif /* SAM9G20_SYSTEMSTATETASK_H_ */
