@@ -12,8 +12,7 @@ ReturnValue_t SystemStateTask::performOperation(uint8_t opCode) {
     semaphore->acquire();
     while(true) {
         semaphore->acquire();
-        if(taskStatusWritePtr != nullptr and numberOfTasks > 0
-                and xTaskGetSchedulerState() == taskSCHEDULER_RUNNING) {
+        if(taskStatusWritePtr != nullptr and numberOfTasks > 0) {
             uxTaskGetSystemState(taskStatusWritePtr, numberOfTasks, nullptr);
         }
     }
@@ -30,6 +29,13 @@ void SystemStateTask::readSystemState() {
     if(semaphore->getSemaphoreCounter() == 0) {
         semaphore->release();
     }
+}
+
+bool SystemStateTask::getSystemStateWasRead() const {
+    if(semaphore->getSemaphoreCounter() == 0) {
+        return true;
+    }
+    return false;
 }
 
 ReturnValue_t SystemStateTask::initializeAfterTaskCreation() {

@@ -16,6 +16,7 @@ public:
     void assignStatusWritePtr(TaskStatus_t* writePtr, uint16_t numberOfTasks);
     ReturnValue_t performOperation(uint8_t opCode) override;
     void readSystemState();
+    bool getSystemStateWasRead() const;
 
     ReturnValue_t initializeAfterTaskCreation() override;
 private:
