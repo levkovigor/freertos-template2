@@ -1,5 +1,6 @@
+#include "CoreController.h"
+
 #include <fsfw/timemanager/Stopwatch.h>
-#include <mission/controller/CoreController.h>
 #include <systemObjectList.h>
 
 CoreController::CoreController(object_id_t objectId): ControllerBase(objectId,

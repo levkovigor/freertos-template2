@@ -19,7 +19,7 @@ OS_FSFW = linux
 CUSTOM_DEFINES += -D$(OS_FSFW)
 
 # General folder paths
-FRAMEWORK_PATH = framework
+FRAMEWORK_PATH = fsfw
 MISSION_PATH = mission
 CONFIG_PATH = $(BOARD_FILE_ROOT)/config
 TEST_PATH = test
