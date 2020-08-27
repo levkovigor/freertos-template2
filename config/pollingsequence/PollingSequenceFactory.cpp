@@ -55,7 +55,7 @@ ReturnValue_t pst::pollingSequenceInitDefault(FixedTimeslotTaskIF *thisSequence)
     thisSequence->addSlot(objects::DUMMY_HANDLER,
             length * 0.8, DeviceHandlerIF::GET_READ);
 
-	if (thisSequence->checkAndInitializeSequence() == HasReturnvaluesIF::RETURN_OK) {
+	if (thisSequence->checkSequence() == HasReturnvaluesIF::RETURN_OK) {
 		return HasReturnvaluesIF::RETURN_OK;
 	}
 	else {
@@ -132,7 +132,7 @@ ReturnValue_t pst::pollingSequenceInitTest(FixedTimeslotTaskIF *thisSequence) {
 //	thisSequence->addSlot(objects::ARDUINO_4,
 //			length * 0.8,  DeviceHandlerIF::GET_READ);
 
-	if (thisSequence->checkAndInitializeSequence() == HasReturnvaluesIF::RETURN_OK) {
+	if (thisSequence->checkSequence() == HasReturnvaluesIF::RETURN_OK) {
 		return HasReturnvaluesIF::RETURN_OK;
 	}
 	else {
