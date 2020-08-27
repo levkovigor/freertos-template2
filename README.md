@@ -425,30 +425,11 @@ A general list of adaptations and style guidelines will be provided:
   the K&R profile with LineWrapping->MaximumLineWidth set to the desired value
   (default value is 80). This doesn't have to be followed stricly
   but adhering to this column width consistently helps with code readability.
-- Type definitions for built-in types have a \_t appended at the end
 - Prefer explicit types like uint8_t, uint16_t, uint32_t
-- Use all upper case letters with words seperated by underscores for constants
-  and enum members.
-  ```cpp
-  typedef uint8_t my_type_t
-  static const my_type_t MY_CONSTANT = 1
-  enum class MyTestEnum: uint8_t {
-	   TEST_1,
-	   TEST_2
-  };
-  ```
-- Prefer strongly typed enums (enum class instead of enum)
 - Prefer nullptr over NULL
 - Member variables which are zero or nullptr initialized, can be initialized in header file
   directly instead of using an initializer list in the source file
-- Use CamelCase with the first letter upper case for classes, enums and structs
-- Use CamelCase with the first letter lower case for class, struct or enum functions
 - Try to keep the scope of variables as small as possible
-- Write abbreviations in CamelCase too (does not apply to file names)
-- For user defined typedefs of objects, use camel case too
-  ```cpp
-  using std::map<uint32_t, SomeObject> =  ObjectMap
-  ```
 
 ### Common errors and crash causes in C++/C and basic concepts
 
