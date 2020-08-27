@@ -88,7 +88,7 @@ void testsemaph::testBinSemaphoreImplementation(SemaphoreIF* binSemaph,
 	// might get interrupted..
 	{
 		//Stopwatch stopwatch(false);
-		result = binSemaph->acquire(10);
+		result = binSemaph->acquire(SemaphoreIF::TimeoutType::WAITING, 10);
 		//dur_millis_t time = stopwatch.stop();
 //		if(abs(time - 10) > 2) {
 //		    sif::error << "UnitTester: Semaphore timeout measured incorrect."
@@ -134,7 +134,7 @@ void testsemaph::testCountingSemaphImplementation(SemaphoreIF* countingSemaph,
 	{
 		Stopwatch stopwatch(false);
 		// attempt to take when count is 0, measure time
-		result = countingSemaph->acquire(10);
+		result = countingSemaph->acquire(SemaphoreIF::TimeoutType::WAITING, 10);
 		dur_millis_t time = stopwatch.stop();
 		if(abs(time - 10) > 1) {
 			unitt::put_error(id);

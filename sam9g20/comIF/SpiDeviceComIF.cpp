@@ -91,7 +91,8 @@ ReturnValue_t SpiDeviceComIF::sendMessage(CookieIF *cookie,
 	    return HasReturnvaluesIF::RETURN_FAILED;
 	}
 
-	ReturnValue_t result = spiSemaphore.acquire(20);
+	ReturnValue_t result = spiSemaphore.acquire(
+	        SemaphoreIF::TimeoutType::WAITING, 20);
 	if(result != HasReturnvaluesIF::RETURN_OK) {
 	    sif::warning << "SpiDeviceComIF::sendMessage: Semaphore unavailable "
 	            "for long time!" << std::endl;
@@ -187,6 +188,7 @@ void SpiDeviceComIF::checkTransferResult(SpiCookie* spiCookie,
     // Try to take semaphore, blocks task if transfer has not finished yet
     // The semaphore is given back by the callback
     ReturnValue_t result = binSemaph.acquireWithTickTimeout(
+            SemaphoreIF::TimeoutType::WAITING,
             SPI_STANDARD_SEMAPHORE_TIMEOUT);
     if(result == BinarySemaphore::SEMAPHORE_TIMEOUT) {
         // DON'T IGNORE THIS WARNING!!!
