@@ -162,3 +162,4 @@ void CoreController::initializeIsisTimerDrivers() {
     RTT_start();
 #endif
 }
+
