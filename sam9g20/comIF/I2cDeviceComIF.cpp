@@ -229,7 +229,7 @@ ReturnValue_t I2cDeviceComIF::assignReply(I2cCookie * i2cCookie,
 				" Configuration Error, taking semaphore !" << std::endl;
 		return result;
 	}
-	if(ReturnValue_t result = binSemaph.release(); result != RETURN_OK) {
+	if(result = binSemaph.release(); result != RETURN_OK) {
 		sif::error << "I2cDeviceComIF: Configuration Error, "
 				"giving semaphore !" << std::endl;
 		return result;
