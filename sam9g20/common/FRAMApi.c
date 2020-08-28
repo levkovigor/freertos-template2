@@ -99,3 +99,14 @@ int reset_sdc1sl1_reboot_counter() {
     return FRAM_writeAndVerify((unsigned char*) &new_reboot_counter,
             SDC1SL1_REBOOT_COUNTER_ADDR, sizeof(new_reboot_counter));
 }
+
+int update_seconds_since_epoch(uint64_t secondsSinceEpoch) {
+	return FRAM_writeAndVerify((unsigned char*) &secondsSinceEpoch,
+			SEC_SINCE_EPOCH_ADDR, sizeof(secondsSinceEpoch));
+}
+
+int read_seconds_since_epoch(uint64_t *secondsSinceEpoch) {
+	return FRAM_read((unsigned char*) secondsSinceEpoch,
+			SEC_SINCE_EPOCH_ADDR,
+			sizeof(((FRAMCriticalData*)0)->seconds_since_epoch));
+}

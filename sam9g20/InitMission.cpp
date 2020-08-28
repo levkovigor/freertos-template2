@@ -21,7 +21,6 @@
 #include <sam9g20/utility/FreeRTOSStackMonitor.h>
 #include <freertos/FreeRTOS.h>
 
-
 /* Initialize Data Pool */
 namespace glob {
 GlobalDataPool dataPool(datapool::dataPoolInit);
@@ -83,8 +82,9 @@ void boardTestTaskInit();
  * @ingroup init
  */
 void initMission(void) {
-    sif::info << "Initiating mission specific code." << std::endl;
-    ReturnValue_t result;
+	sif::info << "Initiating mission specific code." << std::endl;
+
+    ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     // Allocate object manager here, as global constructors
     // might not be executed, depending on buildchain
     sif::info << "Creating objects." << std::endl;
@@ -92,12 +92,15 @@ void initMission(void) {
 
     objectManager -> initialize();
 
-    // TODO(Robin): We should use GPS time here or assign variable
-    // stored in FRAM...
+    // There will be a back up time in the FRAM which is updated regularly.
+    // We should assign that backup variable for the current time.
+    // If the RTC is not reset during a full power cycle, it might have
+    // the current time as well.. need to test this.
     timeval currentTime;
     sif::info << "Setting time to 0." << std::endl;
     currentTime.tv_sec = 0;
     currentTime.tv_usec = 0;
+
     sif::info << "Setting initial clock." << std::endl;
     Clock::setClock(&currentTime);
 

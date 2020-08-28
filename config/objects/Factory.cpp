@@ -28,9 +28,9 @@
 #include <fsfw/pus/CService201HealthCommanding.h>
 #include <fsfw/pus/Service5EventReporting.h>
 #include <fsfw/pus/Service8FunctionManagement.h>
+#include <mission/pus/Service9CustomTimeManagement.h>
 #include <mission/pus/Service3HousekeepingPSB.h>
 #include <mission/pus/Service6MemoryManagement.h>
-#include <mission/pus/Service9TimeManagement.h>
 #include <mission/pus/Service17CustomTest.h>
 #include <mission/pus/Service20ParameterManagement.h>
 #include <mission/pus/Service23FileManagement.h>
@@ -149,7 +149,8 @@ void Factory::produce(void) {
 			pus::PUS_SERVICE_3);
 	new Service5EventReporting(objects::PUS_SERVICE_5, apid::SOURCE_OBSW,
 	        pus::PUS_SERVICE_5);
-	new Service9TimeManagement(objects::PUS_SERVICE_9);
+	new Service9CustomTimeManagement(objects::PUS_SERVICE_9, apid::SOURCE_OBSW,
+			pus::PUS_SERVICE_9);
 	new Service17CustomTest(objects::PUS_SERVICE_17, apid::SOURCE_OBSW,
 	        pus::PUS_SERVICE_17);
 	new Service23FileManagement(objects::PUS_SERVICE_23);

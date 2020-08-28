@@ -21,6 +21,7 @@
  */
 typedef struct __attribute__((__packed__))  _FRAMCriticalData {
 	uint16_t reboot_counter;
+	uint64_t seconds_since_epoch;
 	//! To copy software update from the SD card into the SDRAM at restart.
 	bool software_update_available;
 
@@ -51,6 +52,8 @@ typedef struct __attribute__((__packed__))  _FRAMCriticalData {
 
 static const uint32_t REBOOT_COUNTER_ADDR =
 		offsetof(FRAMCriticalData, reboot_counter);
+static const uint32_t SEC_SINCE_EPOCH_ADDR =
+		offsetof(FRAMCriticalData, seconds_since_epoch);
 static const uint32_t SOFTWARE_UPDATE_BOOL_ADDR =
         offsetof(FRAMCriticalData, software_update_available);
 
@@ -90,6 +93,9 @@ static const uint32_t NUMBER_OF_ACTIVE_TASKS_ADDRESS =
 
 int increment_reboot_counter();
 int read_reboot_counter(uint16_t* reboot_counter);
+
+int update_seconds_since_epoch(uint64_t secondsSinceEpoch);
+int read_seconds_since_epoch(uint64_t* secondsSinceEpoch);
 
 int write_nor_flash_binary_info(size_t binary_size, size_t hamming_code_offset);
 int read_nor_flash_binary_info(size_t* binary_size, size_t* hamming_code_offset);
