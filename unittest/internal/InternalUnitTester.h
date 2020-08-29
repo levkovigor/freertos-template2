@@ -22,7 +22,7 @@ public:
 	 * Some function which calls all other tests
 	 * @return
 	 */
-	ReturnValue_t perform_tests();
+	ReturnValue_t performTests();
 };
 
 

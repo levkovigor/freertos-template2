@@ -16,6 +16,7 @@ extern "C"{
 #include <freertos/task.h>
 
 #include <hal/Timing/WatchDogTimer.h>
+#include <sam9g20/common/FRAMApi.h>
 
 #ifdef ETHERNET
 #include <emac.h>
@@ -29,6 +30,14 @@ extern struct netif *netif;
 }
 
 #include <fsfw/tasks/TaskFactory.h>
+
+#ifndef SW_VERSION
+#define SW_VERSION 0
+#endif
+
+#ifndef SW_SUBVERSION
+#define SW_SUBVERSION 0
+#endif
 
 // quick fix to bypass link error
 extern "C" void __sync_synchronize() {}
@@ -53,7 +62,8 @@ int main(void)
 
 #ifdef ISIS_OBC_G20
 	// Task with the sole purpose of kicking the watchdog to prevent
-	// an iOBC restart
+	// an iOBC restart. This should be done as soon as possible and before
+    // anything is printed.
 	int retval = WDT_startWatchdogKickTask(
 			WATCHDOG_KICK_INTERVAL_MS / portTICK_RATE_MS, FALSE);
 	if(retval != 0) {
@@ -61,11 +71,25 @@ int main(void)
 	}
 #endif
 
+	const uint8_t swVersion = SW_VERSION;
+	const uint8_t swSubversion = SW_SUBVERSION;
+
     printf("-- Source On-Board Software --\n\r");
     printf("-- %s --\n\r", BOARD_NAME);
+    printf("-- Software version v%d.%d --\n\r", swVersion, swSubversion);
     printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 
+    // Enable Co-Processor instruction cache.
     CP15_Enable_I_Cache();
+
+#ifdef ISIS_OBC_G20
+    // Write software version and subversion to FRAM
+    int result = write_software_version(swVersion, swSubversion);
+    if(result != 0) {
+        TRACE_ERROR("Error writing software version to FRAM\n\r");
+    }
+#endif
+
 #if defined(at91sam9g20_ek)
     ConfigureLeds();
     configureEk();

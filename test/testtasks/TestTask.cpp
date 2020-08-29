@@ -53,21 +53,9 @@ ReturnValue_t TestTask::performOperation(uint8_t operationCode) {
 
 ReturnValue_t TestTask::performOneShotAction() {
 	// Everything here will only be performed once.
-	//performEtlTest();
-	//performPusInjectorTest();
-	//examplePacketTest();
-	return performFrameworkUnitTests();;
+    return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t TestTask::performFrameworkUnitTests() {
-	InternalUnitTester unitTestClass;
-	ReturnValue_t result = unitTestClass.perform_tests();
-	if(result != RETURN_OK) {
-		sif::error << "Framework Unit Test did not run successfully !\n"
-			  << std::flush;
-	}
-	return result;
-}
 
 ReturnValue_t TestTask::performPeriodicAction() {
 	ReturnValue_t result = RETURN_OK;
