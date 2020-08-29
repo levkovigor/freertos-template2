@@ -401,7 +401,7 @@ void initMission(void) {
     boardTestTaskInit();
 
     sif::info << "Remaining FreeRTOS heap size: " << std::dec
-            << xPortGetFreeHeapSize() << std::endl;
+            << xPortGetFreeHeapSize() << " bytes." << std::endl;
     size_t remainingFactoryStack = TaskManagement::getTaskStackHighWatermark();
     if(remainingFactoryStack < 3000) {
         sif::warning << "Factory Task: Remaining stack size: "
