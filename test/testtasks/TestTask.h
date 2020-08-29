@@ -34,7 +34,6 @@ protected:
 	virtual ReturnValue_t performPeriodicAction();
 	virtual ReturnValue_t performActionA();
 	virtual ReturnValue_t performActionB();
-	virtual ReturnValue_t performFrameworkUnitTests();
 
 	enum testModes: uint8_t {
 		A,

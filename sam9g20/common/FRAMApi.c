@@ -1,6 +1,31 @@
 #include "FRAMApi.h"
 #include <hal/Storage/FRAM.h>
 
+int write_software_version(uint8_t software_version,
+        uint8_t software_subversion) {
+    int result = FRAM_writeAndVerify((unsigned char*) &software_version,
+            SOFTWARE_VERSION_ADDR, sizeof(software_version));
+    if(result != 0) {
+        return result;
+    }
+
+    return FRAM_writeAndVerify((unsigned char*) &software_subversion,
+            SOFTWARE_SUBVERSION_ADDR, sizeof(software_subversion));
+}
+
+int read_software_version(uint8_t *software_version,
+        uint8_t* software_subversion) {
+    int result = FRAM_read((unsigned char*) software_version,
+            SOFTWARE_VERSION_ADDR,
+            sizeof(((FRAMCriticalData*)0)->software_version));
+    if(result != 0) {
+        return result;
+    }
+    return FRAM_read((unsigned char*) software_subversion,
+            SOFTWARE_SUBVERSION_ADDR,
+            sizeof(((FRAMCriticalData*)0)->software_subversion));
+}
+
 int increment_reboot_counter() {
 	uint16_t current_counter = 0;
 	int result = read_reboot_counter(&current_counter);
@@ -99,3 +124,15 @@ int reset_sdc1sl1_reboot_counter() {
     return FRAM_writeAndVerify((unsigned char*) &new_reboot_counter,
             SDC1SL1_REBOOT_COUNTER_ADDR, sizeof(new_reboot_counter));
 }
+
+int update_seconds_since_epoch(uint64_t secondsSinceEpoch) {
+	return FRAM_writeAndVerify((unsigned char*) &secondsSinceEpoch,
+			SEC_SINCE_EPOCH_ADDR, sizeof(secondsSinceEpoch));
+}
+
+int read_seconds_since_epoch(uint64_t *secondsSinceEpoch) {
+	return FRAM_read((unsigned char*) secondsSinceEpoch,
+			SEC_SINCE_EPOCH_ADDR,
+			sizeof(((FRAMCriticalData*)0)->seconds_since_epoch));
+}
+

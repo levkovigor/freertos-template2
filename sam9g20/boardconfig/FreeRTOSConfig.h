@@ -154,6 +154,7 @@ to exclude the API function. */
 #define INCLUDE_eTaskGetState               1
 #define INCLUDE_xTaskGetSchedulerState		1
 #define INCLUDE_uxTaskGetStackHighWaterMark 1
+#define INCLUDE_xTaskGetIdleTaskHandle		1
 
 /* Run time stats. Can be turned off for mission code. */
 #define configGENERATE_RUN_TIME_STATS   		1

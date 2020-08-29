@@ -11,22 +11,13 @@ ReturnValue_t pst::pollingSequenceInitDefault(FixedTimeslotTaskIF *thisSequence)
 	uint32_t length = thisSequence->getPeriodMs();
 
 	thisSequence->addSlot(objects::PCDU_HANDLER,
-			length * 0.15, DeviceHandlerIF::SEND_WRITE);
+	        length * 0, DeviceHandlerIF::SEND_WRITE);
 	thisSequence->addSlot(objects::PCDU_HANDLER,
-	            length * 0.5, DeviceHandlerIF::GET_WRITE);
+	        length * 0.2, DeviceHandlerIF::GET_WRITE);
 	thisSequence->addSlot(objects::PCDU_HANDLER,
-	        length * 0.55,  DeviceHandlerIF::SEND_READ);
+	        length * 0.4,  DeviceHandlerIF::SEND_READ);
 	thisSequence->addSlot(objects::PCDU_HANDLER,
-	        length * 0.7, DeviceHandlerIF::GET_READ);
-
-	thisSequence->addSlot(objects::PCDU_HANDLER,
-	        length * 0.15, DeviceHandlerIF::SEND_WRITE);
-	thisSequence->addSlot(objects::PCDU_HANDLER,
-	        length * 0.5, DeviceHandlerIF::GET_WRITE);
-	thisSequence->addSlot(objects::PCDU_HANDLER,
-	        length * 0.55,  DeviceHandlerIF::SEND_READ);
-	thisSequence->addSlot(objects::PCDU_HANDLER,
-	        length * 0.7, DeviceHandlerIF::GET_READ);
+	        length * 0.8, DeviceHandlerIF::GET_READ);
 
     thisSequence->addSlot(objects::GPS0_HANDLER,
     		length * 0.3,  DeviceHandlerIF::SEND_WRITE);

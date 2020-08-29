@@ -11,7 +11,7 @@ InternalUnitTester::InternalUnitTester() {}
 
 InternalUnitTester::~InternalUnitTester() {}
 
-ReturnValue_t InternalUnitTester::perform_tests() {
+ReturnValue_t InternalUnitTester::performTests() {
 	sif::info << "Running internal unit tests..\r\n" << std::flush;
 	testserialize::test_serialization();
 	testmq::testMq();
