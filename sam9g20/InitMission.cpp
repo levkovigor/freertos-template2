@@ -400,7 +400,7 @@ void initMission(void) {
     /* Comment out for mission build */
     boardTestTaskInit();
 
-    sif::info << "Remaining heap size: " << std::dec
+    sif::info << "Remaining FreeRTOS heap size: " << std::dec
             << xPortGetFreeHeapSize() << std::endl;
     size_t remainingFactoryStack = TaskManagement::getTaskStackHighWatermark();
     if(remainingFactoryStack < 3000) {
