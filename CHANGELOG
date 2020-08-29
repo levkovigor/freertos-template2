@@ -39,3 +39,16 @@ First version tag!
 - Linux build extended greatly. New TmTc UDP bridge to allow TMTC commanding.
 - Commanding can be done with the TMTC software now, if the script is run with 
 the -c 3 flag to use UDP datagrams (run configurations have been updated accordingly)
+
+## v1.6
+
+- Repository will be public soon!
+- Serial communication has a transport layer now and uses DLE encoding
+- bootloader framework added
+- A lot of code improvements and tests of/for iOBC code
+- Software version and subversion are contained in code now
+- FRAM API added
+- CoreController added
+- Stubs for most device handlers added
+- ThermalSensorHandler uses new local data pool now
+- Several PUS services moved to Framework
