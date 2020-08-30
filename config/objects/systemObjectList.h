@@ -95,6 +95,7 @@ namespace objects {
 
 		/* 0x4d ('M') for Memory Handlers **/
 		SD_CARD_HANDLER = 0x4D0073AD,
+		FRAM_HANDLER = 0x4D008000,
 
 		/* Board Specific */
 		AT91_I2C_TEST_TASK = 0x12345678,

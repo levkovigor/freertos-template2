@@ -94,18 +94,6 @@ void initMission(void) {
 
     objectManager -> initialize();
 
-    // There will be a back up time in the FRAM which is updated regularly.
-    // We should assign that backup variable for the current time.
-    // If the RTC is not reset during a full power cycle, it might have
-    // the current time as well.. need to test this.
-    timeval currentTime;
-    sif::info << "Setting time stored in FRAM or compile time." << std::endl;
-    currentTime.tv_sec = __TIME_UNIX__;
-    currentTime.tv_usec = 0;
-
-    sif::info << "Setting initial clock." << std::endl;
-    Clock::setClock(&currentTime);
-
     sif::info << "Creating tasks.." << std::endl;
 
     /* TMTC Communication Tasks */

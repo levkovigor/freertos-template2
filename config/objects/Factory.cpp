@@ -46,6 +46,7 @@
 #include <mission/devices/GPSHandler.h>
 #include <mission/devices/ThermalSensorHandler.h>
 #include <mission/devices/GyroHandler.h>
+#include <mission/memory/FRAMHandler.h>
 #include <mission/fdir/PCDUFailureIsolation.h>
 
 /* Test files */
@@ -196,16 +197,16 @@ void Factory::produce(void) {
 	new CoreController(objects::CORE_CONTROLLER);
 	DummyCookie * dummyCookie2 = new DummyCookie(addresses::DUMMY_GPS0);
 #if defined(VIRTUAL_BUILD)
-	new GPSHandler(objects::GPS0_HANDLER, objects::DUMMY_GPS_COM_IF, dummyCookie2,
-			switches::GPS0,gps0);
+	new GPSHandler(objects::GPS0_HANDLER, objects::DUMMY_GPS_COM_IF,
+	        dummyCookie2, switches::GPS0,gps0);
 	DummyCookie * dummyCookie3 = new DummyCookie(addresses::DUMMY_GPS1);
-	new GPSHandler(objects::GPS1_HANDLER, objects::DUMMY_GPS_COM_IF, dummyCookie3,
-			switches::GPS1,gps1);
+	new GPSHandler(objects::GPS1_HANDLER, objects::DUMMY_GPS_COM_IF,
+	        dummyCookie3, switches::GPS1,gps1);
 #else
 	new GPSHandler(objects::GPS0_HANDLER,objects::DUMMY_GPS_COM_IF,
-			dummyCookie2, switches::GPS0,gps0);
+			dummyCookie2, switches::GPS0, gps0);
 	new GPSHandler(objects::GPS1_HANDLER,objects::DUMMY_GPS_COM_IF,
-			dummyCookie2, switches::GPS1,gps1);
+			dummyCookie2, switches::GPS1, gps1);
 #endif
 
 
@@ -221,6 +222,9 @@ void Factory::produce(void) {
 	#if defined(stm32)
 	#else
 	new SDCardHandler(objects::SD_CARD_HANDLER);
+#ifdef ISIS_OBC_G20
+	new FRAMHandler(objects::FRAM_HANDLER);
+#endif
 
 	/* Communication Interfaces */
 //	new RS232DeviceComIF(objects::RS232_DEVICE_COM_IF);

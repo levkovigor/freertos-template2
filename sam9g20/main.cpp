@@ -16,6 +16,7 @@ extern "C"{
 #include <freertos/task.h>
 
 #include <hal/Timing/WatchDogTimer.h>
+#include <hal/Storage/FRAM.h>
 #include <sam9g20/common/FRAMApi.h>
 
 #ifdef ETHERNET
@@ -81,14 +82,6 @@ int main(void)
 
     // Enable Co-Processor instruction cache.
     CP15_Enable_I_Cache();
-
-#ifdef ISIS_OBC_G20
-    // Write software version and subversion to FRAM
-    int result = write_software_version(swVersion, swSubversion);
-    if(result != 0) {
-        TRACE_ERROR("Error writing software version to FRAM\n\r");
-    }
-#endif
 
 #if defined(at91sam9g20_ek)
     ConfigureLeds();

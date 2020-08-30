@@ -37,6 +37,10 @@ public:
 	            size_t size) override;
 	ReturnValue_t initializeAfterTaskCreation() override;
 
+	/**
+	 * This returns the 64bit value of a 10kHz counter.
+	 * @return
+	 */
 	static uint64_t getTotalRunTimeCounter();
 	static uint64_t getTotalIdleRunTimeCounter();
 
@@ -59,7 +63,8 @@ private:
 
 	void update64bitCounter();
 	void setUpSystemStateTask();
-	void initializeIsisTimerDrivers();
+	ReturnValue_t initializeIsisTimerDrivers();
+	void generateStatsCsvAndCheckStack();
 };
 
 

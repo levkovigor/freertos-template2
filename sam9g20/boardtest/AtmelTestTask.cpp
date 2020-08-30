@@ -41,7 +41,7 @@ ReturnValue_t AtmelTestTask::performOneShotAction() {
     //Stopwatch stopwatch;
     //performSDCardDemo();
 #ifdef ISIS_OBC_G20
-	performIOBCTest();
+	//performIOBCTest();
 #endif
     return TestTask::performOneShotAction();
 }
