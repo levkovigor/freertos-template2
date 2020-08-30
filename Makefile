@@ -370,7 +370,8 @@ ASFLAGS =  -Wall -g $(OPTIMIZATION) $(I_INCLUDES) -D$(CHIP) -D__ASSEMBLY__ \
 # - LINK_LIBRARIES: Link HCC and HAL library and enable float support
 
 LDFLAGS = $(DEBUG_LEVEL) $(UNUSED_CODE_REMOVAL) $(OPTIMIZATION) $(NEWLIB_NANO) 
-LINK_INCLUDES = -L"$(HAL_PATH)/lib" -L"$(HCC_PATH)/lib" -T"$(LINKER_SCRIPT_PATH)/$(1).lds"
+LINK_INCLUDES = -L"$(HAL_PATH)/lib" -L"$(HCC_PATH)/lib" \
+		-T"$(LINKER_SCRIPT_PATH)/$(1).lds" -Wl,-Map=$(BINDIR)/$(BINARY_NAME).map
 LINK_LIBRARIES = -lc -u _printf_float -u _scanf_float -lHCC -lHCCD -lHAL -lHALD 
 
 
