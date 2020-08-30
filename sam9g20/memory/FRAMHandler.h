@@ -1,5 +1,5 @@
-#ifndef MISSION_MEMORY_FRAMHANDLER_H_
-#define MISSION_MEMORY_FRAMHANDLER_H_
+#ifndef SAM9G20_MEMORY_FRAMHANDLER_H_
+#define SAM9G20_MEMORY_FRAMHANDLER_H_
 
 #include <fsfw/memory/HasMemoryIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
@@ -30,4 +30,4 @@ protected:
 	virtual ReturnValue_t initialize() override;
 };
 
-#endif /* MISSION_MEMORY_FRAMHANDLER_H_ */
+#endif /* SAM9G20_MEMORY_FRAMHANDLER_H_ */

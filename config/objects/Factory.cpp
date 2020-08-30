@@ -39,14 +39,10 @@
 /* Utility */
 #include <mission/utility/TimeStamper.h>
 #include <mission/utility/TmFunnel.h>
-#include <mission/memory/SDCardHandler.h>
-
-/* Devices */
 #include <mission/devices/PCDUHandler.h>
 #include <mission/devices/GPSHandler.h>
 #include <mission/devices/ThermalSensorHandler.h>
 #include <mission/devices/GyroHandler.h>
-#include <mission/memory/FRAMHandler.h>
 #include <mission/fdir/PCDUFailureIsolation.h>
 
 /* Test files */
@@ -70,6 +66,8 @@
 #include <sam9g20/comIF/SpiDeviceComIF.h>
 #include <sam9g20/core/CoreController.h>
 #include <sam9g20/core/SystemStateTask.h>
+#include <sam9g20/memory/FRAMHandler.h>
+#include <sam9g20/memory/SDCardHandler.h>
 #include <sam9g20/utility/FreeRTOSStackMonitor.h>
 
 #include <test/testdevices/TestDeviceHandler.h>

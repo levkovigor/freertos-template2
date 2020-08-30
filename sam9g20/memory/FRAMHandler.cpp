@@ -1,5 +1,5 @@
-#include "FRAMHandler.h"
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <sam9g20/memory/FRAMHandler.h>
 
 extern "C" {
 #include <hal/Storage/FRAM.h>

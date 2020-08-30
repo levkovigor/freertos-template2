@@ -4,8 +4,8 @@
  * \date 27.10.2019
  */
 
-#ifndef MISSION_MEMORY_SDCARDHANDLER_H_
-#define MISSION_MEMORY_SDCARDHANDLER_H_
+#ifndef SAM9G20_MEMORY_SDCARDHANDLER_H_
+#define SAM9G20_MEMORY_SDCARDHANDLER_H_
 
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
@@ -41,4 +41,4 @@ private:
 	StorageManagerIF *IPCStore;
 };
 
-#endif /* MISSION_MEMORY_SDCARDHANDLER_H_ */
+#endif /* SAM9G20_MEMORY_SDCARDHANDLER_H_ */
