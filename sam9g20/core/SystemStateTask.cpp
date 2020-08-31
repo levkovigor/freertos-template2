@@ -25,7 +25,8 @@ ReturnValue_t SystemStateTask::performOperation(uint8_t opCode) {
     	}
     	case(InternalState::READING_STATS): {
     		if(numberOfTasks > 0) {
-    			uxTaskGetSystemState(taskStatArray.data(), numberOfTasks, nullptr);
+    			uxTaskGetSystemState(taskStatArray.data(),
+    					numberOfTasks, nullptr);
     			if(not readOnce) {
     				readOnce = true;
     			}
@@ -134,16 +135,14 @@ void SystemStateTask::generateStatsCsvAndCheckStack() {
     	if(task.xHandle == nullptr) {
     		continue;
     	}
-    	if(task.usStackHighWaterMark * 4 < STACK_THRESHOLD) {
-#ifdef DEBUG
-    		sif::debug << "SystemStateTask: "<< task.pcTaskName << " least "
-    				<< "remaining stack is " << task.usStackHighWaterMark * 4
-					<< " bytes" << std::endl;
-#endif
+    	if(task.usStackHighWaterMark * 4 < STACK_THRESHOLD and
+    			std::strcmp(task.pcTaskName, "IDLE") != 0) {
     		uint32_t firstFourLetters = 0;
     		uint32_t secondFourLetters = 0;
-    		std::memcpy(&firstFourLetters, task.pcTaskName, sizeof(firstFourLetters));
-    		std::memcpy(&secondFourLetters, task.pcTaskName + 4, sizeof(secondFourLetters));
+    		std::memcpy(&firstFourLetters, task.pcTaskName,
+    				sizeof(firstFourLetters));
+    		std::memcpy(&secondFourLetters, task.pcTaskName + 4,
+    				sizeof(secondFourLetters));
     		triggerEvent(LOW_REM_STACK, firstFourLetters, secondFourLetters);
     	}
         if(task.pcTaskName != nullptr) {
