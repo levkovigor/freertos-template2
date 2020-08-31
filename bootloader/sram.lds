@@ -39,7 +39,7 @@ MEMORY
 {
     sram0 (W!RX) : ORIGIN = 0x200000, LENGTH = 0x4000
     sram1 (W!RX) : ORIGIN = 0x300000, LENGTH = 0x4000
-    sdram (W!RX) : ORIGIN = 0x20000000, LENGTH = 0x4000000
+    sdram (W!RX) : ORIGIN = 0x20000000, LENGTH = 0x2000000
 }
 
 SECTIONS
@@ -48,19 +48,36 @@ SECTIONS
     {
         . = ALIGN(4);
         _sfixed0 = .;
-        *(.vectors)
-        *(.ramfunc)
+        *(.vectors) 
+        KEEP(*(.startup)); /* Start up code needed  for FreeRTOS */
+ 		*(.sramfunc)
         *(.text*)
         *(.rodata*)
         *(.data)
+        *(.data*)				/* contains all initialized global and static variables */
         *(.glue_7)
         *(.glue_7t)
+        *(.CP15_*)
         KEEP (*(.init))
     	KEEP (*(.fini))
         . = ALIGN(4);
         _efixed0 = .;
         _efixed = .;
     } >sram0
+    
+    	/* used for unwinding, can be useful for debugging  */  
+	.ARM.extab   : AT(_efixedsec) 
+    {  
+		*(.ARM.extab* .gnu.linkonce.armextab.*) 
+	} >sram0
+   
+    /* used for unwinding, can be useful for debugging  */  
+	__exidx_start = .;
+    .ARM.exidx (NOLOAD) : 
+    {
+		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
+	} >sram0
+    __exidx_end = .;
 
     .fixed1 :
     {
@@ -84,7 +101,24 @@ SECTIONS
         _spostrelocate = .;
         . = ALIGN(4);
         _epostrelocate = .;
-    }
+    } 
+    
+    .sramdata : AT (_sprerelocate + SIZEOF(.prerelocate) + SIZEOF(.postrelocate))
+    {
+        . = ALIGN(4);
+        _ssramdata = .;
+        *(.sramdata)
+        . = ALIGN(4);
+        _esramdata = .;
+    } >sram1
+    
+    .srambss (NOLOAD) : {
+        . = ALIGN(4);
+        _ssrambss = .;
+        *(.srambss)
+        . = ALIGN(4);
+        _esrambss = .;
+    } >sram1
 
     .bss (NOLOAD) : {
         _szero = .;

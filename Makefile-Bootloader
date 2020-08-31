@@ -49,6 +49,10 @@ MEMORY_TYPE = nandflash
 CUSTOM_DEFINES = -DOP_BOOTSTRAP_on
 endif
 
+SW_VERSION = 0
+SW_SUBVERSION = 1
+CUSTOM_DEFINES += -DSW_VERSION=$(SW_VERSION)
+CUSTOM_DEFINES += -DSW_SUBVERSION=$(SW_SUBVERSION)
 
 ifdef ADD_CR
 CUSTOM_DEFINES += -DADD_CR
@@ -65,7 +69,11 @@ endif
 
 IOBC_REMOTE_IP = 192.168.199.228
 
+ifdef IOBC
+OS_APP = freeRTOS
+else
 OS_APP = None
+endif
 CUSTOM_DEFINES += -D$(OS_APP)
 
 # General folder paths
@@ -114,7 +122,7 @@ USE_AT91LIB_STDIO_AND_STRING = 1
 
 # Dynamic Traces to allow change of trace level at run-time by 
 # setting traceLevel global variable
-DYN_TRACES = 1
+DYN_TRACES = 0
 
 # Optimization level. -O0 for debugging, -Os for size. -O0 is default.
 OPTIMIZATION = -O0
@@ -183,6 +191,10 @@ INCLUDES :=
 # Directories where $(directoryname).mk files should be included from.
 # Source files and includes can be added in those submakefiles.
 SUBDIRS := $(BOOTLOADER_PATH) $(PRIVLIB_PATH) 
+
+ifeq ($(OS_APP), freeRTOS) 
+SUBDIRS += $(FREERTOS_PATH)
+endif
 
 # This is a hack from http://make.mad-scientist.net/the-eval-function/
 #
