@@ -65,10 +65,10 @@ void CoreController::performControlOperation() {
     }
 #endif
 
-    if(currentUptimeSeconds - lastDumpSecond >= 20) {
-        systemStateTask->readAndGenerateStats();
-        lastDumpSecond = currentUptimeSeconds;
-    }
+//    if(currentUptimeSeconds - lastDumpSecond >= 20) {
+//        systemStateTask->readAndGenerateStats();
+//        lastDumpSecond = currentUptimeSeconds;
+//    }
 
 }
 
