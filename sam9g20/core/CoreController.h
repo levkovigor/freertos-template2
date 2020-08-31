@@ -49,6 +49,9 @@ private:
 	ActionHelper actionHelper;
 	uint16_t numberOfTasks = 0;
 	bool cpuStatsDumpRequested = true;
+	bool cpuStatDumpPending = false;
+	uint32_t lastDumpSecond = 0;
+	std::array<uint8_t, 2048> statsArray;
 
 	uint32_t lastCounterUpdateSeconds = 0;
 	static uint32_t counterOverflows;
@@ -65,6 +68,7 @@ private:
 	void setUpSystemStateTask();
 	ReturnValue_t initializeIsisTimerDrivers();
 	void generateStatsCsvAndCheckStack();
+	void writePaddedName(uint8_t* buffer, const char *pcTaskName);
 };
 
 
