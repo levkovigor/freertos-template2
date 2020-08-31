@@ -74,6 +74,7 @@ OS_APP = freeRTOS
 else
 OS_APP = None
 endif
+
 CUSTOM_DEFINES += -D$(OS_APP)
 
 # General folder paths

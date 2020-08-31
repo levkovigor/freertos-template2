@@ -48,8 +48,8 @@ SECTIONS
     {
         . = ALIGN(4);
         _sfixed0 = .;
-        *(.vectors) 
-        KEEP(*(.startup)); /* Start up code needed  for FreeRTOS */
+        KEEP(*(.vectors));
+        KEEP(*(.startup));  /* Start up code needed  for FreeRTOS */
  		*(.sramfunc)
         *(.text*)
         *(.rodata*)

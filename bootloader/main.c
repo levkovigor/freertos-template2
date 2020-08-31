@@ -48,8 +48,17 @@
 #define WATCHDOG_KICK_INTERVAL_MS 10
 
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
-void init_task(void* args);
 void initialize_iobc_peripherals();
+void idle_loop();
+void perform_bootloader_core_operation();
+
+#ifdef freeRTOS
+void init_task(void* args);
+void handler_task(void * args);
+static TaskHandle_t handler_task_handle_glob = NULL;
+#endif
+
+
 
 /**
  * @brief	Bootloader which will copy the primary software to SDRAM and
@@ -66,7 +75,7 @@ int main()
     //-------------------------------------------------------------------------
     // Initiate periodic MS interrupt
     //-------------------------------------------------------------------------
-#ifndef freeRTOS
+#ifndef ISIS_OBC_G20
     setup_timer_interrupt();
 #endif
 
@@ -74,15 +83,13 @@ int main()
     // Initiate watchdog for iOBC
     //-------------------------------------------------------------------------
 #ifdef ISIS_OBC_G20
-#ifndef freeRTOS
-    initiate_external_watchdog();
-#else
     int retval = WDT_startWatchdogKickTask(
             WATCHDOG_KICK_INTERVAL_MS / portTICK_RATE_MS, FALSE);
     if(retval != 0) {
         TRACE_ERROR("Starting iOBC Watchdog Feed Task failed!\r\n");
     }
-#endif
+#else
+    initiate_external_watchdog();
 #endif
 
     TRACE_INFO_WP("\n\r-- SOURCE Bootloader --\n\r");
@@ -101,10 +108,36 @@ int main()
     TRACE_INFO("Initiating SDRAM\n\r");
     BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
 
-#ifndef freeRTOS
     feed_watchdog_if_necessary();
+
+#ifdef freeRTOS
+    // otherwise, try to copy SDCard binary to SDRAM
+    // Core Task. Custom interrupts should be configured inside a task.
+    xTaskCreate(handler_task, (const char*)"HANDLER_TASK", 1024, NULL, 2,
+            &handler_task_handle_glob);
+    xTaskCreate(init_task, (const char*)"INIT_TASK", 1024,
+            handler_task_handle_glob , 1, NULL);
+
+    TRACE_INFO("Starting FreeRTOS task scheduler.\n\r");
+    vTaskStartScheduler();
+    TRACE_ERROR("FreeRTOS scheduler error!\n\r");
+    for(;;) {};
+#else
+    // Configure RTT for second time base.
+    RTT_start();
+
+    // Do some copy stuff here.
+    perform_bootloader_core_operation();
+
+    // to see its alive, will not be reached later.
+    idle_loop();
 #endif
 
+}
+
+
+void perform_bootloader_core_operation() {
+    // do all the fancy stuff here.
     // verify hamming code of image in sdram. code size is either written in
     // memory or extracted from FRAM.
     // if successfull, copy norflash to sdram
@@ -112,37 +145,13 @@ int main()
 //    if(result != 0) {
 //        // error
 //    }
-
-#ifdef freeRTOS
-    // otherwise, try to copy SDCard binary to SDRAM
-    // Core Task. Custom interrupts should be configured inside a task.
-    xTaskCreate(init_task, (const char*)"INIT_TASK", 2048, NULL, 1, NULL);
-#else
-    // Configure RTT for seocnd time base.
-    RTT_start();
-    uint32_t last_time = RTT_GetTime();
-    for(;;) {
-        feed_watchdog_if_necessary();
-        uint32_t curr_time = RTT_GetTime();
-        if(curr_time - last_time > 5) {
-            TRACE_INFO("Bootloader idle..\n\r");
-            last_time = curr_time;
-        }
-    }
-#endif
-
-#ifdef freeRTOS
-    TRACE_INFO("Starting FreeRTOS task scheduler.\n\r");
-    vTaskStartScheduler();
-#endif
 }
 
-void init_task(void * args) {
-    initialize_iobc_peripherals();
+void idle_loop() {
     uint32_t last_time = RTT_GetTime();
     for(;;) {
         uint32_t curr_time = RTT_GetTime();
-        if(curr_time - last_time > 5) {
+        if(curr_time - last_time > 60) {
             TRACE_INFO("Bootloader idle..\n\r");
             last_time = curr_time;
         }
@@ -167,5 +176,35 @@ void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
     while(1);//never reach
 }
 
+#ifdef freeRTOS
+void init_task(void * args) {
+    TRACE_INFO("Running initialization task..\n\r");
+    initialize_iobc_peripherals();
+    // perform initialization which needs to be inside a task.
+
+    // start handler task
+    TaskHandle_t handler_task_handle = (TaskHandle_t) args;
+    if(handler_task_handle != NULL) {
+        while(eTaskGetState(handler_task_handle) != eSuspended) {
+            vTaskDelay(1);
+        }
+        vTaskResume(handler_task_handle);
+    }
+
+    // Initialization task not needed anymore, deletes itself.
+    vTaskDelete(NULL);
+}
+
+void handler_task(void * args) {
+    TRACE_INFO("Running Handler task..\n\r");
+    // Wait for initialization to finish
+    vTaskSuspend(NULL);
+
+    performBootloaderCoreOperation();
+
+    // will not be reached when bootloader is finished.
+    idle_loop();
+}
+#endif
 
 
