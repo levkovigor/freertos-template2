@@ -25,7 +25,7 @@ public:
     static constexpr float RTC_RTT_SYNC_INTERVAL = 0.5;
 	static constexpr uint32_t DAY_IN_SECONDS = 60 * 60 * 24;
 
-	CoreController(object_id_t objectId);
+	CoreController(object_id_t objectId, object_id_t systemStateTaskId);
 
 	MessageQueueId_t getCommandQueue() const override;
 	ReturnValue_t handleCommandMessage(CommandMessage *message) override;
@@ -46,12 +46,11 @@ public:
 
 	ActionId_t REQUEST_CPU_STATS_CHECK_STACK = 0;
 private:
+	object_id_t systemStateTaskId;
 	ActionHelper actionHelper;
-	uint16_t numberOfTasks = 0;
 	bool cpuStatsDumpRequested = true;
 	bool cpuStatDumpPending = false;
 	uint32_t lastDumpSecond = 0;
-	std::array<uint8_t, 2048> statsArray;
 
 	uint32_t lastCounterUpdateSeconds = 0;
 	static uint32_t counterOverflows;
@@ -60,12 +59,12 @@ private:
 	uint32_t last32bitIdleCounterValue = 0;
 
 	supervisor_housekeeping_t supervisorHk;
-	std::vector<TaskStatus_t> taskStatArray;
+
 	SystemStateTask* systemStateTask = nullptr;
 	int16_t adcValues[SUPERVISOR_NUMBER_OF_ADC_CHANNELS] = {0};
 
 	void update64bitCounter();
-	void setUpSystemStateTask();
+	ReturnValue_t setUpSystemStateTask();
 	ReturnValue_t initializeIsisTimerDrivers();
 	void generateStatsCsvAndCheckStack();
 	void writePaddedName(uint8_t* buffer, const char *pcTaskName);

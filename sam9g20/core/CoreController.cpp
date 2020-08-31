@@ -18,9 +18,11 @@ extern "C" {
 uint32_t CoreController::counterOverflows = 0;
 uint32_t CoreController::idleCounterOverflows = 0;
 
-CoreController::CoreController(object_id_t objectId): ControllerBase(objectId,
-        objects::NO_OBJECT), actionHelper(this, commandQueue),
-        taskStatArray(0) {
+CoreController::CoreController(object_id_t objectId,
+        object_id_t systemStateTaskId):
+        ControllerBase(objectId, objects::NO_OBJECT),
+        systemStateTaskId(systemStateTaskId),
+        actionHelper(this, commandQueue) {
 #ifdef ISIS_OBC_G20
     sif::info << "CoreController: Starting Supervisor component." << std::endl;
     Supervisor_start(nullptr, 0);
@@ -69,7 +71,7 @@ void CoreController::performControlOperation() {
         lastDumpSecond = currentUptimeSeconds;
     }
 
-    if(cpuStatsDumpRequested == true and not cpuStatDumpPending) {
+    if(cpuStatsDumpRequested and not cpuStatDumpPending) {
         systemStateTask->readSystemState();
         cpuStatDumpPending = true;
     }
@@ -78,7 +80,7 @@ void CoreController::performControlOperation() {
     if(cpuStatDumpPending and systemStateTask->getSystemStateWasRead()) {
         // move this to low prio task, takes rather long..
         Stopwatch stopwatch;
-        generateStatsCsvAndCheckStack();
+        systemStateTask->generateStatsAndCheckStack();
         cpuStatDumpPending = false;
         cpuStatsDumpRequested = false;
     }
@@ -136,106 +138,21 @@ void CoreController::update64bitCounter() {
     last32bitIdleCounterValue = currentIdleCounter;
 }
 
-void CoreController::generateStatsCsvAndCheckStack() {
-    // vTaskGetRunTimeStats();
-    // Special 10kHz tick values for total run time and idle run time.
-    uint64_t upTimeTicks = getTotalRunTimeCounter();
-    uint64_t idleTaskTicks = getTotalIdleRunTimeCounter();
-
-    // we will write to file directly later, write to buffer for now
-
-    std::string timestamp = "placeholder for timestamp\n\r";
-    std::string infoColumn = "10 kHz time base used for CPU statistics\n\r";
-    std::string headerColumn = "Task Name\tAbsTime [Ticks]\tRelTime [%]\t"
-            "LstRemStack [bytes]\n\r";
-    size_t statsIdx = 0;
-    std::memcpy(statsArray.data() + statsIdx, timestamp.data(), timestamp.size());
-    statsIdx += timestamp.size();
-    std::memcpy(statsArray.data() + statsIdx, infoColumn.data(), infoColumn.size());
-    statsIdx += infoColumn.size();
-    std::memcpy(statsArray.data() + statsIdx, headerColumn.data(), headerColumn.size());
-    statsIdx += headerColumn.size();
-
-    /* For percentage calculations. */
-    upTimeTicks /= 100UL;
-    // newlib nano does not support 64 bit print, so eventually the printout
-    // will become invalid.
-    uint32_t idlePrintout = idleTaskTicks & 0xFFFF;
-    for(const auto& task: taskStatArray) {
-        // TODO: check whether any stack is too close to overflowing.
-        if(task.pcTaskName != nullptr) {
-            // human readable format here, tab seperator
-#ifdef DEBUG
-            writePaddedName(static_cast<uint8_t*>(statsArray.data() + statsIdx),
-                    static_cast<const char*>(task.pcTaskName));
-            statsIdx += configMAX_TASK_NAME_LEN;
-            if(std::strcmp(task.pcTaskName, "IDLE") == 0) {
-                statsIdx += std::snprintf((char*)(statsArray.data() + statsIdx),
-                        configMAX_TASK_NAME_LEN + 64,
-                        "%lu\t\t\%lu\t\t%lu", idlePrintout,
-                        static_cast<uint32_t>(idleTaskTicks / upTimeTicks),
-                        task.usStackHighWaterMark * sizeof(configSTACK_DEPTH_TYPE));
-            }
-            else {
-                statsIdx += std::snprintf((char*)(statsArray.data() + statsIdx),
-                        configMAX_TASK_NAME_LEN + 64,
-                        "%lu\t\t%lu\t\t%lu", task.ulRunTimeCounter,
-                        static_cast<uint32_t>(task.ulRunTimeCounter / upTimeTicks),
-                        task.usStackHighWaterMark * sizeof(configSTACK_DEPTH_TYPE));
-            }
-#else
-            // TODO: CSV format here, no padding, comma seperator
-#endif
-            statsArray[statsIdx] = '\n';
-            statsIdx ++;
-            statsArray[statsIdx] = '\r';
-            statsIdx ++;
-        }
-    }
-    statsArray[statsIdx] = '\0';
-    printf("%s\r\n",statsArray.data());
-    printf("Number of bytes written: %d\r\n", statsIdx);
-}
-
-void CoreController::writePaddedName(uint8_t* buffer,
-        const char *pcTaskName) {
-    /* Start by copying the entire string. */
-    size_t bytesWritten = std::snprintf((char*) buffer,
-            configMAX_TASK_NAME_LEN, pcTaskName);
-
-    //buffer[bytesWritten++] = ',';
-
-    /* Pad the end of the string with spaces to ensure columns line up when
-    printed out. */
-    for(uint32_t x = bytesWritten; x < configMAX_TASK_NAME_LEN; x++ )
-    {
-        buffer[x] = ' ';
-        bytesWritten ++;
-    }
-
-    /* Terminate. */
-    buffer[bytesWritten++] = ( char ) 0x00;
-}
 
 ReturnValue_t CoreController::initializeAfterTaskCreation() {
     setUpSystemStateTask();
     return initializeIsisTimerDrivers();
 }
 
-void CoreController::setUpSystemStateTask() {
-    numberOfTasks = uxTaskGetNumberOfTasks();
-    taskStatArray.reserve(numberOfTasks);
-    taskStatArray.resize(numberOfTasks);
+ReturnValue_t CoreController::setUpSystemStateTask() {
     systemStateTask = objectManager->
-            get<SystemStateTask>(objects::SYSTEM_STATE_TASK);
-    if(systemStateTask != nullptr) {
-        systemStateTask->assignStatusWritePtr(taskStatArray.data(),
-                numberOfTasks);
-    }
-    else {
+            get<SystemStateTask>(systemStateTaskId);
+    if(systemStateTask == nullptr) {
         sif::error << "CoreController::performControlOperation:"
                 "System state task invalid!" << std::endl;
+        return HasReturnvaluesIF::RETURN_FAILED;
     }
+    return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t CoreController::initializeIsisTimerDrivers() {

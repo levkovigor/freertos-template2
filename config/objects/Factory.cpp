@@ -191,8 +191,8 @@ void Factory::produce(void) {
 	hk::initHkStruct(&hkIdStruct, gps0, gps1, test);
 	hk::hkInit(housekeepingServicePSB, hkIdStruct);
 
-	new SystemStateTask(objects::SYSTEM_STATE_TASK);
-	new CoreController(objects::CORE_CONTROLLER);
+	new CoreController(objects::CORE_CONTROLLER, objects::SYSTEM_STATE_TASK);
+	new SystemStateTask(objects::SYSTEM_STATE_TASK, objects::CORE_CONTROLLER);
 	DummyCookie * dummyCookie2 = new DummyCookie(addresses::DUMMY_GPS0);
 #if defined(VIRTUAL_BUILD)
 	new GPSHandler(objects::GPS0_HANDLER, objects::DUMMY_GPS_COM_IF,
