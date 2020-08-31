@@ -66,24 +66,11 @@ void CoreController::performControlOperation() {
     }
 #endif
 
-    if(currentUptimeSeconds - lastDumpSecond >= 20 and not cpuStatDumpPending) {
-        cpuStatsDumpRequested = true;
+    if(currentUptimeSeconds - lastDumpSecond >= 20) {
+        systemStateTask->readAndGenerateStats();
         lastDumpSecond = currentUptimeSeconds;
     }
 
-    if(cpuStatsDumpRequested and not cpuStatDumpPending) {
-        systemStateTask->readSystemState();
-        cpuStatDumpPending = true;
-    }
-
-
-    if(cpuStatDumpPending and systemStateTask->getSystemStateWasRead()) {
-        // move this to low prio task, takes rather long..
-        Stopwatch stopwatch;
-        systemStateTask->generateStatsAndCheckStack();
-        cpuStatDumpPending = false;
-        cpuStatsDumpRequested = false;
-    }
 }
 
 ReturnValue_t CoreController::checkModeCommand(Mode_t mode, Submode_t submode,
@@ -97,16 +84,16 @@ MessageQueueId_t CoreController::getCommandQueue() const {
 
 ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
-	if(actionId == REQUEST_CPU_STATS_CHECK_STACK) {
-		if(cpuStatDumpPending or cpuStatsDumpRequested) {
-			// that command is still pending.
+	switch(actionId) {
+	case(REQUEST_CPU_STATS_CHECK_STACK): {
+		if(not systemStateTask->readAndGenerateStats()) {
 			return HasReturnvaluesIF::RETURN_FAILED;
 		}
-		// perform necessary steps to generate CPU stats and dump them.
-	    // do this in a low priority task which is unblocked for that purpose.
-	    cpuStatsDumpRequested = true;
+		return HasReturnvaluesIF::RETURN_OK;
 	}
-    return HasReturnvaluesIF::RETURN_OK;
+	default:
+		return HasActionsIF::INVALID_ACTION_ID;
+	}
 }
 
 
