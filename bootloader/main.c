@@ -108,7 +108,9 @@ int main()
     TRACE_INFO("Initiating SDRAM\n\r");
     BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
 
+#ifndef ISIS_OBC_G20
     feed_watchdog_if_necessary();
+#endif
 
 #ifdef freeRTOS
     // otherwise, try to copy SDCard binary to SDRAM
@@ -200,7 +202,7 @@ void handler_task(void * args) {
     // Wait for initialization to finish
     vTaskSuspend(NULL);
 
-    performBootloaderCoreOperation();
+    perform_bootloader_core_operation();
 
     // will not be reached when bootloader is finished.
     idle_loop();

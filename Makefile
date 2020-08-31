@@ -442,7 +442,6 @@ cleanbin:
 # See: http://make.mad-scientist.net/the-eval-function/
 define MEMORY_BUILDS
 
-
 executable: $(BINDIR)/$(BINARY_NAME)-$(1).bin
 	
 C_OBJECTS_$(1) = $(addprefix $(OBJDIR)/$(1)/, $(C_OBJECTS))
