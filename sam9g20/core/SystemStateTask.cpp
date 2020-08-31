@@ -1,11 +1,8 @@
 #include "SystemStateTask.h"
 
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-#include <fsfw/ipc/MutexHelper.h>
-#include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/objectmanager/ObjectManagerIF.h>
 #include <sam9g20/core/CoreController.h>
+
 #include <inttypes.h>
 
 SystemStateTask::SystemStateTask(object_id_t objectId,

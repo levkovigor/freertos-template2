@@ -1,9 +1,8 @@
-#include <fsfw/timemanager/Clock.h>
 #include "CoreController.h"
 
+#include <fsfw/timemanager/Clock.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <sam9g20/common/FRAMApi.h>
-#include <systemObjectList.h>
 
 extern "C" {
 #include <hal/Timing/Time.h>
@@ -95,8 +94,6 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
 		return HasActionsIF::INVALID_ACTION_ID;
 	}
 }
-
-
 
 uint64_t CoreController::getTotalRunTimeCounter() {
 	return static_cast<uint64_t>(counterOverflows) << 32 |
@@ -203,9 +200,11 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
     sif::info << "CoreController: Clock set." << std::endl;
 #else
     RTT_start();
+    timeval currentTime;
+    uint32_t secSinceEpoch = __TIME_UNIX__;
+    currentTime.tv_sec = secSinceEpoch;
+    Clock::setClock(&currentTime);
 #endif
-
-
 
     return HasReturnvaluesIF::RETURN_OK;
 }

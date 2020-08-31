@@ -1,13 +1,13 @@
 #ifndef SAM9G20_SYSTEMSTATETASK_H_
 #define SAM9G20_SYSTEMSTATETASK_H_
-#include <fsfw/objectmanager/SystemObject.h>
-#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
+
 #include <fsfw/osal/FreeRTOS/BinSemaphUsingTask.h>
+#include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
+#include <fsfw/events/Event.h>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include <fsfw/events/Event.h>
 
 #include <vector>
 #include <array>
