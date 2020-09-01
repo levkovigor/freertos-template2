@@ -12,6 +12,12 @@ CSRC += $(wildcard $(CURRENTPATH)/boardtest/*.c)
 CXXSRC += $(wildcard $(CURRENTPATH)/core/*.cpp)
 CSRC += $(wildcard $(CURRENTPATH)/core/*.c)
 
+CXXSRC += $(wildcard $(CURRENTPATH)/pus/*.cpp)
+CSRC += $(wildcard $(CURRENTPATH)/pus/*.c)
+
+CXXSRC += $(wildcard $(CURRENTPATH)/memory/*.cpp)
+CSRC += $(wildcard $(CURRENTPATH)/memory/*.c)
+
 CXXSRC += $(wildcard $(CURRENTPATH)/comIF/*.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/comIF/cookies/*.cpp)
 

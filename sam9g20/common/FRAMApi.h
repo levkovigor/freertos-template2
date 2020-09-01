@@ -98,6 +98,10 @@ static const uint32_t BOOTLOADER_FAULTY_ADDRESS =
 static const uint32_t NUMBER_OF_ACTIVE_TASKS_ADDRESS =
         offsetof(FRAMCriticalData, number_of_active_tasks);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int write_software_version(uint8_t software_version, uint8_t software_subversion);
 int read_software_version(uint8_t* software_version, uint8_t* software_subversion);
 
@@ -120,5 +124,8 @@ int reset_sdc1sl1_reboot_counter();
 int set_bootloader_faulty(bool faulty);
 int is_bootloader_faulty(bool* faulty);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MISSION_MEMORY_FRAMAPI_H_ */

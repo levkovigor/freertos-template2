@@ -28,7 +28,6 @@
 #include <fsfw/pus/CService201HealthCommanding.h>
 #include <fsfw/pus/Service5EventReporting.h>
 #include <fsfw/pus/Service8FunctionManagement.h>
-#include <mission/pus/Service9CustomTimeManagement.h>
 #include <mission/pus/Service3HousekeepingPSB.h>
 #include <mission/pus/Service6MemoryManagement.h>
 #include <mission/pus/Service17CustomTest.h>
@@ -39,9 +38,6 @@
 /* Utility */
 #include <mission/utility/TimeStamper.h>
 #include <mission/utility/TmFunnel.h>
-#include <mission/memory/SDCardHandler.h>
-
-/* Devices */
 #include <mission/devices/PCDUHandler.h>
 #include <mission/devices/GPSHandler.h>
 #include <mission/devices/ThermalSensorHandler.h>
@@ -69,6 +65,9 @@
 #include <sam9g20/comIF/SpiDeviceComIF.h>
 #include <sam9g20/core/CoreController.h>
 #include <sam9g20/core/SystemStateTask.h>
+#include <sam9g20/memory/FRAMHandler.h>
+#include <sam9g20/memory/SDCardHandler.h>
+#include <sam9g20/pus/Service9CustomTimeManagement.h>
 #include <sam9g20/utility/FreeRTOSStackMonitor.h>
 
 #include <test/testdevices/TestDeviceHandler.h>
@@ -192,20 +191,20 @@ void Factory::produce(void) {
 	hk::initHkStruct(&hkIdStruct, gps0, gps1, test);
 	hk::hkInit(housekeepingServicePSB, hkIdStruct);
 
-	new SystemStateTask(objects::SYSTEM_STATE_TASK);
-	new CoreController(objects::CORE_CONTROLLER);
+	new CoreController(objects::CORE_CONTROLLER, objects::SYSTEM_STATE_TASK);
+	new SystemStateTask(objects::SYSTEM_STATE_TASK, objects::CORE_CONTROLLER);
 	DummyCookie * dummyCookie2 = new DummyCookie(addresses::DUMMY_GPS0);
 #if defined(VIRTUAL_BUILD)
-	new GPSHandler(objects::GPS0_HANDLER, objects::DUMMY_GPS_COM_IF, dummyCookie2,
-			switches::GPS0,gps0);
+	new GPSHandler(objects::GPS0_HANDLER, objects::DUMMY_GPS_COM_IF,
+	        dummyCookie2, switches::GPS0,gps0);
 	DummyCookie * dummyCookie3 = new DummyCookie(addresses::DUMMY_GPS1);
-	new GPSHandler(objects::GPS1_HANDLER, objects::DUMMY_GPS_COM_IF, dummyCookie3,
-			switches::GPS1,gps1);
+	new GPSHandler(objects::GPS1_HANDLER, objects::DUMMY_GPS_COM_IF,
+	        dummyCookie3, switches::GPS1,gps1);
 #else
 	new GPSHandler(objects::GPS0_HANDLER,objects::DUMMY_GPS_COM_IF,
-			dummyCookie2, switches::GPS0,gps0);
+			dummyCookie2, switches::GPS0, gps0);
 	new GPSHandler(objects::GPS1_HANDLER,objects::DUMMY_GPS_COM_IF,
-			dummyCookie2, switches::GPS1,gps1);
+			dummyCookie2, switches::GPS1, gps1);
 #endif
 
 
@@ -221,6 +220,9 @@ void Factory::produce(void) {
 	#if defined(stm32)
 	#else
 	new SDCardHandler(objects::SD_CARD_HANDLER);
+#ifdef ISIS_OBC_G20
+	new FRAMHandler(objects::FRAM_HANDLER);
+#endif
 
 	/* Communication Interfaces */
 //	new RS232DeviceComIF(objects::RS232_DEVICE_COM_IF);

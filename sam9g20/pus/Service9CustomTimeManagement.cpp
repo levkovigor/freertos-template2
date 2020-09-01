@@ -1,6 +1,6 @@
-#include "Service9CustomTimeManagement.h"
 #include <fsfw/pus/servicepackets/Service9Packets.h>
 #include <fsfw/timemanager/CCSDSTime.h>
+#include <sam9g20/pus/Service9CustomTimeManagement.h>
 
 extern "C" {
 #include <hal/Timing/Time.h>

@@ -44,30 +44,23 @@ MEMORY
 }
 
 SECTIONS
-{  
-    .prerelocate : AT (_efixed)
-    {
-        . = ALIGN(4);
-        _sprerelocate = .;
-        *board_lowlevel.o(.text*)
-        *board_memories.o(.text*)
-        . = ALIGN(4);
-        _eprerelocate = .;
-    } >sram0
-    
+{          
     .fixed :
     {
         . = ALIGN(4);
         _sfixed = .;
+        KEEP(*(.startup));
         *(.text*)
         *(.rodata*)
         *(.glue_7)
-        *(.glue_7t)	
-        *(.CP15_*)		
+        *(.glue_7t)	 	
+        *(.data) 
+        *(.data*)	
+        *(.CP15_*)	
         KEEP (*(.init))
     	KEEP (*(.fini))
      	. = ALIGN(4);
-        _efixed1 = .;
+        _efixedsec = .;
     } >ebi_cs0
 
 	/* used for unwinding, can be useful for debugging  */  
@@ -86,19 +79,43 @@ SECTIONS
     
     . = ALIGN(4);
     _efixed = .;
+
+    .prerelocate : AT (_efixed)
+    {
+        . = ALIGN(4);
+        _sprerelocate = .;
+        . = ALIGN(4);
+        _eprerelocate = .;
+    } 
     
     .postrelocate : AT (_efixed + SIZEOF(.prerelocate))
     {
         . = ALIGN(4);
         _spostrelocate = .;
-        *(.vectors)
+        KEEP(*(.vectors));
+        *(.sramfunc)
         *(.ramfunc)
-        *(.data)
         /* contains all initialized global and static variables */
-        *(.data*)	
         . = ALIGN(4);
         _epostrelocate = .;
     } >sram0
+    
+    .sramdata : AT (_sprerelocate + SIZEOF(.prerelocate) + SIZEOF(.postrelocate))
+    {
+        . = ALIGN(4);
+        _ssramdata = .;
+        *(.sramdata)
+        . = ALIGN(4);
+        _esramdata = .;
+    } >sram1
+    
+    .srambss (NOLOAD) : {
+        . = ALIGN(4);
+        _ssrambss = .;
+        *(.srambss)
+        . = ALIGN(4);
+        _esrambss = .;
+    } >sram1
 
     .bss (NOLOAD) : {
         _szero = .;
@@ -114,7 +131,6 @@ SECTIONS
     
     /* Heap section */
 	_sheap_ = .;
-    _eheap_ = 0x301000;
     
     /* top of stack */
     _sstack = 0x304000;

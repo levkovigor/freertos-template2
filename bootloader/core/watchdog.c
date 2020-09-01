@@ -19,10 +19,12 @@ void initiate_external_watchdog() {
 }
 
 void feed_watchdog_if_necessary(void) {
+#ifdef ISIS_OBC_G20
     if(u32_ms_counter - watchdog_last_fed_ms_count >= WATCHDOG_FEED_PERIOD_MS) {
         WDT_forceKick();
         watchdog_last_fed_ms_count = u32_ms_counter;
     }
+#endif
 }
 
 
