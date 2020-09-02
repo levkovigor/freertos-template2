@@ -1,5 +1,9 @@
 #include <mission/devices/GyroHandler.h>
 
+extern "C" {
+#include <hal/Timing/RTT.h>
+}
+
 #if defined(at91sam9g20)
 #include <sam9g20/comIF/cookies/I2cCookie.h>
 #include <sam9g20/comIF/cookies/SpiCookie.h>
@@ -58,14 +62,28 @@ void GyroHandler::doStartUp() {
 	}
 	case(InternalState::READ_RANGE): {
 		if(commandExecuted) {
-			internalState = InternalState::RUNNING;
+			internalState = InternalState::PERFORM_SELFTEST;
 			commandExecuted = false;
-			setMode(MODE_NORMAL);
 		}
 		break;
 	}
+	case(InternalState::PERFORM_SELFTEST): {
+	    if(commandExecuted) {
+	        internalState = InternalState::READ_STATUS;
+	        commandExecuted = false;
+	    }
+	    break;
+	}
+	case(InternalState::READ_STATUS): {
+	    if(commandExecuted) {
+	        internalState = InternalState::RUNNING;
+	        commandExecuted = true;
+	        setMode(MODE_NORMAL);
+	    }
+	    break;
+	}
 	default:
-		break;
+	    break;
 	}
 }
 
@@ -73,21 +91,44 @@ void GyroHandler::doShutDown() {
 }
 
 ReturnValue_t GyroHandler::buildNormalDeviceCommand(DeviceCommandId_t *id) {
-	switch(internalState) {
-	case(InternalState::RUNNING): {
-		// Poll Gyro Device. Perform block read of 7 bytes to read register
-		// 0x12-0x17
-		commandBuffer[0] = GYRO_DATA;
-		std::memset(commandBuffer + 1, 0, 6);
-		DeviceHandlerBase::rawPacket = commandBuffer;
-		DeviceHandlerBase::rawPacketLen = 7;
-		*id = GYRO_DATA;
-		break;
-	}
+    switch(internalState) {
+    case(InternalState::RUNNING): {
+        // perform self-test every week
+        uint32_t currentSecondUptime = RTT_GetTime();
+        if((currentSecondUptime - lastSelfTestSeconds) >=
+                SELF_TEST_PERIOD_SECOND) {
+            *id = PERFORM_SELFTEST;
+            internalState = InternalState::PERFORM_SELFTEST;
+            checkSelfTestRegister = true;
+            lastSelfTestSeconds = currentSecondUptime;
+            return buildCommandFromCommand(*id, nullptr, 0);
+        }
+
+        // if a self-test check is pending, check every few cycles.
+        if(checkSelfTestRegister) {
+            if(selfTestCycleCounter >= selfTestCycleCounterTrigger) {
+                *id = READ_STATUS;
+                internalState = InternalState::READ_STATUS;
+                selfTestCycleCounter = 0;
+                return buildCommandFromCommand(*id, nullptr, 0);
+            }
+            else {
+                selfTestCycleCounter ++;
+            }
+        }
+
+        // Poll Gyro Device. Perform block read of 7 bytes to read register
+        // 0x12-0x17
+        commandBuffer[0] = GYRO_DATA;
+        std::memset(commandBuffer + 1, 0, 6);
+        DeviceHandlerBase::rawPacket = commandBuffer;
+        DeviceHandlerBase::rawPacketLen = 7;
+        *id = GYRO_DATA;
+        break;
+    }
 	default:
 		break;
 	}
-
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -137,9 +178,17 @@ ReturnValue_t GyroHandler::buildTransitionDeviceCommand(DeviceCommandId_t *id) {
 		*id = READ_RANGE;
 		return buildCommandFromCommand(*id, nullptr, 0);
 	}
+	case(InternalState::PERFORM_SELFTEST): {
+	    *id = PERFORM_SELFTEST;
+	    return buildCommandFromCommand(*id, nullptr, 0);
+	}
+	case(InternalState::READ_STATUS): {
+	    *id = READ_STATUS;
+	    return buildCommandFromCommand(*id, nullptr, 0);
+	}
 	default:
 		sif::error << "GyroHandler::buildTransitionDeviceCommand: Invalid"
-				"internal state!" << std::endl;
+				" internal state!" << std::endl;
 	}
 
 	return HasReturnvaluesIF::RETURN_OK;
@@ -177,6 +226,20 @@ ReturnValue_t GyroHandler::buildCommandFromCommand(
 		DeviceHandlerBase::rawPacketLen = 2;
 		break;
 	}
+	case(PERFORM_SELFTEST): {
+	    commandBuffer[0] = SELFTEST_REGISTER;
+	    commandBuffer[1] = PERFORM_SELFTEST_CMD;
+	    DeviceHandlerBase::rawPacket = commandBuffer;
+	    DeviceHandlerBase::rawPacketLen = 2;
+	    break;
+	}
+	case(READ_STATUS): {
+	    commandBuffer[0] = READ_STATUS;
+	    commandBuffer[1] = 0x00;
+	    DeviceHandlerBase::rawPacket = commandBuffer;
+	    DeviceHandlerBase::rawPacketLen = 2;
+	    break;
+	}
 	default:
 		//Unknown DeviceCommand
 		return DeviceHandlerIF::COMMAND_NOT_IMPLEMENTED;
@@ -191,19 +254,25 @@ void GyroHandler::fillCommandAndReplyMap() {
 	this->insertInCommandAndReplyMap(READ_RANGE, 3);
 	this->insertInCommandAndReplyMap(SPI_SELECT, 3);
 	this->insertInCommandAndReplyMap(GYRO_DATA, 3);
+	this->insertInCommandAndReplyMap(PERFORM_SELFTEST, 3);
+	this->insertInCommandAndReplyMap(READ_STATUS, 3);
 }
 
 ReturnValue_t GyroHandler::scanForReply(const uint8_t *start,
         size_t remainingSize, DeviceCommandId_t *foundId, size_t *foundLen) {
 	switch(internalState) {
 	case(InternalState::MODE_SELECT): {
-		commandExecuted = true;
+	    if(mode == _MODE_START_UP) {
+	        commandExecuted = true;
+	    }
 		*foundId = SPI_SELECT;
 		*foundLen = 2;
 		break;
 	}
 	case(InternalState::POWERUP): {
-		commandExecuted = true;
+	    if(mode == _MODE_START_UP) {
+	        commandExecuted = true;
+	    }
 		*foundId = WRITE_POWER;
 		*foundLen = 2;
 		break;
@@ -214,7 +283,9 @@ ReturnValue_t GyroHandler::scanForReply(const uint8_t *start,
 		break;
 	}
 	case(InternalState::WRITE_RANGE): {
-		commandExecuted = true;
+	    if(mode == _MODE_START_UP) {
+	        commandExecuted = true;
+	    }
 		*foundId = WRITE_RANGE;
 		*foundLen = 2;
 		break;
@@ -224,6 +295,20 @@ ReturnValue_t GyroHandler::scanForReply(const uint8_t *start,
 		*foundLen = 2;
 		break;
 	}
+	case(InternalState::PERFORM_SELFTEST): {
+	    if(mode == _MODE_START_UP) {
+	        commandExecuted = true;
+	    }
+	    *foundId = PERFORM_SELFTEST;
+	    *foundLen = 2;
+	    break;
+	}
+	case(InternalState::READ_STATUS): {
+	    *foundId = READ_STATUS;
+	    *foundLen = 2;
+	    break;
+	}
+
 	case(InternalState::RUNNING): {
 		*foundId = GYRO_DATA;
 		*foundLen = 7;
@@ -238,7 +323,11 @@ ReturnValue_t GyroHandler::scanForReply(const uint8_t *start,
 ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
         const uint8_t *packet) {
 	switch(internalState) {
+
 	case(InternalState::READ_PMU_STATUS): {
+	    if(packet[1] == 0xff) {
+	        return HasReturnvaluesIF::RETURN_FAILED;
+	    }
 		if (id == READ_PMU and packet[1] == 0b0000'0100) {
 			// Bootup performed successfully.
 			// PMU value should be stored somewhere
@@ -259,7 +348,11 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 		}
 		break;
 	}
+
 	case(InternalState::READ_RANGE): {
+	    if(packet[1] == 0xff) {
+	        return HasReturnvaluesIF::RETURN_FAILED;
+	    }
 		if(id == READ_RANGE and packet[1] == RANGE_CONFIG) {
 			// Range set successfully.
 			// range should be stored somewhere.
@@ -274,10 +367,42 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 			// do some error handling here. Resend command
 			// or restart
 			internalState = InternalState::READ_RANGE;
-			// If this happens too often, the device will be power cycled.
 			return HasReturnvaluesIF::RETURN_FAILED;
 		}
 		break;
+	}
+
+	case(InternalState::PERFORM_SELFTEST): {
+	    if(mode == MODE_NORMAL) {
+	        // periodic self-test, go back to normal polling mode.
+	        internalState = InternalState::RUNNING;
+	    }
+	    break;
+	}
+
+	case(InternalState::READ_STATUS): {
+	    if(packet[1] == 0xff) {
+	        return HasReturnvaluesIF::RETURN_FAILED;
+	    }
+	    // it is assumed that only the self-test register is read for now!
+	    if((packet[1] & SELFTEST_OK) == SELFTEST_OK) {
+	        if(mode == _MODE_START_UP) {
+	            commandExecuted = true;
+	        }
+	        else {
+	            checkSelfTestRegister = false;
+	            internalState = InternalState::RUNNING;
+	        }
+	    }
+	    else {
+	        if(mode == _MODE_START_UP) {
+	            // startup timeout will be triggered.
+	            return HasReturnvaluesIF::RETURN_OK;
+	        }
+	        // Prevents the delay counter from being reset.
+	        return IGNORE_REPLY_DATA;
+	    }
+	    break;
 	}
 
 	case(InternalState::RUNNING): {

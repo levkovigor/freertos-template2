@@ -25,6 +25,7 @@ public:
 
     //! Gyro range (-+) in degrees
     static constexpr float GYRO_RANGE = 125.0;
+    static constexpr uint32_t SELF_TEST_PERIOD_SECOND = 60 * 60 * 24 * 7;
 protected:
     /* DeviceHandlerBase abstract function implementation */
     void doStartUp() override;
@@ -58,22 +59,35 @@ private:
 		READ_PMU_STATUS,
 		WRITE_RANGE,
 		READ_RANGE,
+		PERFORM_SELFTEST,
+		READ_STATUS,
 		RUNNING,
 		FAULTY
     };
     InternalState internalState = InternalState::NONE;
     bool commandExecuted = false;
+    bool checkSelfTestRegister = true;
+    uint8_t selfTestCycleCounterTrigger = 5;
+    uint8_t selfTestCycleCounter = 0;
+    uint32_t lastSelfTestSeconds = 0;
+    uint8_t selfTestFailCounter;
+
 
     uint8_t commandBuffer[12] = {};
 
     static constexpr uint8_t SPI_MODE_SELECT = 0x7F;
     static constexpr uint8_t POWER_REGISTER = 0x7E;
     static constexpr uint8_t PMU_REGISTER = 0x03;
+    static constexpr uint8_t STATUS_REGISTER = 0x1B;
+    static constexpr uint8_t SELFTEST_REGISTER = 0x6D;
     // Normal PMU mode for Gyroscope.
     static constexpr uint8_t POWER_CONFIG = 0x15;
     static constexpr uint8_t RANGE_REGISTER = 0x43;
     // Configuration for minimal range (+-125 degree).
     static constexpr uint8_t RANGE_CONFIG = 0b0000'0100;
+    // To start self-test, write this byte to the selftest register
+    static constexpr uint8_t PERFORM_SELFTEST_CMD = 0b0001'0000;
+    static constexpr uint8_t SELFTEST_OK = 0b0000'0010;
 
     // Data register X-Axis
     static constexpr uint8_t DATA_REGISTER_START = 0x12;
@@ -86,6 +100,8 @@ private:
     static constexpr DeviceCommandId_t WRITE_RANGE = RANGE_REGISTER;
     static constexpr DeviceCommandId_t READ_RANGE = RANGE_REGISTER | GYRO_READ_MASK;
     static constexpr DeviceCommandId_t READ_PMU = PMU_REGISTER | GYRO_READ_MASK;
+    static constexpr DeviceCommandId_t READ_STATUS = STATUS_REGISTER | GYRO_READ_MASK;
+    static constexpr DeviceCommandId_t PERFORM_SELFTEST = SELFTEST_REGISTER;
     static constexpr DeviceCommandId_t GYRO_DATA = DATA_REGISTER_START | GYRO_READ_MASK;
 
     uint8_t counter = 20;
