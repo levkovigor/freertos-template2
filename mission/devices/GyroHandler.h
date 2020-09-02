@@ -70,7 +70,7 @@ private:
     uint8_t selfTestCycleCounterTrigger = 5;
     uint8_t selfTestCycleCounter = 0;
     uint32_t lastSelfTestSeconds = 0;
-    uint8_t selfTestFailCounter;
+    uint8_t selfTestFailCounter = 0;
 
 
     uint8_t commandBuffer[12] = {};

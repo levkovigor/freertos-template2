@@ -390,6 +390,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 	            commandExecuted = true;
 	        }
 	        else {
+	            selfTestFailCounter = 0;
 	            checkSelfTestRegister = false;
 	            internalState = InternalState::RUNNING;
 	        }
@@ -399,8 +400,18 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 	            // startup timeout will be triggered.
 	            return HasReturnvaluesIF::RETURN_OK;
 	        }
-	        // Prevents the delay counter from being reset.
-	        return IGNORE_REPLY_DATA;
+	        if(selfTestFailCounter == 3) {
+	            // Reboot Gyro here.
+	            return HasReturnvaluesIF::RETURN_FAILED;
+	        }
+	        else {
+	            selfTestFailCounter ++;
+	            // Prevents the delay counter from being reset.
+	            return IGNORE_REPLY_DATA;
+	        }
+
+
+
 	    }
 	    break;
 	}
