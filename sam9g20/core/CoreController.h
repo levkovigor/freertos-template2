@@ -44,12 +44,10 @@ public:
 	static uint64_t getTotalRunTimeCounter();
 	static uint64_t getTotalIdleRunTimeCounter();
 
-	ActionId_t REQUEST_CPU_STATS_CHECK_STACK = 0;
+	static constexpr ActionId_t REQUEST_CPU_STATS_CHECK_STACK = 0;
 private:
 	object_id_t systemStateTaskId;
 	ActionHelper actionHelper;
-	bool cpuStatsDumpRequested = true;
-	bool cpuStatDumpPending = false;
 	uint32_t lastDumpSecond = 0;
 
 	uint32_t lastCounterUpdateSeconds = 0;

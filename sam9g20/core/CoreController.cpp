@@ -1,9 +1,8 @@
-#include <fsfw/timemanager/Clock.h>
 #include "CoreController.h"
 
+#include <fsfw/timemanager/Clock.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <sam9g20/common/FRAMApi.h>
-#include <systemObjectList.h>
 
 extern "C" {
 #include <hal/Timing/Time.h>
@@ -66,24 +65,11 @@ void CoreController::performControlOperation() {
     }
 #endif
 
-    if(currentUptimeSeconds - lastDumpSecond >= 20 and not cpuStatDumpPending) {
-        cpuStatsDumpRequested = true;
-        lastDumpSecond = currentUptimeSeconds;
-    }
+//    if(currentUptimeSeconds - lastDumpSecond >= 20) {
+//        systemStateTask->readAndGenerateStats();
+//        lastDumpSecond = currentUptimeSeconds;
+//    }
 
-    if(cpuStatsDumpRequested and not cpuStatDumpPending) {
-        systemStateTask->readSystemState();
-        cpuStatDumpPending = true;
-    }
-
-
-    if(cpuStatDumpPending and systemStateTask->getSystemStateWasRead()) {
-        // move this to low prio task, takes rather long..
-        Stopwatch stopwatch;
-        systemStateTask->generateStatsAndCheckStack();
-        cpuStatDumpPending = false;
-        cpuStatsDumpRequested = false;
-    }
 }
 
 ReturnValue_t CoreController::checkModeCommand(Mode_t mode, Submode_t submode,
@@ -97,19 +83,17 @@ MessageQueueId_t CoreController::getCommandQueue() const {
 
 ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
-	if(actionId == REQUEST_CPU_STATS_CHECK_STACK) {
-		if(cpuStatDumpPending or cpuStatsDumpRequested) {
-			// that command is still pending.
+	switch(actionId) {
+	case(REQUEST_CPU_STATS_CHECK_STACK): {
+		if(not systemStateTask->readAndGenerateStats()) {
 			return HasReturnvaluesIF::RETURN_FAILED;
 		}
-		// perform necessary steps to generate CPU stats and dump them.
-	    // do this in a low priority task which is unblocked for that purpose.
-	    cpuStatsDumpRequested = true;
+		return HasReturnvaluesIF::RETURN_OK;
 	}
-    return HasReturnvaluesIF::RETURN_OK;
+	default:
+		return HasActionsIF::INVALID_ACTION_ID;
+	}
 }
-
-
 
 uint64_t CoreController::getTotalRunTimeCounter() {
 	return static_cast<uint64_t>(counterOverflows) << 32 |
@@ -216,9 +200,11 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
     sif::info << "CoreController: Clock set." << std::endl;
 #else
     RTT_start();
+    timeval currentTime;
+    uint32_t secSinceEpoch = __TIME_UNIX__;
+    currentTime.tv_sec = secSinceEpoch;
+    Clock::setClock(&currentTime);
 #endif
-
-
 
     return HasReturnvaluesIF::RETURN_OK;
 }

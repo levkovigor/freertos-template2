@@ -28,7 +28,6 @@
 #include <fsfw/pus/CService201HealthCommanding.h>
 #include <fsfw/pus/Service5EventReporting.h>
 #include <fsfw/pus/Service8FunctionManagement.h>
-#include <mission/pus/Service9CustomTimeManagement.h>
 #include <mission/pus/Service3HousekeepingPSB.h>
 #include <mission/pus/Service6MemoryManagement.h>
 #include <mission/pus/Service17CustomTest.h>
@@ -68,6 +67,7 @@
 #include <sam9g20/core/SystemStateTask.h>
 #include <sam9g20/memory/FRAMHandler.h>
 #include <sam9g20/memory/SDCardHandler.h>
+#include <sam9g20/pus/Service9CustomTimeManagement.h>
 #include <sam9g20/utility/FreeRTOSStackMonitor.h>
 
 #include <test/testdevices/TestDeviceHandler.h>

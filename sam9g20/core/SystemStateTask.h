@@ -1,9 +1,10 @@
 #ifndef SAM9G20_SYSTEMSTATETASK_H_
 #define SAM9G20_SYSTEMSTATETASK_H_
-#include <fsfw/objectmanager/SystemObject.h>
-#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
+
 #include <fsfw/osal/FreeRTOS/BinSemaphUsingTask.h>
+#include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
+#include <fsfw/events/Event.h>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -19,30 +20,36 @@ class CoreController;
 class SystemStateTask: public SystemObject,
         public ExecutableObjectIF {
 public:
+	static constexpr size_t STACK_THRESHOLD = 1000;
+
+	static constexpr uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::SYSTEM_STATE_TASK;
+	static constexpr Event LOW_REM_STACK = MAKE_EVENT(0, SEVERITY::LOW); //!< P1: First four letter of task name, P2: Second four letters of task name.
+
     SystemStateTask(object_id_t objectId, object_id_t coreControllerId);
 
     ReturnValue_t performOperation(uint8_t opCode) override;
-    void readSystemState();
-    bool getSystemStateWasRead() const;
 
-    void generateStatsAndCheckStack();
-    bool getSystemStateStatsWereGenerated() const;
+    // Read system state into the task status array.
+    bool readSystemState();
+    bool generateStatsAndCheckStack();
+    // Perform both operation at once
+    bool readAndGenerateStats();
 
-    void readAndGenerateStats();
     ReturnValue_t initializeAfterTaskCreation() override;
 private:
     enum class InternalState {
+    	IDLE,
         READING_STATS,
-        STATS_READ,
         GENERATING_STATS,
-        STATS_GENERATED
     };
     InternalState internalState;
+    bool readOnce = false;
+    bool doubleOperationRequested = false;
 
     object_id_t coreControllerId;
     CoreController* coreController = nullptr;
-    // TODO: make size scale with number of tasks
-    std::array<uint8_t, 2048> statsArray;
+
+    std::vector<uint8_t> statsVector;
     std::vector<TaskStatus_t> taskStatArray;
     BinarySemaphoreUsingTask* semaphore = nullptr;
 
@@ -52,6 +59,10 @@ private:
     void generateStatsCsvAndCheckStack();
     void writePaddedName(uint8_t* buffer,
             const char *pcTaskName);
+    void writeDebugStatLine(const TaskStatus_t& task,
+    		size_t& statsIdx, uint64_t idleTicks, uint64_t uptimeTicks);
+    void writeCsvStatLine(const TaskStatus_t& task,
+    		size_t& statsIdx, uint64_t idleTicks, uint64_t uptimeTicks);
 };
 
 
