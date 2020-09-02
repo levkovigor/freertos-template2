@@ -34,12 +34,12 @@ void GyroHandler::doStartUp() {
 	}
 	case(InternalState::MODE_SELECT): {
 		if(commandExecuted) {
-			internalState = InternalState::POWERUP;
+			internalState = InternalState::WRITE_POWER;
 			commandExecuted = false;
 		}
 		break;
 	}
-	case(InternalState::POWERUP): {
+	case(InternalState::WRITE_POWER): {
 		if(commandExecuted) {
 			internalState = InternalState::READ_PMU_STATUS;
 			commandExecuted = false;
@@ -48,26 +48,26 @@ void GyroHandler::doStartUp() {
 	}
 	case(InternalState::READ_PMU_STATUS): {
 		if(commandExecuted) {
-			internalState = InternalState::WRITE_RANGE;
+			internalState = InternalState::WRITE_CONFIG;
 			commandExecuted = false;
 		}
 		break;
 	}
-	case(InternalState::WRITE_RANGE): {
-		if(commandExecuted) {
-			internalState = InternalState::READ_RANGE;
-			commandExecuted = false;
-		}
-		break;
+	case(InternalState::WRITE_CONFIG): {
+	    if(commandExecuted) {
+	        internalState = InternalState::READ_CONFIG;
+	        commandExecuted = false;
+	    }
+	    break;
 	}
-	case(InternalState::READ_RANGE): {
-		if(commandExecuted) {
-			internalState = InternalState::PERFORM_SELFTEST;
-			commandExecuted = false;
-		}
-		break;
+	case(InternalState::READ_CONFIG): {
+	    if(commandExecuted) {
+	        internalState = InternalState::PERFORM_SELFTEST;
+	        commandExecuted = false;
+	    }
+	    break;
 	}
-	// todo: make self-test optional via parameter.
+	// todo: make self-test optional via parameter?
 	case(InternalState::PERFORM_SELFTEST): {
 	    if(commandExecuted) {
 	        internalState = InternalState::READ_STATUS;
@@ -94,10 +94,9 @@ void GyroHandler::doShutDown() {
 ReturnValue_t GyroHandler::buildNormalDeviceCommand(DeviceCommandId_t *id) {
     switch(internalState) {
     case(InternalState::RUNNING): {
-        // perform self-test every week
         uint32_t currentSecondUptime = RTT_GetTime();
-
         // todo: make self-test optional via parameter.
+        // perform self-test every week
         if((currentSecondUptime - lastSelfTestSeconds) >=
                 SELF_TEST_PERIOD_SECOND) {
             *id = PERFORM_SELFTEST;
@@ -153,7 +152,7 @@ ReturnValue_t GyroHandler::buildTransitionDeviceCommand(DeviceCommandId_t *id) {
 		}
 		else {
 			// Proceed with power up immediately.
-			internalState = InternalState::POWERUP;
+			internalState = InternalState::WRITE_POWER;
 		}
 	}
 
@@ -161,7 +160,7 @@ ReturnValue_t GyroHandler::buildTransitionDeviceCommand(DeviceCommandId_t *id) {
 	case(InternalState::MODE_SELECT): {
 		break;
 	}
-	case(InternalState::POWERUP): {
+	case(InternalState::WRITE_POWER): {
 		*id = WRITE_POWER;
 		commandBuffer[sizeof(commandBuffer)] = POWER_CONFIG;
 		return buildCommandFromCommand(*id,
@@ -171,15 +170,15 @@ ReturnValue_t GyroHandler::buildTransitionDeviceCommand(DeviceCommandId_t *id) {
 		*id = READ_PMU;
 		return buildCommandFromCommand(*id, nullptr, 0);
 	}
-	case(InternalState::WRITE_RANGE): {
-		*id = WRITE_RANGE;
-		commandBuffer[sizeof(commandBuffer)] = RANGE_CONFIG;
-		return buildCommandFromCommand(*id,
-				commandBuffer + sizeof(commandBuffer), 1);
+	case(InternalState::WRITE_CONFIG): {
+	    *id = WRITE_CONFIG;
+	    gyroConfiguration[0] = GYRO_DEF_CONFIG;
+	    gyroConfiguration[1] = RANGE_CONFIG;
+	    return buildCommandFromCommand(*id, gyroConfiguration, 2);
 	}
-	case(InternalState::READ_RANGE): {
-		*id = READ_RANGE;
-		return buildCommandFromCommand(*id, nullptr, 0);
+	case(InternalState::READ_CONFIG): {
+	    *id = READ_CONFIG;
+	    return buildCommandFromCommand(*id, nullptr, 0);
 	}
 	case(InternalState::PERFORM_SELFTEST): {
 	    *id = PERFORM_SELFTEST;
@@ -206,18 +205,61 @@ ReturnValue_t GyroHandler::buildCommandFromCommand(
 		commandBuffer[1] = commandData[0];
 		DeviceHandlerBase::rawPacket = commandBuffer;
 		DeviceHandlerBase::rawPacketLen = 2;
+		if(mode == MODE_NORMAL) {
+		    // external command, mode change necessary to identify reply.
+		    internalState = InternalState::WRITE_POWER;
+		}
 		break;
+	}
+	case(WRITE_CONFIG): {
+	    commandBuffer[0] = CONFIG_REGISTER;
+	    if(commandDataLen == 1) {
+	        // Configuration written to 0x42, see p.35 of datasheet.
+	        // Configuration is cached inside member.
+	        gyroConfiguration[0] = commandData[0];
+	        commandBuffer[1] = gyroConfiguration[0];
+	        DeviceHandlerBase::rawPacketLen = 2;
+	        break;
+	    }
+	    else if(commandDataLen == 2) {
+	        // Configuration written to 0x43, see p.36 of datasheet.
+	        // Configuration is cached inside member.
+	        gyroConfiguration[0] = commandData[0];
+	        gyroConfiguration[1] = commandData[1];
+	        commandBuffer[1] = gyroConfiguration[0];
+	        commandBuffer[2] = gyroConfiguration[1];
+	        DeviceHandlerBase::rawPacketLen = 3;
+	    }
+	    else {
+	        DeviceHandlerBase::rawPacketLen = 0;
+	    }
+	    if(mode == MODE_NORMAL) {
+	        // external command, mode change necessary to identify reply.
+	        internalState = InternalState::WRITE_CONFIG;
+	    }
+        DeviceHandlerBase::rawPacket = commandBuffer;
+        break;
+    }
+	case(READ_CONFIG): {
+	    commandBuffer[0] = READ_CONFIG;
+	    commandBuffer[1] = 0x00;
+	    commandBuffer[2] = 0x00;
+	    if(mode == MODE_NORMAL) {
+	        // external command, mode change necessary to identify reply.
+	        internalState = InternalState::READ_CONFIG;
+	    }
+	    DeviceHandlerBase::rawPacketLen = 3;
+	    DeviceHandlerBase::rawPacket = commandBuffer;
+	    break;
 	}
 	case(WRITE_RANGE): {
 		commandBuffer[0] = WRITE_RANGE;
 		commandBuffer[1] = commandData[0];
-		DeviceHandlerBase::rawPacket = commandBuffer;
-		DeviceHandlerBase::rawPacketLen = 2;
-		break;
-	}
-	case(READ_RANGE): {
-		commandBuffer[0] = READ_RANGE;
-		commandBuffer[1] = 0x00;
+		gyroConfiguration[1] = commandData[0];
+		if(mode == MODE_NORMAL) {
+		    // external command, mode change necessary to identify reply.
+		    internalState = InternalState::WRITE_RANGE;
+		}
 		DeviceHandlerBase::rawPacket = commandBuffer;
 		DeviceHandlerBase::rawPacketLen = 2;
 		break;
@@ -229,6 +271,7 @@ ReturnValue_t GyroHandler::buildCommandFromCommand(
 		DeviceHandlerBase::rawPacketLen = 2;
 		break;
 	}
+
 	case(PERFORM_SELFTEST): {
 	    commandBuffer[0] = SELFTEST_REGISTER;
 	    commandBuffer[1] = PERFORM_SELFTEST_CMD;
@@ -239,6 +282,10 @@ ReturnValue_t GyroHandler::buildCommandFromCommand(
 	case(READ_STATUS): {
 	    commandBuffer[0] = READ_STATUS;
 	    commandBuffer[1] = 0x00;
+	    if(mode == MODE_NORMAL) {
+	        // external command, mode change necessary to identify reply.
+	        internalState = InternalState::READ_STATUS;
+	    }
 	    DeviceHandlerBase::rawPacket = commandBuffer;
 	    DeviceHandlerBase::rawPacketLen = 2;
 	    break;
@@ -254,7 +301,8 @@ void GyroHandler::fillCommandAndReplyMap() {
 	this->insertInCommandAndReplyMap(WRITE_POWER, 2);
 	this->insertInCommandAndReplyMap(READ_PMU, 8);
 	this->insertInCommandAndReplyMap(WRITE_RANGE, 3);
-	this->insertInCommandAndReplyMap(READ_RANGE, 3);
+	this->insertInCommandAndReplyMap(WRITE_CONFIG, 3);
+	this->insertInCommandAndReplyMap(READ_CONFIG, 3);
 	this->insertInCommandAndReplyMap(SPI_SELECT, 3);
 	this->insertInCommandAndReplyMap(GYRO_DATA, 3);
 	this->insertInCommandAndReplyMap(PERFORM_SELFTEST, 3);
@@ -272,9 +320,13 @@ ReturnValue_t GyroHandler::scanForReply(const uint8_t *start,
 		*foundLen = 2;
 		break;
 	}
-	case(InternalState::POWERUP): {
+	case(InternalState::WRITE_POWER): {
 	    if(mode == _MODE_START_UP) {
 	        commandExecuted = true;
+	    }
+	    else {
+	        // acknowledge reply and go back to normal mode immediately.
+	        internalState = InternalState::RUNNING;
 	    }
 		*foundId = WRITE_POWER;
 		*foundLen = 2;
@@ -285,22 +337,35 @@ ReturnValue_t GyroHandler::scanForReply(const uint8_t *start,
 		*foundLen = 2;
 		break;
 	}
-	case(InternalState::WRITE_RANGE): {
+	case(InternalState::WRITE_CONFIG): {
 	    if(mode == _MODE_START_UP) {
 	        commandExecuted = true;
 	    }
-		*foundId = WRITE_RANGE;
-		*foundLen = 2;
+	    else {
+	        // acknowledge reply and go back to normal mode immediately.
+	        internalState = InternalState::RUNNING;
+	    }
+		*foundId = WRITE_CONFIG;
+		*foundLen = 3;
 		break;
 	}
-	case(InternalState::READ_RANGE): {
-		*foundId = READ_RANGE;
-		*foundLen = 2;
+	case(InternalState::READ_CONFIG): {
+		*foundId = READ_CONFIG;
+		*foundLen = 3;
 		break;
+	}
+	case(InternalState::WRITE_RANGE): {
+	    internalState = InternalState::RUNNING;
+	    *foundId = WRITE_RANGE;
+	    *foundLen = 2;
+	    break;
 	}
 	case(InternalState::PERFORM_SELFTEST): {
 	    if(mode == _MODE_START_UP) {
 	        commandExecuted = true;
+	    }
+	    else {
+	        internalState = InternalState::RUNNING;
 	    }
 	    *foundId = PERFORM_SELFTEST;
 	    *foundLen = 2;
@@ -311,7 +376,6 @@ ReturnValue_t GyroHandler::scanForReply(const uint8_t *start,
 	    *foundLen = 2;
 	    break;
 	}
-
 	case(InternalState::RUNNING): {
 		*foundId = GYRO_DATA;
 		*foundLen = 7;
@@ -345,40 +409,30 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 		else {
 			// do some error handling here.
 			// try to send power command again.
-			internalState = InternalState::POWERUP;
+			internalState = InternalState::WRITE_POWER;
 			// If this happens too often, the device will be power cycled.
 			return HasReturnvaluesIF::RETURN_FAILED;
 		}
 		break;
 	}
 
-	case(InternalState::READ_RANGE): {
-	    if(packet[1] == 0xff) {
+	case(InternalState::READ_CONFIG): {
+	    if(packet[1] == 0xff or packet[2] == 0xff) {
 	        return HasReturnvaluesIF::RETURN_FAILED;
 	    }
-		if(id == READ_RANGE and packet[1] == RANGE_CONFIG) {
-			// Range set successfully.
-			// range should be stored somewhere.
-			if(mode == _MODE_START_UP) {
-				commandExecuted = true;
-			}
-			else {
-				internalState = InternalState::RUNNING;
-			}
-		}
-		else {
-			// do some error handling here. Resend command
-			// or restart
-			internalState = InternalState::READ_RANGE;
-			return HasReturnvaluesIF::RETURN_FAILED;
-		}
-		break;
-	}
-
-	case(InternalState::PERFORM_SELFTEST): {
-	    if(mode == MODE_NORMAL) {
-	        // periodic self-test, go back to normal polling mode.
-	        internalState = InternalState::RUNNING;
+	    // It is assumed that the configuration was cached inside the
+	    // last two bytes of the command buffer, so the configuration
+	    // must be equal to those parameters.
+	    if((packet[1] == gyroConfiguration[0]) and
+	            (packet[2] == gyroConfiguration[1])) {
+	        if(mode == _MODE_START_UP) {
+	            // Default configuration successfull.
+	            commandExecuted = true;
+	        }
+	        else if(mode == MODE_NORMAL) {
+	            // Was an external command, go back to polling mode.
+	            internalState = InternalState::RUNNING;
+	        }
 	    }
 	    break;
 	}
@@ -412,9 +466,6 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 	            // Prevents the delay counter from being reset.
 	            return IGNORE_REPLY_DATA;
 	        }
-
-
-
 	    }
 	    break;
 	}
@@ -432,7 +483,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 			float angularVelocityZ =
 					angularVelocityBinaryZ / std::pow(2, 15) * GYRO_RANGE;
 
-			if(counter == 20) {
+			if(counter >= 20) {
 				sif::info << "GyroHandler: Angular velocities in degrees per "
 						"second:" << std::endl;
 				sif::info << "X: " << angularVelocityX << std::endl;

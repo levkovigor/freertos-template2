@@ -266,7 +266,7 @@ void Factory::produce(void) {
 	//new UART0TestTask("UART0 Test Task", objects::AT91_UART0_TEST_TASK);
 	//new UART2TestTask("UART2 Test Task", objects::AT91_UART2_TEST_TASK);
 	//new TwiTestTask(objects::AT91_I2C_TEST_TASK, 16);
-    //new SpiTestTask(objects::AT91_SPI_TEST_TASK, SpiTestTask::SpiTestMode::BLOCKING);
+    //new SpiTestTask(objects::AT91_SPI_TEST_TASK, SpiTestTask::SpiTestMode::GYRO);
 	#endif
 }
 

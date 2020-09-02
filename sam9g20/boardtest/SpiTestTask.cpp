@@ -135,13 +135,57 @@ void SpiTestTask::performBlockingGyroTest() {
 		}
 
 		sif::info << "Gyro booted successfully." << std::endl;
-
-		writeGyroRegister(spiTransfer, 0x43, 0b0000'0100);
-		uint8_t rangeConfig = readGyroRegister(spiTransfer, 0x43);
-		sif::info << "Gyro range config: 0b" << std::bitset<8>(rangeConfig) << std::endl;
-
 		gyroConfigured = true;
 	}
+
+	// TODO: test burst write and read for configuration.
+	// Burst write
+	// 1. General configuration
+	// 2. Range configuration
+	writeData[0] = 0x42;
+	static constexpr uint8_t GYRO_BWP_CONFIG = 0b0001'0000;
+	// Configure 50 Hz output data rate, equals 10.7 Hz 3dB cutoff frequency
+	// with OSR2.
+	static constexpr uint8_t GYRO_ODR_CONFIG = 0b0000'0111;
+	writeData[1] = GYRO_BWP_CONFIG | GYRO_ODR_CONFIG;
+	// Burst configuration, target register is incremented automatically.
+	static constexpr uint8_t RANGE_CONFIG = 0b0000'0100;
+
+	writeData[2] = RANGE_CONFIG;
+	spiTransfer.transferSize = 3;
+
+	configureSpiDummySSIfNeeded();
+	GpioDeviceComIF::enableDecoder1();
+	GpioDeviceComIF::enableDecoderOutput4();
+	int result = SPI_writeRead(&spiTransfer);
+	if(result != 0) {
+	    sif::warning << "SPI Test 2: SPI_writeRead returned: "
+	            << (int)result << std::endl;
+	}
+	GpioDeviceComIF::disableDecoders();
+
+	// Burst read, which reads the configuration and the range register
+	// in one go.
+	writeData[0] = GYRO_READ_MASK | 0x42;
+	writeData[1] = 0x00;
+	writeData[2] = 0x00;
+	spiTransfer.transferSize = 3;
+
+	configureSpiDummySSIfNeeded();
+	GpioDeviceComIF::enableDecoder1();
+	GpioDeviceComIF::enableDecoderOutput4();
+	result = SPI_writeRead(&spiTransfer);
+	if(result != 0) {
+	    sif::warning << "SPI Test 2: SPI_writeRead returned: "
+	            << (int)result << std::endl;
+	}
+	GpioDeviceComIF::disableDecoders();
+
+	sif::info << "Gyro Config Register 0x42: 0b" <<
+	        std::bitset<8>(readData[1]) << std::endl;
+	sif::info << "Gyro Range Config Register 0x43: 0b" <<
+	        std::bitset<8>(readData[2]) << std::endl;
+
 	readGyroSensorsBlockRead(spiTransfer);
 }
 
