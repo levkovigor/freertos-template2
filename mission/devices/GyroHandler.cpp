@@ -425,6 +425,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 	    // must be equal to those parameters.
 	    if((packet[1] == gyroConfiguration[0]) and
 	            (packet[2] == gyroConfiguration[1])) {
+	        // store values to dataset.
 	        if(mode == _MODE_START_UP) {
 	            // Default configuration successfull.
 	            commandExecuted = true;
@@ -441,6 +442,8 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 	    if(packet[1] == 0xff) {
 	        return HasReturnvaluesIF::RETURN_FAILED;
 	    }
+	    // store status to dataset.
+
 	    // it is assumed that only the self-test register is read for now!
 	    if((packet[1] & SELFTEST_OK) == SELFTEST_OK) {
 	        if(mode == _MODE_START_UP) {
@@ -483,6 +486,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 			float angularVelocityZ =
 					angularVelocityBinaryZ / std::pow(2, 15) * GYRO_RANGE;
 
+			// todo: store values to dataset.
 			if(counter >= 20) {
 				sif::info << "GyroHandler: Angular velocities in degrees per "
 						"second:" << std::endl;
