@@ -67,6 +67,7 @@ void GyroHandler::doStartUp() {
 		}
 		break;
 	}
+	// todo: make self-test optional via parameter.
 	case(InternalState::PERFORM_SELFTEST): {
 	    if(commandExecuted) {
 	        internalState = InternalState::READ_STATUS;
@@ -95,6 +96,8 @@ ReturnValue_t GyroHandler::buildNormalDeviceCommand(DeviceCommandId_t *id) {
     case(InternalState::RUNNING): {
         // perform self-test every week
         uint32_t currentSecondUptime = RTT_GetTime();
+
+        // todo: make self-test optional via parameter.
         if((currentSecondUptime - lastSelfTestSeconds) >=
                 SELF_TEST_PERIOD_SECOND) {
             *id = PERFORM_SELFTEST;
