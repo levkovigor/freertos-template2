@@ -3,11 +3,11 @@
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
 
 /**
- * @brief   Device Handler for the BMG250 Gyroscope device
+ * @brief       Device Handler for the BMG250 Gyroscope device
  * @details
  * Documentation of device:
  * https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmg250-ds000.pdf
- * @author  R. Mueller
+ * @author      R. Mueller
  * @ingroup     devices
  */
 class GyroHandler: public DeviceHandlerBase {

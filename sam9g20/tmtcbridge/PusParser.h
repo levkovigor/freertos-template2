@@ -19,6 +19,7 @@
  * If the parser detects split packets (which means that the size of the
  * next packet is larger than the remaining size to scan), it can either
  * store that split packet or throw away the packet.
+ * @author   R. Mueller
  */
 class PusParser {
 public:
