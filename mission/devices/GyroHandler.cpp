@@ -473,6 +473,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 	    break;
 	}
 
+	// Core method: Analyse received sensor data and store it into datapool.
 	case(InternalState::RUNNING): {
 		if(id == GYRO_DATA) {
 			int16_t angularVelocityBinaryX = packet[2] << 8 | packet[1];
