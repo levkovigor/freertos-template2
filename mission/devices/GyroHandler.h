@@ -25,6 +25,7 @@ public:
 
     //! Gyro range (-+) in degrees
     static constexpr float GYRO_RANGE = 125.0;
+    // Check every week for now.
     static constexpr uint32_t SELF_TEST_PERIOD_SECOND = 60 * 60 * 24 * 7;
 protected:
     /* DeviceHandlerBase abstract function implementation */
