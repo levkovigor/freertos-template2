@@ -54,7 +54,7 @@ else
 endif
 
 # General folder paths
-FRAMEWORK_PATH = framework
+FRAMEWORK_PATH = fsfw
 MISSION_PATH = mission
 CONFIG_PATH = $(BOARD_FILE_ROOT)/config
 TEST_PATH = test
@@ -130,7 +130,7 @@ INCLUDES :=
 
 # Directories where $(directoryname).mk files should be included from
 SUBDIRS := $(FRAMEWORK_PATH) $(TEST_PATH) $(BSP_PATH) $(UNITTEST_PATH)\
-		   $(CONFIG_PATH)
+		   $(CONFIG_PATH) $(MISSION_PATH)
 # $(MISSION_PATH) $(CONFIG_PATH)
 # INCLUDES += framework/test/catch2
 

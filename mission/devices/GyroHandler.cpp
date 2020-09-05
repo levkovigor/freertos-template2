@@ -1,10 +1,10 @@
 #include <mission/devices/GyroHandler.h>
 
+#if defined(at91sam9g20)
 extern "C" {
 #include <hal/Timing/RTT.h>
 }
 
-#if defined(at91sam9g20)
 #include <sam9g20/comIF/cookies/I2cCookie.h>
 #include <sam9g20/comIF/cookies/SpiCookie.h>
 #endif
@@ -95,6 +95,7 @@ void GyroHandler::doShutDown() {
 ReturnValue_t GyroHandler::buildNormalDeviceCommand(DeviceCommandId_t *id) {
     switch(internalState) {
     case(InternalState::RUNNING): {
+#if defined(at91sam9g20)
         uint32_t currentSecondUptime = RTT_GetTime();
         // todo: make self-test optional via parameter.
         // perform self-test every week
@@ -119,7 +120,7 @@ ReturnValue_t GyroHandler::buildNormalDeviceCommand(DeviceCommandId_t *id) {
                 selfTestCycleCounter ++;
             }
         }
-
+#endif
         // Poll Gyro Device. Perform block read of 7 bytes to read register
         // 0x12-0x17
         commandBuffer[0] = GYRO_DATA;

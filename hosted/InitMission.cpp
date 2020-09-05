@@ -5,13 +5,10 @@
 
 #include <unittest/internal/InternalUnitTester.h>
 #include <unittest/internal/IntTestMutex.h>
-
 #include <fsfw/datapoolglob/GlobalDataPool.h>
 #include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/tasks/PeriodicTaskIF.h>
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/tasks/TaskFactory.h>
-
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 
 #include <ostream>
@@ -79,6 +76,7 @@ void initTask() {
         sif::error << "Add component PUS Funnel failed" << std::endl;
     }
 
+#ifdef linux
     /* Unix UDP bridge */
     PeriodicTaskIF* UdpBridgeTask = TaskFactory::instance()->createPeriodicTask(
     		"UDP_UNIX_BRIDGE", 50, PeriodicTaskIF::MINIMUM_STACK_SIZE,
@@ -95,6 +93,7 @@ void initTask() {
     if(result != HasReturnvaluesIF::RETURN_OK) {
     	sif::error << "Add component UDP Unix Bridge failed" << std::endl;
     }
+#endif
 
     /* PUS Services */
     PeriodicTaskIF* PusService1 = TaskFactory::instance()->createPeriodicTask(
@@ -169,8 +168,10 @@ void initTask() {
 	TestTask->startTask();
 	PacketDistributorTask->startTask();
 	PollingSequenceTableTaskDefault->startTask();
+#ifdef linux
 	UdpBridgeTask->startTask();
 	UdpPollingTask->startTask();
+#endif
 
 	PusService1->startTask();
 	PusService2->startTask();

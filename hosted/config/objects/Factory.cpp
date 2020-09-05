@@ -14,13 +14,12 @@
 #include <fsfw/health/HealthTable.h>
 #include <fsfw/internalError/InternalErrorReporter.h>
 #include <fsfw/objectmanager/frameworkObjects.h>
-#include <fsfw/osal/linux/TmTcUnixUdpBridge.h>
+
 #include <fsfw/storagemanager/PoolManager.h>
 #include <fsfw/tcdistribution/CCSDSDistributor.h>
 #include <fsfw/tcdistribution/PUSDistributor.h>
 #include <fsfw/tmtcpacket/pus/TmPacketStored.h>
 #include <fsfw/tmtcservices/PusServiceBase.h>
-#include <fsfw/osal/linux/TcUnixUdpPollingTask.h>
 #include <fsfw/pus/Service1TelecommandVerification.h>
 #include <fsfw/pus/Service2DeviceAccess.h>
 #include <fsfw/pus/Service5EventReporting.h>
@@ -28,6 +27,12 @@
 #include <hosted/boardtest/TestTaskHost.h>
 #include <fsfw/pus/CService200ModeCommanding.h>
 #include <test/testdevices/TestDeviceHandler.h>
+
+#ifdef linux
+#include <fsfw/osal/linux/TmTcUnixUdpBridge.h>
+#include <fsfw/osal/linux/TcUnixUdpPollingTask.h>
+#endif
+
 #include <cstdint>
 
 /**
@@ -69,11 +74,15 @@ void Factory::produce(void) {
 
 	/* TM Destination */
 	new TmFunnel(objects::PUS_FUNNEL);
+
+	// TODO: implement for windows.
+#ifdef linux
 	new TmTcUnixUdpBridge(objects::UNIX_UDP_BRIDGE,
 			objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
 			objects::TC_STORE);
 	new TcUnixUdpPollingTask(objects::UNIX_UDP_POLLING_TASK,
 			objects::UNIX_UDP_BRIDGE);
+#endif
 
 	/* PUS Service Base Services */
 	new Service1TelecommandVerification(objects::PUS_SERVICE_1,
