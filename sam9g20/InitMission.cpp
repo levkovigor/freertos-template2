@@ -276,7 +276,7 @@ void initMission(void) {
 
     /* Test Task */
     PeriodicTaskIF* TestTask = TaskFactory::instance()->
-            createPeriodicTask("TEST_TASK", 2, 3072 * 4, 1, nullptr);
+            createPeriodicTask("TEST_TASK", 2, 3072 * 4, 3, nullptr);
     result = TestTask->addComponent(objects::TEST_TASK);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "Add component Test Task failed" << std::endl;
