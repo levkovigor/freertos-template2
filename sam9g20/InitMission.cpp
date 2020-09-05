@@ -276,7 +276,7 @@ void initMission(void) {
 
     /* Test Task */
     PeriodicTaskIF* TestTask = TaskFactory::instance()->
-            createPeriodicTask("TEST_TASK", 3, 3072 * 4, 1, nullptr);
+            createPeriodicTask("TEST_TASK", 2, 3072 * 4, 1, nullptr);
     result = TestTask->addComponent(objects::TEST_TASK);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "Add component Test Task failed" << std::endl;
@@ -407,7 +407,7 @@ void boardTestTaskInit() {
     /* Polling Sequence Table Test */
     FixedTimeslotTaskIF * PollingSequenceTableTaskTest =
             TaskFactory::instance()->createFixedTimeslotTask(
-             "PST_TASK_ARDUINO", 3, 2048 * 4, 0.4, nullptr);
+             "PST_TASK_ARDUINO", 4, 2048 * 4, 0.4, nullptr);
     result = pst::pollingSequenceInitTest(PollingSequenceTableTaskTest);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "creating PST failed" << std::endl;
