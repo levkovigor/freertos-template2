@@ -27,6 +27,7 @@ GyroHandler::~GyroHandler() {
 }
 
 void GyroHandler::doStartUp() {
+
 	switch(internalState) {
 	case(InternalState::NONE): {
 		internalState = InternalState::MODE_SELECT;
@@ -518,7 +519,7 @@ void GyroHandler::debugInterface(uint8_t positionTracker, object_id_t objectId,
 }
 
 uint32_t GyroHandler::getTransitionDelayMs(Mode_t modeFrom, Mode_t modeTo) {
-    return 5000;
+    return 8000;
 }
 
 ReturnValue_t GyroHandler::getSwitches(const uint8_t **switches,
@@ -527,6 +528,9 @@ ReturnValue_t GyroHandler::getSwitches(const uint8_t **switches,
 }
 
 ReturnValue_t GyroHandler::initialize() {
-    setMode(_MODE_START_UP);
     return DeviceHandlerBase::initialize();
+}
+
+ReturnValue_t GyroHandler::initializeAfterTaskCreation() {
+    return DeviceHandlerBase::initializeAfterTaskCreation();
 }

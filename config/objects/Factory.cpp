@@ -247,8 +247,9 @@ void Factory::produce(void) {
 
     spiCookie = new SpiCookie(addresses::SPI_Test_Gyro, 10, SlaveType::DEMULTIPLEXER_1,
     		DemultiplexerOutput::OUTPUT_4, SPImode::mode0_spi, 2, 3'900'000, 1);
-    new GyroHandler(objects::SPI_Test_Gyro, objects::SPI_DEVICE_COM_IF, spiCookie,
-    		switches::GYRO1);
+    GyroHandler* gyroHandler = new GyroHandler(objects::SPI_Test_Gyro,
+            objects::SPI_DEVICE_COM_IF, spiCookie, switches::GYRO1);
+    gyroHandler->setStartUpImmediately();
 
 	//CookieIF * i2cCookie_0 = new I2cCookie(addresses::I2C_ARDUINO_0,
 	//        I2C_MAX_REPLY_LEN);

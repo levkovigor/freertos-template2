@@ -50,6 +50,7 @@ protected:
             uint8_t *numberOfSwitches) override;
 
     ReturnValue_t initialize() override;
+    ReturnValue_t initializeAfterTaskCreation() override;
 
 private:
     const uint8_t switchId;
