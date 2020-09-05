@@ -177,7 +177,7 @@ void AtmelTestTask::performNewPoolManagerAccessTests() {
 	accessorPair.second.print();
 }
 
-void performSDCardDemo() {
+void AtmelTestTask::performSDCardDemo() {
     /* Demo for SD Card 0, SD card slot J35 at at91sam9g20-ek */
     int result = DEMO_SD_Basic(0);
     if(result != 0) {

@@ -276,7 +276,7 @@ void initMission(void) {
 
     /* Test Task */
     PeriodicTaskIF* TestTask = TaskFactory::instance()->
-            createPeriodicTask("TEST_TASK", 3, 2048 * 4, 1, nullptr);
+            createPeriodicTask("TEST_TASK", 3, 3072 * 4, 1, nullptr);
     result = TestTask->addComponent(objects::TEST_TASK);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "Add component Test Task failed" << std::endl;
@@ -284,7 +284,7 @@ void initMission(void) {
 
     /* SD Card handler task */
     PeriodicTaskIF* SDcardTask = TaskFactory::instance()->
-            createPeriodicTask("SD_CARD_TASK",2,2048 * 4, 1, nullptr);
+            createPeriodicTask("SD_CARD_TASK",2, 2048 * 4, 1, nullptr);
     result = SDcardTask->addComponent(objects::SD_CARD_HANDLER);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "Add component SDCardHandler to SDCardTask failed" << std::endl;
