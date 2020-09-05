@@ -72,7 +72,7 @@ public:
     PeriodicTaskIF* getPeriodicTaskHandle(object_id_t objectId);
     FixedTimeslotTaskIF* getFixedTimeslotTaskHandle(object_id_t objectId);
 
-    virtual void setPeriodicOperation(dur_seconds_t period);
+    virtual void setPeriodicOperation(float periodSeconds);
     virtual void clearPeriodicOperation();
 
     /**

@@ -87,7 +87,7 @@ void FreeRTOSStackMonitor::performStackCheck(object_id_t objectId,
 }
 
 void FreeRTOSStackMonitor::performOneShotStackUsageOperation(
-		dur_seconds_t timePointInFuture) {
+		float timePointInFuture) {
 	MutexHelper(monitorMutex, MutexIF::TimeoutType::WAITING, 10);
 	if(timePointInFuture == 0) {
 		performOneShotOperation = true;

@@ -53,7 +53,7 @@ public:
     void setPrintMode();
     void clearPrintMode();
 
-    void performOneShotStackUsageOperation(dur_seconds_t timePointInFuture = 0);
+    void performOneShotStackUsageOperation(float timePointInFuture = 0);
 
     /**
      * Override base performOp to implement mutex protection and to
