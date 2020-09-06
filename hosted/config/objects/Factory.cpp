@@ -28,7 +28,7 @@
 #include <fsfw/pus/CService200ModeCommanding.h>
 #include <test/testdevices/TestDeviceHandler.h>
 
-#ifdef linux
+#ifdef LINUX
 #include <fsfw/osal/linux/TmTcUnixUdpBridge.h>
 #include <fsfw/osal/linux/TcUnixUdpPollingTask.h>
 #elif WIN32
@@ -78,7 +78,7 @@ void Factory::produce(void) {
 	/* TM Destination */
 	new TmFunnel(objects::PUS_FUNNEL);
 
-#ifdef linux
+#ifdef LINUX
 	new TmTcUnixUdpBridge(objects::UDP_BRIDGE,
 	        objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
 	        objects::TC_STORE);
