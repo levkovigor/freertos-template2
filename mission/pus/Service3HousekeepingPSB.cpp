@@ -10,8 +10,8 @@
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/tmtcservices/AcceptsTelemetryIF.h>
 #include <fsfw/serialize/EndianConverter.h>
-#include <fsfw/datapool/PoolRawAccessHelper.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
+#include <mission/utility/PoolRawAccessHelper.h>
 
 Service3HousekeepingPSB::Service3HousekeepingPSB(object_id_t object_id,
 		uint16_t apid, uint8_t serviceId):
