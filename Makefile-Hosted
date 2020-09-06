@@ -37,6 +37,7 @@ ifeq ($(OS),Windows_NT)
 else
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
+    	DETECTED_OS = LINUX
         CUSTOM_DEFINES += -DLINUX
     endif
     ifeq ($(UNAME_S),Darwin)
@@ -179,6 +180,10 @@ $(foreach S,$(SUBDIRS),$(eval $(INCLUDE_FILE)))
 
 # VPATH += mission/pus/
 
+ifeq ($(DETECTED_OS), LINUX)
+CXXSRC += $(FRAMEWORK_PATH)/osal/linux/TcUnixUdpPollingTask.cpp
+CXXSRC += $(FRAMEWORK_PATH)/osal/linux/TmTcUnixUdpBridge.cpp
+endif
 # CXXSRC += Service17Test.cpp
 
 # All C Sources included by .mk files are assigned here
