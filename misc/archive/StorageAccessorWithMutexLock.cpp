@@ -1,14 +1,13 @@
 #include <fsfw/storagemanager/StorageAccessor.h>
 
-ConstStorageAccessor::ConstStorageAccessor(store_address_t storeId): storeId(storeId) {}
+ConstStorageAccessor::ConstStorageAccessor(store_address_t storeId):
+        storeId(storeId) {}
 
 ConstStorageAccessor::~ConstStorageAccessor() {
 	if(deleteData and store != nullptr) {
-		sif::debug << "deleting store data" << std::endl;
 		store->deleteDataNonLocking(storeId);
 	}
 	if(mutexLock != nullptr) {
-		sif::debug << "unlocking mutex lock" << std::endl;
 		mutexLock.reset();
 	}
 }

@@ -5,8 +5,8 @@ namespace pus {
 enum Ids: uint8_t {
 	PUS_SERVICE_1 = 1,
 	PUS_SERVICE_2 = 2,
-	PUS_SERVICE_3 = 30,
-	PUS_SERVICE_3_PSB = 3,
+	PUS_SERVICE_3 = 3,
+	PUS_SERVICE_3_PSB = 30,
 	PUS_SERVICE_5 = 5,
 	PUS_SERVICE_6 = 6,
 	PUS_SERVICE_8 = 8,

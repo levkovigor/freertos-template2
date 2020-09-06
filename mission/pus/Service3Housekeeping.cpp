@@ -127,7 +127,16 @@ ReturnValue_t Service3Housekeeping::handleReply(const CommandMessage* reply,
 
 void Service3Housekeeping::handleUnrequestedReply(
         CommandMessage* reply) {
-    sif::info << "Unrequested reply received!" << std::endl;
+    switch(reply->getCommand()) {
+    case(HousekeepingMessage::HK_REPORT): {
+        generateHkReport(reply);
+        break;
+    }
+    default: {
+        sif::error << "Service3Housekeeping::handleUnrequestedReply: "
+                << "Invalid reply!" << std::endl;
+    }
+    }
 }
 
 MessageQueueId_t Service3Housekeeping::getHkQueue() const {
