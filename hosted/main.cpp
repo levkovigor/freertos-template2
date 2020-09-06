@@ -11,6 +11,8 @@ void initMission();
 static const char* COMPILE_PRINTOUT = "Windows";
 #elif LINUX
 static const char* COMPILE_PRINTOUT = "Linux";
+#else
+static const char* COMPILE_PRINTOUT = "unknown OS";
 #endif
 
 #ifndef SW_VERSION
