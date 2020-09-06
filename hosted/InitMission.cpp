@@ -71,8 +71,7 @@ void initTask() {
         sif::error << "Add component PUS Funnel failed" << std::endl;
     }
 
-//#ifdef linux
-    /* Unix UDP bridge */
+    /* UDP bridge */
     PeriodicTaskIF* UdpBridgeTask = TaskFactory::instance()->createPeriodicTask(
     		"UDP_UNIX_BRIDGE", 50, PeriodicTaskIF::MINIMUM_STACK_SIZE,
 			0.2, nullptr);
@@ -88,7 +87,6 @@ void initTask() {
     if(result != HasReturnvaluesIF::RETURN_OK) {
     	sif::error << "Add component UDP Polling failed" << std::endl;
     }
-//#endif
 
     /* PUS Services */
     PeriodicTaskIF* PusService1 = TaskFactory::instance()->createPeriodicTask(
