@@ -20,6 +20,11 @@ BOARD = host
 OS_FSFW = host
 CUSTOM_DEFINES += -D$(OS_FSFW) 
 
+SW_VERSION = 1
+SW_SUBVERSION = 6
+CUSTOM_DEFINES += -DSW_VERSION=$(SW_VERSION)
+CUSTOM_DEFINES += -DSW_SUBVERSION=$(SW_SUBVERSION)
+
 # Copied from stackoverflow, can be used to differentiate between Windows
 # and Linux
 ifeq ($(OS),Windows_NT)
