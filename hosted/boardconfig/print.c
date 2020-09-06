@@ -1,4 +1,4 @@
-#include <hosted/boardconfig/print.h>
+#include "print.h"
 #include <stdio.h>
 
 void printChar(const char* character, bool errStream) {

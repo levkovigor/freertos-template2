@@ -31,6 +31,9 @@
 #ifdef linux
 #include <fsfw/osal/linux/TmTcUnixUdpBridge.h>
 #include <fsfw/osal/linux/TcUnixUdpPollingTask.h>
+#elif WIN32
+#include <fsfw/osal/windows/TcWinUdpPollingTask.h>
+#include <fsfw/osal/windows/TmTcWinUdpBridge.h>
 #endif
 
 #include <cstdint>
@@ -75,13 +78,18 @@ void Factory::produce(void) {
 	/* TM Destination */
 	new TmFunnel(objects::PUS_FUNNEL);
 
-	// TODO: implement for windows.
 #ifdef linux
-	new TmTcUnixUdpBridge(objects::UNIX_UDP_BRIDGE,
-			objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
-			objects::TC_STORE);
-	new TcUnixUdpPollingTask(objects::UNIX_UDP_POLLING_TASK,
-			objects::UNIX_UDP_BRIDGE);
+	new TmTcUnixUdpBridge(objects::UDP_BRIDGE,
+	        objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
+	        objects::TC_STORE);
+	new TcUnixUdpPollingTask(objects::UDP_POLLING_TASK,
+	        objects::UDP_BRIDGE);
+#elif WIN32
+	new TmTcWinUdpBridge(objects::UDP_BRIDGE,
+	        objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
+	        objects::TC_STORE);
+	new TcWinUdpPollingTask(objects::UDP_POLLING_TASK,
+	        objects::UDP_BRIDGE);
 #endif
 
 	/* PUS Service Base Services */
@@ -122,7 +130,7 @@ void Factory::setStaticFrameworkObjectIds() {
 	DeviceHandlerBase::powerSwitcherId = objects::NO_OBJECT;
 
 	TmPacketStored::timeStamperId = objects::PUS_TIME;
-	TmFunnel::downlinkDestination = objects::UNIX_UDP_BRIDGE;
+	TmFunnel::downlinkDestination = objects::UDP_BRIDGE;
 }
 
 

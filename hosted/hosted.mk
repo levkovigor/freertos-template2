@@ -5,5 +5,6 @@ CXXSRC += $(wildcard $(CURRENTPATH)/boardtest/*.cpp)
 CSRC += $(wildcard $(CURRENTPATH)/boardtest/*.c)
 
 CSRC += $(wildcard $(CURRENTPATH)/boardconfig/*.c)
+CXXSRC += $(wildcard $(CURRENTPATH)/boardconfig/*.cpp)
 
 INCLUDES += $(CURRENTPATH)

@@ -76,24 +76,24 @@ void initTask() {
         sif::error << "Add component PUS Funnel failed" << std::endl;
     }
 
-#ifdef linux
+//#ifdef linux
     /* Unix UDP bridge */
     PeriodicTaskIF* UdpBridgeTask = TaskFactory::instance()->createPeriodicTask(
     		"UDP_UNIX_BRIDGE", 50, PeriodicTaskIF::MINIMUM_STACK_SIZE,
 			0.2, nullptr);
-    result = UdpBridgeTask->addComponent(objects::UNIX_UDP_BRIDGE);
+    result = UdpBridgeTask->addComponent(objects::UDP_BRIDGE);
     if(result != HasReturnvaluesIF::RETURN_OK) {
     	sif::error << "Add component UDP Unix Bridge failed" << std::endl;
     }
 
     PeriodicTaskIF* UdpPollingTask = TaskFactory::instance()->
     		createPeriodicTask("UDP_POLLING", 80,
-    		PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.01, nullptr);
-    result = UdpPollingTask->addComponent(objects::UNIX_UDP_POLLING_TASK);
+    		PeriodicTaskIF::MINIMUM_STACK_SIZE, 2.0, nullptr);
+    result = UdpPollingTask->addComponent(objects::UDP_POLLING_TASK);
     if(result != HasReturnvaluesIF::RETURN_OK) {
-    	sif::error << "Add component UDP Unix Bridge failed" << std::endl;
+    	sif::error << "Add component UDP Polling failed" << std::endl;
     }
-#endif
+//#endif
 
     /* PUS Services */
     PeriodicTaskIF* PusService1 = TaskFactory::instance()->createPeriodicTask(
@@ -169,6 +169,9 @@ void initTask() {
 	PacketDistributorTask->startTask();
 	PollingSequenceTableTaskDefault->startTask();
 #ifdef linux
+	UdpBridgeTask->startTask();
+	UdpPollingTask->startTask();
+#elif WIN32
 	UdpBridgeTask->startTask();
 	UdpPollingTask->startTask();
 #endif

@@ -11,16 +11,17 @@
 # General rules: http://make.mad-scientist.net/papers/rules-of-makefiles/#rule3
 SHELL = /bin/sh
 
+CUSTOM_DEFINES := 
+
 # Chip & board used for compilation
 # (can be overriden by adding CHIP=chip and BOARD=board to the command-line)
 BOARD_FILE_ROOT = hosted
 BOARD = host
 OS_FSFW = host
-CUSTOM_DEFINES += $(OS_FSFW)
+CUSTOM_DEFINES += -D$(OS_FSFW) 
 
 # Copied from stackoverflow, can be used to differentiate between Windows
 # and Linux
-CUSTOM_DEFINES :=
 ifeq ($(OS),Windows_NT)
     CUSTOM_DEFINES += -DWIN32
     ifeq ($(PROCESSOR_ARCHITEW6432),AMD64)
@@ -129,7 +130,7 @@ ASRC :=
 INCLUDES := 
 
 # Directories where $(directoryname).mk files should be included from
-SUBDIRS := $(FRAMEWORK_PATH) $(TEST_PATH) $(BSP_PATH) $(UNITTEST_PATH)\
+SUBDIRS := $(FRAMEWORK_PATH) $(TEST_PATH) $(BSP_PATH) $(UNITTEST_PATH) \
 		   $(CONFIG_PATH) $(MISSION_PATH)
 # $(MISSION_PATH) $(CONFIG_PATH)
 # INCLUDES += framework/test/catch2
@@ -253,9 +254,14 @@ ASFLAGS =  -Wall -g $(OPTIMIZATION) $(I_INCLUDES) -D__ASSEMBLY__
 # Flags for the linker call
 # LINK_INCLUDES specify the path to used libraries and the linker script
 # LINK_LIBRARIES link HCC and HAL library and enable float support
-LDFLAGS = -g3 -pthread $(DEAD_CODE_REMOVAL) $(OPTIMIZATION) 
-LINK_INCLUDES = 
-LINK_LIBRARIES = 
+LDFLAGS := -g3 -pthread $(DEAD_CODE_REMOVAL) $(OPTIMIZATION) 
+
+LINK_INCLUDES := 
+
+LINK_LIBRARIES := 
+ifeq ($(OS),Windows_NT)
+LINK_LIBRARIES += -lwsock32 -lws2_32
+endif
 
 # Gnu Coverage Tools Flags
 ifdef GCOV
