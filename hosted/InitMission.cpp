@@ -36,11 +36,6 @@ void initTask();
 
 void initMission() {
 	sif::info << "Initiating mission specific code." << std::endl;
-#if defined(hosted)
-	testmutex::testMutex();
-	sif::info << "Test" << std::endl;
-	return;
-#endif
 	// Allocate object manager here, as global constructors might not be
 	// executed, depending on buildchain
 	sif::info << "Creating objects" << std::endl;
@@ -168,7 +163,7 @@ void initTask() {
 	TestTask->startTask();
 	PacketDistributorTask->startTask();
 	PollingSequenceTableTaskDefault->startTask();
-#ifdef linux
+#ifdef LINUX
 	UdpBridgeTask->startTask();
 	UdpPollingTask->startTask();
 #elif WIN32
