@@ -253,12 +253,11 @@ hardclean:
 # Only clean files for current build
 clean:
 	-rm -rf $(CLEANOBJ)
-	-rm -rf $(CLEANBIN1)
-	-rm -rf $(CLEANBIN2)
+	-rm -rf $(CLEANBIN)
 	-rm -rf $(CLEANDEP)
 
-# Only clean binaries. Useful for changing the binary type when object files are already compiled
-# so complete rebuild is not necessary
+# Only clean binaries. Useful for changing the binary type when object files 
+# are already compiled so complete rebuild is not necessary
 cleanbin:
 	-rm -rf $(BUILDPATH)/$(OUTPUT_FOLDER)
 	
