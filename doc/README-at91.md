@@ -55,7 +55,7 @@ wsl make -j4
 <a name="buildtargets"></a>
 The Eclipse environment uses the previously mentioned build targets. Build targets can be created by right clicking on sourceobsw &rarr; Build Target &rarr; Create. Also make sure the toolchain is included like seen in the following picture by going to C/C++ Build &rarr; Settings, checking that the paths for the ARM Toolchain are set correctly and hitting Apply. This ensures that the Eclipse indexer finds standard libraries.
 
-<img src="./readme_img/eclipse_example1.PNG" width="80%">
+<img src="./readme_img/eclipse_example1.PNG" width="50%">
 
 ### Example Build Configuration.
 
