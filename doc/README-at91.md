@@ -35,17 +35,17 @@ wsl make -j4
 6. Open up Arduino IDE or Puttty with baud rate 115200 to read debug output
 Main
 
-<img src="./readme_img/01_jlink_setup.png" width="50%">
+<img src="./readme_img/01_jlink_setup.png" width="70%">
 
 #### Debugger
 
-<img src="./readme_img/02_jlink_setup.png" width="50%">
-<img src="./readme_img/03_jlink_setup.png" width="50%">
+<img src="./readme_img/02_jlink_setup.png" width="70%">
+<img src="./readme_img/03_jlink_setup.png" width="70%">
 
 #### Startup
 
-<img src="./readme_img/04_jlink_setup.png" width="50%">
-<img src="./readme_img/05_jlink_setup.png" width="50%">
+<img src="./readme_img/04_jlink_setup.png" width="70%">
+<img src="./readme_img/05_jlink_setup.png" width="70%">
 <br>
 
 ##  Setting up Eclipse environment for build targets
