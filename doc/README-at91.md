@@ -55,7 +55,7 @@ wsl make -j4
 <a name="buildtargets"></a>
 The Eclipse environment uses the previously mentioned build targets. Build targets can be created by right clicking on sourceobsw &rarr; Build Target &rarr; Create. Also make sure the toolchain is included like seen in the following picture by going to C/C++ Build &rarr; Settings, checking that the paths for the ARM Toolchain are set correctly and hitting Apply. This ensures that the Eclipse indexer finds standard libraries.
 
-<img src="./readme_img/eclipse_exampl12.PNG" width="80%">
+<img src="./readme_img/eclipse_example1.PNG" width="80%">
 
 ### Example Build Configuration.
 
@@ -69,6 +69,6 @@ For the AT91 board, the SEGGER J-Link Debug Launch Configuration is used and has
 3. After setting up the build configurations, building and debugging should be easy by only having to click the hammer or the bug icon.
 4. A double click on the build targets in the left panel can also be used to execute the target for the current build configuration, which can be set in the top panel next to the cog.
 
-<img src="./readme_img/eclipse_example2.PNG" width="80%">
+<img src="./readme_img/eclipse_example2.PNG" width="95%">
 <img src="./readme_img/eclipse_example3.PNG" width="60%">
-<img src="./readme_img/eclipse_example4.PNG" width="50%">
+<img src="./readme_img/eclipse_example4.PNG" width="60%">
