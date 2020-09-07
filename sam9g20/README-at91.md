@@ -2,7 +2,7 @@
 
 #### Setting up eclipse to execute the makefile
 1. Right click on project sourceobsw-at91sam9g20-ek &rarr; Properties &rarr; C/C++ Build &rarr; use as build command (wsl can be omitted if Windows Build Tools was installed): wsl make -j4. 
-![Build command](doc/readme_img/build_command.png)
+<img src="./readme_img/build_command.png" width="50%">
 2. Now software can be built by clicking the hammer symbol
 3. Please note that Eclipse CDT has own environmental variables (which are deduced from the native ones normally). If there are some issues running the SDRAM configuration, check whether the used executables are included in the environment variables by going to the project settings (right click project->Properties) to C/C++ Build -> Environment and checking the PATH. The settings will only be applied to the current configuration unless AllConfigurations is selected above. Also make sure that the ARM Toolchain was added to the system environment variables (or add them to the Eclipse environment variables).
 
