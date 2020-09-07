@@ -1,12 +1,13 @@
 ## <a id="top"></a> <a name="at91"></a> AT91SAM9G20-EK getting started
 
-#### Setting up eclipse to execute the makefile
+### Setting up eclipse to execute the makefile
 1. Right click on project sourceobsw-at91sam9g20-ek &rarr; Properties &rarr; C/C++ Build &rarr; use as build command (wsl can be omitted if Windows Build Tools was installed): wsl make -j4. 
 <img src="./readme_img/build_command.png" width="50%">
+
 2. Now software can be built by clicking the hammer symbol
 3. Please note that Eclipse CDT has own environmental variables (which are deduced from the native ones normally). If there are some issues running the SDRAM configuration, check whether the used executables are included in the environment variables by going to the project settings (right click project->Properties) to C/C++ Build -> Environment and checking the PATH. The settings will only be applied to the current configuration unless AllConfigurations is selected above. Also make sure that the ARM Toolchain was added to the system environment variables (or add them to the Eclipse environment variables).
 
-#### Loading Software to AT91SAM9G20-EK
+### Loading Software to AT91SAM9G20-EK
 1.	Install J-Link ARM software from https://www.segger.com/downloads/jlink/#J-LinkSoftwareAndDocumentationPack (on windows)
 2. Check if arm-none-eabi-gdb.exe is found. Otherwise add path to system environement variables. Should already have been installed earlier by
 ````sh
@@ -14,7 +15,7 @@ xpm install --global @gnu-mcu-eclipse/arm-none-eabi-gcc
 ````
 3. Check jumpers on the board. Should be set as follows
 
-![jumpers_at91sam9g20-ek](doc/readme_img/jumpers_at91sam9g20-ek.png)
+<img src="./readme_img/jumpers_at91sam9g20-ek.png" width="50%">
 
 4.	Connect J-Link to USB port of host computer
 5.	Connect J-Link to AT91SAM9G20-EK
@@ -22,9 +23,10 @@ xpm install --global @gnu-mcu-eclipse/arm-none-eabi-gcc
 7. Execute make sdramCfg to configure the sdram. Can be done by creating a new target: Right click project &rarr; Build Targets &rarr; change build command to:<br />
 wsl make -j4
 
-![build_taget](doc/readme_img/build_target.png)
+<img src="./readme_img/build_target.png" width="50%">
 
-#### Start J-Link debugging session from Eclipse
+
+### Start J-Link debugging session from Eclipse
 1. Right click on project &rarr; Debug As &rarr; Debug Configurations...
 2. In the shown menu right click GDB SEGGER J-Link Debugging &rarr; new
 3. Insert in field "C/C++ Application" sourceobsw-at91sam9g20-ek-sdram.elf file (located in bin directory)
@@ -33,17 +35,17 @@ wsl make -j4
 6. Open up Arduino IDE or Puttty with baud rate 115200 to read debug output
 Main
 
-![01_jlink_setup](doc/readme_img/01_jlink_setup.png)
+<img src="./readme_img/01_jlink_setup.png" width="50%">
 
-Debugger
+#### Debugger
 
-![02_jlink_setup](doc/readme_img/02_jlink_setup.png)
-![03_jlink_setup](doc/readme_img/03_jlink_setup.png)
+<img src="./readme_img/02_jlink_setup.png" width="50%">
+<img src="./readme_img/03_jlink_setup.png" width="50%">
 
-Startup
+#### Startup
 
-![04_jlink_setup](doc/readme_img/04_jlink_setup.png)
-![05_jlink_setup](doc/readme_img/05_jlink_setup.png)
+<img src="./readme_img/04_jlink_setup.png" width="50%">
+<img src="./readme_img/05_jlink_setup.png" width="50%">
 <br>
 
 ##  Setting up Eclipse environment for build targets
