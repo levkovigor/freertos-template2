@@ -1,10 +1,10 @@
 ## <a id="top"></a> <a name="at91"></a> AT91SAM9G20-EK getting started
 
 #### Setting up eclipse to execute the makefile
-1. Right click on project sourceobsw-at91sam9g20-ek &rarr; Properties &rarr; C/C++ Build &rarr; use as build command: wsl make -j4
-![A test image](doc/readme_img/build_command.png)
+1. Right click on project sourceobsw-at91sam9g20-ek &rarr; Properties &rarr; C/C++ Build &rarr; use as build command (wsl can be omitted if Windows Build Tools was installed): wsl make -j4. 
+<img src="./readme_img/build_command.png" width="50%">
 2. Now software can be built by clicking the hammer symbol
-3. Please note that Eclipse CDT has own environmental variables (which are deduced from the native ones normally). If there are some issues running the SDRAM configuration, check whether the used executables are included in the environment variables by going to the project settings (right click project->Properties) to C/C++ Build -> Environment and checking the PATH. The settings will only be applied to the current configuration unless AllConfigurations is selected above.
+3. Please note that Eclipse CDT has own environmental variables (which are deduced from the native ones normally). If there are some issues running the SDRAM configuration, check whether the used executables are included in the environment variables by going to the project settings (right click project->Properties) to C/C++ Build -> Environment and checking the PATH. The settings will only be applied to the current configuration unless AllConfigurations is selected above. Also make sure that the ARM Toolchain was added to the system environment variables (or add them to the Eclipse environment variables).
 
 #### Loading Software to AT91SAM9G20-EK
 1.	Install J-Link ARM software from https://www.segger.com/downloads/jlink/#J-LinkSoftwareAndDocumentationPack (on windows)
@@ -52,10 +52,11 @@ Startup
 <a name="buildtargets"></a>
 Environment uses the previously mentioned build targets. Build targets can be created by
 right clicking on sourceobsw -> Build Target -> Create. Also make sure the toolchain is included like
-seen in the following picture.
+seen in the following picture by going to C/C++ Build -> Settings, checking that the paths for the ARM Toolchain are set correctly and 
+hitting Apply.
 ![Build Target](doc/readme_img/eclipse_example1.PNG)
 
-### Example Auto Build Configuration.
+### Example Build Configuration.
 ![Example2](doc/readme_img/eclipse_example2.PNG)
 ![Example3](doc/readme_img/eclipse_example3.PNG)
 ![Example3](doc/readme_img/eclipse_example4.PNG)
