@@ -70,5 +70,5 @@ For the AT91 board, the SEGGER J-Link Debug Launch Configuration is used and has
 4. A double click on the build targets in the left panel can also be used to execute the target for the current build configuration, which can be set in the top panel next to the cog.
 
 <img src="./readme_img/eclipse_example2.PNG" width="80%">
-<img src="./readme_img/eclipse_example3.PNG" width="80%">
-<img src="./readme_img/eclipse_example4.PNG" width="80%">
+<img src="./readme_img/eclipse_example3.PNG" width="60%">
+<img src="./readme_img/eclipse_example4.PNG" width="50%">
