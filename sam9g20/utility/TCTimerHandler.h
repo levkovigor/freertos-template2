@@ -4,8 +4,8 @@
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
 
 extern "C" {
-#include "AT91SAM9G20.h"
-#include <peripherals/tc/tc.h>
+#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/at91sam9g20/AT91SAM9G20.h>
+#include <sam9g20/at91/include/at91/peripherals/tc/tc.h>
 }
 
 #include <cstdint>

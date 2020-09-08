@@ -5,7 +5,7 @@
 #include <sam9g20/comIF/I2cDeviceComIF.h>
 
 extern "C" {
-#include <at91/utility/trace.h>
+#include <sam9g20/at91/include/at91/utility/trace.h>
 #include <hal/Drivers/I2C.h>
 }
 
