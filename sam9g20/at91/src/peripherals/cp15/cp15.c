@@ -31,12 +31,12 @@
 //         Headers
 //-----------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/board.h>
+#include <board.h>
 
 #ifdef CP15_PRESENT
 
-#include <sam9g20/at91/include/at91/utility/trace.h>
-#include <sam9g20/at91/include/at91/peripherals/cp15/cp15.h>
+#include <at91/utility/trace.h>
+#include <at91/peripherals/cp15/cp15.h>
 
 #if defined(__ICCARM__)
 #include <intrinsics.h>
