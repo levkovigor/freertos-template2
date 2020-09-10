@@ -31,9 +31,9 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/utility/assert.h>
-#include <sam9g20/at91/include/at91/utility/hamming.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <at91/utility/assert.h>
+#include <at91/utility/hamming.h>
+#include <at91/utility/trace.h>
 
 //------------------------------------------------------------------------------
 //         Internal function

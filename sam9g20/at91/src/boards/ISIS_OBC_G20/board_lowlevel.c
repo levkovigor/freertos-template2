@@ -47,8 +47,8 @@
 #include <AT91SAM9G20.h>
 #include <at91/boards/ISIS_OBC_G20/board.h>
 #include <at91/boards/ISIS_OBC_G20/board_memories.h>
-#include <sam9g20/at91/include/at91/peripherals/pmc/pmc.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <at91/peripherals/pmc/pmc.h>
+#include <at91/utility/trace.h>
 #include "faultHandler.h"
 
 //------------------------------------------------------------------------------

@@ -54,9 +54,9 @@
 //         Headers
 //-----------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/usb/common/core/USBEndpointDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBGenericDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBInterfaceDescriptor.h>
+#include <at91/usb/common/core/USBEndpointDescriptor.h>
+#include <at91/usb/common/core/USBGenericDescriptor.h>
+#include <at91/usb/common/core/USBInterfaceDescriptor.h>
 
 //-----------------------------------------------------------------------------
 //         Definitions

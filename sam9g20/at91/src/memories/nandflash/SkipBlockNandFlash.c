@@ -31,12 +31,12 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/memories/nandflash/NandFlashModel.h>
-#include <sam9g20/at91/include/at91/memories/nandflash/NandSpareScheme.h>
-#include <sam9g20/at91/include/at91/memories/nandflash/RawNandFlash.h>
-#include <sam9g20/at91/include/at91/memories/nandflash/SkipBlockNandFlash.h>
-#include <sam9g20/at91/include/at91/utility/assert.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <at91/memories/nandflash/NandFlashModel.h>
+#include <at91/memories/nandflash/NandSpareScheme.h>
+#include <at91/memories/nandflash/RawNandFlash.h>
+#include <at91/memories/nandflash/SkipBlockNandFlash.h>
+#include <at91/utility/assert.h>
+#include <at91/utility/trace.h>
 #include <string.h>
 
 //------------------------------------------------------------------------------

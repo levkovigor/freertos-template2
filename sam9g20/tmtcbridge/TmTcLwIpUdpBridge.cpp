@@ -5,7 +5,7 @@
 #include <sam9g20/tmtcbridge/TmTcLwIpUdpBridge.h>
 
 extern "C" {
-#include <sam9g20/at91/include/at91/boards/at91sam9g20-ek/ethernet/lwip_init.h>
+#include <at91/boards/at91sam9g20-ek/ethernet/lwip_init.h>
 }
 
 TmTcLwIpUdpBridge::TmTcLwIpUdpBridge(object_id_t objectId_,

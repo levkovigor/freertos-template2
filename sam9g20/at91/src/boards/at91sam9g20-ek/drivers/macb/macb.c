@@ -32,13 +32,13 @@
 //-----------------------------------------------------------------------------
 //         Headers
 //-----------------------------------------------------------------------------
-#include <sam9g20/at91/include/at91/boards/at91sam9g20-ek/drivers/emac/emac.h>
-#include <sam9g20/at91/include/at91/boards/at91sam9g20-ek/drivers/macb/macb.h>
-#include <sam9g20/at91/include/at91/boards/at91sam9g20-ek/drivers/macb/mii.h>
-#include <sam9g20/at91/include/at91/peripherals/pio/pio.h>
-#include <sam9g20/at91/include/at91/peripherals/rstc/rstc.h>
-#include <sam9g20/at91/include/at91/utility/assert.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <at91/boards/at91sam9g20-ek/drivers/emac/emac.h>
+#include <at91/boards/at91sam9g20-ek/drivers/macb/macb.h>
+#include <at91/boards/at91sam9g20-ek/drivers/macb/mii.h>
+#include <at91/peripherals/pio/pio.h>
+#include <at91/peripherals/rstc/rstc.h>
+#include <at91/utility/assert.h>
+#include <at91/utility/trace.h>
 
 //-----------------------------------------------------------------------------
 //         Definitions

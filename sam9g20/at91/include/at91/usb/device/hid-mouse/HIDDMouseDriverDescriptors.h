@@ -49,7 +49,7 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/usb/device/core/USBDDriverDescriptors.h>
+#include <at91/usb/device/core/USBDDriverDescriptors.h>
 
 //------------------------------------------------------------------------------
 //         Definitions

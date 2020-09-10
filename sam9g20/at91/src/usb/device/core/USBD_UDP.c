@@ -42,12 +42,12 @@
 //------------------------------------------------------------------------------
 
 #include <board.h>
-#include <sam9g20/at91/include/at91/peripherals/pio/pio.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBEndpointDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBGenericRequest.h>
-#include <sam9g20/at91/include/at91/usb/device/core/USBD.h>
-#include <sam9g20/at91/include/at91/usb/device/core/USBDCallbacks.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <at91/peripherals/pio/pio.h>
+#include <at91/usb/common/core/USBEndpointDescriptor.h>
+#include <at91/usb/common/core/USBGenericRequest.h>
+#include <at91/usb/device/core/USBD.h>
+#include <at91/usb/device/core/USBDCallbacks.h>
+#include <at91/utility/trace.h>
 
 #if defined(BOARD_USB_UDP)
 

@@ -43,9 +43,9 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/usb/common/core/USBConfigurationDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBDeviceDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBDeviceQualifierDescriptor.h>
+#include <at91/usb/common/core/USBConfigurationDescriptor.h>
+#include <at91/usb/common/core/USBDeviceDescriptor.h>
+#include <at91/usb/common/core/USBDeviceQualifierDescriptor.h>
 
 //------------------------------------------------------------------------------
 //         Types

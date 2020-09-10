@@ -31,9 +31,9 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/memories/nandflash/NandCommon.h>
-#include <sam9g20/at91/include/at91/memories/nandflash/NandFlashModel.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <at91/memories/nandflash/NandCommon.h>
+#include <at91/memories/nandflash/NandFlashModel.h>
+#include <at91/utility/trace.h>
 #include <string.h>
 
 //------------------------------------------------------------------------------

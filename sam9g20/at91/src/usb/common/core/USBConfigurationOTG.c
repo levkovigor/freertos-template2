@@ -31,7 +31,7 @@
 //      Includes
 //-----------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/usb/common/core/USBConfigurationOTG.h>
+#include <at91/usb/common/core/USBConfigurationOTG.h>
 
 
 USBGenericOTGDescriptor *pOTGDescriptor;

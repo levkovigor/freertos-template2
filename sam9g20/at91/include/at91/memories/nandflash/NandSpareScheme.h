@@ -58,7 +58,7 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/memories/nandflash/NandCommon.h>
+#include <at91/memories/nandflash/NandCommon.h>
 
 //------------------------------------------------------------------------------
 //         Types

@@ -50,7 +50,7 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/usb/common/core/USBGenericRequest.h>
+#include <at91/usb/common/core/USBGenericRequest.h>
 
 //------------------------------------------------------------------------------
 //         Definitions

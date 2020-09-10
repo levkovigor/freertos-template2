@@ -4,7 +4,7 @@
 #include <limits>
 
 extern "C" {
-#include <sam9g20/at91/include/at91/peripherals/aic/aic.h>
+#include <at91/peripherals/aic/aic.h>
 }
 
 

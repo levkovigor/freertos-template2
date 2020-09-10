@@ -47,8 +47,8 @@
 #include <lwip/ip_addr.h>
 #include <lwip/etharp.h>
 #include <lwip/err.h>
-#include <sam9g20/at91/include/at91/boards/at91sam9g20-ek/drivers/emac/emac.h>
-#include <sam9g20/at91/include/at91/boards/at91sam9g20-ek/ethernet/emacif.h>
+#include <at91/boards/at91sam9g20-ek/drivers/emac/emac.h>
+#include <at91/boards/at91sam9g20-ek/ethernet/emacif.h>
 
 
 #include "etharp.h"

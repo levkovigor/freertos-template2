@@ -31,18 +31,18 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/usb/common/core/USBGetDescriptorRequest.h>
-#include <sam9g20/at91/include/at91/usb/common/hid/HIDDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/hid/HIDGenericDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/hid/HIDGenericRequest.h>
-#include <sam9g20/at91/include/at91/usb/common/hid/HIDIdleRequest.h>
-#include <sam9g20/at91/include/at91/usb/common/hid/HIDReportRequest.h>
-#include <sam9g20/at91/include/at91/usb/device/core/USBD.h>
-#include <sam9g20/at91/include/at91/usb/device/core/USBDDriver.h>
-#include <sam9g20/at91/include/at91/usb/device/hid-mouse/HIDDMouseDriver.h>
-#include <sam9g20/at91/include/at91/usb/device/hid-mouse/HIDDMouseDriverDescriptors.h>
-#include <sam9g20/at91/include/at91/usb/device/hid-mouse/HIDDMouseInputReport.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <at91/usb/common/core/USBGetDescriptorRequest.h>
+#include <at91/usb/common/hid/HIDDescriptor.h>
+#include <at91/usb/common/hid/HIDGenericDescriptor.h>
+#include <at91/usb/common/hid/HIDGenericRequest.h>
+#include <at91/usb/common/hid/HIDIdleRequest.h>
+#include <at91/usb/common/hid/HIDReportRequest.h>
+#include <at91/usb/device/core/USBD.h>
+#include <at91/usb/device/core/USBDDriver.h>
+#include <at91/usb/device/hid-mouse/HIDDMouseDriver.h>
+#include <at91/usb/device/hid-mouse/HIDDMouseDriverDescriptors.h>
+#include <at91/usb/device/hid-mouse/HIDDMouseInputReport.h>
+#include <at91/utility/trace.h>
 
 //------------------------------------------------------------------------------
 //         Internal Defines

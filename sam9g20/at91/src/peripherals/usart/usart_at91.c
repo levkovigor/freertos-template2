@@ -31,9 +31,9 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/peripherals/usart/usart_at91.h>
-#include <sam9g20/at91/include/at91/utility/assert.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <at91/peripherals/usart/usart_at91.h>
+#include <at91/utility/assert.h>
+#include <at91/utility/trace.h>
 
 //------------------------------------------------------------------------------
 //         Exported functions

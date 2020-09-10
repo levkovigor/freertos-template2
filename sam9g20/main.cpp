@@ -9,8 +9,8 @@ extern "C"{
 #else
 #endif
 
-#include <sam9g20/at91/include/at91/peripherals/pio/pio.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <at91/peripherals/pio/pio.h>
+#include <at91/utility/trace.h>
 
 #include <FreeRTOSConfig.h>
 #include <freertos/FreeRTOS.h>

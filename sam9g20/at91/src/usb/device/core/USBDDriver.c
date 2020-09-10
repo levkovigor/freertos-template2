@@ -32,20 +32,20 @@
 //------------------------------------------------------------------------------
 
 #include <board.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBConfigurationDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBDeviceDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBDeviceQualifierDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBEndpointDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBFeatureRequest.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBGenericDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBGetDescriptorRequest.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBInterfaceRequest.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBSetAddressRequest.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBSetConfigurationRequest.h>
-#include <sam9g20/at91/include/at91/usb/device/core/USBD.h>
-#include <sam9g20/at91/include/at91/usb/device/core/USBDDriver.h>
-#include <sam9g20/at91/include/at91/usb/device/core/USBDDriverCallbacks.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <at91/usb/common/core/USBConfigurationDescriptor.h>
+#include <at91/usb/common/core/USBDeviceDescriptor.h>
+#include <at91/usb/common/core/USBDeviceQualifierDescriptor.h>
+#include <at91/usb/common/core/USBEndpointDescriptor.h>
+#include <at91/usb/common/core/USBFeatureRequest.h>
+#include <at91/usb/common/core/USBGenericDescriptor.h>
+#include <at91/usb/common/core/USBGetDescriptorRequest.h>
+#include <at91/usb/common/core/USBInterfaceRequest.h>
+#include <at91/usb/common/core/USBSetAddressRequest.h>
+#include <at91/usb/common/core/USBSetConfigurationRequest.h>
+#include <at91/usb/device/core/USBD.h>
+#include <at91/usb/device/core/USBDDriver.h>
+#include <at91/usb/device/core/USBDDriverCallbacks.h>
+#include <at91/utility/trace.h>
 #include <string.h>
 
 //------------------------------------------------------------------------------

@@ -4,7 +4,7 @@
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <sam9g20/boardtest/TwiTestTask.h>
 extern "C" {
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <at91/utility/trace.h>
 }
 
 #include <cstdio>

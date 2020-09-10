@@ -64,8 +64,8 @@
 #ifndef NORFLASHAMD_H
 #define NORFLASHAMD_H
 
-#include <sam9g20/at91/include/at91/memories/norflash/NorFlashApi.h>
-#include <sam9g20/at91/include/at91/memories/norflash/NorFlashCFI.h>
+#include <at91/memories/norflash/NorFlashApi.h>
+#include <at91/memories/norflash/NorFlashCFI.h>
 
 //------------------------------------------------------------------------------
 //         Local functions

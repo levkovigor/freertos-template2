@@ -30,12 +30,12 @@
 //------------------------------------------------------------------------------
 //         Headers
 //------------------------------------------------------------------------------
-#include <sam9g20/at91/include/at91/memories/norflash/NorFlashAmd.h>
-#include <sam9g20/at91/include/at91/memories/norflash/NorFlashApi.h>
-#include <sam9g20/at91/include/at91/memories/norflash/NorFlashCFI.h>
-#include <sam9g20/at91/include/at91/memories/norflash/NorFlashCFI.h>
-#include <sam9g20/at91/include/at91/memories/norflash/NorFlashCommon.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <at91/memories/norflash/NorFlashAmd.h>
+#include <at91/memories/norflash/NorFlashApi.h>
+#include <at91/memories/norflash/NorFlashCFI.h>
+#include <at91/memories/norflash/NorFlashCFI.h>
+#include <at91/memories/norflash/NorFlashCommon.h>
+#include <at91/utility/trace.h>
 #include <string.h>
 
 extern void NorFlash_Hook(void);
