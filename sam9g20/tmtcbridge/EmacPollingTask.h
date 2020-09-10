@@ -6,7 +6,7 @@
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
 
 extern "C" {
-#include <utility/trace.h>
+#include <sam9g20/at91/include/at91/utility/trace.h>
 }
 
 /**

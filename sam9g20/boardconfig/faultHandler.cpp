@@ -1,7 +1,7 @@
 #include "faultHandler.h"
-#include <utility/trace.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
-#include <utility/exithandler.h>
+#include <sam9g20/at91/include/at91/utility/exithandler.h>
+#include <sam9g20/at91/include/at91/utility/trace.h>
 
 
 /*----------------------------------------------------------------------------

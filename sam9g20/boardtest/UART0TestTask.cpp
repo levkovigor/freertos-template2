@@ -3,7 +3,7 @@
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 
 extern "C" {
-	#include "board.h"
+	#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/board.h>
 	#include <hal/Drivers/UART.h>
 }
 

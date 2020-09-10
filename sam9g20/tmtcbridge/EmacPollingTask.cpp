@@ -5,9 +5,9 @@
 #define BOARD_EMAC_PHY_COMP_DM9161 1
 
 extern "C" {
-#include <emacif.h>
-#include <macb.h>
-#include <lwip_init.h>
+#include <sam9g20/at91/include/at91/boards/at91sam9g20-ek/ethernet/emacif.h>
+#include <sam9g20/at91/include/at91/boards/at91sam9g20-ek/drivers/macb/macb.h>
+#include <sam9g20/at91/include/at91/boards/at91sam9g20-ek/ethernet/lwip_init.h>
 
 extern struct netif *netif;  /* network interface structure */
 extern Macb mac;

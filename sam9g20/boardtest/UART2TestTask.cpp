@@ -4,12 +4,12 @@
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 
 extern "C" {
-#include "AT91SAM9G20.h"
-#include "board.h"
+#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/at91sam9g20/AT91SAM9G20.h>
+#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/board.h>
 #ifdef at91sam9g20_ek
 #include "led_ek.h"
 #endif
-#include <utility/trace.h>
+#include <sam9g20/at91/include/at91/utility/trace.h>
 }
 
 /* this is a test for the UART2 driver from ISIS

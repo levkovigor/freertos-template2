@@ -81,13 +81,13 @@ TMTCBRIDGE_PATH = $(BOARD_FILE_ROOT)/tmtcbridge
 LWIP_PATH = $(BOARD_FILE_ROOT)/lwip
 BOARDTEST_PATH = $(BOARD_FILE_ROOT)/boardtest
 
-LINKER_SCRIPT_PATH = $(PRIVLIB_PATH)/at91/linker-scripts
+LINKER_SCRIPT_PATH = $(BOARD_FILE_ROOT)/at91/linker-scripts
 GDB_PATH = $(BOARD_FILE_ROOT)/gdb
 BSP_PATH = $(BOARD_FILE_ROOT)
 
 # Private (non-public) libraries.
 # If programming for AT91 development board or iOBC, add the libraries manually.
-AT91_PATH = $(PRIVLIB_PATH)/at91
+AT91_PATH = $(BOARD_FILE_ROOT)/at91
 HCC_PATH = $(PRIVLIB_PATH)/hcc
 HAL_PATH = $(PRIVLIB_PATH)/hal
 
