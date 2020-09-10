@@ -12,7 +12,14 @@ extern "C" {
 #include <cmath>
 GyroHandler::GyroHandler(object_id_t objectId, object_id_t comIF,
         CookieIF *comCookie, uint8_t switchId):
-        DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId) {
+        DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId),
+		gyroDataSid(objectId, GYRO_DATA), gyroData(gyroDataSid),
+		gyroConfigSid(objectId, READ_CONFIG), gyroConfigSet(gyroConfigSid),
+		selfTestDivider(5)
+#ifdef DEBUG
+, debugDivider(20)
+#endif
+{
 #if defined(at91sam9g20)
 	if(dynamic_cast<SpiCookie*>(comCookie) != nullptr) {
 		comInterface = CommInterface::SPI;
@@ -110,14 +117,10 @@ ReturnValue_t GyroHandler::buildNormalDeviceCommand(DeviceCommandId_t *id) {
 
         // if a self-test check is pending, check every few cycles.
         if(checkSelfTestRegister) {
-            if(selfTestCycleCounter >= selfTestCycleCounterTrigger) {
+            if(selfTestDivider.checkAndIncrement()) {
                 *id = READ_STATUS;
                 internalState = InternalState::READ_STATUS;
-                selfTestCycleCounter = 0;
                 return buildCommandFromCommand(*id, nullptr, 0);
-            }
-            else {
-                selfTestCycleCounter ++;
             }
         }
 #endif
@@ -304,9 +307,9 @@ void GyroHandler::fillCommandAndReplyMap() {
 	this->insertInCommandAndReplyMap(READ_PMU, 8);
 	this->insertInCommandAndReplyMap(WRITE_RANGE, 3);
 	this->insertInCommandAndReplyMap(WRITE_CONFIG, 3);
-	this->insertInCommandAndReplyMap(READ_CONFIG, 3);
+	this->insertInCommandAndReplyMap(READ_CONFIG, 3, &gyroConfigSet);
 	this->insertInCommandAndReplyMap(SPI_SELECT, 3);
-	this->insertInCommandAndReplyMap(GYRO_DATA, 3);
+	this->insertInCommandAndReplyMap(GYRO_DATA, 3, &gyroData);
 	this->insertInCommandAndReplyMap(PERFORM_SELFTEST, 3);
 	this->insertInCommandAndReplyMap(READ_STATUS, 3);
 }
@@ -428,6 +431,23 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 	    if((packet[1] == gyroConfiguration[0]) and
 	            (packet[2] == gyroConfiguration[1])) {
 	        // store values to dataset.
+	    	ReturnValue_t result = gyroConfigSet.read(10);
+	    	if(result != HasReturnvaluesIF::RETURN_OK) {
+	    		return result;
+	    	}
+
+	    	if(not gyroConfigSet.isValid()) {
+	    		gyroConfigSet.setValidity(true, true);
+	    	}
+
+	    	gyroConfigSet.gyroGeneralConfigReg42 = gyroConfiguration[0];
+	    	gyroConfigSet.gyroRangeConfigReg43 = gyroConfiguration[1];
+
+	    	result = gyroConfigSet.commit(10);
+	    	if(result != HasReturnvaluesIF::RETURN_OK) {
+	    		return result;
+	    	}
+
 	        if(mode == _MODE_START_UP) {
 	            // Default configuration successfull.
 	            commandExecuted = true;
@@ -489,20 +509,34 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 			float angularVelocityZ =
 					angularVelocityBinaryZ / std::pow(2, 15) * GYRO_RANGE;
 
-			// todo: store values to dataset.
-			if(counter >= 20) {
+#ifdef DEBUG
+			if(debugDivider.checkAndIncrement()) {
 				sif::info << "GyroHandler: Angular velocities in degrees per "
 						"second:" << std::endl;
 				sif::info << "X: " << angularVelocityX << std::endl;
 				sif::info << "Y: " << angularVelocityY << std::endl;
 				sif::info << "Z: " << angularVelocityZ << std::endl;
-				// Gyro values should be stored in pool.
-				counter = 0;
 			}
-			else {
-				counter ++;
+#endif
+			ReturnValue_t result = gyroData.read(10);
+			if(result != HasReturnvaluesIF::RETURN_OK) {
+				// Configuration error.
+				return result;
 			}
 
+			if(not gyroData.isValid()) {
+				gyroData.setValidity(true, true);
+			}
+
+			gyroData.angVelocityX = angularVelocityX;
+			gyroData.angVelocityY = angularVelocityY;
+			gyroData.angVelocityZ = angularVelocityZ;
+
+			gyroData.commit(10);
+			if(result != HasReturnvaluesIF::RETURN_OK) {
+				// Configuration error.
+				return result;
+			}
 		}
 		break;
 	}
@@ -534,4 +568,21 @@ ReturnValue_t GyroHandler::initialize() {
 
 ReturnValue_t GyroHandler::initializeAfterTaskCreation() {
     return DeviceHandlerBase::initializeAfterTaskCreation();
+}
+
+ReturnValue_t GyroHandler::initializeLocalDataPool(
+		LocalDataPool &localDataPoolMap, LocalDataPoolManager &poolManager) {
+	localDataPoolMap.emplace(GyroPoolIds::ANGULAR_VELOCITY_X,
+			new PoolEntry<float>({0.0}));
+	localDataPoolMap.emplace(GyroPoolIds::ANGULAR_VELOCITY_Y,
+			new PoolEntry<float>({0.0}));
+	localDataPoolMap.emplace(GyroPoolIds::ANGULAR_VELOCITY_Z,
+			new PoolEntry<float>({0.0}));
+	localDataPoolMap.emplace(GyroPoolIds::GENERAL_CONFIG_REG42,
+			new PoolEntry<uint8_t>({0}));
+	localDataPoolMap.emplace(GyroPoolIds::RANGE_CONFIG_REG43,
+			new PoolEntry<uint8_t>({0}));
+
+	poolManager.subscribeForPeriodicPacket(gyroDataSid, true, 4.0, false);
+	return HasReturnvaluesIF::RETURN_OK;
 }

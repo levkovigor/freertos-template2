@@ -1,6 +1,9 @@
 #ifndef MISSION_DEVICES_GYROHANDLER_H_
 #define MISSION_DEVICES_GYROHANDLER_H_
+
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
+#include <fsfw/globalfunctions/PeriodicOperationDivider.h>
+#include <mission/devices/devicepackets/GyroPackets.h>
 
 /**
  * @brief       Device Handler for the BMG250 Gyroscope device
@@ -48,6 +51,8 @@ protected:
     uint32_t getTransitionDelayMs(Mode_t modeFrom, Mode_t modeTo) override;
     ReturnValue_t getSwitches(const uint8_t **switches,
             uint8_t *numberOfSwitches) override;
+	ReturnValue_t initializeLocalDataPool(LocalDataPool& localDataPoolMap,
+	        LocalDataPoolManager& poolManager) override;
 
     ReturnValue_t initialize() override;
     ReturnValue_t initializeAfterTaskCreation() override;
@@ -72,8 +77,6 @@ private:
 
     bool commandExecuted = false;
     bool checkSelfTestRegister = true;
-    uint8_t selfTestCycleCounterTrigger = 5;
-    uint8_t selfTestCycleCounter = 0;
     uint32_t lastSelfTestSeconds = 0;
     uint8_t selfTestFailCounter = 0;
 
@@ -124,7 +127,15 @@ private:
     static constexpr DeviceCommandId_t PERFORM_SELFTEST = SELFTEST_REGISTER;
     static constexpr DeviceCommandId_t GYRO_DATA = DATA_REGISTER_START | GYRO_READ_MASK;
 
-    uint8_t counter = 20;
+    sid_t gyroDataSid;
+    GyroPrimaryDataset gyroData;
+    sid_t gyroConfigSid;
+    GyroAuxilliaryDataset gyroConfigSet;
+
+    PeriodicOperationDivider selfTestDivider;
+#ifdef DEBUG
+	PeriodicOperationDivider debugDivider;
+#endif
 };
 
 #endif /* MISSION_DEVICES_GYROHANDLER_H_ */

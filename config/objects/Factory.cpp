@@ -240,9 +240,10 @@ void Factory::produce(void) {
     spiCookie = new SpiCookie(addresses::SPI_Test_PT1000 ,
             5, SlaveType::DEMULTIPLEXER_1, DemultiplexerOutput::OUTPUT_3,
             SPImode::mode1_spi, 5 , 3'900'000, 1);
-    new ThermalSensorHandler(objects::SPI_Test_PT1000,
-            objects::SPI_DEVICE_COM_IF, spiCookie, switches::PT1000);
-
+    ThermalSensorHandler* thermalSensorHandler =  new ThermalSensorHandler(
+    		objects::SPI_Test_PT1000, objects::SPI_DEVICE_COM_IF, spiCookie,
+			switches::PT1000);
+    thermalSensorHandler->setStartUpImmediately();
 
     spiCookie = new SpiCookie(addresses::SPI_Test_Gyro, 10, SlaveType::DEMULTIPLEXER_1,
     		DemultiplexerOutput::OUTPUT_4, SPImode::mode0_spi, 2, 3'900'000, 1);
