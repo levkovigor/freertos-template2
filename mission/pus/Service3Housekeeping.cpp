@@ -146,16 +146,25 @@ MessageQueueId_t Service3Housekeeping::getHkQueue() const {
 ReturnValue_t Service3Housekeeping::generateHkReport(
 		const CommandMessage* hkMessage) {
 	store_address_t storeId;
+
 	sid_t sid = HousekeepingMessage::getHkReportMessage(hkMessage, &storeId);
 	auto resultPair = IPCStore->getData(storeId);
 	if(resultPair.first != HasReturnvaluesIF::RETURN_OK) {
 		return resultPair.first;
 	}
+
 	HkPacket hkPacket(sid, resultPair.second.data(), resultPair.second.size());
+	size_t serializedSize = 0;
+	uint8_t sidBuffer[sizeof(sid_t)];
+	uint8_t* bufferPtr = sidBuffer;
+	SerializeAdapter::serialize(&sid.objectId, &bufferPtr, &serializedSize,
+			sizeof(sid_t), SerializeIF::Endianness::BIG);
+	SerializeAdapter::serialize(&sid.ownerSetId, &bufferPtr, &serializedSize,
+			sizeof(sid_t), SerializeIF::Endianness::BIG);
 
 	auto result = sendTmPacket(static_cast<uint8_t>(Subservice::HK_REPORT),
-			hkPacket.hkData, hkPacket.hkSize,
-			reinterpret_cast<uint8_t*>(&hkPacket.sid), sizeof(sid));
+			hkPacket.hkData + sizeof(sid_t), hkPacket.hkSize - sizeof(sid_t),
+			sidBuffer, sizeof(sid_t));
 	return result;
 
 }

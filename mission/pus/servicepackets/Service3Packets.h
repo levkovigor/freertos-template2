@@ -13,6 +13,7 @@ public:
     sid_t sid; //!< [EXPORT] : [COMMENT] Structure ID (SID) of housekeeping data.
     const uint8_t* hkData; //!< [EXPORT] : [MAXSIZE] Deduced size
     size_t hkSize; //!< [EXPORT] : [IGNORE]
+
     HkPacket(sid_t sid, const uint8_t* data, size_t size):
             sid(sid), hkData(data), hkSize(size) {}
 };

@@ -6,7 +6,7 @@ ThermalSensorHandler::ThermalSensorHandler(object_id_t objectId,
 		object_id_t comIF, CookieIF *comCookie, uint8_t switchId):
 		DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId),
 		sensorDatasetSid(objectId, REQUEST_RTD),
-		sensorDataset(sensorDatasetSid) {
+		sensorDataset(sensorDatasetSid), debugDivider(20) {
 
 }
 
@@ -210,16 +210,17 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
         // calculate approximation
         float approxTemp = adcCode / 32.0 - 256.0;
 
-        if(counter == 20) {
+        if(debugDivider.checkAndIncrement()) {
         	sif::info << "ThermalSensorHandler::interpretDeviceReply: Measure "
         			"resistance is " << rtdValue << " Ohms." << std::endl;
         	sif::info << "ThermalSensorHandler::interpretDeviceReply: Approximated"
         			" temperature is " << approxTemp << " C" << std::endl;
-        	counter = 0;
         }
-        counter ++;
 
         ReturnValue_t result = sensorDataset.read(10);
+        if(not sensorDataset.isValid()) {
+        	sensorDataset.temperatureCelcius.setValid(true);
+        }
         if(result != HasReturnvaluesIF::RETURN_OK) {
             // todo: should propably be event
             sif::debug << "ThermalSensorHandler::interpretDeviceReply:"
@@ -229,6 +230,7 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
         sensorDataset.temperatureCelcius = approxTemp;
 
         result = sensorDataset.commit(10);
+
         if(result != HasReturnvaluesIF::RETURN_OK) {
             // todo: should propably be event
             sif::debug << "ThermalSensorHandler::interpretDeviceReply:"
