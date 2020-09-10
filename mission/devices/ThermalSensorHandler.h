@@ -2,6 +2,7 @@
 #define MISSION_DEVICES_THERMALSENSORHANDLER_H_
 
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
+#include <fsfw/globalfunctions/PeriodicOperationDivider.h>
 #include <mission/devices/devicepackets/ThermalSensorPacket.h>
 #include <array>
 #include <cstdint>
@@ -82,10 +83,6 @@ private:
 		REQUEST_FAULT_BYTE
 	};
 
-//	enum SetIds {
-//		THERMAL_SENSOR_ID = 0
-//	};
-
 	InternalState internalState = InternalState::NONE;
 	bool commandExecuted = false;
 
@@ -101,7 +98,7 @@ private:
 	sid_t sensorDatasetSid;
 	ThermalSensorDataset sensorDataset;
 
-	uint8_t counter = 0;
+	PeriodicOperationDivider debugDivider;
 };
 
 #endif /* MISSION_THERMALSENSORHANDLER_H_ */
