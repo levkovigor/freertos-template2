@@ -34,8 +34,7 @@ int main(void)
     std::cout << "-- Compiled for " << COMPILE_PRINTOUT << " --" << std::endl;
     std::cout << "-- Software version v" << SW_VERSION << "." << SW_SUBVERSION
             << " -- " << std::endl;
-    std::cout << "-- " <<  __DATE__ << " "
-            << __TIME__ << " --" << std::endl;
+    std::cout << "-- " <<  __DATE__ << " " << __TIME__ << " --" << std::endl;
 	initMission();
 	for(;;) {}
 }
