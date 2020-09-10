@@ -132,14 +132,6 @@ void initMission(void) {
         sif::error << "Add component Serial Bridge failed" << std::endl;
     }
 #endif
-    /* Utility Task */
-    PeriodicTaskIF* TaskMonitorTask = TaskFactory::instance()->
-            createPeriodicTask("TASK_MONITOR", 2, 2048 * 4, 2.0, nullptr);
-    result = TaskMonitorTask->addComponent(objects::FREERTOS_TASK_MONITOR);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "Add component Task Monitor failed" << std::endl;
-    }
-
 
     /* Packet Distributor Taks */
     PeriodicTaskIF* PacketDistributorTask =
@@ -349,42 +341,6 @@ void initMission(void) {
     SystemStateTask -> startTask();
     CoreController->startTask();
 
-    /* Task Monitor can be used to track stack usage of tasks */
-    // todo: will be replaced and performed for each task by using freeRTOS
-    // functionality
-    FreeRTOSStackMonitor* TaskMonitor = objectManager->
-            get<FreeRTOSStackMonitor>(objects::FREERTOS_TASK_MONITOR);
-    TaskMonitor->insertPeriodicTask(objects::SERIAL_POLLING_TASK,
-            TmTcPollingTask);
-    TaskMonitor->insertPeriodicTask(objects::SERIAL_TMTC_BRIDGE, TmTcBridge);
-    TaskMonitor->insertPeriodicTask(objects::PUS_PACKET_DISTRIBUTOR,
-            PacketDistributorTask);
-    TaskMonitor->insertPeriodicTask(objects::PUS_PACKET_DISTRIBUTOR,
-            PacketDistributorTask);
-    TaskMonitor->insertPeriodicTask(objects::EVENT_MANAGER, EventManager);
-
-    TaskMonitor->insertPeriodicTask(objects::PUS_SERVICE_1, PusService01);
-    TaskMonitor->insertPeriodicTask(objects::PUS_SERVICE_2, PusService02);
-    TaskMonitor->insertPeriodicTask(objects::PUS_SERVICE_3, PusService03);
-    TaskMonitor->insertPeriodicTask(objects::PUS_SERVICE_5, PusService05);
-    TaskMonitor->insertPeriodicTask(objects::PUS_SERVICE_6, PusService06);
-    TaskMonitor->insertPeriodicTask(objects::PUS_SERVICE_8, PusService08);
-    TaskMonitor->insertPeriodicTask(objects::PUS_SERVICE_9, PusService09);
-    TaskMonitor->insertPeriodicTask(objects::PUS_SERVICE_17, PusService17);
-    TaskMonitor->insertPeriodicTask(objects::PUS_SERVICE_23, PusService23);
-    TaskMonitor->insertPeriodicTask(objects::PUS_SERVICE_200, PusService200);
-    TaskMonitor->insertPeriodicTask(objects::PUS_SERVICE_201, PusService201);
-
-    TaskMonitor->insertPeriodicTask(objects::TEST_TASK, TestTask);
-    TaskMonitor->insertPeriodicTask(objects::SPI_DEVICE_COM_IF, SpiComTask);
-    TaskMonitor->insertFixedTimeslotTask(objects::DUMMY_HANDLER,
-            PollingSequenceTableTaskDefault);
-
-    TaskMonitor->setPeriodicOperation(10);
-    //taskMonitor->setPrintMode();
-    TaskMonitor->setCheckMode(2000);
-    TaskMonitorTask->startTask();
-
     /* Comment out for mission build */
     boardTestTaskInit();
 
@@ -401,8 +357,6 @@ void initMission(void) {
 
 void boardTestTaskInit() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_FAILED;
-    FreeRTOSStackMonitor* taskMonitor = objectManager->
-                get<FreeRTOSStackMonitor>(objects::FREERTOS_TASK_MONITOR);
 
     /* Polling Sequence Table Test */
     FixedTimeslotTaskIF * PollingSequenceTableTaskTest =
@@ -412,8 +366,6 @@ void boardTestTaskInit() {
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "creating PST failed" << std::endl;
     }
-    taskMonitor->insertFixedTimeslotTask(objects::ARDUINO_0,
-            PollingSequenceTableTaskTest);
 
 
 #ifdef ISIS_OBC_G20
@@ -460,7 +412,7 @@ void boardTestTaskInit() {
 
     sif::info << "Starting test tasks.." << std::endl;
 
-    PollingSequenceTableTaskTest -> startTask ();
+    //PollingSequenceTableTaskTest -> startTask ();
     //SPITask -> startTask();
     //I2CTask -> startTask();
     //UART2Task -> startTask();

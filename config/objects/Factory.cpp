@@ -113,7 +113,6 @@ void Factory::produce(void) {
 
 	/* Utility */
 	new TimeStamper(objects::PUS_TIME);
-	new FreeRTOSStackMonitor(objects::FREERTOS_TASK_MONITOR);
 
 	/* Distributor Tasks */
 	new CCSDSDistributor(apid::SOURCE_OBSW,objects::CCSDS_PACKET_DISTRIBUTOR);
