@@ -17,8 +17,6 @@ Service3Housekeeping::~Service3Housekeeping() {}
 
 ReturnValue_t Service3Housekeeping::isValidSubservice(uint8_t subservice) {
 	switch(static_cast<Subservice>(subservice)) {
-	case Subservice::ADD_HK_REPORT_STRUCTURE:
-	case Subservice::ADD_DIAGNOSTICS_REPORT_STRUCTURE:
 	case Subservice::DELETE_HK_REPORT_STRUCTURE:
 	case Subservice::DELETE_DIAGNOSTICS_REPORT_STRUCTURE:
 	case Subservice::ENABLE_PERIODIC_HK_REPORT_GENERATION:
@@ -33,8 +31,6 @@ ReturnValue_t Service3Housekeeping::isValidSubservice(uint8_t subservice) {
 	case Subservice::DIAGNOSTICS_REPORT:
 	case Subservice::GENERATE_ONE_PARAMETER_REPORT:
 	case Subservice::GENERATE_ONE_DIAGNOSTICS_REPORT:
-	case Subservice::APPEND_PARAMETERS_TO_PARAMETER_REPORT_STRUCTURE:
-	case Subservice::APPEND_PARAMETERS_TO_DIAGNOSTICS_REPORT_STRUCTURE:
 	case Subservice::MODIFY_PARAMETER_REPORT_COLLECTION_INTERVAL:
 	case Subservice::MODIFY_DIAGNOSTICS_REPORT_COLLECTION_INTERVAL:
 		return HasReturnvaluesIF::RETURN_OK;
@@ -80,8 +76,6 @@ ReturnValue_t Service3Housekeeping::prepareCommand(CommandMessage* message,
 		uint8_t subservice, const uint8_t *tcData, size_t tcDataLen,
 		uint32_t *state, object_id_t objectId) {
 	switch(static_cast<Subservice>(subservice)) {
-	case Subservice::ADD_HK_REPORT_STRUCTURE:
-	case Subservice::ADD_DIAGNOSTICS_REPORT_STRUCTURE:
 	case Subservice::DELETE_HK_REPORT_STRUCTURE:
 	case Subservice::DELETE_DIAGNOSTICS_REPORT_STRUCTURE:
 	case Subservice::ENABLE_PERIODIC_HK_REPORT_GENERATION:
@@ -92,8 +86,6 @@ ReturnValue_t Service3Housekeeping::prepareCommand(CommandMessage* message,
 	case Subservice::REPORT_DIAGNOSTICS_REPORT_STRUCTURES :
 	case Subservice::GENERATE_ONE_PARAMETER_REPORT:
 	case Subservice::GENERATE_ONE_DIAGNOSTICS_REPORT:
-	case Subservice::APPEND_PARAMETERS_TO_PARAMETER_REPORT_STRUCTURE:
-	case Subservice::APPEND_PARAMETERS_TO_DIAGNOSTICS_REPORT_STRUCTURE:
 	case Subservice::MODIFY_PARAMETER_REPORT_COLLECTION_INTERVAL:
 	case Subservice::MODIFY_DIAGNOSTICS_REPORT_COLLECTION_INTERVAL:
 		break;
@@ -115,8 +107,6 @@ ReturnValue_t Service3Housekeeping::handleReply(const CommandMessage* reply,
 		CommandMessage* optionalNextCommand, object_id_t objectId,
 		bool *isStep) {
 	switch(reply->getCommand()) {
-	case(HousekeepingMessage::HK_REPORT):
-		return generateHkReport(reply);
 	default:
 		sif::error << "Service3Housekeeping::handleReply: Invalid reply!"
 				<< std::endl;
@@ -127,9 +117,16 @@ ReturnValue_t Service3Housekeeping::handleReply(const CommandMessage* reply,
 
 void Service3Housekeeping::handleUnrequestedReply(
         CommandMessage* reply) {
+	ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     switch(reply->getCommand()) {
+    case(HousekeepingMessage::DIAGNOSTICS_REPORT): {
+    	result = generateHkReport(reply,
+    			static_cast<uint8_t>(Subservice::DIAGNOSTICS_REPORT));
+    	break;
+    }
     case(HousekeepingMessage::HK_REPORT): {
-        generateHkReport(reply);
+        result = generateHkReport(reply,
+        		static_cast<uint8_t>(Subservice::HK_REPORT));
         break;
     }
     default: {
@@ -137,6 +134,12 @@ void Service3Housekeeping::handleUnrequestedReply(
                 << "Invalid reply!" << std::endl;
     }
     }
+
+	if(result != HasReturnvaluesIF::RETURN_OK) {
+		// Configuration error
+		sif::debug << "Service3Housekeeping::handleUnrequestedReply:"
+				<< "Could not generate reply!" << std::endl;
+	}
 }
 
 MessageQueueId_t Service3Housekeeping::getHkQueue() const {
@@ -144,7 +147,7 @@ MessageQueueId_t Service3Housekeeping::getHkQueue() const {
 }
 
 ReturnValue_t Service3Housekeeping::generateHkReport(
-		const CommandMessage* hkMessage) {
+		const CommandMessage* hkMessage, uint8_t subserviceId) {
 	store_address_t storeId;
 
 	sid_t sid = HousekeepingMessage::getHkReportMessage(hkMessage, &storeId);
@@ -154,18 +157,6 @@ ReturnValue_t Service3Housekeeping::generateHkReport(
 	}
 
 	HkPacket hkPacket(sid, resultPair.second.data(), resultPair.second.size());
-	size_t serializedSize = 0;
-	uint8_t sidBuffer[sizeof(sid_t)];
-	uint8_t* bufferPtr = sidBuffer;
-	SerializeAdapter::serialize(&sid.objectId, &bufferPtr, &serializedSize,
-			sizeof(sid_t), SerializeIF::Endianness::BIG);
-	SerializeAdapter::serialize(&sid.ownerSetId, &bufferPtr, &serializedSize,
-			sizeof(sid_t), SerializeIF::Endianness::BIG);
-
-	auto result = sendTmPacket(static_cast<uint8_t>(Subservice::HK_REPORT),
-			hkPacket.hkData + sizeof(sid_t), hkPacket.hkSize - sizeof(sid_t),
-			sidBuffer, sizeof(sid_t));
-	return result;
-
+	return sendTmPacket(static_cast<uint8_t>(Subservice::HK_REPORT),
+			hkPacket.hkData, hkPacket.hkSize, nullptr, 0);
 }
-

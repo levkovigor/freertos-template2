@@ -49,10 +49,11 @@ protected:
 	virtual MessageQueueId_t getHkQueue() const;
 private:
 	enum class Subservice {
-		//!< [EXPORT] : [TC] Add a new structure to the housekeeping reports
-		ADD_HK_REPORT_STRUCTURE = 1,
-		//!< [EXPORT] : [TC] Add a new structure to the diagnostics reports
-		ADD_DIAGNOSTICS_REPORT_STRUCTURE = 2,
+		// The new local pool propably won't allow this.
+//		//!< [EXPORT] : [TC] Add a new structure to the housekeeping reports
+//		ADD_HK_REPORT_STRUCTURE = 1,
+//		//!< [EXPORT] : [TC] Add a new structure to the diagnostics reports
+//		ADD_DIAGNOSTICS_REPORT_STRUCTURE = 2,
 
 		DELETE_HK_REPORT_STRUCTURE = 3, //!< [EXPORT] : [TC]
 		DELETE_DIAGNOSTICS_REPORT_STRUCTURE = 4, //!< [EXPORT] : [TC]
@@ -82,9 +83,6 @@ private:
 		GENERATE_ONE_PARAMETER_REPORT = 27, //!< [EXPORT] : [TC]
 		GENERATE_ONE_DIAGNOSTICS_REPORT = 28, //!< [EXPORT] : [TC]
 
-		APPEND_PARAMETERS_TO_PARAMETER_REPORT_STRUCTURE = 29, //!< [EXPORT] : [TC]
-		APPEND_PARAMETERS_TO_DIAGNOSTICS_REPORT_STRUCTURE = 30, //!< [EXPORT] : [TC]
-
 		MODIFY_PARAMETER_REPORT_COLLECTION_INTERVAL = 31, //!< [EXPORT] : [TC]
 		MODIFY_DIAGNOSTICS_REPORT_COLLECTION_INTERVAL = 32, //!< [EXPORT] : [TC]
 	};
@@ -94,7 +92,8 @@ private:
 	ReturnValue_t checkInterfaceAndAcquireMessageQueue(
 			MessageQueueId_t* messageQueueToSet, object_id_t* objectId);
 
-	ReturnValue_t generateHkReport(const CommandMessage* hkMessage);
+	ReturnValue_t generateHkReport(const CommandMessage* hkMessage,
+			uint8_t subserviceId);
 	void handleUnrequestedReply(CommandMessage* reply) override;
 };
 
