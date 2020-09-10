@@ -412,7 +412,7 @@ void boardTestTaskInit() {
 
     sif::info << "Starting test tasks.." << std::endl;
 
-    //PollingSequenceTableTaskTest -> startTask ();
+    PollingSequenceTableTaskTest -> startTask ();
     //SPITask -> startTask();
     //I2CTask -> startTask();
     //UART2Task -> startTask();
