@@ -31,10 +31,10 @@
 //         Headers
 //-----------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/boards/at91sam9g20-ek/drivers/emac/emac.h>
-#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/at91sam9g20/AT91SAM9G20.h>
-#include <sam9g20/at91/include/at91/utility/assert.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <emac.h>
+#include <AT91SAM9G20.h>
+#include <at91/utility/assert.h>
+#include <at91/utility/trace.h>
 #include <string.h>
 //------------------------------------------------------------------------------
 //         Definitions

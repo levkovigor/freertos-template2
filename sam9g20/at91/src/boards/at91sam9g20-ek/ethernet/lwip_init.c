@@ -18,10 +18,10 @@
 #include <sam9g20/at91/include/at91/boards/at91sam9g20-ek/drivers/macb/mii.h>
 #include <sam9g20/at91/include/at91/boards/at91sam9g20-ek/ethernet/emacif.h>
 #include <sam9g20/at91/include/at91/boards/at91sam9g20-ek/ethernet/lwip_init.h>
-#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/at91sam9g20/AT91SAM9G20.h>
-#include <sam9g20/at91/include/at91/peripherals/aic/aic.h>
-#include <sam9g20/at91/include/at91/peripherals/pio/pio.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <AT91SAM9G20.h>
+#include <at91/peripherals/aic/aic.h>
+#include <at91/peripherals/pio/pio.h>
+#include <at91/utility/trace.h>
 
 
 ip_addr_t ipaddr, netmask, gw;

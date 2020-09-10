@@ -56,8 +56,8 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/at91sam9g20/AT91SAM9G20.h>
-#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/board.h>
+#include <AT91SAM9G20.h>
+#include <board.h>
 
 //------------------------------------------------------------------------------
 //         Definitions

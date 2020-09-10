@@ -31,7 +31,7 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/board.h>
+#include <board.h>
 #include <sam9g20/at91/include/at91/peripherals/aic/aic.h>
 #include <sam9g20/at91/include/at91/usb/device/core/USBD.h>
 #include <sam9g20/at91/include/at91/usb/device/core/USBDCallbacks.h>
