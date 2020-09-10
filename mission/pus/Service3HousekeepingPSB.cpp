@@ -55,7 +55,7 @@ void Service3HousekeepingPSB::generateAllPackets() {
 void Service3HousekeepingPSB::checkErrorMap() {
 	ErrorCounterMapIterator iter;
 	for(iter = errCountMap.begin();iter != errCountMap.end(); iter++) {
-		if(iter.second().errorCounter >= ERROR_MAP_DISABLE_TRIGGER) {
+		if(iter->second.errorCounter >= ERROR_MAP_DISABLE_TRIGGER) {
 			disableErrorMapEntry(&iter);
 		}
 	}
@@ -75,8 +75,8 @@ void Service3HousekeepingPSB::generateHkPacketsFrom(
 		if(sidIterator == sidToPoolIdMap->end()) {
 			return;
 		}
-		store_address_t storeId = sidIterator.second();
-		currentSid = sidIterator.first();
+		store_address_t storeId = sidIterator->second;
+		currentSid = sidIterator->first;
 		ReturnValue_t result = retrieveHkPacketDefinition(storeId, &hkDefinition);
 		uint32_t testParam = 0;
 		std::memcpy(&testParam, hkDefinition.getParameters(), sizeof(testParam));
@@ -176,9 +176,9 @@ void Service3HousekeepingPSB::initializeErrorMapEntry(ErrorMapValue * currentErr
 }
 
 void Service3HousekeepingPSB::disableErrorMapEntry(ErrorCounterMapIterator * iter) {
-	sid32_t currentSID = iter->first();
+	sid32_t currentSID = (*iter)->first;
 	ReturnValue_t result = RETURN_FAILED;
-	if(iter->second().isDiagnostics) {
+	if((*iter)->second.isDiagnostics) {
 		sif::info << "Disabling Diagnostics entry with SID: "
 			 << std::hex << (int)currentSID << std::dec << std::endl;
 		result = disableDiagnosticsReporting(currentSID);
@@ -196,7 +196,7 @@ void Service3HousekeepingPSB::disableErrorMapEntry(ErrorCounterMapIterator * ite
 					 "could not disable HK store entry!" << std::endl;
 		}
 	}
-	triggerEvent(POOL_ENTRY_DISABLED,currentSID, iter->second().returnCode);
+	triggerEvent(POOL_ENTRY_DISABLED,currentSID, (*iter)->second.returnCode);
 	errCountMap.erase(iter);
 }
 
@@ -496,7 +496,7 @@ ReturnValue_t Service3HousekeepingPSB::retrieveStoreID(uint32_t sid,
 		SidToStoreIdMap * sidMap, store_address_t * storeId) {
 	SidToStoreIdIterator sidIterator = sidMap->find(sid);
 	if(sidIterator != sidMap->end()) {
-		*storeId = sidIterator.second();
+		*storeId = sidIterator->second;
 		return RETURN_OK;
 	}
 	else {
@@ -757,7 +757,7 @@ ReturnValue_t Service3HousekeepingPSB::deleteReportStructure(uint32_t sid,
 		SidToStoreIdMap * sidMap) {
 	SidToStoreIdIterator sidIterator = sidMap->find(sid);
 	if(sidIterator != sidMap->end()) {
-		ReturnValue_t result = hkPool.deleteData(sidIterator.second());
+		ReturnValue_t result = hkPool.deleteData(sidIterator->second);
 		if (result != RETURN_OK) {
 			return result;
 		}
