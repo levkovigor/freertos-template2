@@ -31,13 +31,13 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/board.h>
-#include <sam9g20/at91/include/at91/peripherals/pmc/pmc.h>
-#include <sam9g20/at91/include/at91/utility/assert.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <board.h>
+#include <at91/peripherals/pmc/pmc.h>
+#include <at91/utility/assert.h>
+#include <at91/utility/trace.h>
 
 #ifdef CP15_PRESENT
-#include <sam9g20/at91/include/at91/peripherals/cp15/cp15.h>
+#include <at91/peripherals/cp15/cp15.h>
 #endif
 
 #define MASK_STATUS 0x3FFFFFFC

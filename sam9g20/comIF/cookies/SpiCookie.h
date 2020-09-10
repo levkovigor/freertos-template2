@@ -7,7 +7,7 @@
 
 extern "C" {
 #include <hal/Drivers/SPI.h>
-#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/board.h>
+#include <board.h>
 }
 
 #include "portmacro.h"

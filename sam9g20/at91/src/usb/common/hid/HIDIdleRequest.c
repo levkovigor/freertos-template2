@@ -38,7 +38,7 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/usb/common/hid/HIDIdleRequest.h>
+#include <at91/usb/common/hid/HIDIdleRequest.h>
 
 //------------------------------------------------------------------------------
 //         Exported functions

@@ -43,10 +43,10 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/board.h>
-#include <sam9g20/at91/include/at91/peripherals/isi/isi.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
-#include <sam9g20/at91/include/at91/utility/video.h>
+#include <board.h>
+#include <at91/peripherals/isi/isi.h>
+#include <at91/utility/trace.h>
+#include <at91/utility/video.h>
 
 //-----------------------------------------------------------------------------
 /// Enable ISI

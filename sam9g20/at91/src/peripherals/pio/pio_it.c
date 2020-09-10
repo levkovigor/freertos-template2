@@ -35,13 +35,15 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/peripherals/pio/pio_it.h>
-#include <sam9g20/at91/include/at91/peripherals/pio/pio.h>
-#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/board.h>
-#include <sam9g20/at91/include/at91/peripherals/aic/aic.h>
-#include <sam9g20/at91/include/at91/utility/assert.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
-#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/at91sam9g20/AT91SAM9G20.h>
+#include <board.h>
+#include <AT91SAM9G20.h>
+
+#include <at91/peripherals/pio/pio_it.h>
+#include <at91/peripherals/pio/pio.h>
+#include <at91/peripherals/aic/aic.h>
+#include <at91/utility/assert.h>
+#include <at91/utility/trace.h>
+
 //------------------------------------------------------------------------------
 //         Local definitions
 //------------------------------------------------------------------------------

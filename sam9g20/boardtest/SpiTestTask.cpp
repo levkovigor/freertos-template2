@@ -5,9 +5,9 @@
 #include <sam9g20/comIF/GpioDeviceComIF.h>
 
 extern "C" {
-#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/board.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
-#include <sam9g20/at91/include/at91/peripherals/spi/spi_at91.h>
+#include <board.h>
+#include <at91/utility/trace.h>
+#include <at91/peripherals/spi/spi_at91.h>
 }
 
 #include <bitset>

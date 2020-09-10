@@ -32,7 +32,7 @@
 //------------------------------------------------------------------------------
 
 //define __ASSEMBLY__
-#include "at91/boards/ISIS_OBC_G20/board.h"
+#include <board.h>
 
 #ifdef CP15_PRESENT
 

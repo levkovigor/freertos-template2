@@ -45,7 +45,7 @@
 //------------------------------------------------------------------------------
 //         Headers
 //------------------------------------------------------------------------------
-#include <sam9g20/at91/include/at91/commons.h>
+#include <at91/commons.h>
 #include <string.h>
 
 #if USE_AT91LIB_STDIO_AND_STRING

@@ -31,21 +31,21 @@
 //      Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/board.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBConfigurationDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBDeviceDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBDeviceQualifierDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBEndpointDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBFeatureRequest.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBGenericDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBGetDescriptorRequest.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBInterfaceRequest.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBSetAddressRequest.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBSetConfigurationRequest.h>
-#include <sam9g20/at91/include/at91/usb/device/core/USBD.h>
-#include <sam9g20/at91/include/at91/usb/device/core/USBDDriver.h>
-#include <sam9g20/at91/include/at91/usb/device/core/USBDDriverCallbacks.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <board.h>
+#include <at91/usb/common/core/USBConfigurationDescriptor.h>
+#include <at91/usb/common/core/USBDeviceDescriptor.h>
+#include <at91/usb/common/core/USBDeviceQualifierDescriptor.h>
+#include <at91/usb/common/core/USBEndpointDescriptor.h>
+#include <at91/usb/common/core/USBFeatureRequest.h>
+#include <at91/usb/common/core/USBGenericDescriptor.h>
+#include <at91/usb/common/core/USBGetDescriptorRequest.h>
+#include <at91/usb/common/core/USBInterfaceRequest.h>
+#include <at91/usb/common/core/USBSetAddressRequest.h>
+#include <at91/usb/common/core/USBSetConfigurationRequest.h>
+#include <at91/usb/device/core/USBD.h>
+#include <at91/usb/device/core/USBDDriver.h>
+#include <at91/usb/device/core/USBDDriverCallbacks.h>
+#include <at91/utility/trace.h>
 #include <string.h>
 
 //------------------------------------------------------------------------------
@@ -383,8 +383,8 @@ static void USBDDriver_Test(unsigned char test)
             //patterns, jitter, and any other dynamic waveform specifications.
             //The test packet is made up by concatenating the following strings. 
             //(Note: For J/K NRZI data, and for NRZ data, the bit on the left is the first one 
-            //transmitted. “S” indicates that a bit stuff occurs, which inserts an “extra” NRZI data bit. 
-            //“* N” is used to indicate N occurrences of a string of bits or symbols.)
+            //transmitted. ï¿½Sï¿½ indicates that a bit stuff occurs, which inserts an ï¿½extraï¿½ NRZI data bit. 
+            //ï¿½* Nï¿½ is used to indicate N occurrences of a string of bits or symbols.)
             //A port in Test_Packet mode must send this packet repetitively. The inter-packet timing 
             //must be no less than the minimum allowable inter-packet gap as defined in Section 7.1.18 and 
             //no greater than 125 us.
@@ -397,7 +397,7 @@ static void USBDDriver_Test(unsigned char test)
 
         case USBFeatureRequest_TESTJ:
             //Test mode Test_J:
-            //Upon command, a port’s transceiver must enter the high-speed J state and remain in that
+            //Upon command, a portï¿½s transceiver must enter the high-speed J state and remain in that
             //state until the exit action is taken. This enables the testing of the high output drive
             //level on the D+ line.
             // Send ZLP
@@ -409,7 +409,7 @@ static void USBDDriver_Test(unsigned char test)
 
         case USBFeatureRequest_TESTK:
             //Test mode Test_K:
-            //Upon command, a port’s transceiver must enter the high-speed K state and remain in
+            //Upon command, a portï¿½s transceiver must enter the high-speed K state and remain in
             //that state until the exit action is taken. This enables the testing of the high output drive
             //level on the D- line.
             // Send a ZLP
@@ -420,7 +420,7 @@ static void USBDDriver_Test(unsigned char test)
 
         case USBFeatureRequest_TESTSE0NAK:
             //Test mode Test_SE0_NAK:
-            //Upon command, a port’s transceiver must enter the high-speed receive mode
+            //Upon command, a portï¿½s transceiver must enter the high-speed receive mode
             //and remain in that mode until the exit action is taken. This enables the testing
             //of output impedance, low level output voltage, and loading characteristics.
             //In addition, while in this mode, upstream facing ports (and only upstream facing ports)

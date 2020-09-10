@@ -38,9 +38,9 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/usb/device/hid-mouse/HIDDMouseDriverDescriptors.h>
-#include <sam9g20/at91/include/at91/usb/device/hid-mouse/HIDDMouseInputReport.h>
-#include <sam9g20/at91/include/at91/utility/assert.h>
+#include <at91/usb/device/hid-mouse/HIDDMouseDriverDescriptors.h>
+#include <at91/usb/device/hid-mouse/HIDDMouseInputReport.h>
+#include <at91/utility/assert.h>
 
 //------------------------------------------------------------------------------
 //         Exported functions

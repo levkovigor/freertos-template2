@@ -4,8 +4,8 @@
 #include <freertos/task.h>
 #include <FreeRTOSConfig.h>
 
-#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/at91sam9g20/AT91SAM9G20.h>
-#include <sam9g20/at91/include/at91/peripherals/tc/tc.h>
+#include <AT91SAM9G20.h>
+#include <at91/peripherals/tc/tc.h>
 
 // If this is changed, change both!
 // The ISIS PWM driver uses TC0, TC1 and TC2 to provide 6 PWM signals!

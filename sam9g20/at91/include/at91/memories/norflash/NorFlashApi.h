@@ -65,7 +65,7 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/memories/norflash/NorFlashCFI.h>
+#include <at91/memories/norflash/NorFlashCFI.h>
 
 //------------------------------------------------------------------------------
 //         Type

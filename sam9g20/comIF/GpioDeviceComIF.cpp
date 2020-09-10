@@ -3,7 +3,7 @@
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 
 extern "C" {
-#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/board.h>
+#include <board.h>
 }
 
 GpioDeviceComIF::GpioDeviceComIF(object_id_t objectId_):

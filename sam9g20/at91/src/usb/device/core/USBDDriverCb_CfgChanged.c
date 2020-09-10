@@ -31,8 +31,8 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/usb/device/core/USBDDriverCallbacks.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <at91/usb/device/core/USBDDriverCallbacks.h>
+#include <at91/utility/trace.h>
 
 //------------------------------------------------------------------------------
 //         Global functions

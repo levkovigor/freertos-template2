@@ -11,9 +11,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <sam9g20/at91/include/at91/commons.h>
-#include <sam9g20/at91/include/at91/peripherals/dbgu/dbgu.h>
-#include <sam9g20/at91/include/at91/utility/exithandler.h>
+#include <at91/commons.h>
+#include <at91/peripherals/dbgu/dbgu.h>
+#include <at91/utility/exithandler.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>

@@ -31,8 +31,8 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/memories/nandflash/NandSpareScheme.h>
-#include <sam9g20/at91/include/at91/utility/assert.h>
+#include <at91/memories/nandflash/NandSpareScheme.h>
+#include <at91/utility/assert.h>
 
 //------------------------------------------------------------------------------
 //         Exported variables

@@ -38,23 +38,23 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/board.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBConfigurationDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBDeviceDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBEndpointDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBInterfaceDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBStringDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/hid/HIDButton.h>
-#include <sam9g20/at91/include/at91/usb/common/hid/HIDDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/hid/HIDDeviceDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/hid/HIDGenericDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/hid/HIDGenericDesktop.h>
-#include <sam9g20/at91/include/at91/usb/common/hid/HIDInterfaceDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/hid/HIDLeds.h>
-#include <sam9g20/at91/include/at91/usb/common/hid/HIDReport.h>
-#include <sam9g20/at91/include/at91/usb/device/core/USBDDriverDescriptors.h>
-#include <sam9g20/at91/include/at91/usb/device/hid-mouse/HIDDMouseDriverDescriptors.h>
-#include <sam9g20/at91/include/at91/usb/device/hid-mouse/HIDDMouseInputReport.h>
+#include <board.h>
+#include <at91/usb/common/core/USBConfigurationDescriptor.h>
+#include <at91/usb/common/core/USBDeviceDescriptor.h>
+#include <at91/usb/common/core/USBEndpointDescriptor.h>
+#include <at91/usb/common/core/USBInterfaceDescriptor.h>
+#include <at91/usb/common/core/USBStringDescriptor.h>
+#include <at91/usb/common/hid/HIDButton.h>
+#include <at91/usb/common/hid/HIDDescriptor.h>
+#include <at91/usb/common/hid/HIDDeviceDescriptor.h>
+#include <at91/usb/common/hid/HIDGenericDescriptor.h>
+#include <at91/usb/common/hid/HIDGenericDesktop.h>
+#include <at91/usb/common/hid/HIDInterfaceDescriptor.h>
+#include <at91/usb/common/hid/HIDLeds.h>
+#include <at91/usb/common/hid/HIDReport.h>
+#include <at91/usb/device/core/USBDDriverDescriptors.h>
+#include <at91/usb/device/hid-mouse/HIDDMouseDriverDescriptors.h>
+#include <at91/usb/device/hid-mouse/HIDDMouseInputReport.h>
 
 //------------------------------------------------------------------------------
 //         Definitions

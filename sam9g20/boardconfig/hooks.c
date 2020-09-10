@@ -7,7 +7,7 @@
 
 #include <freertos/include/freertos/FreeRTOS.h>
 #include <freertos/include/freertos/task.h>
-#include <sam9g20/at91/include/at91/utility/exithandler.h>
+#include <at91/utility/exithandler.h>
 #include <stdio.h>
 
 extern void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName) __attribute__ ((weak));

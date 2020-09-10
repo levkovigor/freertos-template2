@@ -66,10 +66,10 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/peripherals/twi/twi_at91.h>
-#include <sam9g20/at91/include/at91/utility/assert.h>
-#include <sam9g20/at91/include/at91/utility/at91_math.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <peripherals/twi/twi_at91.h>
+#include <utility/assert.h>
+#include <utility/at91_math.h>
+#include <utility/trace.h>
 
 //------------------------------------------------------------------------------
 //         Global functions

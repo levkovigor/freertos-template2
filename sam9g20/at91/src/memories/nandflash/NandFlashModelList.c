@@ -31,8 +31,8 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/memories/nandflash/NandFlashModelList.h>
-#include <sam9g20/at91/include/at91/memories/nandflash/NandSpareScheme.h>
+#include <at91/memories/nandflash/NandFlashModelList.h>
+#include <at91/memories/nandflash/NandSpareScheme.h>
 
 //------------------------------------------------------------------------------
 //         Exported variables

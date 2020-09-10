@@ -31,9 +31,9 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/board.h>
-#include <sam9g20/at91/include/at91/peripherals/pio/pio.h>
-#include <sam9g20/at91/include/at91/peripherals/tc/tc.h>
+#include <board.h>
+#include <peripherals/pio/pio.h>
+#include <peripherals/tc/tc.h>
 
 //------------------------------------------------------------------------------
 //         Global Functions

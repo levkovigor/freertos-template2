@@ -31,17 +31,17 @@
 //      Headers
 //------------------------------------------------------------------------------
 
-#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/board.h>
-#include <sam9g20/at91/include/at91/peripherals/pio/pio.h>
-#include <sam9g20/at91/include/at91/peripherals/pmc/pmc.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBConfigurationOTG.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBEndpointDescriptor.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBFeatureRequest.h>
-#include <sam9g20/at91/include/at91/usb/common/core/USBGenericRequest.h>
-#include <sam9g20/at91/include/at91/usb/device/core/USBD.h>
-#include <sam9g20/at91/include/at91/usb/device/core/USBDCallbacks.h>
-#include <sam9g20/at91/include/at91/usb/device/core/USBDDriver.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <board.h>
+#include <at91/peripherals/pio/pio.h>
+#include <at91/peripherals/pmc/pmc.h>
+#include <at91/usb/common/core/USBConfigurationOTG.h>
+#include <at91/usb/common/core/USBEndpointDescriptor.h>
+#include <at91/usb/common/core/USBFeatureRequest.h>
+#include <at91/usb/common/core/USBGenericRequest.h>
+#include <at91/usb/device/core/USBD.h>
+#include <at91/usb/device/core/USBDCallbacks.h>
+#include <at91/usb/device/core/USBDDriver.h>
+#include <at91/utility/trace.h>
 #include <utility/led.h>
 
 //------------------------------------------------------------------------------

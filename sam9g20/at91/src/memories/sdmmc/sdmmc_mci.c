@@ -30,11 +30,11 @@
 //------------------------------------------------------------------------------
 //         Headers
 //------------------------------------------------------------------------------
-#include <sam9g20/at91/include/at91/boards/ISIS_OBC_G20/board.h>
-#include <sam9g20/at91/include/at91/memories/sdmmc/sdmmc_mci.h>
-#include <sam9g20/at91/include/at91/peripherals/mci/mci.h>
-#include <sam9g20/at91/include/at91/utility/assert.h>
-#include <sam9g20/at91/include/at91/utility/trace.h>
+#include <board.h>
+#include <at91/memories/sdmmc/sdmmc_mci.h>
+#include <at91/peripherals/mci/mci.h>
+#include <at91/utility/assert.h>
+#include <at91/utility/trace.h>
 #include <string.h>
 
 #define ENABLE_SDMMMC_TRACES 0
@@ -849,7 +849,7 @@ static unsigned char Cmd59(SdCard *pSd, unsigned char option)
 }
 
 //------------------------------------------------------------------------------
-/// Defines the data bus width (’00’=1bit or ’10’=4 bits bus) to be used for data transfer.
+/// Defines the data bus width (ï¿½00ï¿½=1bit or ï¿½10ï¿½=4 bits bus) to be used for data transfer.
 /// The allowed data bus widths are given in SCR register.
 /// Returns the command transfer result (see SendCommand).
 /// \param pSd  Pointer to a SD card driver instance.
@@ -1473,7 +1473,7 @@ unsigned char SD_Init(SdCard *pSd, SdDriver *pSdDriver)
     memset(&(pSd->command), 0, sizeof(SdCmd));
 
     // Initialization delay: The maximum of 1 msec, 74 clock cycles and supply ramp up time
-    // ‘Supply ramp up time’ provides the time that the power is built up to the operating level (the bus
+    // ï¿½Supply ramp up timeï¿½ provides the time that the power is built up to the operating level (the bus
     // master supply voltage) and the time to wait until the SD card can accept the first command
 
     // Power On Init Special Command
@@ -1484,7 +1484,7 @@ unsigned char SD_Init(SdCard *pSd, SdDriver *pSdDriver)
         return error;
     }
 
-    // After power-on or CMD0, all cards’ CMD lines are in input mode, waiting for start bit of the next command.
+    // After power-on or CMD0, all cardsï¿½ CMD lines are in input mode, waiting for start bit of the next command.
     // The cards are initialized with a default relative card address (RCA=0x0000) and with a default
     // driver stage register setting (lowest speed, highest driving current capability).
 
