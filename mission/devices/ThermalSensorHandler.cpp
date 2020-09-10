@@ -218,13 +218,16 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
         }
 
         ReturnValue_t result = sensorDataset.read(10);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+        	// Configuration error
+        	sif::debug << "ThermalSensorHandler::interpretDeviceReply:"
+        			<< " Error reading dataset!" << std::endl;
+        	return result;
+        }
+
+
         if(not sensorDataset.isValid()) {
         	sensorDataset.temperatureCelcius.setValid(true);
-        }
-        if(result != HasReturnvaluesIF::RETURN_OK) {
-            // todo: should propably be event
-            sif::debug << "ThermalSensorHandler::interpretDeviceReply:"
-                    << "Error reading dataset!" << std::endl;
         }
 
         sensorDataset.temperatureCelcius = approxTemp;
@@ -232,30 +235,38 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
         result = sensorDataset.commit(10);
 
         if(result != HasReturnvaluesIF::RETURN_OK) {
-            // todo: should propably be event
+            // Configuration error
             sif::debug << "ThermalSensorHandler::interpretDeviceReply:"
                     << "Error commiting dataset!" << std::endl;
+            return result;
         }
         break;
     }
     case(REQUEST_FAULT_BYTE): {
         faultByte = packet[1];
+#ifdef DEBUG
         sif::info << "ThermalSensorHandler::interpretDeviceReply: Fault byte"
                 " is: 0b" << std::bitset<8>(faultByte) << std::endl;
+#endif
         ReturnValue_t result = sensorDataset.read(10);
         if(result != HasReturnvaluesIF::RETURN_OK) {
-            // todo: should propably be event
+            // Configuration error
             sif::debug << "ThermalSensorHandler::interpretDeviceReply:"
                     << "Error reading dataset!" << std::endl;
+            return result;
         }
-
+        sensorDataset.errorByte.setValid(true);
         sensorDataset.errorByte = faultByte;
+        if(faultByte != 0) {
+        	sensorDataset.temperatureCelcius.setValid(false);
+        }
 
         result = sensorDataset.commit(10);
         if(result != HasReturnvaluesIF::RETURN_OK) {
-            // todo: should propably be event
-            sif::debug << "ThermalSensorHandler::interpretDeviceReply:"
-                    << "Commiting dataset!" << std::endl;
+        	// Configuration error
+        	sif::debug << "ThermalSensorHandler::interpretDeviceReply:"
+        			<< "Error commiting dataset!" << std::endl;
+        	return result;
         }
 
         break;
