@@ -49,15 +49,6 @@ protected:
 	virtual MessageQueueId_t getHkQueue() const;
 private:
 	enum class Subservice {
-		// The new local pool propably won't allow this.
-//		//!< [EXPORT] : [TC] Add a new structure to the housekeeping reports
-//		ADD_HK_REPORT_STRUCTURE = 1,
-//		//!< [EXPORT] : [TC] Add a new structure to the diagnostics reports
-//		ADD_DIAGNOSTICS_REPORT_STRUCTURE = 2,
-
-		DELETE_HK_REPORT_STRUCTURE = 3, //!< [EXPORT] : [TC]
-		DELETE_DIAGNOSTICS_REPORT_STRUCTURE = 4, //!< [EXPORT] : [TC]
-
 		ENABLE_PERIODIC_HK_REPORT_GENERATION = 5, //!< [EXPORT] : [TC]
 		DISABLE_PERIODIC_HK_REPORT_GENERATION = 6, //!< [EXPORT] : [TC]
 
@@ -94,6 +85,9 @@ private:
 
 	ReturnValue_t generateHkReport(const CommandMessage* hkMessage,
 			uint8_t subserviceId);
+	ReturnValue_t prepareReportingTogglingCommand(CommandMessage* command,
+			bool enableReporting, bool isDiagnostics, const uint8_t* tcData,
+			size_t tcDataLen);
 	void handleUnrequestedReply(CommandMessage* reply) override;
 };
 

@@ -17,8 +17,6 @@ Service3Housekeeping::~Service3Housekeeping() {}
 
 ReturnValue_t Service3Housekeeping::isValidSubservice(uint8_t subservice) {
 	switch(static_cast<Subservice>(subservice)) {
-	case Subservice::DELETE_HK_REPORT_STRUCTURE:
-	case Subservice::DELETE_DIAGNOSTICS_REPORT_STRUCTURE:
 	case Subservice::ENABLE_PERIODIC_HK_REPORT_GENERATION:
 	case Subservice::DISABLE_PERIODIC_HK_REPORT_GENERATION:
 	case Subservice::ENABLE_PERIODIC_DIAGNOSTICS_REPORT_GENERATION:
@@ -76,12 +74,18 @@ ReturnValue_t Service3Housekeeping::prepareCommand(CommandMessage* message,
 		uint8_t subservice, const uint8_t *tcData, size_t tcDataLen,
 		uint32_t *state, object_id_t objectId) {
 	switch(static_cast<Subservice>(subservice)) {
-	case Subservice::DELETE_HK_REPORT_STRUCTURE:
-	case Subservice::DELETE_DIAGNOSTICS_REPORT_STRUCTURE:
 	case Subservice::ENABLE_PERIODIC_HK_REPORT_GENERATION:
+		return prepareReportingTogglingCommand(message, true, false,
+				tcData, tcDataLen);
 	case Subservice::DISABLE_PERIODIC_HK_REPORT_GENERATION:
+		return prepareReportingTogglingCommand(message, false, false,
+				tcData, tcDataLen);
 	case Subservice::ENABLE_PERIODIC_DIAGNOSTICS_REPORT_GENERATION:
+		return prepareReportingTogglingCommand(message, true, true,
+				tcData, tcDataLen);
 	case Subservice::DISABLE_PERIODIC_DIAGNOSTICS_REPORT_GENERATION:
+		return prepareReportingTogglingCommand(message, false, true,
+				tcData, tcDataLen);
 	case Subservice::REPORT_HK_REPORT_STRUCTURES:
 	case Subservice::REPORT_DIAGNOSTICS_REPORT_STRUCTURES :
 	case Subservice::GENERATE_ONE_PARAMETER_REPORT:
@@ -107,11 +111,38 @@ ReturnValue_t Service3Housekeeping::handleReply(const CommandMessage* reply,
 		CommandMessage* optionalNextCommand, object_id_t objectId,
 		bool *isStep) {
 	switch(reply->getCommand()) {
+	case(HousekeepingMessage::REPORTING_TOGGLE_SUCCESS): {
+		return CommandingServiceBase::EXECUTION_COMPLETE;
+	}
+	case(HousekeepingMessage::REPORTING_TOGGLE_FAILURE): {
+		failureParameter1 = objectId;
+		// also provide failure reason (returnvalue)
+		// will be most commonly invalid SID or the set already has the desired
+		// reporting status.
+		return CommandingServiceBase::EXECUTION_COMPLETE;
+	}
 	default:
 		sif::error << "Service3Housekeeping::handleReply: Invalid reply!"
 				<< std::endl;
 		return CommandingServiceBase::INVALID_REPLY;
 	}
+	return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t Service3Housekeeping::prepareReportingTogglingCommand(
+		CommandMessage *command, bool enableReporting, bool isDiagnostics,
+		const uint8_t* tcData, size_t tcDataLen) {
+	if(tcDataLen < sizeof(sid_t)) {
+		// It is assumed the full SID is sent for now (even if that means
+		// 4 bytes are redundant)
+		return CommandingServiceBase::INVALID_TC;
+	}
+
+	sid_t targetSid;
+	SerializeAdapter::deSerialize(&targetSid.raw, &tcData, &tcDataLen,
+			SerializeIF::Endianness::BIG);
+	HousekeepingMessage::setToggleReportingMessage(command, targetSid,
+			enableReporting, isDiagnostics);
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
