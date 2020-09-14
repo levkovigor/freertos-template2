@@ -87,7 +87,11 @@ ReturnValue_t Service3Housekeeping::prepareCommand(CommandMessage* message,
 		return prepareReportingTogglingCommand(message, false, true,
 				tcData, tcDataLen);
 	case Subservice::REPORT_HK_REPORT_STRUCTURES:
-	case Subservice::REPORT_DIAGNOSTICS_REPORT_STRUCTURES :
+		return prepareStructureReportingCommand(message, false, tcData,
+				tcDataLen);
+	case Subservice::REPORT_DIAGNOSTICS_REPORT_STRUCTURES:
+		return prepareStructureReportingCommand(message, true, tcData,
+				tcDataLen);
 	case Subservice::GENERATE_ONE_PARAMETER_REPORT:
 	case Subservice::GENERATE_ONE_DIAGNOSTICS_REPORT:
 	case Subservice::MODIFY_PARAMETER_REPORT_COLLECTION_INTERVAL:
@@ -111,10 +115,10 @@ ReturnValue_t Service3Housekeeping::handleReply(const CommandMessage* reply,
 		CommandMessage* optionalNextCommand, object_id_t objectId,
 		bool *isStep) {
 	switch(reply->getCommand()) {
-	case(HousekeepingMessage::REPORTING_TOGGLE_SUCCESS): {
+	case(HousekeepingMessage::HK_REQUEST_SUCCESS): {
 		return CommandingServiceBase::EXECUTION_COMPLETE;
 	}
-	case(HousekeepingMessage::REPORTING_TOGGLE_FAILURE): {
+	case(HousekeepingMessage::HK_REQUEST_FAILURE): {
 		failureParameter1 = objectId;
 		// also provide failure reason (returnvalue)
 		// will be most commonly invalid SID or the set already has the desired
@@ -139,10 +143,74 @@ ReturnValue_t Service3Housekeeping::prepareReportingTogglingCommand(
 	}
 
 	sid_t targetSid;
-	SerializeAdapter::deSerialize(&targetSid.raw, &tcData, &tcDataLen,
+	SerializeAdapter::deSerialize(&targetSid.objectId, &tcData, &tcDataLen,
 			SerializeIF::Endianness::BIG);
-	HousekeepingMessage::setToggleReportingMessage(command, targetSid,
+	SerializeAdapter::deSerialize(&targetSid.ownerSetId, &tcData, &tcDataLen,
+				SerializeIF::Endianness::BIG);
+
+	HousekeepingMessage::setToggleReportingCommand(command, targetSid,
 			enableReporting, isDiagnostics);
+	return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t Service3Housekeeping::prepareStructureReportingCommand(
+		CommandMessage *command, bool isDiagnostics, const uint8_t* tcData,
+		size_t tcDataLen) {
+	if(tcDataLen < sizeof(sid_t)) {
+		// It is assumed the full SID is sent for now (even if that means
+		// 4 bytes are redundant)
+		return CommandingServiceBase::INVALID_TC;
+	}
+
+	sid_t targetSid;
+	SerializeAdapter::deSerialize(&targetSid.objectId, &tcData, &tcDataLen,
+			SerializeIF::Endianness::BIG);
+	SerializeAdapter::deSerialize(&targetSid.ownerSetId, &tcData, &tcDataLen,
+			SerializeIF::Endianness::BIG);
+
+	HousekeepingMessage::setStructureReportingCommand(command, targetSid,
+			isDiagnostics);
+	return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t Service3Housekeeping::prepareOneShotReportCommand(
+		CommandMessage *command, bool isDiagnostics, const uint8_t *tcData,
+		size_t tcDataLen) {
+	if(tcDataLen < sizeof(sid_t)) {
+		// It is assumed the full SID is sent for now (even if that means
+		// 4 bytes are redundant)
+		return CommandingServiceBase::INVALID_TC;
+	}
+
+	sid_t targetSid;
+	SerializeAdapter::deSerialize(&targetSid.objectId, &tcData, &tcDataLen,
+			SerializeIF::Endianness::BIG);
+	SerializeAdapter::deSerialize(&targetSid.ownerSetId, &tcData, &tcDataLen,
+			SerializeIF::Endianness::BIG);
+	HousekeepingMessage::setOneShotReportCommand(command, targetSid,
+			isDiagnostics);
+	return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t Service3Housekeeping::prepareCollectionIntervalModificationCommand(
+		CommandMessage *command, bool isDiagnostics, const uint8_t *tcData,
+		size_t tcDataLen) {
+	if(tcDataLen < sizeof(sid_t) + sizeof(float)) {
+		// It is assumed the full SID and the new collection interval as a float
+		// is sent for now (even if that means 4 bytes are redundant)
+		return CommandingServiceBase::INVALID_TC;
+	}
+
+	sid_t targetSid;
+	float newCollectionInterval = 0;
+	SerializeAdapter::deSerialize(&targetSid.objectId, &tcData, &tcDataLen,
+			SerializeIF::Endianness::BIG);
+	SerializeAdapter::deSerialize(&targetSid.ownerSetId, &tcData, &tcDataLen,
+			SerializeIF::Endianness::BIG);
+	SerializeAdapter::deSerialize(&newCollectionInterval, &tcData, &tcDataLen,
+			SerializeIF::Endianness::BIG);
+	HousekeepingMessage::setCollectionIntervalModificationCommand(command,
+			targetSid, newCollectionInterval, isDiagnostics);
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -181,13 +249,13 @@ ReturnValue_t Service3Housekeeping::generateHkReport(
 		const CommandMessage* hkMessage, uint8_t subserviceId) {
 	store_address_t storeId;
 
-	sid_t sid = HousekeepingMessage::getHkReportMessage(hkMessage, &storeId);
+	sid_t sid = HousekeepingMessage::getHkDataReply(hkMessage, &storeId);
 	auto resultPair = IPCStore->getData(storeId);
 	if(resultPair.first != HasReturnvaluesIF::RETURN_OK) {
 		return resultPair.first;
 	}
 
 	HkPacket hkPacket(sid, resultPair.second.data(), resultPair.second.size());
-	return sendTmPacket(static_cast<uint8_t>(Subservice::HK_REPORT),
+	return sendTmPacket(static_cast<uint8_t>(subserviceId),
 			hkPacket.hkData, hkPacket.hkSize, nullptr, 0);
 }

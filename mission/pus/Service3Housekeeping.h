@@ -88,6 +88,14 @@ private:
 	ReturnValue_t prepareReportingTogglingCommand(CommandMessage* command,
 			bool enableReporting, bool isDiagnostics, const uint8_t* tcData,
 			size_t tcDataLen);
+	ReturnValue_t prepareStructureReportingCommand(CommandMessage* command,
+			bool isDiagnostics, const uint8_t* tcData, size_t tcDataLen);
+	ReturnValue_t prepareOneShotReportCommand(CommandMessage* command,
+			bool isDiagnostics, const uint8_t* tcData, size_t tcDataLen);
+	ReturnValue_t prepareCollectionIntervalModificationCommand(
+			CommandMessage* command, bool isDiagnostics, const uint8_t* tcData,
+			size_t tcDataLen);
+
 	void handleUnrequestedReply(CommandMessage* reply) override;
 };
 
