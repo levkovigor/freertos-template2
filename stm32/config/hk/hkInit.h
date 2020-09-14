@@ -10,7 +10,7 @@
 
 #include <config/cdatapool/gpsPool.h>
 #include <config/cdatapool/testPool.h>
-#include <mission/pus/Service3Housekeeping.h>
+#include <fsfw/pus/Service3Housekeeping.h>
 
 namespace hk {
 
