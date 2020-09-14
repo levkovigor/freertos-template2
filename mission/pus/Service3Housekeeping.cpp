@@ -93,10 +93,15 @@ ReturnValue_t Service3Housekeeping::prepareCommand(CommandMessage* message,
 		return prepareStructureReportingCommand(message, true, tcData,
 				tcDataLen);
 	case Subservice::GENERATE_ONE_PARAMETER_REPORT:
+		return prepareOneShotReportCommand(message, false, tcData, tcDataLen);
 	case Subservice::GENERATE_ONE_DIAGNOSTICS_REPORT:
+		return prepareOneShotReportCommand(message, true, tcData, tcDataLen);
 	case Subservice::MODIFY_PARAMETER_REPORT_COLLECTION_INTERVAL:
+		return prepareCollectionIntervalModificationCommand(message, false,
+				tcData, tcDataLen);
 	case Subservice::MODIFY_DIAGNOSTICS_REPORT_COLLECTION_INTERVAL:
-		break;
+		return prepareCollectionIntervalModificationCommand(message, true,
+				tcData, tcDataLen);
 	case Subservice::HK_DEFINITIONS_REPORT:
 	case Subservice::DIAGNOSTICS_DEFINITION_REPORT:
 	case Subservice::HK_REPORT:
@@ -104,7 +109,7 @@ ReturnValue_t Service3Housekeeping::prepareCommand(CommandMessage* message,
 		// Those are telemetry packets.
 		return CommandingServiceBase::INVALID_TC;
 	default:
-		// should never happen.
+		// should never happen, subservice was already checked.
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
 	return HasReturnvaluesIF::RETURN_OK;
