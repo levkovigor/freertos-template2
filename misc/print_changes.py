@@ -21,30 +21,28 @@ def read_all_files(folder, root_folder: bool, nesting_depth: int = 0):
         write = False
         with open(os.path.join(folder, file), "r") as in_file:
             rows = [x for x in in_file]
+            multi_line = False
             for index, row in enumerate(rows):
-                if "#include" in row:
-                    if folder[2:] in row:
-                        if "<config/" in row:
-                            continue
+                new_lines = row
+                if "sif::" in row:
+                    define_line = "#ifdef CPP_OSTREAM_ENABLED\n"
+                    new_lines = define_line + new_lines
+                    if sif_found and "std::endl" in row:
+                        new_lines += "#endif\n"
                         write = True
-                        row = row.replace(">", "\"")
-                        row = row.replace("<framework", "\"")
-                        row = row.replace(folder[1:] + "/", "")
-                        rows[index] = row
-                        print("Replacement 1" + str(row))
-                    elif "<framework" in row:
-                        how_deep = nesting_depth - 1
-                        write = True
-                        row = row.replace(">", "\"")
-                        string = [".." for i in range(how_deep)]
-                        dots = "/".join(string)
-                        row = row.replace("<framework", "\"" + dots)
-                        rows[index] = row
-                        print("Replacement 2: " + str(row))
+                    elif not multi_line:
+                        multi_line = True
+                if multi_line:
+                    if "std::endl" in row:
+                        new_lines += "#endif\n"
+                        multi_line = False
+                rows[index] = new_lines      
+
         if write:
             with open(os.path.join(folder, file), "w") as in_file:
                 print("Write file %s" % (os.path.join(folder, file)))
                 in_file.writelines(rows)
 
 
-read_all_files(".", True)
+if __name__ == "__main__":
+    main()
