@@ -12,7 +12,7 @@ def read_all_files(folder, root_folder: bool, nesting_depth: int = 0):
             continue
         if ".py" in file:
             continue
-        if file not in ["mission"] and root_folder:
+        if file not in ["mission", "fsfw", "config", "sam9g20", "test", "unittest"] and root_folder:
             continue
         if os.path.isdir(os.path.join(folder, file)):
             read_all_files(os.path.join(folder, file), False, nesting_depth + 1)
