@@ -32,14 +32,14 @@ def read_all_files(folder, root_folder: bool, nesting_depth: int = 0):
                     print("SIF found in line " + str(index) + " file " + str(file))
                     define_line = "#ifdef CPP_OSTREAM_ENABLED\n"
                     new_lines = define_line + new_lines
-                    if "std::endl" in row:
+                    if row in ["std::endl", "std::flush"]:
                         print("One line SIF output from line" + str(index))
                         new_lines += "#endif\n"
                         write = True
                     elif not multi_line:
                         multi_line = True
                 if multi_line:
-                    if "std::endl" in row:
+                    if row in ["std::endl","std::flush"]:
                         print("Multiline output found in " + str(file) + " with ending on row "
                               + str(index))
                         new_lines += "#endif\n"
