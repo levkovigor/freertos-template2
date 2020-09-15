@@ -1,0 +1,8 @@
+#ifndef CONFIG_FSFWCONFIG_H_
+#define CONFIG_FSFWCONFIG_H_
+
+#define CPP_OSTREAM_ENABLED 1
+
+
+
+#endif /* CONFIG_FSFWCONFIG_H_ */
