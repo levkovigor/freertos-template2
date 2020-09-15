@@ -5,6 +5,7 @@
 #include <test/testtasks/PusTcInjector.h>
 #include <unittest/internal/InternalUnitTester.h>
 
+#include <fsfw/objectmanager/ObjectManagerIF.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
