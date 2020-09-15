@@ -1,5 +1,5 @@
 #if defined(GCOV)
-#include <gcov.h>
+#include <boardconfig/gcov.h>
 #endif
 
 #include <iostream>
