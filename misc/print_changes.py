@@ -10,9 +10,9 @@ def read_all_files(folder, root_folder: bool, nesting_depth: int = 0):
     for file in os.listdir(folder):
         if file in [".git", ".idea", ".project", ".settings"]:
             continue
-        if file in [".py", ".a"]:
+        if ".py" in file or ".a" in file:
             continue
-        if file not in ["mission", "fsfw", "config", "sam9g20", "test", "unittest"] and root_folder:
+        if file not in ["fsfw"] and root_folder:
             continue
         if os.path.isdir(os.path.join(folder, file)):
             read_all_files(os.path.join(folder, file), False, nesting_depth + 1)
@@ -32,17 +32,18 @@ def read_all_files(folder, root_folder: bool, nesting_depth: int = 0):
                     print("SIF found in line " + str(index) + " file " + str(file))
                     define_line = "#ifdef CPP_OSTREAM_ENABLED\n"
                     new_lines = define_line + new_lines
-                    if row in ["std::endl", "std::flush"]:
+                    if "std::endl" in row or "std::flush" in row:
                         print("One line SIF output from line" + str(index))
                         new_lines += "#endif\n"
                         write = True
                     elif not multi_line:
                         multi_line = True
                 if multi_line:
-                    if row in ["std::endl","std::flush"]:
+                    if "std::endl" in row or "std::flush" in row:
                         print("Multiline output found in " + str(file) + " with ending on row "
                               + str(index))
                         new_lines += "#endif\n"
+                        write = True
                         multi_line = False
                 rows[index] = new_lines
 
