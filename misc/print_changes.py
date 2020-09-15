@@ -12,7 +12,7 @@ def read_all_files(folder, root_folder: bool, nesting_depth: int = 0):
             continue
         if ".py" in file:
             continue
-        if file not in ["framework"] and root_folder:
+        if file not in ["mission"] and root_folder:
             continue
         if os.path.isdir(os.path.join(folder, file)):
             read_all_files(os.path.join(folder, file), False, nesting_depth + 1)
@@ -25,18 +25,19 @@ def read_all_files(folder, root_folder: bool, nesting_depth: int = 0):
             for index, row in enumerate(rows):
                 new_lines = row
                 if "sif::" in row:
-                    define_line = "#ifdef CPP_OSTREAM_ENABLED\n"
+                    print("SIF found in line " + str(index) + " file " + str(file))
+                    define_line = "#ifdef CPP_OSTREAM_ENABLED\n\r"
                     new_lines = define_line + new_lines
-                    if sif_found and "std::endl" in row:
-                        new_lines += "#endif\n"
+                    if "std::endl" in row:
+                        new_lines += "#endif\n\r"
                         write = True
                     elif not multi_line:
                         multi_line = True
                 if multi_line:
                     if "std::endl" in row:
-                        new_lines += "#endif\n"
+                        new_lines += "#endif\n\r"
                         multi_line = False
-                rows[index] = new_lines      
+                rows[index] = new_lines
 
         if write:
             with open(os.path.join(folder, file), "w") as in_file:
