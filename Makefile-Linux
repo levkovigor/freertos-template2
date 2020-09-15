@@ -165,6 +165,7 @@ DEBUG_MESSAGE = Off
 OPTIMIZATION_MESSAGE = Off
 
 # Define Messages
+MSG_INFO = Software: SOURCE OBSW Linux.
 MSG_LINKING = Linking:
 MSG_COMPILING = Compiling:
 MSG_ASSEMBLING = Assembling:
@@ -208,18 +209,20 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPENDDIR)/$*.d
 #    =0 means  no line-wrapping is done; each error message appears on a single line
 # - fno-exceptions: stops generating extra code needed to propagate exceptions, 
 #    which can produce significant data size overhead
+WARNING_FLAGS =  -Wall -Wshadow=local -Wextra -Wimplicit-fallthrough=1 \
+		-Wno-unused-parameter 
 
 CXXDEFINES := $(CUSTOM_DEFINES)
 CFLAGS += 
-CXXFLAGS += -g3 -Wall -I. $(I_INCLUDES) $(DEPFLAGS) -fmessage-length=0 \
-$(CXXDEFINES) $(OPTIMIZATION) 
+CXXFLAGS += -I. $(DEBUG_LEVEL) $(OPTIMIZATION) $(DEPFLAGS) $(WARNING_FLAGS) \
+		$(I_INCLUDES) -fmessage-length=0 $(CXXDEFINES) 
 CPPFLAGS += -std=c++17 -fno-exceptions
-ASFLAGS =  -Wall -g $(OPTIMIZATION) $(I_INCLUDES) -D__ASSEMBLY__
+ASFLAGS = -Wall $(DEBUG_LEVEL) $(OPTIMIZATION) $(I_INCLUDES) -D__ASSEMBLY__
 
 # Flags for the linker call
 # LINK_INCLUDES specify the path to used libraries and the linker script
 # LINK_LIBRARIES link HCC and HAL library and enable float support
-LDFLAGS = -g3 -pthread $(DEAD_CODE_REMOVAL) $(OPTIMIZATION)
+LINK_FLAGS = $(DEBUG_LEVEL) $(DEAD_CODE_REMOVAL) $(OPTIMIZATION) -pthread 
 LINK_INCLUDES = 
 LINK_LIBRARIES = -lrt
 
@@ -271,20 +274,18 @@ release: DEBUG_LEVEL = -g0
 debug: CXXDEFINES += -DDEBUG
 debug: DEBUG_MESSAGE = On
 
-ifndef KEEP_UNUSED_CODE
-debug release: OPTIMIZATION_MESSAGE = Off with unused code removal
-else
-debug release: OPTIMIZATION_MESSAGE = Off
-endif
-
 debug release: executable
 	
-# executable: $(BINDIR)/$(BINARY_NAME).bin	
-executable: $(BINDIR)/$(BINARY_NAME).elf	
+executable: $(BINDIR)/$(BINARY_NAME).elf
 	@echo
+	@echo $(MSG_INFO)
 	@echo $(MSG_TARGET)
 	@echo $(MSG_OPTIMIZATION)
 	@echo $(MSG_DEBUG)
+
+# For debugging.
+# $(info $${C_OBJECTS} is [${C_OBJECTS}])	
+# $(info $${CXX_OBJECTS} is [${CXX_OBJECTS}])	
 
 C_OBJECTS_PREFIXED = $(addprefix $(OBJDIR)/, $(C_OBJECTS))
 CXX_OBJECTS_PREFIXED = $(addprefix $(OBJDIR)/, $(CXX_OBJECTS))
@@ -294,8 +295,7 @@ ALL_OBJECTS_PREFIXED = $(ASM_OBJECTS_PREFIXED) $(C_OBJECTS_PREFIXED) \
 
 # Useful for debugging the Makefile
 # Also see: https://www.oreilly.com/openbook/make3/book/ch12.pdf
-# $$(info $${ALL_OBJECTS} is [${ALL_OBJECTS}])
-# $$(info $${CXXSRC} is [${CXXSRC}])
+# $$(info $${ALL_OBJECTS_PREFIXED} is [${ALL_OBJECTS_PREFIXED}])
 
 # Automatic variables are used here extensively. Some of them
 # are escaped($$) to suppress immediate evaluation. The most important ones are:
@@ -307,38 +307,46 @@ ALL_OBJECTS_PREFIXED = $(ASM_OBJECTS_PREFIXED) $(C_OBJECTS_PREFIXED) \
 # Generates binary and displays all build properties
 # -p with mkdir ignores error and creates directory when needed.
 
+# SHOW_DETAILS = 1
+
 $(BINDIR)/$(BINARY_NAME).elf: $(ALL_OBJECTS_PREFIXED)
-	@echo
 	@echo $(MSG_LINKING) Target $@
 	@mkdir -p $(@D)
-	@$(CXX) $(LDFLAGS) $(LINK_INCLUDES) -o $@ $^ $(LINK_LIBRARIES)
-ifeq ($(BUILD_FOLDER), mission)
+ifdef SHOW_DETAILS
+	$(CXX) $(LINK_FLAGS) $(LINK_INCLUDES) -o $@ $^ $(LINK_LIBRARIES)
+else
+	@$(CXX) $(LINK_FLAGS) $(LINK_INCLUDES) -o $@ $^ $(LINK_LIBRARIES)
+endif
+ifeq ($(BUILD_FOLDER), release)
 # With Link Time Optimization, section size is not available
 	$(SIZE) $@
 else
-	$(SIZE) $^ $@
+	@$(SIZE) $^ $@
 endif
 
-# Build new objects for changed dependencies. 
+
 $(OBJDIR)/%.o: %.cpp
 $(OBJDIR)/%.o: %.cpp $(DEPENDDIR)/%.d | $(DEPENDDIR)
 	@echo 
 	@echo $(MSG_COMPILING) $<
 	@mkdir -p $(@D)
-	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+ifdef SHOW_DETAILS
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+else
+	@$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+endif
+
 
 $(OBJDIR)/%.o: %.c 
 $(OBJDIR)/%.o: %.c $(DEPENDDIR)/%.d | $(DEPENDDIR) 
 	@echo 
 	@echo $(MSG_COMPILING) $<
 	@mkdir -p $(@D)
+ifdef SHOW_DETAILS
+	$(CC) $(CXXFLAGS) $(CFLAGS) -c -o $@ $<
+else
 	@$(CC) $(CXXFLAGS) $(CFLAGS) -c -o $@ $<
-
-$(OBJDIR)/%.o: %.S Makefile
-	@echo
-	@echo $(MSG_ASSEMBLING) $<
-	@mkdir -p $(@D)
-	@$(CC) $(ASFLAGS) -c -o $@ $<
+endif
 
 #-------------------------------------------------------------------------------
 #		Dependency Handling
