@@ -26,16 +26,16 @@ def read_all_files(folder, root_folder: bool, nesting_depth: int = 0):
                 new_lines = row
                 if "sif::" in row:
                     print("SIF found in line " + str(index) + " file " + str(file))
-                    define_line = "#ifdef CPP_OSTREAM_ENABLED\n\r"
+                    define_line = "#ifdef CPP_OSTREAM_ENABLED\n"
                     new_lines = define_line + new_lines
                     if "std::endl" in row:
-                        new_lines += "#endif\n\r"
+                        new_lines += "#endif\n"
                         write = True
                     elif not multi_line:
                         multi_line = True
                 if multi_line:
                     if "std::endl" in row:
-                        new_lines += "#endif\n\r"
+                        new_lines += "#endif\n"
                         multi_line = False
                 rows[index] = new_lines
 
