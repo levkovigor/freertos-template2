@@ -10,17 +10,21 @@ def read_all_files(folder, root_folder: bool, nesting_depth: int = 0):
     for file in os.listdir(folder):
         if file in [".git", ".idea", ".project", ".settings"]:
             continue
-        if ".py" in file:
+        if file in [".py", ".a"]:
             continue
         if file not in ["mission", "fsfw", "config", "sam9g20", "test", "unittest"] and root_folder:
             continue
         if os.path.isdir(os.path.join(folder, file)):
             read_all_files(os.path.join(folder, file), False, nesting_depth + 1)
             continue
-        print(os.path.join(folder, file))
+        print("Checking file " + str(os.path.join(folder, file)))
         write = False
         with open(os.path.join(folder, file), "r") as in_file:
-            rows = [x for x in in_file]
+            try:
+                rows = [x for x in in_file]
+            except UnicodeDecodeError:
+                print("Decoding error in file " + str(file) + ", continuing..")
+                continue
             multi_line = False
             for index, row in enumerate(rows):
                 new_lines = row
