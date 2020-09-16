@@ -89,7 +89,7 @@ ReturnValue_t TmTcSerialBridge::sendTm(const uint8_t *data, size_t dataLen) {
 	}
 	// If data is being sent too fast, this delay could be used.
 	// It will not block the CPU, because a context switch will be requested.
-	TaskFactory::delayTask(1);
+	TaskFactory::delayTask(2);
 	return result;
 }
 
