@@ -350,11 +350,13 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPENDDIR)/$*.d
 #   C99 scanf/printf formats (e.g. uint8)
 CUSTOM_DEFINES += -DUSE_AT91LIB_STDIO_AND_STRING=$(USE_AT91LIB_STDIO_AND_STRING)
 CUSTOM_DEFINES += -DNEWLIB_NANO_NO_C99_IO
-
+WARNING_FLAGS =  -Wall -Wshadow=local -Wextra -Wimplicit-fallthrough=1 \
+		-Wno-unused-parameter 
+		
 CXXDEFINES := -D$(CHIP) -D$(BOARD) -DTRACE_LEVEL=$(TRACE_LEVEL) \
 		   -DDYN_TRACES=$(DYN_TRACES) $(CUSTOM_DEFINES)
 CFLAGS +=  
-CXXFLAGS += -I. -Wall -Wshadow=local $(DEBUG_LEVEL) $(DEPFLAGS) \
+CXXFLAGS += -I.  $(DEBUG_LEVEL) $(DEPFLAGS) $(WARNING_FLAGS) \
 		-fmessage-length=0 $(OPTIMIZATION) $(I_INCLUDES) $(CXXDEFINES) \
 		$(NEWLIB_NANO) $(CPU_FLAG) 
 CPPFLAGS += -std=c++17 -fno-exceptions

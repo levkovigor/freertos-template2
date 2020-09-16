@@ -26,13 +26,13 @@
 #include <fsfw/events/EventManager.h>
 #include <fsfw/fdir/FailureIsolationBase.h>
 #include <fsfw/health/HealthTable.h>
+#include <fsfw/pus/Service3Housekeeping.h>
 #include <fsfw/tmtcpacket/pus/TmPacketStored.h>
 
 /* PUS Includes */
 #include <fsfw/tmtcservices/PusServiceBase.h>
 #include <mission/pus/Service1TelecommandVerification.h>
 #include <mission/pus/Service2DeviceAccess.h>
-#include <mission/pus/Service3Housekeeping.h>
 #include <mission/pus/Service5EventReporting.h>
 #include <mission/pus/Service6MemoryManagement.h>
 #include <mission/pus/Service8FunctionManagement.h>

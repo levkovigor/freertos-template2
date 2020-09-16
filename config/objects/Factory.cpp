@@ -26,6 +26,7 @@
 #include <fsfw/pus/Service1TelecommandVerification.h>
 #include <fsfw/pus/Service2DeviceAccess.h>
 #include <fsfw/pus/CService201HealthCommanding.h>
+#include <fsfw/pus/Service3Housekeeping.h>
 #include <fsfw/pus/Service5EventReporting.h>
 #include <fsfw/pus/Service8FunctionManagement.h>
 #include <mission/pus/Service3HousekeepingPSB.h>
@@ -33,9 +34,6 @@
 #include <mission/pus/Service17CustomTest.h>
 #include <mission/pus/Service20ParameterManagement.h>
 #include <mission/pus/Service23FileManagement.h>
-#include <mission/pus/Service3Housekeeping.h>
-
-/* Utility */
 #include <mission/utility/TimeStamper.h>
 #include <mission/utility/TmFunnel.h>
 #include <mission/devices/PCDUHandler.h>

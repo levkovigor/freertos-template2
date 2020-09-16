@@ -6,6 +6,8 @@
 #include <fsfw/ipc/MessageQueueIF.h>
 #include <fsfw/storagemanager/StorageManagerIF.h>
 #include <fsfw/container/SharedRingBuffer.h>
+#include <fsfw/objectmanager/SystemObjectIF.h>
+#include <fsfw/objectmanager/frameworkObjects.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 
 
@@ -16,8 +18,10 @@ extern "C" {
 }
 
 #include <config/tmtc/tmtcSize.h>
+
 #include <utility>
 #include <vector>
+#include <array>
 
 /**
  * @brief   Separate task to poll UART with ISIS drivers. Reads all data,

@@ -95,7 +95,7 @@ public:
 		return buffer.entry.getConstBuffer();
 	}
 
-	const size_t getBufferLength() {
+	size_t getBufferLength() {
 		return buffer.getSerializedSize();
 	}
 

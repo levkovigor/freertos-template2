@@ -18,7 +18,7 @@ TestTaskAt91::~TestTaskAt91() {}
 ReturnValue_t TestTaskAt91::performOperation(uint8_t operationCode) {
 	sif::debug << this->printName <<": step " << step << std::endl;
 	step++;
-	if(step == 21474836487){
+	if(step == 1474836487){
 		step = 0;
 	}
 	return HasReturnvaluesIF::RETURN_OK;
