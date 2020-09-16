@@ -66,7 +66,7 @@ ReturnValue_t TmFunnel::handlePacket(TmTcMessage* message) {
 		return result;
 	}
 
-	if(storageQueue != nullptr) {
+	if(storageDestination != objects::NO_OBJECT) {
 		result = storageQueue->sendToDefault(message);
 		if(result != HasReturnvaluesIF::RETURN_OK){
 			tmPool->deleteData(message->getStorageId());
