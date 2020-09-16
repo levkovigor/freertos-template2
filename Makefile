@@ -284,16 +284,16 @@ endif
 OPTIMIZATION_MESSAGE = Off
 
 # Define Messages
-MSG_LINKING = Linking:
-MSG_COMPILING = Compiling:
-MSG_ASSEMBLING = Assembling:
-MSG_DEPENDENCY = Collecting dependencies for:
-MSG_BINARY = Generate binary: 
 ifdef IOBC
 MSG_INFO = Software: Primary mission software for iOBC
 else
 MSG_INFO = Software: Primary mission software for AT91SAM9G20-EK
 endif
+MSG_LINKING = Linking:
+MSG_COMPILING = Compiling:
+MSG_ASSEMBLING = Assembling:
+MSG_DEPENDENCY = Collecting dependencies for:
+MSG_BINARY = Generate binary: 
 MSG_OPTIMIZATION = Optimization: $(OPTIMIZATION), $(OPTIMIZATION_MESSAGE)
 MSG_TARGET = Target Build: $(TARGET)
 MSG_DEBUG = FSFW Debugging: $(DEBUG_MESSAGE), Trace Level: $(TRACE_LEVEL), \

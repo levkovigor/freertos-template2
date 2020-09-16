@@ -3,6 +3,7 @@
 #endif
 
 #include <iostream>
+#include <version.h>
 
 // This will be the entry to the mission specific code
 void initMission();
@@ -13,14 +14,6 @@ static const char* COMPILE_PRINTOUT = "Windows";
 static const char* COMPILE_PRINTOUT = "Linux";
 #else
 static const char* COMPILE_PRINTOUT = "unknown OS";
-#endif
-
-#ifndef SW_VERSION
-#define SW_VERSION 0
-#endif
-
-#ifndef SW_SUBVERSION
-#define SW_SUBVERSION 0
 #endif
 
 /**

@@ -20,11 +20,6 @@ BOARD = host
 OS_FSFW = host
 CUSTOM_DEFINES += -D$(OS_FSFW) 
 
-SW_VERSION = 1
-SW_SUBVERSION = 6
-CUSTOM_DEFINES += -DSW_VERSION=$(SW_VERSION)
-CUSTOM_DEFINES += -DSW_SUBVERSION=$(SW_SUBVERSION)
-
 # Copied from stackoverflow, can be used to differentiate between Windows
 # and Linux
 ifeq ($(OS),Windows_NT)
@@ -103,8 +98,7 @@ BINDIR = $(BUILDPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)
 
 CLEANDEP = $(DEPENDPATH)/$(OUTPUT_FOLDER)
 CLEANOBJ = $(OBJECTPATH)/$(OUTPUT_FOLDER)
-CLEANBIN1 = $(BUILDPATH)/$(OUTPUT_FOLDER)/mission
-CLEANBIN2 = $(BUILDPATH)/$(OUTPUT_FOLDER)/devel
+CLEANBIN = $(BUILDPATH)/$(OUTPUT_FOLDER)
 
 #-------------------------------------------------------------------------------
 #		Tools and Includes
@@ -210,6 +204,7 @@ DEBUG_MESSAGE = Off
 OPTIMIZATION_MESSAGE = Off
 
 # Define Messages
+MSG_INFO = Software: Hosted SOURCE OBSW.
 MSG_LINKING = Linking:
 MSG_COMPILING = Compiling:
 MSG_ASSEMBLING = Assembling:
@@ -250,14 +245,16 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPENDDIR)/$*.d
 # - Wextra: enable extra warnings
 # - g: defines debug level
 # - fmessage-length: to control the formatting algorithm for diagnostic messages;
-#    =0 means  no line-wrapping ifeq ($(OS),Windows_NT)is done; each error message appears on a single line
+#    =0 means  no line-wrapping, each error message appears on a single line
 # - fno-exceptions: stops generating extra code needed to propagate exceptions, 
 #    which can produce significant data size overhead
-
+WARNING_FLAGS =  -Wall -Wshadow=local -Wextra -Wimplicit-fallthrough=1 \
+		-Wno-unused-parameter 
+		
 CXXDEFINES := $(CUSTOM_DEFINES)
 CFLAGS += 
-CXXFLAGS += -g3 -Wall -I. $(I_INCLUDES) $(DEPFLAGS) -fmessage-length=0 -DDEBUG \
-		$(CXXDEFINES) $(OPTIMIZATION) 
+CXXFLAGS += -I. $(DEBUG_LEVEL) $(WARNIING_FLAGS) $(I_INCLUDES) $(DEPFLAGS) \
+		-fmessage-length=0 $(CXXDEFINES) $(OPTIMIZATION) 
 CPPFLAGS += -std=c++2a -fno-exceptions
 ASFLAGS =  -Wall -g $(OPTIMIZATION) $(I_INCLUDES) -D__ASSEMBLY__
 
@@ -299,8 +296,7 @@ hardclean:
 # Only clean files for current build
 clean:
 	-rm -rf $(CLEANOBJ)
-	-rm -rf $(CLEANBIN1)
-	-rm -rf $(CLEANBIN2)
+	-rm -rf $(CLEANBIN)
 	-rm -rf $(CLEANDEP)
 
 # Only clean binaries. Useful for changing the binary type when object files are already compiled
@@ -337,6 +333,7 @@ else
 executable: $(BINDIR)/$(BINARY_NAME).elf
 endif
 	@echo
+	@echo $(MSG_INFO)
 	@echo $(MSG_TARGET)
 	@echo $(MSG_OPTIMIZATION)
 	@echo $(MSG_DEBUG)
@@ -362,6 +359,8 @@ ALL_OBJECTS_PREFIXED = $(ASM_OBJECTS_PREFIXED) $(C_OBJECTS_PREFIXED) \
 # Generates binary and displays all build properties
 # -p with mkdir ignores error and creates directory when needed.
 
+# SHOW_DETAILS = 1
+
 ifeq ($(OS),Windows_NT)
 $(BINDIR)/$(BINARY_NAME).exe: $(ALL_OBJECTS_PREFIXED)
 else
@@ -384,20 +383,32 @@ $(OBJDIR)/%.o: %.cpp $(DEPENDDIR)/%.d | $(DEPENDDIR)
 	@echo 
 	@echo $(MSG_COMPILING) $<
 	@mkdir -p $(@D)
-	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+ifdef SHOW_DETAILS
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+else
+	@$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+endif
 
 $(OBJDIR)/%.o: %.c 
 $(OBJDIR)/%.o: %.c $(DEPENDDIR)/%.d | $(DEPENDDIR) 
 	@echo 
 	@echo $(MSG_COMPILING) $<
 	@mkdir -p $(@D)
+ifdef SHOW_DETAILS
+	$(CC) $(CXXFLAGS) $(CFLAGS) -c -o $@ $<
+else
 	@$(CC) $(CXXFLAGS) $(CFLAGS) -c -o $@ $<
+endif
 
 $(OBJDIR)/%.o: %.S Makefile
 	@echo
 	@echo $(MSG_ASSEMBLING) $<
 	@mkdir -p $(@D)
+ifdef SHOW_DETAILS
+	$(CC) $(ASFLAGS) -c -o $@ $<
+else
 	@$(CC) $(ASFLAGS) -c -o $@ $<
+endif
 
 #-------------------------------------------------------------------------------
 #		Dependency Handling
