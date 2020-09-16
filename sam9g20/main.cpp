@@ -32,14 +32,7 @@ extern struct netif *netif;
 }
 
 #include <fsfw/tasks/TaskFactory.h>
-
-#ifndef SW_VERSION
-#define SW_VERSION 0
-#endif
-
-#ifndef SW_SUBVERSION
-#define SW_SUBVERSION 0
-#endif
+#include <version.h>
 
 // quick fix to bypass link error
 extern "C" void __sync_synchronize() {}

@@ -6,9 +6,11 @@ ThermalSensorHandler::ThermalSensorHandler(object_id_t objectId,
 		object_id_t comIF, CookieIF *comCookie, uint8_t switchId):
 		DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId),
 		sensorDatasetSid(objectId, REQUEST_RTD),
-		sensorDataset(sensorDatasetSid), debugDivider(20) {
-
-}
+		sensorDataset(sensorDatasetSid)
+#ifdef DEBUG
+, debugDivider(20)
+#endif
+{}
 
 ThermalSensorHandler::~ThermalSensorHandler() {
 }
@@ -210,12 +212,14 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
         // calculate approximation
         float approxTemp = adcCode / 32.0 - 256.0;
 
+#ifdef DEBUG
         if(debugDivider.checkAndIncrement()) {
         	sif::info << "ThermalSensorHandler::interpretDeviceReply: Measure "
         			"resistance is " << rtdValue << " Ohms." << std::endl;
         	sif::info << "ThermalSensorHandler::interpretDeviceReply: Approximated"
         			" temperature is " << approxTemp << " C" << std::endl;
         }
+#endif
 
         ReturnValue_t result = sensorDataset.read(10);
         if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -311,12 +315,5 @@ ReturnValue_t ThermalSensorHandler::initializeLocalDataPool(
 }
 
 ReturnValue_t ThermalSensorHandler::initialize() {
-    setMode(_MODE_START_UP);
     return DeviceHandlerBase::initialize();
 }
-
-//ReturnValue_t ThermalSensorHandler::getDataSetHandle(sid_t sid) {
-//    if(sid.ownerSetId == SetIds::THERMAL_SENSOR_ID) {
-//        return &sesn
-//    }
-//}

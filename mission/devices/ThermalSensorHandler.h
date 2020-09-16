@@ -98,7 +98,9 @@ private:
 	sid_t sensorDatasetSid;
 	ThermalSensorDataset sensorDataset;
 
+#ifdef DEBUG
 	PeriodicOperationDivider debugDivider;
+#endif
 };
 
 #endif /* MISSION_THERMALSENSORHANDLER_H_ */

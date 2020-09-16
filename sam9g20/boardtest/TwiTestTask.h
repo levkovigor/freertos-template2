@@ -54,7 +54,7 @@ private:
 	static const uint8_t FRAME_READ_COUNT = ceil((double)MAX_GPS_PACKET_SIZE/(double)MAX_FRAME_SIZE);
 	static const uint8_t LAST_READ_BYTE_NUMBER = MAX_GPS_PACKET_SIZE % MAX_FRAME_SIZE;
 
-	I2CgenericTransfer i2cTransfer {0};
+	I2CgenericTransfer i2cTransfer;
 	I2CtransferStatus transferResult = I2CtransferStatus::done_i2c;
 	BinarySemaphore binSemaph;
 

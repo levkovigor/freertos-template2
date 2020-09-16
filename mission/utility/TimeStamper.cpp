@@ -2,12 +2,12 @@
 #include <mission/utility/TimeStamper.h>
 #include <cstring>
 
-TimeStamper::TimeStamper(object_id_t objectId):SystemObject(objectId) {}
+TimeStamper::TimeStamper(object_id_t objectId): SystemObject(objectId) {}
 
 
 ReturnValue_t TimeStamper::addTimeStamp(uint8_t* buffer,
 		const uint8_t maxSize) {
-	if(maxSize < TimeStamperIF::MISSION_TIMESTAMP_SIZE){
+	if(maxSize < TimeStamperIF::MISSION_TIMESTAMP_SIZE) {
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
 
@@ -18,6 +18,6 @@ ReturnValue_t TimeStamper::addTimeStamp(uint8_t* buffer,
 	if(result != HasReturnvaluesIF::RETURN_OK){
 		return result;
 	}
-	memcpy(buffer,&cds,sizeof(cds));
+	std::memcpy(buffer,&cds,sizeof(cds));
 	return result;
 }
