@@ -8,8 +8,8 @@
 object_id_t TmFunnel::downlinkDestination = objects::NO_OBJECT;
 object_id_t TmFunnel::storageDestination = objects::NO_OBJECT;
 
-TmFunnel::TmFunnel(object_id_t objectId_): SystemObject(objectId_),
-        sourceSequenceCount(0), storageTargetSet(false) {
+TmFunnel::TmFunnel(object_id_t objectId, uint32_t messageDepth):
+        SystemObject(objectId), messageDepth(messageDepth) {
 	tmQueue = QueueFactory::instance()->createMessageQueue(messageDepth,
 	        MessageQueueMessage::MAX_MESSAGE_SIZE);
 	storageQueue = QueueFactory::instance()->createMessageQueue(messageDepth,
@@ -66,7 +66,7 @@ ReturnValue_t TmFunnel::handlePacket(TmTcMessage* message) {
 		return result;
 	}
 
-	if(storageTargetSet) {
+	if(storageQueue != nullptr) {
 		result = storageQueue->sendToDefault(message);
 		if(result != HasReturnvaluesIF::RETURN_OK){
 			tmPool->deleteData(message->getStorageId());
@@ -100,10 +100,14 @@ ReturnValue_t TmFunnel::initialize() {
 	}
 	tmQueue->setDefaultDestination(tmTarget->getReportReceptionQueue());
 
+	// Storage destination is optional.
+	if(storageDestination == objects::NO_OBJECT) {
+	    return SystemObject::initialize();
+	}
+
 	AcceptsTelemetryIF* storageTarget =
 	        objectManager->get<AcceptsTelemetryIF>(storageDestination);
 	if(storageTarget != nullptr) {
-		storageTargetSet = true;
 		storageQueue->setDefaultDestination(
 		        storageTarget->getReportReceptionQueue());
 	}

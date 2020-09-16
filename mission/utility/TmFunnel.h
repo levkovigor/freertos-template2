@@ -24,7 +24,7 @@ class TmFunnel: public AcceptsTelemetryIF,
 		public SystemObject {
 	friend void (Factory::setStaticFrameworkObjectIds)();
 public:
-	TmFunnel(object_id_t objectId);
+	TmFunnel(object_id_t objectId, uint32_t messageDepth = 20);
 	virtual ~TmFunnel();
 
 	virtual MessageQueueId_t getReportReceptionQueue(
@@ -37,14 +37,12 @@ protected:
 	static object_id_t storageDestination;
 
 private:
-
-	uint16_t sourceSequenceCount;
-	bool storageTargetSet;
+	uint16_t sourceSequenceCount = 0;
 	MessageQueueIF* tmQueue = nullptr;
 	MessageQueueIF* storageQueue = nullptr;
 
 	StorageManagerIF* tmPool = nullptr;
-	uint32_t messageDepth = 10;
+	uint32_t messageDepth = 0;
 
 	ReturnValue_t handlePacket(TmTcMessage* message);
 };
