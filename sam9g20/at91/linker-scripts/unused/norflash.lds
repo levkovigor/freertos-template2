@@ -100,21 +100,23 @@ SECTIONS
         _epostrelocate = .;
     } >sram0
 
-    .bss (NOLOAD) : {
-        _szero = .;
-        __bss_start__ = _szero;
+	/* this section holds uninitialized global and static data  */
+ 	. = ALIGN(4);
+    .bss : {
+        _sbss = .;         /* define a global symbol at bss start */
+	    __bss_start__ = _sbss;
         *(.bss)
         *(.bss*)
         *(COMMON)
 		*(COMMON.*)
         . = ALIGN(4);
-        _ezero = .;
-        __bss_end__ = _ezero;
-    } >sram1
+        _ebss = .;         /* define a global symbol at bss end */
+	    __bss_end__ = _ebss;
+    } >ebi_cs0
     
     /* Heap section */
-	_sheap_ = .;
-    _eheap_ = 0x301000;
+	_sheap_ = 0x300000;
+    _eheap_ = 0x302000;
     
     /* top of stack */
     _sstack = 0x304000;

@@ -45,6 +45,15 @@ MEMORY
 
 SECTIONS
 {          
+    .prerelocate : AT (_efixed)
+    {
+        . = ALIGN(4);
+        _sprerelocate = .;
+        *(.sramfunc*)
+        . = ALIGN(4);
+        _eprerelocate = .;
+    } >sram0
+    
     .fixed :
     {
         . = ALIGN(4);
@@ -99,20 +108,9 @@ SECTIONS
 		KEEP(*(SORT(.fini_array.)))
 		KEEP(*(.fini_array))
 		PROVIDE_HIDDEN (__fini_array_end = .);
+		. = ALIGN(4);
+    	_efixed = .;
     } >ebi_cs0
-    
-    . = ALIGN(4);
-    _efixed = .;
-
-    .prerelocate : AT (_efixed)
-    {
-        . = ALIGN(4);
-        _sprerelocate = .;
-        *(.sramfunc)
-        *(.ramfunc)
-        . = ALIGN(4);
-        _eprerelocate = .;
-    } 
     
     .postrelocate : AT (_efixed + SIZEOF(.prerelocate))
     {
@@ -121,47 +119,30 @@ SECTIONS
         KEEP(*(.vectors));
         *(.data) 
         *(.data*)
-        *(.sramdata)
         *(.sramdata*)
         /* contains all initialized global and static variables */
         . = ALIGN(4);
         _epostrelocate = .;
     } >sram0
-    
-    .sramdata : AT (_sprerelocate + SIZEOF(.prerelocate) + SIZEOF(.postrelocate))
-    {
-        . = ALIGN(4);
-        _ssramdata = .;
-        
-        . = ALIGN(4);
-        _esramdata = .;
-    } >sram1
-    
-    .srambss (NOLOAD) : {
-        . = ALIGN(4);
-        _ssrambss = .;
-        *(.srambss)
-        . = ALIGN(4);
-        _esrambss = .;
-    } >sram1
 
     .bss (NOLOAD) : {
-        _szero = .;
-        __bss_start__ = _szero;
+        /* This is used by the startup in order to initialize the .bss secion */
+	    _sbss = .;         /* define a global symbol at bss start */
+	    __bss_start__ = _sbss;
         *(.bss)
         *(.bss*)
+        *(.srambss*)
         *(COMMON)
 		*(COMMON.*)
         . = ALIGN(4);
-        _ezero = .;
-        __bss_end__ = _ezero;
+        _ebss = .;         /* define a global symbol at bss end */
+	    __bss_end__ = _ebss;
     } >sram1
     
     /* Heap section */
 	_sheap_ = .;
+	_eheap_ = 0x302000;
     
     /* top of stack */
     _sstack = 0x304000;
 }
-end = .;
-
