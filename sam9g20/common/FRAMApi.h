@@ -20,36 +20,57 @@
  * This struct will gather all critical data stored on FRAM.
  */
 typedef struct __attribute__((__packed__))  _FRAMCriticalData {
+    // Software information [4, 0-3]
     uint8_t software_version;
     uint8_t software_subversion;
+    uint8_t filler_sw_version[2];
 
+    // Reboot information [4, 4-7]
+    uint8_t filler_reboot_counter[1];
 	uint16_t reboot_counter;
-	uint64_t seconds_since_epoch;
-	//! To copy software update from the SD card into the SDRAM at restart.
-	bool software_update_available;
-
-	size_t nor_flash_binary_size;
-	size_t nor_flash_hamming_code_offset;
-	uint8_t nor_flash_reboot_counter;
-
-	char sd_card1_slot1_binary_file_name [32];
-	char sd_card1_slot1_hamming_code_file_name [32];
-	uint8_t sdc1sl1_reboot_counter;
-
-	char sd_card1_slot2_file_name [32];
-	char sd_card1_slot2_hamming_code_file_name [32];
-	uint8_t sc_card1_slot2_reboot_counter;
-
-	char sd_card2_slot1_binary_file_name [32];
-	char sd_card2_slot1_hamming_code_file_name [32];
-	uint8_t sc_card2_slot1_reboot_counter;
-
-	char sd_card2_slot2_binary_file_name [32];
-	char sd_card2_slot2_hamming_code_file_name[32];
-	uint8_t sc_card2_slot2_reboot_counter;
-
 	bool bootloader_faulty;
 
+	// Second counter [4, 8 - 11]
+	uint32_t seconds_since_epoch;
+
+	// NOR-Flash binary information [4, 12 - 15]
+	size_t nor_flash_binary_size;
+	size_t nor_flash_hamming_code_offset;
+	uint8_t filler_nor_flash[3];
+	uint8_t nor_flash_reboot_counter;
+
+	// SD-card 1 slot 1 information [68, 16 - 83]
+	char sd_card1_slot1_binary_file_name [32];
+	char sd_card1_slot1_hamming_code_file_name [32];
+	uint8_t filler_sdc1sl1[3];
+	uint8_t sdc1sl1_reboot_counter;
+
+	// SD-card 1 slot 2 information [68, 84 - 147 ]
+	char sd_card1_slot2_file_name [32];
+	char sd_card1_slot2_hamming_code_file_name [32];
+	uint8_t filler_sdc1sl2[3];
+	uint8_t sc_card1_slot2_reboot_counter;
+
+	// SD-card 2 slot 1 information [68, 148 - ]
+	char sd_card2_slot1_binary_file_name [32];
+	char sd_card2_slot1_hamming_code_file_name [32];
+	uint8_t filler_sdc2sl1[3];
+	uint8_t sc_card2_slot1_reboot_counter;
+
+	// SD-card 2 slot 2 information
+	char sd_card2_slot2_binary_file_name [32];
+	char sd_card2_slot2_hamming_code_file_name[32];
+	uint8_t filler_sdc2sl2[3];
+	uint8_t sc_card2_slot2_reboot_counter;
+
+	// Software update information
+    uint8_t filler_software_update[1];
+    bool software_update_available;
+	uint8_t software_update_in_slot1;
+	uint8_t software_update_in_slot2;
+
+	// Task information
+	uint8_t filler_tasks[2];
     uint16_t number_of_active_tasks;
 } FRAMCriticalData;
 

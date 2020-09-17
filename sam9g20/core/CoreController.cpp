@@ -65,6 +65,9 @@ void CoreController::performControlOperation() {
     }
 #endif
 
+    // we could perform scrubbing here. However, this task has a
+    // relatively high priority..
+
 //    if(currentUptimeSeconds - lastDumpSecond >= 20) {
 //        systemStateTask->readAndGenerateStats();
 //        lastDumpSecond = currentUptimeSeconds;
