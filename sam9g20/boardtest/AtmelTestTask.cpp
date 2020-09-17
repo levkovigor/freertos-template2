@@ -1,6 +1,7 @@
 #include <logicalAddresses.h>
 #include <fsfw/storagemanager/PoolManager.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <sam9g20/boardtest/AtmelTestTask.h>
 #include <sam9g20/comIF/GpioDeviceComIF.h>
@@ -18,6 +19,8 @@ extern "C" {
 #include <hal/Storage/NORflash.h>
 #include <privlib/hal/include/hal/supervisor.h>
 }
+
+#include <cstring>
 
 
 AtmelTestTask::AtmelTestTask(object_id_t object_id,
@@ -40,6 +43,44 @@ ReturnValue_t AtmelTestTask::performPeriodicAction() {
 ReturnValue_t AtmelTestTask::performOneShotAction() {
     //Stopwatch stopwatch;
     //performSDCardDemo();
+    int result = NORflash_start();
+
+    result = NORflash_test(5);
+
+    NORFLASH_Reset(&NORFlash, 0);
+    TaskFactory::delayTask(1);
+    uint8_t test[4] = {1, 2, 3, 4};
+    uint8_t reception[4] = { 0, 0, 0, 0 };
+    result = NORFLASH_WriteData(&NORFlash, NORFLASH_SA22_ADDRESS,
+            test, 4);
+    int counter = 0;
+    while(result != 0 and counter < 5) {
+        TaskFactory::delayTask(1);
+        //NORFLASH_Reset(&NORFlash, 0);
+        result = NORFLASH_WriteData(&NORFlash, NORFLASH_SA22_ADDRESS, test, 4);
+        counter ++;
+    }
+    sif::info << "counter: " << counter << std::endl;
+
+    counter = 0;
+    while(result != 0 and counter < 5) {
+        //NORFLASH_Reset(&NORFlash, 0);
+        result = NORFLASH_ReadData(&NORFlash, NOR_FLASH_BASE_ADDRESS +
+                        NORFLASH_SA22_ADDRESS, reception, 4);
+    }
+
+    sif::info << "read result: " << (int) result << std::endl;
+    sif::info << "reception read API: " << (int) reception[0]
+               << (int) reception[1]
+               << (int) reception[2] << (int) reception[3] << std::endl;
+
+    std::memcpy(reception,
+            reinterpret_cast<const void*>(
+            NOR_FLASH_BASE_ADDRESS + NORFLASH_SA22_ADDRESS), 4);
+    sif::info << "reception memcpy: " << (int) reception[0] <<
+            (int) reception[1] << (int) reception[2] << (int) reception[3] <<
+            std::endl;
+
 #ifdef ISIS_OBC_G20
 	//performIOBCTest();
 #endif
