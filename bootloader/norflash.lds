@@ -53,9 +53,7 @@ SECTIONS
         *(.text*)
         *(.rodata*)
         *(.glue_7)
-        *(.glue_7t)	 	
-        *(.data) 
-        *(.data*)	
+        *(.glue_7t)	 		
         *(.CP15_*)	
         KEEP (*(.init))
     	KEEP (*(.fini))
@@ -77,6 +75,32 @@ SECTIONS
 	} >ebi_cs0
     __exidx_end = .;
     
+    .preinit_array ALIGN(4): 
+	{
+        PROVIDE_HIDDEN (__preinit_array_start = .);
+        KEEP(*(.preinit_array))
+        PROVIDE_HIDDEN (__preinit_array_end = .);
+    } >ebi_cs0
+
+	/* init data, the constructor addresses are placed in this sections */
+    .init_array ALIGN(4): 
+    {
+        PROVIDE_HIDDEN (__init_array_start = .);
+        KEEP(*(SORT(.init_array.)))
+		KEEP(*(.init_array))
+        PROVIDE_HIDDEN (__init_array_end = .);
+    } >ebi_cs0
+
+	/* finit data, destructor addresses are placed in this section */
+    .fini_array ALIGN(4): 
+    {
+     	
+		PROVIDE_HIDDEN (__fini_array_start = .);
+		KEEP(*(SORT(.fini_array.)))
+		KEEP(*(.fini_array))
+		PROVIDE_HIDDEN (__fini_array_end = .);
+    } >ebi_cs0
+    
     . = ALIGN(4);
     _efixed = .;
 
@@ -84,6 +108,8 @@ SECTIONS
     {
         . = ALIGN(4);
         _sprerelocate = .;
+        *(.sramfunc)
+        *(.ramfunc)
         . = ALIGN(4);
         _eprerelocate = .;
     } 
@@ -93,8 +119,10 @@ SECTIONS
         . = ALIGN(4);
         _spostrelocate = .;
         KEEP(*(.vectors));
-        *(.sramfunc)
-        *(.ramfunc)
+        *(.data) 
+        *(.data*)
+        *(.sramdata)
+        *(.sramdata*)
         /* contains all initialized global and static variables */
         . = ALIGN(4);
         _epostrelocate = .;
@@ -104,7 +132,7 @@ SECTIONS
     {
         . = ALIGN(4);
         _ssramdata = .;
-        *(.sramdata)
+        
         . = ALIGN(4);
         _esramdata = .;
     } >sram1

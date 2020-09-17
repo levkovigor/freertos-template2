@@ -310,7 +310,7 @@ ReturnValue_t ThermalSensorHandler::initializeLocalDataPool(
     localDataPoolMap.emplace(ThermalSensorPoolIds::FAULT_BYTE,
             new PoolEntry<uint8_t>({0}));
     poolManager.subscribeForPeriodicPacket(sensorDatasetSid,
-            true, 4.0, false);
+            false, 4.0, false);
     return HasReturnvaluesIF::RETURN_OK;
 }
 
