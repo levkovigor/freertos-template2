@@ -1,4 +1,3 @@
-#include <logicalAddresses.h>
 #include <fsfw/storagemanager/PoolManager.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/tasks/TaskFactory.h>
@@ -14,10 +13,14 @@ extern "C" {
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <sam9g20/utility/portwrapper.h>
-
 #include <hcc/demo/demo_sd.h>
+
+#ifdef ISIS_OBC_G20
 #include <hal/Storage/NORflash.h>
+#include <sam9g20/common/FRAMApi.h>
 #include <hal/supervisor.h>
+#endif
+
 }
 
 #include <cstring>
@@ -31,10 +34,12 @@ AtmelTestTask::AtmelTestTask(object_id_t object_id,
 AtmelTestTask::~AtmelTestTask() {}
 
 ReturnValue_t AtmelTestTask::performPeriodicAction() {
-	performDataSetTesting(testMode);
-	//performRunTimeStatsTesting();
+	//performDataSetTesting(testMode);
 	// This leads to a crash!
 	//performExceptionTest();
+#ifdef ISIS_OBC_G20
+#endif
+
 	//sif::info << "Hello, I am alive!" << std::endl;
 	return TestTask::performPeriodicAction();
 }
@@ -57,94 +62,11 @@ ReturnValue_t AtmelTestTask::performActionB() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-
-void AtmelTestTask::performRunTimeStatsTesting() {
-    counter ++;
-    // This will move to the CoreController. CoreController will
-    // generate information and keep a 64-bit idle counter by tracking
-    // how often the 32-bit timer counter (running with 10kHz) has overflown.
-
-    // The task run time counters should take a very long time to overflow.
-    if(counter == 40) {
-        // now measure cpu usage.
-        uint16_t numberOfTasks = uxTaskGetNumberOfTasks();
-        char runTimeStats[numberOfTasks * 80];
-        vTaskGetRunTimeStats(runTimeStats);
-        //      sif::debug << "FreeRTOS: " << numberOfTasks << " tasks running."
-        //              << std::endl;
-        //      sif::debug << "Current timer ticks: " << vGetCurrentTimerCounterValue()
-        //              << std::endl;
-        sif::info << "FreeRTOS Run Time Stats: " << std::endl;
-        sif::info << "Absolute time in 10kHz ticks" << std::endl;
-        printf("Task Name\tAbsolute Time\tRelative Time\r\n");
-        printf("%s", runTimeStats);
-
-        counter = 0;
-    }
-}
-
-TestDataSet::TestDataSet(TestInit::TestIdStruct testStruct) :
-     testBool(testStruct.p.testBoolId, this, PoolVariableIF::VAR_READ_WRITE),
-     testUint8(testStruct.p.testUint8Id, this, PoolVariableIF::VAR_READ_WRITE),
-     testUint16(testStruct.p.testUint16Id, this, PoolVariableIF::VAR_READ_WRITE),
-     testUint32(testStruct.p.testUint32Id, this, PoolVariableIF::VAR_READ_WRITE),
-     testFloatVector(testStruct.p.testFloatVectorId, this,
-				PoolVariableIF::VAR_READ_WRITE) {
-}
-
 void AtmelTestTask::performExceptionTest() {
     TestDataSet* exceptTest = nullptr;
     exceptTest->read(20);
 }
 
-
-ReturnValue_t AtmelTestTask::performDataSetTesting(uint8_t testMode) {
-    if(testMode == testModes::A) {
-        ReturnValue_t result = testDataSet.read();
-        if(result != RETURN_OK) {
-            sif::debug << "Test Task: Operartion A, reading test data set failed "
-                    "with code " << std::hex << result << std::dec << std::endl;
-            return result;
-        }
-        testDataSet.testBool = true;
-        testDataSet.testUint8 = 1;
-        testDataSet.testUint16 = 9001;
-        testDataSet.testUint32 = 999999;
-        testDataSet.testFloatVector.value[0] = 1.294;
-        testDataSet.testFloatVector.value[1] = -5.25;
-        testDataSet.testBool.setValid(PoolVariableIF::VALID);
-        testDataSet.testUint32.setValid(PoolVariableIF::VALID);
-        result = testDataSet.commit();
-        if(result != RETURN_OK) {
-            sif::debug << "Test Task: Operartion A, comitting data set failed "
-                    "with code " << std::hex << result << std::dec << std::endl;
-            return result;
-        }
-    }
-    else {
-        ReturnValue_t result = testDataSet.read();
-        if(result != RETURN_OK) {
-            sif::debug << "Test Task: Operartion B, reading test data set failed "
-                    "with code " << std::hex << result << std::dec << std::endl;
-            return result;
-        }
-        testDataSet.testBool = false;
-        testDataSet.testUint8 = 0;
-        testDataSet.testUint16 = 0;
-        testDataSet.testUint32 = 0;
-        testDataSet.testFloatVector.value[0] = 0;
-        testDataSet.testFloatVector.value[1] = 0;
-        testDataSet.testBool.setValid(PoolVariableIF::INVALID);
-        testDataSet.testUint32.setValid(PoolVariableIF::INVALID);
-        result = testDataSet.commit();
-        if(result != RETURN_OK) {
-            sif::debug << "Test Task: Operartion B, comitting data set failed with "
-                    "code " << std::hex << result << std::dec << std::endl;
-            return result;
-        }
-    }
-    return RETURN_OK;
-}
 
 void AtmelTestTask::performNewPoolManagerAccessTests() {
 	uint16_t numberOfElements[1] = {1};
@@ -196,6 +118,8 @@ void AtmelTestTask::performSDCardDemo() {
 void AtmelTestTask::performIOBCTest() {
     //performNorFlashTest(false);
     //performSupervisorTest();
+    performFRAMTest();
+
 }
 
 void AtmelTestTask::performSupervisorTest() {
@@ -339,4 +263,75 @@ void AtmelTestTask::performNorFlashTest(bool displayDebugOutput) {
     }
 }
 
+
+void AtmelTestTask::performFRAMTest() {
+    uint8_t swVersion = 0;
+    uint8_t swSubversion = 0;
+    int result = read_software_version(&swVersion, &swSubversion);
+    if(result == 0) {
+        sif::info << "AtmelTestTask::performFRAMTest: Software version " <<
+                (int) swVersion << std::endl;
+        sif::info << "AtmelTestTask::performFRAMTest: Software subversion " <<
+                (int) swSubversion << std::endl;
+    }
+}
+
 #endif
+
+// move to archive..
+TestDataSet::TestDataSet(TestInit::TestIdStruct testStruct) :
+     testBool(testStruct.p.testBoolId, this, PoolVariableIF::VAR_READ_WRITE),
+     testUint8(testStruct.p.testUint8Id, this, PoolVariableIF::VAR_READ_WRITE),
+     testUint16(testStruct.p.testUint16Id, this, PoolVariableIF::VAR_READ_WRITE),
+     testUint32(testStruct.p.testUint32Id, this, PoolVariableIF::VAR_READ_WRITE),
+     testFloatVector(testStruct.p.testFloatVectorId, this,
+                PoolVariableIF::VAR_READ_WRITE) {
+}
+
+ReturnValue_t AtmelTestTask::performDataSetTesting(uint8_t testMode) {
+    if(testMode == testModes::A) {
+        ReturnValue_t result = testDataSet.read();
+        if(result != RETURN_OK) {
+            sif::debug << "Test Task: Operartion A, reading test data set failed "
+                    "with code " << std::hex << result << std::dec << std::endl;
+            return result;
+        }
+        testDataSet.testBool = true;
+        testDataSet.testUint8 = 1;
+        testDataSet.testUint16 = 9001;
+        testDataSet.testUint32 = 999999;
+        testDataSet.testFloatVector.value[0] = 1.294;
+        testDataSet.testFloatVector.value[1] = -5.25;
+        testDataSet.testBool.setValid(PoolVariableIF::VALID);
+        testDataSet.testUint32.setValid(PoolVariableIF::VALID);
+        result = testDataSet.commit();
+        if(result != RETURN_OK) {
+            sif::debug << "Test Task: Operartion A, comitting data set failed "
+                    "with code " << std::hex << result << std::dec << std::endl;
+            return result;
+        }
+    }
+    else {
+        ReturnValue_t result = testDataSet.read();
+        if(result != RETURN_OK) {
+            sif::debug << "Test Task: Operartion B, reading test data set failed "
+                    "with code " << std::hex << result << std::dec << std::endl;
+            return result;
+        }
+        testDataSet.testBool = false;
+        testDataSet.testUint8 = 0;
+        testDataSet.testUint16 = 0;
+        testDataSet.testUint32 = 0;
+        testDataSet.testFloatVector.value[0] = 0;
+        testDataSet.testFloatVector.value[1] = 0;
+        testDataSet.testBool.setValid(PoolVariableIF::INVALID);
+        testDataSet.testUint32.setValid(PoolVariableIF::INVALID);
+        result = testDataSet.commit();
+        if(result != RETURN_OK) {
+            sif::debug << "Test Task: Operartion B, comitting data set failed with "
+                    "code " << std::hex << result << std::dec << std::endl;
+            return result;
+        }
+    }
+    return RETURN_OK;
+}

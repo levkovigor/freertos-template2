@@ -4,6 +4,7 @@
 #include "SystemStateTask.h"
 #include <fsfw/action/HasActionsIF.h>
 #include <fsfw/controller/ControllerBase.h>
+#include <sam9g20/memory/FRAMHandler.h>
 
 
 extern "C" {
@@ -35,6 +36,7 @@ public:
 	ReturnValue_t executeAction(ActionId_t actionId,
 	            MessageQueueId_t commandedBy, const uint8_t* data,
 	            size_t size) override;
+	ReturnValue_t initialize() override;
 	ReturnValue_t initializeAfterTaskCreation() override;
 
 	/**
@@ -46,6 +48,7 @@ public:
 
 	static constexpr ActionId_t REQUEST_CPU_STATS_CHECK_STACK = 0;
 private:
+	FRAMHandler* framHandler = nullptr;
 	object_id_t systemStateTaskId;
 	ActionHelper actionHelper;
 	uint32_t lastDumpSecond = 0;

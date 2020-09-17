@@ -1,5 +1,9 @@
 #include "CoreController.h"
 
+#include <systemObjectList.h>
+#include <version.h>
+#include <FreeRTOSConfig.h>
+
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <sam9g20/common/FRAMApi.h>
@@ -10,9 +14,9 @@ extern "C" {
 }
 
 #include <utility/portwrapper.h>
-#include <FreeRTOSConfig.h>
 #include <utility/compile_time.h>
-#include <inttypes.h>
+#include <cinttypes>
+
 
 uint32_t CoreController::counterOverflows = 0;
 uint32_t CoreController::idleCounterOverflows = 0;
@@ -64,9 +68,6 @@ void CoreController::performControlOperation() {
         // should not happen!
     }
 #endif
-
-    // we could perform scrubbing here. However, this task has a
-    // relatively high priority..
 
 //    if(currentUptimeSeconds - lastDumpSecond >= 20) {
 //        systemStateTask->readAndGenerateStats();
@@ -128,8 +129,25 @@ void CoreController::update64bitCounter() {
 
 ReturnValue_t CoreController::initializeAfterTaskCreation() {
     setUpSystemStateTask();
+    // Set up values in FRAM.
+    int result = write_software_version(SW_VERSION, SW_SUBVERSION);
+    if (result != 0) {
+        sif::warning << "CoreController::initializeAfterTaskCreation: Writing"
+                " to FRAM failed!" << std::endl;
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
     return initializeIsisTimerDrivers();
 }
+
+ReturnValue_t CoreController::initialize() {
+    framHandler = objectManager->get<FRAMHandler>(objects::FRAM_HANDLER);
+    if(framHandler == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    return SystemObject::initialize();
+}
+
 
 ReturnValue_t CoreController::setUpSystemStateTask() {
     systemStateTask = objectManager->
@@ -188,11 +206,6 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
 
     timeval currentTime;
 
-//    Time_setUnixEpoch(__TIME_UNIX__);
-//    currentTime.tv_sec = __TIME_UNIX__;
-//    Clock::setClock(&currentTime);
-//    update_seconds_since_epoch(secSinceEpoch);
-
     // Setting ISIS clock.
     Time_setUnixEpoch(secSinceEpoch);
 
@@ -209,5 +222,8 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
     Clock::setClock(&currentTime);
 #endif
 
+
+
     return HasReturnvaluesIF::RETURN_OK;
 }
+
