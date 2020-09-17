@@ -57,6 +57,7 @@ private:
     // the SD card.
     ReturnValue_t copyBootloaderToNorFlash(bool performHammingCheck);
 #else
+    ReturnValue_t  copyBootloaderToNandFlash(bool performHammingCheck);
 #endif
 
     // Handler functions for the SD cards

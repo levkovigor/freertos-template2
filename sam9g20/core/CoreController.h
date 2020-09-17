@@ -1,15 +1,16 @@
-#ifndef MISSION_DEVICES_COREHANDLER_H_
-#define MISSION_DEVICES_COREHANDLER_H_
+#ifndef SAM9G20_CORE_CORECONTROLLER_H_
+#define SAM9G20_CORE_CORECONTROLLER_H_
 
 #include "SystemStateTask.h"
 #include <fsfw/action/HasActionsIF.h>
 #include <fsfw/controller/ControllerBase.h>
+
+#ifdef ISIS_OBC_G20
 #include <sam9g20/memory/FRAMHandler.h>
-
-
 extern "C" {
 #include <hal/supervisor.h>
 }
+#endif
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -17,7 +18,10 @@ extern "C" {
 
 /**
  * @brief   Core Controller responsible for monitoring the OBC itself
+ * @details
  * TODO:    Propably needs HasLocalDataPoolIF too
+ * @author  R. Mueller
+ *
  */
 class CoreController: public ControllerBase,
         public HasActionsIF {
@@ -48,7 +52,12 @@ public:
 
 	static constexpr ActionId_t REQUEST_CPU_STATS_CHECK_STACK = 0;
 private:
+#ifdef ISIS_OBC_G20
 	FRAMHandler* framHandler = nullptr;
+	supervisor_housekeeping_t supervisorHk;
+	int16_t adcValues[SUPERVISOR_NUMBER_OF_ADC_CHANNELS] = {0}
+#endif
+
 	object_id_t systemStateTaskId;
 	ActionHelper actionHelper;
 	uint32_t lastDumpSecond = 0;
@@ -59,10 +68,7 @@ private:
 	uint32_t last32bitCounterValue = 0;
 	uint32_t last32bitIdleCounterValue = 0;
 
-	supervisor_housekeeping_t supervisorHk;
-
 	SystemStateTask* systemStateTask = nullptr;
-	int16_t adcValues[SUPERVISOR_NUMBER_OF_ADC_CHANNELS] = {0};
 
 	void update64bitCounter();
 	ReturnValue_t setUpSystemStateTask();

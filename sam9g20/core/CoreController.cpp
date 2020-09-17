@@ -6,10 +6,11 @@
 
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/timemanager/Stopwatch.h>
-#include <sam9g20/common/FRAMApi.h>
 
 extern "C" {
+#ifdef ISIS_OBC_G20
 #include <hal/Timing/Time.h>
+#endif
 #include <hal/Timing/RTT.h>
 }
 
@@ -129,22 +130,16 @@ void CoreController::update64bitCounter() {
 
 ReturnValue_t CoreController::initializeAfterTaskCreation() {
     setUpSystemStateTask();
-    // Set up values in FRAM.
-    int result = write_software_version(SW_VERSION, SW_SUBVERSION);
-    if (result != 0) {
-        sif::warning << "CoreController::initializeAfterTaskCreation: Writing"
-                " to FRAM failed!" << std::endl;
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
     return initializeIsisTimerDrivers();
 }
 
 ReturnValue_t CoreController::initialize() {
+#ifdef ISIS_OBC_G20
     framHandler = objectManager->get<FRAMHandler>(objects::FRAM_HANDLER);
     if(framHandler == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
+#endif
     return SystemObject::initialize();
 }
 
