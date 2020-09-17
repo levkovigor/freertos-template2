@@ -17,7 +17,7 @@ extern "C" {
 
 #include <hcc/demo/demo_sd.h>
 #include <hal/Storage/NORflash.h>
-#include <privlib/hal/include/hal/supervisor.h>
+#include <hal/supervisor.h>
 }
 
 #include <cstring>

@@ -51,15 +51,27 @@ private:
         IMAGE_2 //!< Secondary image (or software update)
     };
 
+#ifdef ISIS_OBC_G20
+    // Special functions, use with care!
+    // Overwrites the bootloader, which can either be stored in FRAM or in
+    // the SD card.
+    ReturnValue_t copyBootloaderToNorFlash(bool performHammingCheck);
+#else
+#endif
+
     // Handler functions for the SD cards
-    void copySdCardImageToNorFlash(SdCard sdCard, ImageSlot imageSlot);
-    void copyNorFlashImageToSdCards(SdCard sdCard, ImageSlot imageSlot);
+    void copySdCardImageToNorFlash(SdCard sdCard, ImageSlot imageSlot,
+            bool performHammingCheck);
+    void copyNorFlashImageToSdCards(SdCard sdCard, ImageSlot imageSlot,
+            bool performHammingCheck);
 
     // Scrubbing functions
     void checkNorFlashImage();
     void checkSdCardImage(SdCard sdCard, ImageSlot imageSlot);
 
     ActionHelper actionHelper;
+
+    uint16_t stepCounter = 0;
 };
 
 
