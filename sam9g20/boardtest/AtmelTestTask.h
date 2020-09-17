@@ -44,6 +44,7 @@ private:
     void performIOBCTest();
     void performNorflashTest();
     void performSupervisorTest();
+    void performNorFlashTest(bool displayDebugOutput = true);
 #endif
 };
 

@@ -43,46 +43,8 @@ ReturnValue_t AtmelTestTask::performPeriodicAction() {
 ReturnValue_t AtmelTestTask::performOneShotAction() {
     //Stopwatch stopwatch;
     //performSDCardDemo();
-    int result = NORflash_start();
-
-    result = NORflash_test(5);
-
-    NORFLASH_Reset(&NORFlash, 0);
-    TaskFactory::delayTask(1);
-    uint8_t test[4] = {1, 2, 3, 4};
-    uint8_t reception[4] = { 0, 0, 0, 0 };
-    result = NORFLASH_WriteData(&NORFlash, NORFLASH_SA22_ADDRESS,
-            test, 4);
-    int counter = 0;
-    while(result != 0 and counter < 5) {
-        TaskFactory::delayTask(1);
-        //NORFLASH_Reset(&NORFlash, 0);
-        result = NORFLASH_WriteData(&NORFlash, NORFLASH_SA22_ADDRESS, test, 4);
-        counter ++;
-    }
-    sif::info << "counter: " << counter << std::endl;
-
-    counter = 0;
-    while(result != 0 and counter < 5) {
-        //NORFLASH_Reset(&NORFlash, 0);
-        result = NORFLASH_ReadData(&NORFlash, NOR_FLASH_BASE_ADDRESS +
-                        NORFLASH_SA22_ADDRESS, reception, 4);
-    }
-
-    sif::info << "read result: " << (int) result << std::endl;
-    sif::info << "reception read API: " << (int) reception[0]
-               << (int) reception[1]
-               << (int) reception[2] << (int) reception[3] << std::endl;
-
-    std::memcpy(reception,
-            reinterpret_cast<const void*>(
-            NOR_FLASH_BASE_ADDRESS + NORFLASH_SA22_ADDRESS), 4);
-    sif::info << "reception memcpy: " << (int) reception[0] <<
-            (int) reception[1] << (int) reception[2] << (int) reception[3] <<
-            std::endl;
-
 #ifdef ISIS_OBC_G20
-	//performIOBCTest();
+	performIOBCTest();
 #endif
     return TestTask::performOneShotAction();
 }
@@ -232,27 +194,9 @@ void AtmelTestTask::performSDCardDemo() {
 #ifdef ISIS_OBC_G20
 
 void AtmelTestTask::performIOBCTest() {
-    performSupervisorTest();
+    //performNorFlashTest(false);
+    //performSupervisorTest();
 }
-
-void AtmelTestTask::performNorflashTest() {
-    int result  = NORflash_start();
-    if(result == 0) {
-        sif::info << "AtmelTestTask: Nor flash init success" << std::endl;
-    }
-    else {
-        sif::info << "AtmelTestTask: Nor flash init failure" << std::endl;
-    }
-
-    result  = NORflash_test(824);
-    if(result == 0) {
-        sif::info << "AtmelTestTask: Nor flash test success" << std::endl;
-    }
-    else {
-        sif::info << "AtmelTestTask: Nor flash test failure" << std::endl;
-    }
-}
-
 
 void AtmelTestTask::performSupervisorTest() {
 
@@ -300,6 +244,99 @@ void AtmelTestTask::performSupervisorTest() {
     sif::info << "Supervisor test successfull!" << std::endl;
 }
 
+void AtmelTestTask::performNorFlashTest(bool displayDebugOutput) {
+    int result = NORflash_start();
 
+    if(result != 0) {
+        if(displayDebugOutput) {
+            sif::info << "AtmelTestTask::performNorFlashTest: Starting failed"
+                    << std::endl;
+        }
+
+        return;
+    }
+    Stopwatch stopwatch;
+
+    // Sectors needs to be eraed, otherwise write operations will fail!
+    result = NORFLASH_EraseSector(&NORFlash, NORFLASH_SA22_ADDRESS);
+
+    // erasing takes a long time. writing of large sectors possibly too..
+    // so we can only write one large cycle per performOperation
+    // (and multiple smaller ones, but that might not be relevant if
+    // the bootload is never overwritten..)
+    stopwatch.stop(true);
+
+    stopwatch.start();
+
+    if(displayDebugOutput) {
+        sif::info << "AtmelTestTask::performNorFlashTest: Erase result: "
+                << result << std::endl;
+    }
+
+    uint8_t test[4] = {1, 2, 3, 5};
+    uint8_t reception[4] = { 0, 0, 0, 0 };
+    int counter = 0;
+    result = 1;
+    while(result != 0 and counter < 3) {
+        result = NORFLASH_WriteData(&NORFlash, NORFLASH_SA22_ADDRESS, test, 4);
+        counter ++;
+    }
+
+    result = NORFLASH_ReadData(&NORFlash, NORFLASH_SA22_ADDRESS, reception, 4);
+    if(displayDebugOutput) {
+        sif::info << "AtmelTestTask::performNorFlashTest: Read result: "
+                << (int) result << std::endl;
+        sif::info << "Read API: " << (int) reception[0] <<
+                (int) reception[1]  << (int) reception[2] << (int) reception[3] <<
+                std::endl;
+    }
+
+
+    std::memcpy(reception, reinterpret_cast<const void*>(
+            NOR_FLASH_BASE_ADDRESS + NORFLASH_SA22_ADDRESS), 4);
+
+    if(displayDebugOutput) {
+        sif::info << "memcpy: " << (int) reception[0] <<
+                (int) reception[1] << (int) reception[2] << (int) reception[3] <<
+                std::endl;
+    }
+
+
+    result = NORFLASH_WriteData(&NORFlash, NORFLASH_SA22_ADDRESS + 256,
+            test, 4);
+    if(result != 0) {
+        if(displayDebugOutput)  {
+            sif::info << "AtmelTestTask::performNorFlashTest: Second write "
+                    "failed" << std::endl;
+        }
+
+        return;
+    }
+
+    if(displayDebugOutput)  {
+        sif::info << "AtmelTestTask::performNorFlashTest: Second write operation "
+                "successfull" << std::endl;
+    }
+
+
+    std::memcpy(reception, reinterpret_cast<const void*>(
+            NOR_FLASH_BASE_ADDRESS + NORFLASH_SA22_ADDRESS + 256), 4);
+
+    if(displayDebugOutput)  {
+        sif::info << "memcpy second: " << (int) reception[0] <<
+                (int) reception[1] << (int) reception[2] << (int) reception[3] <<
+                std::endl;
+    }
+
+    // we can't write to uneraed sectors.
+    result = NORFLASH_WriteData(&NORFlash, NORFLASH_SA0_ADDRESS, test, 4);
+    if(result != 0) {
+        if(displayDebugOutput) {
+            sif::info << "AtmelTestTask::performNorFlashTest: Third write failed "
+                    "(expected, sector not erased!)" <<  std::endl;
+        }
+
+    }
+}
 
 #endif
