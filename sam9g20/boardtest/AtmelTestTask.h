@@ -12,15 +12,15 @@ extern "C" {
 #include <board.h>
 }
 
-class TestDataSet: public GlobDataSet {
-public:
-    TestDataSet(TestInit::TestIdStruct testStruct);
-    gp_bool_t testBool;
-    gp_uint8_t testUint8;
-    gp_uint16_t testUint16;
-    gp_uint32_t testUint32;
-    gp_vec_t<float,2> testFloatVector;
-};
+//class GlobalTestDataSet: public GlobDataSet {
+//public:
+//    GlobalTestDataSet(TestInit::TestIdStruct testStruct);
+//    gp_bool_t testBool;
+//    gp_uint8_t testUint8;
+//    gp_uint16_t testUint16;
+//    gp_uint32_t testUint32;
+//    gp_vec_t<float,2> testFloatVector;
+//};
 
 class AtmelTestTask: public TestTask {
 public:
@@ -35,7 +35,8 @@ private:
     void printDecoderOutput();
     ReturnValue_t performDataSetTesting(uint8_t testMode);
     void performNewPoolManagerAccessTests();
-    TestDataSet testDataSet;
+
+    //GlobalTestDataSet testDataSet;
 
     void performExceptionTest();
     void performSDCardDemo();

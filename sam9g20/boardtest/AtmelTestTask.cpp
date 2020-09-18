@@ -27,8 +27,7 @@ extern "C" {
 
 
 AtmelTestTask::AtmelTestTask(object_id_t object_id,
-        TestInit::TestIdStruct id_struct): TestTask(object_id),
-        testDataSet(id_struct) {
+        TestInit::TestIdStruct id_struct): TestTask(object_id) {
 }
 
 AtmelTestTask::~AtmelTestTask() {}
@@ -63,8 +62,8 @@ ReturnValue_t AtmelTestTask::performActionB() {
 }
 
 void AtmelTestTask::performExceptionTest() {
-    TestDataSet* exceptTest = nullptr;
-    exceptTest->read(20);
+    AtmelTestTask* exceptTest = nullptr;
+    exceptTest->getObjectId();
 }
 
 
@@ -279,59 +278,59 @@ void AtmelTestTask::performFRAMTest() {
 #endif
 
 // move to archive..
-TestDataSet::TestDataSet(TestInit::TestIdStruct testStruct) :
-     testBool(testStruct.p.testBoolId, this, PoolVariableIF::VAR_READ_WRITE),
-     testUint8(testStruct.p.testUint8Id, this, PoolVariableIF::VAR_READ_WRITE),
-     testUint16(testStruct.p.testUint16Id, this, PoolVariableIF::VAR_READ_WRITE),
-     testUint32(testStruct.p.testUint32Id, this, PoolVariableIF::VAR_READ_WRITE),
-     testFloatVector(testStruct.p.testFloatVectorId, this,
-                PoolVariableIF::VAR_READ_WRITE) {
-}
-
-ReturnValue_t AtmelTestTask::performDataSetTesting(uint8_t testMode) {
-    if(testMode == testModes::A) {
-        ReturnValue_t result = testDataSet.read();
-        if(result != RETURN_OK) {
-            sif::debug << "Test Task: Operartion A, reading test data set failed "
-                    "with code " << std::hex << result << std::dec << std::endl;
-            return result;
-        }
-        testDataSet.testBool = true;
-        testDataSet.testUint8 = 1;
-        testDataSet.testUint16 = 9001;
-        testDataSet.testUint32 = 999999;
-        testDataSet.testFloatVector.value[0] = 1.294;
-        testDataSet.testFloatVector.value[1] = -5.25;
-        testDataSet.testBool.setValid(PoolVariableIF::VALID);
-        testDataSet.testUint32.setValid(PoolVariableIF::VALID);
-        result = testDataSet.commit();
-        if(result != RETURN_OK) {
-            sif::debug << "Test Task: Operartion A, comitting data set failed "
-                    "with code " << std::hex << result << std::dec << std::endl;
-            return result;
-        }
-    }
-    else {
-        ReturnValue_t result = testDataSet.read();
-        if(result != RETURN_OK) {
-            sif::debug << "Test Task: Operartion B, reading test data set failed "
-                    "with code " << std::hex << result << std::dec << std::endl;
-            return result;
-        }
-        testDataSet.testBool = false;
-        testDataSet.testUint8 = 0;
-        testDataSet.testUint16 = 0;
-        testDataSet.testUint32 = 0;
-        testDataSet.testFloatVector.value[0] = 0;
-        testDataSet.testFloatVector.value[1] = 0;
-        testDataSet.testBool.setValid(PoolVariableIF::INVALID);
-        testDataSet.testUint32.setValid(PoolVariableIF::INVALID);
-        result = testDataSet.commit();
-        if(result != RETURN_OK) {
-            sif::debug << "Test Task: Operartion B, comitting data set failed with "
-                    "code " << std::hex << result << std::dec << std::endl;
-            return result;
-        }
-    }
-    return RETURN_OK;
-}
+//GlobalTestDataSet::GlobalTestDataSet(TestInit::TestIdStruct testStruct) :
+//     testBool(testStruct.p.testBoolId, this, PoolVariableIF::VAR_READ_WRITE),
+//     testUint8(testStruct.p.testUint8Id, this, PoolVariableIF::VAR_READ_WRITE),
+//     testUint16(testStruct.p.testUint16Id, this, PoolVariableIF::VAR_READ_WRITE),
+//     testUint32(testStruct.p.testUint32Id, this, PoolVariableIF::VAR_READ_WRITE),
+//     testFloatVector(testStruct.p.testFloatVectorId, this,
+//                PoolVariableIF::VAR_READ_WRITE) {
+//}
+//
+//ReturnValue_t AtmelTestTask::performDataSetTesting(uint8_t testMode) {
+//    if(testMode == testModes::A) {
+//        ReturnValue_t result = testDataSet.read();
+//        if(result != RETURN_OK) {
+//            sif::debug << "Test Task: Operartion A, reading test data set failed "
+//                    "with code " << std::hex << result << std::dec << std::endl;
+//            return result;
+//        }
+//        testDataSet.testBool = true;
+//        testDataSet.testUint8 = 1;
+//        testDataSet.testUint16 = 9001;
+//        testDataSet.testUint32 = 999999;
+//        testDataSet.testFloatVector.value[0] = 1.294;
+//        testDataSet.testFloatVector.value[1] = -5.25;
+//        testDataSet.testBool.setValid(PoolVariableIF::VALID);
+//        testDataSet.testUint32.setValid(PoolVariableIF::VALID);
+//        result = testDataSet.commit();
+//        if(result != RETURN_OK) {
+//            sif::debug << "Test Task: Operartion A, comitting data set failed "
+//                    "with code " << std::hex << result << std::dec << std::endl;
+//            return result;
+//        }
+//    }
+//    else {
+//        ReturnValue_t result = testDataSet.read();
+//        if(result != RETURN_OK) {
+//            sif::debug << "Test Task: Operartion B, reading test data set failed "
+//                    "with code " << std::hex << result << std::dec << std::endl;
+//            return result;
+//        }
+//        testDataSet.testBool = false;
+//        testDataSet.testUint8 = 0;
+//        testDataSet.testUint16 = 0;
+//        testDataSet.testUint32 = 0;
+//        testDataSet.testFloatVector.value[0] = 0;
+//        testDataSet.testFloatVector.value[1] = 0;
+//        testDataSet.testBool.setValid(PoolVariableIF::INVALID);
+//        testDataSet.testUint32.setValid(PoolVariableIF::INVALID);
+//        result = testDataSet.commit();
+//        if(result != RETURN_OK) {
+//            sif::debug << "Test Task: Operartion B, comitting data set failed with "
+//                    "code " << std::hex << result << std::dec << std::endl;
+//            return result;
+//        }
+//    }
+//    return RETURN_OK;
+//}

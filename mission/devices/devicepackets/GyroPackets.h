@@ -17,11 +17,11 @@ public:
 	GyroPrimaryDataset(sid_t sid):
 		StaticLocalDataSet(sid),
 		angVelocityX(GyroPoolIds::ANGULAR_VELOCITY_X,
-				sid.objectId, pool_rwm_t::VAR_READ_WRITE, this),
+				sid.objectId, this),
 		angVelocityY(GyroPoolIds::ANGULAR_VELOCITY_Y,
-				sid.objectId, pool_rwm_t::VAR_READ_WRITE, this),
+				sid.objectId, this),
 		angVelocityZ(GyroPoolIds::ANGULAR_VELOCITY_Z,
-				sid.objectId, pool_rwm_t::VAR_READ_WRITE, this) {}
+				sid.objectId, this) {}
 
     lp_var_t<float> angVelocityX;
     lp_var_t<float> angVelocityY;
@@ -33,9 +33,9 @@ public:
 	GyroAuxilliaryDataset(sid_t sid):
 		StaticLocalDataSet(sid),
 		gyroGeneralConfigReg42(GyroPoolIds::GENERAL_CONFIG_REG42,
-				sid.objectId, pool_rwm_t::VAR_READ_WRITE, this),
+				sid.objectId, this),
 		gyroRangeConfigReg43(GyroPoolIds::RANGE_CONFIG_REG43,
-				sid.objectId, pool_rwm_t::VAR_READ_WRITE, this) {}
+				sid.objectId, this) {}
 
 	lp_var_t<uint8_t> gyroGeneralConfigReg42;
 	lp_var_t<uint8_t> gyroRangeConfigReg43;

@@ -16,9 +16,9 @@ public:
     ThermalSensorDataset(sid_t sid):
             StaticLocalDataSet(sid),
             temperatureCelcius(ThermalSensorPoolIds::TEMPERATURE_C,
-            		sid.objectId, pool_rwm_t::VAR_READ_WRITE, this),
+            		sid.objectId, this),
             errorByte(ThermalSensorPoolIds::FAULT_BYTE,
-            		sid.objectId, pool_rwm_t::VAR_READ_WRITE, this) {
+            		sid.objectId, this) {
     }
 
     lp_var_t<float> temperatureCelcius;
