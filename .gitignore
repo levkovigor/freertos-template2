@@ -12,6 +12,7 @@ _dependencies
 
 .project
 .cproject 
+.swp 
 
 __pycache__
 
