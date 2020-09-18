@@ -45,6 +45,15 @@ MEMORY
 
 SECTIONS
 {          
+    .prerelocate : AT (_efixed)
+    {
+        . = ALIGN(4);
+        _sprerelocate = .;
+        *(.sramfunc*)
+        . = ALIGN(4);
+        _eprerelocate = .;
+    } >sram0
+    
     .fixed :
     {
         . = ALIGN(4);
@@ -53,9 +62,7 @@ SECTIONS
         *(.text*)
         *(.rodata*)
         *(.glue_7)
-        *(.glue_7t)	 	
-        *(.data) 
-        *(.data*)	
+        *(.glue_7t)	 		
         *(.CP15_*)	
         KEEP (*(.init))
     	KEEP (*(.fini))
@@ -77,63 +84,65 @@ SECTIONS
 	} >ebi_cs0
     __exidx_end = .;
     
-    . = ALIGN(4);
-    _efixed = .;
+    .preinit_array ALIGN(4): 
+	{
+        PROVIDE_HIDDEN (__preinit_array_start = .);
+        KEEP(*(.preinit_array))
+        PROVIDE_HIDDEN (__preinit_array_end = .);
+    } >ebi_cs0
 
-    .prerelocate : AT (_efixed)
+	/* init data, the constructor addresses are placed in this sections */
+    .init_array ALIGN(4): 
     {
-        . = ALIGN(4);
-        _sprerelocate = .;
-        . = ALIGN(4);
-        _eprerelocate = .;
-    } 
+        PROVIDE_HIDDEN (__init_array_start = .);
+        KEEP(*(SORT(.init_array.)))
+		KEEP(*(.init_array))
+        PROVIDE_HIDDEN (__init_array_end = .);
+    } >ebi_cs0
+
+	/* finit data, destructor addresses are placed in this section */
+    .fini_array ALIGN(4): 
+    {
+     	
+		PROVIDE_HIDDEN (__fini_array_start = .);
+		KEEP(*(SORT(.fini_array.)))
+		KEEP(*(.fini_array))
+		PROVIDE_HIDDEN (__fini_array_end = .);
+		. = ALIGN(4);
+    	_efixed = .;
+    } >ebi_cs0
     
     .postrelocate : AT (_efixed + SIZEOF(.prerelocate))
     {
         . = ALIGN(4);
         _spostrelocate = .;
         KEEP(*(.vectors));
-        *(.sramfunc)
-        *(.ramfunc)
+        *(.data) 
+        *(.data*)
+        *(.sramdata*)
         /* contains all initialized global and static variables */
         . = ALIGN(4);
         _epostrelocate = .;
     } >sram0
-    
-    .sramdata : AT (_sprerelocate + SIZEOF(.prerelocate) + SIZEOF(.postrelocate))
-    {
-        . = ALIGN(4);
-        _ssramdata = .;
-        *(.sramdata)
-        . = ALIGN(4);
-        _esramdata = .;
-    } >sram1
-    
-    .srambss (NOLOAD) : {
-        . = ALIGN(4);
-        _ssrambss = .;
-        *(.srambss)
-        . = ALIGN(4);
-        _esrambss = .;
-    } >sram1
 
     .bss (NOLOAD) : {
-        _szero = .;
-        __bss_start__ = _szero;
+        /* This is used by the startup in order to initialize the .bss secion */
+	    _sbss = .;         /* define a global symbol at bss start */
+	    __bss_start__ = _sbss;
         *(.bss)
         *(.bss*)
+        *(.srambss*)
         *(COMMON)
 		*(COMMON.*)
         . = ALIGN(4);
-        _ezero = .;
-        __bss_end__ = _ezero;
+        _ebss = .;         /* define a global symbol at bss end */
+	    __bss_end__ = _ebss;
     } >sram1
     
     /* Heap section */
 	_sheap_ = .;
+	_eheap_ = 0x302000;
     
     /* top of stack */
     _sstack = 0x304000;
 }
-end = .;
-

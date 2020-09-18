@@ -82,6 +82,7 @@ CUSTOM_DEFINES += -D$(OS_APP)
 PRIVLIB_PATH = privlib
 BOOTLOADER_PATH = bootloader
 FREERTOS_PATH = freertos
+AT91_PATH = $(BOARD_FILE_ROOT)/at91
 
 LINKER_SCRIPT_PATH = $(BOOTLOADER_PATH)
 ifeq ($(MEMORY_TYPE), norflash)
@@ -96,7 +97,6 @@ BSP_PATH = $(BOARD_FILE_ROOT)
 
 # Private (non-public) libraries.
 # If programming for AT91 development board or iOBC, add the libraries manually.
-AT91_PATH = $(PRIVLIB_PATH)/at91
 HCC_PATH = $(PRIVLIB_PATH)/hcc
 HAL_PATH = $(PRIVLIB_PATH)/hal
 
@@ -192,7 +192,7 @@ INCLUDES :=
 
 # Directories where $(directoryname).mk files should be included from.
 # Source files and includes can be added in those submakefiles.
-SUBDIRS := $(BOOTLOADER_PATH) $(PRIVLIB_PATH) 
+SUBDIRS := $(BOOTLOADER_PATH) $(PRIVLIB_PATH) $(AT91_PATH)
 
 ifeq ($(OS_APP), freeRTOS) 
 SUBDIRS += $(FREERTOS_PATH)
@@ -227,7 +227,7 @@ I_INCLUDES += -I$(ETL_PATH)
 # Include all includes defined as INCLUDES=...
 I_INCLUDES += $(addprefix -I, $(INCLUDES))
 # Debug Info
-#$(info $${I_INCLUDES} is [${I_INCLUDES}])
+# $(info $${I_INCLUDES} is [${I_INCLUDES}])
 
 #-------------------------------------------------------------------------------
 #		Source Files
@@ -435,6 +435,9 @@ ALL_OBJECTS =  $(ASM_OBJECTS) $(C_OBJECTS) $(CXX_OBJECTS)
 
 # Generates binary and displays all build properties
 # -p with mkdir ignores error and creates directory when needed.
+
+# SHOW_DETAILS = 1
+
 $(BINDIR)/$(BINARY_NAME).bin: $(BINDIR)/$(BINARY_NAME).elf
 	@echo
 	@echo $(MSG_INFO)
@@ -466,7 +469,11 @@ $(BINDIR)/$(BINARY_NAME).elf: $(ALL_OBJECTS)
 	@echo $(BINARY_NAME)
 	@echo $(MSG_LINKING) Target $@
 	@mkdir -p $(@D)
+ifdef SHOW_DETAILS
+	$(CXX) $(LDFLAGS) $(LINK_INCLUDES) -o $@ $^ $(LINK_LIBRARIES)
+else
 	@$(CXX) $(LDFLAGS) $(LINK_INCLUDES) -o $@ $^ $(LINK_LIBRARIES)
+endif
 ifeq ($(BUILD_FOLDER), mission)
 # With Link Time Optimization, section size is not available
 	$(SIZE) $@
@@ -481,14 +488,22 @@ $(OBJDIR)/%.o: %.cpp $(DEPENDDIR)/%.d | $(DEPENDDIR)
 	@echo 
 	@echo $(MSG_COMPILING) $<
 	@mkdir -p $(@D)
-	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+ifdef SHOW_DETAILS
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+else
+	@$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+endif
 
 $(OBJDIR)/%.o: %.c 
 $(OBJDIR)/%.o: %.c $(DEPENDDIR)/%.d | $(DEPENDDIR) 
 	@echo 
 	@echo $(MSG_COMPILING) $<
 	@mkdir -p $(@D)
+ifdef SHOW_DETAILS
+	$(CC) $(CXXFLAGS) $(CFLAGS) -c -o $@ $<
+else
 	@$(CC) $(CXXFLAGS) $(CFLAGS) -c -o $@ $<
+endif
 
 $(OBJDIR)/%.o: %.S Makefile
 	@echo

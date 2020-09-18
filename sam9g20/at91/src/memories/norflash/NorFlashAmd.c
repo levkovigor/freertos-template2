@@ -421,6 +421,7 @@ unsigned char AMD_EraseChip(struct NorFlashInfo *pNorFlashInfo)
             }
         }
 
+        NorFlash_Hook();
         // Akhil: This will make sure other things can happen while we wait for the nor flash to finish the erase operation.
 //        if(done != 1) {
 //        	vTaskDelay(1);

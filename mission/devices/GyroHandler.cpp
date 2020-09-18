@@ -583,6 +583,6 @@ ReturnValue_t GyroHandler::initializeLocalDataPool(
 	localDataPoolMap.emplace(GyroPoolIds::RANGE_CONFIG_REG43,
 			new PoolEntry<uint8_t>({0}));
 
-	poolManager.subscribeForPeriodicPacket(gyroDataSid, true, 4.0, false);
+	poolManager.subscribeForPeriodicPacket(gyroDataSid, false, 4.0, false);
 	return HasReturnvaluesIF::RETURN_OK;
 }

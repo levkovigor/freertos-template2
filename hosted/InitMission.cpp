@@ -10,6 +10,7 @@
 #include <fsfw/tasks/PeriodicTaskIF.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/timemanager/Stopwatch.h>
 
 #include <ostream>
 
@@ -39,11 +40,11 @@ void initMission() {
 	// Allocate object manager here, as global constructors might not be
 	// executed, depending on buildchain
 	sif::info << "Creating objects" << std::endl;
+
 	objectManager = new ObjectManager(Factory::produce);
 	objectManager -> initialize();
 
 	initTask();
-
 }
 
 void initTask() {

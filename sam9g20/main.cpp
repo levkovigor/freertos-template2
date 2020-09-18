@@ -66,12 +66,9 @@ int main(void)
 	}
 #endif
 
-	const uint8_t swVersion = SW_VERSION;
-	const uint8_t swSubversion = SW_SUBVERSION;
-
     printf("\n\r-- Source On-Board Software --\n\r");
     printf("-- %s --\n\r", BOARD_NAME);
-    printf("-- Software version v%d.%d --\n\r", swVersion, swSubversion);
+    printf("-- Software version v%d.%d --\n\r", SW_VERSION, SW_SUBVERSION);
     printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 
     // Enable Co-Processor instruction cache.

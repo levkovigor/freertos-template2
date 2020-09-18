@@ -65,9 +65,9 @@
 #ifndef SAM9G20_FREERTOS_CONFIG_H
 #define SAM9G20_FREERTOS_CONFIG_H
 
-#include "at91/utility/trace.h"
-#include "at91/utility/assert.h"
-#include "board.h"
+#include <at91/utility/trace.h>
+#include <at91/utility/assert.h>
+#include <board.h>
 
 /*-----------------------------------------------------------
  * Application specific definitions.

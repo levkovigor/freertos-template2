@@ -5,13 +5,7 @@ extern "C" {
 #include <hal/Storage/FRAM.h>
 }
 
-#ifndef SW_VERSION
-#define SW_VERSION 0
-#endif
-
-#ifndef SW_SUBVERSION
-#define SW_SUBVERSION 0
-#endif
+#include <version.h>
 
 FRAMHandler::FRAMHandler(object_id_t objectId): SystemObject(objectId) {
 }

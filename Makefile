@@ -196,7 +196,7 @@ INCLUDES :=
 
 # Directories where $(directoryname).mk files should be included from.
 # Source files and includes can be added in those submakefiles.
-SUBDIRS := $(CONFIG_PATH) $(FRAMEWORK_PATH) $(MISSION_PATH) $(BSP_PATH) \
+SUBDIRS := $(CONFIG_PATH) $(FRAMEWORK_PATH) $(MISSION_PATH) $(BSP_PATH) $(AT91_PATH) \
 		$(TEST_PATH) $(TMTCBRIDGE_PATH) $(UNITTEST_PATH) $(PRIVLIB_PATH) $(FREERTOS_PATH) 
 		
 # $(info $${SUBDIRS} is [${SUBDIRS}])	

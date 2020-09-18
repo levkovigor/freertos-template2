@@ -35,7 +35,6 @@ private:
     void printDecoderOutput();
     ReturnValue_t performDataSetTesting(uint8_t testMode);
     void performNewPoolManagerAccessTests();
-    void performRunTimeStatsTesting();
     TestDataSet testDataSet;
 
     void performExceptionTest();
@@ -43,7 +42,10 @@ private:
 #ifdef ISIS_OBC_G20
     void performIOBCTest();
     void performNorflashTest();
+    // it is assumed software version was written by FRAM handler
+    void performFRAMTest();
     void performSupervisorTest();
+    void performNorFlashTest(bool displayDebugOutput = true);
 #endif
 };
 
