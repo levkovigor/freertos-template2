@@ -1,3 +1,5 @@
+#include <fsfw/tasks/TaskFactory.h>
+
 #if defined(GCOV)
 #include <boardconfig/gcov.h>
 #endif
@@ -29,7 +31,10 @@ int main(void)
             << " -- " << std::endl;
     std::cout << "-- " <<  __DATE__ << " " << __TIME__ << " --" << std::endl;
 	initMission();
-	for(;;) {}
+	for(;;) {
+		// suspend main thread by sleeping it.
+		TaskFactory::delayTask(5000);
+	}
 }
 
 
