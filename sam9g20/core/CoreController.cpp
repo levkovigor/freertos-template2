@@ -193,7 +193,7 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
 
     // if stored time is 0, set the compile time of the binary
     if(secSinceEpoch == 0) {
-        secSinceEpoch = __TIME_UNIX__;
+        secSinceEpoch = UNIX_TIMESTAMP;
         retval = update_seconds_since_epoch(secSinceEpoch);
     }
 
@@ -212,7 +212,7 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
 #else
     RTT_start();
     timeval currentTime;
-    uint32_t secSinceEpoch = __TIME_UNIX__;
+    uint32_t secSinceEpoch = UNIX_TIMESTAMP;
     currentTime.tv_sec = secSinceEpoch;
     Clock::setClock(&currentTime);
 #endif
