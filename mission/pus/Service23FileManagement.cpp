@@ -1,25 +1,15 @@
-/*
- * Service23FileManagement.cpp
- *
- *  Created on: 09.12.2019
- *      Author: Jakob Meier
- */
-
 #include <mission/pus/Service23FileManagement.h>
 
-#include <config/tmtc/apid.h>
-#include <config/tmtc/pusIds.h>
-
-#include <framework/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <config/objects/systemObjectList.h>
-#include <framework/tmtcpacket/pus/TmPacketStored.h>
-#include <framework/memory/HasFileSystemIF.h>
-#include <framework/memory/FileSystemMessage.h>
-#include <framework/action/ActionMessage.h>
+#include <fsfw/tmtcpacket/pus/TmPacketStored.h>
+#include <fsfw/memory/HasFileSystemIF.h>
+#include <fsfw/memory/FileSystemMessage.h>
+#include <fsfw/action/ActionMessage.h>
 
-Service23FileManagement::Service23FileManagement(object_id_t objectId_):
-CommandingServiceBase(objectId_,apid::SOURCE_OBSW,pus::PUS_SERVICE_23,
-								4,60,objects::PUS_PACKET_DISTRIBUTOR,objects::PUS_FUNNEL) {
+Service23FileManagement::Service23FileManagement(object_id_t objectId,
+        uint16_t apid, uint8_t serviceId):
+        CommandingServiceBase(objectId, apid, serviceId, 4,60) {
 }
 
 
@@ -28,58 +18,45 @@ Service23FileManagement::~Service23FileManagement() {
 
 
 ReturnValue_t Service23FileManagement::isValidSubservice(uint8_t subservice) {
-	switch(subservice){
-		case Subservice::CREATE_FILE:
-			sif::info << "Service 23 detected valid subservice" << std::endl;
-			return HasReturnvaluesIF::RETURN_OK;
-		case Subservice::DELETE_FILE:
-			return HasReturnvaluesIF::RETURN_OK;
-		case Subservice::CREATE_DIRECTORY:
-			return HasReturnvaluesIF::RETURN_OK;
-		case Subservice::DELETE_DIRECTORY:
-			return HasReturnvaluesIF::RETURN_OK;
-		case Subservice::WRITE:
-			return HasReturnvaluesIF::RETURN_OK;
-		case Subservice::READ:
-			return HasReturnvaluesIF::RETURN_OK;
-		default:
-			return HasReturnvaluesIF::RETURN_FAILED;
-	}
+    switch(subservice){
+    case Subservice::CREATE_FILE:
+    case Subservice::DELETE_FILE:
+    case Subservice::CREATE_DIRECTORY:
+    case Subservice::DELETE_DIRECTORY:
+    case Subservice::WRITE:
+    case Subservice::READ:
+        sif::info << "Service 23 detected valid subservice" << std::endl;
+        return HasReturnvaluesIF::RETURN_OK;
+    default:
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
 }
 
 
 ReturnValue_t Service23FileManagement::getMessageQueueAndObject(
 		uint8_t subservice, const uint8_t *tcData, size_t tcDataLen,
 		MessageQueueId_t *id, object_id_t *objectId) {
+    if(tcDataLen < sizeof(object_id_t)) {
+        return CommandingServiceBase::INVALID_TC;
+    }
 
-	ReturnValue_t result = checkAndAcquireTargetID(objectId, tcData, tcDataLen);
-	if (result != RETURN_OK) {
-		return result;
-	}
-
-	result = checkInterfaceAndAcquireMessageQueue(id, objectId);
-	return result;
+    SerializeAdapter::deSerialize(objectId, &tcData, &tcDataLen,
+            SerializeIF::Endianness::BIG);
+	return checkInterfaceAndAcquireMessageQueue(id,objectId);
 }
 
 
-ReturnValue_t Service23FileManagement::checkAndAcquireTargetID(object_id_t* objectIdToSet, const uint8_t* tcData, uint32_t tcDataLen) {
-	size_t size = tcDataLen;
-	if(SerializeAdapter<object_id_t>::deSerialize(objectIdToSet,&tcData,&size,true)!=HasReturnvaluesIF::RETURN_OK)
-		return CommandingServiceBase::INVALID_TC;
-	 else
-		 return HasReturnvaluesIF::RETURN_OK;
-}
-
-
-ReturnValue_t Service23FileManagement::checkInterfaceAndAcquireMessageQueue(MessageQueueId_t* MessageQueueToSet, object_id_t* objectId) {
+ReturnValue_t Service23FileManagement::checkInterfaceAndAcquireMessageQueue(
+        MessageQueueId_t* messageQueueToSet, object_id_t* objectId) {
 	// check hasActionIF property of target
-	HasFileSystemIF* possibleTarget = objectManager->get<HasFileSystemIF>(*objectId);
-	if(possibleTarget!=NULL){
-		*MessageQueueToSet = possibleTarget->getCommandQueue();
-		return HasReturnvaluesIF::RETURN_OK;
-	}else {
-		return CommandingServiceBase::INVALID_OBJECT;
+	HasFileSystemIF* possibleTarget =
+	        objectManager->get<HasFileSystemIF>(*objectId);
+	if(possibleTarget == nullptr){
+	    return CommandingServiceBase::INVALID_OBJECT;
+
 	}
+	*messageQueueToSet = possibleTarget->getCommandQueue();
+	return HasReturnvaluesIF::RETURN_OK;
 }
 
 

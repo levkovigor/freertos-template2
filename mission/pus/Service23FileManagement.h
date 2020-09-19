@@ -1,18 +1,11 @@
-/*
- * Service23FileManagement.h
- *
- *  Created on: 09.12.2019
- *      Author: Jakob Meier
- */
-
 #ifndef MISSION_PUS_SERVICE23FILEMANAGEMENT_H_
 #define MISSION_PUS_SERVICE23FILEMANAGEMENT_H_
 
-#include <framework/objectmanager/SystemObject.h>
-#include <framework/tmtcservices/CommandingServiceBase.h>
+#include <fsfw/objectmanager/SystemObject.h>
+#include <fsfw/tmtcservices/CommandingServiceBase.h>
 
 /**
- * \brief File Management Service
+ * @brief File Management Service
  *
  * Full Documentation: ECSS-E-ST-70-41C p.403
  *
@@ -36,13 +29,14 @@
  *   - TC[23,15]: Move a file
  *   - TC[23,16]: Suspend file copy operations
  *   - TC[23,17]: Resume file copy operations
- *
- * \ingroup pus_services
+ * @author  Jakob Meier
+ * @ingroup pus_services
  */
 class Service23FileManagement: public CommandingServiceBase {
 public:
 
-	Service23FileManagement(object_id_t objectId_);
+	Service23FileManagement(object_id_t objectId, uint16_t apid,
+	        uint8_t serviceId);
 	virtual ~Service23FileManagement();
 
 protected:
@@ -96,8 +90,8 @@ protected:
 			bool *isStep);
 
 private:
-	ReturnValue_t checkAndAcquireTargetID(object_id_t* objectIdToSet, const uint8_t* tcData, uint32_t tcDataLen);
-	ReturnValue_t checkInterfaceAndAcquireMessageQueue(MessageQueueId_t* MessageQueueToSet, object_id_t* objectId);
+	ReturnValue_t checkInterfaceAndAcquireMessageQueue(
+	        MessageQueueId_t* messageQueueToSet, object_id_t* objectId);
 
 	ReturnValue_t prepareDeleteFileCommand(CommandMessage *message,
 					const uint8_t *tcData, uint32_t tcDataLen);
