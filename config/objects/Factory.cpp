@@ -149,17 +149,18 @@ void Factory::produce(void) {
 			pus::PUS_SERVICE_9);
 	new Service17CustomTest(objects::PUS_SERVICE_17, apid::SOURCE_OBSW,
 	        pus::PUS_SERVICE_17);
-	new Service23FileManagement(objects::PUS_SERVICE_23, apid::SOURCE_OBSW,
-	        pus::PUS_SERVICE_23);
+
 
 	/* PUS Gateway Services using CommandingServiceBase */
 	new Service2DeviceAccess(objects::PUS_SERVICE_2, apid::SOURCE_OBSW,
 	        pus::PUS_SERVICE_2);
 	new Service6MemoryManagement(objects::PUS_SERVICE_6, apid::SOURCE_OBSW,
 	        pus::PUS_SERVICE_6);
+    new Service8FunctionManagement(objects::PUS_SERVICE_8, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_8);
 	new Service20ParameterManagement(objects::PUS_SERVICE_20);
-	new Service8FunctionManagement(objects::PUS_SERVICE_8, apid::SOURCE_OBSW,
-			pus::PUS_SERVICE_8);
+    new Service23FileManagement(objects::PUS_SERVICE_23, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_23);
 	new CService200ModeCommanding(objects::PUS_SERVICE_200, apid::SOURCE_OBSW,
 	        pus::PUS_SERVICE_200);
 	new CService201HealthCommanding(objects::PUS_SERVICE_201, apid::SOURCE_OBSW,
