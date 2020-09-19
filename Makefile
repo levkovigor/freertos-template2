@@ -39,8 +39,11 @@ BOARD_NAME = iOBC
 else 
 BOARD = AT91SAM9G20_EK
 BOARD_NAME = at91ek
+# This define is used by the AT91 to perform 
+# reduced NAND-Flash operations
 CUSTOM_DEFINES += -DOP_BOOTSTRAP_on
 endif
+CUSTOM_DEFINES += -D$(BOARD) -D$(CHIP)
 
 ifdef ADD_CR
 CUSTOM_DEFINES += -DADD_CR
@@ -54,8 +57,6 @@ CHIP_PATH = iobc
 else
 CHIP_PATH = sam9g20ek
 endif
-
-IOBC_REMOTE_IP = 192.168.199.228
 
 OS_FSFW = freeRTOS
 OS_APP = $(OS_FSFW)
@@ -349,8 +350,8 @@ CUSTOM_DEFINES += -DNEWLIB_NANO_NO_C99_IO
 WARNING_FLAGS =  -Wall -Wshadow=local -Wextra -Wimplicit-fallthrough=1 \
 		-Wno-unused-parameter 
 		
-CXXDEFINES := -D$(CHIP) -D$(BOARD) -DTRACE_LEVEL=$(TRACE_LEVEL) \
-		   -DDYN_TRACES=$(DYN_TRACES) $(CUSTOM_DEFINES)
+CXXDEFINES := -DTRACE_LEVEL=$(TRACE_LEVEL) -DDYN_TRACES=$(DYN_TRACES) \
+		$(CUSTOM_DEFINES)
 CFLAGS +=  
 CXXFLAGS += -I.  $(DEBUG_LEVEL) $(DEPFLAGS) $(WARNING_FLAGS) \
 		-fmessage-length=0 $(OPTIMIZATION) $(I_INCLUDES) $(CXXDEFINES) \
@@ -462,6 +463,9 @@ ALL_OBJECTS =  $$(ASM_OBJECTS_$(1)) $$(C_OBJECTS_$(1)) $$(CXX_OBJECTS_$(1))
 
 # Generates binary and displays all build properties
 # -p with mkdir ignores error and creates directory when needed.
+
+# SHOW_DETAILS = 1
+
 $(BINDIR)/$(BINARY_NAME)-$(1).bin: $(BINDIR)/$(BINARY_NAME)-$(1).elf
 	@echo
 	@echo $$(MSG_INFO)
@@ -493,7 +497,11 @@ $(BINDIR)/$(BINARY_NAME)-$(1).elf: $$(ALL_OBJECTS)
 	@echo $(BINARY_NAME)
 	@echo $(MSG_LINKING) Target $$@
 	@mkdir -p $$(@D)
+ifdef SHOW_DETAILS
+	$(CXX) $(LDFLAGS) $(LINK_INCLUDES) -o $$@ $$^ $(LINK_LIBRARIES)
+else
 	@$(CXX) $(LDFLAGS) $(LINK_INCLUDES) -o $$@ $$^ $(LINK_LIBRARIES)
+endif
 ifeq ($(BUILD_FOLDER), mission)
 # With Link Time Optimization, section size is not available
 	$(SIZE) $$@
@@ -508,6 +516,9 @@ $(OBJDIR)/$(1)/%.o: %.cpp $(DEPENDDIR)/%.d | $(DEPENDDIR)
 	@echo 
 	@echo $(MSG_COMPILING) $$<
 	@mkdir -p $$(@D)
+ifdef SHOW_DETAILS
+	$(CXX) $$(CPPFLAGS) $$(CXXFLAGS) -D$(1) -c -o $$@ $$<
+else
 	@$(CXX) $$(CPPFLAGS) $$(CXXFLAGS) -D$(1) -c -o $$@ $$<
 
 $(OBJDIR)/$(1)/%.o: %.c 
@@ -515,13 +526,21 @@ $(OBJDIR)/$(1)/%.o: %.c $(DEPENDDIR)/%.d | $(DEPENDDIR)
 	@echo 
 	@echo $(MSG_COMPILING) $$<
 	@mkdir -p $$(@D)
+ifdef SHOW_DETAILS
+	$(CC) $$(CXXFLAGS) $$(CFLAGS) -D$(1) -c -o $$@ $$<
+else
 	@$(CC) $$(CXXFLAGS) $$(CFLAGS) -D$(1) -c -o $$@ $$<
+endif
 
 $(OBJDIR)/$(1)/%.o: %.S Makefile
 	@echo
 	@echo $(MSG_ASSEMBLING) $$<
 	@mkdir -p $$(@D)
+ifdef SHOW_DETAILS
+	$(CC) $$(ASFLAGS) -D$(1) -c -o $$@ $$<
+else
 	@$(CC) $$(ASFLAGS) -D$(1) -c -o $$@ $$<
+endif
 
 endef
 
@@ -567,6 +586,8 @@ else
 	'source $(GDB_PATH)/at91sam9g20-ek-sdram.gdb'
 	@fortune | cowsay | lolcat || true
 endif
+
+IOBC_REMOTE_IP = 192.168.199.228
 
 # Configre SDRAM of IOBC
 iobcCfg:

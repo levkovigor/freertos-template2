@@ -52,7 +52,7 @@ ReturnValue_t AtmelTestTask::performOneShotAction() {
 #ifdef ISIS_OBC_G20
 	performIOBCTest();
 #endif
-	performHammingTest();
+	//performHammingTest();
     return TestTask::performOneShotAction();
 }
 
