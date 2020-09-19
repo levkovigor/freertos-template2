@@ -78,8 +78,8 @@ private:
             const uint8_t* data, size_t size, uint16_t packetNumber) override;
     ReturnValue_t read(const char* repositoryPath, const char* filename,
             uint8_t* tmData, uint32_t* tmDataLen);
-    void sendCompletionReply(MessageQueueId_t replyToQueue,
-            Command_t completionStatus);
+    void sendCompletionReply(bool success = true,
+            ReturnValue_t errorCode = HasReturnvaluesIF::RETURN_OK);
     ReturnValue_t sendDataReply(MessageQueueId_t receivedFromQueueId,
             uint8_t* tmData, uint8_t tmDataLen);
 

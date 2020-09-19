@@ -291,15 +291,21 @@ ReturnValue_t SDCardHandler::deleteDirectory(const char* repositoryPath,
 }
 
 
-void SDCardHandler::sendCompletionReply(MessageQueueId_t receivedFromQueueId,
-        Command_t completionStatus){
+void SDCardHandler::sendCompletionReply(bool success, ReturnValue_t errorCode) {
     CommandMessage reply;
-    FileSystemMessage::setCompletionReply(&reply, completionStatus);
-    ReturnValue_t result = commandQueue->sendMessage(receivedFromQueueId, &reply);
+    if(success) {
+        FileSystemMessage::setSuccessReply(&reply);
+    }
+    else {
+        FileSystemMessage::setFailureReply(&reply, errorCode);
+    }
+
+    ReturnValue_t result = commandQueue->reply(&reply);
     if(result != HasReturnvaluesIF::RETURN_OK){
-        if(result == MessageQueueIF::FULL){
-            sif::error << "SD Card Handler fails to send reply. "
-                    << "Queue of receiver is full" << std::endl;
+        if(result == MessageQueueIF::FULL) {
+            // Configuration error.
+            sif::error << "SDCardHandler::sendCompletionReply: "
+                    <<" Queue of receiver is full!" << std::endl;
         }
     }
 }
@@ -332,7 +338,7 @@ ReturnValue_t SDCardHandler::sendDataReply(MessageQueueId_t receivedFromQueueId,
 
 
 ReturnValue_t SDCardHandler::handleDeleteFileCommand(CommandMessage* message){
-    MessageQueueId_t receivedFromQueueId = message->getSender();
+    //MessageQueueId_t receivedFromQueueId = message->getSender();
     store_address_t storeId = FileSystemMessage::getStoreId(message);
     size_t ipcStoreBufferSize = 0;
     const uint8_t* ipcStoreBuffer = nullptr;
@@ -348,21 +354,18 @@ ReturnValue_t SDCardHandler::handleDeleteFileCommand(CommandMessage* message){
     /* Extract the repository path and the filename from the
         application data field */
     result = command.deSerialize(&ipcStoreBuffer, ipcStoreBufferSize);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        sendCompletionReply(receivedFromQueueId,
-                FileSystemMessage::COMPLETION_FAILED);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        sendCompletionReply(false, result);
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     result = deleteFile(command.getRepositoryPath(), command.getFilename());
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "SDCardHandler::handleDeleteFileCommand: Deleting file "
                 << command.getFilename() << " failed" << std::endl;
-        sendCompletionReply(receivedFromQueueId,
-                FileSystemMessage::COMPLETION_FAILED);
+        sendCompletionReply(false, result);
     }
     else {
-        sendCompletionReply(receivedFromQueueId,
-                FileSystemMessage::COMPLETION_SUCCESS);
+        sendCompletionReply();
     }
 
     if (IPCStore->deleteData(storeId) != HasReturnvaluesIF::RETURN_OK) {
@@ -377,7 +380,7 @@ ReturnValue_t SDCardHandler::handleDeleteFileCommand(CommandMessage* message){
 
 ReturnValue_t SDCardHandler::handleCreateDirectoryCommand(
         CommandMessage* message){
-    MessageQueueId_t receivedFromQueueId = message->getSender();
+    //MessageQueueId_t receivedFromQueueId = message->getSender();
     store_address_t storeId = FileSystemMessage::getStoreId(message);
 
     auto returnPair = IPCStore->getData(storeId);
@@ -395,31 +398,29 @@ ReturnValue_t SDCardHandler::handleCreateDirectoryCommand(
     ReturnValue_t result = command.deSerialize(&ipcStoreBuffer,
             ipcStoreBufferSize);
     if(result != HasReturnvaluesIF::RETURN_OK){
-        sendCompletionReply(receivedFromQueueId,
-                FileSystemMessage::COMPLETION_FAILED);
+        sendCompletionReply(false, result);
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     result = createDirectory(command.getRepositoryPath(),
             command.getDirname());
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "SDCardHandler::handleCreateDirectoryCommand: "
-                << "Creating directory " << command.getDirname()
-                << " failed" << std::endl;
-        sendCompletionReply(receivedFromQueueId,
-                FileSystemMessage::COMPLETION_FAILED);
-    }
-    else {
-        sendCompletionReply(receivedFromQueueId,
-                FileSystemMessage::COMPLETION_SUCCESS);
+        if(result != FOLDER_ALREADY_EXISTS) {
+            sif::error << "SDCardHandler::handleCreateDirectoryCommand: "
+                    << "Creating directory " << command.getDirname()
+                    << " failed" << std::endl;
+        }
+        sendCompletionReply(false, result);
+        return HasReturnvaluesIF::RETURN_FAILED;
     }
 
+    sendCompletionReply();
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 
 ReturnValue_t SDCardHandler::handleDeleteDirectoryCommand(
         CommandMessage* message){
-    MessageQueueId_t receivedFromQueueId = message->getSender();
+    //MessageQueueId_t receivedFromQueueId = message->getSender();
     store_address_t storeId = FileSystemMessage::getStoreId(message);
     size_t ipcStoreBufferSize = 0;
     const uint8_t* ipcStoreBuffer = NULL;
@@ -431,8 +432,7 @@ ReturnValue_t SDCardHandler::handleDeleteDirectoryCommand(
         application data field */
         result = command.deSerialize(&ipcStoreBuffer, ipcStoreBufferSize);
         if(result != HasReturnvaluesIF::RETURN_OK){
-            sendCompletionReply(receivedFromQueueId,
-                                FileSystemMessage::COMPLETION_FAILED);
+            sendCompletionReply(false, result);
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         result = deleteDirectory(command.getRepositoryPath(),
@@ -440,11 +440,10 @@ ReturnValue_t SDCardHandler::handleDeleteDirectoryCommand(
         if (result != HasReturnvaluesIF::RETURN_OK) {
             sif::error << "Deleting directory " << command.getDirname()
                     << " failed" << std::endl;
-            sendCompletionReply(receivedFromQueueId,
-                    FileSystemMessage::COMPLETION_FAILED);
-        } else {
-            sendCompletionReply(receivedFromQueueId,
-                                FileSystemMessage::COMPLETION_SUCCESS);
+            sendCompletionReply(false, result);
+        }
+        else {
+            sendCompletionReply();
         }
         if (IPCStore->deleteData(storeId) != HasReturnvaluesIF::RETURN_OK) {
             sif::error << "Failed to delete data in IPC store" << std::endl;
@@ -459,7 +458,7 @@ ReturnValue_t SDCardHandler::handleDeleteDirectoryCommand(
 
 
 ReturnValue_t SDCardHandler::handleWriteCommand(CommandMessage* message){
-    MessageQueueId_t receivedFromQueueId = message->getSender();
+    //MessageQueueId_t receivedFromQueueId = message->getSender();
     store_address_t storeId = FileSystemMessage::getStoreId(message);
     size_t ipcStoreBufferSize = 0;
     const uint8_t* ipcStoreBuffer = NULL;
@@ -474,12 +473,10 @@ ReturnValue_t SDCardHandler::handleWriteCommand(CommandMessage* message){
         if(result != HasReturnvaluesIF::RETURN_OK){
             sif::info << "Writing to file " << command.getFilename()
                     << " failed" << std::endl;
-            sendCompletionReply(receivedFromQueueId,
-                    FileSystemMessage::COMPLETION_FAILED);
+            sendCompletionReply(false, result);
         }
         else{
-            sendCompletionReply(receivedFromQueueId,
-                    FileSystemMessage::COMPLETION_SUCCESS);
+            sendCompletionReply();
         }
         if(IPCStore->deleteData(storeId) != HasReturnvaluesIF::RETURN_OK){
             sif::error << "Failed to delete data in IPC store" << std::endl;
@@ -515,8 +512,7 @@ ReturnValue_t SDCardHandler::handleReadCommand(CommandMessage* message) {
         if (result != HasReturnvaluesIF::RETURN_OK) {
             sif::error << "Reading from file " << command.getFilename()
                     << " failed" << std::endl;
-            sendCompletionReply(receivedFromQueueId,
-                    FileSystemMessage::COMPLETION_FAILED);
+            sendCompletionReply(false, result);
         } else {
             sendDataReply(receivedFromQueueId, tmData, tmDataLen);
         }
@@ -572,7 +568,7 @@ ReturnValue_t SDCardHandler::read(const char* repositoryPath,
 }
 
 
-ReturnValue_t SDCardHandler::changeDirectory(const char* repositoryPath){
+ReturnValue_t SDCardHandler::changeDirectory(const char* repositoryPath) {
     int result;
     /* Because all paths are relative to the root directory,
     go to root directory here */
