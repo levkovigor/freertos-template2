@@ -6,7 +6,7 @@
 #include <sam9g20/comIF/GpioDeviceComIF.h>
 
 extern "C" {
-#if defined(at91sam9g20_ek)
+#if defined(AT91SAM9G20_EK)
 #include <led_ek.h>
 #endif
 

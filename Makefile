@@ -37,7 +37,7 @@ ifdef IOBC
 BOARD = ISIS_OBC_G20
 BOARD_NAME = iOBC
 else 
-BOARD = at91sam9g20_ek
+BOARD = AT91SAM9G20_EK
 BOARD_NAME = at91ek
 endif
 

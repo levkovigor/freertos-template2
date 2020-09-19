@@ -62,6 +62,7 @@
 #include <sam9g20/comIF/RS232DeviceComIF.h>
 #include <sam9g20/comIF/SpiDeviceComIF.h>
 #include <sam9g20/core/CoreController.h>
+#include <sam9g20/core/SoftwareImageHandler.h>
 #include <sam9g20/core/SystemStateTask.h>
 #include <sam9g20/memory/FRAMHandler.h>
 #include <sam9g20/memory/SDCardHandler.h>
@@ -216,6 +217,7 @@ void Factory::produce(void) {
 
 	/* Board dependant files */
 
+	new SoftwareImageHandler(objects::SOFTWARE_IMAGE_HANDLER);
 	#if defined(stm32)
 	#else
 	new SDCardHandler(objects::SD_CARD_HANDLER);

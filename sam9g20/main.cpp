@@ -4,7 +4,7 @@ extern "C"{
 #include <AT91SAM9G20.h>
 #include <at91/peripherals/cp15/cp15.h>
 
-#if defined(at91sam9g20_ek)
+#if defined(AT91SAM9G20_EK)
 #include <led_ek.h>
 #else
 #endif
@@ -37,7 +37,7 @@ extern struct netif *netif;
 // quick fix to bypass link error
 extern "C" void __sync_synchronize() {}
 
-#if defined(at91sam9g20_ek)
+#if defined(AT91SAM9G20_EK)
 void ConfigureLeds(void);
 void configureEk(void);
 #endif
@@ -74,7 +74,7 @@ int main(void)
     // Enable Co-Processor instruction cache.
     CP15_Enable_I_Cache();
 
-#if defined(at91sam9g20_ek)
+#if defined(AT91SAM9G20_EK)
     ConfigureLeds();
     configureEk();
     LED_Toggle(0);
@@ -103,7 +103,7 @@ void initTask (void * args) {
 }
 
 /* Configures LEDs \#1 and \#2 (cleared by default). */
-#if defined(at91sam9g20_ek)
+#if defined(AT91SAM9G20_EK)
 void ConfigureLeds(void)
 {
     LED_Configure(0);
