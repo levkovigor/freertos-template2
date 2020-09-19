@@ -13,6 +13,13 @@ extern "C"{
     #include <hcc/api_mdriver_atmel_mcipdc.h>
 }
 
+
+enum class VolumeId {
+    SD_CARD_0 = 0,
+    SD_CARD_1 = 1
+};
+
+
 /**
  * @brief   This access class can be created locally to initiate access to the
  *          file system.
@@ -21,12 +28,12 @@ extern "C"{
  */
 class FileSystemAccess {
 public:
-    FileSystemAccess();
+    FileSystemAccess(VolumeId volumeId = VolumeId::SD_CARD_0);
     ~FileSystemAccess();
 
     ReturnValue_t accessSuccess = HasReturnvaluesIF::RETURN_OK;
 private:
-
+    VolumeId volumeId;
 };
 
 /**
@@ -38,6 +45,9 @@ class SDCardHandler : public SystemObject,
         public HasFileSystemIF {
     friend class FileSystemAccess;
 public:
+    static constexpr uint8_t INTERFACE_ID = CLASS_ID::SD_CARD_HANDLER;
+    static constexpr ReturnValue_t FOLDER_ALREADY_EXISTS = MAKE_RETURN_CODE(0x01);
+
     SDCardHandler(object_id_t objectId_);
     virtual ~SDCardHandler();
 
@@ -46,9 +56,9 @@ public:
     ReturnValue_t performOperation(uint8_t operationCode = 0);
 
 private:
-    static ReturnValue_t openFilesystem();
-    static ReturnValue_t closeFilesystem();
-    static ReturnValue_t selectSDCard(int volumeID);
+    static ReturnValue_t openFilesystem(VolumeId volumeId = VolumeId::SD_CARD_0);
+    static ReturnValue_t closeFilesystem(VolumeId volumeId = VolumeId::SD_CARD_0);
+    static ReturnValue_t selectSDCard(VolumeId volumeID);
 
     ReturnValue_t handleMessages();
 
@@ -81,11 +91,6 @@ private:
      * The repositoryPath must be absolute.
      */
     ReturnValue_t changeDirectory(const char* repositoryPath);
-
-    enum volumeID{
-        SD_CARD_0 = 0,
-        SD_CARD_1 = 1
-    };
 
     /**
      * The MessageQueue used to receive commands, data and to send replies.

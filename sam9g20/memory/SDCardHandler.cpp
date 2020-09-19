@@ -21,12 +21,12 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode){
     return result;
 }
 
-FileSystemAccess::FileSystemAccess() {
-    accessSuccess = SDCardHandler::openFilesystem();
+FileSystemAccess::FileSystemAccess(VolumeId volumeId): volumeId(volumeId) {
+    accessSuccess = SDCardHandler::openFilesystem(this->volumeId);
 }
 
 FileSystemAccess::~FileSystemAccess() {
-    SDCardHandler::closeFilesystem();
+    SDCardHandler::closeFilesystem(volumeId);
 }
 
 ReturnValue_t SDCardHandler::handleMessages() {
@@ -95,7 +95,7 @@ MessageQueueId_t SDCardHandler::getCommandQueue() const{
 }
 
 
-ReturnValue_t SDCardHandler::openFilesystem(){
+ReturnValue_t SDCardHandler::openFilesystem(VolumeId volume){
     /* Initialize the memory to be used by the filesystem */
     hcc_mem_init();
 
@@ -115,15 +115,15 @@ ReturnValue_t SDCardHandler::openFilesystem(){
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
-    result = selectSDCard(volumeID::SD_CARD_0);
+    result = selectSDCard(volume);
     if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "SD Card " << volumeID::SD_CARD_0
+        sif::error << "SD Card " << static_cast<uint8_t>(VolumeId::SD_CARD_0)
                 << " not present or defect" << std::endl;
         return HasReturnvaluesIF::RETURN_FAILED;
         /* Try to access the second sd card */
-        result = selectSDCard(volumeID::SD_CARD_1);
+        result = selectSDCard(volume);
         if(result != HasReturnvaluesIF::RETURN_OK){
-            sif::error << "SD Card " << volumeID::SD_CARD_1
+            sif::error << "SD Card " << static_cast<uint8_t>(VolumeId::SD_CARD_1)
                     << " not present or defect" << std::endl;
             return HasReturnvaluesIF::RETURN_FAILED;
         }
@@ -131,7 +131,8 @@ ReturnValue_t SDCardHandler::openFilesystem(){
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t SDCardHandler::closeFilesystem() {
+ReturnValue_t SDCardHandler::closeFilesystem(VolumeId volumeId) {
+    f_delvolume(static_cast<uint8_t>(volumeId));
     f_releaseFS();
     int result = fs_delete();
     if(result != 0) {
@@ -144,9 +145,10 @@ ReturnValue_t SDCardHandler::closeFilesystem() {
 }
 
 
-ReturnValue_t SDCardHandler::selectSDCard(int volumeID){
+ReturnValue_t SDCardHandler::selectSDCard(VolumeId volumeID){
     /* Initialize volID as safe */
-    int result = f_initvolume(0, atmel_mcipdc_initfunc, volumeID);
+    int result = f_initvolume(0, atmel_mcipdc_initfunc,
+            static_cast<uint8_t>(volumeID));
 
     if((result != F_NO_ERROR) and (result != F_ERR_NOTFORMATTED)) {
         sif::error << "SDCardHandler::selectSDCard: f_initvolume failed with "
@@ -259,8 +261,13 @@ ReturnValue_t SDCardHandler::createDirectory(const char* repositoryPath,
         return result;
     }
     result = f_mkdir(dirname);
-    if(result != F_NO_ERROR){
-        sif::error << "f_mkdir pb: " << result  << std::endl;
+    if(result == F_ERR_DUPLICATED) {
+        // folder already exists
+        return FOLDER_ALREADY_EXISTS;
+    }
+    else if(result != F_NO_ERROR) {
+        sif::error << "SDCardHandler::createDirectory: f_mkdir failed with "
+                << "code" << result;
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 

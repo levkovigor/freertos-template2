@@ -1,10 +1,3 @@
-/*
- * classIds.h
- *
- *  Created on: 16.07.2018
- *      Author: mohr
- */
-
 #ifndef CONFIG_RETURNVALUES_CLASSIDS_H_
 #define CONFIG_RETURNVALUES_CLASSIDS_H_
 
@@ -20,7 +13,8 @@ enum {
 	I2C_CHANNEL, //!< I2C
 	SPI_CHANNEL, //!< SPI
 	GPS_HANDLER,  //!< GPS
-	PUS_SERVICE_3 //!< HKS
+	PUS_SERVICE_3, //!< HKS
+	SD_CARD_HANDLER, //!> SDCH
 };
 }
 
