@@ -14,12 +14,29 @@ extern "C"{
 }
 
 /**
+ * @brief   This access class can be created locally to initiate access to the
+ *          file system.
+ * @details
+ * It will automatically close the access when being destroyed
+ */
+class FileSystemAccess {
+public:
+    FileSystemAccess();
+    ~FileSystemAccess();
+
+    ReturnValue_t accessSuccess = HasReturnvaluesIF::RETURN_OK;
+private:
+
+};
+
+/**
  * Additional abstraction layer to encapsulate access to SD cards
  * using the iOBC HCC FAT API.
  */
 class SDCardHandler : public SystemObject,
         public ExecutableObjectIF,
         public HasFileSystemIF {
+    friend class FileSystemAccess;
 public:
     SDCardHandler(object_id_t objectId_);
     virtual ~SDCardHandler();
@@ -29,8 +46,12 @@ public:
     ReturnValue_t performOperation(uint8_t operationCode = 0);
 
 private:
-    ReturnValue_t initializeFileSystem();
-    ReturnValue_t selectSDCard(int volumeID);
+    static ReturnValue_t openFilesystem();
+    static ReturnValue_t closeFilesystem();
+    static ReturnValue_t selectSDCard(int volumeID);
+
+    ReturnValue_t handleMessages();
+
     ReturnValue_t handleDeleteFileCommand(CommandMessage* message);
     ReturnValue_t handleCreateDirectoryCommand(CommandMessage* message);
     ReturnValue_t handleDeleteDirectoryCommand(CommandMessage* message);
@@ -39,8 +60,10 @@ private:
     ReturnValue_t createFile(const char* dirname, const char* filename,
             const uint8_t* data, size_t size) override;
     ReturnValue_t deleteFile(const char* repositoryPath, const char* filename);
-    ReturnValue_t createDirectory(const char* repositoryPath, const char* dirname);
-    ReturnValue_t deleteDirectory(const char* repositoryPath, const char* dirname);
+    ReturnValue_t createDirectory(const char* repositoryPath,
+            const char* dirname);
+    ReturnValue_t deleteDirectory(const char* repositoryPath,
+            const char* dirname);
     ReturnValue_t writeToFile(const char* repositoryPath, const char* filename,
             const uint8_t* data, size_t size, uint16_t packetNumber) override;
     ReturnValue_t read(const char* repositoryPath, const char* filename,
@@ -49,10 +72,13 @@ private:
             Command_t completionStatus);
     ReturnValue_t sendDataReply(MessageQueueId_t receivedFromQueueId,
             uint8_t* tmData, uint8_t tmDataLen);
-    /*
-     * @brief This function can be used to switch to a directory provided with the repositoryPath
-     * @param repositoryPath Pointer to a string holding the repositoryPath to the directory. The
-     *                       repositoryPath must be absolute.
+
+    /**
+     * @brief   This function can be used to switch to a directory provided
+     *          with the repositoryPath
+     * @param repositoryPath
+     * Pointer to a string holding the repositoryPath to the directory.
+     * The repositoryPath must be absolute.
      */
     ReturnValue_t changeDirectory(const char* repositoryPath);
 
