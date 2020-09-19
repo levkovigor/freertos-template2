@@ -63,7 +63,9 @@ private:
     // the SD card.
     ReturnValue_t copyBootloaderToNorFlash(bool performHammingCheck);
 #elif defined(AT91SAM9G20_EK)
-    ReturnValue_t copyBootloaderToNandFlash(bool performHammingCheck);
+    ReturnValue_t copyBootloaderToNandFlash(bool performHammingCheck,
+            bool displayInfo = false);
+    ReturnValue_t nandFlashInit(bool displayInfo = false);
 #endif
 
     // Handler functions for the SD cards
@@ -79,6 +81,7 @@ private:
     ActionHelper actionHelper;
 
     uint16_t stepCounter = 0;
+    bool oneShot = true;
 };
 
 

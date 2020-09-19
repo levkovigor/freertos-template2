@@ -89,7 +89,7 @@ endif
 ASRC += cp15_asm.S
 
 # Objects built from C source files
-ifeq ($(BOARD), at91sam9g20_ek)
+ifeq ($(BOARD), AT91SAM9G20_EK)
 CSRC += led.c
 ifdef ETHERNET
 CSRC += emac.c
@@ -121,6 +121,7 @@ CSRC += pio_it.c
 CSRC += tc.c
 CSRC += twi_at91.c
 CSRC += pmc.c
+CSRC += hamming.c
 CSRC += board_lowlevel.c
 CSRC += trace.c
 CSRC += at91_math.c

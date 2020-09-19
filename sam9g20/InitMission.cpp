@@ -228,7 +228,7 @@ void initMission(void) {
     }
 
     PeriodicTaskIF* PusService17 = TaskFactory::instance()->createPeriodicTask(
-    		"PUS_TEST_17", 2, 1024 * 4, 2, nullptr);
+    		"PUS_TEST_17", 1, 1024 * 4, 2, nullptr);
     result = PusService17->addComponent(objects::PUS_SERVICE_17);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "Add component PUS Test Service 17 failed" << std::endl;
@@ -250,7 +250,7 @@ void initMission(void) {
 
     PeriodicTaskIF* PusService200 =
             TaskFactory::instance()->createPeriodicTask(
-            "PUS_MODE_MGMT_200", 2, 2048 * 4, 1.2, nullptr);
+            "PUS_MODE_MGMT_200", 3, 2048 * 4, 1.2, nullptr);
     result = PusService200->addComponent(objects::PUS_SERVICE_200);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "Add component PUS Mode "
@@ -268,7 +268,7 @@ void initMission(void) {
 
     /* Test Task */
     PeriodicTaskIF* TestTask = TaskFactory::instance()->
-            createPeriodicTask("TEST_TASK", 2, 3072 * 4, 3, nullptr);
+            createPeriodicTask("TEST_TASK", 1, 3072 * 4, 3, nullptr);
     result = TestTask->addComponent(objects::TEST_TASK);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "Add component Test Task failed" << std::endl;
@@ -276,10 +276,17 @@ void initMission(void) {
 
     /* SD Card handler task */
     PeriodicTaskIF* SDcardTask = TaskFactory::instance()->
-            createPeriodicTask("SD_CARD_TASK",2, 2048 * 4, 1, nullptr);
+            createPeriodicTask("SD_CARD_TASK", 2, 2048 * 4, 1, nullptr);
     result = SDcardTask->addComponent(objects::SD_CARD_HANDLER);
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component SDCardHandler to SDCardTask failed" << std::endl;
+        sif::error << "Add component SDCardTask failed" << std::endl;
+    }
+
+    PeriodicTaskIF* SoftwareImageTask = TaskFactory::instance()->
+            createPeriodicTask("SW_IMG_TASK", 3, 2048 * 4, 2, nullptr);
+    result = SoftwareImageTask->addComponent(objects::SOFTWARE_IMAGE_HANDLER);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        sif::error << "Add component Software Image Task failed" << std::endl;
     }
 
     /* Core Controller task */
@@ -338,6 +345,7 @@ void initMission(void) {
     TestTask -> startTask();
     SpiComTask->startTask();
     SDcardTask -> startTask();
+    SoftwareImageTask -> startTask();
     SystemStateTask -> startTask();
     CoreController->startTask();
 
@@ -412,7 +420,7 @@ void boardTestTaskInit() {
 
     sif::info << "Starting test tasks.." << std::endl;
 
-    PollingSequenceTableTaskTest -> startTask ();
+    //PollingSequenceTableTaskTest -> startTask ();
     //SPITask -> startTask();
     //I2CTask -> startTask();
     //UART2Task -> startTask();

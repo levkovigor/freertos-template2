@@ -1,0 +1,10 @@
+#ifndef UNITTEST_HOSTED_NEWTESTS_TESTTEMPLATE_H_
+#define UNITTEST_HOSTED_NEWTESTS_TESTTEMPLATE_H_
+
+#include <cstdint>
+
+static uint8_t testVariable = 1;
+
+
+
+#endif /* UNITTEST_TESTFW_NEWTESTS_TESTTEMPLATE_H_ */

@@ -12,16 +12,6 @@ extern "C" {
 #include <board.h>
 }
 
-//class GlobalTestDataSet: public GlobDataSet {
-//public:
-//    GlobalTestDataSet(TestInit::TestIdStruct testStruct);
-//    gp_bool_t testBool;
-//    gp_uint8_t testUint8;
-//    gp_uint16_t testUint16;
-//    gp_uint32_t testUint32;
-//    gp_vec_t<float,2> testFloatVector;
-//};
-
 class AtmelTestTask: public TestTask {
 public:
     AtmelTestTask(object_id_t object_id, TestInit::TestIdStruct id_struct);
@@ -48,6 +38,7 @@ private:
     void performSupervisorTest();
     void performNorFlashTest(bool displayDebugOutput = true);
 #endif
+    void performHammingTest();
 };
 
 #endif /* SAM9G20_BOARDTEST_ATMELTESTTASK_H_ */

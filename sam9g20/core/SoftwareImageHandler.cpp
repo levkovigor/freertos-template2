@@ -4,13 +4,15 @@
 #include <sam9g20/core/SoftwareImageHandler.h>
 
 extern "C" {
-#include <board.h>
 #ifdef ISIS_OBC_G20
 #include <hal/Storage/NORflash.h>
 #elif defined(AT91SAM9G20_EK)
 // include nand flash stuff here
-#include <board_memories.h>
+#include <at91/boards/at91sam9g20-ek/board.h>
+#include <at91/boards/at91sam9g20-ek/board_memories.h>
 #include <at91/peripherals/pio/pio.h>
+#include <at91/utility/trace.h>
+#include <at91/utility/hamming.h>
 #include <at91/memories/nandflash/SkipBlockNandFlash.h>
 #endif
 
@@ -18,6 +20,20 @@ extern "C" {
 
 
 #ifdef AT91SAM9G20_EK
+//#define OP_BOOTSTRAP_on
+/// Nandflash memory size.
+static unsigned int memSize;
+/// Size of one block in the nandflash, in bytes.
+static unsigned int blockSize;
+/// Number of blocks in nandflash.
+static unsigned short numBlocks;
+/// Size of one page in the nandflash, in bytes.
+static unsigned short pageSize;
+/// Number of page per block
+static unsigned short numPagesPerBlock;
+// Nandflash bus width
+static unsigned char nfBusWidth = 16;
+
 /// Pins used to access to nandflash.
 static const Pin pPinsNf[] = {PINS_NANDFLASH};
 /// Nandflash device structure.
@@ -40,6 +56,15 @@ SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
 }
 
 ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
+    if(oneShot) {
+        Stopwatch stopwatch;
+#if defined(AT91SAM9G20_EK)
+        copyBootloaderToNandFlash(false, true);
+        stopwatch.stop(true);
+#endif
+        oneShot = false;
+    }
+
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -57,7 +82,9 @@ ReturnValue_t SoftwareImageHandler::initialize() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-#ifdef ISIS_OBC_G20
+
+
+//#ifdef ISIS_OBC_G20
 //ReturnValue_t SoftwareImageHandler::copyBootloaderToNorFlash(
 //        bool performHammingCheck) {
 //    // The bootloader will be written to the NOR-Flash or NAND-Flash.
@@ -141,15 +168,104 @@ ReturnValue_t SoftwareImageHandler::initialize() {
 //    return HasReturnvaluesIF::RETURN_OK;
 //}
 
-#elif defined(AT91SAM9G20_EK)
+//#elif defined(AT91SAM9G20_EK)
 
 ReturnValue_t SoftwareImageHandler::copyBootloaderToNandFlash(
-        bool performHammingCheck) {
+        bool performHammingCheck, bool displayInfo) {
+    if(not displayInfo) {
+        setTrace(TRACE_LEVEL_WARNING);
+    }
     BOARD_ConfigureNandFlash(nfBusWidth);
     PIO_Configure(pPinsNf, PIO_LISTSIZE(pPinsNf));
+    ReturnValue_t result = nandFlashInit(displayInfo);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash: "
+                << "Error initializing NAND-Flash." << std::endl;
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    // First block will be used for bootloader, so we erase it first.
+    uint8_t retval = SkipBlockNandFlash_EraseBlock(&skipBlockNf, 0,
+            NORMAL_ERASE);
+    if(retval != 0) {
+        sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash: "
+                 << "Error erasing first block." << std::endl;
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    uint8_t buffer[2048];
+    std::memset(buffer, 1, 1024);
+    std::memset(buffer + 1024, 5, 1024);
+    retval = SkipBlockNandFlash_WritePage(&skipBlockNf, 0, 0, buffer, NULL);
+    if(retval != 0) {
+        sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash: "
+                << "Error writing to first block." << std::endl;
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    retval = SkipBlockNandFlash_ReadPage(&skipBlockNf, 0, 0, buffer, NULL);
+    if(retval != 0) {
+        sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash: "
+                << "Error reading from first block." << std::endl;
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    if(not displayInfo) {
+        setTrace(TRACE_LEVEL_DEBUG);
+    }
+
+    sif::info << "Should be all 1: " << (int) buffer[0] << ", "
+            << (int) buffer[1023] << std::endl;
+    sif::info << "Should be all 5: " << (int) buffer[1025] << ", "
+            << (int) buffer[2047] << std::endl;
+
     return HasReturnvaluesIF::RETURN_OK;
 }
-#endif
+
+ReturnValue_t SoftwareImageHandler::nandFlashInit(bool displayInfo)
+{
+    // Configure SMC for Nandflash accesses (done each time because of old ROM codes)
+    BOARD_ConfigureNandFlash(nfBusWidth);
+    PIO_Configure(pPinsNf, PIO_LISTSIZE(pPinsNf));
+
+    //memset(&skipBlockNf, 0, sizeof(skipBlockNf));
+
+    if (SkipBlockNandFlash_Initialize(&skipBlockNf, 0, cmdBytesAddr,
+             addrBytesAddr, dataBytesAddr, nfCePin, nfRbPin)) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    // Check the data bus width of the NandFlash
+    nfBusWidth = NandFlashModel_GetDataBusWidth((struct NandFlashModel *)&skipBlockNf);
+
+    // Reconfigure bus width
+    BOARD_ConfigureNandFlash(nfBusWidth);
+
+    // Get device parameters
+    memSize = NandFlashModel_GetDeviceSizeInBytes(&skipBlockNf.ecc.raw.model);
+    blockSize = NandFlashModel_GetBlockSizeInBytes(&skipBlockNf.ecc.raw.model);
+    numBlocks = NandFlashModel_GetDeviceSizeInBlocks(&skipBlockNf.ecc.raw.model);
+    pageSize = NandFlashModel_GetPageDataSize(&skipBlockNf.ecc.raw.model);
+    numPagesPerBlock = NandFlashModel_GetBlockSizeInPages(&skipBlockNf.ecc.raw.model);
+
+    if(displayInfo) {
+        TRACE_INFO("Size of the whole device in bytes : 0x%x \n\r",
+                memSize);
+        TRACE_INFO("Size in bytes of one single block of a device : 0x%x \n\r",
+                blockSize);
+        TRACE_INFO("Number of blocks in the entire device : 0x%x \n\r",
+                numBlocks);
+        TRACE_INFO("Size of the data area of a page in bytes : 0x%x \n\r",
+                pageSize);
+        TRACE_INFO("Number of pages in the entire device : 0x%x \n\r",
+                numPagesPerBlock);
+        TRACE_INFO("Bus width : %d \n\r",nfBusWidth);
+
+    }
+
+    return HasReturnvaluesIF::RETURN_OK;
+}
+//#endif
 
 void SoftwareImageHandler::copySdCardImageToNorFlash(SdCard sdCard,
         ImageSlot imageSlot, bool performHammingCheck) {
