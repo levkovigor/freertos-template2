@@ -127,10 +127,11 @@ private:
     static constexpr DeviceCommandId_t PERFORM_SELFTEST = SELFTEST_REGISTER;
     static constexpr DeviceCommandId_t GYRO_DATA = DATA_REGISTER_START | GYRO_READ_MASK;
 
-    sid_t gyroDataSid;
+
     GyroPrimaryDataset gyroData;
-    sid_t gyroConfigSid;
     GyroAuxilliaryDataset gyroConfigSet;
+    sid_t gyroDataSid;
+    sid_t gyroConfigSid;
 
     PeriodicOperationDivider selfTestDivider;
 #ifdef DEBUG

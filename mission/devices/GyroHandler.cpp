@@ -13,8 +13,8 @@ extern "C" {
 GyroHandler::GyroHandler(object_id_t objectId, object_id_t comIF,
         CookieIF *comCookie, uint8_t switchId):
         DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId),
-		gyroDataSid(objectId, GYRO_DATA), gyroData(gyroDataSid),
-		gyroConfigSid(objectId, READ_CONFIG), gyroConfigSet(gyroConfigSid),
+		gyroData(this, GYRO_DATA), gyroConfigSet(this, READ_CONFIG),
+		gyroDataSid(gyroData.getSid()), gyroConfigSid(gyroConfigSet.getSid()),
 		selfTestDivider(5)
 #ifdef DEBUG
 , debugDivider(20)

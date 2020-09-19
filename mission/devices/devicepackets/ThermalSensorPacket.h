@@ -10,19 +10,32 @@ enum ThermalSensorPoolIds: lp_id_t {
 
 
 class ThermalSensorDataset:
-        public StaticLocalDataSet<sizeof(float) + sizeof(uint8_t)> {
-public:
+		public StaticLocalDataSet<sizeof(float) + sizeof(uint8_t)> {
+		public:
 
-    ThermalSensorDataset(sid_t sid):
-            StaticLocalDataSet(sid),
-            temperatureCelcius(ThermalSensorPoolIds::TEMPERATURE_C,
-            		sid.objectId, this),
-            errorByte(ThermalSensorPoolIds::FAULT_BYTE,
-            		sid.objectId, this) {
-    }
+	/**
+	 * Constructor used by owner and data creators like device handlers.
+	 * @param owner
+	 * @param setId
+	 */
+	ThermalSensorDataset(HasLocalDataPoolIF* owner, uint32_t setId):
+		StaticLocalDataSet(owner, setId) {
+	}
 
-    lp_var_t<float> temperatureCelcius;
-    lp_var_t<uint8_t> errorByte;
+	/**
+	 * Constructor used by data users like controllers.
+	 * @param sid
+	 */
+	ThermalSensorDataset(sid_t sid):
+		StaticLocalDataSet(sid) {
+	}
+
+	lp_var_t<float> temperatureCelcius = lp_var_t<float>(
+			ThermalSensorPoolIds::TEMPERATURE_C,
+			sid.objectId, this);
+	lp_var_t<uint8_t> errorByte = lp_var_t<uint8_t>(
+			ThermalSensorPoolIds::FAULT_BYTE,
+			sid.objectId, this);
 };
 
 
