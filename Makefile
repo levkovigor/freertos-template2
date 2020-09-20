@@ -520,6 +520,7 @@ ifdef SHOW_DETAILS
 	$(CXX) $$(CPPFLAGS) $$(CXXFLAGS) -D$(1) -c -o $$@ $$<
 else
 	@$(CXX) $$(CPPFLAGS) $$(CXXFLAGS) -D$(1) -c -o $$@ $$<
+endif
 
 $(OBJDIR)/$(1)/%.o: %.c 
 $(OBJDIR)/$(1)/%.o: %.c $(DEPENDDIR)/%.d | $(DEPENDDIR) 

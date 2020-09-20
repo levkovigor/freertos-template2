@@ -5,6 +5,7 @@
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/ipc/CommandMessage.h>
 #include <fsfw/memory/FileSystemMessage.h>
+#include <sam9g20/memory/SDCardAccess.h>
 
 SDCardHandler::SDCardHandler(object_id_t objectId_):SystemObject(objectId_){
     commandQueue = QueueFactory::instance()->createMessageQueue(queueDepth);
@@ -21,13 +22,6 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode){
     return result;
 }
 
-FileSystemAccess::FileSystemAccess(VolumeId volumeId): volumeId(volumeId) {
-    accessSuccess = SDCardHandler::openFilesystem(this->volumeId);
-}
-
-FileSystemAccess::~FileSystemAccess() {
-    SDCardHandler::closeFilesystem(volumeId);
-}
 
 ReturnValue_t SDCardHandler::handleMessages() {
     CommandMessage message;
@@ -39,9 +33,15 @@ ReturnValue_t SDCardHandler::handleMessages() {
         return result;
     }
 
-    FileSystemAccess fileSystemAccess;
-    if(fileSystemAccess.accessSuccess == HasReturnvaluesIF::RETURN_OK){
+    SDCardAccess sdCardAccess = SDCardAccess(preferredVolume);
+    if(sdCardAccess.accessSuccess == HasReturnvaluesIF::RETURN_OK){
         fileSystemInitialized = true;
+    }
+    else if(sdCardAccess.accessSuccess == SDCardAccess::OTHER_VOLUME_ACTIVE) {
+    	// what to do now? we lose old files? maybe a reboot would help..
+    }
+    else {
+    	// not good, reboot?
     }
 
     switch(message.getCommand()) {
@@ -94,83 +94,6 @@ MessageQueueId_t SDCardHandler::getCommandQueue() const{
     return commandQueue->getId();
 }
 
-
-ReturnValue_t SDCardHandler::openFilesystem(VolumeId volume){
-    /* Initialize the memory to be used by the filesystem */
-    hcc_mem_init();
-
-    /* Initialize the filesystem */
-    int result = fs_init();
-    if(result != F_NO_ERROR){
-        sif::error << "SDCardHandler::openFilesystem: fs_init failed with "
-                << "code" << result;
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-    /* Register this task with filesystem */
-    result = f_enterFS();
-    if(result != F_NO_ERROR){
-        sif::error << "SDCardHandler::openFilesystem: fs_enterFS failed with "
-                << "code" << result;
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-    result = selectSDCard(volume);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "SD Card " << static_cast<uint8_t>(VolumeId::SD_CARD_0)
-                << " not present or defect" << std::endl;
-        return HasReturnvaluesIF::RETURN_FAILED;
-        /* Try to access the second sd card */
-        result = selectSDCard(volume);
-        if(result != HasReturnvaluesIF::RETURN_OK){
-            sif::error << "SD Card " << static_cast<uint8_t>(VolumeId::SD_CARD_1)
-                    << " not present or defect" << std::endl;
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
-    }
-    return HasReturnvaluesIF::RETURN_OK;
-}
-
-ReturnValue_t SDCardHandler::closeFilesystem(VolumeId volumeId) {
-    f_delvolume(static_cast<uint8_t>(volumeId));
-    f_releaseFS();
-    int result = fs_delete();
-    if(result != 0) {
-        sif::error << "SDCardHandler::closeFilesystem: fs_delete failed with "
-                << "code" << result;
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-    return hcc_mem_delete();
-}
-
-
-ReturnValue_t SDCardHandler::selectSDCard(VolumeId volumeID){
-    /* Initialize volID as safe */
-    int result = f_initvolume(0, atmel_mcipdc_initfunc,
-            static_cast<uint8_t>(volumeID));
-
-    if((result != F_NO_ERROR) and (result != F_ERR_NOTFORMATTED)) {
-        sif::error << "SDCardHandler::selectSDCard: f_initvolume failed with "
-                << "code" << result;
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-    if(result == F_ERR_NOTFORMATTED) {
-        /**
-         *  The file system has not been formatted to safeFat yet
-         *  Therefore format filesystem now
-         */
-        result = f_format( 0, F_FAT32_MEDIA );
-        if(result != F_NO_ERROR) {
-            sif::error << "SDCardHandler::selectSDCard: f_format failed with "
-                    << "code" << result;
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
-    }
-
-    return HasReturnvaluesIF::RETURN_OK;
-}
 
 
 ReturnValue_t SDCardHandler::writeToFile(const char* repositoryPath,

@@ -6,6 +6,7 @@
 #include <fsfw/memory/AcceptsMemoryMessagesIF.h>
 #include <fsfw/ipc/MessageQueueIF.h>
 #include <fsfw/memory/HasFileSystemIF.h>
+#include <sam9g20/memory/SDCardApi.h>
 
 extern "C"{
     #include <hcc/api_fat.h>
@@ -14,27 +15,6 @@ extern "C"{
 }
 
 
-enum class VolumeId {
-    SD_CARD_0 = 0,
-    SD_CARD_1 = 1
-};
-
-
-/**
- * @brief   This access class can be created locally to initiate access to the
- *          file system.
- * @details
- * It will automatically close the access when being destroyed
- */
-class FileSystemAccess {
-public:
-    FileSystemAccess(VolumeId volumeId = VolumeId::SD_CARD_0);
-    ~FileSystemAccess();
-
-    ReturnValue_t accessSuccess = HasReturnvaluesIF::RETURN_OK;
-private:
-    VolumeId volumeId;
-};
 
 /**
  * Additional abstraction layer to encapsulate access to SD cards
@@ -43,7 +23,7 @@ private:
 class SDCardHandler : public SystemObject,
         public ExecutableObjectIF,
         public HasFileSystemIF {
-    friend class FileSystemAccess;
+    friend class SDCardAccess;
 public:
     static constexpr uint8_t INTERFACE_ID = CLASS_ID::SD_CARD_HANDLER;
     static constexpr ReturnValue_t FOLDER_ALREADY_EXISTS = MAKE_RETURN_CODE(0x01);
@@ -56,9 +36,8 @@ public:
     ReturnValue_t performOperation(uint8_t operationCode = 0);
 
 private:
-    static ReturnValue_t openFilesystem(VolumeId volumeId = VolumeId::SD_CARD_0);
-    static ReturnValue_t closeFilesystem(VolumeId volumeId = VolumeId::SD_CARD_0);
-    static ReturnValue_t selectSDCard(VolumeId volumeID);
+
+    //static ReturnValue_t selectSDCard(VolumeId volumeID);
 
     ReturnValue_t handleMessages();
 
@@ -108,6 +87,9 @@ private:
     uint32_t readReplyMaxLen = 300;
 
     bool fileSystemInitialized = false;
+
+    // TODO: make this configurable parameter.
+    VolumeId preferredVolume = SD_CARD_0;
 };
 
 #endif /* SAM9G20_MEMORY_SDCARDHANDLER_H_ */
