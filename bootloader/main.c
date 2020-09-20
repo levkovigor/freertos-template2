@@ -22,7 +22,12 @@
 #include <hal/Timing/RTT.h>
 
 #include <cp15/cp15.h>
+
+#include "config/bootloaderConfig.h"
+#if DEBUG_IO_LIB == 1
 #include <utility/trace.h>
+#endif
+
 #include <peripherals/dbgu/dbgu.h>
 #include <peripherals/pio/pio.h>
 #include <peripherals/aic/aic.h>
@@ -46,6 +51,8 @@
 #endif
 
 #define WATCHDOG_KICK_INTERVAL_MS 10
+
+
 
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
 void initialize_iobc_peripherals();
@@ -86,17 +93,20 @@ int main()
     int retval = WDT_startWatchdogKickTask(
             WATCHDOG_KICK_INTERVAL_MS / portTICK_RATE_MS, FALSE);
     if(retval != 0) {
+#if DEBUG_IO_LIB == 1
         TRACE_ERROR("Starting iOBC Watchdog Feed Task failed!\r\n");
+#endif
     }
 #else
     initiate_external_watchdog();
 #endif
 
+#if DEBUG_IO_LIB == 1
     TRACE_INFO_WP("\n\r-- SOURCE Bootloader --\n\r");
     TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME);
     TRACE_INFO_WP("-- Software version v%d.%d --\n\r", SW_VERSION, SW_SUBVERSION);
     TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
-
+#endif
     //-------------------------------------------------------------------------
     // Enable I-Cache
     //-------------------------------------------------------------------------
@@ -105,7 +115,9 @@ int main()
     //-------------------------------------------------------------------------
     // Configure SDRAM
     //-------------------------------------------------------------------------
+#if DEBUG_IO_LIB == 1
     TRACE_INFO("Initiating SDRAM\n\r");
+#endif
     BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
 
 #ifndef ISIS_OBC_G20
@@ -119,10 +131,13 @@ int main()
             &handler_task_handle_glob);
     xTaskCreate(init_task, (const char*)"INIT_TASK", 1024,
             handler_task_handle_glob , 1, NULL);
-
+#if DEBUG_IO_LIB == 1
     TRACE_INFO("Starting FreeRTOS task scheduler.\n\r");
+#endif
     vTaskStartScheduler();
+#if DEBUG_IO_LIB == 1
     TRACE_ERROR("FreeRTOS scheduler error!\n\r");
+#endif
     for(;;) {};
 #else
     // Configure RTT for second time base.
@@ -154,7 +169,9 @@ void idle_loop() {
     for(;;) {
         uint32_t curr_time = RTT_GetTime();
         if(curr_time - last_time > 60) {
+#if DEBUG_IO_LIB == 1
             TRACE_INFO("Bootloader idle..\n\r");
+#endif
             last_time = curr_time;
         }
     }
@@ -198,7 +215,9 @@ void init_task(void * args) {
 }
 
 void handler_task(void * args) {
+#if DEBUG_IO_LIB == 1
     TRACE_INFO("Running Handler task..\n\r");
+#endif
     // Wait for initialization to finish
     vTaskSuspend(NULL);
 
