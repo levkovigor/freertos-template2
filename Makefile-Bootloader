@@ -40,7 +40,7 @@ BOARD_NAME = iOBC
 MEMORY_TYPE = norflash
 CUSTOM_DEFINES += -D$(MEMORY_TYPE)
 else 
-BOARD = at91sam9g20_ek
+BOARD = AT91SAM9G20_ek
 BOARD_NAME = at91ek
 # AT91-SAM9G20-EK Configuration:
 # Code will be written to NAND-Flash.

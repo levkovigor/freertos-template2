@@ -1,8 +1,18 @@
+#include "main.h"
+#include "config/bootloaderConfig.h"
+
 #include <board.h>
 #include <AT91SAM9G20.h>
 #include <board_memories.h>
+#include <peripherals/dbgu/dbgu.h>
+#include <peripherals/pio/pio.h>
+#include <peripherals/aic/aic.h>
+#include <peripherals/pio/pio.h>
+#include <cp15/cp15.h>
 
-#include "main.h"
+#include <core/timer.h>
+#include <hal/Timing/RTT.h>
+
 
 // The AT91SAM9G20-EK does not have a pre-installed NOR-Flash. Therefore,
 // we only include the NorFlash boot header for iOBC projects.
@@ -12,31 +22,18 @@
 #include <core/bootNandFlash.h>
 #endif
 
-#include <core/timer.h>
-
-#ifndef freeRTOS
-#include <core/watchdog.h>
-#else
-#include <hal/Timing/WatchDogTimer.h>
-#endif
-#include <hal/Timing/RTT.h>
-
-#include <cp15/cp15.h>
-
-#include "config/bootloaderConfig.h"
-#if DEBUG_IO_LIB == 1
-#include <utility/trace.h>
-#endif
-
-#include <peripherals/dbgu/dbgu.h>
-#include <peripherals/pio/pio.h>
-#include <peripherals/aic/aic.h>
-#include <peripherals/pio/pio.h>
 
 #ifdef freeRTOS
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <FreeRTOSConfig.h>
+#include <hal/Timing/WatchDogTimer.h>
+#else
+#include <core/watchdog.h>
+#endif
+
+#if DEBUG_IO_LIB == 1
+#include <utility/trace.h>
 #endif
 
 #include <stdbool.h>
@@ -93,7 +90,7 @@ int main()
     //-------------------------------------------------------------------------
 #ifdef ISIS_OBC_G20
     int retval = WDT_startWatchdogKickTask(
-            WATCHDOG_KICK_INTERVAL_MS / portTICK_RATE_MS, FALSE);
+            WATCHDOG_KICK_INTERVAL_MS / portTICK_RATE_MS, 0);
     if(retval != 0) {
 #if DEBUG_IO_LIB == 1
         TRACE_ERROR("Starting iOBC Watchdog Feed Task failed!\r\n");
@@ -126,13 +123,16 @@ int main()
     feed_watchdog_if_necessary();
 #endif
 
+    //-------------------------------------------------------------------------
+    // iOBC Bootloader
+    //-------------------------------------------------------------------------
 #ifdef freeRTOS
     // otherwise, try to copy SDCard binary to SDRAM
     // Core Task. Custom interrupts should be configured inside a task.
-    xTaskCreate(handler_task, (const char*)"HANDLER_TASK", 1024, NULL, 2,
+    xTaskCreate(handler_task, "HANDLER_TASK", 1024, NULL, 2,
             &handler_task_handle_glob);
-    xTaskCreate(init_task, (const char*)"INIT_TASK", 1024,
-            handler_task_handle_glob , 1, NULL);
+    xTaskCreate(init_task, "INIT_TASK", 1024, handler_task_handle_glob,
+            1, NULL);
 #if DEBUG_IO_LIB == 1
     TRACE_INFO("Starting FreeRTOS task scheduler.\n\r");
 #endif
@@ -142,10 +142,13 @@ int main()
 #endif
     for(;;) {};
 #else
+
     // Configure RTT for second time base.
     RTT_start();
 
-    // Do some copy stuff here.
+    //-------------------------------------------------------------------------
+    // AT91 Bootloader
+    //-------------------------------------------------------------------------
     perform_bootloader_core_operation();
 
     // to see its alive, will not be reached later.
@@ -156,14 +159,19 @@ int main()
 
 
 void perform_bootloader_core_operation() {
-    // do all the fancy stuff here.
-    // verify hamming code of image in sdram. code size is either written in
-    // memory or extracted from FRAM.
-    // if successfull, copy norflash to sdram
-//    int result = copy_norflash_binary_to_sdram("Test", 256);
-//    if(result != 0) {
-//        // error
-//    }
+     // do all the fancy stuff here.
+     // verify hamming code of image in sdram. code size is either written in
+     // memory or extracted from FRAM.
+     // if successfull, copy norflash to sdram
+#ifdef ISIS_OBC_G20
+    int result = copy_norflash_binary_to_sdram("Test", 256);
+#elif defined(AT91SAM9G20_EK)
+    int result = copy_nandflash_binary_to_sdram();
+#endif
+    if(result != 0) {
+        // error
+    }
+    go_to_jump_address(SDRAM_DESTINATION, 0);
 }
 
 void idle_loop() {
