@@ -1,6 +1,11 @@
 #ifndef BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_
 #define BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_
 
+#ifdef AT91SAM9G20_EK
+// This should translate to the second block of the NAND flash.
+#define NAND_FLASH_OFFSET 0x20000
+#endif
+
 // Can be used to disable printouts to reduce code size (does not make much of
 // a difference, most of the AT91 lib uses IO so it iss difficult to remove it)
 #define DEBUG_IO_LIB 1

@@ -1,4 +1,5 @@
 #include "bootNandFlash.h"
+#include "../config/bootloaderConfig.h"
 #include <at91/boards/at91sam9g20-ek/board.h>
 #include <at91/boards/at91sam9g20-ek/board_memories.h>
 #include <at91/utility/trace.h>
@@ -39,7 +40,7 @@ static const Pin nfRbPin = BOARD_NF_RB_PIN;
 
 int copy_nandflash_binary_to_sdram() {
     NandInit();
-    BOOT_NAND_CopyBin(0, 0);
+    BOOT_NAND_CopyBin(0x20000, BINARY_SIZE);
     return 0;
 }
 
