@@ -25,9 +25,8 @@ SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
 
 ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
     if(oneShot) {
-        Stopwatch stopwatch;
 #if defined(AT91SAM9G20_EK)
-        //copyBootloaderToNandFlash(false, true);
+        copyBootloaderToNandFlash(false, true);
 #endif
         oneShot = false;
     }
@@ -193,6 +192,7 @@ static const Pin nfRbPin = BOARD_NF_RB_PIN;
 
 ReturnValue_t SoftwareImageHandler::copyBootloaderToNandFlash(
         bool performHammingCheck, bool displayInfo) {
+	Stopwatch stopwatch;
     if(not displayInfo) {
         setTrace(TRACE_LEVEL_WARNING);
     }
