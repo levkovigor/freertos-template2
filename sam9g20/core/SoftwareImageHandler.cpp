@@ -26,7 +26,7 @@ SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
 ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
     if(oneShot) {
 #if defined(AT91SAM9G20_EK)
-        copyBootloaderToNandFlash(false, true);
+        //copyBootloaderToNandFlash(false, true);
 #endif
         oneShot = false;
     }

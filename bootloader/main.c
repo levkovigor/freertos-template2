@@ -166,7 +166,7 @@ void perform_bootloader_core_operation() {
 #ifdef ISIS_OBC_G20
     int result = copy_norflash_binary_to_sdram("Test", 256);
 #elif defined(AT91SAM9G20_EK)
-    int result = copy_nandflash_binary_to_sdram();
+    int result = copy_nandflash_binary_to_sdram(false);
 #endif
     if(result != 0) {
         // error

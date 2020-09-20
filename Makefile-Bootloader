@@ -124,7 +124,7 @@ USE_AT91LIB_STDIO_AND_STRING = 1
 
 # Dynamic Traces to allow change of trace level at run-time by 
 # setting traceLevel global variable
-DYN_TRACES = 0
+DYN_TRACES = 1
 
 # Optimization level. -O0 for debugging, -Os for size. -O0 is default.
 OPTIMIZATION = -O0

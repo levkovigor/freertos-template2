@@ -38,9 +38,18 @@ static const Pin nfRbPin = BOARD_NF_RB_PIN;
 #define BOOT_NAND_ERROR_NO_DEVICE    1 /// No nand devices has been detected
 #define BOOT_NAND_ERROR_GP           2
 
-int copy_nandflash_binary_to_sdram() {
+int copy_nandflash_binary_to_sdram(bool enable_full_printout) {
+    if(!enable_full_printout) {
+        setTrace(TRACE_LEVEL_WARNING);
+    }
+
     NandInit();
     BOOT_NAND_CopyBin(0x20000, BINARY_SIZE);
+
+    if(!enable_full_printout) {
+        setTrace(TRACE_LEVEL_DEBUG);
+    }
+
     return 0;
 }
 
