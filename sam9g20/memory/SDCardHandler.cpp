@@ -5,8 +5,9 @@
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/ipc/CommandMessage.h>
 #include <fsfw/memory/FileSystemMessage.h>
+#include <sam9g20/memory/SDCardAccess.h>
 
-SDCardHandler::SDCardHandler(object_id_t objectId_):SystemObject(objectId_){
+SDCardHandler::SDCardHandler(object_id_t objectId):SystemObject(objectId) {
     commandQueue = QueueFactory::instance()->createMessageQueue(queueDepth);
     IPCStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
 }
@@ -17,64 +18,123 @@ SDCardHandler::~SDCardHandler(){
 }
 
 ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode){
-    ReturnValue_t result = handleMessages();
-    return result;
-}
+	CommandMessage message;
 
-FileSystemAccess::FileSystemAccess(VolumeId volumeId): volumeId(volumeId) {
-    accessSuccess = SDCardHandler::openFilesystem(this->volumeId);
-}
+	// Check for first message
+	ReturnValue_t result = commandQueue->receiveMessage(&message);
+	if(result == MessageQueueIF::EMPTY) {
+		return HasReturnvaluesIF::RETURN_OK;
+	}
+	else if(result != HasReturnvaluesIF::RETURN_OK) {
+		return result;
+	}
 
-FileSystemAccess::~FileSystemAccess() {
-    SDCardHandler::closeFilesystem(volumeId);
-}
-
-ReturnValue_t SDCardHandler::handleMessages() {
-    CommandMessage message;
-    ReturnValue_t result = commandQueue->receiveMessage(&message);
-    if(result == MessageQueueIF::EMPTY) {
-        return HasReturnvaluesIF::RETURN_OK;
-    }
-    else if(result != HasReturnvaluesIF::RETURN_OK) {
-        return result;
-    }
-
-    FileSystemAccess fileSystemAccess;
-    if(fileSystemAccess.accessSuccess == HasReturnvaluesIF::RETURN_OK){
-        fileSystemInitialized = true;
+    VolumeId volumeToOpen = determineVolumeToOpen();
+    // File system message received, open access to SD Card which will
+    // be closed automatically on function exit.
+    SDCardAccess sdCardAccess = SDCardAccess(volumeToOpen);
+    result = handleAccessResult(sdCardAccess.accessResult);
+    if(result == HasReturnvaluesIF::RETURN_FAILED) {
+    	// No SD card could be opened.
+    	return result;
     }
 
-    switch(message.getCommand()) {
+    // handle first message. Returnvalue ignored for now.
+	result = handleMessage(&message);
+	// Returnvalue ignored for now.
+	return handleMultipleMessages(&message);
+}
+
+VolumeId SDCardHandler::determineVolumeToOpen() {
+    if(not fileSystemWasUsedOnce) {
+    	return preferredVolume;
+    }
+    else {
+    	return activeVolume;
+    }
+}
+
+ReturnValue_t SDCardHandler::handleAccessResult(ReturnValue_t accessResult) {
+    if(accessResult == HasReturnvaluesIF::RETURN_OK){
+    	fileSystemWasUsedOnce = true;
+    }
+    else if(accessResult == SDCardAccess::OTHER_VOLUME_ACTIVE) {
+    	if(preferredVolume == SD_CARD_0) {
+    		activeVolume = SD_CARD_1;
+    	}
+    	else {
+    		activeVolume = SD_CARD_0;
+    	}
+    	fileSystemWasUsedOnce = true;
+    	// what to do now? we lose old files? maybe a reboot would help..
+    	triggerEvent(SD_CARD_SWITCHED, activeVolume, 0);
+    }
+    else {
+    	// not good, reboot?
+    	triggerEvent(SD_CARD_ACCESS_FAILED, 0, 0);
+    	return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+
+ReturnValue_t SDCardHandler::handleMultipleMessages(CommandMessage *message) {
+	ReturnValue_t status = HasReturnvaluesIF::RETURN_OK;
+	for(uint8_t counter = 1;
+			counter < MAX_FILE_MESSAGES_HANDLED_PER_CYCLE;
+			counter++)
+	{
+		ReturnValue_t result = commandQueue->receiveMessage(message);
+		if(result == MessageQueueIF::EMPTY) {
+			return HasReturnvaluesIF::RETURN_OK;
+		}
+		else if(result != HasReturnvaluesIF::RETURN_OK) {
+			return result;
+		}
+
+		result = handleMessage(message);
+		if(result != HasReturnvaluesIF::RETURN_OK) {
+			status = result;
+		}
+	}
+	return status;
+}
+
+
+ReturnValue_t SDCardHandler::handleMessage(CommandMessage* message) {
+	ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
+
+    switch(message->getCommand()) {
     case FileSystemMessage::DELETE_FILE: {
-        result = handleDeleteFileCommand(&message);
+        result = handleDeleteFileCommand(message);
         if(result != HasReturnvaluesIF::RETURN_OK){
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         break;
     }
     case FileSystemMessage::CREATE_DIRECTORY: {
-        result = handleCreateDirectoryCommand(&message);
+        result = handleCreateDirectoryCommand(message);
         if(result != HasReturnvaluesIF::RETURN_OK){
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         break;
     }
     case FileSystemMessage::DELETE_DIRECTORY: {
-        result = handleDeleteDirectoryCommand(&message);
+        result = handleDeleteDirectoryCommand(message);
         if(result != HasReturnvaluesIF::RETURN_OK){
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         break;
     }
     case FileSystemMessage::WRITE: {
-        result = handleWriteCommand(&message);
+        result = handleWriteCommand(message);
         if(result != HasReturnvaluesIF::RETURN_OK){
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         break;
     }
     case FileSystemMessage::READ: {
-        result = handleReadCommand(&message);
+        result = handleReadCommand(message);
         if(result != HasReturnvaluesIF::RETURN_OK){
             return HasReturnvaluesIF::RETURN_FAILED;
         }
@@ -94,83 +154,6 @@ MessageQueueId_t SDCardHandler::getCommandQueue() const{
     return commandQueue->getId();
 }
 
-
-ReturnValue_t SDCardHandler::openFilesystem(VolumeId volume){
-    /* Initialize the memory to be used by the filesystem */
-    hcc_mem_init();
-
-    /* Initialize the filesystem */
-    int result = fs_init();
-    if(result != F_NO_ERROR){
-        sif::error << "SDCardHandler::openFilesystem: fs_init failed with "
-                << "code" << result;
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-    /* Register this task with filesystem */
-    result = f_enterFS();
-    if(result != F_NO_ERROR){
-        sif::error << "SDCardHandler::openFilesystem: fs_enterFS failed with "
-                << "code" << result;
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-    result = selectSDCard(volume);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "SD Card " << static_cast<uint8_t>(VolumeId::SD_CARD_0)
-                << " not present or defect" << std::endl;
-        return HasReturnvaluesIF::RETURN_FAILED;
-        /* Try to access the second sd card */
-        result = selectSDCard(volume);
-        if(result != HasReturnvaluesIF::RETURN_OK){
-            sif::error << "SD Card " << static_cast<uint8_t>(VolumeId::SD_CARD_1)
-                    << " not present or defect" << std::endl;
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
-    }
-    return HasReturnvaluesIF::RETURN_OK;
-}
-
-ReturnValue_t SDCardHandler::closeFilesystem(VolumeId volumeId) {
-    f_delvolume(static_cast<uint8_t>(volumeId));
-    f_releaseFS();
-    int result = fs_delete();
-    if(result != 0) {
-        sif::error << "SDCardHandler::closeFilesystem: fs_delete failed with "
-                << "code" << result;
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-    return hcc_mem_delete();
-}
-
-
-ReturnValue_t SDCardHandler::selectSDCard(VolumeId volumeID){
-    /* Initialize volID as safe */
-    int result = f_initvolume(0, atmel_mcipdc_initfunc,
-            static_cast<uint8_t>(volumeID));
-
-    if((result != F_NO_ERROR) and (result != F_ERR_NOTFORMATTED)) {
-        sif::error << "SDCardHandler::selectSDCard: f_initvolume failed with "
-                << "code" << result;
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-    if(result == F_ERR_NOTFORMATTED) {
-        /**
-         *  The file system has not been formatted to safeFat yet
-         *  Therefore format filesystem now
-         */
-        result = f_format( 0, F_FAT32_MEDIA );
-        if(result != F_NO_ERROR) {
-            sif::error << "SDCardHandler::selectSDCard: f_format failed with "
-                    << "code" << result;
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
-    }
-
-    return HasReturnvaluesIF::RETURN_OK;
-}
 
 
 ReturnValue_t SDCardHandler::writeToFile(const char* repositoryPath,
@@ -231,6 +214,8 @@ ReturnValue_t SDCardHandler::writeToFile(const char* repositoryPath,
 }
 
 
+// TODO: Move low level stuff to C API so bootloader or other files can use
+// them directly.
 ReturnValue_t SDCardHandler::deleteFile(const char* repositoryPath,
         const char* filename){
     int result;
@@ -404,13 +389,13 @@ ReturnValue_t SDCardHandler::handleCreateDirectoryCommand(
     result = createDirectory(command.getRepositoryPath(),
             command.getDirname());
     if (result != HasReturnvaluesIF::RETURN_OK) {
+    	// If the folder already exists, count that as  success..
         if(result != FOLDER_ALREADY_EXISTS) {
             sif::error << "SDCardHandler::handleCreateDirectoryCommand: "
                     << "Creating directory " << command.getDirname()
                     << " failed" << std::endl;
+            sendCompletionReply(false, result);
         }
-        sendCompletionReply(false, result);
-        return HasReturnvaluesIF::RETURN_FAILED;
     }
 
     sendCompletionReply();
@@ -587,3 +572,4 @@ ReturnValue_t SDCardHandler::changeDirectory(const char* repositoryPath) {
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
+

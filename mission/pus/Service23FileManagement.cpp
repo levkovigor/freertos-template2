@@ -64,30 +64,37 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
 		uint8_t subservice, const uint8_t *tcData, size_t tcDataLen,
 		uint32_t *state, object_id_t objectId) {
 	ReturnValue_t result;
-	if(subservice == Subservice::CREATE_FILE){
-
+	switch(subservice) {
+	case(Subservice::CREATE_FILE): {
+		break;
 	}
-	if(subservice == Subservice::DELETE_FILE){
-		result = prepareDeleteFileCommand(message, tcData, tcDataLen);
-	}
-	else if(subservice == Subservice::CREATE_DIRECTORY){
+	case(Subservice::CREATE_DIRECTORY): {
 		result = prepareCreateDirectoryCommand(message, tcData, tcDataLen);
+		break;
 	}
-	else if(subservice == Subservice::DELETE_DIRECTORY){
+	case(Subservice::DELETE_FILE): {
+		result = prepareDeleteFileCommand(message, tcData, tcDataLen);
+		break;
+	}
+	case(Subservice::DELETE_DIRECTORY): {
 		result = prepareDeleteDirectoryCommand(message, tcData, tcDataLen);
+		break;
 	}
-	else if(subservice ==Subservice::WRITE){
+	case(Subservice::WRITE): {
 		result = prepareWriteCommand(message, tcData, tcDataLen);
+		break;
 	}
-	else if(subservice ==Subservice::READ){
+	case(Subservice::READ): {
 		result = prepareReadCommand(message, tcData, tcDataLen);
+		break;
 	}
-	else {
-		result = RETURN_FAILED;
+	default: {
+		result = HasReturnvaluesIF::RETURN_FAILED;
+	}
+
 	}
 
 	return result;
-
 }
 
 
@@ -95,7 +102,8 @@ ReturnValue_t Service23FileManagement::prepareDeleteFileCommand(
 		CommandMessage *message, const uint8_t *tcData, uint32_t tcDataLen) {
 	store_address_t parameterAddress;
 	/* Add data without the objectId to the IPC store */
-	ReturnValue_t result = IPCStore->addData(&parameterAddress, tcData + sizeof(object_id_t), tcDataLen - sizeof(object_id_t));
+	ReturnValue_t result = IPCStore->addData(&parameterAddress,
+			tcData + sizeof(object_id_t), tcDataLen - sizeof(object_id_t));
 	if(result == HasReturnvaluesIF::RETURN_OK){
 		FileSystemMessage::setDeleteFileCommand(message, parameterAddress);
 	}
@@ -111,7 +119,8 @@ ReturnValue_t Service23FileManagement::prepareCreateDirectoryCommand(
 		CommandMessage *message, const uint8_t *tcData, uint32_t tcDataLen) {
 	store_address_t parameterAddress;
 	/* Add data without the objectId to the IPC store */
-	ReturnValue_t result = IPCStore->addData(&parameterAddress, tcData + sizeof(object_id_t), tcDataLen - sizeof(object_id_t));
+	ReturnValue_t result = IPCStore->addData(&parameterAddress,
+			tcData + sizeof(object_id_t), tcDataLen - sizeof(object_id_t));
 	if(result == HasReturnvaluesIF::RETURN_OK){
 		FileSystemMessage::setCreateDirectoryCommand(message, parameterAddress);
 	}
@@ -127,7 +136,8 @@ ReturnValue_t Service23FileManagement::prepareDeleteDirectoryCommand(
 		CommandMessage *message, const uint8_t *tcData, uint32_t tcDataLen) {
 	store_address_t parameterAddress;
 	/* Add data without the objectId to the IPC store */
-	ReturnValue_t result = IPCStore->addData(&parameterAddress, tcData + sizeof(object_id_t), tcDataLen - sizeof(object_id_t));
+	ReturnValue_t result = IPCStore->addData(&parameterAddress,
+			tcData + sizeof(object_id_t), tcDataLen - sizeof(object_id_t));
 	if(result == HasReturnvaluesIF::RETURN_OK){
 		FileSystemMessage::setDeleteDirectoryCommand(message, parameterAddress);
 	}
@@ -145,9 +155,11 @@ ReturnValue_t Service23FileManagement::prepareWriteCommand(
 
 	// store additional parameters into the Inter Process Communication Store
 	store_address_t parameterAddress;
-	ReturnValue_t result = IPCStore->addData(&parameterAddress, tcData + sizeof(object_id_t), tcDataLen - sizeof(object_id_t));
+	ReturnValue_t result = IPCStore->addData(&parameterAddress,
+			tcData + sizeof(object_id_t), tcDataLen - sizeof(object_id_t));
 	if(result == HasReturnvaluesIF::RETURN_OK){
-		// setWriteCommand expects a Command Message and a store address pointing to the write packet
+		// setWriteCommand expects a Command Message and a store address
+		// pointing to the write packet
 		FileSystemMessage::setWriteCommand(message, parameterAddress);
 	}
 	else{
@@ -163,8 +175,8 @@ ReturnValue_t Service23FileManagement::prepareReadCommand(
 		uint32_t tcDataLen) {
 
 	store_address_t parameterAddress;
-	ReturnValue_t result = IPCStore->addData(&parameterAddress, tcData + sizeof(object_id_t),
-			tcDataLen - sizeof(object_id_t));
+	ReturnValue_t result = IPCStore->addData(&parameterAddress,
+			tcData + sizeof(object_id_t), tcDataLen - sizeof(object_id_t));
 	if (result == HasReturnvaluesIF::RETURN_OK) {
 		FileSystemMessage::setReadCommand(message, parameterAddress);
 	} else {
@@ -179,13 +191,17 @@ ReturnValue_t Service23FileManagement::handleReply(const CommandMessage* reply,
 		Command_t previousCommand, uint32_t* state,
 		CommandMessage* optionalNextCommand, object_id_t objectId,
 		bool* isStep) {
-	Command_t reply_id = reply->getCommand();
+	Command_t replyId = reply->getCommand();
 	ReturnValue_t result;
-	switch(reply_id)  {
+	switch(replyId)  {
 	case FileSystemMessage::COMPLETION_SUCCESS: {
-		result = EXECUTION_COMPLETE;
-		break;
+		return CommandingServiceBase::EXECUTION_COMPLETE;
 	}
+	case FileSystemMessage::COMPLETION_FAILED: {
+		failureParameter1 = FileSystemMessage::getFailureReply(reply);
+		return HasReturnvaluesIF::RETURN_FAILED;
+	}
+
 	case FileSystemMessage::READ_REPLY: {
 		store_address_t storeId = FileSystemMessage::getStoreId(reply);
 		size_t size = 0;
@@ -199,10 +215,7 @@ ReturnValue_t Service23FileManagement::handleReply(const CommandMessage* reply,
 		result = IPCStore ->deleteData(storeId);
 		break;
 	}
-	case FileSystemMessage::COMPLETION_FAILED: {
-		result = HasReturnvaluesIF::RETURN_FAILED;
-		break;
-	}
+
 	default:
 		result = INVALID_REPLY;
 	}
