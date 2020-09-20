@@ -1,8 +1,8 @@
 #ifndef BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_
 #define BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_
 
-
-// Can be used to disable printouts to reduce code size.
+// Can be used to disable printouts to reduce code size (does not make much of
+// a difference, most of the AT91 lib uses IO so it iss difficult to remove it)
 #define DEBUG_IO_LIB 1
 
 // Specify whether the current binary is the debug binary or the mission
