@@ -18,7 +18,7 @@ public:
     SDCardAccess(VolumeId volumeId = SD_CARD_0);
     ~SDCardAccess();
 
-    ReturnValue_t accessSuccess = HasReturnvaluesIF::RETURN_OK;
+    ReturnValue_t accessResult = HasReturnvaluesIF::RETURN_OK;
 private:
     VolumeId currentVolumeId;
 };

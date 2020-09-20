@@ -10,10 +10,9 @@
 
 extern "C"{
     #include <hcc/api_fat.h>
-    #include <hcc/api_hcc_mem.h>
-    #include <hcc/api_mdriver_atmel_mcipdc.h>
 }
 
+#include <subsystemIdRanges.h>
 
 
 /**
@@ -25,8 +24,16 @@ class SDCardHandler : public SystemObject,
         public HasFileSystemIF {
     friend class SDCardAccess;
 public:
+
+    static constexpr uint8_t MAX_FILE_MESSAGES_HANDLED_PER_CYCLE = 5;
+
     static constexpr uint8_t INTERFACE_ID = CLASS_ID::SD_CARD_HANDLER;
     static constexpr ReturnValue_t FOLDER_ALREADY_EXISTS = MAKE_RETURN_CODE(0x01);
+
+    static const uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::SD_CARD_HANDLER;
+
+    static constexpr Event SD_CARD_SWITCHED = MAKE_EVENT(0x00, SEVERITY::MEDIUM); //!< It was not possible to open the preferred SD card so the other was used. P1: Active volume
+    static constexpr Event SD_CARD_ACCESS_FAILED = MAKE_EVENT(0x01, SEVERITY::HIGH); //!< Opening failed for both SD cards.
 
     SDCardHandler(object_id_t objectId_);
     virtual ~SDCardHandler();
@@ -37,9 +44,7 @@ public:
 
 private:
 
-    //static ReturnValue_t selectSDCard(VolumeId volumeID);
-
-    ReturnValue_t handleMessages();
+    ReturnValue_t handleMessage(CommandMessage* message);
 
     ReturnValue_t handleDeleteFileCommand(CommandMessage* message);
     ReturnValue_t handleCreateDirectoryCommand(CommandMessage* message);
@@ -86,10 +91,16 @@ private:
      * For larger sizes the software needs to be adapted. */
     uint32_t readReplyMaxLen = 300;
 
-    bool fileSystemInitialized = false;
+    bool fileSystemWasUsedOnce = false;
+    bool fileSystemOpen = false;
 
     // TODO: make this configurable parameter.
     VolumeId preferredVolume = SD_CARD_0;
+    VolumeId activeVolume = SD_CARD_0;
+
+    VolumeId determineVolumeToOpen();
+    ReturnValue_t handleAccessResult(ReturnValue_t accessResult);
+    ReturnValue_t handleMultipleMessages(CommandMessage* message);
 };
 
 #endif /* SAM9G20_MEMORY_SDCARDHANDLER_H_ */

@@ -14,16 +14,15 @@ SDCardAccess::SDCardAccess(VolumeId volumeId):
     	else {
     		volumeId = SD_CARD_0;
     	}
-    	accessSuccess = open_filesystem(volumeId);
-    	if(accessSuccess != F_NO_ERROR) {
-    		// maybe trigger event.
-    		accessSuccess = OTHER_VOLUME_ACTIVE;
+    	accessResult = open_filesystem(volumeId);
+    	if(accessResult != F_NO_ERROR) {
+    		accessResult = OTHER_VOLUME_ACTIVE;
     	}
     	else {
-    		// maybe trigger event.
-    		accessSuccess = HasReturnvaluesIF::RETURN_FAILED;
+    		accessResult = HasReturnvaluesIF::RETURN_FAILED;
     	}
     }
+    currentVolumeId = volumeId;
 }
 
 SDCardAccess::~SDCardAccess() {
