@@ -51,7 +51,9 @@ VPATH += $(AT91_PATH)/src/utility
 # needed for USB device test
 VPATH += $(AT91_PATH)/src/usb/common/core
 VPATH += $(AT91_PATH)/src/usb/common/hid
+VPATH += $(AT91_PATH)/src/usb/common/cdc
 VPATH += $(AT91_PATH)/src/usb/device/core
+VPATH += $(AT91_PATH)/src/usb/device/cdc
 VPATH += $(AT91_PATH)/src/usb/device/hid-mouse
 VPATH += $(DEMO_PATH)/src/Tests
 # end needed for USB device test
@@ -158,25 +160,9 @@ CSRC += USBDCallbacks_Initialized.c
 CSRC += USBDCallbacks_Reset.c
 CSRC += USBDDriverCb_IfSettingChanged.c
 
+# CDC device drivers
+CSRC += CDCDSerialDriver.c
+CSRC += CDCDSerialDriverDescriptors.c
+CSRC += CDCLineCoding.c
+CSRC += CDCSetControlLineStateRequest.c
 
-#CSRC += USBdeviceTest.o
-#CSRC += HIDDMouseDriver.o
-#CSRC += HIDDMouseDriverDescriptors.o
-#CSRC += HIDDMouseInputReport.o
-#CSRC += HIDIdleRequest.o
-#CSRC += HIDReportRequest.o
-# needed for USB device test
-
-#include <at91/usb/common/core/USBConfigurationDescriptor.h>
-#include <at91/usb/common/core/USBDeviceDescriptor.h>
-#include <at91/usb/common/core/USBDeviceQualifierDescriptor.h>
-#include <at91/usb/common/core/USBEndpointDescriptor.h>
-#include <at91/usb/common/core/USBFeatureRequest.h>
-#include <at91/usb/common/core/USBGenericDescriptor.h>
-#include <at91/usb/common/core/USBGetDescriptorRequest.h>
-#include <at91/usb/common/core/USBInterfaceRequest.h>
-#include <at91/usb/common/core/USBSetAddressRequest.h>
-#include <at91/usb/common/core/USBSetConfigurationRequest.h>
-#include <at91/usb/device/core/USBD.h>
-#include <at91/usb/device/core/USBDDriver.h>
-#include <at91/usb/device/core/USBDDriverCallbacks.h>
