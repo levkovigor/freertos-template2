@@ -1,15 +1,17 @@
 #ifndef SAM9G20_COMIF_USBDEVICECOMIF_H_
 #define SAM9G20_COMIF_USBDEVICECOMIF_H_
 
+#include <fsfw/container/SharedRingBuffer.h>
 #include <fsfw/container/SimpleRingBuffer.h>
 #include <fsfw/devicehandlers/DeviceCommunicationIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
+#include <config/tmtc/tmtcSize.h>
 #include <array>
 
 
 class USBDeviceComIF: public SystemObject, public DeviceCommunicationIF {
 public:
-	USBDeviceComIF(object_id_t objectId);
+	USBDeviceComIF(object_id_t objectId, SharedRingBuffer* usbRingBuffer);
 
 	/** DeviceCommunicationIF implementation */
 	ReturnValue_t initializeInterface(CookieIF * cookie) override;
@@ -21,9 +23,10 @@ public:
 	virtual ReturnValue_t readReceivedMessage(CookieIF *cookie,
 			uint8_t **buffer, size_t *size) override;
 private:
-	static std::array<uint8_t, 1024> usbBuffer1;
-	static std::array<uint8_t, 1024> usbBuffer2;
-
+	static constexpr uint16_t USB_FRAME_MAX_SIZE =
+	    		tmtcsize::MAX_USB_FRAME_SIZE;
+	std::array<uint8_t, USB_FRAME_MAX_SIZE> usbBuffer;
+	SharedRingBuffer* usbRingBuffer = nullptr;
 	//------------------------------------------------------------------------------
 	/// Callback invoked when data has been received on the USB.
 	//------------------------------------------------------------------------------
@@ -36,19 +39,15 @@ private:
 		WRITE_SUCCESS,
 		WRITE_BUSY,
 		WRITE_FAILURE,
-		READ_SUCCESS,
-		READ_BUSY,
-		READ_FAILURE
 	};
 
-	bool errorOccuredOnce = false;
+	size_t sizeRead = 0;
 
-	static size_t receivedDataLen;
 	static size_t sentDataLen;
 	static uint8_t errorStatus;
 
 	TransferStates writeState = TransferStates::WRITE_SUCCESS;
-	TransferStates readState = TransferStates::READ_SUCCESS;
+	bool errorOccuredOnce = false;
 };
 
 

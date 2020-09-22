@@ -1,6 +1,8 @@
+#include "USBDeviceComIF.h"
+
+#include <fsfw/ipc/MutexHelper.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Countdown.h>
-#include "USBDeviceComIF.h"
 
 extern "C" {
 #include <board.h>
@@ -9,10 +11,7 @@ extern "C" {
 #include <usb/device/cdc/CDCDSerialDriver.h>
 }
 
-std::array<uint8_t, 1024> USBDeviceComIF::usbBuffer1;
-std::array<uint8_t, 1024> USBDeviceComIF::usbBuffer2;
 size_t USBDeviceComIF::sentDataLen = 0;
-size_t USBDeviceComIF::receivedDataLen = 0;
 uint8_t USBDeviceComIF::errorStatus = 0;
 
 //------------------------------------------------------------------------------
@@ -29,7 +28,9 @@ static void VBus_Configure(void);
 #endif //#if defined(PIN_USB_VBUS)
 
 
-USBDeviceComIF::USBDeviceComIF(object_id_t objectId): SystemObject(objectId) {
+USBDeviceComIF::USBDeviceComIF(object_id_t objectId,
+		SharedRingBuffer* usbRingBuffer): SystemObject(objectId),
+		usbRingBuffer(usbRingBuffer) {
 	// If they are present, configure Vbus & Wake-up pins
 	// we could assign a higher priority here maybe..
 	PIO_InitializeInterrupts(AT91C_AIC_PRIOR_LOWEST);
@@ -39,12 +40,6 @@ USBDeviceComIF::USBDeviceComIF(object_id_t objectId): SystemObject(objectId) {
 
 	// connect if needed
 	VBUS_CONFIGURE();
-
-	// Read data immediately.
-	// propably should use a ring buffer to read all data..
-	uint8_t sendResult = CDCDSerialDriver_Read(usbBuffer1.data(),
-			usbBuffer1.size(),
-			reinterpret_cast<TransferCallback>(UsbDataReceived),0);
 
 }
 
@@ -65,6 +60,12 @@ ReturnValue_t USBDeviceComIF::initializeInterface(CookieIF *cookie) {
 			}
 			TaskFactory::delayTask(1);
 		}
+	}
+
+	if(usbRingBuffer == nullptr) {
+		sif::error << "USBPolling::initialize: Ring buffer is nullptr!"
+				<< std::endl;
+		return HasReturnvaluesIF::RETURN_FAILED;
 	}
 	return HasReturnvaluesIF::RETURN_OK;
 }
@@ -116,19 +117,27 @@ ReturnValue_t USBDeviceComIF::getSendSuccess(CookieIF *cookie) {
 
 ReturnValue_t USBDeviceComIF::requestReceiveMessage(CookieIF *cookie,
 		size_t requestLen) {
-//	if(requestLen == 0) {
-//		return HasReturnvaluesIF::RETURN_OK;
-//	}
+	MutexHelper(usbRingBuffer->getMutexHandle(),
+			MutexIF::TimeoutType::WAITING, 5);
+	auto fifoHandle = usbRingBuffer->getReceiveSizesFIFO();
+	if(fifoHandle->empty()) {
+		return HasReturnvaluesIF::RETURN_OK;
+	}
 
+	if(not fifoHandle->empty()) {
+		 fifoHandle->retrieve(&sizeRead);
+	}
 
+	usbRingBuffer->readData(usbBuffer.data(), sizeRead);
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t USBDeviceComIF::readReceivedMessage(CookieIF *cookie,
 		uint8_t **buffer, size_t *size) {
-	if(readState == TransferStates::READ_SUCCESS) {
-		*buffer = usbBuffer1.data();
-		*size = receivedDataLen;
+	if(sizeRead > 0) {
+		*buffer = usbBuffer.data();
+		*size = sizeRead;
+		sizeRead = 0;
 	}
 
 	return HasReturnvaluesIF::RETURN_OK;

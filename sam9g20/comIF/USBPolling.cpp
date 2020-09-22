@@ -21,10 +21,15 @@ USBPolling::USBPolling(object_id_t objectId, SharedRingBuffer* usbRingBuffer):
 	usbStruct2.otherUsbStruct = &usbStruct1;
 	usbStruct2.receiveBuffer = usbBuffer2.data();
 	usbStruct2.bufferReady = true;
+
 }
 
 ReturnValue_t USBPolling::initialize() {
-
+	if(usbRingBuffer == nullptr) {
+		sif::error << "USBPolling::initialize: Ring buffer is nullptr!"
+				<< std::endl;
+		return HasReturnvaluesIF::RETURN_FAILED;
+	}
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -46,20 +51,53 @@ ReturnValue_t USBPolling::performOperation(uint8_t opCode) {
 
 	while(true) {
 		usbSemaphore1.acquire(SemaphoreIF::TimeoutType::BLOCKING);
-		// write data in buffer 1 into ring buffer.
-
-		usbStruct1.bufferReady = true;
+		writeTransfer1ToRingBuffer();
 
 		usbSemaphore2.acquire(SemaphoreIF::TimeoutType::BLOCKING);
-		// write data in buffer 2 into ring buffer.
-
-		usbStruct2.bufferReady = true;
+		writeTransfer2ToRingBuffer();
 
 		if(dataComingInTooFast) {
 			handleOverrunSituation();
 		}
 	}
 	return HasReturnvaluesIF::RETURN_OK;
+}
+
+
+void USBPolling::writeTransfer1ToRingBuffer() {
+	// write data in buffer 1 into ring buffer.
+	usbRingBuffer->lockRingBufferMutex(MutexIF::TimeoutType::WAITING, 5);
+	ReturnValue_t result = usbRingBuffer->writeData(usbBuffer1.data(),
+			usbStruct1.dataReceived);
+	if(result != HasReturnvaluesIF::RETURN_OK) {
+		// trigger event or print debug output?
+	}
+
+	if(usbRingBuffer->getReceiveSizesFIFO()->full()) {
+		// config error.
+	}
+
+	usbRingBuffer->getReceiveSizesFIFO()->insert(usbStruct1.dataReceived);
+	usbStruct1.bufferReady = true;
+	usbRingBuffer->unlockRingBufferMutex();
+}
+
+void USBPolling::writeTransfer2ToRingBuffer() {
+	usbRingBuffer->lockRingBufferMutex(MutexIF::TimeoutType::WAITING, 5);
+	ReturnValue_t result = usbRingBuffer->writeData(usbBuffer2.data(),
+			usbStruct2.dataReceived);
+	if(result != HasReturnvaluesIF::RETURN_OK) {
+		// trigger event or print debug output?
+	}
+
+	if(usbRingBuffer->getReceiveSizesFIFO()->full()) {
+		// config error.
+	}
+
+	usbRingBuffer->getReceiveSizesFIFO()->insert(usbStruct2.dataReceived);
+	usbRingBuffer->unlockRingBufferMutex();
+
+	usbStruct2.bufferReady = true;
 }
 
 void USBPolling::handleOverrunSituation() {
@@ -102,6 +140,7 @@ void USBPolling::handleOverrunSituation() {
 	}
 }
 
+
 void USBPolling::UsbDataReceived(void* usbPollingTask, unsigned char status,
 		unsigned int received, unsigned int remaining)
 {
@@ -111,10 +150,12 @@ void USBPolling::UsbDataReceived(void* usbPollingTask, unsigned char status,
 	// release the semaphore in any case.
 	ReturnValue_t result = BinarySemaphore::releaseFromISR(usbStruct->semaphore,
 			&higherPrioTaskWokenFromRelease);
+	usbStruct->dataReceived = received;
 	if(result != HasReturnvaluesIF::RETURN_OK) {
 		// config error
 		return;
 	}
+
 
 	// Bus might be overloaded, don't intiate new transfer.
 	if(dataComingInTooFast) {

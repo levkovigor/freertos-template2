@@ -22,6 +22,7 @@ private:
 	struct UsbStruct {
 		USBPolling* taskPtr;
 		uint8_t* receiveBuffer;
+		size_t dataReceived;
 		// Specify whether buffer is read for read call.
 		volatile bool bufferReady;
 		SemaphoreHandle_t semaphore;
@@ -40,6 +41,9 @@ private:
 
 
 	SharedRingBuffer* usbRingBuffer;
+
+	void writeTransfer1ToRingBuffer();
+	void writeTransfer2ToRingBuffer();
 
 	void handleOverrunSituation();
 	static void UsbDataReceived(void* usbPollingTask, unsigned char status,
