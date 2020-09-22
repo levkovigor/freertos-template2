@@ -6,7 +6,7 @@
 
 namespace tmtcsize {
 static const size_t MAX_SERIAL_FRAME_SIZE = 1500;
-static const uint32_t MAX_TM_PACKET = 50;
+static const uint32_t MAX_USB_FRAME_SIZE = 1500;
 }
 
 #endif /* CONFIG_TMTC_TMTCSIZE_H_ */
