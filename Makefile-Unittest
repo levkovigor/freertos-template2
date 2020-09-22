@@ -33,6 +33,9 @@ OUTPUT_FOLDER = $(OS_FSFW)
 # Optimization level. Optimized for debugging.
 OPTIMIZATION = -O0
 
+# Default debug output. Optimized for debugging.
+DEBUG_LEVEL = -g3
+
 ifdef GCOV
 CUSTOM_DEFINES += -DGCOV
 endif
@@ -163,10 +166,10 @@ MSG_DEBUG = FSFW Debugging: $(DEBUG_MESSAGE)
 # -Wl,--gc-sections: needs to be passed to the linker to throw aways unused code
 ifdef KEEP_UNUSED_CODE
 PROTOTYPE_OPTIMIZATION = 
-DEAD_CODE_REMOVAL = 
+UNUSED_CODE_REMOVAL = 
 else
 PROTOTYPE_OPTIMIZATION = -ffunction-sections -fdata-sections
-DEAD_CODE_REMOVAL = -Wl,--gc-sections
+UNUSED_CODE_REMOVAL = -Wl,--gc-sections
 # Link time optimization
 # See https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html for reference
 # Link time is larger and size of object files can not be retrieved
@@ -192,16 +195,19 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPENDDIR)/$*.d
 # - fno-exceptions: stops generating extra code needed to propagate exceptions, 
 #    which can produce significant data size overhead
 CUSTOM_DEFINES += -DUNIT_TEST
-CDEFINES := $(CUSTOM_DEFINES)
+WARNING_FLAGS = -Wall -Wshadow=local -Wextra -Wimplicit-fallthrough=1 \
+		-Wno-unused-parameter 
+		
+CXXDEFINES := $(CUSTOM_DEFINES)
 CFLAGS += 
-CXXFLAGS += -I. -g3  -Wall $(DEPFLAGS) -fPIC -fmessage-length=0  \
-			$(OPTIMIZATION) $(I_INCLUDES) $(CDEFINES)
-CPPFLAGS +=  -std=c++17  
+CXXFLAGS += -I. $(DEBUG_LEVEL) $(WARNING_FLAGS) $(DEPFLAGS) -fPIC \
+		-fmessage-length=0 $(OPTIMIZATION) $(I_INCLUDES) $(CXXDEFINES)
+CPPFLAGS += -std=c++17  
 
 # Flags for the linker call
 # LINK_INCLUDES specify the path to used libraries and the linker script
 # LINK_LIBRARIES: Link real time support
-LDFLAGS = -g3 -pthread $(DEAD_CODE_REMOVAL) $(OPTIMIZATION) 
+LDFLAGS = $(DEBUG_LEVEL) $(UNUSED_CODE_REMOVAL) $(OPTIMIZATION) -pthread 
 LINK_INCLUDES = 
 LINK_LIBRARIES = -lrt
 
@@ -213,6 +219,8 @@ GCOV_LINKER_LIBS = -lgcov -fprofile-arcs -ftest-coverage
 LINK_LIBRARIES += $(GCOV_LINKER_LIBS)
 endif
 
+# $(info $${CXXFLAGS} is [${CXXFLAGS}])
+
 #-------------------------------------------------------------------------------
 #		Rules
 #-------------------------------------------------------------------------------
@@ -220,8 +228,8 @@ endif
 # https://www.gnu.org/software/make/manual/make.html#Call-Function
 # $(1) = Memory names
 # Rules are called for each memory type
-# Two Expansion Symbols $$ are equal to secondary expansion
-# See: https://www.gnu.org/software/make/manual/html_node/Secondary-Expansion.html
+# Two Expansion Symbols $$ are to escape the dollar sign for eval.
+# See: http://make.mad-scientist.net/the-eval-function/
 
 # Cleans all files 
 hardclean: 
@@ -250,42 +258,57 @@ release: LINK_TIME_OPTIMIZATION = -flto
 release: TARGET = Mission and Integration Testing
 release: OPTIMIZATION_MESSAGE = On with Link Time Optimization
 
-debug: CDEFINES += -DDEBUG
+debug: CXXDEFINES += -DDEBUG
 debug: TARGET = Debug
 debug: DEBUG_MESSAGE = On
 
 ifndef KEEP_UNUSED_CODE
-debug release: OPTIMIZATION_MESSAGE = Off with unused code removal
-else
-debug release: OPTIMIZATION_MESSAGE = Off
+debug release: OPTIMIZATION_MESSAGE += , no unused code removal
 endif
 
 debug release notestfw: executable
-# executable: $(BINDIR)/$(BINARY_NAME).bin	
+	
 executable: $(BINDIR)/$(BINARY_NAME).elf	
+	@echo
+	#@echo $(MSG_INFO)
+	#@echo $(MSG_TARGET)
+	#@echo $(MSG_OPTIMIZATION)
+	#@echo $(MSG_DEBUG)
 
 C_OBJECTS_PREFIXED = $(addprefix $(OBJDIR)/, $(C_OBJECTS))
 CXX_OBJECTS_PREFIXED = $(addprefix $(OBJDIR)/, $(CXX_OBJECTS))
 ASM_OBJECTS_PREFIXED = $(addprefix $(OBJDIR)/, $(ASM_OBJECTS))
 ALL_OBJECTS = $(ASM_OBJECTS_PREFIXED) $(C_OBJECTS_PREFIXED) $(CXX_OBJECTS_PREFIXED) 
 
-# can be used for makefile "debugging"
-# $(info $${CXX_OBJECTS} is [${CXX_OBJECTS}])
+# Useful for debugging the Makefile
+# Also see: https://www.oreilly.com/openbook/make3/book/ch12.pdf
+# $(info $${ALL_OBJECTS} is [${ALL_OBJECTS}])
 # $(info $${CXXSRC} is [${CXXSRC}])
 
-$(BINDIR)/$(BINARY_NAME).hex: $(BINDIR)/$(BINARY_NAME).elf
-	@echo
-	@echo $(MSG_BINARY)
-	@mkdir -p $(@D)
-	$(HEXCOPY) $< $@
+# Automatic variables are used here extensively. Some of them
+# are escaped($$) to suppress immediate evaluation. The most important ones are:
+# $@: Name of Target (left side of rule)
+# $<: Name of the first prerequisite (right side of rule)
+# @^: List of all prerequisite, omitting duplicates
+# @D: Directory and file-within-directory part of $@
 
-# Link with required libraries: HAL (Hardware Abstraction Layer) and HCC (File System Library)
-# $(BINDIR)/$(BINARY_NAME).elf: $(ALL_OBJECTS)
+# Generates binary and displays all build properties
+# -p with mkdir ignores error and creates directory when needed.
+
+# SHOW_DETAILS = 1
+
+
+# Link with required libraries: HAL (Hardware Abstraction Layer) and 
+# HCC (File System Library)
 $(BINDIR)/$(BINARY_NAME).elf: $(ALL_OBJECTS)
 	@echo
 	@echo $(MSG_LINKING) Target $@
 	@mkdir -p $(@D)
+ifdef SHOW_DETAILS
+	$(CXX) $(LDFLAGS) $(LINK_INCLUDES) -o $@ $^ $(LINK_LIBRARIES)
+else
 	@$(CXX) $(LDFLAGS) $(LINK_INCLUDES) -o $@ $^ $(LINK_LIBRARIES)
+endif	
 ifeq ($(BUILD_FOLDER), mission)
 # With Link Time Optimization, section size is not available
 	$(SIZE) $@
@@ -293,6 +316,12 @@ else
 	$(SIZE) $^ $@
 endif
 
+$(BINDIR)/$(BINARY_NAME).hex: $(BINDIR)/$(BINARY_NAME).elf
+	@echo
+	@echo $(MSG_BINARY)
+	@mkdir -p $(@D)
+	$(HEXCOPY) $< $@
+	
 # Build new objects for changed dependencies. 
 $(OBJDIR)/%.o: %.cpp
 $(OBJDIR)/%.o: %.cpp $(DEPENDDIR)/%.d | $(DEPENDDIR)

@@ -198,8 +198,9 @@ INCLUDES :=
 
 # Directories where $(directoryname).mk files should be included from.
 # Source files and includes can be added in those submakefiles.
-SUBDIRS := $(CONFIG_PATH) $(FRAMEWORK_PATH) $(MISSION_PATH) $(BSP_PATH) $(AT91_PATH) \
-		$(TEST_PATH) $(TMTCBRIDGE_PATH) $(UNITTEST_PATH) $(PRIVLIB_PATH) $(FREERTOS_PATH) 
+SUBDIRS := $(CONFIG_PATH) $(FRAMEWORK_PATH) $(MISSION_PATH) $(BSP_PATH) \
+		$(AT91_PATH) $(TEST_PATH) $(TMTCBRIDGE_PATH) $(UNITTEST_PATH) \
+		$(PRIVLIB_PATH) $(FREERTOS_PATH) 
 		
 # $(info $${SUBDIRS} is [${SUBDIRS}])	
 # to include the lwip source files
@@ -347,7 +348,7 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPENDDIR)/$*.d
 #   C99 scanf/printf formats (e.g. uint8)
 CUSTOM_DEFINES += -DUSE_AT91LIB_STDIO_AND_STRING=$(USE_AT91LIB_STDIO_AND_STRING)
 CUSTOM_DEFINES += -DNEWLIB_NANO_NO_C99_IO
-WARNING_FLAGS =  -Wall -Wshadow=local -Wextra -Wimplicit-fallthrough=1 \
+WARNING_FLAGS = -Wall -Wshadow=local -Wextra -Wimplicit-fallthrough=1 \
 		-Wno-unused-parameter 
 		
 CXXDEFINES := -DTRACE_LEVEL=$(TRACE_LEVEL) -DDYN_TRACES=$(DYN_TRACES) \
@@ -373,6 +374,7 @@ LINK_INCLUDES = -L"$(HAL_PATH)/lib" -L"$(HCC_PATH)/lib" \
 		-T"$(LINKER_SCRIPT_PATH)/$(1).lds" -Wl,-Map=$(BINDIR)/$(BINARY_NAME).map
 LINK_LIBRARIES = -lc -u _printf_float -u _scanf_float -lHCC -lHCCD -lHAL -lHALD 
 
+# $(info $${I_INCLUDES} is [${I_INCLUDES}])
 
 #-------------------------------------------------------------------------------
 #		Rules
@@ -411,9 +413,7 @@ virtual: DEBUG_MESSAGE = On
 virtual: DEBUG_LEVEL = -g3
 
 ifndef KEEP_UNUSED_CODE
-debug virtual: OPTIMIZATION_MESSAGE = Off with unused code removal
-else
-debug virtual: OPTIMIZATION_MESSAGE = Off
+debug virtual mission: OPTIMIZATION_MESSAGE += , no unused code removal
 endif
 
 debug virtual mission: executable
