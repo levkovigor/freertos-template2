@@ -299,8 +299,8 @@ MSG_DEPENDENCY = Collecting dependencies for:
 MSG_BINARY = Generate binary: 
 MSG_OPTIMIZATION = Optimization: $(OPTIMIZATION), $(OPTIMIZATION_MESSAGE)
 MSG_TARGET = Target Build: $(TARGET)
-MSG_DEBUG = FSFW Debugging: $(DEBUG_MESSAGE), Trace Level: $(TRACE_LEVEL), \
-            Dynamic Traces: $(DYN_TRACE_MESSAGE)
+MSG_DEBUG = Debug level: $(DEBUG_LEVEL), FSFW Debugging: $(DEBUG_MESSAGE), \
+		Trace Level: $(TRACE_LEVEL), Dynamic Traces: $(DYN_TRACE_MESSAGE)
 MSG_COMIF = TMTC Communication Interface: $(COMIF_MESSAGE)
 
 # See: https://stackoverflow.com/questions/6687630/how-to-remove-unused-c-c-symbols-with-gcc-and-ld
@@ -442,7 +442,7 @@ cleanbin:
 define MEMORY_BUILDS
 
 executable: $(BINDIR)/$(BINARY_NAME)-$(1).bin
-	
+
 C_OBJECTS_$(1) = $(addprefix $(OBJDIR)/$(1)/, $(C_OBJECTS))
 ASM_OBJECTS_$(1) = $(addprefix $(OBJDIR)/$(1)/, $(ASM_OBJECTS))
 CXX_OBJECTS_$(1) = $(addprefix $(OBJDIR)/$(1)/, $(CXX_OBJECTS))
@@ -473,9 +473,9 @@ $(BINDIR)/$(BINARY_NAME)-$(1).bin: $(BINDIR)/$(BINARY_NAME)-$(1).elf
 	@echo $$(MSG_OPTIMIZATION)
 	@echo $$(MSG_DEBUG)
 	@echo $$(MSG_COMIF)
-	@echo $(MSG_BINARY)
+	@echo $(MSG_BINARY) $$@
 	@mkdir -p $$(@D)
-	$(BINCOPY) $$< $$@ 
+	@$(BINCOPY) $$< $$@ 
 ifeq ($(OS),Windows_NT)
 	@echo Binary Size: `busybox stat -c %s $$@` bytes
 else
@@ -493,8 +493,6 @@ $(BINDIR)/$(BINARY_NAME)-$(1).hex: $(BINDIR)/$(BINARY_NAME)-$(1).elf
 # HCC (File System Library)
 $(BINDIR)/$(BINARY_NAME)-$(1).elf: $$(ALL_OBJECTS) 
 	@echo
-	@echo $(HEADERS)
-	@echo $(BINARY_NAME)
 	@echo $(MSG_LINKING) Target $$@
 	@mkdir -p $$(@D)
 ifdef SHOW_DETAILS

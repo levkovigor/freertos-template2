@@ -133,6 +133,13 @@ endif
 # if a target is not listed in the current directory, 
 # make searches in the directories specified with VPATH
 
+# VPATH += sam9g20/at91/src/utility
+# I_INCLUDES += -Isam9g20/at91/include
+# I_INCLUDES += -Isam9g20/at91/include/at91/boards/at91sam9g20-ek
+
+# CSRC += hamming.c
+# CSRC += trace.c
+
 # All C Sources included by .mk files are assigned here
 # Add the objects to sources so dependency handling works
 C_OBJECTS += $(CSRC:.c=.o)
@@ -147,11 +154,12 @@ CXX_OBJECTS +=  $(CXXSRC:.cpp=.o)
 #		Build Configuration + Output
 #-------------------------------------------------------------------------------
 
-TARGET = Unit Test
+TARGET = Hosted unittest \(Linux\)
 DEBUG_MESSAGE = Off
 OPTIMIZATION_MESSAGE = Off
 
 # Define Messages
+MSG_INFO = Software: Unittest for SOURCE OBSW.
 MSG_LINKING = Linking:
 MSG_COMPILING = Compiling:
 MSG_ASSEMBLING = Assembling:
@@ -159,7 +167,7 @@ MSG_DEPENDENCY = Collecting dependencies for:
 MSG_BINARY = Generate binary: 
 MSG_OPTIMIZATION = Optimization: $(OPTIMIZATION), $(OPTIMIZATION_MESSAGE)
 MSG_TARGET = Target Build: $(TARGET)
-MSG_DEBUG = FSFW Debugging: $(DEBUG_MESSAGE)
+MSG_DEBUG = Debug level: $(DEBUG_LEVEL), FSFW Debugging: $(DEBUG_MESSAGE)
 
 # See https://stackoverflow.com/questions/6687630/how-to-remove-unused-c-c-symbols-with-gcc-and-ld
 # Used to throw away unused code. Reduces code size significantly !
@@ -270,15 +278,16 @@ debug release notestfw: executable
 	
 executable: $(BINDIR)/$(BINARY_NAME).elf	
 	@echo
-	#@echo $(MSG_INFO)
-	#@echo $(MSG_TARGET)
-	#@echo $(MSG_OPTIMIZATION)
-	#@echo $(MSG_DEBUG)
+	@echo $(MSG_INFO)
+	@echo $(MSG_TARGET)
+	@echo $(MSG_OPTIMIZATION)
+	@echo $(MSG_DEBUG)
 
 C_OBJECTS_PREFIXED = $(addprefix $(OBJDIR)/, $(C_OBJECTS))
 CXX_OBJECTS_PREFIXED = $(addprefix $(OBJDIR)/, $(CXX_OBJECTS))
 ASM_OBJECTS_PREFIXED = $(addprefix $(OBJDIR)/, $(ASM_OBJECTS))
-ALL_OBJECTS = $(ASM_OBJECTS_PREFIXED) $(C_OBJECTS_PREFIXED) $(CXX_OBJECTS_PREFIXED) 
+ALL_OBJECTS = $(ASM_OBJECTS_PREFIXED) $(C_OBJECTS_PREFIXED) \
+		$(CXX_OBJECTS_PREFIXED) 
 
 # Useful for debugging the Makefile
 # Also see: https://www.oreilly.com/openbook/make3/book/ch12.pdf
