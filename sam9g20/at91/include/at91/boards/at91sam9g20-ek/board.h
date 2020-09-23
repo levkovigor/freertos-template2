@@ -85,7 +85,9 @@
 /// Name of the board.
 #define BOARD_NAME              "AT91SAM9G20-EK"
 /// Board definition.
-#define at91sam9g20ek
+#ifndef AT91SAM9G20_EK
+#define AT91SAM9G20_EK
+#endif
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
@@ -137,6 +139,22 @@
 /// 
 /// !Constants
 /// - BOARD_USB_BMATTRIBUTES
+/// Chip has a UDP controller.
+
+// SOURCE: Defines taken over from ISIS iOBC board.h file!
+#define BOARD_USB_UDP
+
+/// Indicates the D+ pull-up is internal to the USB controller.
+#define BOARD_USB_PULLUP_INTERNAL
+
+/// Number of endpoints in the USB controller.
+#define BOARD_USB_NUMENDPOINTS                  6
+
+/// Returns the maximum packet size of the given endpoint.
+#define BOARD_USB_ENDPOINTS_MAXPACKETSIZE(i)    ((i >= 4) ? 512 : 64)
+
+/// Returns the number of FIFO banks for the given endpoint.
+#define BOARD_USB_ENDPOINTS_BANKS(i)            (((i == 0) || (i == 3)) ? 1 : 2)
 
 /// USB attributes configuration descriptor (bus or self powered, remote wakeup)
 #define BOARD_USB_BMATTRIBUTES USBConfigurationDescriptor_SELFPOWERED_NORWAKEUP

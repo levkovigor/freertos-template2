@@ -1,10 +1,3 @@
-/**
- * @file dataPoolInit.h
- *
- * @date 06.12.2018
- * @author jakob
- */
-
 #ifndef CONFIG_CDATAPOOL_DATAPOOLINIT_H_
 #define CONFIG_CDATAPOOL_DATAPOOLINIT_H_
 

@@ -1,9 +1,3 @@
-/**
- * \file SDCardHandler.h
- *
- * \date 27.10.2019
- */
-
 #ifndef SAM9G20_MEMORY_SDCARDHANDLER_H_
 #define SAM9G20_MEMORY_SDCARDHANDLER_H_
 
@@ -11,34 +5,102 @@
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/memory/AcceptsMemoryMessagesIF.h>
 #include <fsfw/ipc/MessageQueueIF.h>
+#include <fsfw/memory/HasFileSystemIF.h>
+#include <sam9g20/memory/SDCardApi.h>
+
+extern "C"{
+    #include <hcc/api_fat.h>
+}
+
+#include <config/events/subsystemIdRanges.h>
+
 
 /**
  * Additional abstraction layer to encapsulate access to SD cards
  * using the iOBC HCC FAT API.
  */
-class SDCardHandler : public SystemObject, public ExecutableObjectIF, public AcceptsMemoryMessagesIF {
+class SDCardHandler : public SystemObject,
+        public ExecutableObjectIF,
+        public HasFileSystemIF {
+    friend class SDCardAccess;
 public:
-	SDCardHandler(object_id_t objectId_);
-	virtual ~SDCardHandler();
 
-	ReturnValue_t handleMemoryLoad(uint32_t address, const uint8_t* data, uint32_t size, uint8_t** dataPointer);
-	ReturnValue_t handleMemoryDump(uint32_t address, uint32_t size, uint8_t** dataPointer, uint8_t* dumpTarget);
+    static constexpr uint8_t MAX_FILE_MESSAGES_HANDLED_PER_CYCLE = 5;
 
-	MessageQueueId_t getCommandQueue() const;
+    static constexpr uint8_t INTERFACE_ID = CLASS_ID::SD_CARD_HANDLER;
+    static constexpr ReturnValue_t FOLDER_ALREADY_EXISTS = MAKE_RETURN_CODE(0x01);
 
-	ReturnValue_t performOperation(uint8_t operationCode = 0);
+    static const uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::SD_CARD_HANDLER;
 
-	ReturnValue_t setAddress( uint32_t* startAddress );
+    static constexpr Event SD_CARD_SWITCHED = MAKE_EVENT(0x00, SEVERITY::MEDIUM); //!< It was not possible to open the preferred SD card so the other was used. P1: Active volume
+    static constexpr Event SD_CARD_ACCESS_FAILED = MAKE_EVENT(0x01, SEVERITY::HIGH); //!< Opening failed for both SD cards.
+
+    SDCardHandler(object_id_t objectId_);
+    virtual ~SDCardHandler();
+
+    MessageQueueId_t getCommandQueue() const;
+
+    ReturnValue_t performOperation(uint8_t operationCode = 0);
 
 private:
-	/**
-	 * The MessageQueue used to receive commands, data and to send replies.
-	 */
-	MessageQueueIF* commandQueue;
 
-	uint32_t queueDepth = 20;
+    ReturnValue_t handleMessage(CommandMessage* message);
 
-	StorageManagerIF *IPCStore;
+    ReturnValue_t handleDeleteFileCommand(CommandMessage* message);
+    ReturnValue_t handleCreateDirectoryCommand(CommandMessage* message);
+    ReturnValue_t handleDeleteDirectoryCommand(CommandMessage* message);
+    ReturnValue_t handleWriteCommand(CommandMessage* message);
+    ReturnValue_t handleReadCommand(CommandMessage* message);
+    ReturnValue_t createFile(const char* dirname, const char* filename,
+            const uint8_t* data, size_t size) override;
+    ReturnValue_t deleteFile(const char* repositoryPath, const char* filename);
+    ReturnValue_t createDirectory(const char* repositoryPath,
+            const char* dirname);
+    ReturnValue_t deleteDirectory(const char* repositoryPath,
+            const char* dirname);
+    ReturnValue_t writeToFile(const char* repositoryPath, const char* filename,
+            const uint8_t* data, size_t size, uint16_t packetNumber) override;
+    ReturnValue_t read(const char* repositoryPath, const char* filename,
+            uint8_t* tmData, uint32_t* tmDataLen);
+    void sendCompletionReply(bool success = true,
+            ReturnValue_t errorCode = HasReturnvaluesIF::RETURN_OK);
+    ReturnValue_t sendDataReply(MessageQueueId_t receivedFromQueueId,
+            uint8_t* tmData, uint8_t tmDataLen);
+
+    /**
+     * @brief   This function can be used to switch to a directory provided
+     *          with the repositoryPath
+     * @param repositoryPath
+     * Pointer to a string holding the repositoryPath to the directory.
+     * The repositoryPath must be absolute.
+     */
+    ReturnValue_t changeDirectory(const char* repositoryPath);
+
+    /**
+     * The MessageQueue used to receive commands, data and to send replies.
+     */
+    MessageQueueIF* commandQueue;
+
+    uint32_t queueDepth = 20;
+
+    StorageManagerIF *IPCStore;
+
+    F_FILE *file = nullptr;
+
+    /* For now  max size of reply is set to 300.
+     * For larger sizes the software needs to be adapted. */
+    uint32_t readReplyMaxLen = 300;
+
+    bool fileSystemWasUsedOnce = false;
+    bool fileSystemOpen = false;
+
+    // TODO: make this configurable parameter.
+    VolumeId preferredVolume = SD_CARD_0;
+    VolumeId activeVolume = SD_CARD_0;
+
+    VolumeId determineVolumeToOpen();
+    ReturnValue_t handleAccessResult(ReturnValue_t accessResult);
+    ReturnValue_t handleMultipleMessages(CommandMessage* message);
 };
 
 #endif /* SAM9G20_MEMORY_SDCARDHANDLER_H_ */

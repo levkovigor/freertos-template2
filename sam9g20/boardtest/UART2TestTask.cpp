@@ -6,7 +6,7 @@
 extern "C" {
 #include <AT91SAM9G20.h>
 #include <board.h>
-#ifdef at91sam9g20_ek
+#ifdef AT91SAM9G20_EK
 #include "led_ek.h"
 #endif
 #include <at91/utility/trace.h>

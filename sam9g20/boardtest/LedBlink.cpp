@@ -3,7 +3,7 @@
 
 extern "C" {
 #include <sam9g20/utility/print.h>
-#if defined(at91sam9g20_ek)
+#if defined(AT91SAM9G20_EK)
 #include <led_ek.h>
 #endif
 }
@@ -17,7 +17,7 @@ LED_Blink::~LED_Blink() {
 }
 
 ReturnValue_t LED_Blink::performOperation(uint8_t operationCode) {
-	#if defined(at91sam9g20_ek)
+	#if defined(AT91SAM9G20_EK)
 		LED_Toggle(1);
 	#endif
 

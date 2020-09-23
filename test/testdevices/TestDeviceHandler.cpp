@@ -1,18 +1,20 @@
 #include <fsfw/datapool/PoolDataSetBase.h>
 #include <fsfw/datapoollocal/LocalDataSet.h>
 #include <fsfw/datapoollocal/LocalPoolVariable.h>
-#include <fsfw/datapoollocal/LocalPoolVector.h>
+
 #include <fsfw/devicehandlers/AcceptsDeviceResponsesIF.h>
 #include <test/testdevices/TestDeviceHandler.h>
 
-#if defined(freeRTOS)
-#include <fsfw/osal/FreeRTOS/TaskManagement.h>
-#endif
 
 TestDevice::TestDevice(object_id_t objectId, object_id_t comIF,
-		CookieIF * cookie, bool onImmediately):
-		DeviceHandlerBase(objectId,comIF, cookie),
-		onImmediately(onImmediately) {
+		CookieIF * cookie, bool onImmediately, bool changingDataset):
+		DeviceHandlerBase(objectId, comIF, cookie),
+		testDatasetSid(objectId, 0), testDatasetSidDiag(objectId, 1),
+		testDataset(testDatasetSid), testDatasetDiag(testDatasetSidDiag),
+		opDivider(2), opDivider2(10) {
+	if(onImmediately) {
+		this->setStartUpImmediately();
+	}
 }
 
 TestDevice::~TestDevice() {}
@@ -24,9 +26,8 @@ void TestDevice::debugInterface(uint8_t positionTracker,
 
 void TestDevice::performOperationHook() {
 	//sif::info << "DummyDevice: Alive!" << std::endl;
-	if(mode != MODE_ON and onImmediately) {
-		setMode(_MODE_START_UP);
-		onImmediately = false;
+	if(changingDatasets) {
+		changeDatasets();
 	}
 
 	if(oneShot) {
@@ -34,10 +35,67 @@ void TestDevice::performOperationHook() {
 		oneShot = false;
 	}
 
-#if defined(freeRTOS)
-    //sif::info << TaskManagement::getTaskStackHighWatermark() << std::endl;
-#endif
 	//sif::info << "Hook: " << counter ++ << std::endl;
+}
+
+void TestDevice::changeDatasets() {
+	if(not opDivider.checkAndIncrement()) {
+		return;
+	}
+
+	if(mode) {
+		testDataset.testVar1 = 42;
+		testDatasetDiag.testVar1 = 42;
+		testDataset.testVar1.setValid(true);
+		testDatasetDiag.testVar1.setValid(true);
+
+		testDataset.testVar2[0] = 1.3;
+		testDataset.testVar2[1] = 2.2;
+		testDataset.testVar2[2] = -39.23;
+		testDatasetDiag.testVar2[0] = 1.3;
+		testDatasetDiag.testVar2[1] = 2.2;
+		testDatasetDiag.testVar2[2] = -39.23;
+		testDataset.testVar2.setValid(false);
+		testDatasetDiag.testVar2.setValid(false);
+
+		testDataset.testVar3[0] = 1;
+		testDataset.testVar3[1] = 2;
+		testDataset.testVar3[2] = 3;
+		testDatasetDiag.testVar3[0] = 1;
+		testDatasetDiag.testVar3[1] = 2;
+		testDatasetDiag.testVar3[2] = 3;
+		testDataset.testVar3.setValid(true);
+		testDatasetDiag.testVar3.setValid(true);
+
+	}
+	else {
+
+		testDataset.testVar1 = 1;
+		testDatasetDiag.testVar1 = 1;
+		testDataset.testVar1.setValid(false);
+		testDatasetDiag.testVar1.setValid(false);
+
+		testDataset.testVar2[0] = 0.1;
+		testDataset.testVar2[1] = 0.23;
+		testDataset.testVar2[2] = 6.45;
+		testDatasetDiag.testVar2[0] = 0.1;
+		testDatasetDiag.testVar2[1] = 0.23;
+		testDatasetDiag.testVar2[2] = 6.45;
+		testDataset.testVar2.setValid(true);
+		testDatasetDiag.testVar2.setValid(true);
+
+		testDataset.testVar3[0] = 3;
+		testDataset.testVar3[1] = 2;
+		testDataset.testVar3[2] = 1;
+		testDatasetDiag.testVar3[0] = 3;
+		testDatasetDiag.testVar3[1] = 2;
+		testDatasetDiag.testVar3[2] = 1;
+		testDataset.testVar3.setValid(false);
+		testDatasetDiag.testVar3.setValid(false);
+	}
+	mode = !mode;
+
+
 }
 
 void TestDevice::doStartUp() {
@@ -331,47 +389,31 @@ uint32_t TestDevice::getTransitionDelayMs(Mode_t modeFrom, Mode_t modeTo) {
 ReturnValue_t TestDevice::initializeLocalDataPool(LocalDataPool& localDataPoolMap,
 	    LocalDataPoolManager& poolManager) {
 	// This will initialize a uint8_t pool entry with a length of one (uint8_t).
-	localDataPoolMap.emplace(static_cast<lp_id_t>(PoolIds::TEST_VAR_1),
+	localDataPoolMap.emplace(static_cast<lp_id_t>(LocalPoolIds::TEST_VAR_1),
 			new PoolEntry<uint8_t>());
 	// This will initialize a pool entry with 3 floats, which are all
 	// 0 initialized
-	localDataPoolMap.emplace(static_cast<lp_id_t>(PoolIds::TEST_VEC_1),
+	localDataPoolMap.emplace(static_cast<lp_id_t>(LocalPoolIds::TEST_VEC_1),
 			new PoolEntry<float>({0, 0, 0}, 3));
 	// This will initialize a pool entry with 3 uint32_t but only
 	// initialize the first two values to the specified values
-	localDataPoolMap.emplace(static_cast<lp_id_t>(PoolIds::TEST_VEC_2),
+	localDataPoolMap.emplace(static_cast<lp_id_t>(LocalPoolIds::TEST_VEC_2),
 			new PoolEntry<uint32_t>({2,5,6}, 3));
+
+	//poolManager.subscribeForPeriodicPacket(testDatasetSid, false, 2.0, false);
+	//poolManager.subscribeForPeriodicPacket(testDatasetSidDiag, false, 0.5, true);
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
-void TestDevice::testLocalDataPool() {
-	lp_bool_t testBool(static_cast<lp_id_t>(PoolIds::TEST_VAR_1), this);
-	lp_vec_t<float,3> testFloatVec(static_cast<lp_id_t>(
-			PoolIds::TEST_VEC_1), this);
-	lp_vec_t<uint32_t,3> testUint32Vec(static_cast<lp_id_t>(
-			PoolIds::TEST_VEC_2), this);
-	LocalDataSet testDataSet(this, 0, 3);
-	testDataSet.registerVariable(&testBool);
-	testDataSet.registerVariable(&testFloatVec);
-	testDataSet.registerVariable(&testUint32Vec);
-	// First, I want to access a variable without a dataset. This should
-	// be possible.
-	auto res = testBool.read();
-	if(res != RETURN_OK) {
-		sif::error.print("NO");
+TestDataset::TestDataset(sid_t sid, bool setAllValid): StaticLocalDataSet(sid),
+		testVar1(static_cast<lp_id_t>(LocalPoolIds::TEST_VAR_1), sid.objectId,
+				this),
+		testVar2(static_cast<lp_id_t>(LocalPoolIds::TEST_VEC_1), sid.objectId,
+				this),
+		testVar3(static_cast<lp_id_t>(LocalPoolIds::TEST_VEC_2), sid.objectId,
+				this) {
+	if(setAllValid) {
+		this->setValidity(true, true);
 	}
-	sif::info << "Read test bool: " <<  (int) testBool.value << std::endl;
-	testBool.value = true;
-	res = testBool.commit();
-	if(res != RETURN_OK) {
-		sif::error.print("NO");
-	}
-	res = testBool.read();
-	if(res != RETURN_OK) {
-		sif::error.print("NO");
-	}
-	sif::info << "Read test bool: " <<  (int) testBool.value << std::endl;
-
-	testUint32Vec.read(MutexIF::POLLING);
-	sif::info << std::dec <<testUint32Vec << std::endl;
 }
+

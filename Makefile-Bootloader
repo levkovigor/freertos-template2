@@ -40,7 +40,7 @@ BOARD_NAME = iOBC
 MEMORY_TYPE = norflash
 CUSTOM_DEFINES += -D$(MEMORY_TYPE)
 else 
-BOARD = at91sam9g20_ek
+BOARD = AT91SAM9G20_ek
 BOARD_NAME = at91ek
 # AT91-SAM9G20-EK Configuration:
 # Code will be written to NAND-Flash.
@@ -124,7 +124,7 @@ USE_AT91LIB_STDIO_AND_STRING = 1
 
 # Dynamic Traces to allow change of trace level at run-time by 
 # setting traceLevel global variable
-DYN_TRACES = 0
+DYN_TRACES = 1
 
 # Optimization level. -O0 for debugging, -Os for size. -O0 is default.
 OPTIMIZATION = -O0

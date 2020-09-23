@@ -1,13 +1,21 @@
 #include <fsfw/timemanager/Stopwatch.h>
+
+
 #include <sam9g20/core/SoftwareImageHandler.h>
 
 extern "C" {
 #ifdef ISIS_OBC_G20
 #include <hal/Storage/NORflash.h>
-#else
+#elif defined(AT91SAM9G20_EK)
 // include nand flash stuff here
+#include <at91/boards/at91sam9g20-ek/board.h>
+#include <at91/boards/at91sam9g20-ek/board_memories.h>
+#include <at91/peripherals/pio/pio.h>
+#include <at91/utility/trace.h>
+#include <at91/utility/hamming.h>
 #include <at91/memories/nandflash/SkipBlockNandFlash.h>
 #endif
+
 }
 
 SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
@@ -16,6 +24,13 @@ SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
 }
 
 ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
+    if(oneShot) {
+#if defined(AT91SAM9G20_EK)
+        //copyBootloaderToNandFlash(false, true);
+#endif
+        oneShot = false;
+    }
+
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -33,10 +48,34 @@ ReturnValue_t SoftwareImageHandler::initialize() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
+void SoftwareImageHandler::copySdCardImageToNorFlash(SdCard sdCard,
+        ImageSlot imageSlot, bool performHammingCheck) {
+}
+
+void SoftwareImageHandler::copyNorFlashImageToSdCards(SdCard sdCard,
+        ImageSlot imageSlot, bool performHammingCheck) {
+}
+
+void SoftwareImageHandler::checkNorFlashImage() {
+}
+
+void SoftwareImageHandler::checkSdCardImage(SdCard sdCard,
+        ImageSlot imageSlot) {
+}
+
+MessageQueueId_t SoftwareImageHandler::getCommandQueue() const {
+    return 0;
+}
+
+ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
+        MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+
 #ifdef ISIS_OBC_G20
 ReturnValue_t SoftwareImageHandler::copyBootloaderToNorFlash(
         bool performHammingCheck) {
-
     // The bootloader will be written to the NOR-Flash or NAND-Flash.
 
     // NOR-Flash:
@@ -117,25 +156,135 @@ ReturnValue_t SoftwareImageHandler::copyBootloaderToNorFlash(
 
     return HasReturnvaluesIF::RETURN_OK;
 }
-#else
+
+#elif defined(AT91SAM9G20_EK)
+
+
+#ifdef AT91SAM9G20_EK
+/// Nandflash memory size.
+static unsigned int memSize;
+/// Size of one block in the nandflash, in bytes.
+static unsigned int blockSize;
+/// Number of blocks in nandflash.
+static unsigned short numBlocks;
+/// Size of one page in the nandflash, in bytes.
+static unsigned short pageSize;
+/// Number of page per block
+static unsigned short numPagesPerBlock;
+// Nandflash bus width
+static unsigned char nfBusWidth = 16;
+
+/// Pins used to access to nandflash.
+static const Pin pPinsNf[] = {PINS_NANDFLASH};
+/// Nandflash device structure.
+static struct SkipBlockNandFlash skipBlockNf;
+/// Address for transferring command bytes to the nandflash.
+static unsigned int cmdBytesAddr = BOARD_NF_COMMAND_ADDR;
+/// Address for transferring address bytes to the nandflash.
+static unsigned int addrBytesAddr = BOARD_NF_ADDRESS_ADDR;
+/// Address for transferring data bytes to the nandflash.
+static unsigned int dataBytesAddr = BOARD_NF_DATA_ADDR;
+/// Nandflash chip enable pin.
+static const Pin nfCePin = BOARD_NF_CE_PIN;
+/// Nandflash ready/busy pin.
+static const Pin nfRbPin = BOARD_NF_RB_PIN;
+#endif
 
 ReturnValue_t SoftwareImageHandler::copyBootloaderToNandFlash(
-        bool performHammingCheck) {
+        bool performHammingCheck, bool displayInfo) {
+	Stopwatch stopwatch;
+    if(not displayInfo) {
+        setTrace(TRACE_LEVEL_WARNING);
+    }
+    BOARD_ConfigureNandFlash(nfBusWidth);
+    PIO_Configure(pPinsNf, PIO_LISTSIZE(pPinsNf));
+    ReturnValue_t result = nandFlashInit(displayInfo);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash: "
+                << "Error initializing NAND-Flash." << std::endl;
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    // First block will be used for bootloader, so we erase it first.
+    uint8_t retval = SkipBlockNandFlash_EraseBlock(&skipBlockNf, 0,
+            NORMAL_ERASE);
+    if(retval != 0) {
+        sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash: "
+                 << "Error erasing first block." << std::endl;
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    uint8_t buffer[2048];
+    std::memset(buffer, 1, 1024);
+    std::memset(buffer + 1024, 5, 1024);
+    retval = SkipBlockNandFlash_WritePage(&skipBlockNf, 0, 0, buffer, NULL);
+    if(retval != 0) {
+        sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash: "
+                << "Error writing to first block." << std::endl;
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    retval = SkipBlockNandFlash_ReadPage(&skipBlockNf, 0, 0, buffer, NULL);
+    if(retval != 0) {
+        sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash: "
+                << "Error reading from first block." << std::endl;
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    if(not displayInfo) {
+        setTrace(TRACE_LEVEL_DEBUG);
+    }
+
+    sif::info << "Should be all 1: " << (int) buffer[0] << ", "
+            << (int) buffer[1023] << std::endl;
+    sif::info << "Should be all 5: " << (int) buffer[1025] << ", "
+            << (int) buffer[2047] << std::endl;
+
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t SoftwareImageHandler::nandFlashInit(bool displayInfo)
+{
+    // Configure SMC for Nandflash accesses (done each time because of old ROM codes)
+    BOARD_ConfigureNandFlash(nfBusWidth);
+    PIO_Configure(pPinsNf, PIO_LISTSIZE(pPinsNf));
+
+    //memset(&skipBlockNf, 0, sizeof(skipBlockNf));
+
+    if (SkipBlockNandFlash_Initialize(&skipBlockNf, 0, cmdBytesAddr,
+             addrBytesAddr, dataBytesAddr, nfCePin, nfRbPin)) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    // Check the data bus width of the NandFlash
+    nfBusWidth = NandFlashModel_GetDataBusWidth((struct NandFlashModel *)&skipBlockNf);
+
+    // Reconfigure bus width
+    BOARD_ConfigureNandFlash(nfBusWidth);
+
+    // Get device parameters
+    memSize = NandFlashModel_GetDeviceSizeInBytes(&skipBlockNf.ecc.raw.model);
+    blockSize = NandFlashModel_GetBlockSizeInBytes(&skipBlockNf.ecc.raw.model);
+    numBlocks = NandFlashModel_GetDeviceSizeInBlocks(&skipBlockNf.ecc.raw.model);
+    pageSize = NandFlashModel_GetPageDataSize(&skipBlockNf.ecc.raw.model);
+    numPagesPerBlock = NandFlashModel_GetBlockSizeInPages(&skipBlockNf.ecc.raw.model);
+
+    if(displayInfo) {
+        TRACE_INFO("Size of the whole device in bytes : 0x%x \n\r",
+                memSize);
+        TRACE_INFO("Size in bytes of one single block of a device : 0x%x \n\r",
+                blockSize);
+        TRACE_INFO("Number of blocks in the entire device : 0x%x \n\r",
+                numBlocks);
+        TRACE_INFO("Size of the data area of a page in bytes : 0x%x \n\r",
+                pageSize);
+        TRACE_INFO("Number of pages in the entire device : 0x%x \n\r",
+                numPagesPerBlock);
+        TRACE_INFO("Bus width : %d \n\r",nfBusWidth);
+
+    }
+
     return HasReturnvaluesIF::RETURN_OK;
 }
 #endif
 
-void SoftwareImageHandler::copySdCardImageToNorFlash(SdCard sdCard,
-        ImageSlot imageSlot, bool performHammingCheck) {
-}
-
-void SoftwareImageHandler::copyNorFlashImageToSdCards(SdCard sdCard,
-        ImageSlot imageSlot, bool performHammingCheck) {
-}
-
-void SoftwareImageHandler::checkNorFlashImage() {
-}
-
-void SoftwareImageHandler::checkSdCardImage(SdCard sdCard,
-        ImageSlot imageSlot) {
-}

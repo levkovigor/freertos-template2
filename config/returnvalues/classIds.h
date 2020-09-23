@@ -1,17 +1,8 @@
-/*
- * classIds.h
- *
- *  Created on: 16.07.2018
- *      Author: mohr
- */
-
 #ifndef CONFIG_RETURNVALUES_CLASSIDS_H_
 #define CONFIG_RETURNVALUES_CLASSIDS_H_
 
 /**
- * Source IDs starts at 73 for now
- * Framework IDs for ReturnValues run from 0 to 56
- * and are located inside <fsfw/returnvalues/FwClassIds.h>
+ * @brief   CLASS_ID defintions which are required for custom returnvalues.
  */
 namespace CLASS_ID {
 enum {
@@ -20,7 +11,9 @@ enum {
 	I2C_CHANNEL, //!< I2C
 	SPI_CHANNEL, //!< SPI
 	GPS_HANDLER,  //!< GPS
-	PUS_SERVICE_3 //!< HKS
+	PUS_SERVICE_3, //!< HKS
+	SD_CARD_ACCESS, //!< SDCA
+	SD_CARD_HANDLER, //!< SDCH
 };
 }
 

@@ -1,5 +1,8 @@
-#ifndef CONFIG_TMTC_SUBSYSTEMIDRANGES_H_
-#define CONFIG_TMTC_SUBSYSTEMIDRANGES_H_
+#ifndef CONFIG_EVENTS_SUBSYSTEMIDRANGES_H_
+#define CONFIG_EVENTS_SUBSYSTEMIDRANGES_H_
+
+#include <cstdint>
+#include <fsfw/events/fwSubsystemIdRanges.h>
 
 /**
  * These IDs are part of the ID for an event thrown by a subsystem.
@@ -13,7 +16,6 @@ enum: uint8_t {
 	PUS_SERVICE_5 = 85,
 	PUS_SERVICE_6 = 86,
 	PUS_SERVICE_8 = 88,
-	PUS_SERVICE_9 = 89,
 	PUS_SERVICE_23 = 103,
 	DUMMY_DEVICE = 128,
 
@@ -23,8 +25,10 @@ enum: uint8_t {
 	I2C_COM_IF = 141,
 
 	TASK_MONITOR = 160,
-	SYSTEM_STATE_TASK = 161
+	SYSTEM_STATE_TASK = 161,
+
+	SD_CARD_HANDLER = 180
 };
 }
 
-#endif /* CONFIG_TMTC_SUBSYSTEMIDRANGES_H_ */
+#endif /* CONFIG_EVENTS_SUBSYSTEMIDRANGES_H_ */

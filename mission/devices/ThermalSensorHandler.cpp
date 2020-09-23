@@ -5,8 +5,8 @@
 ThermalSensorHandler::ThermalSensorHandler(object_id_t objectId,
 		object_id_t comIF, CookieIF *comCookie, uint8_t switchId):
 		DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId),
-		sensorDatasetSid(objectId, REQUEST_RTD),
-		sensorDataset(sensorDatasetSid)
+		sensorDataset(this, REQUEST_RTD),
+		sensorDatasetSid(sensorDataset.getSid())
 #ifdef DEBUG
 , debugDivider(20)
 #endif

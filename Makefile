@@ -37,9 +37,13 @@ ifdef IOBC
 BOARD = ISIS_OBC_G20
 BOARD_NAME = iOBC
 else 
-BOARD = at91sam9g20_ek
+BOARD = AT91SAM9G20_EK
 BOARD_NAME = at91ek
+# This define is used by the AT91 to perform 
+# reduced NAND-Flash operations
+CUSTOM_DEFINES += -DOP_BOOTSTRAP_on
 endif
+CUSTOM_DEFINES += -D$(BOARD) -D$(CHIP)
 
 ifdef ADD_CR
 CUSTOM_DEFINES += -DADD_CR
@@ -53,8 +57,6 @@ CHIP_PATH = iobc
 else
 CHIP_PATH = sam9g20ek
 endif
-
-IOBC_REMOTE_IP = 192.168.199.228
 
 OS_FSFW = freeRTOS
 OS_APP = $(OS_FSFW)
@@ -196,8 +198,9 @@ INCLUDES :=
 
 # Directories where $(directoryname).mk files should be included from.
 # Source files and includes can be added in those submakefiles.
-SUBDIRS := $(CONFIG_PATH) $(FRAMEWORK_PATH) $(MISSION_PATH) $(BSP_PATH) $(AT91_PATH) \
-		$(TEST_PATH) $(TMTCBRIDGE_PATH) $(UNITTEST_PATH) $(PRIVLIB_PATH) $(FREERTOS_PATH) 
+SUBDIRS := $(CONFIG_PATH) $(FRAMEWORK_PATH) $(MISSION_PATH) $(BSP_PATH) \
+		$(AT91_PATH) $(TEST_PATH) $(TMTCBRIDGE_PATH) $(UNITTEST_PATH) \
+		$(PRIVLIB_PATH) $(FREERTOS_PATH) 
 		
 # $(info $${SUBDIRS} is [${SUBDIRS}])	
 # to include the lwip source files
@@ -296,8 +299,8 @@ MSG_DEPENDENCY = Collecting dependencies for:
 MSG_BINARY = Generate binary: 
 MSG_OPTIMIZATION = Optimization: $(OPTIMIZATION), $(OPTIMIZATION_MESSAGE)
 MSG_TARGET = Target Build: $(TARGET)
-MSG_DEBUG = FSFW Debugging: $(DEBUG_MESSAGE), Trace Level: $(TRACE_LEVEL), \
-            Dynamic Traces: $(DYN_TRACE_MESSAGE)
+MSG_DEBUG = Debug level: $(DEBUG_LEVEL), FSFW Debugging: $(DEBUG_MESSAGE), \
+		Trace Level: $(TRACE_LEVEL), Dynamic Traces: $(DYN_TRACE_MESSAGE)
 MSG_COMIF = TMTC Communication Interface: $(COMIF_MESSAGE)
 
 # See: https://stackoverflow.com/questions/6687630/how-to-remove-unused-c-c-symbols-with-gcc-and-ld
@@ -345,11 +348,11 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPENDDIR)/$*.d
 #   C99 scanf/printf formats (e.g. uint8)
 CUSTOM_DEFINES += -DUSE_AT91LIB_STDIO_AND_STRING=$(USE_AT91LIB_STDIO_AND_STRING)
 CUSTOM_DEFINES += -DNEWLIB_NANO_NO_C99_IO
-WARNING_FLAGS =  -Wall -Wshadow=local -Wextra -Wimplicit-fallthrough=1 \
+WARNING_FLAGS = -Wall -Wshadow=local -Wextra -Wimplicit-fallthrough=1 \
 		-Wno-unused-parameter 
 		
-CXXDEFINES := -D$(CHIP) -D$(BOARD) -DTRACE_LEVEL=$(TRACE_LEVEL) \
-		   -DDYN_TRACES=$(DYN_TRACES) $(CUSTOM_DEFINES)
+CXXDEFINES := -DTRACE_LEVEL=$(TRACE_LEVEL) -DDYN_TRACES=$(DYN_TRACES) \
+		$(CUSTOM_DEFINES)
 CFLAGS +=  
 CXXFLAGS += -I.  $(DEBUG_LEVEL) $(DEPFLAGS) $(WARNING_FLAGS) \
 		-fmessage-length=0 $(OPTIMIZATION) $(I_INCLUDES) $(CXXDEFINES) \
@@ -371,6 +374,7 @@ LINK_INCLUDES = -L"$(HAL_PATH)/lib" -L"$(HCC_PATH)/lib" \
 		-T"$(LINKER_SCRIPT_PATH)/$(1).lds" -Wl,-Map=$(BINDIR)/$(BINARY_NAME).map
 LINK_LIBRARIES = -lc -u _printf_float -u _scanf_float -lHCC -lHCCD -lHAL -lHALD 
 
+# $(info $${I_INCLUDES} is [${I_INCLUDES}])
 
 #-------------------------------------------------------------------------------
 #		Rules
@@ -409,9 +413,7 @@ virtual: DEBUG_MESSAGE = On
 virtual: DEBUG_LEVEL = -g3
 
 ifndef KEEP_UNUSED_CODE
-debug virtual: OPTIMIZATION_MESSAGE = Off with unused code removal
-else
-debug virtual: OPTIMIZATION_MESSAGE = Off
+debug virtual mission: OPTIMIZATION_MESSAGE += , no unused code removal
 endif
 
 debug virtual mission: executable
@@ -440,7 +442,7 @@ cleanbin:
 define MEMORY_BUILDS
 
 executable: $(BINDIR)/$(BINARY_NAME)-$(1).bin
-	
+
 C_OBJECTS_$(1) = $(addprefix $(OBJDIR)/$(1)/, $(C_OBJECTS))
 ASM_OBJECTS_$(1) = $(addprefix $(OBJDIR)/$(1)/, $(ASM_OBJECTS))
 CXX_OBJECTS_$(1) = $(addprefix $(OBJDIR)/$(1)/, $(CXX_OBJECTS))
@@ -461,6 +463,9 @@ ALL_OBJECTS =  $$(ASM_OBJECTS_$(1)) $$(C_OBJECTS_$(1)) $$(CXX_OBJECTS_$(1))
 
 # Generates binary and displays all build properties
 # -p with mkdir ignores error and creates directory when needed.
+
+# SHOW_DETAILS = 1
+
 $(BINDIR)/$(BINARY_NAME)-$(1).bin: $(BINDIR)/$(BINARY_NAME)-$(1).elf
 	@echo
 	@echo $$(MSG_INFO)
@@ -468,9 +473,9 @@ $(BINDIR)/$(BINARY_NAME)-$(1).bin: $(BINDIR)/$(BINARY_NAME)-$(1).elf
 	@echo $$(MSG_OPTIMIZATION)
 	@echo $$(MSG_DEBUG)
 	@echo $$(MSG_COMIF)
-	@echo $(MSG_BINARY)
+	@echo $(MSG_BINARY) $$@
 	@mkdir -p $$(@D)
-	$(BINCOPY) $$< $$@ 
+	@$(BINCOPY) $$< $$@ 
 ifeq ($(OS),Windows_NT)
 	@echo Binary Size: `busybox stat -c %s $$@` bytes
 else
@@ -488,11 +493,13 @@ $(BINDIR)/$(BINARY_NAME)-$(1).hex: $(BINDIR)/$(BINARY_NAME)-$(1).elf
 # HCC (File System Library)
 $(BINDIR)/$(BINARY_NAME)-$(1).elf: $$(ALL_OBJECTS) 
 	@echo
-	@echo $(HEADERS)
-	@echo $(BINARY_NAME)
 	@echo $(MSG_LINKING) Target $$@
 	@mkdir -p $$(@D)
+ifdef SHOW_DETAILS
+	$(CXX) $(LDFLAGS) $(LINK_INCLUDES) -o $$@ $$^ $(LINK_LIBRARIES)
+else
 	@$(CXX) $(LDFLAGS) $(LINK_INCLUDES) -o $$@ $$^ $(LINK_LIBRARIES)
+endif
 ifeq ($(BUILD_FOLDER), mission)
 # With Link Time Optimization, section size is not available
 	$(SIZE) $$@
@@ -507,20 +514,32 @@ $(OBJDIR)/$(1)/%.o: %.cpp $(DEPENDDIR)/%.d | $(DEPENDDIR)
 	@echo 
 	@echo $(MSG_COMPILING) $$<
 	@mkdir -p $$(@D)
+ifdef SHOW_DETAILS
+	$(CXX) $$(CPPFLAGS) $$(CXXFLAGS) -D$(1) -c -o $$@ $$<
+else
 	@$(CXX) $$(CPPFLAGS) $$(CXXFLAGS) -D$(1) -c -o $$@ $$<
+endif
 
 $(OBJDIR)/$(1)/%.o: %.c 
 $(OBJDIR)/$(1)/%.o: %.c $(DEPENDDIR)/%.d | $(DEPENDDIR) 
 	@echo 
 	@echo $(MSG_COMPILING) $$<
 	@mkdir -p $$(@D)
+ifdef SHOW_DETAILS
+	$(CC) $$(CXXFLAGS) $$(CFLAGS) -D$(1) -c -o $$@ $$<
+else
 	@$(CC) $$(CXXFLAGS) $$(CFLAGS) -D$(1) -c -o $$@ $$<
+endif
 
 $(OBJDIR)/$(1)/%.o: %.S Makefile
 	@echo
 	@echo $(MSG_ASSEMBLING) $$<
 	@mkdir -p $$(@D)
+ifdef SHOW_DETAILS
+	$(CC) $$(ASFLAGS) -D$(1) -c -o $$@ $$<
+else
 	@$(CC) $$(ASFLAGS) -D$(1) -c -o $$@ $$<
+endif
 
 endef
 
@@ -566,6 +585,8 @@ else
 	'source $(GDB_PATH)/at91sam9g20-ek-sdram.gdb'
 	@fortune | cowsay | lolcat || true
 endif
+
+IOBC_REMOTE_IP = 192.168.199.228
 
 # Configre SDRAM of IOBC
 iobcCfg:

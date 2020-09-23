@@ -19,11 +19,6 @@ OS_FSFW = linux
 CUSTOM_DEFINES += -D$(OS_FSFW)
 CUSTOM_DEFINES += -DLINUX
 
-SW_VERSION = 1
-SW_SUBVERSION = 6
-CUSTOM_DEFINES += -DSW_VERSION=$(SW_VERSION)
-CUSTOM_DEFINES += -DSW_SUBVERSION=$(SW_SUBVERSION)
-
 # General folder paths
 FRAMEWORK_PATH = fsfw
 MISSION_PATH = mission
@@ -233,6 +228,8 @@ CXXFLAGS += $(GCOV_CXXFLAGS)
 GCOV_LINKER_LIBS = -lgcov -fprofile-arcs -ftest-coverage
 LINK_LIBRARIES += $(GCOV_LINKER_LIBS)
 endif
+
+
 
 #-------------------------------------------------------------------------------
 #		Rules

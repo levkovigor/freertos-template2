@@ -1,13 +1,10 @@
 /* Config */
 #include <config/cdatapool/dataPoolInit.h>
-#include <config/cdatapool/gpsPool.h>
 #include <config/objects/Factory.h>
 #include <config/tmtc/apid.h>
 #include <config/objects/systemObjectList.h>
 #include <config/devices/logicalAddresses.h>
 #include <config/devices/powerSwitcherList.h>
-#include <config/hk/sid.h>
-#include <config/hk/hkInit.h>
 #include <config/tmtc/pusIds.h>
 
 /* Flight Software Framework */
@@ -29,7 +26,6 @@
 #include <fsfw/pus/Service3Housekeeping.h>
 #include <fsfw/pus/Service5EventReporting.h>
 #include <fsfw/pus/Service8FunctionManagement.h>
-#include <mission/pus/Service3HousekeepingPSB.h>
 #include <mission/pus/Service6MemoryManagement.h>
 #include <mission/pus/Service17CustomTest.h>
 #include <mission/pus/Service20ParameterManagement.h>
@@ -62,11 +58,11 @@
 #include <sam9g20/comIF/RS232DeviceComIF.h>
 #include <sam9g20/comIF/SpiDeviceComIF.h>
 #include <sam9g20/core/CoreController.h>
+#include <sam9g20/core/SoftwareImageHandler.h>
 #include <sam9g20/core/SystemStateTask.h>
 #include <sam9g20/memory/FRAMHandler.h>
 #include <sam9g20/memory/SDCardHandler.h>
 #include <sam9g20/pus/Service9CustomTimeManagement.h>
-#include <sam9g20/utility/FreeRTOSStackMonitor.h>
 
 #include <test/testdevices/TestDeviceHandler.h>
 
@@ -138,9 +134,6 @@ void Factory::produce(void) {
 	/* PUS Standalone Services using PusServiceBase */
 	new Service1TelecommandVerification(objects::PUS_SERVICE_1,
 	        apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::PUS_FUNNEL);
-	Service3HousekeepingPSB* housekeepingServicePSB =
-			new Service3HousekeepingPSB(objects::PUS_SERVICE_3_PSB,
-			apid::SOURCE_OBSW, pus::PUS_SERVICE_3_PSB);
 	new Service3Housekeeping(objects::PUS_SERVICE_3, apid::SOURCE_OBSW,
 			pus::PUS_SERVICE_3);
 	new Service5EventReporting(objects::PUS_SERVICE_5, apid::SOURCE_OBSW,
@@ -149,16 +142,18 @@ void Factory::produce(void) {
 			pus::PUS_SERVICE_9);
 	new Service17CustomTest(objects::PUS_SERVICE_17, apid::SOURCE_OBSW,
 	        pus::PUS_SERVICE_17);
-	new Service23FileManagement(objects::PUS_SERVICE_23);
+
 
 	/* PUS Gateway Services using CommandingServiceBase */
 	new Service2DeviceAccess(objects::PUS_SERVICE_2, apid::SOURCE_OBSW,
 	        pus::PUS_SERVICE_2);
 	new Service6MemoryManagement(objects::PUS_SERVICE_6, apid::SOURCE_OBSW,
 	        pus::PUS_SERVICE_6);
+    new Service8FunctionManagement(objects::PUS_SERVICE_8, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_8);
 	new Service20ParameterManagement(objects::PUS_SERVICE_20);
-	new Service8FunctionManagement(objects::PUS_SERVICE_8, apid::SOURCE_OBSW,
-			pus::PUS_SERVICE_8);
+    new Service23FileManagement(objects::PUS_SERVICE_23, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_23);
 	new CService200ModeCommanding(objects::PUS_SERVICE_200, apid::SOURCE_OBSW,
 	        pus::PUS_SERVICE_200);
 	new CService201HealthCommanding(objects::PUS_SERVICE_201, apid::SOURCE_OBSW,
@@ -176,18 +171,6 @@ void Factory::produce(void) {
 	new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_ECHO_COM_IF,
 			dummyCookie1, true);
 
-	/* Data Structures, pool initialization */
-	/* GPS Data Structures */
-	struct GpsInit::navDataIdStruct gps0;
-	struct GpsInit::navDataIdStruct gps1;
-	GpsInit::gpsIdStructInit(&gps0,&gps1);
-	struct hk::hkIdStruct hkIdStruct;
-	/* Test Data Structure */
-	struct TestInit::TestIdStruct test;
-	TestInit::TestStructInit(&test);
-	hk::initHkStruct(&hkIdStruct, gps0, gps1, test);
-	hk::hkInit(housekeepingServicePSB, hkIdStruct);
-
 	new CoreController(objects::CORE_CONTROLLER, objects::SYSTEM_STATE_TASK);
 	new SystemStateTask(objects::SYSTEM_STATE_TASK, objects::CORE_CONTROLLER);
 	DummyCookie * dummyCookie2 = new DummyCookie(addresses::DUMMY_GPS0);
@@ -199,21 +182,21 @@ void Factory::produce(void) {
 	        dummyCookie3, switches::GPS1,gps1);
 #else
 	new GPSHandler(objects::GPS0_HANDLER,objects::DUMMY_GPS_COM_IF,
-			dummyCookie2, switches::GPS0, gps0);
+			dummyCookie2, switches::GPS0);
 	new GPSHandler(objects::GPS1_HANDLER,objects::DUMMY_GPS_COM_IF,
-			dummyCookie2, switches::GPS1, gps1);
+			dummyCookie2, switches::GPS1);
 #endif
-
 
 	/* Dummy Communication Interfaces */
 	new DummyEchoComIF(objects::DUMMY_ECHO_COM_IF);
 	new DummyGPSComIF(objects::DUMMY_GPS_COM_IF);
 
 	/* Test Tasks */
-	new AtmelTestTask(objects::TEST_TASK, test);
+	new AtmelTestTask(objects::TEST_TASK);
 
 	/* Board dependant files */
 
+	new SoftwareImageHandler(objects::SOFTWARE_IMAGE_HANDLER);
 	#if defined(stm32)
 	#else
 	new SDCardHandler(objects::SD_CARD_HANDLER);

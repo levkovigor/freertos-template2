@@ -5,6 +5,7 @@
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 
+
 /**
  * @brief   Commandable handler object to manage software updates.
  * @details
@@ -35,6 +36,11 @@ public:
 
     ReturnValue_t initialize() override;
 
+    /** HasActionsIF overrides */
+    MessageQueueId_t getCommandQueue() const override;
+    ReturnValue_t executeAction(ActionId_t actionId,
+            MessageQueueId_t commandedBy, const uint8_t* data,
+            size_t size) override;
 private:
     /**
      * There are 2 SD cards available.
@@ -56,8 +62,10 @@ private:
     // Overwrites the bootloader, which can either be stored in FRAM or in
     // the SD card.
     ReturnValue_t copyBootloaderToNorFlash(bool performHammingCheck);
-#else
-    ReturnValue_t  copyBootloaderToNandFlash(bool performHammingCheck);
+#elif defined(AT91SAM9G20_EK)
+    ReturnValue_t copyBootloaderToNandFlash(bool performHammingCheck,
+            bool displayInfo = false);
+    ReturnValue_t nandFlashInit(bool displayInfo = false);
 #endif
 
     // Handler functions for the SD cards
@@ -73,6 +81,7 @@ private:
     ActionHelper actionHelper;
 
     uint16_t stepCounter = 0;
+    bool oneShot = true;
 };
 
 

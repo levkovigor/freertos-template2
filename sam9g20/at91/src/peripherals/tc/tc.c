@@ -108,7 +108,7 @@ unsigned char TC_FindMckDivisor(
     const unsigned int divisors[5] = {2, 8, 32, 128,
 #if defined(at91sam9260) || defined(at91sam9261) || defined(at91sam9263) \
     || defined(at91sam9xe) || defined(at91sam9rl64) || defined(at91cap9) || \
-    defined(at91sam9g20_ek) || defined(iOBC)
+    defined(AT91SAM9G20_EK) || defined(iOBC)
         BOARD_MCK / 32768};
 #else
         1024};

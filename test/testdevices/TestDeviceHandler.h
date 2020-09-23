@@ -2,29 +2,48 @@
 #define TEST_TESTDEVICES_TESTDEVICEHANDLER_H_
 
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
-#include <fsfw/events/EventReportingProxyIF.h>
+#include <fsfw/datapoollocal/StaticLocalDataSet.h>
+#include <fsfw/datapoollocal/LocalPoolVariable.h>
+#include <fsfw/datapoollocal/LocalPoolVector.h>
+#include <fsfw/globalfunctions/PeriodicOperationDivider.h>
 #include <test/testinterfaces/DummyCookie.h>
+
+enum class LocalPoolIds {
+	TEST_VAR_1,
+	TEST_VEC_1,
+	TEST_VEC_2
+};
+
+class TestDataset: public StaticLocalDataSet<3> {
+public:
+	TestDataset(sid_t sid, bool setAllValid =  true);
+
+	// Can be used if data is changed regularly.
+	bool mode = false;
+
+	lp_var_t<uint8_t> testVar1;
+	lp_vec_t<float, 3> testVar2;
+	lp_vec_t<uint32_t, 3> testVar3;
+private:
+
+};
 
 /**
  * @brief 	Basic dummy device handler to test device commanding without a
  * 			physical device.
  * @details
  * Use ActionMessages for functional commanding (PUS Service 8) or
- * Device Handler Messages for raw commanding (sent buffer is simply returned).
+ * Device Handler Messages (PUS Service 2) for raw commanding
+ * (sent buffer is simply returned).
  * @author	R. Mueller
  * @ingroup devices
  */
 class TestDevice: public DeviceHandlerBase {
 public:
 	TestDevice(object_id_t objectId, object_id_t comIF, CookieIF * cookie,
-	        bool onImmediately = false);
-	virtual ~ TestDevice();
+	        bool onImmediately = true, bool changingDataset = true);
 
-	enum class PoolIds {
-		TEST_VAR_1,
-		TEST_VEC_1,
-		TEST_VEC_2
-	};
+	virtual ~ TestDevice();
 
 	virtual ReturnValue_t getParameter(uint8_t domainId, uint16_t parameterId,
 			ParameterWrapper *parameterWrapper,
@@ -121,10 +140,11 @@ private:
 			sizeof(COMMAND_2_PARAM1) + sizeof(COMMAND_2_PARAM2);
 
 	uint8_t commandBuffer[MAX_BUFFER_SIZE];
-	uint16_t trigger = 0;
-	bool onImmediately = false;
+
+	bool changingDatasets = false;
 	bool oneShot = true;
-	//variables for service 20 test
+
+	// variables for parameter service
 	uint32_t testParameter1 = 0;
 	int32_t testParameter2 = -2;
 	float testParameter3 = 3.3;
@@ -145,9 +165,18 @@ private:
 	ReturnValue_t initializeLocalDataPool(LocalDataPool& localDataPoolMap,
 	        LocalDataPoolManager& poolManager) override;
 
-	void testLocalDataPool();
+	// Test datasets which use the LocalDataPool of the test device
+	sid_t testDatasetSid;
+	sid_t testDatasetSidDiag;
+	TestDataset testDataset;
+	TestDataset testDatasetDiag;
+	void changeDatasets();
 
-	int counter = 0;
+	// These operation dividers can be used to only perform actions every few
+	// cycles. They are initialized in the constructor with the operation
+	// divider.
+	PeriodicOperationDivider opDivider;
+	PeriodicOperationDivider opDivider2;
 };
 
 
