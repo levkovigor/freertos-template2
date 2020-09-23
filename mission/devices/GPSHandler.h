@@ -2,7 +2,6 @@
 #define MISSION_DEVICES_GPSHANDLER_H_
 
 #include <mission/devices/devicepackets/GPSPackets.h>
-#include <config/cdatapool/gpsPool.h>
 
 #include <fsfw/datapoolglob/GlobalDataSet.h>
 #include <fsfw/datapoolglob/GlobalPoolVariable.h>
@@ -19,8 +18,8 @@
  */
 class GPSHandler : public DeviceHandlerBase {
 public:
-	GPSHandler(object_id_t objectId_, object_id_t comIF_, CookieIF * cookie_,
-			uint8_t powerSwitchId_, GpsInit::navDataIdStruct idStruct_);
+	GPSHandler(object_id_t objectId, object_id_t comIF, CookieIF * cookie,
+			uint8_t powerSwitchId);
 	virtual ~GPSHandler();
 
 	static uint8_t calcChecksum(const uint8_t * payload,uint16_t payloadSize);
@@ -214,23 +213,6 @@ private:
 	bool firstReplyReceived;
 
 	GpsNavigationMessage navMessage;
-
-	class NavData: public GlobDataSet {
-	public:
-		NavData(GpsInit::navDataIdStruct idStruct);
-		gp_uint8_t fixMode;
-		gp_uint8_t numberOfSvInFix;
-		gp_uint16_t gnssWeek;
-		gp_uint32_t timeOfWeek;
-		gp_uint32_t latitude;
-		gp_uint32_t longitude;
-		gp_uint32_t meanSeaLevelAltitude;
-		gp_vec_t<uint32_t,3> positionECEF;
-		gp_vec_t<uint32_t,3> velocityECEF;
-	};
-
-	NavData navData;
-
 
 	ReturnValue_t buildBaudSelectCommand(const uint8_t *commandData,
 			size_t commandDataLen);

@@ -3,7 +3,6 @@
 
 #include <test/testtasks/TestTask.h>
 #include <config/cdatapool/dataPoolInit.h>
-#include <config/cdatapool/testPool.h>
 #include <fsfw/datapoolglob/GlobalDataSet.h>
 #include <fsfw/datapoolglob/GlobalPoolVariable.h>
 #include <fsfw/datapoolglob/GlobalPoolVector.h>
@@ -14,7 +13,7 @@ extern "C" {
 
 class AtmelTestTask: public TestTask {
 public:
-    AtmelTestTask(object_id_t object_id, TestInit::TestIdStruct id_struct);
+    AtmelTestTask(object_id_t object_id);
     virtual ~AtmelTestTask();
 private:
     ReturnValue_t performPeriodicAction() override;

@@ -1,13 +1,10 @@
 /* Config */
 #include <config/cdatapool/dataPoolInit.h>
-#include <config/cdatapool/gpsPool.h>
 #include <config/objects/Factory.h>
 #include <config/tmtc/apid.h>
 #include <config/objects/systemObjectList.h>
 #include <config/devices/logicalAddresses.h>
 #include <config/devices/powerSwitcherList.h>
-#include <config/hk/sid.h>
-#include <config/hk/hkInit.h>
 #include <config/tmtc/pusIds.h>
 
 /* Flight Software Framework */
@@ -29,7 +26,6 @@
 #include <fsfw/pus/Service3Housekeeping.h>
 #include <fsfw/pus/Service5EventReporting.h>
 #include <fsfw/pus/Service8FunctionManagement.h>
-#include <mission/pus/Service3HousekeepingPSB.h>
 #include <mission/pus/Service6MemoryManagement.h>
 #include <mission/pus/Service17CustomTest.h>
 #include <mission/pus/Service20ParameterManagement.h>
@@ -138,9 +134,6 @@ void Factory::produce(void) {
 	/* PUS Standalone Services using PusServiceBase */
 	new Service1TelecommandVerification(objects::PUS_SERVICE_1,
 	        apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::PUS_FUNNEL);
-	Service3HousekeepingPSB* housekeepingServicePSB =
-			new Service3HousekeepingPSB(objects::PUS_SERVICE_3_PSB,
-			apid::SOURCE_OBSW, pus::PUS_SERVICE_3_PSB);
 	new Service3Housekeeping(objects::PUS_SERVICE_3, apid::SOURCE_OBSW,
 			pus::PUS_SERVICE_3);
 	new Service5EventReporting(objects::PUS_SERVICE_5, apid::SOURCE_OBSW,
@@ -178,18 +171,6 @@ void Factory::produce(void) {
 	new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_ECHO_COM_IF,
 			dummyCookie1, true);
 
-	/* Data Structures, pool initialization */
-	/* GPS Data Structures */
-	struct GpsInit::navDataIdStruct gps0;
-	struct GpsInit::navDataIdStruct gps1;
-	GpsInit::gpsIdStructInit(&gps0,&gps1);
-	struct hk::hkIdStruct hkIdStruct;
-	/* Test Data Structure */
-	struct TestInit::TestIdStruct test;
-	TestInit::TestStructInit(&test);
-	hk::initHkStruct(&hkIdStruct, gps0, gps1, test);
-	hk::hkInit(housekeepingServicePSB, hkIdStruct);
-
 	new CoreController(objects::CORE_CONTROLLER, objects::SYSTEM_STATE_TASK);
 	new SystemStateTask(objects::SYSTEM_STATE_TASK, objects::CORE_CONTROLLER);
 	DummyCookie * dummyCookie2 = new DummyCookie(addresses::DUMMY_GPS0);
@@ -201,9 +182,9 @@ void Factory::produce(void) {
 	        dummyCookie3, switches::GPS1,gps1);
 #else
 	new GPSHandler(objects::GPS0_HANDLER,objects::DUMMY_GPS_COM_IF,
-			dummyCookie2, switches::GPS0, gps0);
+			dummyCookie2, switches::GPS0);
 	new GPSHandler(objects::GPS1_HANDLER,objects::DUMMY_GPS_COM_IF,
-			dummyCookie2, switches::GPS1, gps1);
+			dummyCookie2, switches::GPS1);
 #endif
 
 
@@ -212,7 +193,7 @@ void Factory::produce(void) {
 	new DummyGPSComIF(objects::DUMMY_GPS_COM_IF);
 
 	/* Test Tasks */
-	new AtmelTestTask(objects::TEST_TASK, test);
+	new AtmelTestTask(objects::TEST_TASK);
 
 	/* Board dependant files */
 

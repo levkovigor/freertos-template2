@@ -28,8 +28,7 @@ extern "C" {
 #include <cstring>
 
 
-AtmelTestTask::AtmelTestTask(object_id_t object_id,
-        TestInit::TestIdStruct id_struct): TestTask(object_id) {
+AtmelTestTask::AtmelTestTask(object_id_t object_id): TestTask(object_id) {
 }
 
 AtmelTestTask::~AtmelTestTask() {}

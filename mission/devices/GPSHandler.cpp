@@ -3,11 +3,9 @@
 #include <fsfw/devicehandlers/AcceptsDeviceResponsesIF.h>
 
 GPSHandler::GPSHandler(object_id_t objectId_, object_id_t comIF_,
-		CookieIF * cookie_, uint8_t powerSwitchId,
-		GpsInit::navDataIdStruct idStruct_):
+		CookieIF * cookie_, uint8_t powerSwitchId):
 		DeviceHandlerBase(objectId_ ,comIF_, cookie_), switchId(powerSwitchId),
-		commandExecuted(false), firstReplyReceived(false), navMessage(),
-		navData(idStruct_) {
+		commandExecuted(false), firstReplyReceived(false), navMessage() {
 }
 
 GPSHandler::~GPSHandler() {}
@@ -337,33 +335,34 @@ ReturnValue_t GPSHandler::interpretDeviceReply(DeviceCommandId_t id,
 }
 
 ReturnValue_t GPSHandler::interpretNavigationData(const uint8_t *packet) {
-	sif::info << "GPS Handler: GPS packet received successfully !" << std::endl;
-	if(internalState == InternalState::STATE_WAIT_FIRST_MESSAGE) {
-		firstReplyReceived = true;
-	}
-	ReturnValue_t result = navData.read();
-	if(result != RETURN_OK) {
-		sif::debug << "GPSHandler::interpretNavigationData: Could not read"
-				" dataset with error code " << result << std::endl;
-		// reset the dataset.
-		ReturnValue_t commitResult = navData.commit();
-		if(commitResult != RETURN_OK) {
-			sif::error << "GPSHandler::interpretNavigationData: Error "
-					" committing faulty dataset!" << std::endl;
-		}
-		return result;
-	}
-	size_t size = navMessage.getSerializedSize();
-
-	result = navMessage.deSerialize(&packet, &size,
-	        SerializeIF::Endianness::BIG);
-	if(result != RETURN_OK) {
-		return result;
-	}
-	//deSerializeNavigationDataIntoDataset(packet);
-	checkAndStoreStructDataIntoDatapool();
-	result = navData.commit();
-	return result;
+//	sif::info << "GPS Handler: GPS packet received successfully !" << std::endl;
+//	if(internalState == InternalState::STATE_WAIT_FIRST_MESSAGE) {
+//		firstReplyReceived = true;
+//	}
+//	//ReturnValue_t result = navData.read();
+//	if(result != RETURN_OK) {
+//		sif::debug << "GPSHandler::interpretNavigationData: Could not read"
+//				" dataset with error code " << result << std::endl;
+//		// reset the dataset.
+//		//ReturnValue_t commitResult = navData.commit();
+//		if(commitResult != RETURN_OK) {
+//			sif::error << "GPSHandler::interpretNavigationData: Error "
+//					" committing faulty dataset!" << std::endl;
+//		}
+//		return result;
+//	}
+//	size_t size = navMessage.getSerializedSize();
+//
+//	result = navMessage.deSerialize(&packet, &size,
+//	        SerializeIF::Endianness::BIG);
+//	if(result != RETURN_OK) {
+//		return result;
+//	}
+//	//deSerializeNavigationDataIntoDataset(packet);
+//	checkAndStoreStructDataIntoDatapool();
+//	//result = navData.commit();
+//	return result;
+    return HasReturnvaluesIF::RETURN_OK;
 }
 
 //void GPSHandler::deSerializeNavigationDataIntoDataset(const uint8_t * packet) {
@@ -375,43 +374,43 @@ ReturnValue_t GPSHandler::interpretNavigationData(const uint8_t *packet) {
 //
 //}
 
-void GPSHandler::checkAndStoreStructDataIntoDatapool() {
-	if (navMessage.fixMode != navData.fixMode.value) {
-		if ((navMessage.fixMode> 2) && (navData.fixMode.value <2)) {
-			triggerEvent(GPS_FIX, navMessage.fixMode);
-		} else if (navMessage.fixMode == 0) {
-			triggerEvent(GPS_LOST_FIX, navMessage.fixMode);
-		}
-		navData.fixMode = navMessage.fixMode;
-	}
-
-	if(navMessage.fixMode < 2) {
-		//navData.velocityECEF.setValid(PoolVariableIF::INVALID);
-		navData.setEntriesValid(PoolVariableIF::INVALID);
-	}
-	else {
-		navData.setEntriesValid(PoolVariableIF::VALID);
-	}
-	navData.numberOfSvInFix = navMessage.numberOfSvInFix;
-
-	navData.velocityECEF.value[0] = navMessage.ecefVx;
-	navData.velocityECEF.value[1] = navMessage.ecefVy;
-	navData.velocityECEF.value[2] = navMessage.ecefVz;
-	navData.positionECEF.value[0] = navMessage.ecefX;
-	navData.positionECEF.value[1] = navMessage.ecefY;
-	navData.positionECEF.value[2] = navMessage.ecefZ;
-
-	// we should check for value jumps here, but we need a threshold
-	// or is this done by a monitor class?
-	navData.latitude =  navMessage.latitude;
-	// sif::info << "GPS Handler: The latitude value as hex is: "
-	//      <<std::hex << gpsData->latitude << std::endl;
-	navData.longitude = navMessage.latitude;
-
-	navData.meanSeaLevelAltitude = navMessage.meanSeaLevelAltitude;
-	navData.gnssWeek = navMessage.gnssWeek;
-	navData.timeOfWeek = navMessage.timeOfWeek;
-}
+//void GPSHandler::checkAndStoreStructDataIntoDatapool() {
+//	if (navMessage.fixMode != navData.fixMode.value) {
+//		if ((navMessage.fixMode> 2) && (navData.fixMode.value <2)) {
+//			triggerEvent(GPS_FIX, navMessage.fixMode);
+//		} else if (navMessage.fixMode == 0) {
+//			triggerEvent(GPS_LOST_FIX, navMessage.fixMode);
+//		}
+//		navData.fixMode = navMessage.fixMode;
+//	}
+//
+//	if(navMessage.fixMode < 2) {
+//		//navData.velocityECEF.setValid(PoolVariableIF::INVALID);
+//		navData.setEntriesValid(PoolVariableIF::INVALID);
+//	}
+//	else {
+//		navData.setEntriesValid(PoolVariableIF::VALID);
+//	}
+//	navData.numberOfSvInFix = navMessage.numberOfSvInFix;
+//
+//	navData.velocityECEF.value[0] = navMessage.ecefVx;
+//	navData.velocityECEF.value[1] = navMessage.ecefVy;
+//	navData.velocityECEF.value[2] = navMessage.ecefVz;
+//	navData.positionECEF.value[0] = navMessage.ecefX;
+//	navData.positionECEF.value[1] = navMessage.ecefY;
+//	navData.positionECEF.value[2] = navMessage.ecefZ;
+//
+//	// we should check for value jumps here, but we need a threshold
+//	// or is this done by a monitor class?
+//	navData.latitude =  navMessage.latitude;
+//	// sif::info << "GPS Handler: The latitude value as hex is: "
+//	//      <<std::hex << gpsData->latitude << std::endl;
+//	navData.longitude = navMessage.latitude;
+//
+//	navData.meanSeaLevelAltitude = navMessage.meanSeaLevelAltitude;
+//	navData.gnssWeek = navMessage.gnssWeek;
+//	navData.timeOfWeek = navMessage.timeOfWeek;
+//}
 
 
 void GPSHandler::setNormalDatapoolEntriesInvalid() {
@@ -435,19 +434,6 @@ uint32_t GPSHandler::getTransitionDelayMs(Mode_t modeFrom, Mode_t modeTo) {
 		return 0;
 	}
 }
-
-
-// Initialize Navigation Dataset
-GPSHandler::NavData::NavData(GpsInit::navDataIdStruct gpsDataIdStruct) :
-	fixMode(gpsDataIdStruct.p.fixModeId, this, PoolVariableIF::VAR_READ_WRITE),
-	numberOfSvInFix(gpsDataIdStruct.p.numberOfSvInFixId, this, PoolVariableIF::VAR_WRITE),
-	gnssWeek(gpsDataIdStruct.p.gnssWeekId,this, PoolVariableIF::VAR_WRITE),
-	timeOfWeek(gpsDataIdStruct.p.timeOfWeekId, this, PoolVariableIF::VAR_WRITE),
-	latitude(gpsDataIdStruct.p.latitudeId, this, PoolVariableIF::VAR_WRITE),
-	longitude(gpsDataIdStruct.p.longitudeId, this, PoolVariableIF::VAR_WRITE),
-	meanSeaLevelAltitude(gpsDataIdStruct.p.meanSeaAltitudeId, this, PoolVariableIF::VAR_WRITE),
-	positionECEF(gpsDataIdStruct.p.positionId, this, PoolVariableIF::VAR_WRITE),
-	velocityECEF(gpsDataIdStruct.p.velocityId, this, PoolVariableIF::VAR_WRITE) {}
 
 
 uint8_t GPSHandler::calcChecksum(const uint8_t * payload,uint16_t payloadSize) {
