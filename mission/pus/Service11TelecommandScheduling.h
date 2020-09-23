@@ -9,6 +9,7 @@ class Service11TelecommandScheduling: public PusServiceBase {
 public:
     Service11TelecommandScheduling(object_id_t objectId, uint16_t apid,
             uint8_t serviceId);
+    virtual ~Service11TelecommandScheduling();
 
     /** PusServiceBase overrides */
     virtual ReturnValue_t handleRequest(uint8_t subservice) override;

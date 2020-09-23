@@ -10,7 +10,7 @@
  */
 namespace SUBSYSTEM_ID {
 enum: uint8_t {
-	SUBSYSTE_ID_START = FW_SUBSYSTEM_ID_RANGE,
+	SUBSYSTEM_ID_START = FW_SUBSYSTEM_ID_RANGE,
 	/**
 	 * 80-105: PUS Services
 	 */
@@ -19,9 +19,9 @@ enum: uint8_t {
 	PUS_SERVICE_5 = 85,
 	PUS_SERVICE_6 = 86,
 	PUS_SERVICE_8 = 88,
-	PUS_SERVICE_9 = 89,
 	PUS_SERVICE_23 = 91,
-	DUMMY_DEVICE = 90,
+	DUMMY_DEVICE = 100,
+
 	/**
 	 * 105-115: AOCS
 	 */

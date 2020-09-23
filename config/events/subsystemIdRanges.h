@@ -1,5 +1,8 @@
-#ifndef CONFIG_TMTC_SUBSYSTEMIDRANGES_H_
-#define CONFIG_TMTC_SUBSYSTEMIDRANGES_H_
+#ifndef CONFIG_EVENTS_SUBSYSTEMIDRANGES_H_
+#define CONFIG_EVENTS_SUBSYSTEMIDRANGES_H_
+
+#include <cstdint>
+#include <fsfw/events/fwSubsystemIdRanges.h>
 
 /**
  * These IDs are part of the ID for an event thrown by a subsystem.
@@ -28,4 +31,4 @@ enum: uint8_t {
 };
 }
 
-#endif /* CONFIG_TMTC_SUBSYSTEMIDRANGES_H_ */
+#endif /* CONFIG_EVENTS_SUBSYSTEMIDRANGES_H_ */

@@ -12,7 +12,7 @@ extern "C"{
     #include <hcc/api_fat.h>
 }
 
-#include <subsystemIdRanges.h>
+#include <config/events/subsystemIdRanges.h>
 
 
 /**
