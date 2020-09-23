@@ -1,11 +1,3 @@
-                                                                                    /**
- * @file 	InitMission.cpp
- * @brief 	Includes mission and board specific code initialisation,
- *        	starts all services and initializes mission.
- * @date 	10.08.2019
- * @author  J. Meier, R. Mueller
- * @ingroup init
- */
 #include <dataPoolInit.h>
 #include <systemObjectList.h>
 #include <Factory.h>
@@ -79,7 +71,8 @@ void boardTestTaskInit();
  * For stress tests of the software, call getTaskStackHighWatermark()
  * for TaskManagement to track the used stack.
  *
- *  Don't forget to start the tasks !
+ * Don't forget to start the tasks !
+ * @author  R. Mueller, J. Meier
  * @ingroup init
  */
 void initMission(void) {
@@ -419,7 +412,7 @@ void boardTestTaskInit() {
 
     sif::info << "Starting test tasks.." << std::endl;
 
-    PollingSequenceTableTaskTest -> startTask ();
+    //PollingSequenceTableTaskTest -> startTask ();
     //SPITask -> startTask();
     //I2CTask -> startTask();
     //UART2Task -> startTask();

@@ -187,7 +187,6 @@ void Factory::produce(void) {
 			dummyCookie2, switches::GPS1);
 #endif
 
-
 	/* Dummy Communication Interfaces */
 	new DummyEchoComIF(objects::DUMMY_ECHO_COM_IF);
 	new DummyGPSComIF(objects::DUMMY_GPS_COM_IF);
