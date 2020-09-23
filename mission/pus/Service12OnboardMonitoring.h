@@ -1,9 +1,3 @@
-/**
- * \file Service12OnboardMonitoring.h
- *
- * \date 27.10.2019
- */
-
 #ifndef MISSION_PUS_SERVICE12ONBOARDMONITORING_H_
 #define MISSION_PUS_SERVICE12ONBOARDMONITORING_H_
 

@@ -5,8 +5,9 @@
 #include <cstddef>
 
 namespace tmtcsize {
-static const size_t MAX_SERIAL_FRAME_SIZE = 1500;
-static const uint32_t MAX_TM_PACKET = 50;
+static constexpr size_t MAX_SERIAL_FRAME_SIZE = 1500;
+static constexpr size_t MAX_STORED_TELECOMMANDS = 2000;
+static constexpr uint32_t MAX_TM_PACKET = 50;
 }
 
 #endif /* CONFIG_TMTC_TMTCSIZE_H_ */
