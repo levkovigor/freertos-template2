@@ -51,7 +51,9 @@ VPATH += $(AT91_PATH)/src/utility
 # needed for USB device test
 VPATH += $(AT91_PATH)/src/usb/common/core
 VPATH += $(AT91_PATH)/src/usb/common/hid
+VPATH += $(AT91_PATH)/src/usb/common/cdc
 VPATH += $(AT91_PATH)/src/usb/device/core
+VPATH += $(AT91_PATH)/src/usb/device/cdc
 VPATH += $(AT91_PATH)/src/usb/device/hid-mouse
 VPATH += $(DEMO_PATH)/src/Tests
 # end needed for USB device test
@@ -141,25 +143,26 @@ ASRC += board_cstartup_freeRTOS.S
 else
 ASRC += board_cstartup.S
 endif
-# needed for USB device test 
-#CSRC += USBdeviceTest.o
-#CSRC += USBConfigurationDescriptor.o
-#CSRC += USBEndpointDescriptor.o
-#CSRC += USBFeatureRequest.o
-#CSRC += USBGenericDescriptor.o
-#CSRC += USBGenericRequest.o
-#CSRC += USBGetDescriptorRequest.o
-#CSRC += USBInterfaceRequest.o
-#CSRC += USBSetAddressRequest.o
-#CSRC += USBSetConfigurationRequest.o
-#CSRC += USBD_UDP.o
-#CSRC += USBDCallbacks_Initialized.o
-#CSRC += USBDCallbacks_Reset.o
-#CSRC += USBDDriver.o
-#CSRC += USBDDriverCb_IfSettingChanged.o
-#CSRC += HIDDMouseDriver.o
-#CSRC += HIDDMouseDriverDescriptors.o
-#CSRC += HIDDMouseInputReport.o
-#CSRC += HIDIdleRequest.o
-#CSRC += HIDReportRequest.o
-# needed for USB device test
+
+# USB drivers
+CSRC += USBD_UDP.c
+CSRC += USBDDriver.c
+CSRC += USBGenericDescriptor.c
+CSRC += USBGenericRequest.c
+CSRC += USBConfigurationDescriptor.c
+CSRC += USBGetDescriptorRequest.c
+CSRC += USBInterfaceRequest.c
+CSRC += USBSetAddressRequest.c
+CSRC += USBSetConfigurationRequest.c
+CSRC += USBEndpointDescriptor.c
+CSRC += USBFeatureRequest.c
+CSRC += USBDCallbacks_Initialized.c
+CSRC += USBDCallbacks_Reset.c
+CSRC += USBDDriverCb_IfSettingChanged.c
+
+# CDC device drivers
+CSRC += CDCDSerialDriver.c
+CSRC += CDCDSerialDriverDescriptors.c
+CSRC += CDCLineCoding.c
+CSRC += CDCSetControlLineStateRequest.c
+

@@ -67,7 +67,6 @@
 #include <sam9g20/memory/FRAMHandler.h>
 #include <sam9g20/memory/SDCardHandler.h>
 #include <sam9g20/pus/Service9CustomTimeManagement.h>
-#include <sam9g20/utility/FreeRTOSStackMonitor.h>
 
 #include <test/testdevices/TestDeviceHandler.h>
 

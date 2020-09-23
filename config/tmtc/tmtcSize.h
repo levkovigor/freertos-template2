@@ -6,7 +6,8 @@
 
 namespace tmtcsize {
 static constexpr size_t MAX_SERIAL_FRAME_SIZE = 1500;
-static constexpr size_t MAX_STORED_TELECOMMANDS = 2000;
+static constexpr size_t MAX_USB_FRAME_SIZE = 1500;
+static constexpr uint32_t MAX_STORED_TELECOMMANDS = 2000;
 static constexpr uint32_t MAX_TM_PACKET = 50;
 }
 

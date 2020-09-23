@@ -18,7 +18,6 @@
 #include <fsfw/datapoolglob/GlobalDataPool.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 
-#include <sam9g20/utility/FreeRTOSStackMonitor.h>
 #include <freertos/FreeRTOS.h>
 #include <unittest/internal/InternalUnitTester.h>
 #include <utility/compile_time.h>

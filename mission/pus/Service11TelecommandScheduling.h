@@ -15,9 +15,14 @@ public:
     virtual ReturnValue_t performService() override;
 private:
     struct TelecommandStruct {
+        dur_millis_t milliseconds;
         store_address_t storeId;
     };
 
+    /**
+     * The telecommand map uses the exectution time as a Unix time stamp as
+     * the key. This is mapped to a generic telecommand struct.
+     */
     using TelecommandMap = etl::multimap<uint32_t, struct TelecommandStruct,
             tmtcsize::MAX_STORED_TELECOMMANDS>;
     TelecommandMap telecommandMap;
