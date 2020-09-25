@@ -2,6 +2,7 @@
 
 RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId):
 		SystemObject(objectId) {
+
 }
 
 ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {

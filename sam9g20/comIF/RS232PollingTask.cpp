@@ -78,7 +78,7 @@ void RS232PollingTask::pollUart() {
     ReturnValue_t result = uartSemaphore1.acquire();
     if(result == HasReturnvaluesIF::RETURN_OK) {
         handleTransferCompletion(readBuffer1.data(), transfer1bytesReceived,
-                transfer1Status);
+                transfer1Status, config::RS232_MUTEX_TIMEOUT);
         int retval = UART_queueTransfer(&uartTransfer1);
         if(retval != 0) {
             otherErrorCount++;
@@ -88,7 +88,7 @@ void RS232PollingTask::pollUart() {
     result = uartSemaphore2.acquire();
     if(result == HasReturnvaluesIF::RETURN_OK) {
         handleTransferCompletion(readBuffer2.data(), transfer2bytesReceived,
-                transfer2Status);
+                transfer2Status, config::RS232_MUTEX_TIMEOUT);
         int retval = UART_queueTransfer(&uartTransfer2);
         if(retval != 0) {
             otherErrorCount++;
@@ -115,42 +115,3 @@ void RS232PollingTask::uart2Callback(SystemContext context,
 	genericUartCallback(context, sem);
 }
 
-void RS232PollingTask::genericUartCallback(SystemContext context,
-		xSemaphoreHandle sem) {
-	BaseType_t higherPriorityTaskAwoken = pdFALSE;
-	if(context == SystemContext::task_context) {
-		BinarySemaphore::release(sem);
-	}
-	else {
-		BinarySemaphore::releaseFromISR(sem,
-				&higherPriorityTaskAwoken);
-	}
-	if(context == SystemContext::isr_context and
-			higherPriorityTaskAwoken == pdPASS) {
-		// Request a context switch before exiting ISR, as recommended
-	    // by FreeRTOS.
-		TaskManagement::requestContextSwitch(CallContext::ISR);
-	}
-}
-
-void RS232PollingTask::handleTransferCompletion(uint8_t* data,
-        volatile size_t& bytesReceived,
-        UARTtransferStatus& transferStatus) {
-    ReturnValue_t result = sharedRingBuffer->lockRingBufferMutex(
-            MutexIF::TimeoutType::WAITING,
-            config::RS232_MUTEX_TIMEOUT);
-    if(result != HasReturnvaluesIF::RETURN_OK) {
-        lastError = result;
-        otherErrorCount++;
-    }
-
-    // check for erroneous operations first
-    result = handleTransferResult(transfer2Status);
-    if(result == HasReturnvaluesIF::RETURN_OK) {
-        sharedRingBuffer->writeData(data, bytesReceived);
-        bytesReceived = 0;
-    }
-
-    sharedRingBuffer->unlockRingBufferMutex();
-
-}

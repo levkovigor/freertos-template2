@@ -40,7 +40,12 @@ protected:
     ReturnValue_t lastError = HasReturnvaluesIF::RETURN_OK;
 
     ReturnValue_t handleTransferResult(UARTtransferStatus status);
+    void handleTransferCompletion(uint8_t* data, volatile size_t& bytesReceived,
+            UARTtransferStatus& transferStatus, uint16_t mutexTimeoutMs);
     void generateErrorEventResetCounters();
+
+    static void genericUartCallback(SystemContext context,
+            xSemaphoreHandle sem);
 };
 
 

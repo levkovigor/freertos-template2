@@ -1,8 +1,8 @@
-#include "RingBufferAnalyzer.h"
-
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/globalfunctions/DleEncoder.h>
 #include <fsfw/ipc/MutexHelper.h>
+#include <sam9g20/core/RingBufferAnalyzer.h>
+#include <config/constants.h>
 #include <cstring>
 
 RingBufferAnalyzer::RingBufferAnalyzer(SharedRingBuffer *ringBuffer,
@@ -39,7 +39,7 @@ ReturnValue_t RingBufferAnalyzer::checkForPackets(uint8_t* receptionBuffer,
 ReturnValue_t RingBufferAnalyzer::readRingBuffer() {
 	ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
 	MutexHelper lock(ringBuffer->getMutexHandle(),
-			MutexIF::TimeoutType::WAITING, 5);
+			MutexIF::TimeoutType::WAITING, config::RS232_MUTEX_TIMEOUT);
 	size_t dataToRead = ringBuffer->getAvailableReadData();
 	if(dataToRead == 0) {
 		return NO_PACKET_FOUND;

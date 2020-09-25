@@ -47,12 +47,15 @@ ReturnValue_t TmTcSerialBridge::handleTc() {
 		if(result == HasReturnvaluesIF::RETURN_OK) {
 			result = handleTcReception(packetFoundLen);
 			if(result != HasReturnvaluesIF::RETURN_OK) {
+			    sif::debug << "TmTcSerialBridge::handleTc: Handling TC"
+			            << " failed!" << std::endl;
 				return result;
 			}
 		}
 		else if(result == RingBufferAnalyzer::POSSIBLE_PACKET_LOSS) {
 			// trigger event?
-
+		    sif::debug << "TmTcSerialBridge::handleTc: Possible data loss"
+		            << std::endl;
 			continue;
 		}
 		else if(result == RingBufferAnalyzer::NO_PACKET_FOUND) {

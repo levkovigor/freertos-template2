@@ -38,7 +38,7 @@ public:
     static constexpr uint32_t RS232_BAUD_RATE = config::RS232_BAUDRATE;
     /** The frame size will be set to this value if no other value is
      *  supplied in the constructor. */
-    static constexpr uint16_t RS232_MAX_SERIAL_FRAME_SIZE =
+    static constexpr size_t RS232_MAX_SERIAL_FRAME_SIZE =
     		config::RS232_MAX_SERIAL_FRAME_SIZE;
     static constexpr float RS232_SERIAL_TIMEOUT_BAUDTICKS =
     		config::RS232_SERIAL_TIMEOUT_BAUDTICKS;
@@ -87,12 +87,7 @@ private:
 
 	static void uart1Callback(SystemContext context, xSemaphoreHandle sem);
 	static void uart2Callback(SystemContext context, xSemaphoreHandle sem);
-	static void genericUartCallback(SystemContext context,
-			xSemaphoreHandle sem);
 
-	void handleTransferCompletion(uint8_t* data,
-	        volatile size_t& bytesReceived,
-	        UARTtransferStatus& transferStatus);
 };
 
 

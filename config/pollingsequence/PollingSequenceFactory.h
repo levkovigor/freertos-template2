@@ -25,7 +25,10 @@ namespace pst {
 /* 0.4 second period init*/
 ReturnValue_t pollingSequenceInitDefault(FixedTimeslotTaskIF *thisSequence);
 
-/* For Arduino */
+/* For RS485 controller */
+ReturnValue_t pollingSequenceInitRS485(FixedTimeslotTaskIF *thisSequence);
+
+/* For Arduino and tests */
 ReturnValue_t pollingSequenceInitTest(FixedTimeslotTaskIF *thisSequence);
 
 }

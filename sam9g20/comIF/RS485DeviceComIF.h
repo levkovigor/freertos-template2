@@ -3,7 +3,12 @@
 
 #include <fsfw/devicehandlers/DeviceCommunicationIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
+#include <config/constants.h>
 
+extern "C" {
+
+#include <hal/Drivers/UART.h>
+}
 class RS485DeviceComIF: public DeviceCommunicationIF, public SystemObject {
 public:
     static constexpr uint8_t INTERFACE_ID = CLASS_ID::RS485_COM_IF;
@@ -22,6 +27,7 @@ public:
 
 	virtual ~RS485DeviceComIF();
 private:
+
 };
 
 #endif /* BSP_COMIF_RS485DEVICECOMIF_H_ */

@@ -3,7 +3,7 @@
 
 #include <fsfw/tmtcservices/TmTcBridge.h>
 #include <fsfw/tmtcservices/AcceptsTelecommandsIF.h>
-#include <sam9g20/utility/RingBufferAnalyzer.h>
+#include <sam9g20/core/RingBufferAnalyzer.h>
 
 extern "C" {
 	#include <board.h>

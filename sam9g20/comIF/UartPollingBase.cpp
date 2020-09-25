@@ -2,6 +2,8 @@
 #include "ComConstants.h"
 
 #include <fsfw/objectmanager/ObjectManagerIF.h>
+#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
+#include <fsfw/osal/FreeRTOS/TaskManagement.h>
 
 UartPollingBase::UartPollingBase(object_id_t objectId,
         object_id_t sharedRingBufferId, UARTbus uartBus,
@@ -26,6 +28,27 @@ ReturnValue_t UartPollingBase::initialize() {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     return result;
+}
+
+
+void UartPollingBase::handleTransferCompletion(uint8_t *data,
+        volatile size_t &bytesReceived, UARTtransferStatus &transferStatus,
+        uint16_t mutexTimeoutMs) {
+    ReturnValue_t result = sharedRingBuffer->lockRingBufferMutex(
+            MutexIF::TimeoutType::WAITING, mutexTimeoutMs);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        lastError = result;
+        otherErrorCount++;
+    }
+
+    // check for erroneous operations first
+    result = handleTransferResult(transferStatus);
+    if(result == HasReturnvaluesIF::RETURN_OK) {
+        sharedRingBuffer->writeData(data, bytesReceived);
+        bytesReceived = 0;
+    }
+
+    sharedRingBuffer->unlockRingBufferMutex();
 }
 
 
@@ -86,4 +109,22 @@ void UartPollingBase::generateErrorEventResetCounters() {
     overrunErrorCount = 0;
     framingErrorCount = 0;
     otherErrorCount = 0;
+}
+
+void UartPollingBase::genericUartCallback(SystemContext context,
+        xSemaphoreHandle sem) {
+    BaseType_t higherPriorityTaskAwoken = pdFALSE;
+    if(context == SystemContext::task_context) {
+        BinarySemaphore::release(sem);
+    }
+    else {
+        BinarySemaphore::releaseFromISR(sem,
+                &higherPriorityTaskAwoken);
+    }
+    if(context == SystemContext::isr_context and
+            higherPriorityTaskAwoken == pdPASS) {
+        // Request a context switch before exiting ISR, as recommended
+        // by FreeRTOS.
+        TaskManagement::requestContextSwitch(CallContext::ISR);
+    }
 }
