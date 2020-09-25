@@ -1,6 +1,8 @@
 #ifndef SAM9G20_COMIF_I2C_DEVICECOMIF_H_
 #define SAM9G20_COMIF_I2C_DEVICECOMIF_H_
 
+#include <config/constants.h>
+
 #include <fsfw/objectmanager/SystemObject.h>
 #include <sam9g20/comIF/cookies/I2cCookie.h>
 
@@ -22,10 +24,12 @@ public:
 	static constexpr uint8_t BUS_CHECK_TRIGGER = 10;
 
 	/**
-	 * Set to portMAXDELAY for debugging.
-	 * Is set to one for values less than 1.
+	 * Set to portMAXDELAY for debugging, specified as 1/10th of ticks.
+	 * Is set to one for values less than 1. Should be specified to
+	 * portMAX_DELAY for debugging.
 	 */
-	static constexpr uint32_t I2C_TRANSFER_TIMEOUT = portMAX_DELAY;
+	static constexpr uint32_t I2C_TRANSFER_TIMEOUT =
+			config::I2C_TRANSFER_TIMEOUT;
 
 	static const uint8_t INTERFACE_ID = CLASS_ID::I2C_CHANNEL;
 
