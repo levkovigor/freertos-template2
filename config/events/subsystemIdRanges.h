@@ -23,6 +23,7 @@ enum: uint8_t {
 
 	SPI_COM_IF = 140,
 	I2C_COM_IF = 141,
+	UART_COM_IF = 142,
 
 	TASK_MONITOR = 160,
 	SYSTEM_STATE_TASK = 161,

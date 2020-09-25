@@ -3,7 +3,7 @@
 
 #include <fsfw/tmtcservices/PusServiceBase.h>
 #include <etl/multimap.h>
-#include <config/tmtc/tmtcSize.h>
+#include <config/constants.h>
 
 class Service11TelecommandScheduling: public PusServiceBase {
 public:
@@ -25,7 +25,7 @@ private:
      * the key. This is mapped to a generic telecommand struct.
      */
     using TelecommandMap = etl::multimap<uint32_t, struct TelecommandStruct,
-            tmtcsize::MAX_STORED_TELECOMMANDS>;
+            config::MAX_STORED_TELECOMMANDS>;
     TelecommandMap telecommandMap;
 
 };

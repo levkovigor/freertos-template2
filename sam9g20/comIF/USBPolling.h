@@ -5,7 +5,7 @@
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
-#include <config/tmtc/tmtcSize.h>
+#include <config/constants.h>
 #include <array>
 
 class USBPolling: public SystemObject, public ExecutableObjectIF {
@@ -16,8 +16,8 @@ public:
 	ReturnValue_t initialize() override;
 private:
 
-	static constexpr uint16_t USB_FRAME_MAX_SIZE =
-	    		tmtcsize::MAX_USB_FRAME_SIZE;
+	static constexpr size_t USB_FRAME_MAX_SIZE =
+	    		config::USB_FRAME_SIZE;
 
 	struct UsbStruct {
 		USBPolling* taskPtr;

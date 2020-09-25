@@ -27,7 +27,8 @@ ReturnValue_t TmTcSerialBridge::initialize() {
 	if(ringBuffer == nullptr) {
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
-	analyzerTask = new SerialAnalyzerTask(ringBuffer,AnalyzerModes::DLE_ENCODING);
+	analyzerTask = new RingBufferAnalyzer(ringBuffer,
+			AnalyzerModes::DLE_ENCODING);
 	return TmTcBridge::initialize();
 }
 
@@ -49,11 +50,12 @@ ReturnValue_t TmTcSerialBridge::handleTc() {
 				return result;
 			}
 		}
-		else if(result == SerialAnalyzerTask::POSSIBLE_PACKET_LOSS) {
+		else if(result == RingBufferAnalyzer::POSSIBLE_PACKET_LOSS) {
 			// trigger event?
+
 			continue;
 		}
-		else if(result == SerialAnalyzerTask::NO_PACKET_FOUND) {
+		else if(result == RingBufferAnalyzer::NO_PACKET_FOUND) {
 			return HasReturnvaluesIF::RETURN_OK;
 		}
 	}

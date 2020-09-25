@@ -17,7 +17,8 @@ extern "C" {
 #include <hal/Drivers/UART.h>
 }
 
-#include <config/tmtc/tmtcSize.h>
+#include <config/constants.h>
+#include "ComConstants.h"
 
 #include <utility>
 #include <vector>
@@ -32,18 +33,20 @@ extern "C" {
  * another task.
  * @author 	R. Mueller
  */
-class TcSerialPollingTask:  public SystemObject,
+class RS232PollingTask:  public SystemObject,
         public ExecutableObjectIF,
         public HasReturnvaluesIF {
     friend class TmTcSerialBridge;
+    friend class RS232DeviceComIF;
 public:
-    static constexpr uint32_t BAUD_RATE = 230400;
-    static constexpr uint8_t TC_RECEPTION_QUEUE_DEPTH = 10;
+
+    static constexpr uint32_t RS232_BAUD_RATE = config::RS232_BAUDRATE;
     /** The frame size will be set to this value if no other value is
      *  supplied in the constructor. */
-    static constexpr uint16_t SERIAL_FRAME_MAX_SIZE =
-    		tmtcsize::MAX_SERIAL_FRAME_SIZE;
-    static constexpr float DEFAULT_SERIAL_TIMEOUT_BAUDTICKS = 5;
+    static constexpr uint16_t RS232_MAX_SERIAL_FRAME_SIZE =
+    		config::RS232_MAX_SERIAL_FRAME_SIZE;
+    static constexpr float RS232_SERIAL_TIMEOUT_BAUDTICKS =
+    		config::RS232_SERIAL_TIMEOUT_BAUDTICKS;
 
     /**
      * Default ctor.
@@ -56,12 +59,10 @@ public:
      * @param serialTimeoutBaudticks Timeout in baudticks. Maxiumum uint16_t
      * value is reserved for the dafault timeout
      */
-	TcSerialPollingTask(object_id_t objectId, object_id_t tcBridge,
-			object_id_t sharedRingBufferId,
-			uint16_t serialTimeoutBaudticks = DEFAULT_SERIAL_TIMEOUT_BAUDTICKS,
-			size_t frameSize = 0);
+	RS232PollingTask(object_id_t objectId, object_id_t tcBridge,
+			object_id_t sharedRingBufferId);
 
-	virtual ~TcSerialPollingTask();
+	virtual ~RS232PollingTask();
 
 	virtual ReturnValue_t initialize();
 
@@ -78,24 +79,25 @@ protected:
 private:
 	object_id_t tcBridge = objects::NO_OBJECT;
 
+
 	UARTconfig configBus0 = { .mode = AT91C_US_USMODE_NORMAL |
 			AT91C_US_CLKS_CLOCK | AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE |
 			AT91C_US_OVER_16 | AT91C_US_NBSTOP_1_BIT, .baudrate = 115200,
 			.timeGuard = 0, .busType = rs232_uart, .rxtimeout = 0xFFFF };
 
-	bool started = false;
+	static bool uart0Started;
 
 	UARTgenericTransfer uartTransfer1;
 	static volatile uint8_t transfer1bytesReceived;
 	BinarySemaphore uartSemaphore1;
 	UARTtransferStatus transfer1Status = done_uart;
-	std::array<uint8_t, SERIAL_FRAME_MAX_SIZE> readBuffer1;
+	std::array<uint8_t, RS232_MAX_SERIAL_FRAME_SIZE> readBuffer1;
 
 	BinarySemaphore uartSemaphore2;
 	static volatile uint8_t transfer2bytesReceived;
 	UARTgenericTransfer uartTransfer2;
 	UARTtransferStatus transfer2Status = done_uart;
-	std::array<uint8_t, SERIAL_FRAME_MAX_SIZE> readBuffer2;
+	std::array<uint8_t, RS232_MAX_SERIAL_FRAME_SIZE> readBuffer2;
 
 
 	/**
@@ -122,6 +124,9 @@ private:
 	static void uart2Callback(SystemContext context, xSemaphoreHandle sem);
 	static void genericUartCallback(SystemContext context,
 			xSemaphoreHandle sem);
+
+	uint32_t errorCounter = 0;
+	ReturnValue_t lastError = HasReturnvaluesIF::RETURN_OK;
 };
 
 

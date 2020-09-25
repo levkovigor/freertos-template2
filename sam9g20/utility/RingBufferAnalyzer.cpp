@@ -1,10 +1,11 @@
-#include "SerialAnalyzerTask.h"
+#include "RingBufferAnalyzer.h"
+
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/globalfunctions/DleEncoder.h>
 #include <fsfw/ipc/MutexHelper.h>
 #include <cstring>
 
-SerialAnalyzerTask::SerialAnalyzerTask(SharedRingBuffer *ringBuffer,
+RingBufferAnalyzer::RingBufferAnalyzer(SharedRingBuffer *ringBuffer,
 		AnalyzerModes mode):
 		 mode(mode), ringBuffer(ringBuffer) {
 	if(ringBuffer == nullptr) {
@@ -15,7 +16,7 @@ SerialAnalyzerTask::SerialAnalyzerTask(SharedRingBuffer *ringBuffer,
 
 }
 
-ReturnValue_t SerialAnalyzerTask::checkForPackets(uint8_t* receptionBuffer,
+ReturnValue_t RingBufferAnalyzer::checkForPackets(uint8_t* receptionBuffer,
 		size_t maxData, size_t* packetSize) {
 	if(receptionBuffer == nullptr or packetSize == nullptr) {
 		return HasReturnvaluesIF::RETURN_FAILED;
@@ -35,7 +36,7 @@ ReturnValue_t SerialAnalyzerTask::checkForPackets(uint8_t* receptionBuffer,
 	return result;
 }
 
-ReturnValue_t SerialAnalyzerTask::readRingBuffer() {
+ReturnValue_t RingBufferAnalyzer::readRingBuffer() {
 	ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
 	MutexHelper lock(ringBuffer->getMutexHandle(),
 			MutexIF::TimeoutType::WAITING, 5);
@@ -59,7 +60,7 @@ ReturnValue_t SerialAnalyzerTask::readRingBuffer() {
 	return result;
 }
 
-ReturnValue_t SerialAnalyzerTask::handleDleParsing(uint8_t* receptionBuffer,
+ReturnValue_t RingBufferAnalyzer::handleDleParsing(uint8_t* receptionBuffer,
 		size_t maxSize, size_t* packetSize) {
 	size_t readSize = 0;
 	ReturnValue_t result = parseForDleEncodedPackets(currentBytesRead,
@@ -79,7 +80,7 @@ ReturnValue_t SerialAnalyzerTask::handleDleParsing(uint8_t* receptionBuffer,
 	return result;
 }
 
-ReturnValue_t SerialAnalyzerTask::parseForDleEncodedPackets(
+ReturnValue_t RingBufferAnalyzer::parseForDleEncodedPackets(
 		size_t bytesToRead, uint8_t* receptionBuffer, size_t maxSize,
 		size_t* packetSize, size_t* readSize) {
 	bool stxFound = false;

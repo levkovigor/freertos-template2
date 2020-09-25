@@ -1,4 +1,4 @@
-#include <sam9g20/tmtcbridge/TcSerialPollingTask.h>
+#include "RS232PollingTask.h"
 #include <sam9g20/tmtcbridge/TmTcSerialBridge.h>
 
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
@@ -11,22 +11,22 @@
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 
+bool RS232PollingTask::uart0Started = false;
 
-volatile uint8_t TcSerialPollingTask::transfer1bytesReceived = 0;
-volatile uint8_t TcSerialPollingTask::transfer2bytesReceived = 0;
+volatile uint8_t RS232PollingTask::transfer1bytesReceived = 0;
+volatile uint8_t RS232PollingTask::transfer2bytesReceived = 0;
 
-TcSerialPollingTask::TcSerialPollingTask(object_id_t objectId,
-		object_id_t tcBridge, object_id_t sharedRingBufferId,
-		uint16_t serialTimeoutBaudticks, size_t frameSize):
+RS232PollingTask::RS232PollingTask(object_id_t objectId,
+		object_id_t tcBridge, object_id_t sharedRingBufferId):
 		SystemObject(objectId), tcBridge(tcBridge),
 		sharedRingBufferId(sharedRingBufferId) {
-	configBus0.rxtimeout = serialTimeoutBaudticks;
+	configBus0.rxtimeout = RS232_SERIAL_TIMEOUT_BAUDTICKS;
 }
 
-TcSerialPollingTask::~TcSerialPollingTask() {}
+RS232PollingTask::~RS232PollingTask() {}
 
 
-ReturnValue_t TcSerialPollingTask::initialize() {
+ReturnValue_t RS232PollingTask::initialize() {
 	tcStore = objectManager->get<StorageManagerIF>(objects::TC_STORE);
 	if (tcStore == nullptr) {
 		sif::error << "TcSerialPollingTask::initialize: TC Store uninitialized!"
@@ -42,8 +42,9 @@ ReturnValue_t TcSerialPollingTask::initialize() {
 		return RETURN_FAILED;
 	}
 	//targetTcDestination = tcTarget->getRequestQueue();
-	configBus0.baudrate = BAUD_RATE;
+	configBus0.baudrate = RS232_BAUD_RATE;
 	ReturnValue_t result = UART_start(bus0_uart,configBus0);
+	uart0Started = true;
 	if (result != RETURN_OK) {
 		sif::error << "Serial Polling: UART_start init error with code " <<
 				(int) result << std::endl;
@@ -59,7 +60,7 @@ ReturnValue_t TcSerialPollingTask::initialize() {
 }
 
 
-ReturnValue_t TcSerialPollingTask::performOperation(uint8_t operationCode) {
+ReturnValue_t RS232PollingTask::performOperation(uint8_t operationCode) {
 	initiateUartTransfers();
 	while(true) {
 		pollUart();
@@ -67,13 +68,13 @@ ReturnValue_t TcSerialPollingTask::performOperation(uint8_t operationCode) {
 	return RETURN_OK; // This should never be reached
 }
 
-void TcSerialPollingTask::initiateUartTransfers() {
+void RS232PollingTask::initiateUartTransfers() {
 	uartTransfer1.bus = bus0_uart;
 	uartTransfer1.callback = uart1Callback;
 	uartTransfer1.direction = read_uartDir;
 	uartTransfer1.postTransferDelay = 0;
 	uartTransfer1.readData = readBuffer1.data();
-	uartTransfer1.readSize = SERIAL_FRAME_MAX_SIZE;
+	uartTransfer1.readSize = RS232_MAX_SERIAL_FRAME_SIZE;
 	uartTransfer1.result = &transfer1Status;
 	uartSemaphore1.acquire();
 	uartTransfer1.semaphore = uartSemaphore1.getSemaphore();
@@ -83,7 +84,7 @@ void TcSerialPollingTask::initiateUartTransfers() {
 	uartTransfer2.direction = read_uartDir;
 	uartTransfer2.postTransferDelay = 0;
 	uartTransfer2.readData = readBuffer2.data();
-	uartTransfer2.readSize = SERIAL_FRAME_MAX_SIZE;
+	uartTransfer2.readSize = RS232_MAX_SERIAL_FRAME_SIZE;
 	uartTransfer2.result = &transfer2Status;
 	uartSemaphore2.acquire();
 	uartTransfer2.semaphore = uartSemaphore2.getSemaphore();
@@ -96,46 +97,60 @@ void TcSerialPollingTask::initiateUartTransfers() {
 	}
 	result = UART_queueTransfer(&uartTransfer2);
 	if(result != 0) {
+		// config error
 		sif::error << "TcSerialPollingTask::initiateUartTransfers: Config error"
 				<< std::endl;
-		// config error
 	}
 }
 
-void TcSerialPollingTask::pollUart() {
+void RS232PollingTask::pollUart() {
 	ReturnValue_t result = uartSemaphore1.acquire();
 	if(result == HasReturnvaluesIF::RETURN_OK) {
-	    // todo: handle lock error
-		sharedRingBuffer->lockRingBufferMutex(MutexIF::TimeoutType::WAITING, 2);
+		result = sharedRingBuffer->lockRingBufferMutex(
+				MutexIF::TimeoutType::WAITING,
+				config::RS232_MUTEX_TIMEOUT);
+		if(result != HasReturnvaluesIF::RETURN_OK) {
+			errorCounter ++;
+		}
 		sharedRingBuffer->writeData(readBuffer1.data(), transfer1bytesReceived);
 		sharedRingBuffer->unlockRingBufferMutex();
 		if(transfer1Status != done_uart) {
-			// todo: handle error here
+			// might lead to spam, so we use error counter instead..
+			errorCounter++;
 		}
 		int retval = UART_queueTransfer(&uartTransfer1);
 		if(retval != 0) {
-			// todo: config error debug output
+			errorCounter ++;
 		}
 	}
 
 	result = uartSemaphore2.acquire();
 	if(result == HasReturnvaluesIF::RETURN_OK) {
-	    // todo: handle lock error
-		sharedRingBuffer->lockRingBufferMutex(MutexIF::TimeoutType::WAITING, 2);
+		result = sharedRingBuffer->lockRingBufferMutex(
+				MutexIF::TimeoutType::WAITING,
+				config::RS232_MUTEX_TIMEOUT);
+		if(result != HasReturnvaluesIF::RETURN_OK) {
+			errorCounter++;
+		}
 		sharedRingBuffer->writeData(readBuffer2.data(), transfer2bytesReceived);
 		sharedRingBuffer->unlockRingBufferMutex();
 		if(transfer2Status != done_uart) {
-		    // todo: handle error here
+		    errorCounter++;
 		}
 		int retval = UART_queueTransfer(&uartTransfer2);
 		if(retval != 0) {
-		    // todo: config error debug output
+		    errorCounter++;
 		}
+	}
+
+	if(errorCounter > 0) {
+		triggerEvent(comconstants::RS232_POLLONG_ERROR, errorCounter, lastError);
+		errorCounter = 0;
 	}
 }
 
 
-ReturnValue_t TcSerialPollingTask::handleOverrunError() {
+ReturnValue_t RS232PollingTask::handleOverrunError() {
 	sif::error << "Serial Polling: Overrun error on bus 0" << std::endl;
 	size_t recvSize = UART_getPrevBytesRead(bus0_uart);
 	sif::error << "Read " << recvSize << " bytes." << std::endl;
@@ -146,19 +161,19 @@ ReturnValue_t TcSerialPollingTask::handleOverrunError() {
 	return RETURN_FAILED;
 }
 
-void TcSerialPollingTask::uart1Callback(SystemContext context,
+void RS232PollingTask::uart1Callback(SystemContext context,
 		xSemaphoreHandle sem) {
 	transfer1bytesReceived = UART_getPrevBytesRead(bus0_uart);
 	genericUartCallback(context, sem);
 }
 
-void TcSerialPollingTask::uart2Callback(SystemContext context,
+void RS232PollingTask::uart2Callback(SystemContext context,
 		xSemaphoreHandle sem) {
 	transfer2bytesReceived = UART_getPrevBytesRead(bus0_uart);
 	genericUartCallback(context, sem);
 }
 
-void TcSerialPollingTask::genericUartCallback(SystemContext context,
+void RS232PollingTask::genericUartCallback(SystemContext context,
 		xSemaphoreHandle sem) {
 	BaseType_t higherPriorityTaskAwoken = pdFALSE;
 	if(context == SystemContext::task_context) {
