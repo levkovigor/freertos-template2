@@ -1,6 +1,8 @@
 #ifndef SAM9G20_TMTCBRIDGE_SERIALPOLLINGTASK_H_
 #define SAM9G20_TMTCBRIDGE_SERIALPOLLINGTASK_H_
 
+#include "ComConstants.h"
+
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/ipc/MessageQueueIF.h>
@@ -10,7 +12,6 @@
 #include <fsfw/objectmanager/frameworkObjects.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 
-
 extern "C" {
 #include <board.h>
 #include <AT91SAM9G20.h>
@@ -18,10 +19,7 @@ extern "C" {
 }
 
 #include <config/constants.h>
-#include "ComConstants.h"
 
-#include <utility>
-#include <vector>
 #include <array>
 
 /**

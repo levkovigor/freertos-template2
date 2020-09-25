@@ -144,7 +144,7 @@ void RS232PollingTask::pollUart() {
 	}
 
 	if(errorCounter > 0) {
-		triggerEvent(comconstants::RS232_POLLONG_ERROR, errorCounter, lastError);
+		triggerEvent(comconstants::RS232_POLLING_ERROR, errorCounter, lastError);
 		errorCounter = 0;
 	}
 }
