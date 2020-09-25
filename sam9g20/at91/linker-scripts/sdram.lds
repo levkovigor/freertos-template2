@@ -169,7 +169,7 @@ SECTIONS
 
     /* Heap section */
 	_sheap_ = .;
-    _eheap_ = 0x21700000;
+    _eheap_ = 0x21800000;
 
 	/* top of stack */
     _sstack = 0x22000000 - 1024;
