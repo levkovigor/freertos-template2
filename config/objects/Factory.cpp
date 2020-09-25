@@ -126,7 +126,7 @@ void Factory::produce(void) {
 			objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
 			objects::TC_STORE, objects::SERIAL_RING_BUFFER);
 	new RS232PollingTask(objects::SERIAL_POLLING_TASK,
-			objects::SERIAL_TMTC_BRIDGE, objects::SERIAL_RING_BUFFER);
+	        objects::SERIAL_RING_BUFFER);
 
 	/* TM Destination */
 	new TmFunnel(objects::PUS_FUNNEL);

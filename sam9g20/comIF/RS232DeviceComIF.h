@@ -7,7 +7,6 @@
 
 #include <fsfw/events/Event.h>
 
-// UART Driver, pre-compiled with C (libHal.a)
 extern "C" {
 #include <AT91SAM9G20.h>
 #include <hal/Drivers/UART.h>
@@ -26,10 +25,10 @@ extern "C" {
  */
 class RS232DeviceComIF: public DeviceCommunicationIF, public SystemObject {
 public:
-	static constexpr uint8_t INTERFACE_ID = CLASS_ID::RS232_CHANNEL;
+	static constexpr uint8_t INTERFACE_ID = CLASS_ID::RS232_COM_IF;
 
-	// could not configure and start RS232 connection
-	static constexpr ReturnValue_t OPENING_ERROR = MAKE_RETURN_CODE(0x00);
+	// Bus has not been started yet.
+	static constexpr ReturnValue_t RS232_INACTIVE = MAKE_RETURN_CODE(0x00);
 
 	RS232DeviceComIF(object_id_t objectId);
 	virtual ~RS232DeviceComIF();
@@ -46,7 +45,7 @@ public:
 private:
 	UARTgenericTransfer writeStruct;
 	BinarySemaphore writeSemaphore;
-	UARTtransferStatus writeResult;
+	UARTtransferStatus writeResult = UARTtransferStatus::done_uart;
 
 	static void uartWriteCallback(SystemContext context, xSemaphoreHandle sem);
 

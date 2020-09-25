@@ -36,7 +36,7 @@ public:
 	//! Default semaphore timout in ticks
 	static constexpr TickType_t SPI_STANDARD_SEMAPHORE_TIMEOUT = 40;
 
-	static constexpr uint8_t INTERFACE_ID = CLASS_ID::SPI_CHANNEL;
+	static constexpr uint8_t INTERFACE_ID = CLASS_ID::SPI_COM_IF;
 	static constexpr uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::SPI_COM_IF;
 
 	static constexpr ReturnValue_t SPI_INIT_FAILURE = MAKE_RETURN_CODE(0x01);

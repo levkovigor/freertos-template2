@@ -2,11 +2,12 @@
 #define SAM9G20_TMTCBRIDGE_SERIALPOLLINGTASK_H_
 
 #include "ComConstants.h"
+#include "UartPollingBase.h"
+#include <config/constants.h>
 
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/ipc/MessageQueueIF.h>
-#include <fsfw/storagemanager/StorageManagerIF.h>
 #include <fsfw/container/SharedRingBuffer.h>
 #include <fsfw/objectmanager/SystemObjectIF.h>
 #include <fsfw/objectmanager/frameworkObjects.h>
@@ -18,22 +19,18 @@ extern "C" {
 #include <hal/Drivers/UART.h>
 }
 
-#include <config/constants.h>
-
 #include <array>
 
 /**
- * @brief   Separate task to poll UART with ISIS drivers. Reads all data,
+ * @brief   Separate task to poll RS232 with ISIS drivers. Reads all data,
  * 			by keeping up two queue transfers which use DMA and callbacks.
  * @details
- * This polling task is agnostics to the data and simply reads all of it into
+ * This polling task does not handle the data and simply reads all of it into
  * a shared ring buffer. Analyzing the ring buffer needs to be done by
  * another task.
  * @author 	R. Mueller
  */
-class RS232PollingTask:  public SystemObject,
-        public ExecutableObjectIF,
-        public HasReturnvaluesIF {
+class RS232PollingTask: public UartPollingBase {
     friend class TmTcSerialBridge;
     friend class RS232DeviceComIF;
 public:
@@ -49,34 +46,17 @@ public:
     /**
      * Default ctor.
      * @param objectId
-     * @param tcBridge
-     * Bridge object which just relays TC messages.
-     * @param frameSize
-     * Optional frame size which can be used if fixed TC
-     * packet frames are used
-     * @param serialTimeoutBaudticks Timeout in baudticks. Maxiumum uint16_t
-     * value is reserved for the dafault timeout
+     * @param sharedRingBufferId
+     * Data will be written into this ring buffer.
      */
-	RS232PollingTask(object_id_t objectId, object_id_t tcBridge,
-			object_id_t sharedRingBufferId);
+	RS232PollingTask(object_id_t objectId, object_id_t sharedRingBufferId);
+
+	ReturnValue_t performOperation(uint8_t opCode) override;
+	ReturnValue_t initialize() override;
 
 	virtual ~RS232PollingTask();
 
-	virtual ReturnValue_t initialize();
-
-	/**
-	 * Executed periodically (set task priority and periodicity in init_mission)
-	 * @param operationCode
-	 * @return
-	 */
-	virtual ReturnValue_t performOperation(uint8_t operationCode = 0);
-
-protected:
-	StorageManagerIF* tcStore = nullptr;
-
 private:
-	object_id_t tcBridge = objects::NO_OBJECT;
-
 
 	UARTconfig configBus0 = { .mode = AT91C_US_USMODE_NORMAL |
 			AT91C_US_CLKS_CLOCK | AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE |
@@ -86,13 +66,13 @@ private:
 	static bool uart0Started;
 
 	UARTgenericTransfer uartTransfer1;
-	static volatile uint8_t transfer1bytesReceived;
+	static volatile size_t transfer1bytesReceived;
 	BinarySemaphore uartSemaphore1;
 	UARTtransferStatus transfer1Status = done_uart;
 	std::array<uint8_t, RS232_MAX_SERIAL_FRAME_SIZE> readBuffer1;
 
 	BinarySemaphore uartSemaphore2;
-	static volatile uint8_t transfer2bytesReceived;
+	static volatile size_t transfer2bytesReceived;
 	UARTgenericTransfer uartTransfer2;
 	UARTtransferStatus transfer2Status = done_uart;
 	std::array<uint8_t, RS232_MAX_SERIAL_FRAME_SIZE> readBuffer2;
@@ -104,27 +84,15 @@ private:
 	 */
 	void initiateUartTransfers();
 	void pollUart();
-	ReturnValue_t pollTc();
-
-
-	void ringBufferPrototypePoll();
-	object_id_t sharedRingBufferId;
-	SharedRingBuffer* sharedRingBuffer = nullptr;
-
-	/**
-	 * Overrun error. Packet was still read. Maybe implement reading,
-	 * not done for now.
-	 * @return
-	 */
-	ReturnValue_t handleOverrunError();
 
 	static void uart1Callback(SystemContext context, xSemaphoreHandle sem);
 	static void uart2Callback(SystemContext context, xSemaphoreHandle sem);
 	static void genericUartCallback(SystemContext context,
 			xSemaphoreHandle sem);
 
-	uint32_t errorCounter = 0;
-	ReturnValue_t lastError = HasReturnvaluesIF::RETURN_OK;
+	void handleTransferCompletion(uint8_t* data,
+	        volatile size_t& bytesReceived,
+	        UARTtransferStatus& transferStatus);
 };
 
 

@@ -31,7 +31,7 @@ public:
 	static constexpr uint32_t I2C_TRANSFER_TIMEOUT =
 			config::I2C_TRANSFER_TIMEOUT;
 
-	static const uint8_t INTERFACE_ID = CLASS_ID::I2C_CHANNEL;
+	static const uint8_t INTERFACE_ID = CLASS_ID::I2C_COM_IF;
 
 
 	//! Returnvalues by ISIS driver start-up

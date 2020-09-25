@@ -52,6 +52,7 @@ public:
 
 	static constexpr ActionId_t REQUEST_CPU_STATS_CHECK_STACK = 0;
 private:
+
 #ifdef ISIS_OBC_G20
 	FRAMHandler* framHandler = nullptr;
 	supervisor_housekeeping_t supervisorHk;

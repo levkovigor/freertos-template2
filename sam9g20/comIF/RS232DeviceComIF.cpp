@@ -23,10 +23,11 @@ ReturnValue_t RS232DeviceComIF::initializeInterface(CookieIF *cookie) {
 ReturnValue_t RS232DeviceComIF::sendMessage(CookieIF *cookie,
 		const uint8_t *sendData, size_t sendLen) {
 	if(not RS232PollingTask::uart0Started) {
-		// should not happen!
+		// should not happen! The RS232 bus is started by the RS232PollingTask
+	    // at program initialization.
 		sif::error << "RS232DeviceComIF::sendMessage: UART bus 0 not active"
 				<< std::endl;
-		return HasReturnvaluesIF::RETURN_FAILED;
+		return RS232_INACTIVE;
 	}
 
 	writeStruct.writeData = const_cast<uint8_t*>(sendData);

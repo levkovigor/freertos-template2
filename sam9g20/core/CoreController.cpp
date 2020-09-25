@@ -1,9 +1,11 @@
+
 #include "CoreController.h"
 
 #include <systemObjectList.h>
 #include <version.h>
 #include <FreeRTOSConfig.h>
 
+#include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/timemanager/Stopwatch.h>
 
@@ -34,7 +36,13 @@ CoreController::CoreController(object_id_t objectId,
 }
 
 ReturnValue_t CoreController::handleCommandMessage(CommandMessage *message) {
-    return actionHelper.handleActionMessage(message);
+    ReturnValue_t result = actionHelper.handleActionMessage(message);
+    if(result == HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    // handle other messages here.
+    return CommandMessageIF::UNKNOWN_COMMAND;
 }
 
 void CoreController::performControlOperation() {
