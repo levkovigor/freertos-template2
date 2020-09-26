@@ -101,7 +101,7 @@ void initMission(void) {
 #ifdef ETHERNET
     /* EMAC polling task */
     TmTcPollingTask = TaskFactory::instance()->
-            createPeriodicTask("EMAC_PollingTask", 8,1024 * 4 ,0.1, nullptr);
+            createPeriodicTask("EMAC_PollingTask", 8, 1024 * 4 , 0.1, nullptr);
     result = TmTcPollingTask->addComponent(objects::EMAC_POLLING_TASK);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "Add component EMAC Task failed" << std::endl;

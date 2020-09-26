@@ -32,7 +32,7 @@ ReturnValue_t PusParser::parsePusPackets(const uint8_t *frame,
 		}
 		else {
 			sif::debug << "TcSerialPollingTask::readNextPacket: Next packet "
-					"larger than remaining frame," << std::endl;
+					<< "larger than remaining frame," << std::endl;
 			sif::debug << "Throwing away packet. Detected packet size: "
 					<< packetSize << std::endl;
 		}
@@ -94,7 +94,7 @@ ReturnValue_t PusParser::readNextPacket(const uint8_t *frame,
 		}
 		else {
 			sif::debug << "TcSerialPollingTask::readNextPacket: Next packet "
-					"larger than remaining frame," << std::endl;
+					<< "larger than remaining frame," << std::endl;
 			sif::debug << "Throwing away packet. Detected packet size: "
 					<< nextPacketSize << std::endl;
 		}
@@ -106,7 +106,7 @@ ReturnValue_t PusParser::readNextPacket(const uint8_t *frame,
 	if (result != HasReturnvaluesIF::RETURN_OK) {
 		// FIFO full.
 		sif::debug << "PusParser: Issue inserting into start index size "
-		        "FIFO, it is full!" << std::endl;
+		        << "FIFO, it is full!" << std::endl;
 	}
 	currentIndex += nextPacketSize;
 
