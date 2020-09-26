@@ -24,7 +24,35 @@ typedef enum {
 int open_filesystem(VolumeId volumeId);
 int close_filesystem(VolumeId volumeId);
 int select_sd_card(VolumeId volumeId);
+
+/**
+ * Create directory in specified path.
+ * @param repository_path
+ * @param dirname
+ * @return
+ * F_NO_ERROR (0) if the folder was created successfully, error code otherwise
+ * with 6 being the error code for F_ERR_DUPLICATED
+ */
+int create_directory(const char* repository_path, const char* dirname);
+
+/**
+ * Change to certain directory
+ * @param repository_path
+ * @return
+ * F_NO_ERROR (0) if the directory was changed, error code otherwise,
+ * with 4 being the error code for F_ERR_INVALIDDIR
+ */
 int change_directory(const char* repository_path);
+
+/**
+ * Remove directory with specified name in specified path.
+ * @param repository_path
+ * @param dirname
+ * @return
+ * F_NO_ERROR(0) if the directory was removed successfully, error code otherwise
+ * with 14 being the error code for F_ERR_NOTEMPTY
+ */
+int delete_directory(const char* repository_path, const char* dirname);
 
 /**
  * Helper function to read whole file
@@ -35,6 +63,22 @@ int change_directory(const char* repository_path);
  */
 int read_whole_file(const char* repository_path, const char* file_name,
         uint8_t* buffer, const size_t max_buffer_size);
+
+/***
+ * Create a file. Data can be written to new file directly if desired.
+ * @param repository_path
+ * @param filename
+ * @param initial_data      Pointer to data to write. Set to NULL if not needed.
+ * @param initial_data_size Size of data to be written.
+ * @return
+ * Returns -2 if the path does not exists, -1 if the file already exists,
+ * and the number of bytes written otherwise.
+ */
+int create_file(const char* repository_path, const char* filename,
+        const uint8_t* initial_data, size_t initial_data_size);
+
+int delete_file(const char* repository_path,
+        const char* filename);
 
 #ifdef __cplusplus
 }

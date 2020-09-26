@@ -213,47 +213,43 @@ ReturnValue_t SDCardHandler::writeToFile(const char* repositoryPath,
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-
-// TODO: Move low level stuff to C API so bootloader or other files can use
-// them directly.
 ReturnValue_t SDCardHandler::deleteFile(const char* repositoryPath,
-        const char* filename){
-    int result;
-    result = changeDirectory(repositoryPath);
-    if(result != HasReturnvaluesIF::RETURN_OK){
+        const char* filename) {
+    int result = delete_file(repositoryPath, filename);
+    if(result == F_NO_ERROR) {
+        return HasReturnvaluesIF::RETURN_OK;
+    }
+    else {
         return result;
     }
-    result = f_delete(filename);
-    if(result != F_NO_ERROR){
-        sif::error << "f_delete pb: " << result  << std::endl;
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-    return HasReturnvaluesIF::RETURN_OK;
 }
 
 
 ReturnValue_t SDCardHandler::createFile(const char* dirname,
-        const char* filename, const uint8_t* data, size_t size){
-    return HasReturnvaluesIF::RETURN_OK;
+        const char* filename, const uint8_t* data, size_t size,
+        size_t* bytesWritten) {
+    int result = create_file(dirname, filename, data, size);
+    if(result == -2) {
+        return HasFileSystemIF::FILE_ALREADY_EXISTS;
+    }
+    else if(result == -1) {
+        return HasFileSystemIF::DIRECTORY_DOES_NOT_EXIST;
+    }
+    else {
+        *bytesWritten = result;
+        return HasReturnvaluesIF::RETURN_OK;
+    }
 }
 
 
 ReturnValue_t SDCardHandler::createDirectory(const char* repositoryPath,
         const char* dirname){
-    int result;
-    result = changeDirectory(repositoryPath);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        return result;
-    }
-    result = f_mkdir(dirname);
+    int result = create_directory(repositoryPath, dirname);
     if(result == F_ERR_DUPLICATED) {
-        // folder already exists
-        return FOLDER_ALREADY_EXISTS;
+        return HasFileSystemIF::DIRECTORY_ALREADY_EXISTS;
     }
     else if(result != F_NO_ERROR) {
-        sif::error << "SDCardHandler::createDirectory: f_mkdir failed with "
-                << "code" << result;
-        return HasReturnvaluesIF::RETURN_FAILED;
+        return result;
     }
 
     return HasReturnvaluesIF::RETURN_OK;
@@ -262,15 +258,13 @@ ReturnValue_t SDCardHandler::createDirectory(const char* repositoryPath,
 
 ReturnValue_t SDCardHandler::deleteDirectory(const char* repositoryPath,
         const char* dirname){
-    int result;
-    result = changeDirectory(repositoryPath);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        return result;
+    int result = delete_directory(repositoryPath, dirname);
+    if(result == F_ERR_NOTEMPTY) {
+        return HasFileSystemIF::DIRECTORY_NOT_EMPTY;
     }
-    result = f_rmdir(dirname);
-    if(result != F_NO_ERROR){
-        sif::error << "f_rmdir pb: " << result  << std::endl;
-        return HasReturnvaluesIF::RETURN_FAILED;
+    else if(result != F_NO_ERROR) {
+        // should not happen (directory read only)
+        return result;
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -389,8 +383,8 @@ ReturnValue_t SDCardHandler::handleCreateDirectoryCommand(
     result = createDirectory(command.getRepositoryPath(),
             command.getDirname());
     if (result != HasReturnvaluesIF::RETURN_OK) {
-    	// If the folder already exists, count that as  success..
-        if(result != FOLDER_ALREADY_EXISTS) {
+    	// If the folder already exists, count that as success..
+        if(result != HasFileSystemIF::DIRECTORY_ALREADY_EXISTS) {
             sif::error << "SDCardHandler::handleCreateDirectoryCommand: "
                     << "Creating directory " << command.getDirname()
                     << " failed" << std::endl;

@@ -74,6 +74,38 @@ int select_sd_card(VolumeId volumeId){
 	return 0;
 }
 
+int create_directory(const char *repository_path, const char *dirname) {
+    int result = change_directory(repository_path);
+    if(result != F_NO_ERROR){
+        return result;
+    }
+    result = f_mkdir(dirname);
+    if(result == F_ERR_DUPLICATED) {
+        // folder already exists, no diagnostic output here for now.
+    }
+    else if(result != F_NO_ERROR) {
+        TRACE_ERROR("create_directory: f_mkdir failed with "
+                "code %d \n\r", result);
+    }
+    return result;
+}
+
+int delete_directory(const char* repository_path, const char* dirname) {
+    int result = change_directory(repository_path);
+    if(result != F_NO_ERROR){
+        return result;
+    }
+    result = f_rmdir(dirname);
+    if(result == F_ERR_NOTEMPTY) {
+        // folder not emppty, no diagnostic output here for now.
+    }
+    else if(result != F_NO_ERROR) {
+        TRACE_ERROR("remove_directory: f_mkdir failed with "
+                "code %d \n\r", result);
+    }
+    return result;
+}
+
 int change_directory(const char* repository_path) {
     int result;
     /* Because all paths are relative to the root directory,
@@ -89,7 +121,7 @@ int change_directory(const char* repository_path) {
         result = f_chdir(repository_path);
         if(result != F_NO_ERROR){
             TRACE_ERROR("change_directory: f_chdir failed with code %d\n\r",
-                            result);
+                result);
         }
     }
     return result;
@@ -132,3 +164,57 @@ int read_whole_file(const char* repository_path, const char* file_name,
     }
     return bytes_read;
 }
+
+int create_file(const char* repository_path, const char* filename,
+        const uint8_t* initial_data, size_t initial_data_size) {
+    int result = change_directory(repository_path);
+    if(result != F_NO_ERROR){
+        return -2;
+    }
+
+    F_FIND exists;
+    result = f_findfirst(filename, &exists);
+    if(result == F_NO_ERROR) {
+        // file already exists..
+        return -1;
+    }
+    F_FILE* file = f_open(filename, "a");
+    size_t bytes_written = 0;
+    if((file != NULL) && (initial_data != NULL)) {
+        bytes_written = f_write(initial_data, sizeof(uint8_t),
+                initial_data_size, file);
+        if(bytes_written != initial_data_size) {
+            TRACE_DEBUG("create_file: f_write did not write all bytes!\n\r");
+        }
+        return bytes_written;
+    }
+    else if(file == NULL) {
+        TRACE_ERROR("create_file: f_open failed with code %d\n\r",
+                f_getlasterror());
+    }
+
+    if(file != NULL) {
+        result = f_close(file);
+        if (result != F_NO_ERROR) {
+            TRACE_ERROR("create_file: f_close failed with code %d\n\r",
+                    f_getlasterror());
+        }
+    }
+    return bytes_written;
+}
+
+int delete_file(const char* repository_path,
+        const char* filename) {
+    int result = change_directory(repository_path);
+    if(result != F_NO_ERROR){
+        return result;
+    }
+    result = f_delete(filename);
+    if(result != F_NO_ERROR){
+        TRACE_ERROR("delete_file: f_delete failed with code %d\n\r",result);
+        return result;
+    }
+    return result;
+}
+
+

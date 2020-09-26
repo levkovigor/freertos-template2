@@ -28,7 +28,6 @@ public:
     static constexpr uint8_t MAX_FILE_MESSAGES_HANDLED_PER_CYCLE = 5;
 
     static constexpr uint8_t INTERFACE_ID = CLASS_ID::SD_CARD_HANDLER;
-    static constexpr ReturnValue_t FOLDER_ALREADY_EXISTS = MAKE_RETURN_CODE(0x01);
 
     static const uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::SD_CARD_HANDLER;
 
@@ -51,8 +50,8 @@ private:
     ReturnValue_t handleDeleteDirectoryCommand(CommandMessage* message);
     ReturnValue_t handleWriteCommand(CommandMessage* message);
     ReturnValue_t handleReadCommand(CommandMessage* message);
-    ReturnValue_t createFile(const char* dirname, const char* filename,
-            const uint8_t* data, size_t size) override;
+    ReturnValue_t createFile(const char* repositoryPath, const char* filename,
+            const uint8_t* data, size_t size, size_t* bytesWritten) override;
     ReturnValue_t deleteFile(const char* repositoryPath, const char* filename);
     ReturnValue_t createDirectory(const char* repositoryPath,
             const char* dirname);

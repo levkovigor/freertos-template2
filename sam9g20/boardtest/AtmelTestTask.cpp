@@ -5,6 +5,7 @@
 
 #include <sam9g20/boardtest/AtmelTestTask.h>
 #include <sam9g20/comIF/GpioDeviceComIF.h>
+#include <sam9g20/memory/SDCardAccess.h>
 
 extern "C" {
 #if defined(AT91SAM9G20_EK)
@@ -16,6 +17,7 @@ extern "C" {
 #include <sam9g20/utility/portwrapper.h>
 #include <at91/utility/hamming.h>
 #include <hcc/demo/demo_sd.h>
+#include <sam9g20/memory/SDCardApi.h>
 
 #ifdef ISIS_OBC_G20
 #include <hal/Storage/NORflash.h>
@@ -25,7 +27,6 @@ extern "C" {
 
 }
 
-#include <test/prototypes/ActionContainer.h>
 #include <cstring>
 
 
@@ -49,6 +50,9 @@ ReturnValue_t AtmelTestTask::performPeriodicAction() {
 ReturnValue_t AtmelTestTask::performOneShotAction() {
     //Stopwatch stopwatch;
     //performSDCardDemo();
+    printFilesTest();
+    //test = f_findfirst(".*.", &findResult);
+
 #ifdef ISIS_OBC_G20
 	performIOBCTest();
 #endif
@@ -342,3 +346,52 @@ void AtmelTestTask::performHammingTest() {
     }
 }
 
+void AtmelTestTask::printFilesTest() {
+    SDCardAccess access;
+    F_FIND findResult;
+
+    // 1. List all files in root directory
+    sif::info << "Listing all files in root directory: " << std::endl;
+    // find all files in root
+    int fileFound = f_findfirst("*", &findResult);
+    if(fileFound != 0) {
+        return;
+    }
+    sif::info << "File 1: " << findResult.filename << std::endl;
+    for(uint8_t idx = 0; idx < 5; idx ++) {
+        int found = f_findnext(&findResult);
+        if(found == 0) {
+            sif::info << "File " << static_cast<uint16_t>(idx + 2)
+                    << ": " << findResult.filename << std::endl;
+        }
+        else {
+            break;
+        }
+
+    }
+
+    // 2. Create a file in the root directory and relist all files.
+    int result = create_file("/", "TEST2", NULL, 0);
+    if(result != 0) {
+        sif::debug << "File could not be created!" << std::endl;
+    }
+
+    // find all files in root
+    sif::info << "Listing all files in root directory again: " << std::endl;
+    fileFound = f_findfirst("*", &findResult);
+    if(fileFound != 0) {
+        return;
+    }
+    sif::info << "File 1: " << findResult.filename << std::endl;
+    for(uint8_t idx = 0; idx < 5; idx ++) {
+        int found = f_findnext(&findResult);
+        if(found == 0) {
+            sif::info << "File " << static_cast<uint16_t>(idx + 2)
+                    << ": " << findResult.filename << std::endl;
+        }
+        else {
+            break;
+        }
+
+    }
+}
