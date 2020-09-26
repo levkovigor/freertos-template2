@@ -350,6 +350,21 @@ void AtmelTestTask::printFilesTest() {
     SDCardAccess access;
     F_FIND findResult;
 
+    f_chdir("/");
+    // create 2 files
+    create_file(NULL, "F1", NULL, 0);
+    create_file(NULL, "F2", NULL, 0);
+    // create 3 folders
+    create_directory(NULL, "D1");
+    create_directory(NULL, "D2");
+    create_directory(NULL, "D3");
+
+    // create a file inside folder D2
+    create_file("D2/", "D2F1", NULL, 0);
+
+    // create a folder inside folder D3
+    create_directory("D3/", "D3D1");
+
     // 1. List all files in root directory
     sif::info << "Listing all files in root directory: " << std::endl;
     // find all files in root
@@ -361,7 +376,7 @@ void AtmelTestTask::printFilesTest() {
     for(uint8_t idx = 0; idx < 5; idx ++) {
         int found = f_findnext(&findResult);
         if(found == 0) {
-            sif::info << "File " << static_cast<uint16_t>(idx + 2)
+            sif::info << "Object " << static_cast<uint16_t>(idx + 2)
                     << ": " << findResult.filename << std::endl;
         }
         else {
@@ -370,14 +385,23 @@ void AtmelTestTask::printFilesTest() {
 
     }
 
-    // 2. Create a file in the root directory and relist all files.
-    int result = create_file("/", "TEST2", NULL, 0);
-    if(result != 0) {
-        sif::debug << "File could not be created!" << std::endl;
-    }
+//    // Delete all files
+//    delete_file(NULL, "F1");
+//    delete_file(NULL, "F2");
+//    // delete all folders
+//    int del_result = delete_directory(NULL, "D1");
+//    // these should fail
+//    del_result = delete_directory(NULL, "D2");
+//    del_result = delete_directory(NULL, "D3");
+//    // those will be successfull.
+//    del_result = delete_directory_force(NULL, "D2", false);
+//    // those will be successfull.
+//    del_result = delete_directory_force(NULL, "D3", true);
+    int result = clear_sd_card();
 
+    // 1. List all files in root directory
+    sif::info << "Listing all files in root directory: " << std::endl;
     // find all files in root
-    sif::info << "Listing all files in root directory again: " << std::endl;
     fileFound = f_findfirst("*", &findResult);
     if(fileFound != 0) {
         return;
@@ -386,7 +410,7 @@ void AtmelTestTask::printFilesTest() {
     for(uint8_t idx = 0; idx < 5; idx ++) {
         int found = f_findnext(&findResult);
         if(found == 0) {
-            sif::info << "File " << static_cast<uint16_t>(idx + 2)
+            sif::info << "Object " << static_cast<uint16_t>(idx + 2)
                     << ": " << findResult.filename << std::endl;
         }
         else {
@@ -394,4 +418,84 @@ void AtmelTestTask::printFilesTest() {
         }
 
     }
+//
+//    // 2. Create a file in the root directory and relist all files.
+//    int result = create_file("/", "TEST2", NULL, 0);
+//    if(result != 0) {
+//        sif::debug << "File could not be created!" << std::endl;
+//    }
+//
+//    // find all files in root
+//    sif::info << "Listing all files in root directory again: " << std::endl;
+//    fileFound = f_findfirst("*", &findResult);
+//    if(fileFound != 0) {
+//        return;
+//    }
+//    sif::info << "File 1: " << findResult.filename << std::endl;
+//    for(uint8_t idx = 0; idx < 5; idx ++) {
+//        int found = f_findnext(&findResult);
+//        if(found == 0) {
+//            sif::info << "File " << static_cast<uint16_t>(idx + 2)
+//                    << ": " << findResult.filename << std::endl;
+//        }
+//        else {
+//            break;
+//        }
+//
+//    }
+//
+//    // 4. create directory and relist all files
+//    result = create_directory("/", "T_DIR");
+//
+//    // find all files in root
+//    sif::info << "Listing all files in root directory again: " << std::endl;
+//    fileFound = f_findfirst("*", &findResult);
+//    if(fileFound != 0) {
+//        return;
+//    }
+//    sif::info << "File 1: " << findResult.filename << std::endl;
+//    for(uint8_t idx = 0; idx < 5; idx ++) {
+//        int found = f_findnext(&findResult);
+//        if(found == 0) {
+//            sif::info << "File " << static_cast<uint16_t>(idx + 2)
+//                    << ": " << findResult.filename << std::endl;
+//        }
+//        else {
+//            break;
+//        }
+//
+//    }
+//
+//    // 5. change to directory
+//
+//    result = change_directory("T_DIR/");
+//    if(result == F_NO_ERROR) {
+//        //result = f_getcwd()
+//        result = create_file(NULL, "TEST3", nullptr, 0);
+//        result = change_directory("/");
+//    }
+//
+//
+//    // 6. find all files in root, but attempt to go into directory
+//    sif::info << "Listing all files in root directory again: " << std::endl;
+//    fileFound = f_findfirst("*", &findResult);
+//    if(fileFound != 0) {
+//        return;
+//    }
+//    sif::info << "File 1: " << findResult.filename << std::endl;
+//    for(uint8_t idx = 0; idx < 5; idx ++) {
+//        int found = f_findnext(&findResult);
+//        if(found == 0) {
+//            sif::info << "File " << static_cast<uint16_t>(idx + 2)
+//                << ": " << findResult.filename << std::endl;
+//        }
+//        else {
+//            break;
+//        }
+//        if(change_directory(findResult.filename) == F_NO_ERROR) {
+//            sif::info << findResult.filename << " is directory!" << std::endl;
+//            change_directory("/");
+//        }
+//
+//    }
 }

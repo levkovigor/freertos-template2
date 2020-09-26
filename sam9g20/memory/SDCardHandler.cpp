@@ -77,7 +77,6 @@ ReturnValue_t SDCardHandler::handleAccessResult(ReturnValue_t accessResult) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-
 ReturnValue_t SDCardHandler::handleMultipleMessages(CommandMessage *message) {
 	ReturnValue_t status = HasReturnvaluesIF::RETURN_OK;
 	for(uint8_t counter = 1;
@@ -546,7 +545,8 @@ ReturnValue_t SDCardHandler::read(const char* repositoryPath,
 
 
 ReturnValue_t SDCardHandler::changeDirectory(const char* repositoryPath) {
-    int result = change_directory(repositoryPath);
+    // change to root directory, all paths are going to be relative.
+    int result = change_directory(repositoryPath, true);
     if(result == F_NO_ERROR) {
         return HasReturnvaluesIF::RETURN_OK;
     }
@@ -555,3 +555,70 @@ ReturnValue_t SDCardHandler::changeDirectory(const char* repositoryPath) {
     }
 }
 
+
+
+ReturnValue_t SDCardHandler::printSdCard() {
+    F_FIND findResult;
+    uint8_t recursionDepth = 0;
+    int fileFound = f_findfirst("*", &findResult);
+    if(fileFound != 0) {
+        // should never happen!
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    sif::info << "Printing SD Card (F = File, D = Directory): " << std::endl;
+    if(change_directory(findResult.filename, false) == F_NO_ERROR) {
+        sif::info << "D: " << findResult.filename << std::endl;
+        printHelper(&findResult, ++recursionDepth);
+    }
+    else {
+        sif::info << "F: " << findResult.filename << std::endl;
+    }
+
+
+    for(uint8_t idx = 0; idx < 32; idx ++) {
+        fileFound = f_findnext(&findResult);
+        if(fileFound != F_NO_ERROR) {
+            break;
+        }
+
+        if(change_directory(findResult.filename, false) == F_NO_ERROR) {
+            sif::info << findResult.filename << " is directory!" << std::endl;
+            printHelper(&findResult, ++recursionDepth);
+        }
+        else {
+            for(uint8_t j = 0; j < recursionDepth; j++) {
+                sif::info << "-";
+            }
+            sif::info << findResult.filename << std::endl;
+        }
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t SDCardHandler::printRepository(const char *repository) {
+
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t SDCardHandler::printHelper(F_FIND* findResult,
+        uint8_t recursionDepth) {
+    for(uint8_t idx = 0; idx < 255; idx ++) {
+        int found = f_findnext(findResult);
+        if(found != F_NO_ERROR) {
+            break;
+        }
+
+        if(change_directory(findResult->filename, false) == F_NO_ERROR) {
+            sif::info << findResult->filename << " is directory!" << std::endl;
+            printHelper(findResult, ++recursionDepth);
+        }
+        else {
+            for(uint8_t j = 0; j < recursionDepth; j++) {
+                sif::info << "-";
+            }
+            sif::info << findResult->filename << std::endl;
+        }
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+}

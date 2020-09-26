@@ -41,6 +41,9 @@ public:
 
     ReturnValue_t performOperation(uint8_t operationCode = 0);
 
+    // Useful functions for development
+    static ReturnValue_t printRepository(const char* repository);
+    static ReturnValue_t printSdCard();
 private:
 
     ReturnValue_t handleMessage(CommandMessage* message);
@@ -103,6 +106,9 @@ private:
     VolumeId determineVolumeToOpen();
     ReturnValue_t handleAccessResult(ReturnValue_t accessResult);
     ReturnValue_t handleMultipleMessages(CommandMessage* message);
+
+    static ReturnValue_t printHelper(F_FIND* result, uint8_t recursionDepth);
+
 };
 
 #endif /* SAM9G20_MEMORY_SDCARDHANDLER_H_ */

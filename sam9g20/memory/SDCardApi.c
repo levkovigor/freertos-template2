@@ -5,6 +5,9 @@
 #include <hcc/api_mdriver_atmel_mcipdc.h>
 #include <hcc/api_hcc_mem.h>
 
+#include <string.h>
+
+static int delete_file_system_object(const char* name);
 
 int open_filesystem(VolumeId volume){
 	/* Initialize the memory to be used by the filesystem */
@@ -75,64 +78,80 @@ int select_sd_card(VolumeId volumeId){
 }
 
 int create_directory(const char *repository_path, const char *dirname) {
-    int result = change_directory(repository_path);
-    if(result != F_NO_ERROR){
-        return result;
+    int result = 0;
+    if(repository_path != NULL) {
+        result = change_directory(repository_path, true);
+        if(result != F_NO_ERROR){
+            return result;
+        }
     }
+
     result = f_mkdir(dirname);
     if(result == F_ERR_DUPLICATED) {
         // folder already exists, no diagnostic output here for now.
     }
     else if(result != F_NO_ERROR) {
         TRACE_ERROR("create_directory: f_mkdir failed with "
-                "code %d \n\r", result);
+                "code %d!\n\r", result);
+    }
+
+    if(repository_path != NULL) {
+        f_chdir("/");
     }
     return result;
 }
 
 int delete_directory(const char* repository_path, const char* dirname) {
-    int result = change_directory(repository_path);
-    if(result != F_NO_ERROR){
-        return result;
+    int result = 0;
+    if(repository_path != NULL) {
+        result = change_directory(repository_path, true);
+        if(result != F_NO_ERROR){
+            return result;
+        }
     }
+
     result = f_rmdir(dirname);
     if(result == F_ERR_NOTEMPTY) {
-        // folder not emppty, no diagnostic output here for now.
+        // folder not empty, no diagnostic output here for now.
     }
     else if(result != F_NO_ERROR) {
-        TRACE_ERROR("remove_directory: f_mkdir failed with "
-                "code %d \n\r", result);
+        TRACE_ERROR("remove_directory: f_rmdir failed with "
+                "code %d!\n\r", result);
+    }
+
+    if(repository_path != NULL) {
+        f_chdir("/");
     }
     return result;
 }
 
-int change_directory(const char* repository_path) {
-    int result;
-    /* Because all paths are relative to the root directory,
-    go to root directory here */
-    result = f_chdir("/");
-    if(result != F_NO_ERROR){
-        TRACE_ERROR("change_directory: f_chdir failed with code %d\n\r",
-                result);
-        return result;
+int change_directory(const char* repository_path, bool from_root) {
+    if(from_root) {
+       f_chdir("/");
     }
+
     /* Change to the desired path */
-    if(*repository_path != '\0'){
-        result = f_chdir(repository_path);
-        if(result != F_NO_ERROR){
-            TRACE_ERROR("change_directory: f_chdir failed with code %d\n\r",
+    int result = f_chdir(repository_path);
+    if(result == F_ERR_NOTFOUND){
+        // directory does not exist, no diagnostic output here for now.
+    }
+    else if(result != F_NO_ERROR) {
+        TRACE_ERROR("change_directory: f_chdir failed with code %d!\n\r",
                 result);
-        }
     }
     return result;
 }
 
 int read_whole_file(const char* repository_path, const char* file_name,
         uint8_t *buffer, const size_t max_buffer_size) {
-    int result = change_directory(repository_path);
-    if (result != F_NO_ERROR) {
-        return 0;
+    int result = 0;
+    if(repository_path != NULL) {
+        result = change_directory(repository_path, true);
+        if (result != F_NO_ERROR) {
+            return 0;
+        }
     }
+
 
     F_FILE* file = f_open(file_name, "r");
     if (f_getlasterror() != F_NO_ERROR) {
@@ -167,9 +186,12 @@ int read_whole_file(const char* repository_path, const char* file_name,
 
 int create_file(const char* repository_path, const char* filename,
         const uint8_t* initial_data, size_t initial_data_size) {
-    int result = change_directory(repository_path);
-    if(result != F_NO_ERROR){
-        return -2;
+    int result = 0;
+    if(repository_path != NULL) {
+        result = change_directory(repository_path, true);
+        if(result != F_NO_ERROR){
+            return -2;
+        }
     }
 
     F_FIND exists;
@@ -200,21 +222,141 @@ int create_file(const char* repository_path, const char* filename,
                     f_getlasterror());
         }
     }
+
+    if(repository_path != NULL) {
+        f_chdir("/");
+    }
+
     return bytes_written;
 }
 
 int delete_file(const char* repository_path,
         const char* filename) {
-    int result = change_directory(repository_path);
-    if(result != F_NO_ERROR){
-        return result;
+    int result = 0;
+    if(repository_path != NULL) {
+        result = change_directory(repository_path, true);
+        if(result != F_NO_ERROR){
+            return result;
+        }
     }
+
     result = f_delete(filename);
     if(result != F_NO_ERROR){
-        TRACE_ERROR("delete_file: f_delete failed with code %d\n\r",result);
+        TRACE_ERROR("delete_file: f_delete failed with code %d!\n\r",result);
         return result;
     }
     return result;
 }
 
+int delete_directory_force(const char *repository_path, const char *dirname,
+        bool delete_subfolder_recursively) {
+    int status = F_NO_ERROR;
+    // attempt normal delete first.
+    int result = delete_directory(repository_path, dirname);
+    if(result == F_NO_ERROR) {
+        return result;
+    }
 
+    if(repository_path != NULL) {
+        result = change_directory(repository_path, true);
+        if(result != F_NO_ERROR) {
+            return result;
+        }
+    }
+
+    // normal delete failed, we need to delete all files in folder.
+    F_FIND find_result;
+    result = change_directory(dirname, false);
+    if(result != F_NO_ERROR) {
+        return result;
+    }
+
+    int file_found = f_findfirst("./*", &find_result);
+    if(file_found != F_NO_ERROR) {
+        return file_found;
+    }
+
+    if(find_result.filename[0] == '.') {
+        // we are not in root, so the next search result is going
+        // to be the parent folder, and the third result is going to be
+        // the first file or directory.
+        f_findnext(&find_result);
+        file_found = f_findnext(&find_result);
+    }
+
+    for(int idx = 0; idx < 255; idx++) {
+        if(idx > 0) {
+            file_found = f_findnext(&find_result);
+        }
+
+        if(file_found != F_NO_ERROR) {
+            break;
+        }
+
+        result = delete_file_system_object(find_result.name);
+        if(result != F_NO_ERROR) {
+            TRACE_ERROR("clear_sd_card: elete_file_system_object failed with "
+                    "code %d!\n\r", result);
+            status = result;
+        }
+    }
+
+    // folder should be empty now
+    change_directory("..", false);
+    result = delete_directory(NULL, dirname);
+    if(result != F_NO_ERROR) {
+        status = result;
+    }
+
+    if(repository_path != NULL) {
+        f_chdir("/");
+    }
+    return status;
+}
+
+int clear_sd_card() {
+    F_FIND find_result;
+    int file_found = 0;
+    int result = F_NO_ERROR;
+    int status = F_NO_ERROR;
+    f_chdir("/");
+    f_findfirst("*", &find_result);
+
+    // Skip SYSTEM  folder.
+    if(strncmp(find_result.filename, "SYSTEM", 6) == 0) {
+        file_found = f_findnext(&find_result);
+    }
+
+    for(int idx = 0; idx < 255; idx++) {
+        if(idx > 0) {
+            file_found = f_findnext(&find_result);
+            if(strncmp(find_result.filename, "SYSTEM", 6) == 0) {
+                continue;
+            }
+        }
+
+        if(file_found != F_NO_ERROR) {
+            break;
+        }
+
+        result = delete_file_system_object(find_result.filename);
+        if(result != F_NO_ERROR) {
+            TRACE_ERROR("clear_sd_card: elete_file_system_object failed with "
+                    "code %d!\n\r", result);
+            status = result;
+        }
+    }
+    return status;
+}
+
+int delete_file_system_object(const char* name) {
+    int result = F_NO_ERROR;
+    if(change_directory(name, false) == F_NO_ERROR) {
+        change_directory("..", false);
+        result = delete_directory_force(NULL, name, true);
+    }
+    else {
+        result = delete_file(NULL, name);
+    }
+    return result;
+}
