@@ -7,12 +7,19 @@
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+
 #include <fsfw/datapoolglob/GlobalDataPool.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 
 #include <freertos/FreeRTOS.h>
 #include <unittest/internal/InternalUnitTester.h>
+#include <config/OBSWConfig.h>
 #include <utility/compile_time.h>
+
+#if DISPLAY_FACTORY_ALLOCATION_SIZE == 1
+#include <new>
+static size_t allocatedSize = 0;
+#endif
 
 /* Initialize Data Pool */
 namespace glob {
@@ -351,7 +358,10 @@ void initMission(void) {
         sif::warning << "Factory Task: Remaining stack size: "
                 << remainingFactoryStack << " bytes" << std::endl;
     }
-
+#if DISPLAY_FACTORY_ALLOCATION_SIZE == 1
+    sif::info << "Allocated size by new function: " << allocatedSize
+            << std::endl;
+#endif
     sif::info << "Tasks started." << std::endl;
 }
 
@@ -423,3 +433,11 @@ void boardTestTaskInit() {
     LedTask->startTask();
 #endif
 }
+
+
+#if DISPLAY_FACTORY_ALLOCATION_SIZE == 1
+void* operator new(size_t size) {
+    allocatedSize += size;
+    return std::malloc(size);
+}
+#endif

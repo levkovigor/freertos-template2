@@ -11,7 +11,7 @@ extern "C" {
 #include <hal/Drivers/UART.h>
 }
 
-#include <config/constants.h>
+#include <config/OBSWConfig.h>
 
 /**
  * @brief   Separate task to poll RS485 with ISIS drivers. Reads all data,

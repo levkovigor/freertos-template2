@@ -1,10 +1,9 @@
 #ifndef SAM9G20_TMTCBRIDGE_SERIALPOLLINGTASK_H_
 #define SAM9G20_TMTCBRIDGE_SERIALPOLLINGTASK_H_
 
+#include <config/OBSWConfig.h>
 #include "ComConstants.h"
 #include "UartPollingBase.h"
-#include <config/constants.h>
-
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/ipc/MessageQueueIF.h>

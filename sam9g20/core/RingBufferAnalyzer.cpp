@@ -1,8 +1,8 @@
+#include <config/OBSWConfig.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/globalfunctions/DleEncoder.h>
 #include <fsfw/ipc/MutexHelper.h>
 #include <sam9g20/core/RingBufferAnalyzer.h>
-#include <config/constants.h>
 #include <cstring>
 
 RingBufferAnalyzer::RingBufferAnalyzer(SharedRingBuffer *ringBuffer,

@@ -3,7 +3,7 @@
 
 #include <fsfw/tmtcservices/PusServiceBase.h>
 #include <etl/multimap.h>
-#include <config/constants.h>
+#include <config/OBSWConfig.h>
 
 class Service11TelecommandScheduling: public PusServiceBase {
 public:

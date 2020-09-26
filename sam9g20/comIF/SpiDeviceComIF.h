@@ -1,8 +1,7 @@
 #ifndef SAM9G20_COMIF_SPIDEVICECOMIF_H_
 #define SAM9G20_COMIF_SPIDEVICECOMIF_H_
 
-#include <config/constants.h>
-
+#include <config/OBSWConfig.h>
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/devicehandlers/DeviceCommunicationIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>

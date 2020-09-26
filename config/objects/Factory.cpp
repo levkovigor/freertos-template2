@@ -77,6 +77,7 @@
 
 #include <cstdint>
 
+
 /**
  * Build tasks by using SystemObject Interface (Interface).
  * Header files of all tasks must be included
@@ -274,5 +275,4 @@ void Factory::setStaticFrameworkObjectIds() {
 	TmFunnel::downlinkDestination = objects::SERIAL_TMTC_BRIDGE;
 #endif
 }
-
 

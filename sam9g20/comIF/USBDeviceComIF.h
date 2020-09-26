@@ -5,7 +5,7 @@
 #include <fsfw/container/SimpleRingBuffer.h>
 #include <fsfw/devicehandlers/DeviceCommunicationIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
-#include <config/constants.h>
+#include <config/OBSWConfig.h>
 #include <array>
 
 
