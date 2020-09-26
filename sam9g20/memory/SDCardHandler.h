@@ -61,11 +61,11 @@ private:
     ReturnValue_t writeToFile(const char* repositoryPath, const char* filename,
             const uint8_t* data, size_t size, uint16_t packetNumber) override;
     ReturnValue_t read(const char* repositoryPath, const char* filename,
-            uint8_t* tmData, uint32_t* tmDataLen);
+            uint8_t* tmData, size_t* tmDataLen);
     void sendCompletionReply(bool success = true,
             ReturnValue_t errorCode = HasReturnvaluesIF::RETURN_OK);
     ReturnValue_t sendDataReply(MessageQueueId_t receivedFromQueueId,
-            uint8_t* tmData, uint8_t tmDataLen);
+            uint8_t* tmData, size_t tmDataLen);
 
     /**
      * @brief   This function can be used to switch to a directory provided
@@ -73,6 +73,9 @@ private:
      * @param repositoryPath
      * Pointer to a string holding the repositoryPath to the directory.
      * The repositoryPath must be absolute.
+     * @return
+     * -@c RETURN_OK if command was executed successfully.
+     * -@c Filesystem errorcode otherwise
      */
     ReturnValue_t changeDirectory(const char* repositoryPath);
 

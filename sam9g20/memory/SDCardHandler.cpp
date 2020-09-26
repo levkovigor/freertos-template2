@@ -297,7 +297,7 @@ void SDCardHandler::sendCompletionReply(bool success, ReturnValue_t errorCode) {
 
 
 ReturnValue_t SDCardHandler::sendDataReply(MessageQueueId_t receivedFromQueueId,
-        uint8_t* tmData, uint8_t tmDataLen){
+        uint8_t* tmData, size_t tmDataLen){
     store_address_t parameterAddress;
     ReturnValue_t result = IPCStore->addData(&parameterAddress, tmData, tmDataLen);
     if(result != HasReturnvaluesIF::RETURN_OK){
@@ -491,7 +491,7 @@ ReturnValue_t SDCardHandler::handleReadCommand(CommandMessage* message) {
         }
 
         uint8_t tmData[readReplyMaxLen];
-        uint32_t tmDataLen = 0;
+        size_t tmDataLen = 0;
         result = read(command.getRepositoryPath(), command.getFilename(),
                 tmData, &tmDataLen);
         if (result != HasReturnvaluesIF::RETURN_OK) {
@@ -514,22 +514,20 @@ ReturnValue_t SDCardHandler::handleReadCommand(CommandMessage* message) {
 
 
 ReturnValue_t SDCardHandler::read(const char* repositoryPath,
-        const char* filename, uint8_t* tmData, uint32_t* tmDataLen) {
-    int result;
-    F_FILE* file;
-
-    result = changeDirectory(repositoryPath);
+        const char* filename, uint8_t* tmData, size_t* tmDataLen) {
+    int result = changeDirectory(repositoryPath);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         return result;
     }
 
-    file = f_open(filename, "r");
+    F_FILE* file = f_open(filename, "r");
     if (f_getlasterror() != F_NO_ERROR) {
         sif::error << "f_open pb: " << f_getlasterror() << std::endl;
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
     long filesize = f_filelength(filename);
+    // TODO: sanity check for file size. (limited)
     uint8_t filecontent[filesize];
     if (f_read(filecontent, sizeof(uint8_t), filesize, file) != filesize) {
         sif::error << "Not all items read" << std::endl;
@@ -554,22 +552,12 @@ ReturnValue_t SDCardHandler::read(const char* repositoryPath,
 
 
 ReturnValue_t SDCardHandler::changeDirectory(const char* repositoryPath) {
-    int result;
-    /* Because all paths are relative to the root directory,
-    go to root directory here */
-    result = f_chdir("/");
-    if(result != F_NO_ERROR){
-        sif::error << "f_chdir pb: " << result << std::endl;
-        return HasReturnvaluesIF::RETURN_FAILED;
+    int result = change_directory(repositoryPath);
+    if(result == F_NO_ERROR) {
+        return HasReturnvaluesIF::RETURN_OK;
     }
-    /* Change to the location of the directory to delete */
-    if(*repositoryPath != '\0'){
-        result = f_chdir(repositoryPath);
-        if(result != F_NO_ERROR){
-            sif::error << "f_chdir pb: " << result << std::endl;
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
+    else {
+        return result;
     }
-    return HasReturnvaluesIF::RETURN_OK;
 }
 

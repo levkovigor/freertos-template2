@@ -25,6 +25,12 @@ static constexpr uint16_t RS485_MUTEX_TIMEOUT = 20;
  */
 static constexpr uint32_t I2C_TRANSFER_TIMEOUT = portMAX_DELAY;
 
+/**
+ * Consider setting this higher if some SPI devices take a longer time
+ * (should never take 40ms though..)
+ */
+static constexpr uint32_t SPI_DEFAULT_TIMEOUT_MS = 40;
+
 static constexpr size_t USB_FRAME_SIZE = 1500;
 static constexpr uint32_t MAX_STORED_TELECOMMANDS = 2000;
 }

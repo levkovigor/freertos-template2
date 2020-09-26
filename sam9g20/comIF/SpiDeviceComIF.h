@@ -1,5 +1,8 @@
-#ifndef BSP_COMIF_SPI_DEVICECOMIF_H_
-#define BSP_COMIF_SPI_DEVICECOMIF_H_
+#ifndef SAM9G20_COMIF_SPIDEVICECOMIF_H_
+#define SAM9G20_COMIF_SPIDEVICECOMIF_H_
+
+#include <config/constants.h>
+
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/devicehandlers/DeviceCommunicationIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
@@ -12,7 +15,7 @@ extern "C" {
 #include <hal/Drivers/SPI.h>
 }
 
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 /**
@@ -26,19 +29,21 @@ class SpiDeviceComIF: public DeviceCommunicationIF,
 		public ExecutableObjectIF
 {
 public:
-	SpiDeviceComIF(object_id_t objectId_);
+	SpiDeviceComIF(object_id_t objectId);
 	virtual ~SpiDeviceComIF();
-
-	static inline uint16_t higherTaskUnlockedCounter = 0;
 
 	static constexpr uint8_t NUMBER_OF_SINGLE_SLAVE_SELECTS = 4;
 	static constexpr uint8_t NUMBER_OF_DEMULTIPLEXER_OUTPUTS = 8;
-	//! Default semaphore timout in ticks
-	static constexpr TickType_t SPI_STANDARD_SEMAPHORE_TIMEOUT = 40;
+	//! Default semaphore timout in milliseconds
+	static constexpr TickType_t SPI_STANDARD_SEMAPHORE_TIMEOUT =
+	        config::SPI_DEFAULT_TIMEOUT_MS;
+	//! Default mutex timeout in milliseconds
+	static constexpr TickType_t SPI_STANDARD_MUTEX_TIMEOUT = 20;
 
 	static constexpr uint8_t INTERFACE_ID = CLASS_ID::SPI_COM_IF;
 	static constexpr uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::SPI_COM_IF;
 
+	static constexpr Event SPI_START_FAILURE = MAKE_EVENT(0x00, SEVERITY::HIGH);
 	static constexpr ReturnValue_t SPI_INIT_FAILURE = MAKE_RETURN_CODE(0x01);
 	static constexpr ReturnValue_t SPI_COMMUNICATION_TIMEOUT =
 	        MAKE_RETURN_CODE(0x02);
@@ -62,17 +67,11 @@ public:
         RETURN_OK = 0
     };
 
-	/**
-	 * @brief	Executed one per task cycle
-	 * @return	Currently, the return value is ignored.
-	 */
+    /** ExecutableObjectIF overrides */
 	ReturnValue_t performOperation(uint8_t opCode) override;
+	ReturnValue_t initialize() override;
 
-	/*
-	 * DeviceCommunicationIF abstract function. See DeviceCommunicationIF
-	 * documentation. This is the interface used by device handlers to
-	 * communicate with devices.
-	 */
+	/** DeviceCommunicationIF overrides */
 	ReturnValue_t initializeInterface(CookieIF * cookie) override;
 	ReturnValue_t sendMessage(CookieIF *cookie, const uint8_t * sendData,
 			size_t sendLen) override;
@@ -81,12 +80,6 @@ public:
 	        size_t requestLen) override;
 	ReturnValue_t readReceivedMessage(CookieIF *cookie,
 			uint8_t **readData, size_t *readLen) override;
-
-	/**
-	 * Called on object creation by object manager.
-	 * @return
-	 */
-	ReturnValue_t initialize() override;
 
 	/**
 	 * Check whether the SPI address actually exists. Don't forget
@@ -103,14 +96,14 @@ private:
 	struct SpiStruct {
 		//! Default constructor, assigns cookie pointer and intializes vector
 		//! with max reply length
-		SpiStruct(SpiCookie * spiCookie_, uint32_t maxReplyLen_):
-				spiCookie(spiCookie_), spiReplyBuffer(maxReplyLen_) {}
+		SpiStruct(SpiCookie * spiCookie, uint32_t maxReplyLen):
+				spiCookie(spiCookie), spiReplyBuffer(maxReplyLen) {}
 
 		SpiCookie * spiCookie = nullptr;
 		//! Reply Buffer is cleared automatically on struct destruction.
 		ReplyBuffer spiReplyBuffer;
 	};
-	using SpiMap = std::unordered_map<address_t, SpiStruct>;
+	using SpiMap = std::map<address_t, SpiStruct>;
 	using SpiIterator = SpiMap::iterator;
 
 	//! This will be the primary data structure to store replies and a
@@ -154,4 +147,4 @@ private:
 			xSemaphoreHandle semaphore);
 };
 
-#endif /* BSP_COMIF_SPI_DEVICECOMIF_H_ */
+#endif /* SAM9G20_COMIF_SPIDEVICECOMIF_H_ */
