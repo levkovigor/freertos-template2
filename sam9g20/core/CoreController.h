@@ -4,6 +4,7 @@
 #include "SystemStateTask.h"
 #include <fsfw/action/HasActionsIF.h>
 #include <fsfw/controller/ControllerBase.h>
+#include <fsfw/datapoollocal/LocalDataPoolManager.h>
 
 #ifdef ISIS_OBC_G20
 #include <sam9g20/memory/FRAMHandler.h>
@@ -24,7 +25,8 @@ extern "C" {
  *
  */
 class CoreController: public ControllerBase,
-        public HasActionsIF {
+        public HasActionsIF,
+        public HasLocalDataPoolIF {
 public:
     static constexpr uint8_t SUPERVISOR_INDEX = -1;
     static constexpr float RTC_RTT_SYNC_INTERVAL = 0.5;
@@ -37,9 +39,21 @@ public:
 	void performControlOperation() override;
 	ReturnValue_t checkModeCommand(Mode_t mode, Submode_t submode,
 	            uint32_t *msToReachTheMode) override;
+
+	/** HasActionsIF override */
 	ReturnValue_t executeAction(ActionId_t actionId,
 	            MessageQueueId_t commandedBy, const uint8_t* data,
 	            size_t size) override;
+
+	/** HasLocalDataPoolIF overrides */
+    ReturnValue_t initializeLocalDataPool(
+            LocalDataPool& localDataPoolMap,
+            LocalDataPoolManager& poolManager) override;
+    LocalDataPoolManager* getHkManagerHandle() override;
+    dur_millis_t getPeriodicOperationFrequency() const override;
+    LocalPoolDataSetBase* getDataSetHandle(sid_t sid) override;
+    object_id_t getObjectId() const override;
+
 	ReturnValue_t initialize() override;
 	ReturnValue_t initializeAfterTaskCreation() override;
 
@@ -51,7 +65,10 @@ public:
 	static uint64_t getTotalIdleRunTimeCounter();
 
 	static constexpr ActionId_t REQUEST_CPU_STATS_CHECK_STACK = 0;
+
 private:
+	ActionHelper actionHelper;
+	LocalDataPoolManager poolManager;
 
 #ifdef ISIS_OBC_G20
 	FRAMHandler* framHandler = nullptr;
@@ -60,7 +77,7 @@ private:
 #endif
 
 	object_id_t systemStateTaskId;
-	ActionHelper actionHelper;
+
 	uint32_t lastDumpSecond = 0;
 
 	uint32_t lastCounterUpdateSeconds = 0;

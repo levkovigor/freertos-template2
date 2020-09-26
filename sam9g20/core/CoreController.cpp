@@ -27,8 +27,8 @@ uint32_t CoreController::idleCounterOverflows = 0;
 CoreController::CoreController(object_id_t objectId,
         object_id_t systemStateTaskId):
         ControllerBase(objectId, objects::NO_OBJECT),
-        systemStateTaskId(systemStateTaskId),
-        actionHelper(this, commandQueue) {
+        actionHelper(this, commandQueue), poolManager(this, commandQueue),
+        systemStateTaskId(systemStateTaskId) {
 #ifdef ISIS_OBC_G20
     sif::info << "CoreController: Starting Supervisor component." << std::endl;
     Supervisor_start(nullptr, 0);
@@ -163,6 +163,10 @@ ReturnValue_t CoreController::setUpSystemStateTask() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
+object_id_t CoreController::getObjectId() const {
+    return SystemObject::getObjectId();
+}
+
 ReturnValue_t CoreController::initializeIsisTimerDrivers() {
 #ifdef ISIS_OBC_G20
     sif::info << "CoreController: Starting RTC and RTT." << std::endl;
@@ -230,3 +234,19 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
+ReturnValue_t CoreController::initializeLocalDataPool(
+        LocalDataPool &localDataPoolMap, LocalDataPoolManager &poolManager) {
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+LocalDataPoolManager* CoreController::getHkManagerHandle() {
+    return &poolManager;
+}
+
+dur_millis_t CoreController::getPeriodicOperationFrequency() const {
+    return executingTask->getPeriodMs();
+}
+
+LocalPoolDataSetBase* CoreController::getDataSetHandle(sid_t sid) {
+    return nullptr;
+}
