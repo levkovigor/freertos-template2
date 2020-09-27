@@ -63,7 +63,8 @@ int delete_directory(const char* repository_path, const char* dirname);
 
 /**
  * Delete the directory even if it is not empty by deleting all files.
- * Use with care!
+ * Use with care, this is the rm -rf equivalent if the third parameter
+ * is set to true!
  * @param repository_path
  * @param dirname
  * @param delete_subfolder_recursively If the folder contains other folders
@@ -84,6 +85,19 @@ int delete_directory_force(const char* repository_path, const char* dirname,
  * or all steps failed.
  */
 int clear_sd_card();
+
+/**
+ * Delete a file which resides in a give path.
+ * @param repository_path File is located at this path. Set to NULL to delete
+ * file in current directory.
+ * @param filename
+ * @return
+ * F_NO_ERROR (0) if the file was deleted successfully, otherwise error code
+ * with 3 being the error code for F_ERR_INVALIDDIR if the target is
+ * a directory.
+ */
+int delete_file(const char* repository_path,
+        const char* filename);
 
 /**
  * Helper function to read whole file
@@ -108,18 +122,6 @@ int read_whole_file(const char* repository_path, const char* file_name,
 int create_file(const char* repository_path, const char* filename,
         const uint8_t* initial_data, size_t initial_data_size);
 
-/**
- * Delete a file which resides in a give path.
- * @param repository_path File is located at this path. Set to NULL to delete
- * file in current directory.
- * @param filename
- * @return
- * F_NO_ERROR (0) if the file was deleted successfully, otherwise error code
- * with 3 being the error code for F_ERR_INVALIDDIR if the target is
- * a directory.
- */
-int delete_file(const char* repository_path,
-        const char* filename);
 
 #ifdef __cplusplus
 }

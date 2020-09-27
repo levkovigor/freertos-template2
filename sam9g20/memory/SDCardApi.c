@@ -322,7 +322,7 @@ int clear_sd_card() {
     f_chdir("/");
     f_findfirst("*", &find_result);
 
-    // Skip SYSTEM  folder.
+    // Skip SYSTEM folder.
     if(strncmp(find_result.filename, "SYSTEM", 6) == 0) {
         file_found = f_findnext(&find_result);
     }
@@ -351,6 +351,7 @@ int clear_sd_card() {
 
 int delete_file_system_object(const char* name) {
     int result = F_NO_ERROR;
+    // Check whether it is a directory or a file
     if(change_directory(name, false) == F_NO_ERROR) {
         change_directory("..", false);
         result = delete_directory_force(NULL, name, true);

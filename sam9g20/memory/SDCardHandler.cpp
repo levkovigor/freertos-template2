@@ -7,7 +7,7 @@
 #include <fsfw/memory/FileSystemMessage.h>
 #include <sam9g20/memory/SDCardAccess.h>
 
-SDCardHandler::SDCardHandler(object_id_t objectId):SystemObject(objectId) {
+SDCardHandler::SDCardHandler(object_id_t objectId): SystemObject(objectId) {
     commandQueue = QueueFactory::instance()->createMessageQueue(queueDepth);
     IPCStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
 }
@@ -556,6 +556,10 @@ ReturnValue_t SDCardHandler::changeDirectory(const char* repositoryPath) {
 }
 
 
+ReturnValue_t SDCardHandler::printRepository(const char *repository) {
+    // TODO: implement printing for single repositories.
+    return HasReturnvaluesIF::RETURN_OK;
+}
 
 ReturnValue_t SDCardHandler::printSdCard() {
     F_FIND findResult;
@@ -590,10 +594,6 @@ ReturnValue_t SDCardHandler::printSdCard() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t SDCardHandler::printRepository(const char *repository) {
-    // TODO: implement printing for single repositories.
-    return HasReturnvaluesIF::RETURN_OK;
-}
 
 ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
     F_FIND findResult;
@@ -640,4 +640,7 @@ ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
 }
 
 ReturnValue_t SDCardHandler::dumpSdCard() {
+    // TODO: implement. This dumps the file structure of the SD card and will
+    // be one of the most important functionalities for operators.
+    return HasReturnvaluesIF::RETURN_OK;
 }
