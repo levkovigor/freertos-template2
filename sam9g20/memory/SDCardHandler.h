@@ -44,6 +44,9 @@ public:
     // Useful functions for development
     static ReturnValue_t printRepository(const char* repository);
     static ReturnValue_t printSdCard();
+
+    // This function will dump the current SD card format in ASCII format
+    static ReturnValue_t dumpSdCard();
 private:
 
     ReturnValue_t handleMessage(CommandMessage* message);

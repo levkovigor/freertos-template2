@@ -591,7 +591,7 @@ ReturnValue_t SDCardHandler::printSdCard() {
 }
 
 ReturnValue_t SDCardHandler::printRepository(const char *repository) {
-
+    // TODO: implement printing for single repositories.
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -637,4 +637,7 @@ ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
         }
     }
     return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t SDCardHandler::dumpSdCard() {
 }
