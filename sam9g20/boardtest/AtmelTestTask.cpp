@@ -348,6 +348,7 @@ void AtmelTestTask::performHammingTest() {
 }
 
 void AtmelTestTask::printFilesTest() {
+    Stopwatch stopwatch;
     SDCardAccess access;
     f_chdir("/");
     // create 2 files
@@ -365,40 +366,12 @@ void AtmelTestTask::printFilesTest() {
     // create a folder inside folder D3
     create_directory("D3/", "D3D1");
     create_file("D3/D3D1/", "D3D1F1", NULL, 0);
+    stopwatch.stop(true);
+    stopwatch.start();
 
-    // 1. List all files in root directory
-//    sif::info << "Listing all files in root directory: " << std::endl;
-//    // find all files in root
-//    int fileFound = f_findfirst("*", &findResult);
-//    if(fileFound != 0) {
-//        return;
-//    }
-//    sif::info << "File 1: " << findResult.filename << std::endl;
-//    for(uint8_t idx = 0; idx < 5; idx ++) {
-//        int found = f_findnext(&findResult);
-//        if(found == 0) {
-//            sif::info << "Object " << static_cast<uint16_t>(idx + 2)
-//                    << ": " << findResult.filename << std::endl;
-//        }
-//        else {
-//            break;
-//        }
-//
-//    }
-     SDCardHandler::printSdCard();
-
-//    // Delete all files
-//    delete_file(NULL, "F1");
-//    delete_file(NULL, "F2");
-//    // delete all folders
-//    int del_result = delete_directory(NULL, "D1");
-//    // these should fail
-//    del_result = delete_directory(NULL, "D2");
-//    del_result = delete_directory(NULL, "D3");
-//    // those will be successfull.
-//    del_result = delete_directory_force(NULL, "D2", false);
-//    // those will be successfull.
-//    del_result = delete_directory_force(NULL, "D3", true);
+    SDCardHandler::printSdCard();
+    stopwatch.stop(true);
+    stopwatch.start();
     int result = clear_sd_card();
     if(result == F_NO_ERROR) {
         sif::info << "SD card cleared without errors" << std::endl;
@@ -406,27 +379,8 @@ void AtmelTestTask::printFilesTest() {
     else {
         sif::info << "Errors clearing SD card" << std::endl;
     }
-
+    stopwatch.stop(true);
+    stopwatch.start();
     SDCardHandler::printSdCard();
-
-    // 1. List all files in root directory
-//    sif::info << "Listing all files in root directory: " << std::endl;
-//    // find all files in root
-//    fileFound = f_findfirst("*", &findResult);
-//    if(fileFound != 0) {
-//        return;
-//    }
-//    sif::info << "File 1: " << findResult.filename << std::endl;
-//    for(uint8_t idx = 0; idx < 5; idx ++) {
-//        int found = f_findnext(&findResult);
-//        if(found == 0) {
-//            sif::info << "Object " << static_cast<uint16_t>(idx + 2)
-//                    << ": " << findResult.filename << std::endl;
-//        }
-//        else {
-//            break;
-//        }
-//
-//    }
 
 }
