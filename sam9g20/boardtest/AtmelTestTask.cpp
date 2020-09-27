@@ -6,6 +6,7 @@
 #include <sam9g20/boardtest/AtmelTestTask.h>
 #include <sam9g20/comIF/GpioDeviceComIF.h>
 #include <sam9g20/memory/SDCardAccess.h>
+#include <sam9g20/memory/SDCardHandler.h>
 
 extern "C" {
 #if defined(AT91SAM9G20_EK)
@@ -348,8 +349,6 @@ void AtmelTestTask::performHammingTest() {
 
 void AtmelTestTask::printFilesTest() {
     SDCardAccess access;
-    F_FIND findResult;
-
     f_chdir("/");
     // create 2 files
     create_file(NULL, "F1", NULL, 0);
@@ -361,29 +360,32 @@ void AtmelTestTask::printFilesTest() {
 
     // create a file inside folder D2
     create_file("D2/", "D2F1", NULL, 0);
+    create_file("D2/", "D2F2", NULL, 0);
 
     // create a folder inside folder D3
     create_directory("D3/", "D3D1");
+    create_file("D3/D3D1/", "D3D1F1", NULL, 0);
 
     // 1. List all files in root directory
-    sif::info << "Listing all files in root directory: " << std::endl;
-    // find all files in root
-    int fileFound = f_findfirst("*", &findResult);
-    if(fileFound != 0) {
-        return;
-    }
-    sif::info << "File 1: " << findResult.filename << std::endl;
-    for(uint8_t idx = 0; idx < 5; idx ++) {
-        int found = f_findnext(&findResult);
-        if(found == 0) {
-            sif::info << "Object " << static_cast<uint16_t>(idx + 2)
-                    << ": " << findResult.filename << std::endl;
-        }
-        else {
-            break;
-        }
-
-    }
+//    sif::info << "Listing all files in root directory: " << std::endl;
+//    // find all files in root
+//    int fileFound = f_findfirst("*", &findResult);
+//    if(fileFound != 0) {
+//        return;
+//    }
+//    sif::info << "File 1: " << findResult.filename << std::endl;
+//    for(uint8_t idx = 0; idx < 5; idx ++) {
+//        int found = f_findnext(&findResult);
+//        if(found == 0) {
+//            sif::info << "Object " << static_cast<uint16_t>(idx + 2)
+//                    << ": " << findResult.filename << std::endl;
+//        }
+//        else {
+//            break;
+//        }
+//
+//    }
+     SDCardHandler::printSdCard();
 
 //    // Delete all files
 //    delete_file(NULL, "F1");
@@ -398,104 +400,33 @@ void AtmelTestTask::printFilesTest() {
 //    // those will be successfull.
 //    del_result = delete_directory_force(NULL, "D3", true);
     int result = clear_sd_card();
+    if(result == F_NO_ERROR) {
+        sif::info << "SD card cleared without errors" << std::endl;
+    }
+    else {
+        sif::info << "Errors clearing SD card" << std::endl;
+    }
+
+    SDCardHandler::printSdCard();
 
     // 1. List all files in root directory
-    sif::info << "Listing all files in root directory: " << std::endl;
-    // find all files in root
-    fileFound = f_findfirst("*", &findResult);
-    if(fileFound != 0) {
-        return;
-    }
-    sif::info << "File 1: " << findResult.filename << std::endl;
-    for(uint8_t idx = 0; idx < 5; idx ++) {
-        int found = f_findnext(&findResult);
-        if(found == 0) {
-            sif::info << "Object " << static_cast<uint16_t>(idx + 2)
-                    << ": " << findResult.filename << std::endl;
-        }
-        else {
-            break;
-        }
+//    sif::info << "Listing all files in root directory: " << std::endl;
+//    // find all files in root
+//    fileFound = f_findfirst("*", &findResult);
+//    if(fileFound != 0) {
+//        return;
+//    }
+//    sif::info << "File 1: " << findResult.filename << std::endl;
+//    for(uint8_t idx = 0; idx < 5; idx ++) {
+//        int found = f_findnext(&findResult);
+//        if(found == 0) {
+//            sif::info << "Object " << static_cast<uint16_t>(idx + 2)
+//                    << ": " << findResult.filename << std::endl;
+//        }
+//        else {
+//            break;
+//        }
+//
+//    }
 
-    }
-//
-//    // 2. Create a file in the root directory and relist all files.
-//    int result = create_file("/", "TEST2", NULL, 0);
-//    if(result != 0) {
-//        sif::debug << "File could not be created!" << std::endl;
-//    }
-//
-//    // find all files in root
-//    sif::info << "Listing all files in root directory again: " << std::endl;
-//    fileFound = f_findfirst("*", &findResult);
-//    if(fileFound != 0) {
-//        return;
-//    }
-//    sif::info << "File 1: " << findResult.filename << std::endl;
-//    for(uint8_t idx = 0; idx < 5; idx ++) {
-//        int found = f_findnext(&findResult);
-//        if(found == 0) {
-//            sif::info << "File " << static_cast<uint16_t>(idx + 2)
-//                    << ": " << findResult.filename << std::endl;
-//        }
-//        else {
-//            break;
-//        }
-//
-//    }
-//
-//    // 4. create directory and relist all files
-//    result = create_directory("/", "T_DIR");
-//
-//    // find all files in root
-//    sif::info << "Listing all files in root directory again: " << std::endl;
-//    fileFound = f_findfirst("*", &findResult);
-//    if(fileFound != 0) {
-//        return;
-//    }
-//    sif::info << "File 1: " << findResult.filename << std::endl;
-//    for(uint8_t idx = 0; idx < 5; idx ++) {
-//        int found = f_findnext(&findResult);
-//        if(found == 0) {
-//            sif::info << "File " << static_cast<uint16_t>(idx + 2)
-//                    << ": " << findResult.filename << std::endl;
-//        }
-//        else {
-//            break;
-//        }
-//
-//    }
-//
-//    // 5. change to directory
-//
-//    result = change_directory("T_DIR/");
-//    if(result == F_NO_ERROR) {
-//        //result = f_getcwd()
-//        result = create_file(NULL, "TEST3", nullptr, 0);
-//        result = change_directory("/");
-//    }
-//
-//
-//    // 6. find all files in root, but attempt to go into directory
-//    sif::info << "Listing all files in root directory again: " << std::endl;
-//    fileFound = f_findfirst("*", &findResult);
-//    if(fileFound != 0) {
-//        return;
-//    }
-//    sif::info << "File 1: " << findResult.filename << std::endl;
-//    for(uint8_t idx = 0; idx < 5; idx ++) {
-//        int found = f_findnext(&findResult);
-//        if(found == 0) {
-//            sif::info << "File " << static_cast<uint16_t>(idx + 2)
-//                << ": " << findResult.filename << std::endl;
-//        }
-//        else {
-//            break;
-//        }
-//        if(change_directory(findResult.filename) == F_NO_ERROR) {
-//            sif::info << findResult.filename << " is directory!" << std::endl;
-//            change_directory("/");
-//        }
-//
-//    }
 }

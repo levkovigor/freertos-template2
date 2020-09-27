@@ -559,39 +559,33 @@ ReturnValue_t SDCardHandler::changeDirectory(const char* repositoryPath) {
 
 ReturnValue_t SDCardHandler::printSdCard() {
     F_FIND findResult;
+    int fileFound = 0;
     uint8_t recursionDepth = 0;
-    int fileFound = f_findfirst("*", &findResult);
-    if(fileFound != 0) {
-        // should never happen!
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
+    f_chdir("/");
+    f_findfirst("*", &findResult);
 
-    sif::info << "Printing SD Card (F = File, D = Directory): " << std::endl;
-    if(change_directory(findResult.filename, false) == F_NO_ERROR) {
-        sif::info << "D: " << findResult.filename << std::endl;
-        printHelper(&findResult, ++recursionDepth);
-    }
-    else {
-        sif::info << "F: " << findResult.filename << std::endl;
-    }
+    sif::info << "Printing SD Card: " << std::endl;
+    sif::info << "F = File, D = Directory, - = Subdir Depth" << std::endl;
 
+    for(int idx = 0; idx < 255; idx++) {
+        if(idx > 0) {
+            fileFound = f_findnext(&findResult);
+        }
 
-    for(uint8_t idx = 0; idx < 32; idx ++) {
-        fileFound = f_findnext(&findResult);
         if(fileFound != F_NO_ERROR) {
             break;
         }
 
+        // check whether file object is directory or file.
         if(change_directory(findResult.filename, false) == F_NO_ERROR) {
-            sif::info << findResult.filename << " is directory!" << std::endl;
-            printHelper(&findResult, ++recursionDepth);
+            sif::info << "D: " << findResult.filename << std::endl;
+            printHelper(recursionDepth + 1);
+            change_directory("..", false);
         }
         else {
-            for(uint8_t j = 0; j < recursionDepth; j++) {
-                sif::info << "-";
-            }
-            sif::info << findResult.filename << std::endl;
+            sif::info << "F: " << findResult.filename << std::endl;
         }
+
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -601,23 +595,45 @@ ReturnValue_t SDCardHandler::printRepository(const char *repository) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t SDCardHandler::printHelper(F_FIND* findResult,
-        uint8_t recursionDepth) {
+ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
+    F_FIND findResult;
+    int fileFound = f_findfirst("./*", &findResult);
+    if(fileFound != F_NO_ERROR) {
+        return HasReturnvaluesIF::RETURN_OK;
+    }
+
+    if(findResult.filename[0] == '.') {
+        // we are not in root, so the next search result is going
+        // to be the parent folder, and the third result is going to be
+        // the first file or directory.
+        f_findnext(&findResult);
+        fileFound = f_findnext(&findResult);
+    }
+
     for(uint8_t idx = 0; idx < 255; idx ++) {
-        int found = f_findnext(findResult);
-        if(found != F_NO_ERROR) {
-            break;
+        if(idx > 0) {
+            fileFound = f_findnext(&findResult);
         }
 
-        if(change_directory(findResult->filename, false) == F_NO_ERROR) {
-            sif::info << findResult->filename << " is directory!" << std::endl;
-            printHelper(findResult, ++recursionDepth);
+        if(fileFound != F_NO_ERROR) {
+            return HasReturnvaluesIF::RETURN_OK;
+        }
+
+
+
+        if(change_directory(findResult.filename, false) == F_NO_ERROR) {
+            for(uint8_t j = 0; j < recursionDepth; j++) {
+                sif::info << "-";
+            }
+            sif::info << "D: " << findResult.filename << std::endl;
+            printHelper(recursionDepth + 1);
+            change_directory("..", false);
         }
         else {
             for(uint8_t j = 0; j < recursionDepth; j++) {
                 sif::info << "-";
             }
-            sif::info << findResult->filename << std::endl;
+            sif::info << "F: " << findResult.filename << std::endl;
         }
     }
     return HasReturnvaluesIF::RETURN_OK;

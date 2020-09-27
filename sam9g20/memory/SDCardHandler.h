@@ -107,7 +107,7 @@ private:
     ReturnValue_t handleAccessResult(ReturnValue_t accessResult);
     ReturnValue_t handleMultipleMessages(CommandMessage* message);
 
-    static ReturnValue_t printHelper(F_FIND* result, uint8_t recursionDepth);
+    static ReturnValue_t printHelper(uint8_t recursionDepth);
 
 };
 
