@@ -5,6 +5,7 @@ extern "C" {
 }
 
 #include <cstdio>
+#include <cstdlib>
 
 LedTask::LedTask(object_id_t objectId, std::string name, LedModes ledMode):
         SystemObject(objectId), ledMode(ledMode) {
