@@ -95,6 +95,15 @@ void initMission(void) {
 
     sif::info << "Creating tasks.." << std::endl;
 
+    /* Internal Error Reporter */
+    PeriodicTaskIF* InternalErrorReporter = TaskFactory::instance()->
+            createPeriodicTask("INT_ERR_RPRTR", 4, 1024 * 4, 2.0, nullptr);
+    result = InternalErrorReporter->addComponent(objects::INTERNAL_ERROR_REPORTER);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        sif::error << "Add component Internal Error Reporter "
+                << "failed " << std::endl;
+    }
+
     /* TMTC Communication Tasks */
     PeriodicTaskIF * TmTcPollingTask = nullptr;
     PeriodicTaskIF* TmTcBridge = nullptr;
@@ -166,7 +175,7 @@ void initMission(void) {
 
     /* Event Manager */
     PeriodicTaskIF* EventManager = TaskFactory::instance()->createPeriodicTask(
-    		"EVENT_MANAGER", 8, 2048 * 4, 0.2, NULL);
+    		"EVENT_MANAGER", 8, 2048 * 4, 0.2, nullptr);
     result = EventManager->addComponent(objects::EVENT_MANAGER);
     if(result != HasReturnvaluesIF::RETURN_OK){
         sif::error << "Add component Event Manager failed" << std::endl;
@@ -324,6 +333,7 @@ void initMission(void) {
 
     TmTcPollingTask -> startTask();
     TmTcBridge -> startTask();
+    InternalErrorReporter -> startTask();
     PacketDistributorTask -> startTask();
     PollingSequenceTableTaskDefault -> startTask();
     EventManager -> startTask();
