@@ -269,3 +269,25 @@ void USART_SetIrdaFilter(AT91S_USART *pUsart, unsigned char filter)
     pUsart->US_IF = filter;
 }
 
+//------------------------------------------------------------------------------
+/// Sets the baud rate.
+/// \param baudrate             Desired baudrate
+/// \param useFractionalPart    Specify whether FP component of peripheral will
+///                             be used
+//------------------------------------------------------------------------------
+void USART_SetBaudRate(unsigned int masterClock, unsigned int baudrate,
+        unsigned char useFractionalPart)
+{
+    // reconfigure uart to new baud
+    // See p.450 of SAM9G20 datasheet for calculation details.
+    float clockDividerExact = ((float)masterClock / baudrate) / 16;
+    uint16_t clockDivider = (uint16_t) clockDividerExact;
+    if(useFractionalPart) {
+        uint8_t fractionalPart = 8 * (clockDividerExact - clockDivider);
+        AT91C_BASE_US0->US_BRGR = (fractionalPart << 16) + clockDivider;
+    }
+    else {
+        AT91C_BASE_US0->US_BRGR = clockDivider;
+    }
+}
+

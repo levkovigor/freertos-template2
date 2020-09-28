@@ -7,12 +7,19 @@
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+
 #include <fsfw/datapoolglob/GlobalDataPool.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 
 #include <freertos/FreeRTOS.h>
 #include <unittest/internal/InternalUnitTester.h>
+#include <config/OBSWConfig.h>
 #include <utility/compile_time.h>
+
+#if DISPLAY_FACTORY_ALLOCATION_SIZE == 1
+#include <new>
+static size_t allocatedSize = 0;
+#endif
 
 /* Initialize Data Pool */
 namespace glob {
@@ -88,13 +95,22 @@ void initMission(void) {
 
     sif::info << "Creating tasks.." << std::endl;
 
+    /* Internal Error Reporter */
+    PeriodicTaskIF* InternalErrorReporter = TaskFactory::instance()->
+            createPeriodicTask("INT_ERR_RPRTR", 4, 1024 * 4, 2.0, nullptr);
+    result = InternalErrorReporter->addComponent(objects::INTERNAL_ERROR_REPORTER);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        sif::error << "Add component Internal Error Reporter "
+                << "failed " << std::endl;
+    }
+
     /* TMTC Communication Tasks */
     PeriodicTaskIF * TmTcPollingTask = nullptr;
     PeriodicTaskIF* TmTcBridge = nullptr;
 #ifdef ETHERNET
     /* EMAC polling task */
     TmTcPollingTask = TaskFactory::instance()->
-            createPeriodicTask("EMAC_PollingTask", 8,1024 * 4 ,0.1, nullptr);
+            createPeriodicTask("EMAC_PollingTask", 8, 1024 * 4 , 0.1, nullptr);
     result = TmTcPollingTask->addComponent(objects::EMAC_POLLING_TASK);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "Add component EMAC Task failed" << std::endl;
@@ -159,7 +175,7 @@ void initMission(void) {
 
     /* Event Manager */
     PeriodicTaskIF* EventManager = TaskFactory::instance()->createPeriodicTask(
-    		"EVENT_MANAGER", 8, 2048 * 4, 0.2, NULL);
+    		"EVENT_MANAGER", 8, 2048 * 4, 0.2, nullptr);
     result = EventManager->addComponent(objects::EVENT_MANAGER);
     if(result != HasReturnvaluesIF::RETURN_OK){
         sif::error << "Add component Event Manager failed" << std::endl;
@@ -317,6 +333,7 @@ void initMission(void) {
 
     TmTcPollingTask -> startTask();
     TmTcBridge -> startTask();
+    InternalErrorReporter -> startTask();
     PacketDistributorTask -> startTask();
     PollingSequenceTableTaskDefault -> startTask();
     EventManager -> startTask();
@@ -351,7 +368,10 @@ void initMission(void) {
         sif::warning << "Factory Task: Remaining stack size: "
                 << remainingFactoryStack << " bytes" << std::endl;
     }
-
+#if DISPLAY_FACTORY_ALLOCATION_SIZE == 1
+    sif::info << "Allocated size by new function: " << allocatedSize
+            << std::endl;
+#endif
     sif::info << "Tasks started." << std::endl;
 }
 
@@ -423,3 +443,11 @@ void boardTestTaskInit() {
     LedTask->startTask();
 #endif
 }
+
+
+#if DISPLAY_FACTORY_ALLOCATION_SIZE == 1
+void* operator new(size_t size) {
+    allocatedSize += size;
+    return std::malloc(size);
+}
+#endif

@@ -1,5 +1,6 @@
-#ifndef SAM9G20_COMIF_SERIALANALYZERTASK_H_
-#define SAM9G20_COMIF_SERIALANALYZERTASK_H_
+#ifndef SAM9G20_UTILITY_SERIALANALYZERHELPER_H_
+#define SAM9G20_UTILITY_SERIALANALYZERHELPER_H_
+
 #include <fsfw/container/SharedRingBuffer.h>
 #include <vector>
 
@@ -12,7 +13,7 @@ enum class AnalyzerModes {
  * 			encoded packets.
  * @details
  */
-class SerialAnalyzerTask {
+class RingBufferAnalyzer {
 public:
 	static constexpr uint8_t INTERFACE_ID = CLASS_ID::SERIAL_ANALYZER;
 	static constexpr ReturnValue_t NO_PACKET_FOUND = MAKE_RETURN_CODE(0x01);
@@ -23,7 +24,7 @@ public:
 	 * @param buffer
 	 * @param mode
 	 */
-	SerialAnalyzerTask(SharedRingBuffer* buffer,
+	RingBufferAnalyzer(SharedRingBuffer* buffer,
 			AnalyzerModes mode = AnalyzerModes::DLE_ENCODING);
 
 	/**
@@ -59,4 +60,4 @@ private:
 
 
 
-#endif /* SAM9G20_COMIF_SERIALANALYZERTASK_H_ */
+#endif /* SAM9G20_UTILITY_SERIALANALYZERHELPER_H_ */

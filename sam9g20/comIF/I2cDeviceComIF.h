@@ -1,5 +1,7 @@
-#ifndef BSP_COMIF_I2C_DEVICECOMIF_H_
-#define BSP_COMIF_I2C_DEVICECOMIF_H_
+#ifndef SAM9G20_COMIF_I2C_DEVICECOMIF_H_
+#define SAM9G20_COMIF_I2C_DEVICECOMIF_H_
+
+#include <config/OBSWConfig.h>
 
 #include <fsfw/objectmanager/SystemObject.h>
 #include <sam9g20/comIF/cookies/I2cCookie.h>
@@ -22,13 +24,15 @@ public:
 	static constexpr uint8_t BUS_CHECK_TRIGGER = 10;
 
 	/**
-	 * Set to portMAXDELAY for debugging.
-	 * Is set to one for values less than 1.
+	 * Set to portMAXDELAY for debugging, specified as 1/10th of ticks.
+	 * Is set to one for values less than 1. Should be specified to
+	 * portMAX_DELAY for debugging.
 	 */
-	static constexpr uint32_t I2C_TRANSFER_TIMEOUT = portMAX_DELAY;
+	static constexpr uint32_t I2C_TRANSFER_TIMEOUT =
+			config::I2C_TRANSFER_TIMEOUT;
 
-	static const uint8_t INTERFACE_ID = CLASS_ID::I2C_CHANNEL;
-	static const uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::I2C_COM_IF;
+	static const uint8_t INTERFACE_ID = CLASS_ID::I2C_COM_IF;
+
 
 	//! Returnvalues by ISIS driver start-up
 	enum class I2cInitResult: int {
@@ -64,8 +68,6 @@ public:
 
 	static constexpr ReturnValue_t I2C_INVALID_ADDRESS = MAKE_RETURN_CODE(0xE1);
 	static constexpr ReturnValue_t I2C_ADDRESS_NOT_IN_RECEIVE_MAP = MAKE_RETURN_CODE(0xE2);
-
-	static constexpr Event I2C_DRIVER_ERROR_EVENT = MAKE_EVENT(0x00, SEVERITY::HIGH);
 
 	/**
 	 * Called at system object initialization. Sets up the I2C communication
@@ -143,4 +145,4 @@ private:
 	static void I2cCallback(SystemContext context, xSemaphoreHandle semaphore);
 };
 
-#endif /* BSP_COMIF_I2C_DEVICECOMIF_H_ */
+#endif /* SAM9G20_COMIF_I2C_DEVICECOMIF_H_ */

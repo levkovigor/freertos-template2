@@ -27,7 +27,8 @@ ReturnValue_t TmTcSerialBridge::initialize() {
 	if(ringBuffer == nullptr) {
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
-	analyzerTask = new SerialAnalyzerTask(ringBuffer,AnalyzerModes::DLE_ENCODING);
+	analyzerTask = new RingBufferAnalyzer(ringBuffer,
+			AnalyzerModes::DLE_ENCODING);
 	return TmTcBridge::initialize();
 }
 
@@ -46,14 +47,18 @@ ReturnValue_t TmTcSerialBridge::handleTc() {
 		if(result == HasReturnvaluesIF::RETURN_OK) {
 			result = handleTcReception(packetFoundLen);
 			if(result != HasReturnvaluesIF::RETURN_OK) {
+			    sif::debug << "TmTcSerialBridge::handleTc: Handling TC"
+			            << " failed!" << std::endl;
 				return result;
 			}
 		}
-		else if(result == SerialAnalyzerTask::POSSIBLE_PACKET_LOSS) {
+		else if(result == RingBufferAnalyzer::POSSIBLE_PACKET_LOSS) {
 			// trigger event?
+		    sif::debug << "TmTcSerialBridge::handleTc: Possible data loss"
+		            << std::endl;
 			continue;
 		}
-		else if(result == SerialAnalyzerTask::NO_PACKET_FOUND) {
+		else if(result == RingBufferAnalyzer::NO_PACKET_FOUND) {
 			return HasReturnvaluesIF::RETURN_OK;
 		}
 	}

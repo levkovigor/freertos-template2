@@ -38,6 +38,7 @@ private:
     void performNorFlashTest(bool displayDebugOutput = true);
 #endif
     void performHammingTest();
+    void printFilesTest();
 };
 
 #endif /* SAM9G20_BOARDTEST_ATMELTESTTASK_H_ */

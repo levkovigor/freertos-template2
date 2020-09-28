@@ -7,7 +7,7 @@
 #include <fsfw/memory/FileSystemMessage.h>
 #include <sam9g20/memory/SDCardAccess.h>
 
-SDCardHandler::SDCardHandler(object_id_t objectId):SystemObject(objectId) {
+SDCardHandler::SDCardHandler(object_id_t objectId): SystemObject(objectId) {
     commandQueue = QueueFactory::instance()->createMessageQueue(queueDepth);
     IPCStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
 }
@@ -76,7 +76,6 @@ ReturnValue_t SDCardHandler::handleAccessResult(ReturnValue_t accessResult) {
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
-
 
 ReturnValue_t SDCardHandler::handleMultipleMessages(CommandMessage *message) {
 	ReturnValue_t status = HasReturnvaluesIF::RETURN_OK;
@@ -213,47 +212,43 @@ ReturnValue_t SDCardHandler::writeToFile(const char* repositoryPath,
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-
-// TODO: Move low level stuff to C API so bootloader or other files can use
-// them directly.
 ReturnValue_t SDCardHandler::deleteFile(const char* repositoryPath,
-        const char* filename){
-    int result;
-    result = changeDirectory(repositoryPath);
-    if(result != HasReturnvaluesIF::RETURN_OK){
+        const char* filename) {
+    int result = delete_file(repositoryPath, filename);
+    if(result == F_NO_ERROR) {
+        return HasReturnvaluesIF::RETURN_OK;
+    }
+    else {
         return result;
     }
-    result = f_delete(filename);
-    if(result != F_NO_ERROR){
-        sif::error << "f_delete pb: " << result  << std::endl;
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-    return HasReturnvaluesIF::RETURN_OK;
 }
 
 
 ReturnValue_t SDCardHandler::createFile(const char* dirname,
-        const char* filename, const uint8_t* data, size_t size){
-    return HasReturnvaluesIF::RETURN_OK;
+        const char* filename, const uint8_t* data, size_t size,
+        size_t* bytesWritten) {
+    int result = create_file(dirname, filename, data, size);
+    if(result == -2) {
+        return HasFileSystemIF::FILE_ALREADY_EXISTS;
+    }
+    else if(result == -1) {
+        return HasFileSystemIF::DIRECTORY_DOES_NOT_EXIST;
+    }
+    else {
+        *bytesWritten = result;
+        return HasReturnvaluesIF::RETURN_OK;
+    }
 }
 
 
 ReturnValue_t SDCardHandler::createDirectory(const char* repositoryPath,
         const char* dirname){
-    int result;
-    result = changeDirectory(repositoryPath);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        return result;
-    }
-    result = f_mkdir(dirname);
+    int result = create_directory(repositoryPath, dirname);
     if(result == F_ERR_DUPLICATED) {
-        // folder already exists
-        return FOLDER_ALREADY_EXISTS;
+        return HasFileSystemIF::DIRECTORY_ALREADY_EXISTS;
     }
     else if(result != F_NO_ERROR) {
-        sif::error << "SDCardHandler::createDirectory: f_mkdir failed with "
-                << "code" << result;
-        return HasReturnvaluesIF::RETURN_FAILED;
+        return result;
     }
 
     return HasReturnvaluesIF::RETURN_OK;
@@ -262,15 +257,13 @@ ReturnValue_t SDCardHandler::createDirectory(const char* repositoryPath,
 
 ReturnValue_t SDCardHandler::deleteDirectory(const char* repositoryPath,
         const char* dirname){
-    int result;
-    result = changeDirectory(repositoryPath);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        return result;
+    int result = delete_directory(repositoryPath, dirname);
+    if(result == F_ERR_NOTEMPTY) {
+        return HasFileSystemIF::DIRECTORY_NOT_EMPTY;
     }
-    result = f_rmdir(dirname);
-    if(result != F_NO_ERROR){
-        sif::error << "f_rmdir pb: " << result  << std::endl;
-        return HasReturnvaluesIF::RETURN_FAILED;
+    else if(result != F_NO_ERROR) {
+        // should not happen (directory read only)
+        return result;
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -297,7 +290,7 @@ void SDCardHandler::sendCompletionReply(bool success, ReturnValue_t errorCode) {
 
 
 ReturnValue_t SDCardHandler::sendDataReply(MessageQueueId_t receivedFromQueueId,
-        uint8_t* tmData, uint8_t tmDataLen){
+        uint8_t* tmData, size_t tmDataLen){
     store_address_t parameterAddress;
     ReturnValue_t result = IPCStore->addData(&parameterAddress, tmData, tmDataLen);
     if(result != HasReturnvaluesIF::RETURN_OK){
@@ -389,8 +382,8 @@ ReturnValue_t SDCardHandler::handleCreateDirectoryCommand(
     result = createDirectory(command.getRepositoryPath(),
             command.getDirname());
     if (result != HasReturnvaluesIF::RETURN_OK) {
-    	// If the folder already exists, count that as  success..
-        if(result != FOLDER_ALREADY_EXISTS) {
+    	// If the folder already exists, count that as success..
+        if(result != HasFileSystemIF::DIRECTORY_ALREADY_EXISTS) {
             sif::error << "SDCardHandler::handleCreateDirectoryCommand: "
                     << "Creating directory " << command.getDirname()
                     << " failed" << std::endl;
@@ -491,7 +484,7 @@ ReturnValue_t SDCardHandler::handleReadCommand(CommandMessage* message) {
         }
 
         uint8_t tmData[readReplyMaxLen];
-        uint32_t tmDataLen = 0;
+        size_t tmDataLen = 0;
         result = read(command.getRepositoryPath(), command.getFilename(),
                 tmData, &tmDataLen);
         if (result != HasReturnvaluesIF::RETURN_OK) {
@@ -514,22 +507,20 @@ ReturnValue_t SDCardHandler::handleReadCommand(CommandMessage* message) {
 
 
 ReturnValue_t SDCardHandler::read(const char* repositoryPath,
-        const char* filename, uint8_t* tmData, uint32_t* tmDataLen) {
-    int result;
-    F_FILE* file;
-
-    result = changeDirectory(repositoryPath);
+        const char* filename, uint8_t* tmData, size_t* tmDataLen) {
+    int result = changeDirectory(repositoryPath);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         return result;
     }
 
-    file = f_open(filename, "r");
+    F_FILE* file = f_open(filename, "r");
     if (f_getlasterror() != F_NO_ERROR) {
         sif::error << "f_open pb: " << f_getlasterror() << std::endl;
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
     long filesize = f_filelength(filename);
+    // TODO: sanity check for file size. (limited)
     uint8_t filecontent[filesize];
     if (f_read(filecontent, sizeof(uint8_t), filesize, file) != filesize) {
         sif::error << "Not all items read" << std::endl;
@@ -554,22 +545,102 @@ ReturnValue_t SDCardHandler::read(const char* repositoryPath,
 
 
 ReturnValue_t SDCardHandler::changeDirectory(const char* repositoryPath) {
-    int result;
-    /* Because all paths are relative to the root directory,
-    go to root directory here */
-    result = f_chdir("/");
-    if(result != F_NO_ERROR){
-        sif::error << "f_chdir pb: " << result << std::endl;
-        return HasReturnvaluesIF::RETURN_FAILED;
+    // change to root directory, all paths are going to be relative.
+    int result = change_directory(repositoryPath, true);
+    if(result == F_NO_ERROR) {
+        return HasReturnvaluesIF::RETURN_OK;
     }
-    /* Change to the location of the directory to delete */
-    if(*repositoryPath != '\0'){
-        result = f_chdir(repositoryPath);
-        if(result != F_NO_ERROR){
-            sif::error << "f_chdir pb: " << result << std::endl;
-            return HasReturnvaluesIF::RETURN_FAILED;
+    else {
+        return result;
+    }
+}
+
+
+ReturnValue_t SDCardHandler::printRepository(const char *repository) {
+    // TODO: implement printing for single repositories.
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t SDCardHandler::printSdCard() {
+    F_FIND findResult;
+    int fileFound = 0;
+    uint8_t recursionDepth = 0;
+    f_chdir("/");
+    f_findfirst("*", &findResult);
+
+    sif::info << "Printing SD Card: " << std::endl;
+    sif::info << "F = File, D = Directory, - = Subdir Depth" << std::endl;
+
+    for(int idx = 0; idx < 255; idx++) {
+        if(idx > 0) {
+            fileFound = f_findnext(&findResult);
+        }
+
+        if(fileFound != F_NO_ERROR) {
+            break;
+        }
+
+        // check whether file object is directory or file.
+        if(change_directory(findResult.filename, false) == F_NO_ERROR) {
+            sif::info << "D: " << findResult.filename << std::endl;
+            printHelper(recursionDepth + 1);
+            change_directory("..", false);
+        }
+        else {
+            sif::info << "F: " << findResult.filename << std::endl;
+        }
+
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+
+ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
+    F_FIND findResult;
+    int fileFound = f_findfirst("./*", &findResult);
+    if(fileFound != F_NO_ERROR) {
+        return HasReturnvaluesIF::RETURN_OK;
+    }
+
+    if(findResult.filename[0] == '.') {
+        // we are not in root, so the next search result is going
+        // to be the parent folder, and the third result is going to be
+        // the first file or directory.
+        f_findnext(&findResult);
+        fileFound = f_findnext(&findResult);
+    }
+
+    for(uint8_t idx = 0; idx < 255; idx ++) {
+        if(idx > 0) {
+            fileFound = f_findnext(&findResult);
+        }
+
+        if(fileFound != F_NO_ERROR) {
+            return HasReturnvaluesIF::RETURN_OK;
+        }
+
+
+
+        if(change_directory(findResult.filename, false) == F_NO_ERROR) {
+            for(uint8_t j = 0; j < recursionDepth; j++) {
+                sif::info << "-";
+            }
+            sif::info << "D: " << findResult.filename << std::endl;
+            printHelper(recursionDepth + 1);
+            change_directory("..", false);
+        }
+        else {
+            for(uint8_t j = 0; j < recursionDepth; j++) {
+                sif::info << "-";
+            }
+            sif::info << "F: " << findResult.filename << std::endl;
         }
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
 
+ReturnValue_t SDCardHandler::dumpSdCard() {
+    // TODO: implement. This dumps the file structure of the SD card and will
+    // be one of the most important functionalities for operators.
+    return HasReturnvaluesIF::RETURN_OK;
+}

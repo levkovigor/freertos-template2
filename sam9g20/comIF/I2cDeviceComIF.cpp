@@ -9,6 +9,8 @@ extern "C" {
 #include <hal/Drivers/I2C.h>
 }
 
+#include "ComConstants.h"
+
 I2cDeviceComIF::I2cDeviceComIF(object_id_t objectId): SystemObject(objectId),
 		i2cCookie(nullptr) {
 }
@@ -332,7 +334,7 @@ ReturnValue_t I2cDeviceComIF::checkI2cDriver() {
 		I2CdriverState i2cDriverState = I2C_getDriverState();
 		if(i2cDriverState == error_i2cState or
 				i2cDriverState == uninitialized_i2cState) {
-			triggerEvent(I2C_DRIVER_ERROR_EVENT, 0, 0);
+			triggerEvent(comconstants::I2C_DRIVER_ERROR_EVENT, 0, 0);
 			// Restart driver.
 			I2C_stop();
 			I2C_start(I2C_BUS_SPEED_HZ, I2C_TRANSFER_TIMEOUT);

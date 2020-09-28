@@ -219,18 +219,20 @@ private:
 };
 
 /**
- * @brief This class serves as a helper to put the parameters of a reply to the file system read command
- *  	  into one common buffer.
+ * @brief   This class serves as a helper to put the parameters of a reply to
+ *          the file system read command into one common buffer.
  */
 class ReadReply {
 public:
 
-	ReadReply(const char* repositoryPath_, const char* filename_, uint8_t* data_, uint16_t filesize_) :
-			repositoryPath(repositoryPath_), filename(filename_), filesize(filesize_) {
+	ReadReply(const char* repositoryPath_, const char* filename_,
+	        uint8_t* data_, uint16_t filesize_) :
+			repositoryPath(repositoryPath_), filename(filename_),
+			filesize(filesize_) {
 		std::memcpy(data, data_, filesize_);
 	}
 
-	ReturnValue_t serialize(uint8_t* tmData, uint32_t* tmDataLen){
+	ReturnValue_t serialize(uint8_t* tmData, size_t* tmDataLen) {
 		uint8_t* tmp = tmData;
 		repositoryPath.copy(reinterpret_cast<char*>(tmp), repositoryPath.size());
 		tmp = tmp + repositoryPath.size();

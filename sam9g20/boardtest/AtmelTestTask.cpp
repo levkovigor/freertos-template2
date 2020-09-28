@@ -5,6 +5,8 @@
 
 #include <sam9g20/boardtest/AtmelTestTask.h>
 #include <sam9g20/comIF/GpioDeviceComIF.h>
+#include <sam9g20/memory/SDCardAccess.h>
+#include <sam9g20/memory/SDCardHandler.h>
 
 extern "C" {
 #if defined(AT91SAM9G20_EK)
@@ -16,6 +18,7 @@ extern "C" {
 #include <sam9g20/utility/portwrapper.h>
 #include <at91/utility/hamming.h>
 #include <hcc/demo/demo_sd.h>
+#include <sam9g20/memory/SDCardApi.h>
 
 #ifdef ISIS_OBC_G20
 #include <hal/Storage/NORflash.h>
@@ -48,6 +51,9 @@ ReturnValue_t AtmelTestTask::performPeriodicAction() {
 ReturnValue_t AtmelTestTask::performOneShotAction() {
     //Stopwatch stopwatch;
     //performSDCardDemo();
+    //printFilesTest();
+    //test = f_findfirst(".*.", &findResult);
+
 #ifdef ISIS_OBC_G20
 	performIOBCTest();
 #endif
@@ -341,3 +347,45 @@ void AtmelTestTask::performHammingTest() {
     }
 }
 
+void AtmelTestTask::printFilesTest() {
+    Stopwatch stopwatch;
+    SDCardAccess access;
+    stopwatch.stop(true);
+    stopwatch.start();
+    f_chdir("/");
+    // create 2 files
+    create_file(NULL, "F1", NULL, 0);
+    create_file(NULL, "F2", NULL, 0);
+    stopwatch.stop(true);
+    stopwatch.start();
+    // create 3 folders
+    create_directory(NULL, "D1");
+    create_directory(NULL, "D2");
+    create_directory(NULL, "D3");
+    stopwatch.stop(true);
+    stopwatch.start();
+    // create a file inside folder D2
+    create_file("D2/", "D2F1", NULL, 0);
+    create_file("D2/", "D2F2", NULL, 0);
+
+    // create a folder inside folder D3
+    create_directory("D3/", "D3D1");
+    create_file("D3/D3D1/", "D3D1F1", NULL, 0);
+    stopwatch.stop(true);
+    stopwatch.start();
+
+    SDCardHandler::printSdCard();
+    stopwatch.stop(true);
+    stopwatch.start();
+    int result = clear_sd_card();
+    if(result == F_NO_ERROR) {
+        sif::info << "SD card cleared without errors" << std::endl;
+    }
+    else {
+        sif::info << "Errors clearing SD card" << std::endl;
+    }
+    stopwatch.stop(true);
+    stopwatch.start();
+    SDCardHandler::printSdCard();
+
+}

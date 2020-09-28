@@ -47,7 +47,6 @@
 /* Board Support Package Files */
 #include <sam9g20/boardtest/AtmelArduinoHandler.h>
 #include <sam9g20/boardtest/AtmelTestTask.h>
-#include <sam9g20/tmtcbridge/TcSerialPollingTask.h>
 #include <sam9g20/tmtcbridge/TmTcSerialBridge.h>
 #include <sam9g20/boardtest/TwiTestTask.h>
 #include <sam9g20/boardtest/UART0TestTask.h>
@@ -57,6 +56,7 @@
 #include <sam9g20/comIF/GpioDeviceComIF.h>
 #include <sam9g20/comIF/RS232DeviceComIF.h>
 #include <sam9g20/comIF/SpiDeviceComIF.h>
+#include <sam9g20/comIF/RS232PollingTask.h>
 #include <sam9g20/core/CoreController.h>
 #include <sam9g20/core/SoftwareImageHandler.h>
 #include <sam9g20/core/SystemStateTask.h>
@@ -77,6 +77,7 @@
 
 #include <cstdint>
 
+
 /**
  * Build tasks by using SystemObject Interface (Interface).
  * Header files of all tasks must be included
@@ -92,10 +93,7 @@ void Factory::produce(void) {
 	setStaticFrameworkObjectIds();
 	new EventManager(objects::EVENT_MANAGER);
 	new HealthTable(objects::HEALTH_TABLE);
-	new InternalErrorReporter(objects::INTERNAL_ERROR_REPORTER,
-			datapool::INTERNAL_ERROR_FULL_MSG_QUEUES,
-			datapool::INTERNAL_ERROR_MISSED_LIVE_TM,
-			datapool::INTERNAL_ERROR_STORE_FULL);
+	new InternalErrorReporter(objects::INTERNAL_ERROR_REPORTER);
 
 	/* Pool manager handles storage und mutexes */
 	/* Data Stores. Currently reserving 9600 bytes of memory */
@@ -125,8 +123,8 @@ void Factory::produce(void) {
 	new TmTcSerialBridge(objects::SERIAL_TMTC_BRIDGE,
 			objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
 			objects::TC_STORE, objects::SERIAL_RING_BUFFER);
-	new TcSerialPollingTask(objects::SERIAL_POLLING_TASK,
-			objects::SERIAL_TMTC_BRIDGE, objects::SERIAL_RING_BUFFER);
+	new RS232PollingTask(objects::SERIAL_POLLING_TASK,
+	        objects::SERIAL_RING_BUFFER);
 
 	/* TM Destination */
 	new TmFunnel(objects::PUS_FUNNEL);
@@ -274,5 +272,4 @@ void Factory::setStaticFrameworkObjectIds() {
 	TmFunnel::downlinkDestination = objects::SERIAL_TMTC_BRIDGE;
 #endif
 }
-
 

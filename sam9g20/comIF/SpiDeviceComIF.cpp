@@ -1,7 +1,7 @@
-#include <logicalAddresses.h>
+#include "SpiDeviceComIF.h"
+#include "GpioDeviceComIF.h"
 
-#include <sam9g20/comIF/SpiDeviceComIF.h>
-#include <sam9g20/comIF/GpioDeviceComIF.h>
+#include <logicalAddresses.h>
 
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/ipc/MutexHelper.h>
@@ -14,16 +14,14 @@ extern "C" {
 #include <at91/peripherals/spi/spi_at91.h>
 }
 
-SpiDeviceComIF::SpiDeviceComIF(object_id_t objectId): SystemObject(objectId) {
-}
+SpiDeviceComIF::SpiDeviceComIF(object_id_t objectId): SystemObject(objectId) {}
 
 SpiDeviceComIF::~SpiDeviceComIF() {}
 
 ReturnValue_t SpiDeviceComIF::initialize() {
 	ReturnValue_t result = SPI_start(spiBus,spiSlaves);
 	if(result != RETURN_OK) {
-		// TODO: we should also trigger an event here and maybe we should
-	    // attempt restarts later.
+		triggerEvent(SPI_START_FAILURE, 0, 0);
 		return SPI_INIT_FAILURE;
 	}
 	return RETURN_OK;
@@ -92,7 +90,7 @@ ReturnValue_t SpiDeviceComIF::sendMessage(CookieIF *cookie,
 	}
 
 	ReturnValue_t result = spiSemaphore.acquire(
-	        SemaphoreIF::TimeoutType::WAITING, 20);
+	        SemaphoreIF::TimeoutType::WAITING, SPI_STANDARD_SEMAPHORE_TIMEOUT);
 	if(result != HasReturnvaluesIF::RETURN_OK) {
 	    sif::warning << "SpiDeviceComIF::sendMessage: Semaphore unavailable "
 	            "for long time!" << std::endl;
@@ -129,14 +127,15 @@ void SpiDeviceComIF::prepareSpiTransfer(SPItransfer& spiTransfer,
 ReturnValue_t SpiDeviceComIF::getSendSuccess(CookieIF *cookie) {
 	SpiCookie * spiCookie = dynamic_cast<SpiCookie *> (cookie);
 	uint32_t spiAddress = spiCookie->getAddress();
-	auto spi_iter = spiMap.find(spiAddress);
-	if(spi_iter == spiMap.end()) {
+	auto spiIter = spiMap.find(spiAddress);
+	if(spiIter == spiMap.end()) {
 		sif::warning << "SPI ComIF: Invalid logical address " << std::hex
 				<< spiCookie->getAddress() << std::endl;
 		return RETURN_FAILED;
 	}
 	// Com Status has mutex protection
-	// MutexHelper mutexLock(spi_cookie->getMutexHandle(), MutexIF::BLOCKING);
+	MutexHelper mutexLock(spiCookie->getMutexHandle(), MutexIF::WAITING,
+	        SPI_STANDARD_MUTEX_TIMEOUT);
 	if(spiCookie->getCurrentComStatus() == ComStatus::FAULTY) {
 		return spiCookie->getErrorReturnValue();
 	}
@@ -166,7 +165,8 @@ ReturnValue_t SpiDeviceComIF::readReceivedMessage(CookieIF *cookie,
 
 	checkTransferResult(spiCookie, spiSemaphore);
 	// Com Status has mutex protection
-	//MutexHelper mutexLock(spiCookie->getMutexHandle(), 30);
+	MutexHelper mutexLock(spiCookie->getMutexHandle(),MutexIF::WAITING,
+	        SPI_STANDARD_MUTEX_TIMEOUT);
 	if(spiCookie->getCurrentComStatus() == ComStatus::TRANSFER_SUCCESS) {
 		*buffer = spiIter->second.spiReplyBuffer.data();
 		*size = spiCookie->getTransferLen();
@@ -196,9 +196,9 @@ void SpiDeviceComIF::checkTransferResult(SpiCookie* spiCookie,
         // number higher or consider setting individual times in the cookies
         // We have to draw the line between devices that just take a long
         // time and faulty communication.
-        sif::warning << "Spi ComIF: After waiting for " <<
-                SPI_STANDARD_SEMAPHORE_TIMEOUT << " ticks, the transfer "
-                "was not completed!" << std::endl;
+        sif::warning << "Spi ComIF: After waiting for "
+                << SPI_STANDARD_SEMAPHORE_TIMEOUT << " ticks, the transfer "
+                << "was not completed!" << std::endl;
         result = SPI_COMMUNICATION_TIMEOUT;
     }
     else if(result != RETURN_OK) {
@@ -206,6 +206,9 @@ void SpiDeviceComIF::checkTransferResult(SpiCookie* spiCookie,
                 << std::endl;
     }
 
+    // Com Status has mutex protection
+    MutexHelper mutexLock(spiCookie->getMutexHandle(), MutexIF::WAITING,
+            SPI_STANDARD_MUTEX_TIMEOUT);
     if(result != RETURN_OK) {
         spiCookie->setCurrentComStatus(ComStatus::FAULTY, result);
     }
@@ -222,8 +225,7 @@ void SpiDeviceComIF::SPIcallback(SystemContext context,
         xSemaphoreHandle semaphore) {
     GpioDeviceComIF::disableDecoders();
     BaseType_t higherPriorityTaskAwoken = pdFALSE;
-    ReturnValue_t result;
-    //TRACE_INFO("SPI Callback reached\n\r");
+    ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     if(context == SystemContext::task_context) {
         result = BinarySemaphore::release(semaphore);
     }
@@ -248,11 +250,8 @@ void SpiDeviceComIF::SPIcallback(SystemContext context,
 
     if(context == SystemContext::isr_context and
     		higherPriorityTaskAwoken == pdPASS) {
-    	// After some research, I have found out that each interrupt causes
-    	// a higher priority task to awaken. I assume that the ISR is called
-    	// from a separate driver internal task/queue. I assume this
-    	// is expected behaviour as this task has a relatively high
-    	// priority and has blocking elements.
+    	// Request context switch at exit of ISR like recommended by
+        // FreeRTOS.
     	TaskManagement::requestContextSwitch(CallContext::ISR);
     }
 }

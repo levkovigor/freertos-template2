@@ -32,10 +32,10 @@ class ThermalSensorDataset:
 
 	lp_var_t<float> temperatureCelcius = lp_var_t<float>(
 			ThermalSensorPoolIds::TEMPERATURE_C,
-			sid.objectId, this);
+			hkManager->getOwner(), this);
 	lp_var_t<uint8_t> errorByte = lp_var_t<uint8_t>(
 			ThermalSensorPoolIds::FAULT_BYTE,
-			sid.objectId, this);
+			hkManager->getOwner(), this);
 };
 
 

@@ -5,7 +5,7 @@
 #include <fsfw/container/SimpleRingBuffer.h>
 #include <fsfw/devicehandlers/DeviceCommunicationIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
-#include <config/tmtc/tmtcSize.h>
+#include <config/OBSWConfig.h>
 #include <array>
 
 
@@ -24,7 +24,7 @@ public:
 			uint8_t **buffer, size_t *size) override;
 private:
 	static constexpr uint16_t USB_FRAME_MAX_SIZE =
-	    		tmtcsize::MAX_USB_FRAME_SIZE;
+	    		config::USB_FRAME_SIZE;
 	std::array<uint8_t, USB_FRAME_MAX_SIZE> usbBuffer;
 	SharedRingBuffer* usbRingBuffer = nullptr;
 	//------------------------------------------------------------------------------

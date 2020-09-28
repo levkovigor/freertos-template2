@@ -1,9 +1,8 @@
 # <a id="top"></a> <a name="linux"></a> Linux
 Please note that a full linux installation should be available,
 either inside a virtual machine or as dualboot or stand-alone installation to run
-the linux binary or the unit test.<br>
-These steps were tested for Ubuntu 18.04 and Ubuntu 19.10. 
-Steps might vary for other distributions.
+the linux binary.<br>
+These steps were tested for Ubuntu 20.04.
 If not done yet, install the full C++ build chain:
 ```sh
 sudo apt-get install build-essential
@@ -15,7 +14,8 @@ make -f Makefile-Linux
 ```
 to compile for Linux.
 Please note that on most UNIX environments (e.g. Ubuntu), the real time functionalities 
-used by the UNIX pthread module are restricted, which will lead to permission errors when creating these tasks.
+used by the UNIX pthread module are restricted, which will lead to permission errors when creating these tasks
+and configuring real-time properites like scheduling priorities.
 
 To solve this issues, try following steps:
 
@@ -45,7 +45,7 @@ If adding the second line is not desired for security reasons,
 the soft limit needs to be set for each session. If using an IDE like eclipse 
 in that case, the IDE needs to be started from the console after setting
 the soft limit higher there. After adding the two lines to the file,
-the computer needs to be restarted (it is possible that relogging is enough)
+the computer needs to be restarted.
 
 It is also recommended to perform the following change so that the unlockRealtime
 script does not need to be run anymore each time. The following steps
@@ -71,9 +71,6 @@ A possible solution which only persists for the current session is
 echo <newMsgMax> | sudo tee /proc/sys/fs/mqueue/msg_max
 ```
 or running the `unlockRealtime` script.
-
-The Linux binary has an own main (see linux folder), does not do much and still 
-needs to be developed.
 
 
 ## <a name="unittest"></a> Unit Tests

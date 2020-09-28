@@ -28,7 +28,6 @@ public:
     static constexpr uint8_t MAX_FILE_MESSAGES_HANDLED_PER_CYCLE = 5;
 
     static constexpr uint8_t INTERFACE_ID = CLASS_ID::SD_CARD_HANDLER;
-    static constexpr ReturnValue_t FOLDER_ALREADY_EXISTS = MAKE_RETURN_CODE(0x01);
 
     static const uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::SD_CARD_HANDLER;
 
@@ -42,6 +41,12 @@ public:
 
     ReturnValue_t performOperation(uint8_t operationCode = 0);
 
+    // Useful functions for development
+    static ReturnValue_t printRepository(const char* repository);
+    static ReturnValue_t printSdCard();
+
+    // This function will dump the current SD card format in ASCII format
+    static ReturnValue_t dumpSdCard();
 private:
 
     ReturnValue_t handleMessage(CommandMessage* message);
@@ -51,8 +56,8 @@ private:
     ReturnValue_t handleDeleteDirectoryCommand(CommandMessage* message);
     ReturnValue_t handleWriteCommand(CommandMessage* message);
     ReturnValue_t handleReadCommand(CommandMessage* message);
-    ReturnValue_t createFile(const char* dirname, const char* filename,
-            const uint8_t* data, size_t size) override;
+    ReturnValue_t createFile(const char* repositoryPath, const char* filename,
+            const uint8_t* data, size_t size, size_t* bytesWritten) override;
     ReturnValue_t deleteFile(const char* repositoryPath, const char* filename);
     ReturnValue_t createDirectory(const char* repositoryPath,
             const char* dirname);
@@ -61,11 +66,11 @@ private:
     ReturnValue_t writeToFile(const char* repositoryPath, const char* filename,
             const uint8_t* data, size_t size, uint16_t packetNumber) override;
     ReturnValue_t read(const char* repositoryPath, const char* filename,
-            uint8_t* tmData, uint32_t* tmDataLen);
+            uint8_t* tmData, size_t* tmDataLen);
     void sendCompletionReply(bool success = true,
             ReturnValue_t errorCode = HasReturnvaluesIF::RETURN_OK);
     ReturnValue_t sendDataReply(MessageQueueId_t receivedFromQueueId,
-            uint8_t* tmData, uint8_t tmDataLen);
+            uint8_t* tmData, size_t tmDataLen);
 
     /**
      * @brief   This function can be used to switch to a directory provided
@@ -73,6 +78,9 @@ private:
      * @param repositoryPath
      * Pointer to a string holding the repositoryPath to the directory.
      * The repositoryPath must be absolute.
+     * @return
+     * -@c RETURN_OK if command was executed successfully.
+     * -@c Filesystem errorcode otherwise
      */
     ReturnValue_t changeDirectory(const char* repositoryPath);
 
@@ -101,6 +109,9 @@ private:
     VolumeId determineVolumeToOpen();
     ReturnValue_t handleAccessResult(ReturnValue_t accessResult);
     ReturnValue_t handleMultipleMessages(CommandMessage* message);
+
+    static ReturnValue_t printHelper(uint8_t recursionDepth);
+
 };
 
 #endif /* SAM9G20_MEMORY_SDCARDHANDLER_H_ */

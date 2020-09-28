@@ -1,96 +1,53 @@
-/**
- * @file RS232DeviceComIF.h
- *
- * @date 30.30.2020
- */
-
 #ifndef MISSION_COMIF_RS232DEVICECOMIF_H_
 #define MISSION_COMIF_RS232DEVICECOMIF_H_
 
 #include <fsfw/devicehandlers/DeviceCommunicationIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
+#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 
-// UART Driver, pre-compiled with C (libHal.a)
+#include <fsfw/events/Event.h>
+
 extern "C" {
 #include <AT91SAM9G20.h>
 #include <hal/Drivers/UART.h>
 }
 
+#include "ComConstants.h"
 
-
+/**
+ * @brief	This class will be used by the Iridium device to send commands.
+ * @details
+ * Please note that all RS232 data will be polled by a special task and
+ * forwarded to a CCSDS distributer directly. Unless specifically implemented
+ * in the polling task, packets targeted at the Irdidium handler will be
+ * received via the messaging interfaces, instead of being polled in
+ * this communication interface.
+ */
 class RS232DeviceComIF: public DeviceCommunicationIF, public SystemObject {
 public:
-	static const uint8_t INTERFACE_ID = CLASS_ID::RS232_CHANNEL;
+	static constexpr uint8_t INTERFACE_ID = CLASS_ID::RS232_COM_IF;
 
-	static const ReturnValue_t OPENING_ERROR = MAKE_RETURN_CODE(0x00); // could not configure and start RS232 connection
+	// Bus has not been started yet.
+	static constexpr ReturnValue_t RS232_INACTIVE = MAKE_RETURN_CODE(0x00);
 
-	RS232DeviceComIF(object_id_t object_id_);
+	RS232DeviceComIF(object_id_t objectId);
 	virtual ~RS232DeviceComIF();
 
-	/**
-	 * @brief Device specific initialization, using the cookie.
-	 * @details
-	 * The cookie is already prepared in the factory. If the communication
-	 * interface needs to be set up in some way and requires cookie information,
-	 * this can be performed in this function, which is called on device handler
-	 * initialization.
-	 * @param cookie
-	 * @return -@c RETURN_OK if initialization was successfull
-	 * 		   - Everything else triggers failure event with returnvalue as parameter 1
-	 */
-	virtual ReturnValue_t initializeInterface(CookieIF * cookie);
-
-	/**
-	 * Called by DHB in the SEND_WRITE doSendWrite().
-	 * This function is used to send data to the physical device
-	 * by implementing and calling related drivers or wrapper functions.
-	 * @param cookie
-	 * @param data
-	 * @param len
-	 * @return -@c RETURN_OK for successfull send
-	 *         - Everything else triggers failure event with returnvalue as parameter 1
-	 */
-	virtual ReturnValue_t sendMessage(CookieIF *cookie, const uint8_t * sendData,
-			size_t sendLen);
-
-	/**
-	 * Called by DHB in the GET_WRITE doGetWrite().
-	 * Get send confirmation that the data in sendMessage() was sent successfully.
-	 * @param cookie
-	 * @return -@c RETURN_OK if data was sent successfull
-	 * 		   - Everything else triggers falure event with returnvalue as parameter 1
-	 */
-	virtual ReturnValue_t getSendSuccess(CookieIF *cookie);
-
-	/**
-	 * Called by DHB in the SEND_WRITE doSendRead().
-	 * Request a reply.
-	 * @param cookie
-	 * @return -@c RETURN_OK to confirm the request for data has been sent.
-	 *         -@c NO_READ_REQUEST if no request shall be made. readReceivedMessage()
-	 *         	   will not be called in the respective communication cycle.
-	 *         - Everything else triggers failure event with returnvalue as parameter 1
-	 */
-	virtual ReturnValue_t requestReceiveMessage(CookieIF *cookie, size_t requestLen);
-
-	/**
-	 * Called by DHB in the GET_WRITE doGetRead().
-	 * This function is used to receive data from the physical device
-	 * by implementing and calling related drivers or wrapper functions.
-	 * @param cookie
-	 * @param data
-	 * @param len
-	 * @return @c RETURN_OK for successfull receive
-	 *         - Everything else triggers failure event with returnvalue as parameter 1
-	 */
-	virtual ReturnValue_t readReceivedMessage(CookieIF *cookie, uint8_t **buffer,
-			size_t *size);
+	virtual ReturnValue_t initializeInterface(CookieIF * cookie) override;
+	virtual ReturnValue_t sendMessage(CookieIF *cookie,
+			const uint8_t * sendData, size_t sendLen) override;
+	virtual ReturnValue_t getSendSuccess(CookieIF *cookie) override;
+	virtual ReturnValue_t requestReceiveMessage(CookieIF *cookie,
+			size_t requestLen) override;
+	virtual ReturnValue_t readReceivedMessage(CookieIF *cookie,
+			uint8_t **buffer, size_t *size) override;
 
 private:
+	UARTgenericTransfer writeStruct;
+	BinarySemaphore writeSemaphore;
+	UARTtransferStatus writeResult = UARTtransferStatus::done_uart;
 
-	uint8_t buffer[2048];
-	uint16_t len;
-	UARTconfig setRS232Config(UARTconfig RS232Config);
+	static void uartWriteCallback(SystemContext context, xSemaphoreHandle sem);
 
 };
 
