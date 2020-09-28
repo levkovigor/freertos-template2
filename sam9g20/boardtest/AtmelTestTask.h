@@ -6,6 +6,7 @@
 #include <fsfw/datapoolglob/GlobalDataSet.h>
 #include <fsfw/datapoolglob/GlobalPoolVariable.h>
 #include <fsfw/datapoolglob/GlobalPoolVector.h>
+#include <fsfw/timemanager/Countdown.h>
 
 extern "C" {
 #include <board.h>
@@ -39,6 +40,8 @@ private:
 #endif
     void performHammingTest();
     void printFilesTest();
+
+    Countdown countdown;
 };
 
 #endif /* SAM9G20_BOARDTEST_ATMELTESTTASK_H_ */

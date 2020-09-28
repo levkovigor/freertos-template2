@@ -32,6 +32,7 @@ extern "C" {
 
 
 AtmelTestTask::AtmelTestTask(object_id_t object_id): TestTask(object_id) {
+    countdown.setTimeout(3000);
 }
 
 AtmelTestTask::~AtmelTestTask() {}
@@ -51,7 +52,11 @@ ReturnValue_t AtmelTestTask::performPeriodicAction() {
 ReturnValue_t AtmelTestTask::performOneShotAction() {
     //Stopwatch stopwatch;
     //performSDCardDemo();
-    //printFilesTest();
+    if(countdown.hasTimedOut()) {
+        printFilesTest();
+    }
+
+
     //test = f_findfirst(".*.", &findResult);
 
 #ifdef ISIS_OBC_G20
