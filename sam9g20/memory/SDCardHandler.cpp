@@ -602,7 +602,7 @@ ReturnValue_t SDCardHandler::printSdCard() {
 
 ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
     F_FIND findResult;
-    int fileFound = f_findfirst("./*", &findResult);
+    int fileFound = f_findfirst("*", &findResult);
     if(fileFound != F_NO_ERROR) {
         return HasReturnvaluesIF::RETURN_OK;
     }

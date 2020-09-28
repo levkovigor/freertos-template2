@@ -271,7 +271,7 @@ int delete_directory_force(const char *repository_path, const char *dirname,
         return result;
     }
 
-    int file_found = f_findfirst("./*", &find_result);
+    int file_found = f_findfirst("*", &find_result);
     if(file_found != F_NO_ERROR) {
         return file_found;
     }
@@ -295,7 +295,7 @@ int delete_directory_force(const char *repository_path, const char *dirname,
 
         result = delete_file_system_object(find_result.filename);
         if(result != F_NO_ERROR) {
-            TRACE_ERROR("clear_sd_card: elete_file_system_object failed with "
+            TRACE_ERROR("clear_sd_card: delete_file_system_object failed with "
                     "code %d!\n\r", result);
             status = result;
         }
@@ -320,7 +320,10 @@ int clear_sd_card() {
     int result = F_NO_ERROR;
     int status = F_NO_ERROR;
     f_chdir("/");
-    f_findfirst("*", &find_result);
+    file_found = f_findfirst("*", &find_result);
+    if(file_found != F_NO_ERROR) {
+        return F_NO_ERROR;
+    }
 
     // Skip SYSTEM folder.
     if(strncmp(find_result.filename, "SYSTEM", 6) == 0) {
@@ -330,9 +333,11 @@ int clear_sd_card() {
     for(int idx = 0; idx < 255; idx++) {
         if(idx > 0) {
             file_found = f_findnext(&find_result);
-            if(strncmp(find_result.filename, "SYSTEM", 6) == 0) {
-                continue;
-            }
+        }
+
+        // Skip SYSTEM folder.
+        if(strncmp(find_result.filename, "SYSTEM", 6) == 0) {
+            continue;
         }
 
         if(file_found != F_NO_ERROR) {
@@ -341,7 +346,7 @@ int clear_sd_card() {
 
         result = delete_file_system_object(find_result.filename);
         if(result != F_NO_ERROR) {
-            TRACE_ERROR("clear_sd_card: elete_file_system_object failed with "
+            TRACE_ERROR("clear_sd_card: delete_file_system_object failed with "
                     "code %d!\n\r", result);
             status = result;
         }
