@@ -566,7 +566,12 @@ ReturnValue_t SDCardHandler::printSdCard() {
     int fileFound = 0;
     uint8_t recursionDepth = 0;
     f_chdir("/");
-    f_findfirst("*", &findResult);
+    fileFound = f_findfirst("*", &findResult);
+    if(fileFound != F_NO_ERROR) {
+        // might be empty.
+        sif::info << "SD Card empty." << std::endl;
+        return HasReturnvaluesIF::RETURN_OK;
+    }
 
     sif::info << "Printing SD Card: " << std::endl;
     sif::info << "F = File, D = Directory, - = Subdir Depth" << std::endl;

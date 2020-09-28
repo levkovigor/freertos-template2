@@ -293,7 +293,7 @@ int delete_directory_force(const char *repository_path, const char *dirname,
             break;
         }
 
-        result = delete_file_system_object(find_result.name);
+        result = delete_file_system_object(find_result.filename);
         if(result != F_NO_ERROR) {
             TRACE_ERROR("clear_sd_card: elete_file_system_object failed with "
                     "code %d!\n\r", result);
