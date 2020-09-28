@@ -115,5 +115,8 @@ extern unsigned char USART_IsDataAvailable(AT91S_USART *usart);
 
 extern void USART_SetIrdaFilter(AT91S_USART *pUsart, unsigned char filter);
 
+extern void USART_SetBaudRate(unsigned int masterClock, unsigned int baudrate,
+        unsigned char useFractionalPart);
+
 #endif //#ifndef USART_AT91_H
 
