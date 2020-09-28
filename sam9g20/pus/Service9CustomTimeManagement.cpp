@@ -10,8 +10,7 @@ Service9CustomTimeManagement::Service9CustomTimeManagement(object_id_t objectId,
 		uint16_t apid, uint8_t serviceId):
 		Service9TimeManagement(objectId, apid, serviceId) {}
 
-int Service9CustomTimeManagement::setIsisClock(
-		Clock::TimeOfDay_t& timeOfDay) {
+int Service9CustomTimeManagement::setIsisClock(Clock::TimeOfDay_t& timeOfDay) {
 	// it is assumed the timer is already running here!
 	timeval timeval;
 	Clock::convertTimeOfDayToTimeval(&timeOfDay, &timeval);
