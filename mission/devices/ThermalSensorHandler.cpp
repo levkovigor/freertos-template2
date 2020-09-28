@@ -244,6 +244,7 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
                     << "Error commiting dataset!" << std::endl;
             return result;
         }
+
         break;
     }
     case(REQUEST_FAULT_BYTE): {
