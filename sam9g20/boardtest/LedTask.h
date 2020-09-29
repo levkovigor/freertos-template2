@@ -5,6 +5,7 @@
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <cstdint>
 #include <map>
+#include <string>
 
 /**
  * @brief   LED task.
