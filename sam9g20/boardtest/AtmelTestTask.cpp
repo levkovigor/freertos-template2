@@ -52,11 +52,7 @@ ReturnValue_t AtmelTestTask::performPeriodicAction() {
 ReturnValue_t AtmelTestTask::performOneShotAction() {
     //Stopwatch stopwatch;
     //performSDCardDemo();
-    printFilesTest();
-
-
-
-    //test = f_findfirst(".*.", &findResult);
+    //printFilesTest();
 
 #ifdef ISIS_OBC_G20
 	performIOBCTest();

@@ -300,9 +300,6 @@ void boardTestTaskInit() {
     PeriodicTaskIF* LedTask = TaskFactory::instance()->
     		createPeriodicTask("LED_TASK", 1, 1024 * 4, 0.4, nullptr);
     result = LedTask->addComponent(objects::LED_TASK);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-    	sif::error << "Add component UART0 Task failed" << std::endl;
-    }
 #endif
 
     /* UART0 Test Task */
@@ -339,7 +336,7 @@ void boardTestTaskInit() {
 
     sif::info << "Starting test tasks.." << std::endl;
 
-    PollingSequenceTableTaskTest -> startTask ();
+    //PollingSequenceTableTaskTest -> startTask ();
     //SPITask -> startTask();
     //I2CTask -> startTask();
     //UART2Task -> startTask();
