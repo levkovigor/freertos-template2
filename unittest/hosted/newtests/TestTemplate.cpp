@@ -1,5 +1,3 @@
-#include "TestTemplate.h"
-
 #include <CatchDefinitions.h>
 #include <catch.hpp>
 
@@ -21,6 +19,7 @@
  *  - https://github.com/catchorg/Catch2/blob/master/docs/test-cases-and-sections.md
  */
 TEST_CASE("Dummy Test" , "[DummyTest]") {
+	uint8_t testVariable = 1;
 	//perform set-up here
 	CHECK(testVariable == 1);
 	SECTION("TestSection") {

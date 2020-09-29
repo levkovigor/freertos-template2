@@ -1,7 +1,8 @@
 #include <unittest/hosted/TestSerialLinkedPacket.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
-#include "CatchDefinitions.h"
-#include "catch.hpp"
+
+#include <CatchDefinitions.h>
+#include <catch.hpp>
 
 TEST_CASE("Serial Linked Packet" , "[SerLinkPacket]") {
 	// perform set-up here
