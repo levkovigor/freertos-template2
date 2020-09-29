@@ -1,5 +1,6 @@
-#ifndef UNITTEST_TESTFW_NEWTESTS_TESTACTIONHELPER_H_
-#define UNITTEST_TESTFW_NEWTESTS_TESTACTIONHELPER_H_
+#ifndef UNITTEST_HOSTED_TESTACTIONHELPER_H_
+#define UNITTEST_HOSTED_TESTACTIONHELPER_H_
+
 #include <fsfw/action/HasActionsIF.h>
 #include <fsfw/ipc/MessageQueueIF.h>
 #include <unittest/hosted/CatchDefinitions.h>

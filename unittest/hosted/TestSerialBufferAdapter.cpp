@@ -1,9 +1,12 @@
-#include <unittest/hosted/TestSerialBufferAdapter.h>
 #include <fsfw/serialize/SerialBufferAdapter.h>
 
-#include "CatchDefinitions.h"
-#include "catch.hpp"
+#include <CatchDefinitions.h>
+#include <catch.hpp>
 
+
+static bool test_value_bool = true;
+static uint16_t tv_uint16 {283};
+static std::array<uint8_t, 512> testArray;
 
 TEST_CASE("Serial Buffer Adapter", "[single-file]") {
 	size_t serialized_size = 0;
@@ -37,14 +40,14 @@ TEST_CASE("Serial Buffer Adapter", "[single-file]") {
 	}
 
 	SECTION("Serialize with size field") {
-		SerialBufferAdapter<uint8_t> tv_serial_buffer_adapter =
+		SerialBufferAdapter<uint8_t> tv_serial_buffer_adapter_loc =
 				SerialBufferAdapter<uint8_t>(test_serial_buffer.data(),
 						test_serial_buffer.size(), true);
 		serialized_size = 0;
 		arrayPtr = testArray.data();
 		SerializeAdapter::serialize(&test_value_bool, &arrayPtr,&serialized_size,
 				testArray.size(), SerializeIF::Endianness::MACHINE);
-		SerializeAdapter::serialize(&tv_serial_buffer_adapter, &arrayPtr,
+		SerializeAdapter::serialize(&tv_serial_buffer_adapter_loc, &arrayPtr,
 				&serialized_size, testArray.size(),
 				SerializeIF::Endianness::MACHINE);
 		SerializeAdapter::serialize(&tv_uint16, &arrayPtr, &serialized_size,
@@ -63,16 +66,16 @@ TEST_CASE("Serial Buffer Adapter", "[single-file]") {
 	}
 
 	SECTION("Test set buffer function") {
-		SerialBufferAdapter<uint8_t> tv_serial_buffer_adapter =
+		SerialBufferAdapter<uint8_t> tv_serial_buffer_adapter_loc =
 					SerialBufferAdapter<uint8_t>((uint8_t*)nullptr,
 					0, true);
-		tv_serial_buffer_adapter.setBuffer(test_serial_buffer.data(),
+		tv_serial_buffer_adapter_loc.setBuffer(test_serial_buffer.data(),
 				test_serial_buffer.size());
 		serialized_size = 0;
 		arrayPtr = testArray.data();
 		SerializeAdapter::serialize(&test_value_bool, &arrayPtr,&serialized_size,
 				testArray.size(), SerializeIF::Endianness::MACHINE);
-		SerializeAdapter::serialize(&tv_serial_buffer_adapter, &arrayPtr,
+		SerializeAdapter::serialize(&tv_serial_buffer_adapter_loc, &arrayPtr,
 				&serialized_size, testArray.size(),
 				SerializeIF::Endianness::MACHINE);
 		SerializeAdapter::serialize(&tv_uint16, &arrayPtr, &serialized_size,

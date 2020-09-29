@@ -1,4 +1,3 @@
-#include "RingBufferTest.h"
 #include <fsfw/container/SimpleRingBuffer.h>
 
 #include <CatchDefinitions.h>
