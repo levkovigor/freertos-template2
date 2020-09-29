@@ -3,7 +3,7 @@
 
 #include <fsfw/action/HasActionsIF.h>
 #include <fsfw/ipc/MessageQueueIF.h>
-#include <unittest/hosted/CatchDefinitions.h>
+#include <CatchDefinitions.h>
 
 
 class ActionHelperOwnerMockBase: public HasActionsIF {

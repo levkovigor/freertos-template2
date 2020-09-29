@@ -5,8 +5,8 @@
 #include <fsfw/datapoolglob/GlobalPoolVariable.h>
 #include <fsfw/datapoolglob/GlobalPoolVector.h>
 
-#include <unittest/hosted/catch2/catch.hpp>
-#include <unittest/hosted/CatchDefinitions.h>
+#include <catch.hpp>
+#include <CatchDefinitions.h>
 
 TEST_CASE( "Simple global datapool test", "[TestDataPool]") {
 	GlobDataSet testDataSet;

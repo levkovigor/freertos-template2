@@ -1,6 +1,6 @@
 #include <fsfw/storagemanager/LocalPool.h>
-#include <unittest/hosted/catch2/catch.hpp>
-#include <unittest/hosted/CatchDefinitions.h>
+#include <catch.hpp>
+#include <CatchDefinitions.h>
 #include <array>
 
 TEST_CASE( "New Accessor" , "[NewAccessor]") {

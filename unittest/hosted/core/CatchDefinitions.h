@@ -1,6 +1,6 @@
 #pragma once
 
-#include <fsfw/ipc/MessageQueueSenderIF.h>
+#include <fsfw/ipc/messageQueueDefinitions.h>
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
 #include <fsfw/storagemanager/StorageManagerIF.h>
 

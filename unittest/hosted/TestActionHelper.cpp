@@ -1,8 +1,8 @@
 #include <fsfw/action/ActionHelper.h>
 #include <fsfw/ipc/CommandMessage.h>
 #include <unittest/hosted/catch2/catch.hpp>
-#include <unittest/hosted/CatchDefinitions.h>
-#include <unittest/hosted/CatchMain.h>
+#include <CatchDefinitions.h>
+
 #include <unittest/hosted/TestActionHelper.h>
 
 TEST_CASE( "Action Helper" , "[ActionHelper]") {

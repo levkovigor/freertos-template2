@@ -3,8 +3,8 @@
 #include <fsfw/storagemanager/LocalPool.h>
 #include "CatchDefinitions.h"
 #include <unittest/hosted/catch2/catch.hpp>
-#include <unittest/hosted/CatchDefinitions.h>
-#include <unittest/hosted/CatchMain.h>
+#include <CatchDefinitions.h>
+
 
 TEST_CASE( "Local Pool Simple Tests [1 Pool]" , "[TestPool]") {
 	uint16_t numberOfElements[1] = {1};
