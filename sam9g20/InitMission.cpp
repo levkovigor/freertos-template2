@@ -176,13 +176,13 @@ void initMission(void) {
     PusMediumPriorityTask->addComponent(objects::PUS_SERVICE_3_HOUSEKEEPING);
     PusMediumPriorityTask->addComponent(objects::PUS_SERVICE_8_FUNCTION_MGMT);
     PusMediumPriorityTask->addComponent(objects::PUS_SERVICE_200_MODE_MGMT);
-    PusMediumPriorityTask->addComponent(objects::PUS_SERVICE_201);
+    PusMediumPriorityTask->addComponent(objects::PUS_SERVICE_201_HEALTH);
     PusMediumPriorityTask->addComponent(objects::PUS_SERVICE_23);
 
     /* PUS Low Priority */
     PeriodicTaskIF* PusLowPriorityTask = TaskFactory::instance()->
     		createPeriodicTask("PUS_LOW_PRIO", 3, 2048 * 4, 1.6, nullptr);
-    PusLowPriorityTask->addComponent(objects::PUS_SERVICE_20);
+    PusLowPriorityTask->addComponent(objects::PUS_SERVICE_20_PARAM_MGMT);
     PusLowPriorityTask->addComponent(objects::PUS_SERVICE_17_TEST);
 
     /* SD Card handler task */
@@ -205,31 +205,19 @@ void initMission(void) {
     PeriodicTaskIF* CoreController = TaskFactory::instance()->
             createPeriodicTask("CORE_CONTROLLER", 6, 2048 * 4, 1, nullptr);
     result = CoreController->addComponent(objects::CORE_CONTROLLER);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component Core Controller failed" << std::endl;
-    }
     PeriodicTaskIF* SystemStateTask = TaskFactory::instance()->
             createPeriodicTask("SYSTEM_STATE_TSK", 2, 2048 * 4, 100, nullptr);
     result = SystemStateTask->addComponent(objects::SYSTEM_STATE_TASK);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component Core Controller failed" << std::endl;
-    }
 
     /* SPI Communication Interface*/
     PeriodicTaskIF* SpiComTask = TaskFactory::instance()->
             createPeriodicTask("SPI_COM_IF", 8, 1024 * 4, 0.4, nullptr);
     result = SpiComTask->addComponent(objects::SPI_DEVICE_COM_IF);
-    if(result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Adding component SPI Com Task failed" << std::endl;
-    }
 
     /* Test Task */
     PeriodicTaskIF* TestTask = TaskFactory::instance()->
             createPeriodicTask("TEST_TASK", 1, 3072 * 4, 3, nullptr);
     result = TestTask->addComponent(objects::TEST_TASK);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component Test Task failed" << std::endl;
-    }
 
 #ifdef DEBUG
     InternalUnitTester unitTestClass;
