@@ -85,53 +85,8 @@ private:
     uint8_t gyroConfiguration[2];
     uint8_t commandBuffer[12] = {};
 
-    static constexpr uint8_t SPI_MODE_SELECT = 0x7F;
-    static constexpr uint8_t POWER_REGISTER = 0x7E;
-    static constexpr uint8_t PMU_REGISTER = 0x03;
-    static constexpr uint8_t STATUS_REGISTER = 0x1B;
-    static constexpr uint8_t CONFIG_REGISTER = 0x42;
-    static constexpr uint8_t RANGE_REGISTER = 0x43;
-    static constexpr uint8_t SELFTEST_REGISTER = 0x6D;
-    // Normal PMU mode for Gyroscope.
-    static constexpr uint8_t POWER_CONFIG = 0x15;
-
-
-    // Configuration for minimal range (+-125 degree).
-    static constexpr uint8_t RANGE_CONFIG = 0b0000'0100;
-    // To start self-test, write this byte to the selftest register
-    static constexpr uint8_t PERFORM_SELFTEST_CMD = 0b0001'0000;
-    // Configure OSR2, oversampling rate 2 (see p.15 of datasheet)
-    static constexpr uint8_t GYRO_BWP_CONFIG = 0b0001'0000;
-    // Configure 50 Hz output data rate, equals 10.7 Hz 3dB cutoff frequency
-    // with OSR2.
-    static constexpr uint8_t GYRO_ODR_CONFIG = 0b0000'0111;
-    // Default configuration.
-    static constexpr uint8_t GYRO_DEF_CONFIG = GYRO_BWP_CONFIG | GYRO_ODR_CONFIG;
-
-    static constexpr uint8_t SELFTEST_OK = 0b0000'0010;
-
-
-    // Data register X-Axis
-    static constexpr uint8_t DATA_REGISTER_START = 0x12;
-
-    // Gyroscope read mask
-    static  constexpr uint8_t GYRO_READ_MASK = 0x80;
-
-    static constexpr DeviceCommandId_t SPI_SELECT = SPI_MODE_SELECT;
-    static constexpr DeviceCommandId_t WRITE_POWER = POWER_REGISTER;
-    static constexpr DeviceCommandId_t WRITE_RANGE = RANGE_REGISTER;
-    static constexpr DeviceCommandId_t WRITE_CONFIG = CONFIG_REGISTER;
-    static constexpr DeviceCommandId_t READ_CONFIG = CONFIG_REGISTER | GYRO_READ_MASK;
-    static constexpr DeviceCommandId_t READ_PMU = PMU_REGISTER | GYRO_READ_MASK;
-    static constexpr DeviceCommandId_t READ_STATUS = STATUS_REGISTER | GYRO_READ_MASK;
-    static constexpr DeviceCommandId_t PERFORM_SELFTEST = SELFTEST_REGISTER;
-    static constexpr DeviceCommandId_t GYRO_DATA = DATA_REGISTER_START | GYRO_READ_MASK;
-
-
     GyroPrimaryDataset gyroData;
     GyroAuxilliaryDataset gyroConfigSet;
-    sid_t gyroDataSid;
-    sid_t gyroConfigSid;
 
     PeriodicOperationDivider selfTestDivider;
 #ifdef DEBUG

@@ -130,30 +130,30 @@ void Factory::produce(void) {
 	new TmFunnel(objects::PUS_FUNNEL);
 
 	/* PUS Standalone Services using PusServiceBase */
-	new Service1TelecommandVerification(objects::PUS_SERVICE_1,
+	new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,
 	        apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::PUS_FUNNEL);
-	new Service3Housekeeping(objects::PUS_SERVICE_3, apid::SOURCE_OBSW,
-			pus::PUS_SERVICE_3);
-	new Service5EventReporting(objects::PUS_SERVICE_5, apid::SOURCE_OBSW,
-	        pus::PUS_SERVICE_5);
-	new Service9CustomTimeManagement(objects::PUS_SERVICE_9, apid::SOURCE_OBSW,
-			pus::PUS_SERVICE_9);
-	new Service17CustomTest(objects::PUS_SERVICE_17, apid::SOURCE_OBSW,
+	new Service3Housekeeping(objects::PUS_SERVICE_3_HOUSEKEEPING,
+			apid::SOURCE_OBSW, pus::PUS_SERVICE_3);
+	new Service5EventReporting(objects::PUS_SERVICE_5_EVENT_REPORTING,
+			apid::SOURCE_OBSW, pus::PUS_SERVICE_5);
+	new Service9CustomTimeManagement(objects::PUS_SERVICE_9_TIME_MGMT,
+			apid::SOURCE_OBSW, pus::PUS_SERVICE_9);
+	new Service17CustomTest(objects::PUS_SERVICE_17_TEST, apid::SOURCE_OBSW,
 	        pus::PUS_SERVICE_17);
 
 
 	/* PUS Gateway Services using CommandingServiceBase */
-	new Service2DeviceAccess(objects::PUS_SERVICE_2, apid::SOURCE_OBSW,
-	        pus::PUS_SERVICE_2);
-	new Service6MemoryManagement(objects::PUS_SERVICE_6, apid::SOURCE_OBSW,
-	        pus::PUS_SERVICE_6);
-    new Service8FunctionManagement(objects::PUS_SERVICE_8, apid::SOURCE_OBSW,
-            pus::PUS_SERVICE_8);
+	new Service2DeviceAccess(objects::PUS_SERVICE_2_DEVICE_ACCESS,
+			apid::SOURCE_OBSW, pus::PUS_SERVICE_2);
+	new Service6MemoryManagement(objects::PUS_SERVICE_6_MEM_MGMT,
+			apid::SOURCE_OBSW, pus::PUS_SERVICE_6);
+    new Service8FunctionManagement(objects::PUS_SERVICE_8_FUNCTION_MGMT,
+    		apid::SOURCE_OBSW, pus::PUS_SERVICE_8);
 	new Service20ParameterManagement(objects::PUS_SERVICE_20);
     new Service23FileManagement(objects::PUS_SERVICE_23, apid::SOURCE_OBSW,
             pus::PUS_SERVICE_23);
-	new CService200ModeCommanding(objects::PUS_SERVICE_200, apid::SOURCE_OBSW,
-	        pus::PUS_SERVICE_200);
+	new CService200ModeCommanding(objects::PUS_SERVICE_200_MODE_MGMT,
+			apid::SOURCE_OBSW, pus::PUS_SERVICE_200);
 	new CService201HealthCommanding(objects::PUS_SERVICE_201, apid::SOURCE_OBSW,
 	        pus::PUS_SERVICE_201);
 
@@ -174,10 +174,10 @@ void Factory::produce(void) {
 	DummyCookie * dummyCookie2 = new DummyCookie(addresses::DUMMY_GPS0);
 #if defined(VIRTUAL_BUILD)
 	new GPSHandler(objects::GPS0_HANDLER, objects::DUMMY_GPS_COM_IF,
-	        dummyCookie2, switches::GPS0,gps0);
+	        dummyCookie2, switches::GPS0);
 	DummyCookie * dummyCookie3 = new DummyCookie(addresses::DUMMY_GPS1);
 	new GPSHandler(objects::GPS1_HANDLER, objects::DUMMY_GPS_COM_IF,
-	        dummyCookie3, switches::GPS1,gps1);
+	        dummyCookie3, switches::GPS1);
 #else
 	new GPSHandler(objects::GPS0_HANDLER,objects::DUMMY_GPS_COM_IF,
 			dummyCookie2, switches::GPS0);
@@ -257,11 +257,10 @@ void Factory::setStaticFrameworkObjectIds() {
 	CommandingServiceBase::defaultPacketSource = objects::PUS_PACKET_DISTRIBUTOR;
 	CommandingServiceBase::defaultPacketDestination = objects::PUS_FUNNEL;
 
-	VerificationReporter::messageReceiver = objects::PUS_SERVICE_1;
+	VerificationReporter::messageReceiver = objects::PUS_SERVICE_1_VERIFICATION;
 
 	DeviceHandlerBase::powerSwitcherId = objects::PCDU_HANDLER;
-	DeviceHandlerBase::rawDataReceiverId = objects::PUS_SERVICE_2;
-	LocalDataPoolManager::defaultHkDestination = objects::PUS_SERVICE_3;
+	DeviceHandlerBase::rawDataReceiverId = objects::PUS_SERVICE_2_DEVICE_ACCESS;
 
 	DeviceHandlerFailureIsolation::powerConfirmationId = objects::PCDU_HANDLER;
 

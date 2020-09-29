@@ -95,15 +95,6 @@ void initMission(void) {
 
     sif::info << "Creating tasks.." << std::endl;
 
-    /* Internal Error Reporter */
-    PeriodicTaskIF* InternalErrorReporter = TaskFactory::instance()->
-            createPeriodicTask("INT_ERR_RPRTR", 4, 1024 * 4, 2.0, nullptr);
-    result = InternalErrorReporter->addComponent(objects::INTERNAL_ERROR_REPORTER);
-    if(result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component Internal Error Reporter "
-                << "failed " << std::endl;
-    }
-
     /* TMTC Communication Tasks */
     PeriodicTaskIF * TmTcPollingTask = nullptr;
     PeriodicTaskIF* TmTcBridge = nullptr;
@@ -112,184 +103,97 @@ void initMission(void) {
     TmTcPollingTask = TaskFactory::instance()->
             createPeriodicTask("EMAC_PollingTask", 8, 1024 * 4 , 0.1, nullptr);
     result = TmTcPollingTask->addComponent(objects::EMAC_POLLING_TASK);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component EMAC Task failed" << std::endl;
-    }
 
     /* UDP Task for Ethernet Communication */
     TmTcBridge = TaskFactory::instance()->
             createPeriodicTask("UDP_TMTC_TASK",6, 2048 * 4, 0.2, nullptr);
     result = TmTcBridge->addComponent(objects::UDP_TMTC_BRIDGE);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "Add component UDP Bridge Client failed" << std::endl;
-    }
 #else
     /* Serial Polling Task */
     TmTcPollingTask = TaskFactory::instance()->
             createPeriodicTask("SERIAL_TC_POLLING", 8, 3096 * 4, 0.1, nullptr);
     result = TmTcPollingTask ->addComponent(objects::SERIAL_POLLING_TASK);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component Serial Polling Task failed" << std::endl;
-    }
 
     /* Serial Bridge Task for UART Communication */
     TmTcBridge = TaskFactory::instance()->
             createPeriodicTask("SERIAL_TMTC_TASK", 7, 2048 * 4, 0.1, nullptr);
     result = TmTcBridge->addComponent(objects::SERIAL_TMTC_BRIDGE);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "Add component Serial Bridge failed" << std::endl;
-    }
 #endif
 
     /* Packet Distributor Taks */
     PeriodicTaskIF* PacketDistributorTask =
     		TaskFactory::instance()-> createPeriodicTask(
-    		"TMTC_DISTRIBUTOR",6, 2048 * 4, 0.4,nullptr);
+    		"TMTC_DISTRIBUTOR", 6, 2048 * 4, 0.4, nullptr);
     result = PacketDistributorTask->
             addComponent(objects::CCSDS_PACKET_DISTRIBUTOR);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "Add component CCSDS Packet Distributor failed"
-                << std::endl;
-    }
-    result = PacketDistributorTask->
-            addComponent(objects::PUS_PACKET_DISTRIBUTOR);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "Add component PUS Packet Distributor failed"
-                << std::endl;
-    }
+    result = PacketDistributorTask->addComponent(
+    		objects::PUS_PACKET_DISTRIBUTOR);
     result = PacketDistributorTask->addComponent(objects::PUS_FUNNEL);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "Add component PUS Funnel failed" << std::endl;
-    }
 
 
     /* Polling Sequence Table Default */
     FixedTimeslotTaskIF * PollingSequenceTableTaskDefault =
     TaskFactory::instance()-> createFixedTimeslotTask(
-    		"PST_TASK_DEFAULT", 4, 2048 * 4, 0.4, nullptr);
+    		"PST_TASK_DEFAULT", 5, 2048 * 4, 0.4, nullptr);
     result = pst::pollingSequenceInitDefault(PollingSequenceTableTaskDefault);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "creating PST failed" << std::endl;
     }
 
-
     /* Event Manager */
     PeriodicTaskIF* EventManager = TaskFactory::instance()->createPeriodicTask(
     		"EVENT_MANAGER", 8, 2048 * 4, 0.2, nullptr);
     result = EventManager->addComponent(objects::EVENT_MANAGER);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "Add component Event Manager failed" << std::endl;
-    }
+
+    /* Internal Error Reporter */
+    PeriodicTaskIF* InternalErrorReporter = TaskFactory::instance()->
+            createPeriodicTask("INT_ERR_RPRTR", 1, 1024 * 4, 2.0, nullptr);
+    result = InternalErrorReporter->addComponent(
+    		objects::INTERNAL_ERROR_REPORTER);
 
     /* PUS Services */
+
+    /* Verification Service */
     PeriodicTaskIF* PusService01 = TaskFactory::instance()->createPeriodicTask(
     		"PUS_VERFICIATION_1", 5, 2048 * 4, 0.4, nullptr);
-    result = PusService01->addComponent(objects::PUS_SERVICE_1);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "Add component PUS Verification Service 1 failed" << std::endl;
-    }
+    result = PusService01->addComponent(objects::PUS_SERVICE_1_VERIFICATION);
 
-    PeriodicTaskIF* PusService02 = TaskFactory::instance()->createPeriodicTask(
-    		"PUS_DEVICE_ACCESS_2", 5, 2048 * 4, 0.2, nullptr);
-    result = PusService02->addComponent(objects::PUS_SERVICE_2);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "Add component PUS Device Access Service 2 failed" << std::endl;
-    }
-
-    PeriodicTaskIF* PusService03 = TaskFactory::instance()-> createPeriodicTask(
-    		"PUS_HOUSEKEEPING_3", 4, 2048 * 4, 0.2, nullptr);
-    result = PusService03->addComponent(objects::PUS_SERVICE_3/*_PSB*/);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "Add component PUS Housekeeping Service 3 failed" << std::endl;
-    }
-
+    /* Event Reporter */
     PeriodicTaskIF* PusService05 = TaskFactory::instance()-> createPeriodicTask(
-    		"PUS_EVENT_REPORTER_5", 4, 2048 * 4, 0.2, nullptr);
-    result = PusService05->addComponent(objects::PUS_SERVICE_5);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "Add component PUS Event Reporting "
-                 "Service 5 failed" << std::endl;
-    }
+    		"PUS_EVENT_RPRTR_5", 4, 2048 * 4, 0.2, nullptr);
+    PusService05->addComponent(objects::PUS_SERVICE_5_EVENT_REPORTING);
 
-    PeriodicTaskIF* PusService06 = TaskFactory::instance()->createPeriodicTask(
-    		"PUS_MEMORY_MGMT_6", 4, 2048 * 4, 0.2, nullptr);
-    result = PusService06->addComponent(objects::PUS_SERVICE_6);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "Add component PUS Memory Management "
-                 "Service 6 failed" << std::endl;
-    }
+    /* PUS High Priority */
+    PeriodicTaskIF* PusHighPriorityTask = TaskFactory::instance()->
+    		createPeriodicTask("PUS_HIGH_PRIO", 5, 2048 * 4, 0.2, nullptr);
+    PusHighPriorityTask->addComponent(objects::PUS_SERVICE_2_DEVICE_ACCESS);
+    PusHighPriorityTask->addComponent(objects::PUS_SERVICE_6_MEM_MGMT);
+    PusHighPriorityTask->addComponent(objects::PUS_SERVICE_9_TIME_MGMT);
 
-    PeriodicTaskIF* PusService08 = TaskFactory::instance()->createPeriodicTask(
-    		"PUS_FUNCTION_MGMT_8", 3, 2048 * 4, 0.8, nullptr);
-    result = PusService08 -> addComponent(objects::PUS_SERVICE_8);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "Add component PUS Function Management "
-                 "Service 8 failed" << std::endl;
-    }
+    /* PUS Medium Priority */
+    PeriodicTaskIF* PusMediumPriorityTask = TaskFactory::instance()->
+    		createPeriodicTask("PUS_MED_PRIO", 4, 2048 * 4, 0.8, nullptr);
+    PusMediumPriorityTask->addComponent(objects::PUS_SERVICE_3_HOUSEKEEPING);
+    PusMediumPriorityTask->addComponent(objects::PUS_SERVICE_8_FUNCTION_MGMT);
+    PusMediumPriorityTask->addComponent(objects::PUS_SERVICE_200_MODE_MGMT);
+    PusMediumPriorityTask->addComponent(objects::PUS_SERVICE_201);
+    PusMediumPriorityTask->addComponent(objects::PUS_SERVICE_23);
 
-    PeriodicTaskIF* PusService09 = TaskFactory::instance()->createPeriodicTask(
-    		"PUS_TIME_9", 5, 1024 * 4, 0.4, nullptr);
-    result = PusService09->addComponent(objects::PUS_SERVICE_9);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "Add component PUS Time "
-                 "Management Service 9 failed" << std::endl;
-    }
-
-    PeriodicTaskIF* PusService17 = TaskFactory::instance()->createPeriodicTask(
-    		"PUS_TEST_17", 1, 1024 * 4, 2, nullptr);
-    result = PusService17->addComponent(objects::PUS_SERVICE_17);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component PUS Test Service 17 failed" << std::endl;
-    }
-
-    PeriodicTaskIF* PusService20 = TaskFactory::instance()->createPeriodicTask(
-    		"PUS_PARAMETER_SERVICE_20", 3, 2048 * 4, 2, nullptr);
-    result = PusService20->addComponent(objects::PUS_SERVICE_20);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component PUS Parameter Service 20 failed" << std::endl;
-    }
-
-    PeriodicTaskIF* PusService23 = TaskFactory::instance()->createPeriodicTask(
-    		"PUS_FILE_MGMT_23", 3, 2048 * 4, 2, nullptr);
-    result = PusService23->addComponent(objects::PUS_SERVICE_23);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component PUS Test Service 23 failed" << std::endl;
-    }
-
-    PeriodicTaskIF* PusService200 =
-            TaskFactory::instance()->createPeriodicTask(
-            "PUS_MODE_MGMT_200", 3, 2048 * 4, 1.2, nullptr);
-    result = PusService200->addComponent(objects::PUS_SERVICE_200);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component PUS Mode "
-                 "Commanding Service 200 failed" << std::endl;
-    }
-
-    PeriodicTaskIF* PusService201 =
-            TaskFactory::instance()->createPeriodicTask(
-            "PUS_HEALTH_MGMT_201", 3, 1024 * 4, 1.2, nullptr);
-    result = PusService201->addComponent(objects::PUS_SERVICE_201);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component PUS Health "
-                 "Commanding Service 201 failed" << std::endl;
-    }
-
-    /* Test Task */
-    PeriodicTaskIF* TestTask = TaskFactory::instance()->
-            createPeriodicTask("TEST_TASK", 1, 3072 * 4, 3, nullptr);
-    result = TestTask->addComponent(objects::TEST_TASK);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component Test Task failed" << std::endl;
-    }
+    /* PUS Low Priority */
+    PeriodicTaskIF* PusLowPriorityTask = TaskFactory::instance()->
+    		createPeriodicTask("PUS_LOW_PRIO", 3, 2048 * 4, 1.6, nullptr);
+    PusLowPriorityTask->addComponent(objects::PUS_SERVICE_20);
+    PusLowPriorityTask->addComponent(objects::PUS_SERVICE_17_TEST);
 
     /* SD Card handler task */
-    PeriodicTaskIF* SDcardTask = TaskFactory::instance()->
-            createPeriodicTask("SD_CARD_TASK", 2, 2048 * 4, 1, nullptr);
-    result = SDcardTask->addComponent(objects::SD_CARD_HANDLER);
+    PeriodicTaskIF* SDCardTask = TaskFactory::instance()->
+            createPeriodicTask("SD_CARD_TASK", 2, 2048 * 4, 5.0, nullptr);
+    result = SDCardTask->addComponent(objects::SD_CARD_HANDLER);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "Add component SDCardTask failed" << std::endl;
     }
 
+    /* Software image task */
     PeriodicTaskIF* SoftwareImageTask = TaskFactory::instance()->
             createPeriodicTask("SW_IMG_TASK", 3, 2048 * 4, 2, nullptr);
     result = SoftwareImageTask->addComponent(objects::SOFTWARE_IMAGE_HANDLER);
@@ -298,16 +202,15 @@ void initMission(void) {
     }
 
     /* Core Controller task */
-    PeriodicTaskIF* SystemStateTask = TaskFactory::instance()->
-            createPeriodicTask("SYSTEM_STATE_TSK", 2, 2048 * 4, 10, nullptr);
-    result = SystemStateTask->addComponent(objects::SYSTEM_STATE_TASK);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component Core Controller failed" << std::endl;
-    }
-
     PeriodicTaskIF* CoreController = TaskFactory::instance()->
             createPeriodicTask("CORE_CONTROLLER", 6, 2048 * 4, 1, nullptr);
     result = CoreController->addComponent(objects::CORE_CONTROLLER);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        sif::error << "Add component Core Controller failed" << std::endl;
+    }
+    PeriodicTaskIF* SystemStateTask = TaskFactory::instance()->
+            createPeriodicTask("SYSTEM_STATE_TSK", 2, 2048 * 4, 100, nullptr);
+    result = SystemStateTask->addComponent(objects::SYSTEM_STATE_TASK);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "Add component Core Controller failed" << std::endl;
     }
@@ -318,6 +221,14 @@ void initMission(void) {
     result = SpiComTask->addComponent(objects::SPI_DEVICE_COM_IF);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "Adding component SPI Com Task failed" << std::endl;
+    }
+
+    /* Test Task */
+    PeriodicTaskIF* TestTask = TaskFactory::instance()->
+            createPeriodicTask("TEST_TASK", 1, 3072 * 4, 3, nullptr);
+    result = TestTask->addComponent(objects::TEST_TASK);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        sif::error << "Add component Test Task failed" << std::endl;
     }
 
 #ifdef DEBUG
@@ -339,24 +250,20 @@ void initMission(void) {
     EventManager -> startTask();
 
     PusService01 -> startTask();
-    PusService02 -> startTask();
-    PusService03 -> startTask();
     PusService05 -> startTask();
-    PusService06 -> startTask();
-    PusService08 -> startTask();
-    PusService09 -> startTask();
-    PusService17 -> startTask();
-    PusService20 -> startTask();
-    PusService23 -> startTask();
-    PusService200 -> startTask();
-    PusService201 -> startTask();
 
-    TestTask -> startTask();
-    SpiComTask->startTask();
-    SDcardTask -> startTask();
+    PusHighPriorityTask->startTask();
+    PusMediumPriorityTask->startTask();
+    PusLowPriorityTask->startTask();
+
+    SDCardTask -> startTask();
     SoftwareImageTask -> startTask();
+
     SystemStateTask -> startTask();
     CoreController->startTask();
+    SpiComTask->startTask();
+
+    TestTask -> startTask();
 
     /* Comment out for mission build */
     boardTestTaskInit();
@@ -432,7 +339,7 @@ void boardTestTaskInit() {
 
     sif::info << "Starting test tasks.." << std::endl;
 
-    //PollingSequenceTableTaskTest -> startTask ();
+    PollingSequenceTableTaskTest -> startTask ();
     //SPITask -> startTask();
     //I2CTask -> startTask();
     //UART2Task -> startTask();

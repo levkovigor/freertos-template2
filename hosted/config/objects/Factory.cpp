@@ -93,20 +93,20 @@ void Factory::produce(void) {
 #endif
 
 	/* PUS Service Base Services */
-	new Service1TelecommandVerification(objects::PUS_SERVICE_1,
+	new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,
 			apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::PUS_FUNNEL);
 
-	new Service5EventReporting(objects::PUS_SERVICE_5, apid::SOURCE_OBSW,
+	new Service5EventReporting(objects::PUS_SERVICE_5_EVENT_REPORTING, apid::SOURCE_OBSW,
 			pus::PUS_SERVICE_5);
-	new Service17CustomTest(objects::PUS_SERVICE_17, apid::SOURCE_OBSW,
+	new Service17CustomTest(objects::PUS_SERVICE_17_TEST, apid::SOURCE_OBSW,
 			pus::PUS_SERVICE_17);
 
 	/* Commanding Service Base Services */
 	new Service2DeviceAccess(objects::PUS_SERVICE_2, apid::SOURCE_OBSW,
 				pus::PUS_SERVICE_2);
-	new Service8FunctionManagement(objects::PUS_SERVICE_8, apid::SOURCE_OBSW,
+	new Service8FunctionManagement(objects::PUS_SERVICE_8_FUNCTION_MGMT, apid::SOURCE_OBSW,
 			pus::PUS_SERVICE_8);
-	new CService200ModeCommanding(objects::PUS_SERVICE_200, apid::SOURCE_OBSW,
+	new CService200ModeCommanding(objects::PUS_SERVICE_200_MODE_MGMT, apid::SOURCE_OBSW,
 				pus::PUS_SERVICE_200);
 
 
@@ -125,7 +125,7 @@ void Factory::setStaticFrameworkObjectIds() {
 	CommandingServiceBase::defaultPacketSource = objects::PUS_PACKET_DISTRIBUTOR;
 	CommandingServiceBase::defaultPacketDestination = objects::PUS_FUNNEL;
 
-	VerificationReporter::messageReceiver = objects::PUS_SERVICE_1;
+	VerificationReporter::messageReceiver = objects::PUS_SERVICE_1_VERIFICATION;
 	DeviceHandlerBase::rawDataReceiverId = objects::PUS_SERVICE_2;
 	DeviceHandlerBase::powerSwitcherId = objects::NO_OBJECT;
 

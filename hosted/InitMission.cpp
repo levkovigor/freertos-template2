@@ -93,7 +93,7 @@ void initTask() {
     PeriodicTaskIF* PusService1 = TaskFactory::instance()->createPeriodicTask(
     		"PUS_SRV_1", 50, PeriodicTaskIF::MINIMUM_STACK_SIZE,
 			0.4, nullptr);
-    result = PusService1->addComponent(objects::PUS_SERVICE_1);
+    result = PusService1->addComponent(objects::PUS_SERVICE_1_VERIFICATION);
     if(result != HasReturnvaluesIF::RETURN_OK) {
     	sif::error << "Add component Verification Reporter failed" << std::endl;
     }
@@ -109,7 +109,7 @@ void initTask() {
     PeriodicTaskIF* PusService5 = TaskFactory::instance()->createPeriodicTask(
     		"PUS_SRV_5", 50, PeriodicTaskIF::MINIMUM_STACK_SIZE,
 			0.4, nullptr);
-    result = PusService5->addComponent(objects::PUS_SERVICE_5);
+    result = PusService5->addComponent(objects::PUS_SERVICE_5_EVENT_REPORTING);
     if(result != HasReturnvaluesIF::RETURN_OK) {
     	sif::error << "Add component Event Service failed" << std::endl;
     }
@@ -117,7 +117,7 @@ void initTask() {
     PeriodicTaskIF* PusService8 = TaskFactory::instance()->createPeriodicTask(
     		"PUS_SRV_8", 50, PeriodicTaskIF::MINIMUM_STACK_SIZE,
 			0.4, nullptr);
-    result = PusService2->addComponent(objects::PUS_SERVICE_8);
+    result = PusService2->addComponent(objects::PUS_SERVICE_8_FUNCTION_MGMT);
     if(result != HasReturnvaluesIF::RETURN_OK) {
     	sif::error << "Add component Function MGMT failed" << std::endl;
     }
@@ -125,7 +125,7 @@ void initTask() {
     PeriodicTaskIF* PusService17 = TaskFactory::instance()->createPeriodicTask(
     		"PUS_SRV_17", 50, PeriodicTaskIF::MINIMUM_STACK_SIZE,
 			0.4, nullptr);
-    result = PusService17->addComponent(objects::PUS_SERVICE_17);
+    result = PusService17->addComponent(objects::PUS_SERVICE_17_TEST);
     if(result != HasReturnvaluesIF::RETURN_OK) {
     	sif::error << "Add component Test Service failed" << std::endl;
     }
@@ -133,7 +133,7 @@ void initTask() {
     PeriodicTaskIF* PusService200 = TaskFactory::instance()->createPeriodicTask(
     		"PUS_SRV_200", 50, PeriodicTaskIF::MINIMUM_STACK_SIZE,
 			0.4, nullptr);
-    result = PusService200->addComponent(objects::PUS_SERVICE_200);
+    result = PusService200->addComponent(objects::PUS_SERVICE_200_MODE_MGMT);
     if(result != HasReturnvaluesIF::RETURN_OK) {
     	sif::error << "Add component Mode MGMT failed" << std::endl;
     }
