@@ -37,7 +37,7 @@ use `kill-session` instead. In some cases, it can becomes necessary to restart
 the J-Link GDB Server. The GDB Server should be run with the following command
 
 ```sh
-JLinkGDBServerCLExe -USB -device AT91SAM9G20 -endian little -if JTAG -speed adaptive -noLocalhostOnly 
+JLinkGDBServerCLExe -USB -device AT91SAM9G20 -endian little -if JTAG -speed auto -noLocalhostOnly 
 ```
 Add a & at the end optionally to run it in the background. Background processes can be listed
 with `ps -aux` and killed with `kill <processId>`
