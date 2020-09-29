@@ -101,7 +101,7 @@ void initTask() {
     PeriodicTaskIF* PusService2 = TaskFactory::instance()->createPeriodicTask(
     		"PUS_SRV_2", 50, PeriodicTaskIF::MINIMUM_STACK_SIZE,
 			0.2, nullptr);
-    result = PusService2->addComponent(objects::PUS_SERVICE_2);
+    result = PusService2->addComponent(objects::PUS_SERVICE_2_DEVICE_ACCESS);
     if(result != HasReturnvaluesIF::RETURN_OK) {
     	sif::error << "Add component Device Access failed" << std::endl;
     }
