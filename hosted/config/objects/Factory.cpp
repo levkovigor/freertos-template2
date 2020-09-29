@@ -55,10 +55,7 @@ void Factory::produce(void) {
 	setStaticFrameworkObjectIds();
 	new EventManager(objects::EVENT_MANAGER);
 	new HealthTable(objects::HEALTH_TABLE);
-	new InternalErrorReporter(objects::INTERNAL_ERROR_REPORTER,
-				datapool::INTERNAL_ERROR_FULL_MSG_QUEUES,
-				datapool::INTERNAL_ERROR_MISSED_LIVE_TM,
-				datapool::INTERNAL_ERROR_STORE_FULL);
+	new InternalErrorReporter(objects::INTERNAL_ERROR_REPORTER);
 
 	/* Pool manager handles storage und mutexes */
 	/* Data Stores. Currently reserving 9600 bytes of memory */
@@ -102,12 +99,12 @@ void Factory::produce(void) {
 			pus::PUS_SERVICE_17);
 
 	/* Commanding Service Base Services */
-	new Service2DeviceAccess(objects::PUS_SERVICE_2, apid::SOURCE_OBSW,
-				pus::PUS_SERVICE_2);
-	new Service8FunctionManagement(objects::PUS_SERVICE_8_FUNCTION_MGMT, apid::SOURCE_OBSW,
-			pus::PUS_SERVICE_8);
-	new CService200ModeCommanding(objects::PUS_SERVICE_200_MODE_MGMT, apid::SOURCE_OBSW,
-				pus::PUS_SERVICE_200);
+	new Service2DeviceAccess(objects::PUS_SERVICE_2_DEVICE_ACCESS,
+			apid::SOURCE_OBSW, pus::PUS_SERVICE_2);
+	new Service8FunctionManagement(objects::PUS_SERVICE_8_FUNCTION_MGMT,
+			apid::SOURCE_OBSW, pus::PUS_SERVICE_8);
+	new CService200ModeCommanding(objects::PUS_SERVICE_200_MODE_MGMT,
+			apid::SOURCE_OBSW,pus::PUS_SERVICE_200);
 
 
 	/* Test Tasks */
@@ -126,7 +123,7 @@ void Factory::setStaticFrameworkObjectIds() {
 	CommandingServiceBase::defaultPacketDestination = objects::PUS_FUNNEL;
 
 	VerificationReporter::messageReceiver = objects::PUS_SERVICE_1_VERIFICATION;
-	DeviceHandlerBase::rawDataReceiverId = objects::PUS_SERVICE_2;
+	DeviceHandlerBase::rawDataReceiverId = objects::PUS_SERVICE_2_DEVICE_ACCESS;
 	DeviceHandlerBase::powerSwitcherId = objects::NO_OBJECT;
 
 	TmPacketStored::timeStamperId = objects::PUS_TIME;
