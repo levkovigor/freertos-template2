@@ -6,10 +6,10 @@
 
 #include <test/testinterfaces/DummyCookie.h>
 
-DummyCookie::DummyCookie(address_t address_): address(address_) {}
+TestCookie::TestCookie(address_t address_): address(address_) {}
 
-DummyCookie::~DummyCookie() {}
+TestCookie::~TestCookie() {}
 
-address_t DummyCookie::getAddress() const {
+address_t TestCookie::getAddress() const {
 	return address;
 }

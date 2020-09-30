@@ -80,7 +80,6 @@ void initTask() {
     if(result != HasReturnvaluesIF::RETURN_OK) {
     	sif::error << "Add component UDP Unix Bridge failed" << std::endl;
     }
-
     PeriodicTaskIF* UdpPollingTask = TaskFactory::instance()->
     		createPeriodicTask("UDP_POLLING", 80,
     		PeriodicTaskIF::MINIMUM_STACK_SIZE, 2.0, nullptr);

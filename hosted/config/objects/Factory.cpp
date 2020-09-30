@@ -26,6 +26,7 @@
 #include <fsfw/pus/Service8FunctionManagement.h>
 #include <hosted/boardtest/TestTaskHost.h>
 #include <fsfw/pus/CService200ModeCommanding.h>
+#include <fsfw/pus/Service3Housekeeping.h>
 #include <test/testdevices/TestDeviceHandler.h>
 
 #ifdef LINUX
@@ -92,7 +93,8 @@ void Factory::produce(void) {
 	/* PUS Service Base Services */
 	new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,
 			apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::PUS_FUNNEL);
-
+	new Service3Housekeeping(objects::PUS_SERVICE_3_HOUSEKEEPING, apid::SOURCE_OBSW,
+			pus::PUS_SERVICE_3);
 	new Service5EventReporting(objects::PUS_SERVICE_5_EVENT_REPORTING, apid::SOURCE_OBSW,
 			pus::PUS_SERVICE_5);
 	new Service17CustomTest(objects::PUS_SERVICE_17_TEST, apid::SOURCE_OBSW,
@@ -108,8 +110,8 @@ void Factory::produce(void) {
 
 
 	/* Test Tasks */
-	CookieIF* dummyCookie = new DummyCookie(0);
-	new DummyEchoComIF(objects::DUMMY_INTERFACE);
+	CookieIF* dummyCookie = new TestCookie(0);
+	new TestEchoComIF(objects::DUMMY_INTERFACE);
 	new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_INTERFACE,
 	        dummyCookie, true);
 	new TestTaskHost(objects::TEST_TASK);
@@ -121,6 +123,8 @@ void Factory::setStaticFrameworkObjectIds() {
 
 	CommandingServiceBase::defaultPacketSource = objects::PUS_PACKET_DISTRIBUTOR;
 	CommandingServiceBase::defaultPacketDestination = objects::PUS_FUNNEL;
+
+	LocalDataPoolManager::defaultHkDestination = objects::PUS_SERVICE_3_HOUSEKEEPING;
 
 	VerificationReporter::messageReceiver = objects::PUS_SERVICE_1_VERIFICATION;
 	DeviceHandlerBase::rawDataReceiverId = objects::PUS_SERVICE_2_DEVICE_ACCESS;

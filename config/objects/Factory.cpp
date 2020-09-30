@@ -162,20 +162,20 @@ void Factory::produce(void) {
 	 * These includes work without connected hardware via virtualized
 	 * devices and interfaces
 	 */
-	CookieIF * dummyCookie0 = new DummyCookie(addresses::PCDU);
+	CookieIF * dummyCookie0 = new TestCookie(addresses::PCDU);
 	new PCDUHandler(objects::PCDU_HANDLER,objects::DUMMY_ECHO_COM_IF,
 			dummyCookie0);
-	CookieIF * dummyCookie1 = new DummyCookie(addresses::DUMMY_ECHO);
+	CookieIF * dummyCookie1 = new TestCookie(addresses::DUMMY_ECHO);
 	new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_ECHO_COM_IF,
 			dummyCookie1, true);
 
 	new CoreController(objects::CORE_CONTROLLER, objects::SYSTEM_STATE_TASK);
 	new SystemStateTask(objects::SYSTEM_STATE_TASK, objects::CORE_CONTROLLER);
-	DummyCookie * dummyCookie2 = new DummyCookie(addresses::DUMMY_GPS0);
+	TestCookie * dummyCookie2 = new TestCookie(addresses::DUMMY_GPS0);
 #if defined(VIRTUAL_BUILD)
 	new GPSHandler(objects::GPS0_HANDLER, objects::DUMMY_GPS_COM_IF,
 	        dummyCookie2, switches::GPS0);
-	DummyCookie * dummyCookie3 = new DummyCookie(addresses::DUMMY_GPS1);
+	TestCookie * dummyCookie3 = new TestCookie(addresses::DUMMY_GPS1);
 	new GPSHandler(objects::GPS1_HANDLER, objects::DUMMY_GPS_COM_IF,
 	        dummyCookie3, switches::GPS1);
 #else
@@ -186,7 +186,7 @@ void Factory::produce(void) {
 #endif
 
 	/* Dummy Communication Interfaces */
-	new DummyEchoComIF(objects::DUMMY_ECHO_COM_IF);
+	new TestEchoComIF(objects::DUMMY_ECHO_COM_IF);
 	new DummyGPSComIF(objects::DUMMY_GPS_COM_IF);
 
 	/* Test Tasks */

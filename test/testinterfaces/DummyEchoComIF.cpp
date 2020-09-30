@@ -8,7 +8,7 @@
 #include <fsfw/tmtcpacket/pus/TmPacketStored.h>
 
 
-DummyEchoComIF::DummyEchoComIF(object_id_t object_id_, bool initFunnel):
+TestEchoComIF::TestEchoComIF(object_id_t object_id_, bool initFunnel):
 	SystemObject(object_id_) {
 	if(initFunnel) {
 		funnel = objectManager->get<AcceptsTelemetryIF>(objects::PUS_FUNNEL);
@@ -21,13 +21,13 @@ DummyEchoComIF::DummyEchoComIF(object_id_t object_id_, bool initFunnel):
 	}
 }
 
-DummyEchoComIF::~DummyEchoComIF() {}
+TestEchoComIF::~TestEchoComIF() {}
 
-ReturnValue_t DummyEchoComIF::initializeInterface(CookieIF * cookie) {
+ReturnValue_t TestEchoComIF::initializeInterface(CookieIF * cookie) {
 	return RETURN_OK;
 }
 
-ReturnValue_t DummyEchoComIF::sendMessage(CookieIF *cookie, const uint8_t * sendData,
+ReturnValue_t TestEchoComIF::sendMessage(CookieIF *cookie, const uint8_t * sendData,
 		size_t sendLen) {
 	// DummyCookie * dummyCookie = dynamic_cast<DummyCookie*>(cookie);
     replyBuffer.reserve(sendLen);
@@ -39,17 +39,17 @@ ReturnValue_t DummyEchoComIF::sendMessage(CookieIF *cookie, const uint8_t * send
 	return RETURN_OK;
 }
 
-ReturnValue_t DummyEchoComIF::getSendSuccess(CookieIF *cookie) {
+ReturnValue_t TestEchoComIF::getSendSuccess(CookieIF *cookie) {
 	return RETURN_OK;
 }
 
-ReturnValue_t DummyEchoComIF::requestReceiveMessage(CookieIF *cookie,
+ReturnValue_t TestEchoComIF::requestReceiveMessage(CookieIF *cookie,
 		size_t requestLen) {
 	// debug << "ComIF Request Receive Message" << std::endl;
 	return RETURN_OK;
 }
 
-ReturnValue_t DummyEchoComIF::readReceivedMessage(CookieIF *cookie,
+ReturnValue_t TestEchoComIF::readReceivedMessage(CookieIF *cookie,
 		uint8_t **buffer, size_t *size) {
 	//DummyCookie * dummyCookie = dynamic_cast<DummyCookie*>(cookie);
 	*buffer = replyBuffer.data();
