@@ -54,6 +54,7 @@ ObjectManagerIF* objectManager;
 
 /* Board Tests, not used in mission */
 void boardTestTaskInit();
+void printAddError(object_id_t objectId);
 
 /**
  * @brief   Initializes mission specific implementation of FSFW,
@@ -137,19 +138,25 @@ void initMission(void) {
     		"PST_TASK_DEFAULT", 5, 2048 * 4, 0.4, nullptr);
     result = pst::pollingSequenceInitDefault(PollingSequenceTableTaskDefault);
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "creating PST failed" << std::endl;
+        sif::error << "InitMission: Creating PST failed!" << std::endl;
     }
 
     /* Event Manager */
     PeriodicTaskIF* EventManager = TaskFactory::instance()->createPeriodicTask(
-    		"EVENT_MANAGER", 8, 2048 * 4, 0.2, nullptr);
+            "EVENT_MANAGER", 8, 2048 * 4, 0.2, nullptr);
     result = EventManager->addComponent(objects::EVENT_MANAGER);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        printAddError(objects::EVENT_MANAGER);
+    }
 
     /* Internal Error Reporter */
     PeriodicTaskIF* InternalErrorReporter = TaskFactory::instance()->
             createPeriodicTask("INT_ERR_RPRTR", 1, 1024 * 4, 2.0, nullptr);
     result = InternalErrorReporter->addComponent(
-    		objects::INTERNAL_ERROR_REPORTER);
+            objects::INTERNAL_ERROR_REPORTER);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        printAddError(objects::INTERNAL_ERROR_REPORTER);
+    }
 
     /* PUS Services */
 
@@ -190,7 +197,7 @@ void initMission(void) {
             createPeriodicTask("SD_CARD_TASK", 2, 2048 * 4, 5.0, nullptr);
     result = SDCardTask->addComponent(objects::SD_CARD_HANDLER);
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component SDCardTask failed" << std::endl;
+        printAddError(objects::SD_CARD_HANDLER);
     }
 
     /* Software image task */
@@ -198,34 +205,42 @@ void initMission(void) {
             createPeriodicTask("SW_IMG_TASK", 3, 2048 * 4, 2, nullptr);
     result = SoftwareImageTask->addComponent(objects::SOFTWARE_IMAGE_HANDLER);
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component Software Image Task failed" << std::endl;
+        printAddError(objects::SOFTWARE_IMAGE_HANDLER);
     }
 
     /* Core Controller task */
     PeriodicTaskIF* CoreController = TaskFactory::instance()->
             createPeriodicTask("CORE_CONTROLLER", 6, 2048 * 4, 1, nullptr);
     result = CoreController->addComponent(objects::CORE_CONTROLLER);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        printAddError(objects::CORE_CONTROLLER);
+    }
     PeriodicTaskIF* SystemStateTask = TaskFactory::instance()->
             createPeriodicTask("SYSTEM_STATE_TSK", 2, 2048 * 4, 100, nullptr);
     result = SystemStateTask->addComponent(objects::SYSTEM_STATE_TASK);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        printAddError(objects::SYSTEM_STATE_TASK);
+    }
 
     /* SPI Communication Interface*/
     PeriodicTaskIF* SpiComTask = TaskFactory::instance()->
             createPeriodicTask("SPI_COM_IF", 8, 1024 * 4, 0.4, nullptr);
     result = SpiComTask->addComponent(objects::SPI_DEVICE_COM_IF);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        printAddError(objects::SPI_DEVICE_COM_IF);
+    }
 
-    /* Test Task */
-    PeriodicTaskIF* TestTask = TaskFactory::instance()->
-            createPeriodicTask("TEST_TASK", 1, 3072 * 4, 3, nullptr);
-    result = TestTask->addComponent(objects::TEST_TASK);
 
-#ifdef DEBUG
+#if ADD_TEST_CODE == 1
     InternalUnitTester unitTestClass;
     result = unitTestClass.performTests();
     if(result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Framework Unit Test did not run successfully!"
-                << std::endl;
+        sif::error << "InitMission: Internal unit tests did not run "
+                << "successfully!" << std::endl;
     }
+
+    /* Comment out for mission build */
+    boardTestTaskInit();
 #endif
 
     sif::info << "Starting mission tasks.." << std::endl;
@@ -251,11 +266,6 @@ void initMission(void) {
     CoreController->startTask();
     SpiComTask->startTask();
 
-    TestTask -> startTask();
-
-    /* Comment out for mission build */
-    boardTestTaskInit();
-
     sif::info << "Remaining FreeRTOS heap size: " << std::dec
             << xPortGetFreeHeapSize() << " bytes." << std::endl;
     size_t remainingFactoryStack = TaskManagement::getTaskStackHighWatermark();
@@ -270,6 +280,7 @@ void initMission(void) {
     sif::info << "Tasks started." << std::endl;
 }
 
+#if ADD_TEST_CODE == 1
 void boardTestTaskInit() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_FAILED;
 
@@ -280,6 +291,15 @@ void boardTestTaskInit() {
     result = pst::pollingSequenceInitTest(PollingSequenceTableTaskTest);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "creating PST failed" << std::endl;
+    }
+
+
+    /* Test Task */
+    PeriodicTaskIF* TestTask = TaskFactory::instance()->
+            createPeriodicTask("TEST_TASK", 1, 3072 * 4, 3, nullptr);
+    result = TestTask->addComponent(objects::TEST_TASK);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        printAddError(objects::TEST_TASK);
     }
 
 
@@ -324,7 +344,8 @@ void boardTestTaskInit() {
 
     sif::info << "Starting test tasks.." << std::endl;
 
-    //PollingSequenceTableTaskTest -> startTask ();
+    PollingSequenceTableTaskTest -> startTask ();
+    TestTask -> startTask();
     //SPITask -> startTask();
     //I2CTask -> startTask();
     //UART2Task -> startTask();
@@ -335,6 +356,7 @@ void boardTestTaskInit() {
     LedTask->startTask();
 #endif
 }
+#endif
 
 
 #if DISPLAY_FACTORY_ALLOCATION_SIZE == 1
@@ -343,3 +365,9 @@ void* operator new(size_t size) {
     return std::malloc(size);
 }
 #endif
+
+void printAddError(object_id_t objectId) {
+    sif::error << "InitMission::printAddError: Adding 0x" << std::hex
+            << std::setfill('0') << std::setw(8) << objectId
+            << " failed!" << std::dec << std::endl;
+}

@@ -126,7 +126,7 @@ ReturnValue_t GyroHandler::buildNormalDeviceCommand(DeviceCommandId_t *id) {
 #endif
         // Poll Gyro Device. Perform block read of 7 bytes to read register
         // 0x12-0x17
-        commandBuffer[0] = GyroDefinitions::GYRO_DATA;
+        commandBuffer[0] = GyroDefinitions::GYRO_DATA_CMD;
         std::memset(commandBuffer + 1, 0, 6);
         DeviceHandlerBase::rawPacket = commandBuffer;
         DeviceHandlerBase::rawPacketLen = 7;
@@ -206,7 +206,7 @@ ReturnValue_t GyroHandler::buildCommandFromCommand(
 		size_t commandDataLen) {
 	switch(deviceCommand) {
 	case(GyroDefinitions::WRITE_POWER): {
-		commandBuffer[0] = GyroDefinitions::WRITE_POWER;
+		commandBuffer[0] = GyroDefinitions::POWER_REGISTER;
 		commandBuffer[1] = commandData[0];
 		DeviceHandlerBase::rawPacket = commandBuffer;
 		DeviceHandlerBase::rawPacketLen = 2;
@@ -246,7 +246,7 @@ ReturnValue_t GyroHandler::buildCommandFromCommand(
         break;
     }
 	case(GyroDefinitions::READ_CONFIG): {
-	    commandBuffer[0] = GyroDefinitions::READ_CONFIG;
+	    commandBuffer[0] = GyroDefinitions::READ_CONFIG_CMD;
 	    commandBuffer[1] = 0x00;
 	    commandBuffer[2] = 0x00;
 	    if(mode == MODE_NORMAL) {
@@ -285,7 +285,7 @@ ReturnValue_t GyroHandler::buildCommandFromCommand(
 	    break;
 	}
 	case(GyroDefinitions::READ_STATUS): {
-	    commandBuffer[0] = GyroDefinitions::READ_STATUS;
+	    commandBuffer[0] = GyroDefinitions::READ_STATUS_CMD;
 	    commandBuffer[1] = 0x00;
 	    if(mode == MODE_NORMAL) {
 	        // external command, mode change necessary to identify reply.
