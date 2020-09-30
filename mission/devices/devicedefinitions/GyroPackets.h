@@ -3,16 +3,23 @@
 
 #include <fsfw/datapoollocal/StaticLocalDataSet.h>
 #include <fsfw/datapoollocal/LocalPoolVariable.h>
+#include <fsfw/devicehandlers/DeviceHandlerIF.h>
+
+namespace GyroDefinitions {
 
 enum GyroPoolIds: lp_id_t {
     ANGULAR_VELOCITY_X,
-	ANGULAR_VELOCITY_Y,
-	ANGULAR_VELOCITY_Z,
-	GENERAL_CONFIG_REG42,
-	RANGE_CONFIG_REG43
+    ANGULAR_VELOCITY_Y,
+    ANGULAR_VELOCITY_Z,
+    GENERAL_CONFIG_REG42,
+    RANGE_CONFIG_REG43
 };
 
-namespace GyroDefinitions {
+static constexpr DeviceCommandId_t WRITE_CONFIG = 0x00;
+static constexpr DeviceCommandId_t READ_CONFIG = 0x01;
+static constexpr DeviceCommandId_t PERFORM_SELFTEST = 0x02;
+static constexpr DeviceCommandId_t READ_STATUS = 0x03;
+static constexpr DeviceCommandId_t GYRO_DATA = 0x04;
 
 // Gyroscope read mask
 static  constexpr uint8_t GYRO_READ_MASK = 0x80;
@@ -52,11 +59,6 @@ static constexpr DeviceCommandId_t WRITE_POWER = POWER_REGISTER;
 static constexpr DeviceCommandId_t WRITE_RANGE = RANGE_REGISTER;
 static constexpr DeviceCommandId_t READ_PMU = PMU_REGISTER | GYRO_READ_MASK;
 
-static constexpr DeviceCommandId_t WRITE_CONFIG = 0x00;
-static constexpr DeviceCommandId_t READ_CONFIG = 0x01;
-static constexpr DeviceCommandId_t PERFORM_SELFTEST = 0x02;
-static constexpr DeviceCommandId_t READ_STATUS = 0x03;
-static constexpr DeviceCommandId_t GYRO_DATA = 0x04;
 }
 
 
@@ -71,13 +73,13 @@ public:
 		StaticLocalDataSet(sid_t(gyroId, DATA_SET_ID)) {}
 
     lp_var_t<float> angVelocityX = lp_var_t<float>(
-    		GyroPoolIds::ANGULAR_VELOCITY_X,
+    		GyroDefinitions::ANGULAR_VELOCITY_X,
 			sid.objectId, this);
     lp_var_t<float> angVelocityY = lp_var_t<float>(
-    		GyroPoolIds::ANGULAR_VELOCITY_Y,
+            GyroDefinitions::ANGULAR_VELOCITY_Y,
 			sid.objectId, this);
     lp_var_t<float> angVelocityZ = lp_var_t<float>(
-    		GyroPoolIds::ANGULAR_VELOCITY_Z,
+            GyroDefinitions::ANGULAR_VELOCITY_Z,
 			sid.objectId, this);
 };
 
@@ -91,9 +93,9 @@ public:
 		StaticLocalDataSet(sid_t(gyroId, DATA_SET_ID)) {}
 
 	lp_var_t<uint8_t> gyroGeneralConfigReg42 = lp_var_t<uint8_t>(
-			GyroPoolIds::GENERAL_CONFIG_REG42, sid.objectId, this);
+	        GyroDefinitions::GENERAL_CONFIG_REG42, sid.objectId, this);
 	lp_var_t<uint8_t> gyroRangeConfigReg43 =  lp_var_t<uint8_t>(
-			GyroPoolIds::RANGE_CONFIG_REG43,
+	        GyroDefinitions::RANGE_CONFIG_REG43,
 			sid.objectId, this);
 };
 

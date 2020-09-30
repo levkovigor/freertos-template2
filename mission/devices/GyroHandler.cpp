@@ -1,5 +1,5 @@
-#include <mission/devices/GyroHandler.h>
-#include "devicepackets/GyroPackets.h"
+#include "GyroHandler.h"
+#include "devicedefinitions/GyroPackets.h"
 
 #if defined(at91sam9g20)
 extern "C" {
@@ -572,15 +572,15 @@ ReturnValue_t GyroHandler::initializeAfterTaskCreation() {
 
 ReturnValue_t GyroHandler::initializeLocalDataPool(
 		LocalDataPool &localDataPoolMap, LocalDataPoolManager &poolManager) {
-	localDataPoolMap.emplace(GyroPoolIds::ANGULAR_VELOCITY_X,
+	localDataPoolMap.emplace(GyroDefinitions::ANGULAR_VELOCITY_X,
 			new PoolEntry<float>({0.0}));
-	localDataPoolMap.emplace(GyroPoolIds::ANGULAR_VELOCITY_Y,
+	localDataPoolMap.emplace(GyroDefinitions::ANGULAR_VELOCITY_Y,
 			new PoolEntry<float>({0.0}));
-	localDataPoolMap.emplace(GyroPoolIds::ANGULAR_VELOCITY_Z,
+	localDataPoolMap.emplace(GyroDefinitions::ANGULAR_VELOCITY_Z,
 			new PoolEntry<float>({0.0}));
-	localDataPoolMap.emplace(GyroPoolIds::GENERAL_CONFIG_REG42,
+	localDataPoolMap.emplace(GyroDefinitions::GENERAL_CONFIG_REG42,
 			new PoolEntry<uint8_t>({0}));
-	localDataPoolMap.emplace(GyroPoolIds::RANGE_CONFIG_REG43,
+	localDataPoolMap.emplace(GyroDefinitions::RANGE_CONFIG_REG43,
 			new PoolEntry<uint8_t>({0}));
 
 	poolManager.subscribeForPeriodicPacket(gyroData.getSid(), false, 4.0, false);

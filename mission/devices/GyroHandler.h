@@ -1,9 +1,9 @@
 #ifndef MISSION_DEVICES_GYROHANDLER_H_
 #define MISSION_DEVICES_GYROHANDLER_H_
 
+#include "devicedefinitions/GyroPackets.h"
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
 #include <fsfw/globalfunctions/PeriodicOperationDivider.h>
-#include <mission/devices/devicepackets/GyroPackets.h>
 
 /**
  * @brief       Device Handler for the BMG250 Gyroscope device

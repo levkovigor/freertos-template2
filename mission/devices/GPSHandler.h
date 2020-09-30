@@ -1,7 +1,7 @@
 #ifndef MISSION_DEVICES_GPSHANDLER_H_
 #define MISSION_DEVICES_GPSHANDLER_H_
 
-#include <mission/devices/devicepackets/GPSPackets.h>
+#include "devicedefinitions/GPSPackets.h"
 
 #include <fsfw/datapoolglob/GlobalDataSet.h>
 #include <fsfw/datapoolglob/GlobalPoolVariable.h>

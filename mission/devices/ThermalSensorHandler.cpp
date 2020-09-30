@@ -1,4 +1,5 @@
-#include <mission/devices/ThermalSensorHandler.h>
+#include "ThermalSensorHandler.h"
+
 #include <bitset>
 #include <cmath>
 

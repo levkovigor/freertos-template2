@@ -1,4 +1,5 @@
-#include <mission/devices/GPSHandler.h>
+#include "GPSHandler.h"
+
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/devicehandlers/AcceptsDeviceResponsesIF.h>
 

@@ -1,9 +1,10 @@
 #ifndef MISSION_DEVICES_THERMALSENSORHANDLER_H_
 #define MISSION_DEVICES_THERMALSENSORHANDLER_H_
 
+#include "devicedefinitions/ThermalSensorPacket.h"
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
 #include <fsfw/globalfunctions/PeriodicOperationDivider.h>
-#include <mission/devices/devicepackets/ThermalSensorPacket.h>
+
 #include <array>
 #include <cstdint>
 
