@@ -26,7 +26,7 @@
 
 //! When using the newlib nano library, C99 support for stdio facilities
 //! will not be provided. This define should be set to 1 if this is the case.
-#define FSFW_NEWLIB_NANO_NO_C99_IO 	1
+#define FSFW_NO_C99_IO 	1
 
 
 #endif /* CONFIG_FSFWCONFIG_H_ */
