@@ -90,7 +90,7 @@ private:
 
     PeriodicOperationDivider selfTestDivider;
 #ifdef DEBUG
-	PeriodicOperationDivider debugDivider;
+	PeriodicOperationDivider* debugDivider;
 #endif
 };
 

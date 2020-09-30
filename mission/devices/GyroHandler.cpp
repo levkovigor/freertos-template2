@@ -5,9 +5,6 @@
 extern "C" {
 #include <hal/Timing/RTT.h>
 }
-
-#include <sam9g20/comIF/cookies/I2cCookie.h>
-#include <sam9g20/comIF/cookies/SpiCookie.h>
 #endif
 
 #include <cmath>
@@ -15,20 +12,11 @@ GyroHandler::GyroHandler(object_id_t objectId, object_id_t comIF,
         CookieIF *comCookie, uint8_t switchId):
         DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId),
 		gyroData(this), gyroConfigSet(this),
-		selfTestDivider(5)
+		selfTestDivider(5) {
 #ifdef DEBUG
-, debugDivider(20)
+    debugDivider = new PeriodicOperationDivider(20);
 #endif
-{
-#if defined(at91sam9g20)
-	if(dynamic_cast<SpiCookie*>(comCookie) != nullptr) {
-		comInterface = CommInterface::SPI;
-	}
-	else if(dynamic_cast<I2cCookie*>(comCookie) != nullptr) {
-		comInterface = CommInterface::I2C;
-	}
-#endif
-}
+    }
 
 GyroHandler::~GyroHandler() {
 }
@@ -510,7 +498,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 					angularVelocityBinaryZ / std::pow(2, 15) * GYRO_RANGE;
 
 #ifdef DEBUG
-			if(debugDivider.checkAndIncrement()) {
+			if(debugDivider->checkAndIncrement()) {
 				sif::info << "GyroHandler: Angular velocities in degrees per "
 						"second:" << std::endl;
 				sif::info << "X: " << angularVelocityX << std::endl;
