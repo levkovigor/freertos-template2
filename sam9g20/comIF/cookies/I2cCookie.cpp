@@ -1,8 +1,8 @@
-#include <sam9g20/comIF/cookies/I2cCookie.h>
+#include "I2cCookie.h"
 
-I2cCookie::I2cCookie(address_t address, size_t maxReplyLen_,
-		I2cCommunicationType i2cComType_): logicalAddress(address),
-		maxReplyLen(maxReplyLen_), i2cComType(i2cComType_) {
+I2cCookie::I2cCookie(address_t address, size_t maxReplyLen,
+		I2cCommunicationType i2cComType): logicalAddress(address),
+		maxReplyLen(maxReplyLen), i2cComType(i2cComType) {
 	setUpGenericI2cStruct();
 }
 

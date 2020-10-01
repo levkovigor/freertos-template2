@@ -73,19 +73,19 @@
 
 //IP FEATURES
 
-/// Indicates chip has an UDP Full Speed. 
-#define CHIP_USB_UDP 
+/// Indicates chip has an UDP Full Speed.
+#define CHIP_USB_UDP
 
-/// Indicates chip has an Host Full Speed. 
-#define CHIP_USB_UHP_OHCI 
+/// Indicates chip has an Host Full Speed.
+#define CHIP_USB_UHP_OHCI
 
-/// Indicates chip has an internal pull-up. 
-#define CHIP_USB_PULLUP_INTERNAL 
+/// Indicates chip has an internal pull-up.
+#define CHIP_USB_PULLUP_INTERNAL
 
-/// Number of USB endpoints 
-#define CHIP_USB_NUMENDPOINTS 6 
+/// Number of USB endpoints
+#define CHIP_USB_NUMENDPOINTS 6
 
-/// Endpoints max paxcket size 
+/// Endpoints max paxcket size
 #define CHIP_USB_ENDPOINTS_MAXPACKETSIZE(i) \
    ((i == 0) ? 64 : \
    ((i == 1) ? 64 : \
@@ -94,7 +94,7 @@
    ((i == 4) ? 512 : \
    ((i == 5) ? 512 : 0 ))))))
 
-/// Endpoints Number of Bank 
+/// Endpoints Number of Bank
 #define CHIP_USB_ENDPOINTS_BANKS(i) \
    ((i == 0) ? 1 : \
    ((i == 1) ? 2 : \

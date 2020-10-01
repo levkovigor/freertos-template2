@@ -15,10 +15,10 @@
  * @details Assign this com IF in the factory when creating the device handler
  * @ingroup test
  */
-class DummyEchoComIF: public DeviceCommunicationIF, public SystemObject {
+class TestEchoComIF: public DeviceCommunicationIF, public SystemObject {
 public:
-	DummyEchoComIF(object_id_t object_id_, bool initFunnel = false);
-	virtual ~DummyEchoComIF();
+	TestEchoComIF(object_id_t object_id_, bool initFunnel = false);
+	virtual ~TestEchoComIF();
 
 	/**
 	 * @brief Device specific initialization, using the cookie.

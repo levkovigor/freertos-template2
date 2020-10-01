@@ -1,4 +1,4 @@
-#include <sam9g20/comIF/cookies/SpiCookie.h>
+#include "SpiCookie.h"
 
 #include <fsfw/ipc/MutexFactory.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>

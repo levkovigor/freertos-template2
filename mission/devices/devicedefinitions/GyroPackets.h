@@ -3,22 +3,38 @@
 
 #include <fsfw/datapoollocal/StaticLocalDataSet.h>
 #include <fsfw/datapoollocal/LocalPoolVariable.h>
+#include <fsfw/devicehandlers/DeviceHandlerIF.h>
+
+namespace GyroDefinitions {
 
 enum GyroPoolIds: lp_id_t {
     ANGULAR_VELOCITY_X,
-	ANGULAR_VELOCITY_Y,
-	ANGULAR_VELOCITY_Z,
-	GENERAL_CONFIG_REG42,
-	RANGE_CONFIG_REG43
+    ANGULAR_VELOCITY_Y,
+    ANGULAR_VELOCITY_Z,
+    GENERAL_CONFIG_REG42,
+    RANGE_CONFIG_REG43
 };
 
-namespace GyroDefinitions {
+static constexpr DeviceCommandId_t WRITE_CONFIG = 0x00;
+static constexpr DeviceCommandId_t READ_CONFIG = 0x01;
+static constexpr DeviceCommandId_t PERFORM_SELFTEST = 0x02;
+static constexpr DeviceCommandId_t READ_STATUS = 0x03;
+static constexpr DeviceCommandId_t GYRO_DATA = 0x04;
+
+// Gyroscope read mask
+static  constexpr uint8_t GYRO_READ_MASK = 0x80;
+
+// Data register X-Axis
+static constexpr uint8_t DATA_REGISTER_START = 0x12;
 
 static constexpr uint8_t SPI_MODE_SELECT = 0x7F;
 static constexpr uint8_t POWER_REGISTER = 0x7E;
 static constexpr uint8_t PMU_REGISTER = 0x03;
 static constexpr uint8_t STATUS_REGISTER = 0x1B;
 static constexpr uint8_t CONFIG_REGISTER = 0x42;
+static constexpr uint8_t GYRO_DATA_CMD = DATA_REGISTER_START | GYRO_READ_MASK;
+static constexpr uint8_t READ_CONFIG_CMD = CONFIG_REGISTER | GYRO_READ_MASK;
+static constexpr uint8_t READ_STATUS_CMD = STATUS_REGISTER | GYRO_READ_MASK;
 static constexpr uint8_t RANGE_REGISTER = 0x43;
 static constexpr uint8_t SELFTEST_REGISTER = 0x6D;
 // Normal PMU mode for Gyroscope.
@@ -38,21 +54,11 @@ static constexpr uint8_t GYRO_DEF_CONFIG = GYRO_BWP_CONFIG | GYRO_ODR_CONFIG;
 
 static constexpr uint8_t SELFTEST_OK = 0b0000'0010;
 
-// Data register X-Axis
-static constexpr uint8_t DATA_REGISTER_START = 0x12;
-
-// Gyroscope read mask
-static  constexpr uint8_t GYRO_READ_MASK = 0x80;
-
 static constexpr DeviceCommandId_t SPI_SELECT = SPI_MODE_SELECT;
 static constexpr DeviceCommandId_t WRITE_POWER = POWER_REGISTER;
 static constexpr DeviceCommandId_t WRITE_RANGE = RANGE_REGISTER;
-static constexpr DeviceCommandId_t WRITE_CONFIG = CONFIG_REGISTER;
-static constexpr DeviceCommandId_t READ_CONFIG = CONFIG_REGISTER | GYRO_READ_MASK;
 static constexpr DeviceCommandId_t READ_PMU = PMU_REGISTER | GYRO_READ_MASK;
-static constexpr DeviceCommandId_t READ_STATUS = STATUS_REGISTER | GYRO_READ_MASK;
-static constexpr DeviceCommandId_t PERFORM_SELFTEST = SELFTEST_REGISTER;
-static constexpr DeviceCommandId_t GYRO_DATA = DATA_REGISTER_START | GYRO_READ_MASK;
+
 }
 
 
@@ -67,13 +73,13 @@ public:
 		StaticLocalDataSet(sid_t(gyroId, DATA_SET_ID)) {}
 
     lp_var_t<float> angVelocityX = lp_var_t<float>(
-    		GyroPoolIds::ANGULAR_VELOCITY_X,
+    		GyroDefinitions::ANGULAR_VELOCITY_X,
 			sid.objectId, this);
     lp_var_t<float> angVelocityY = lp_var_t<float>(
-    		GyroPoolIds::ANGULAR_VELOCITY_Y,
+            GyroDefinitions::ANGULAR_VELOCITY_Y,
 			sid.objectId, this);
     lp_var_t<float> angVelocityZ = lp_var_t<float>(
-    		GyroPoolIds::ANGULAR_VELOCITY_Z,
+            GyroDefinitions::ANGULAR_VELOCITY_Z,
 			sid.objectId, this);
 };
 
@@ -87,9 +93,9 @@ public:
 		StaticLocalDataSet(sid_t(gyroId, DATA_SET_ID)) {}
 
 	lp_var_t<uint8_t> gyroGeneralConfigReg42 = lp_var_t<uint8_t>(
-			GyroPoolIds::GENERAL_CONFIG_REG42, sid.objectId, this);
+	        GyroDefinitions::GENERAL_CONFIG_REG42, sid.objectId, this);
 	lp_var_t<uint8_t> gyroRangeConfigReg43 =  lp_var_t<uint8_t>(
-			GyroPoolIds::RANGE_CONFIG_REG43,
+	        GyroDefinitions::RANGE_CONFIG_REG43,
 			sid.objectId, this);
 };
 

@@ -1,13 +1,10 @@
-#include <mission/devices/GyroHandler.h>
-#include "devicepackets/GyroPackets.h"
+#include "GyroHandler.h"
+#include "devicedefinitions/GyroPackets.h"
 
 #if defined(at91sam9g20)
 extern "C" {
 #include <hal/Timing/RTT.h>
 }
-
-#include <sam9g20/comIF/cookies/I2cCookie.h>
-#include <sam9g20/comIF/cookies/SpiCookie.h>
 #endif
 
 #include <cmath>
@@ -15,20 +12,11 @@ GyroHandler::GyroHandler(object_id_t objectId, object_id_t comIF,
         CookieIF *comCookie, uint8_t switchId):
         DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId),
 		gyroData(this), gyroConfigSet(this),
-		selfTestDivider(5)
+		selfTestDivider(5) {
 #ifdef DEBUG
-, debugDivider(20)
+    debugDivider = new PeriodicOperationDivider(20);
 #endif
-{
-#if defined(at91sam9g20)
-	if(dynamic_cast<SpiCookie*>(comCookie) != nullptr) {
-		comInterface = CommInterface::SPI;
-	}
-	else if(dynamic_cast<I2cCookie*>(comCookie) != nullptr) {
-		comInterface = CommInterface::I2C;
-	}
-#endif
-}
+    }
 
 GyroHandler::~GyroHandler() {
 }
@@ -126,7 +114,7 @@ ReturnValue_t GyroHandler::buildNormalDeviceCommand(DeviceCommandId_t *id) {
 #endif
         // Poll Gyro Device. Perform block read of 7 bytes to read register
         // 0x12-0x17
-        commandBuffer[0] = GyroDefinitions::GYRO_DATA;
+        commandBuffer[0] = GyroDefinitions::GYRO_DATA_CMD;
         std::memset(commandBuffer + 1, 0, 6);
         DeviceHandlerBase::rawPacket = commandBuffer;
         DeviceHandlerBase::rawPacketLen = 7;
@@ -206,7 +194,7 @@ ReturnValue_t GyroHandler::buildCommandFromCommand(
 		size_t commandDataLen) {
 	switch(deviceCommand) {
 	case(GyroDefinitions::WRITE_POWER): {
-		commandBuffer[0] = GyroDefinitions::WRITE_POWER;
+		commandBuffer[0] = GyroDefinitions::POWER_REGISTER;
 		commandBuffer[1] = commandData[0];
 		DeviceHandlerBase::rawPacket = commandBuffer;
 		DeviceHandlerBase::rawPacketLen = 2;
@@ -246,7 +234,7 @@ ReturnValue_t GyroHandler::buildCommandFromCommand(
         break;
     }
 	case(GyroDefinitions::READ_CONFIG): {
-	    commandBuffer[0] = GyroDefinitions::READ_CONFIG;
+	    commandBuffer[0] = GyroDefinitions::READ_CONFIG_CMD;
 	    commandBuffer[1] = 0x00;
 	    commandBuffer[2] = 0x00;
 	    if(mode == MODE_NORMAL) {
@@ -285,7 +273,7 @@ ReturnValue_t GyroHandler::buildCommandFromCommand(
 	    break;
 	}
 	case(GyroDefinitions::READ_STATUS): {
-	    commandBuffer[0] = GyroDefinitions::READ_STATUS;
+	    commandBuffer[0] = GyroDefinitions::READ_STATUS_CMD;
 	    commandBuffer[1] = 0x00;
 	    if(mode == MODE_NORMAL) {
 	        // external command, mode change necessary to identify reply.
@@ -510,7 +498,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 					angularVelocityBinaryZ / std::pow(2, 15) * GYRO_RANGE;
 
 #ifdef DEBUG
-			if(debugDivider.checkAndIncrement()) {
+			if(debugDivider->checkAndIncrement()) {
 				sif::info << "GyroHandler: Angular velocities in degrees per "
 						"second:" << std::endl;
 				sif::info << "X: " << angularVelocityX << std::endl;
@@ -572,15 +560,15 @@ ReturnValue_t GyroHandler::initializeAfterTaskCreation() {
 
 ReturnValue_t GyroHandler::initializeLocalDataPool(
 		LocalDataPool &localDataPoolMap, LocalDataPoolManager &poolManager) {
-	localDataPoolMap.emplace(GyroPoolIds::ANGULAR_VELOCITY_X,
+	localDataPoolMap.emplace(GyroDefinitions::ANGULAR_VELOCITY_X,
 			new PoolEntry<float>({0.0}));
-	localDataPoolMap.emplace(GyroPoolIds::ANGULAR_VELOCITY_Y,
+	localDataPoolMap.emplace(GyroDefinitions::ANGULAR_VELOCITY_Y,
 			new PoolEntry<float>({0.0}));
-	localDataPoolMap.emplace(GyroPoolIds::ANGULAR_VELOCITY_Z,
+	localDataPoolMap.emplace(GyroDefinitions::ANGULAR_VELOCITY_Z,
 			new PoolEntry<float>({0.0}));
-	localDataPoolMap.emplace(GyroPoolIds::GENERAL_CONFIG_REG42,
+	localDataPoolMap.emplace(GyroDefinitions::GENERAL_CONFIG_REG42,
 			new PoolEntry<uint8_t>({0}));
-	localDataPoolMap.emplace(GyroPoolIds::RANGE_CONFIG_REG43,
+	localDataPoolMap.emplace(GyroDefinitions::RANGE_CONFIG_REG43,
 			new PoolEntry<uint8_t>({0}));
 
 	poolManager.subscribeForPeriodicPacket(gyroData.getSid(), false, 4.0, false);

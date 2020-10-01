@@ -1,5 +1,9 @@
+#ifdef AT91SAM9G20_EK
+
 #include "bootNandFlash.h"
-#include "../config/bootloaderConfig.h"
+#include <bootloaderConfig.h>
+#include <main.h>
+
 #include <at91/boards/at91sam9g20-ek/board.h>
 #include <at91/boards/at91sam9g20-ek/board_memories.h>
 #include <at91/utility/trace.h>
@@ -205,3 +209,5 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
     }
     return BOOT_NAND_SUCCESS;
 }
+
+#endif

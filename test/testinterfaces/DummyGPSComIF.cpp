@@ -147,7 +147,7 @@ ReturnValue_t DummyGPSComIF::readReceivedMessage(CookieIF *cookie,
 
 void DummyGPSComIF::generateGpsPacket(CookieIF * cookie, uint8_t ** gpsPacket,
 		size_t * packetSize) {
-	DummyCookie * dummyCookie = dynamic_cast<DummyCookie*>(cookie);
+	TestCookie * dummyCookie = dynamic_cast<TestCookie*>(cookie);
 	//do this so the buffer persists when the function is exited. not very efficient
 	//but I like to do a braced encloded intialization  for this huge buffer.
 	gpsDataBufferSize = navMessage.getSerializedSize();

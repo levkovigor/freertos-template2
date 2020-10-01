@@ -1,4 +1,5 @@
-#include <sam9g20/comIF/GpioDeviceComIF.h>
+#include "GpioDeviceComIF.h"
+
 #include <config/devices/logicalAddresses.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 

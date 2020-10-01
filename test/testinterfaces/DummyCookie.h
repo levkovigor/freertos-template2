@@ -12,10 +12,10 @@
 /**
  * Use this to identify different device handlers for DummyComIF
  */
-class DummyCookie : public CookieIF {
+class TestCookie : public CookieIF {
 public:
-	DummyCookie(address_t address_);
-	virtual ~DummyCookie();
+	TestCookie(address_t address_);
+	virtual ~TestCookie();
 
 	address_t getAddress() const;
 private:

@@ -22,6 +22,8 @@ INCLUDES += $(AT91LIB)/usb/device/hid-mouse
 INCLUDES += $(AT91LIB)/usb/common/core
 INCLUDES += $(AT91LIB)/usb/common/hid
 
+INCLUDES += $(AT91LIB)/boards/common
+
 ifeq ($(BOARD), ISIS_OBC_G20)
 INCLUDES += $(AT91LIB)/boards/ISIS_OBC_G20
 INCLUDES += $(AT91LIB)/boards/ISIS_OBC_G20/at91sam9g20

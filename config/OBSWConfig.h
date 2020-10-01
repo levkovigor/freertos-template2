@@ -5,8 +5,9 @@
 #include <cstddef>
 #include <portmacro.h>
 
-#define DISPLAY_FACTORY_ALLOCATION_SIZE 0
-#define RS485_WITH_TERMINATION 1
+#define DISPLAY_FACTORY_ALLOCATION_SIZE     0
+#define RS485_WITH_TERMINATION              1
+#define ADD_TEST_CODE                       1
 
 namespace config {
 static constexpr uint32_t RS232_BAUDRATE = 230400;

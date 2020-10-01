@@ -1,7 +1,7 @@
 #ifndef MISSION_DEVICES_GPSHANDLER_H_
 #define MISSION_DEVICES_GPSHANDLER_H_
 
-#include <mission/devices/devicepackets/GPSPackets.h>
+#include "devicedefinitions/GPSPackets.h"
 
 #include <fsfw/datapoolglob/GlobalDataSet.h>
 #include <fsfw/datapoolglob/GlobalPoolVariable.h>
@@ -28,7 +28,7 @@ public:
 	static constexpr uint8_t BINARY_HEADER_AND_TAIL_SIZE = 7;
 
 protected:
-	/* DHB abstract function implementation */
+	/* DeviceHandlerBase abstract function implementation */
 	/** Perform startup procedure */
 	void doStartUp() override;
 	/** Shutdown procedure is not needed for GPS Device */

@@ -1,9 +1,10 @@
 #ifndef MISSION_DEVICES_THERMALSENSORHANDLER_H_
 #define MISSION_DEVICES_THERMALSENSORHANDLER_H_
 
+#include "devicedefinitions/ThermalSensorPacket.h"
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
 #include <fsfw/globalfunctions/PeriodicOperationDivider.h>
-#include <mission/devices/devicepackets/ThermalSensorPacket.h>
+
 #include <array>
 #include <cstdint>
 
@@ -46,6 +47,7 @@ public:
 	static constexpr float RTD_RREF_PT1000 = 4000.0; //!< Ohm
 	static constexpr float RTD_RESISTANCE0_PT1000 = 1000.0; //!< Ohm
 protected:
+	/* DeviceHandlerBase abstract function implementation */
 	void doStartUp() override;
 	void doShutDown() override;
 	ReturnValue_t buildNormalDeviceCommand(DeviceCommandId_t * id) override;
