@@ -242,7 +242,7 @@
 #define PINS_SPI1_SWCS_POR {PIN_SPI1_NPCS3_SW_POR, PIN_SPI1_NPCS4_SW_POR, PIN_SPI1_NPCS5_SW_POR, PIN_SPI1_NPCS6_SW_POR, PIN_SPI1_NPCS7_SW_POR}
 
 /// USB VBus monitoring pin definition.
-#define PIN_USB_VBUS    {1 << 31, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_INPUT, PIO_DEFAULT}
+#define PIN_USB_VBUS    {1U << 31, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_INPUT, PIO_DEFAULT}
 
 /// List of MCI1 pins definitions. MCI0 is not used as it shares pins with SPI
 #define PINS_MCI1  \

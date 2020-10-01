@@ -73,7 +73,7 @@ private:
 #ifdef ISIS_OBC_G20
 	FRAMHandler* framHandler = nullptr;
 	supervisor_housekeeping_t supervisorHk;
-	int16_t adcValues[SUPERVISOR_NUMBER_OF_ADC_CHANNELS] = {0}
+	int16_t adcValues[SUPERVISOR_NUMBER_OF_ADC_CHANNELS] = {0};
 #endif
 
 	object_id_t systemStateTaskId;

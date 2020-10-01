@@ -8,7 +8,7 @@
 /// Initialize NOR devices and transfer one or several modules from Nor to the
 /// target memory (SRAM/SDRAM).
 //------------------------------------------------------------------------------
-int copy_norflash_binary_to_sdram(char* binary_name, size_t binary_size)
+int copy_norflash_binary_to_sdram(size_t binary_size)
 {
     // Initialize Nor
     //-------------------------------------------------------------------------
@@ -21,8 +21,8 @@ int copy_norflash_binary_to_sdram(char* binary_name, size_t binary_size)
     // have to feed the watchdog..
     // For now, we copy in buckets instead of one go.
     uint8_t binary_divisor = 5;
-    TRACE_INFO("Copying \"%s\" (%d bytes) from NOR 0x%lx to SDRAM 0x%09x\n\r",
-                binary_name, binary_size, BINARY_BASE_ADDRESS_READ,
+    TRACE_INFO("Copying NOR-Flash binary (%d bytes) from NOR 0x%lx "
+            "to SDRAM 0x%09x\n\r", binary_size, BINARY_BASE_ADDRESS_READ,
                 (int) BOARD_SDRAM_BASE_ADDRESS);
     // It is assumed that a sanity check of the binary size was already
     // performed. The binary size is extracted from FRAM.

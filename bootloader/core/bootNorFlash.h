@@ -1,5 +1,6 @@
 #ifndef BOOTLOADER_BOOTNORFLASH_H_
 #define BOOTLOADER_BOOTNORFLASH_H_
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -28,7 +29,7 @@ static const uint32_t BINARY_BASE_ADDRESS_READ = BOOTLOADER_END_ADDRESS_READ;
 static const uint32_t BINARY_END_ADDRESS_READ = NOR_FLASH_END_ADDRESS_READ;
 
 
-int copy_norflash_binary_to_sdram(char* binary_name, size_t binary_size);
+int copy_norflash_binary_to_sdram(size_t binary_size);
 
 
 #endif /* BOOTLOADER_BOOTNORFLASH_H_ */

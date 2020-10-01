@@ -31,6 +31,7 @@
 //         Headers
 //------------------------------------------------------------------------------
 #include <board.h>
+#include <chip.h>
 #include <usb/device/cdc/CDCDSerialDriverDescriptors.h>
 #include <usb/common/core/USBGenericDescriptor.h>
 #include <usb/common/core/USBConfigurationDescriptor.h>

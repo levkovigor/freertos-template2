@@ -142,7 +142,9 @@ int main()
 #endif
     for(;;) {};
 #else
-
+    //-------------------------------------------------------------------------
+    // AT91SAM9G20-EK Bootloader
+    //-------------------------------------------------------------------------
     // Configure RTT for second time base.
     RTT_start();
 
@@ -164,7 +166,7 @@ void perform_bootloader_core_operation() {
      // memory or extracted from FRAM.
      // if successfull, copy norflash to sdram
 #ifdef ISIS_OBC_G20
-    int result = copy_norflash_binary_to_sdram("Test", 256);
+    int result = copy_norflash_binary_to_sdram(256);
 #elif defined(AT91SAM9G20_EK)
     int result = copy_nandflash_binary_to_sdram(false);
 #endif
