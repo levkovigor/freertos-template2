@@ -1,5 +1,6 @@
 #ifndef MISSION_DEVICES_SUNSENSORHANDLER_H_
 #define MISSION_DEVICES_SUNSENSORHANDLER_H_
+
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
 
 /**
