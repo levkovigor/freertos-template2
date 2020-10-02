@@ -557,7 +557,44 @@ ReturnValue_t SDCardHandler::changeDirectory(const char* repositoryPath) {
 
 
 ReturnValue_t SDCardHandler::printRepository(const char *repository) {
-    // TODO: implement printing for single repositories.
+	int result = change_directory(repository, true);
+	if(result != F_NO_ERROR) {
+		return result;
+	}
+
+	F_FIND findResult;
+    int fileFound = f_findfirst("*.*", &findResult);
+    if(fileFound != F_NO_ERROR) {
+        return HasReturnvaluesIF::RETURN_OK;
+    }
+
+    if(findResult.filename[0] == '.') {
+        // we are not in root, so the next search result is going
+        // to be the parent folder, and the third result is going to be
+        // the first file or directory.
+        f_findnext(&findResult);
+        fileFound = f_findnext(&findResult);
+    }
+
+    for(int idx = 0; idx < 255; idx++) {
+        if(idx > 0) {
+            fileFound = f_findnext(&findResult);
+        }
+
+        if(fileFound != F_NO_ERROR) {
+            break;
+        }
+
+        // check whether file object is directory or file.
+        if(change_directory(findResult.filename, false) == F_NO_ERROR) {
+        	change_directory("..", false);
+            sif::info << "D: " << findResult.filename << std::endl;
+        }
+        else {
+            sif::info << "F: " << findResult.filename << std::endl;
+        }
+
+    }
     return HasReturnvaluesIF::RETURN_OK;
 }
 
