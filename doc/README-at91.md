@@ -69,7 +69,7 @@ It is also recommended to use the active build configuration and rebuild the ind
 <br>
 
 Example indexer settings:
-<img src="./readme_img/eclipse/eclipse_indexer.PNG" width="50%">
+<img src="./readme_img/eclipse/eclipse_indexer.png" width="50%">
 <br>
 
 ### Example Build Configuration.
@@ -78,11 +78,19 @@ Please note that this is just an example and a display of how to use
 Eclipse to make development as convenient as possible.
 There is a distinction between build configurations and launch configurations in Eclipse.
 
-1. Build configurations should be setup separately (e.g. one for release and one for debug build, target and used cores can be specified in the Behaviour tab), and built once. 
-2. After that the built binary can be selected in the launch configuration. There are different launch configuration types provided by Eclipse, depending on whether the binary needs to be uploaded to an external development board or is simply executed on the host machine directly.
-For the AT91 board, the SEGGER J-Link Debug Launch Configuration is used and has to be configured appropriately (see sections above).
-3. After setting up the build configurations, building and debugging should be easy by only having to click the hammer or the bug icon.
-4. A double click on the build targets in the left panel can also be used to execute the target for the current build configuration, which can be set in the top panel next to the cog.
+1. Build configurations should be setup separately (e.g. one for release and one 
+   for debug build, target and used cores can be specified in the Behaviour tab), and built once. 
+2. After that the built binary can be selected in the launch configuration. 
+   There are different launch configuration types provided by Eclipse, depending 
+   on whether the binary needs to be uploaded to an external development board 
+   or is simply executed on the host machine directly.
+   For the AT91 board, the SEGGER J-Link Debug Launch Configuration is used and has 
+   to be configured appropriately (see sections above).
+3. After setting up the build configurations, building and debugging should be 
+   easy by only having to click the hammer or the bug icon.
+4. A double click on the build targets in the left panel can also be used to 
+   execute the target for the current build configuration, which can be set in 
+   the top panel next to the cog.
 
 <img src="./readme_img/eclipse/eclipse_example2.PNG" width="95%">
 <img src="./readme_img/eclipse/eclipse_example3.PNG" width="60%">
