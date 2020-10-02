@@ -17,7 +17,7 @@ properly for convenient development.
 
 1. Install JDK if not installed yet. Eclipse requires 
 [Java SE Platform (JDK)](https://www.oracle.com/technetwork/java/javase/downloads/index.html)
-2. Install [Eclipse for C/C++ Developers](https://www.eclipse.org/downloads/packages/release/2019-03/r/eclipse-ide-cc-developers)
+2. Install [Eclipse for C/C++ Developers](https://www.eclipse.org/downloads/packages/)
 3. Go to Menu -> Help -> Eclipse Marketplace and search and install GNU MCU Eclipse
 
 
