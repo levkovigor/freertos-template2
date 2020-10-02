@@ -29,12 +29,12 @@ extern const char* SW_REPOSITORY;
 #endif
 
 extern const char* BOOTLOADER_NAME;
+extern const char* SW_SLOT_0_NAME;
 extern const char* SW_SLOT_1_NAME;
-extern const char* SW_SLOT_2_NAME;
 
 extern const char* BL_HAMMING_NAME;
+extern const char* SW_SLOT_0_HAMMING_NAME;
 extern const char* SW_SLOT_1_HAMMING_NAME;
-extern const char* SW_SLOT_2_HAMMING_NAME;
 
 static constexpr uint32_t RS232_BAUDRATE = 230400;
 static constexpr size_t RS232_MAX_SERIAL_FRAME_SIZE = 1500;

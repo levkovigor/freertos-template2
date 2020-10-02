@@ -14,12 +14,12 @@ const char* SW_REPOSITORY = "BIN/IOBC/OBSW";
 #endif
 
 const char* BOOTLOADER_NAME = "bl.bin";
-const char* SW_SLOT_1_NAME = "obsw_sl1.bin";
-const char* SW_SLOT_2_NAME = "obsw_sl2.bin";
+const char* SW_SLOT_0_NAME = "obsw_sl1.bin";
+const char* SW_SLOT_1_NAME = "obsw_sl2.bin";
 
 const char* BL_HAMMING_NAME = "bl_ham.bin";
-const char* SW_SLOT_1_HAMMING_NAME = "sl1_hamm.bin";
-const char* SW_SLOT_2_HAMMING_NAME = "sl2_hamm.bin";
+const char* SW_SLOT_0_HAMMING_NAME = "sl1_hamm.bin";
+const char* SW_SLOT_1_HAMMING_NAME = "sl2_hamm.bin";
 
 #ifdef __cplusplus
 }

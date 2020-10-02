@@ -6,6 +6,7 @@
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/timemanager/Countdown.h>
 
+
 #if defined(ISIS_OBC_G20) && defined(AT91SAM9G20_EK)
 #error "Two board defined at once. Please check includes!"
 #endif
@@ -34,6 +35,8 @@ class SoftwareImageHandler: public SystemObject,
         public ExecutableObjectIF,
         public HasActionsIF {
 public:
+	static constexpr uint8_t SUBSYSTEM_ID = CLASS_ID::SW_IMAGE_HANDLER;
+	static constexpr ReturnValue_t TASK_PERIOD_OVER_SOON = MAKE_RETURN_CODE(0x00);
     SoftwareImageHandler(object_id_t objectId);
 
     ReturnValue_t performOperation(uint8_t opCode) override;
@@ -82,11 +85,25 @@ private:
     // the SD card.
     ReturnValue_t copySdBootloaderToNorFlash(bool performHammingCheck);
 #endif
+
 #ifdef AT91SAM9G20_EK
     static constexpr size_t NAND_PAGE_SIZE = 2048;
+    static constexpr uint8_t PAGES_PER_BLOCK = 64;
     ReturnValue_t copyBootloaderToNandFlash(bool performHammingCheck,
-            bool displayInfo = false);
-    ReturnValue_t nandFlashInit(bool displayInfo = false);
+    		bool configureNandFlash = true);
+    ReturnValue_t nandFlashInit();
+    /**
+     * Common function to set up NAND and also erase blocks for either
+     * the bootloader or the software image.
+     * @param configureNand
+     * @param bootloader
+     * @param softwareSlot	false for slot 0, true for slot 1
+     * @return
+     */
+    ReturnValue_t handleNandInitAndErasure(bool configureNand,
+    		bool bootloader, bool softwareSlot = false);
+    ReturnValue_t handleErasingForObsw(bool softwareSlot);
+    ReturnValue_t handleSdToNandCopyOperation(bool bootloader);
 #endif
 
     // Handler functions for the SD cards
@@ -107,6 +124,9 @@ private:
     size_t currentIdx = 0;
     size_t currentFileSize = 0;
     uint8_t errorCount = 0;
+
+    bool displayInfo = false;
+
     bool operationOngoing = false;
     bool dataRead = false;
     bool oneShot = true;
