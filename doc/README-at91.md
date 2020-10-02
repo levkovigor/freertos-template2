@@ -30,7 +30,10 @@ wsl make -j4
 1. Right click on project &rarr; Debug As &rarr; Debug Configurations...
 2. In the shown menu right click GDB SEGGER J-Link Debugging &rarr; new
 3. Insert in field "C/C++ Application" sourceobsw-at91sam9g20-ek-sdram.elf file (located in bin directory)
-4. Set up the debugger as shown in the following pictures. It is important that the path to the JLinkGDBServerCL.exe and the arm-none-eabi-gdb.exe are set corretly. If the ARM Toolchain has and the J-Link Software folder have been added to the system environment variables (which is recommended), it should be sufficient to only specify the .exe file without the full path.
+4. Set up the debugger as shown in the following pictures. It is important that the 
+   path to the JLinkGDBServerCL.exe and the arm-none-eabi-gdb.exe are set corretly. 
+   If the ARM Toolchain has and the J-Link Software folder have been added to the 
+   system environment variables (which is recommended), it should be sufficient to only specify the .exe file without the full path.
 5. Now, image can be written to the at91sam9g20-ek by clicking the "Debug"-button
 6. Open up Eclipse Terminal/Arduino IDE/Puttty with baud rate 115200 to read debug output
 
@@ -53,9 +56,21 @@ wsl make -j4
 ### Example environment
 
 <a name="buildtargets"></a>
-The Eclipse environment uses the previously mentioned build targets. Build targets can be created by right clicking on sourceobsw &rarr; Build Target &rarr; Create. Also make sure the toolchain is included like seen in the following picture by going to C/C++ Build &rarr; Settings, checking that the paths for the ARM Toolchain are set correctly and hitting Apply. This ensures that the Eclipse indexer finds standard libraries.
+The Eclipse environment uses the previously mentioned build targets. 
+Build targets can be created by right clicking on sourceobsw &rarr; Build Target &rarr; Create. 
+Also make sure the toolchain is included like seen in the following picture by going to 
+C/C++ Build &rarr; Settings, checking that the paths for the ARM Toolchain are set correctly 
+and hitting Apply. This ensures that the Eclipse indexer finds standard libraries.
+If this does not work, right click on sourceobsw &rarr; Properties &rarr; C/C++ General &rarr; Indexer and enable project specific settings. 
+It is also recommended to use the active build configuration and rebuild the index on build configuration change.
 
-<img src="./readme_img/eclipse_example1.PNG" width="50%">
+
+<img src="./readme_img/eclipse/eclipse_example1.PNG" width="50%">
+<br>
+
+Example indexer settings:
+<img src="./readme_img/eclipse/eclipse_indexer.PNG" width="50%">
+<br>
 
 ### Example Build Configuration.
 
@@ -69,6 +84,6 @@ For the AT91 board, the SEGGER J-Link Debug Launch Configuration is used and has
 3. After setting up the build configurations, building and debugging should be easy by only having to click the hammer or the bug icon.
 4. A double click on the build targets in the left panel can also be used to execute the target for the current build configuration, which can be set in the top panel next to the cog.
 
-<img src="./readme_img/eclipse_example2.PNG" width="95%">
-<img src="./readme_img/eclipse_example3.PNG" width="60%">
-<img src="./readme_img/eclipse_example4.PNG" width="60%">
+<img src="./readme_img/eclipse/eclipse_example2.PNG" width="95%">
+<img src="./readme_img/eclipse/eclipse_example3.PNG" width="60%">
+<img src="./readme_img/eclipse/eclipse_example4.PNG" width="60%">
