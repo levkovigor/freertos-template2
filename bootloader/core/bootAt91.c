@@ -1,6 +1,7 @@
+
 #ifdef AT91SAM9G20_EK
 
-#include "bootNandFlash.h"
+#include <bootloader/core/bootAt91.h>
 #include <bootloaderConfig.h>
 #include <main.h>
 
