@@ -279,14 +279,8 @@ ReturnValue_t SoftwareImageHandler::copyBootloaderToNandFlash(
     	SDCardAccess sdCardAccess;
     	if(not miscFlag) {
     		SDCardHandler::printSdCard();
-
     		int result = change_directory("BIN/AT91/BL", true);
-    		F_FIND test;
-    		result = f_findfirst("*.bin", &test);
-    		result = f_findnext(&test);
-    		result = f_findnext(&test);
-    		result = f_findnext(&test);
-    		result = f_findnext(&test);
+
     		sif::info << "Copying bootloader on SD card"
     				<< sdCardAccess.currentVolumeId << " to AT91 NAND-Flash.."
     				<< std::endl;

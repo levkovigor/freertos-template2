@@ -566,7 +566,8 @@ ReturnValue_t SDCardHandler::printSdCard() {
     int fileFound = 0;
     uint8_t recursionDepth = 0;
     f_chdir("/");
-    fileFound = f_findfirst("*", &findResult);
+    // find directories first
+    fileFound = f_findfirst("*.*", &findResult);
     if(fileFound != F_NO_ERROR) {
         // might be empty.
         sif::info << "SD Card empty." << std::endl;
@@ -592,17 +593,20 @@ ReturnValue_t SDCardHandler::printSdCard() {
             change_directory("..", false);
         }
         else {
+        	// Normally files should have a three letter extension, but
+        	// we always check whether there is a file without extension
             sif::info << "F: " << findResult.filename << std::endl;
         }
 
     }
+
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 
 ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
     F_FIND findResult;
-    int fileFound = f_findfirst("*", &findResult);
+    int fileFound = f_findfirst("*.*", &findResult);
     if(fileFound != F_NO_ERROR) {
         return HasReturnvaluesIF::RETURN_OK;
     }
@@ -623,7 +627,6 @@ ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
         if(fileFound != F_NO_ERROR) {
             return HasReturnvaluesIF::RETURN_OK;
         }
-
 
 
         if(change_directory(findResult.filename, false) == F_NO_ERROR) {
