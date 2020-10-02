@@ -106,6 +106,10 @@ Note that make and git are required (installation guide below)
 Don't forget the use compile optimization by providing the -j parameter.
 On windows, wsl must be added before make, if tools like MSYS2 or Windows Build
 Tools are not installed.
+It is recommended to set up Eclipse instead of using the command line to build
+the software, as this allows for much more convenient development and debugging.
+For developers unfamiliar with Eclipse, it is recommended to read the
+[Eclipse setup guide](doc/README-eclipse.md#top).
 
 Following make targets are available:
 - sdramCfg: Configure AT91 SDRAM on start-up. Required after each restart.
@@ -126,17 +130,11 @@ Example call to build debug build on windows:
 ```sh
 make debug WINDOWS=1
 ```
-Currently, there are two binary folders: One for the development binaries
-and one for the mission binaries. For the dependency and object folders, four different combinations are possible
-(two for the different comm interfaces and two for the binary types).
-Thus, if a different binary is needed, e.g. when switching from devel build to mission build,
-and all object files are already available, it is sufficient to clean the binaries with
-the cleanbin target and then rebuild the target build. Make will recognize that the object files are already available and link the new requires binary.
 
 The provided TMTC has separate [instructions](https://git.ksat-stuttgart.de/source/tmtc)
-It is possible to chose between serial communication via RS232 and Ethernet communication with UDP datagrams. For the serial communication, a USB to female RS232 cable can be used (or UART jumper wires..).
-
-Instructions to set up Eclipse for these build targets are provided in the AT91 Getting Started chapter.
+It is possible to chose between serial communication via RS232 and Ethernet 
+communication with UDP datagrams. For the serial communication, a USB to female 
+RS232 cable can be used (or UART jumper wires..).
 
 ## Setting up prerequisites
 
