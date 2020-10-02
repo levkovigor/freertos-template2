@@ -153,29 +153,29 @@ int write_sd_card_bin_folder(const char* binary_folder, size_t length) {
 }
 
 
-int read_sdc1sl1_bin_names(char *bin_name, char* hamm_name) {
-	int result = FRAM_read((unsigned char*) bin_name,
-			SDC1SL1_FILE_NAME_ADDR,
-			sizeof(((FRAMCriticalData*)0)->sdc1sl1_binary_file_name));
-	if(result != 0) {
-		return result;
-	}
-	return FRAM_read((unsigned char*) hamm_name,
-			SDC1SL1_HAMM_CODE_NAME_ADDR,
-			sizeof(((FRAMCriticalData*)0)->sdc1sl1_hamming_code_file_name));
-
-}
-
-int write_sdc1sl1_bin_names(const char *bin_name, size_t length_bin ,
-		const char* hamm_name, size_t length_hamm) {
-	int result = FRAM_writeAndVerify((unsigned char*) bin_name,
-			SDC1SL1_FILE_NAME_ADDR,
-			length_bin);
-	if(result != 0) {
-		return result;
-	}
-	return FRAM_writeAndVerify((unsigned char*) bin_name,
-			SDC1SL1_HAMM_CODE_NAME_ADDR,
-			length_hamm);
-}
+//int read_sdc1sl1_bin_names(char *bin_name, char* hamm_name) {
+//	int result = FRAM_read((unsigned char*) bin_name,
+//			SDC1SL1_FILE_NAME_ADDR,
+//			sizeof(((FRAMCriticalData*)0)->sdc1sl1_binary_file_name));
+//	if(result != 0) {
+//		return result;
+//	}
+//	return FRAM_read((unsigned char*) hamm_name,
+//			SDC1SL1_HAMM_CODE_NAME_ADDR,
+//			sizeof(((FRAMCriticalData*)0)->sdc1sl1_hamming_code_file_name));
+//
+//}
+//
+//int write_sdc1sl1_bin_names(const char *bin_name, size_t length_bin ,
+//		const char* hamm_name, size_t length_hamm) {
+//	int result = FRAM_writeAndVerify((unsigned char*) bin_name,
+//			SDC1SL1_FILE_NAME_ADDR,
+//			length_bin);
+//	if(result != 0) {
+//		return result;
+//	}
+//	return FRAM_writeAndVerify((unsigned char*) bin_name,
+//			SDC1SL1_HAMM_CODE_NAME_ADDR,
+//			length_hamm);
+//}
 

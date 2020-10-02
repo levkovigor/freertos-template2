@@ -43,26 +43,26 @@ typedef struct __attribute__((__packed__))  _FRAMCriticalData {
 	char sd_card_binary_folder[16];
 
 	/* SD-card 1 binary slot 1 information */
-	char sdc1sl1_binary_file_name [16];
-	char sdc1sl1_hamming_code_file_name [16];
+//	char sdc1sl1_binary_file_name [16];
+//	char sdc1sl1_hamming_code_file_name [16];
 	uint8_t filler_sdc1sl1[3];
 	uint8_t sdc1sl1_reboot_counter;
 
 	/* SD-card 1 binary slot 2 information */
-	char sdc1sl2_file_name [16];
-	char sdc1sl2_hamming_code_file_name [16];
+//	char sdc1sl2_file_name [16];
+//	char sdc1sl2_hamming_code_file_name [16];
 	uint8_t filler_sdc1sl2[3];
 	uint8_t sdc1sl2_reboot_counter;
 
 	/* SD-card 2 binary slot 1 information */
-	char sdc2sl1_binary_file_name [16];
-	char sdc2sl1_hamming_code_file_name [16];
+//	char sdc2sl1_binary_file_name [16];
+//	char sdc2sl1_hamming_code_file_name [16];
 	uint8_t filler_sdc2sl1[3];
 	uint8_t sdc2sl1_reboot_counter;
 
 	/* SD-card 2 binary slot 2 information */
-	char sdc2sl2_binary_file_name [16];
-	char sdc2sl2_hamming_code_file_name[16];
+//	char sdc2sl2_binary_file_name [16];
+//	char sdc2sl2_hamming_code_file_name[16];
 	uint8_t filler_sdc2sl2[3];
 	uint8_t sdc2sl2_reboot_counter;
 
@@ -112,31 +112,31 @@ static const uint32_t NOR_FLASH_REBOOT_COUNTER_ADDRESS =
 static const uint32_t SDC_BINARY_FOLDER_ADDR =
         offsetof(FRAMCriticalData, sd_card_binary_folder);
 
-static const uint32_t SDC1SL1_FILE_NAME_ADDR =
-		offsetof(FRAMCriticalData, sdc1sl1_binary_file_name);
-static const uint32_t SDC1SL1_HAMM_CODE_NAME_ADDR =
-		offsetof(FRAMCriticalData, sdc1sl1_hamming_code_file_name);
+//static const uint32_t SDC1SL1_FILE_NAME_ADDR =
+//		offsetof(FRAMCriticalData, sdc1sl1_binary_file_name);
+//static const uint32_t SDC1SL1_HAMM_CODE_NAME_ADDR =
+//		offsetof(FRAMCriticalData, sdc1sl1_hamming_code_file_name);
 static const uint32_t SDC1SL1_REBOOT_COUNTER_ADDR =
         offsetof(FRAMCriticalData, sdc1sl1_reboot_counter);
 
-static const uint32_t SDC1SL2_FILE_NAME_ADDR =
-		offsetof(FRAMCriticalData, sdc1sl2_file_name);
-static const uint32_t SDC1SL2_HAMM_CODE_NAME_ADDR =
-		offsetof(FRAMCriticalData, sdc1sl2_hamming_code_file_name);
+//static const uint32_t SDC1SL2_FILE_NAME_ADDR =
+//		offsetof(FRAMCriticalData, sdc1sl2_file_name);
+//static const uint32_t SDC1SL2_HAMM_CODE_NAME_ADDR =
+//		offsetof(FRAMCriticalData, sdc1sl2_hamming_code_file_name);
 static const uint32_t SDC1SL2_REBOOT_COUNTER_ADDR =
         offsetof(FRAMCriticalData, sdc1sl2_reboot_counter);
 
-static const uint32_t SDC2SL1_FILE_NAME_ADDR =
-		offsetof(FRAMCriticalData, sdc2sl1_binary_file_name);
-static const uint32_t SDC2SL1_HAMM_CODE_NAME_ADDR =
-		offsetof(FRAMCriticalData, sdc2sl1_hamming_code_file_name);
+//static const uint32_t SDC2SL1_FILE_NAME_ADDR =
+//		offsetof(FRAMCriticalData, sdc2sl1_binary_file_name);
+//static const uint32_t SDC2SL1_HAMM_CODE_NAME_ADDR =
+//		offsetof(FRAMCriticalData, sdc2sl1_hamming_code_file_name);
 static const uint32_t SDC2SL1_REBOOT_COUNTER_ADDR =
         offsetof(FRAMCriticalData, sdc2sl1_reboot_counter);
 
-static const uint32_t SDC2SL2_FILE_NAME_ADDR  =
-		offsetof(FRAMCriticalData, sdc2sl2_binary_file_name);
-static const uint32_t SDC2SL2_HAMM_CODE_NAME_ADDR =
-		offsetof(FRAMCriticalData, sdc2sl2_hamming_code_file_name);
+//static const uint32_t SDC2SL2_FILE_NAME_ADDR  =
+//		offsetof(FRAMCriticalData, sdc2sl2_binary_file_name);
+//static const uint32_t SDC2SL2_HAMM_CODE_NAME_ADDR =
+//		offsetof(FRAMCriticalData, sdc2sl2_hamming_code_file_name);
 static const uint32_t SDC2SL2_REBOOT_COUNTER_ADDR =
         offsetof(FRAMCriticalData, sdc2sl2_reboot_counter);
 

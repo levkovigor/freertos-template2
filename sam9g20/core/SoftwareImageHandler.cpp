@@ -21,6 +21,7 @@ extern "C" {
 #endif
 }
 
+#include <config/OBSWConfig.h>
 #include <sam9g20/memory/SDCardAccess.h>
 
 
@@ -30,8 +31,8 @@ SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
 }
 
 ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
+	//Stopwatch stopwatch;
     if(not operationOngoing and oneShot) {
-    	countdown->resetTimer();
 #if defined(AT91SAM9G20_EK)
         copyBootloaderToNandFlash(false, false);
 #endif
@@ -226,8 +227,6 @@ static const Pin nfRbPin = BOARD_NF_RB_PIN;
 
 ReturnValue_t SoftwareImageHandler::copyBootloaderToNandFlash(
         bool performHammingCheck, bool displayInfo) {
-
-	Stopwatch stopwatch;
     if(not displayInfo) {
         setTrace(TRACE_LEVEL_WARNING);
     }
@@ -242,8 +241,8 @@ ReturnValue_t SoftwareImageHandler::copyBootloaderToNandFlash(
             PIO_Configure(pPinsNf, PIO_LISTSIZE(pPinsNf));
             ReturnValue_t result = nandFlashInit(false);
             if(result != HasReturnvaluesIF::RETURN_OK) {
-                sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash: "
-                        << "Error initializing NAND-Flash." << std::endl;
+                sif::error << "SoftwareImageHandler::copyBootloaderToNand"
+                		<< "Flash: Error initializing NAND-Flash." << std::endl;
                 return HasReturnvaluesIF::RETURN_FAILED;
             }
             stepCounter ++;
@@ -272,32 +271,29 @@ ReturnValue_t SoftwareImageHandler::copyBootloaderToNandFlash(
         }
     }
 
-
-    stopwatch.stop(true);
-
     if(internalState == InternalState::STEP_2) {
     	SDCardAccess sdCardAccess;
     	if(not miscFlag) {
-    		SDCardHandler::printSdCard();
-    		int result = change_directory("BIN/AT91/BL", true);
-
-    		sif::info << "Copying bootloader on SD card"
-    				<< sdCardAccess.currentVolumeId << " to AT91 NAND-Flash.."
-    				<< std::endl;
+    		//SDCardHandler::printSdCard();
     		miscFlag = true;
     		if(countdown->hasTimedOut()) {
     			return HasReturnvaluesIF::RETURN_OK;
     		}
     	}
 
-    	int result = change_directory("BIN/AT91", true);
+    	int result = change_directory(config::BOOTLOADER_REPOSITORY, true);
     	if(result != F_NO_ERROR) {
     		// changing directory failed!
     		return HasReturnvaluesIF::RETURN_FAILED;
     	}
 
-    	currentFileSize = f_filelength("bl.bin");
-    	F_FILE* bootloader = f_open("bl.bin", "r");
+    	currentFileSize = f_filelength("BL.BIN");
+    	sif::info << "Copying AT91 bootloader on SD card "
+    			<< sdCardAccess.currentVolumeId << " to AT91 NAND-Flash.."
+				<< std::endl;
+    	sif::info << "Bootloader size: " <<  currentFileSize
+    			<< " bytes." << std::endl;
+    	F_FILE* bootloader = f_open("BL.BIN", "r");
     	if(f_getlasterror() != F_NO_ERROR) {
     		// Opening file failed!
     		return HasReturnvaluesIF::RETURN_FAILED;
@@ -371,9 +367,11 @@ ReturnValue_t SoftwareImageHandler::copyBootloaderToNandFlash(
     			continue;
     		}
     		else {
-    			sif::info << "Written " << NAND_PAGE_SIZE << " bytes to "
+#ifdef DEBUG
+    			sif::debug << "Written " << NAND_PAGE_SIZE << " bytes to "
     					<< "NAND-Flash Block 0 & Page " << stepCounter
 						<< std::endl;
+#endif
     			dataRead = false;
     			errorCount = 0;
     		}
@@ -383,7 +381,7 @@ ReturnValue_t SoftwareImageHandler::copyBootloaderToNandFlash(
 
     		if(currentIdx >= currentFileSize) {
     			// operation finished.
-    			sif::debug << "Copying bootloader to NAND-Flash finished with "
+    			sif::info << "Copying bootloader to NAND-Flash finished with "
     					<< stepCounter << " cycles!" << std::endl;
     			operationOngoing = false;
     			stepCounter = 0;

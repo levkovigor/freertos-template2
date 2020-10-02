@@ -8,6 +8,7 @@ CXXSRC += $(wildcard $(CURRENTPATH)/events/*.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/tmtc/*.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/osal/*.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/devices/*.cpp)
+CXXSRC += $(wildcard $(CURRENTPATH)/*.cpp)
 
 INCLUDES += $(CURRENTPATH)
 INCLUDES += $(CURRENTPATH)/objects

@@ -1,15 +1,41 @@
-#ifndef CONFIG_TMTC_TMTCSIZE_H_
-#define CONFIG_TMTC_TMTCSIZE_H_
+#ifndef CONFIG_OBSWCONFIG_H_
+#define CONFIG_OBSWCONFIG_H_
 
+#ifdef __cplusplus
 #include <cstdint>
 #include <cstddef>
+#else
+#include <stdint.h>
+#include <stddef.h>
+#endif
+
 #include <portmacro.h>
 
 #define DISPLAY_FACTORY_ALLOCATION_SIZE     0
 #define RS485_WITH_TERMINATION              1
 #define ADD_TEST_CODE                       1
 
+#ifdef __cplusplus
 namespace config {
+#endif
+
+/* Hardcoded file names */
+#ifdef AT91SAM9G20_EK
+extern const char* BOOTLOADER_REPOSITORY;
+extern const char* SW_REPOSITORY;
+#else
+extern char* BOOTLOADER_REPOSITORY;
+extern const char* SW_REPOSITORY;
+#endif
+
+extern const char* BOOTLOADER_NAME;
+extern const char* SW_SLOT_1_NAME;
+extern const char* SW_SLOT_2_NAME;
+
+extern const char* BL_HAMMING_NAME;
+extern const char* SW_SLOT_1_HAMMING_NAME;
+extern const char* SW_SLOT_2_HAMMING_NAME;
+
 static constexpr uint32_t RS232_BAUDRATE = 230400;
 static constexpr size_t RS232_MAX_SERIAL_FRAME_SIZE = 1500;
 static constexpr uint32_t RS232_SERIAL_TIMEOUT_BAUDTICKS = 5;
@@ -35,6 +61,9 @@ static constexpr uint32_t SPI_DEFAULT_TIMEOUT_MS = 40;
 
 static constexpr size_t USB_FRAME_SIZE = 1500;
 static constexpr uint32_t MAX_STORED_TELECOMMANDS = 2000;
-}
 
-#endif /* CONFIG_TMTC_TMTCSIZE_H_ */
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* CONFIG_OBSWCONFIG_H_ */
