@@ -194,7 +194,7 @@ void initMission(void) {
 
     /* SD Card handler task */
     PeriodicTaskIF* SDCardTask = TaskFactory::instance()->
-            createPeriodicTask("SD_CARD_TASK", 2, 2048 * 4, 5.0, nullptr);
+            createPeriodicTask("SD_CARD_TASK", 3, 2048 * 4, 5.0, nullptr);
     result = SDCardTask->addComponent(objects::SD_CARD_HANDLER);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         printAddError(objects::SD_CARD_HANDLER);
@@ -202,7 +202,7 @@ void initMission(void) {
 
     /* Software image task */
     PeriodicTaskIF* SoftwareImageTask = TaskFactory::instance()->
-            createPeriodicTask("SW_IMG_TASK", 3, 2048 * 4, 2, nullptr);
+            createPeriodicTask("SW_IMG_TASK", 2, 2048 * 4, 2, nullptr);
     result = SoftwareImageTask->addComponent(objects::SOFTWARE_IMAGE_HANDLER);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         printAddError(objects::SOFTWARE_IMAGE_HANDLER);
@@ -344,7 +344,7 @@ void boardTestTaskInit() {
 
     sif::info << "Starting test tasks.." << std::endl;
 
-    PollingSequenceTableTaskTest -> startTask ();
+    //PollingSequenceTableTaskTest -> startTask ();
     TestTask -> startTask();
     //SPITask -> startTask();
     //I2CTask -> startTask();

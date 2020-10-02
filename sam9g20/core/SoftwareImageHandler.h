@@ -4,7 +4,11 @@
 #include <fsfw/action/HasActionsIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
+#include <fsfw/timemanager/Countdown.h>
 
+#if defined(ISIS_OBC_G20) && defined(AT91SAM9G20_EK)
+#error "Two board defined at once. Please check includes!"
+#endif
 
 /**
  * @brief   Commandable handler object to manage software updates.
@@ -36,12 +40,19 @@ public:
 
     ReturnValue_t initialize() override;
 
+    ReturnValue_t initializeAfterTaskCreation() override;
+
+    void setTaskIF(PeriodicTaskIF* executingTask) override;
+
     /** HasActionsIF overrides */
     MessageQueueId_t getCommandQueue() const override;
     ReturnValue_t executeAction(ActionId_t actionId,
             MessageQueueId_t commandedBy, const uint8_t* data,
             size_t size) override;
 private:
+    PeriodicTaskIF* executingTask = nullptr;
+
+    std::array<uint8_t, 8192> readArray;
     /**
      * There are 2 SD cards available.
      * In normal cases, SD card 1 will be preferred
@@ -57,12 +68,22 @@ private:
         IMAGE_2 //!< Secondary image (or software update)
     };
 
+    enum class InternalState {
+    	IDLE,
+		// Usually reserved for preparation steps like clearing memory
+    	STEP_1,
+		// Usually reserved for the actual copy operation.
+		STEP_2
+    };
+
 #ifdef ISIS_OBC_G20
     // Special functions, use with care!
     // Overwrites the bootloader, which can either be stored in FRAM or in
     // the SD card.
-    ReturnValue_t copyBootloaderToNorFlash(bool performHammingCheck);
-#elif defined(AT91SAM9G20_EK)
+    ReturnValue_t copySdBootloaderToNorFlash(bool performHammingCheck);
+#endif
+#ifdef AT91SAM9G20_EK
+    static constexpr size_t NAND_PAGE_SIZE = 2048;
     ReturnValue_t copyBootloaderToNandFlash(bool performHammingCheck,
             bool displayInfo = false);
     ReturnValue_t nandFlashInit(bool displayInfo = false);
@@ -80,8 +101,16 @@ private:
 
     ActionHelper actionHelper;
 
+    Countdown* countdown = nullptr;
+    InternalState internalState = InternalState::IDLE;
     uint16_t stepCounter = 0;
+    size_t currentIdx = 0;
+    size_t currentFileSize = 0;
+    uint8_t errorCount = 0;
+    bool operationOngoing = false;
+    bool dataRead = false;
     bool oneShot = true;
+    bool miscFlag = false;
 };
 
 

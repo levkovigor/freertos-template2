@@ -66,6 +66,13 @@ typedef struct __attribute__((__packed__))  _FRAMCriticalData {
 	uint8_t filler_sdc2sl2[3];
 	uint8_t sdc2sl2_reboot_counter;
 
+	/*
+	 * Bootloader binary information. Bootloader itself could also be stored
+	 * in FRAM. Hamming code will be stored in FRAM in any case.
+	 */
+	char bootloader_binary_file_name[16];
+	char bootloader_hamming_code_file_name[16];
+
 	/* Software update information */
     uint8_t filler_software_update[1];
     bool software_update_available;
@@ -135,6 +142,14 @@ static const uint32_t SDC2SL2_REBOOT_COUNTER_ADDR =
 
 static const uint32_t NUMBER_OF_ACTIVE_TASKS_ADDRESS =
         offsetof(FRAMCriticalData, number_of_active_tasks);
+
+// 12 kB of the upper FRAM will be reserved for the NOR-Flash binary hamming
+// code.
+static const uint32_t NOR_FLASH_HAMMING_RESERVED_SIZE = 12000;
+
+// 512 bytes of the upper FRAM will be reserved for the bootloader hamming
+// code.
+static const uint32_t BOOTLOADER_HAMMING_RESERVED_SIZE = 512;
 
 #ifdef __cplusplus
 extern "C" {
