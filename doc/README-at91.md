@@ -75,9 +75,7 @@ After that, it is recommended to perform following project configuration steps:
 1. Right click on the project folder in the Project Explorer panel left 
    and go to Properties
 2. Go to C/C++ General and enable Doxygen as the documentation tool
-3. Go to MCU and check whether the required toolchains are found if developing
-   for a MCU
-4. Go to C/C++ Build &rarr; Indexer. It is recommened to enable project specific
+3. Go to C/C++ Build &rarr; Indexer. It is recommened to enable project specific
    settings, use the active build configuration and rebuild the index
    on build configuration change.
 
@@ -85,25 +83,26 @@ Example indexer settings:
 <br>
 <img src="./readme_img/eclipse/eclipse_indexer.png" width="50%">
 
-Special steps if developing for a MCU (like the AT91 or the iOBC):
+Special steps if developing for a MCU (like the AT91 or the iOBC) and using
+a special toolchain:
 
-1. Make sure the toolchain is included like seen in the following picture by going to 
+1. Install the Eclipse MCU Plugin from the Eclipse Marketplace by going to
+   Help &rarr; Eclipse Marketplace
+2. Install the ARM Toolchain (explained in main README) and add it to the
+   path variables. After that, go to Project Properties &rarr; MCU and make sure
+   the Toolchain is found by Eclipse.
+3. Make sure the toolchain is included like seen in the following picture by going to 
    C/C++ Build &rarr; Settings, checking that the paths for the ARM Toolchain are 
    set correctly and hitting Apply. The Eclipse MCU plugin needs to be installed
    for this to work.
    
 <img src="./readme_img/eclipse/eclipse_projectexplorer.png" width="50%">
 
-### Example environment
+### Example Build Configuration.
 
 <a name="buildtargets"></a>
 The Eclipse environment uses the previously mentioned build targets. 
 Build targets can be created by right clicking on sourceobsw &rarr; Build Target &rarr; Create. 
-
-<br>
-
-### Example Build Configuration.
-
 Please note that this is just an example and a display of how to use
 Eclipse to make development as convenient as possible.
 There is a distinction between build configurations and launch configurations in Eclipse.
