@@ -67,6 +67,7 @@ It is also recommended to use the active build configuration and rebuild the ind
 
 <img src="./readme_img/eclipse/eclipse_example1.PNG" width="50%">
 <br>
+<br>
 
 Example indexer settings:
 <img src="./readme_img/eclipse/eclipse_indexer.png" width="50%">
