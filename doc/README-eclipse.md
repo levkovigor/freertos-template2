@@ -1,5 +1,6 @@
 #  Setting up Eclipse environment for build targets
 
+### General information
 Eclipse is a major IDE used for various programming languages. While it might
 be better known as an IDE for Java development, it is possible to develop
 C and C++ code (for Desktop or for microcontrollers) with the right plugins and 
@@ -11,6 +12,14 @@ via J-Link or USB.
 However, it is also somewhat cumbersome and difficult to set up for beginners.
 Therefore, some recommended starting points will be given to set up Eclipse
 properly for convenient development.
+
+### Installation Eclipse for C/C++ Developers on Windows
+
+1. Install JDK if not installed yet. Eclipse requires 
+[Java SE Platform (JDK)](https://www.oracle.com/technetwork/java/javase/downloads/index.html)
+2. Install [Eclipse for C/C++ Developers](https://www.eclipse.org/downloads/packages/release/2019-03/r/eclipse-ide-cc-developers)
+3. Go to Menu -> Help -> Eclipse Marketplace and search and install GNU MCU Eclipse
+
 
 ### Recommended steps
 
