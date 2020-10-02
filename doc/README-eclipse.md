@@ -1,5 +1,17 @@
 #  Setting up Eclipse environment for build targets
 
+Eclipse is a major IDE used for various programming languages. While it might
+be better known as an IDE for Java development, it is possible to develop
+C and C++ code (for Desktop or for microcontrollers) with the right plugins and 
+extensions. Eclipse is a very useful tool to ease development and provides 
+tools like a powerful project indexer and various ways to conveniently build, 
+run and debug software on either the desktop or on embedded systems connected 
+via J-Link or USB.
+
+However, it is also somewhat cumbersome and difficult to set up for beginners.
+Therefore, some recommended starting points will be given to set up Eclipse
+properly for convenient development.
+
 ### Recommended steps
 
 Makefile projects are generally imported by using File &rarr; New &rarr; Other

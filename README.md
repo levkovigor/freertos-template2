@@ -31,6 +31,7 @@ and source files have to be setup and included accordingly!
 [C++](#cpp)<br>
 
 **Board and environment specific introduction**<br>
+[Setting up Eclipse](doc/README-eclipse.md#top)<br>
 [AT91SAM9G20 getting started](doc/README-at91.md#top)<br>
 [QEMU getting started](doc/README-qemu.md#top)<br>
 [Flatsat getting started](doc/README-flatsat.md#top)<br>
