@@ -95,4 +95,4 @@ There is a distinction between build configurations and launch configurations in
 
 <img src="./readme_img/eclipse/eclipse_example2.PNG" width="95%">
 <img src="./readme_img/eclipse/eclipse_example3.PNG" width="60%">
-<img src="./readme_img/eclipse/eclipse_example4.PNG" width="60%">
+<img src="./readme_img/eclipse/eclipse_buildcfg.png" width="60%">
