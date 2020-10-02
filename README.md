@@ -1,9 +1,12 @@
-Source On-Board Software
+SOURCE On-Board Software
 ======
 
 ## General Information
+More general information of the project can be found
+on the [KSat website](https://www.ksat-stuttgart.de/en/our-missions/source/).
+
 The SOURCE On-Board Software will be run on the iOBC which uses the SAM9G20
-chip. It is based on the Flight Software Framework by the IRS.
+SoC. The software is based on the Flight Software Framework by the IRS.
 It is recommended to use the [Python TMTC commander](https://git.ksat-stuttgart.de/source/tmtc)
 to test TMTC handling. Packets can be sent to the Linux version by using the UDP communication 
 interface of the commander.
