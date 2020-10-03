@@ -9,7 +9,7 @@
 #error "Two board defined at once. Please check includes!"
 #endif
 
-class ImageCopyingHelper;
+class ImageCopyingEngine;
 class PeriodicTaskIF;
 class ScrubbingEngine;
 class Countdown;
@@ -106,7 +106,7 @@ private:
     ActionHelper actionHelper;
     ImageBuffer imgBuffer;
     Countdown* countdown = nullptr;
-    ImageCopyingHelper* imgCpHelper = nullptr;
+    ImageCopyingEngine* imgCpHelper = nullptr;
     ScrubbingEngine* scrubbingEngine = nullptr;
 
     HandlerState handlerState = HandlerState::IDLE;

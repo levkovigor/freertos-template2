@@ -1,7 +1,7 @@
-#include "ImageCopyingHelper.h"
 #include <config/OBSWConfig.h>
 
 #include <fsfw/timemanager/Countdown.h>
+#include <sam9g20/core/ImageCopyingEngine.h>
 
 #ifdef AT91SAM9G20_EK
 
@@ -27,12 +27,12 @@ extern "C" {
 
 #endif
 
-ImageCopyingHelper::ImageCopyingHelper(SoftwareImageHandler *owner,
+ImageCopyingEngine::ImageCopyingEngine(SoftwareImageHandler *owner,
         Countdown *countdown, SoftwareImageHandler::ImageBuffer *imgBuffer):
         owner(owner), countdown(countdown), imgBuffer(imgBuffer) {}
 
 
-bool ImageCopyingHelper::getIsOperationOngoing() const {
+bool ImageCopyingEngine::getIsOperationOngoing() const {
     if(imageHandlerState == ImageHandlerStates::IDLE) {
         return false;
     }
@@ -41,15 +41,15 @@ bool ImageCopyingHelper::getIsOperationOngoing() const {
     }
 }
 
-void ImageCopyingHelper::setHammingCodeCheck(bool enableHammingCodeCheck) {
+void ImageCopyingEngine::setHammingCodeCheck(bool enableHammingCodeCheck) {
     this->performHammingCodeCheck = enableHammingCodeCheck;
 }
 
-void ImageCopyingHelper::enableExtendedDebugOutput(bool enableMoreOutput) {
+void ImageCopyingEngine::enableExtendedDebugOutput(bool enableMoreOutput) {
     this->extendedDebugOutput = enableMoreOutput;
 }
 
-ReturnValue_t ImageCopyingHelper::startSdcToFlashOperation(SdCard sdCard,
+ReturnValue_t ImageCopyingEngine::startSdcToFlashOperation(SdCard sdCard,
         ImageSlot imageSlot) {
     imageHandlerState = ImageHandlerStates::COPY_SDC_IMG_TO_FLASH;
     this->sdCard = sdCard;
@@ -57,7 +57,7 @@ ReturnValue_t ImageCopyingHelper::startSdcToFlashOperation(SdCard sdCard,
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t ImageCopyingHelper::startFlashToSdcOperation(SdCard sdCard,
+ReturnValue_t ImageCopyingEngine::startFlashToSdcOperation(SdCard sdCard,
         ImageSlot imageSlot) {
     imageHandlerState = ImageHandlerStates::COPY_FLASH_IMG_TO_SDC;
     this->sdCard = sdCard;
@@ -65,7 +65,7 @@ ReturnValue_t ImageCopyingHelper::startFlashToSdcOperation(SdCard sdCard,
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t ImageCopyingHelper::startBootloaderToFlashOperation(
+ReturnValue_t ImageCopyingEngine::startBootloaderToFlashOperation(
         bool fromFRAM) {
     bootloader = true;
     if(fromFRAM) {
@@ -82,7 +82,7 @@ ReturnValue_t ImageCopyingHelper::startBootloaderToFlashOperation(
 }
 
 
-ReturnValue_t ImageCopyingHelper::continueCurrentOperation() {
+ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
     switch(imageHandlerState) {
 #ifdef ISIS_OBC_G20
     case(ImageHandlerStates::IDLE): {
@@ -132,21 +132,21 @@ ReturnValue_t ImageCopyingHelper::continueCurrentOperation() {
 }
 
 
-ImageCopyingHelper::ImageHandlerStates
-ImageCopyingHelper::getImageHandlerState() const {
+ImageCopyingEngine::ImageHandlerStates
+ImageCopyingEngine::getImageHandlerState() const {
     return imageHandlerState;
 }
 
-GenericInternalState ImageCopyingHelper::getInternalState() const {
+GenericInternalState ImageCopyingEngine::getInternalState() const {
     return internalState;
 }
 
-ImageCopyingHelper::ImageHandlerStates
-ImageCopyingHelper::getLastFinishedState() const {
+ImageCopyingEngine::ImageHandlerStates
+ImageCopyingEngine::getLastFinishedState() const {
     return lastFinishedState;
 }
 
-void ImageCopyingHelper::reset() {
+void ImageCopyingEngine::reset() {
     internalState = GenericInternalState::IDLE;
     imageHandlerState = ImageHandlerStates::IDLE;
     stepCounter = 0;
@@ -192,7 +192,7 @@ static const Pin nfCePin = BOARD_NF_CE_PIN;
 /// Nandflash ready/busy pin.
 static const Pin nfRbPin = BOARD_NF_RB_PIN;
 
-ReturnValue_t ImageCopyingHelper::copySdCardImageToNandFlash() {
+ReturnValue_t ImageCopyingEngine::copySdCardImageToNandFlash() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
 
     if(internalState == GenericInternalState::IDLE) {
@@ -218,7 +218,7 @@ ReturnValue_t ImageCopyingHelper::copySdCardImageToNandFlash() {
 
 
 
-ReturnValue_t ImageCopyingHelper::configureNand(bool disableDebugOutput) {
+ReturnValue_t ImageCopyingEngine::configureNand(bool disableDebugOutput) {
     if(disableDebugOutput) {
         setTrace(TRACE_LEVEL_WARNING);
     }
@@ -236,7 +236,7 @@ ReturnValue_t ImageCopyingHelper::configureNand(bool disableDebugOutput) {
     return result;
 }
 
-ReturnValue_t ImageCopyingHelper::handleNandErasure(bool disableAt91Output) {
+ReturnValue_t ImageCopyingEngine::handleNandErasure(bool disableAt91Output) {
     if(disableAt91Output) {
         setTrace(TRACE_LEVEL_WARNING);
     }
@@ -278,7 +278,7 @@ ReturnValue_t ImageCopyingHelper::handleNandErasure(bool disableAt91Output) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t ImageCopyingHelper::handleErasingForObsw() {
+ReturnValue_t ImageCopyingEngine::handleErasingForObsw() {
     // Make sure that the current file size and required blocks are only
     // cached once by using the helperFlag1.
     if(not helperFlag1) {
@@ -323,17 +323,12 @@ ReturnValue_t ImageCopyingHelper::handleErasingForObsw() {
         }
     }
     stepCounter = 0;
-    // Set this to one as it will be used later  to specify the block.
-    // (block 0 is reserved for bootloader).
-    helperCounter1 = 1;
-    helperCounter2 = 0;
-    currentByteIdx = 0;
     helperFlag1 = false;
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 
-ReturnValue_t ImageCopyingHelper::handleSdToNandCopyOperation(
+ReturnValue_t ImageCopyingEngine::handleSdToNandCopyOperation(
         bool disableAt91Output) {
     SDCardAccess sdCardAccess;
 
@@ -365,7 +360,7 @@ ReturnValue_t ImageCopyingHelper::handleSdToNandCopyOperation(
     }
 }
 
-ReturnValue_t ImageCopyingHelper::performNandCopyAlgorithm(
+ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
         F_FILE** binaryFile) {
 
     // If reading or writing failed, the loop might be restarted
@@ -429,6 +424,8 @@ ReturnValue_t ImageCopyingHelper::performNandCopyAlgorithm(
             // we have to start at one.
             helperCounter1 = 1;
         }
+        helperCounter2 = 0;
+        currentByteIdx = 0;
     }
 
     if(stepCounter == 0 and extendedDebugOutput){
@@ -519,7 +516,7 @@ ReturnValue_t ImageCopyingHelper::performNandCopyAlgorithm(
 }
 
 
-ReturnValue_t ImageCopyingHelper::nandFlashInit()
+ReturnValue_t ImageCopyingEngine::nandFlashInit()
 {
     // Configure SMC for Nandflash accesses
     // (done each time because of old ROM codes)
@@ -568,7 +565,7 @@ ReturnValue_t ImageCopyingHelper::nandFlashInit()
 }
 #else
 
-ReturnValue_t ImageCopyingHelper::copySdCardImageToNorFlash() {
+ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
     countdown->resetTimer();
     // 1. step: Find out bootloader location and name
     //read_nor_flash_reboot_counter()
@@ -669,7 +666,7 @@ ReturnValue_t ImageCopyingHelper::copySdCardImageToNorFlash() {
 #endif
 
 
-ReturnValue_t ImageCopyingHelper::prepareGenericFileInformation(
+ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         VolumeId currentVolume, F_FILE** filePtr) {
     int result = 0;
     if(bootloader) {

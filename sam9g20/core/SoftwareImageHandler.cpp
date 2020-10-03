@@ -1,11 +1,10 @@
 #include "SoftwareImageHandler.h"
-#include "ImageCopyingHelper.h"
-
 #include <sam9g20/memory/SDCardHandler.h>
 #include <fsfw/tasks/PeriodicTaskIF.h>
 #include <fsfw/timemanager/Countdown.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/ipc/QueueFactory.h>
+#include <sam9g20/core/ImageCopyingEngine.h>
 
 #ifdef ISIS_OBC_G20
 extern "C" {
@@ -50,7 +49,7 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
             }
             else {
                 // copy op finished
-                if(imgCpHelper->getLastFinishedState() == ImageCopyingHelper::
+                if(imgCpHelper->getLastFinishedState() == ImageCopyingEngine::
                         ImageHandlerStates::COPY_SDC_BL_TO_FLASH) {
                     imgCpHelper->startSdcToFlashOperation(SdCard::SD_CARD_0,
                             ImageSlot::IMAGE_0);
@@ -93,7 +92,7 @@ ReturnValue_t SoftwareImageHandler::initialize() {
 ReturnValue_t SoftwareImageHandler::initializeAfterTaskCreation() {
 	countdown = new Countdown(
 			static_cast<float>(this->executingTask->getPeriodMs()) * 0.8);
-	imgCpHelper = new ImageCopyingHelper(this, countdown, &imgBuffer);
+	imgCpHelper = new ImageCopyingEngine(this, countdown, &imgBuffer);
 	return HasReturnvaluesIF::RETURN_OK;
 }
 

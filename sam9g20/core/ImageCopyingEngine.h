@@ -1,5 +1,5 @@
-#ifndef SAM9G20_CORE_IMAGECOPYINGHELPER_H_
-#define SAM9G20_CORE_IMAGECOPYINGHELPER_H_
+#ifndef SAM9G20_CORE_IMAGECOPYINGENGINE_H_
+#define SAM9G20_CORE_IMAGECOPYINGENGINE_H_
 
 #include <sam9g20/core/SoftwareImageHandler.h>
 
@@ -13,7 +13,12 @@ extern "C" {
 #else
 #endif
 
-class ImageCopyingHelper {
+/**
+ * @brief   This class encapsulates all image copying operations required by
+ *          the SoftwareImageHandler
+ * @author  R. Mueller
+ */
+class ImageCopyingEngine {
 public:
 
     enum class ImageHandlerStates {
@@ -30,7 +35,7 @@ public:
         REPLACE_SDC_IMG
     };
 
-    ImageCopyingHelper(SoftwareImageHandler* owner, Countdown* countdown,
+    ImageCopyingEngine(SoftwareImageHandler* owner, Countdown* countdown,
             SoftwareImageHandler::ImageBuffer* imgBuffer);
 
     /**
@@ -51,7 +56,13 @@ public:
 
     ImageHandlerStates getImageHandlerState() const;
     ImageHandlerStates getLastFinishedState() const;
+
+    /**
+     * Can be used by SoftwareImageHandler to generate step replies.
+     * @return
+     */
     GenericInternalState getInternalState() const;
+
     /**
      * Can be used by SoftwareImageHandler to check whether the handler is
      * ready for a new operation.
@@ -154,7 +165,4 @@ private:
 
 };
 
-
-
-
-#endif /* SAM9G20_CORE_IMAGECOPYINGHELPER_H_ */
+#endif /* SAM9G20_CORE_IMAGECOPYINGENGINE_H_ */
