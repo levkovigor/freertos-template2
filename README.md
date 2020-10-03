@@ -1,9 +1,12 @@
-Source On-Board Software
+SOURCE On-Board Software
 ======
 
 ## General Information
+More general information of the project can be found
+on the [KSat website](https://www.ksat-stuttgart.de/en/our-missions/source/).
+
 The SOURCE On-Board Software will be run on the iOBC which uses the SAM9G20
-chip. It is based on the Flight Software Framework by the IRS.
+SoC. The software is based on the Flight Software Framework by the IRS.
 It is recommended to use the [Python TMTC commander](https://git.ksat-stuttgart.de/source/tmtc)
 to test TMTC handling. Packets can be sent to the Linux version by using the UDP communication 
 interface of the commander.
@@ -28,6 +31,7 @@ and source files have to be setup and included accordingly!
 [C++](#cpp)<br>
 
 **Board and environment specific introduction**<br>
+[Installing and setting up Eclipse](doc/README-eclipse.md#top)<br>
 [AT91SAM9G20 getting started](doc/README-at91.md#top)<br>
 [QEMU getting started](doc/README-qemu.md#top)<br>
 [Flatsat getting started](doc/README-flatsat.md#top)<br>
@@ -102,6 +106,10 @@ Note that make and git are required (installation guide below)
 Don't forget the use compile optimization by providing the -j parameter.
 On windows, wsl must be added before make, if tools like MSYS2 or Windows Build
 Tools are not installed.
+It is recommended to set up Eclipse instead of using the command line to build
+the software, as this allows for much more convenient development and debugging.
+For developers unfamiliar with Eclipse, it is recommended to read the
+[Eclipse setup guide](doc/README-eclipse.md#top).
 
 Following make targets are available:
 - sdramCfg: Configure AT91 SDRAM on start-up. Required after each restart.
@@ -122,17 +130,11 @@ Example call to build debug build on windows:
 ```sh
 make debug WINDOWS=1
 ```
-Currently, there are two binary folders: One for the development binaries
-and one for the mission binaries. For the dependency and object folders, four different combinations are possible
-(two for the different comm interfaces and two for the binary types).
-Thus, if a different binary is needed, e.g. when switching from devel build to mission build,
-and all object files are already available, it is sufficient to clean the binaries with
-the cleanbin target and then rebuild the target build. Make will recognize that the object files are already available and link the new requires binary.
 
 The provided TMTC has separate [instructions](https://git.ksat-stuttgart.de/source/tmtc)
-It is possible to chose between serial communication via RS232 and Ethernet communication with UDP datagrams. For the serial communication, a USB to female RS232 cable can be used (or UART jumper wires..).
-
-Instructions to set up Eclipse for these build targets are provided in the AT91 Getting Started chapter.
+It is possible to chose between serial communication via RS232 and Ethernet 
+communication with UDP datagrams. For the serial communication, a USB to female 
+RS232 cable can be used (or UART jumper wires..).
 
 ## Setting up prerequisites
 
@@ -169,39 +171,21 @@ sudo apt-get install build-essential
 
 ## Developers Information
 
+### General information
+
 Developing software on microcontrollers requires a lot of software tools and is generally
-more complicated than Desktop App Development. Tools like QEMU or docker can/will be used
+more complicated than Desktop application development. Tools like QEMU or docker can/will be used
 to simplify the proccess as they provide virtualization and encapsulation of the embedded
 environment without the need of countless software tools and real hardware.
 However, testing on the real hardware will still be very important to ensure
 the software runs successfully on the target environment (iOBC by ISIS) without any issues.
-The following instructions contain all required tools to set up a decent development environment on Windows to work with the hardware.
+The following instructions contain all required tools to set up a decent 
+development environment on Windows to work with the hardware.
 The steps will be easier on Linux and the Unit Test and Linux binaries can only
 be used in a Linux Virtual Machine or full Linux OS installation, so it is
 worth considering setting up dual boot with linux or setting up a virtual machine.
 Not all steps might be necessary depending on the experiences and already available tools of a
 new developer.
-
-### Installation Eclipse for C/C++ Developers on Windows
-
-1. Install JDK if not installed yet. Eclipse requires [Java SE Platform (JDK)](https://www.oracle.com/technetwork/java/javase/downloads/index.html)
-2. Install [Eclipse for C/C++ Developers](https://www.eclipse.org/downloads/packages/release/2019-03/r/eclipse-ide-cc-developers)
-3. Go to Menu -> Help -> Eclipse Marketplace and search and install GNU MCU Eclipse
-
-### Required steps to build flight software in Eclipse for C/C++ Developers
-
-1. In Eclipse, import the souceobsw folder as a Makefile project
-2. Rightclick on sourceobsw, go to MCU and ensure the Arm Toolchain is found (xPack should be found automatically)
-3. Go to C/C++ Build -> Settings -> Toolchain, make sure the toolchain path is set correctly and press apply.
-Toolchain binaries should appear in includes in the folder structure (important for indexer)
-4. Rightclick on sourceobsw, properties, and use following build settings:
-   GNU Toolchains for Ubuntu are needed for this !
-   Example build, using windows build tools
-   ```sh
-   > make all
-   ```
-5. Build acceleration can be turned on by going to behaviour options and
-   enabling parallel build.
 
 
 ### Installation Linux Subsystem (WSL) or any other command line program for windows
@@ -262,9 +246,11 @@ Restart command line programm and test the alias by typing
 - Board Startup file: Perform absolutely necessary configuration at start-up before branching to main.cpp
 - Main: Configure board and start RTOS scheduler. Calls init_mission() which contains all missions tasks
 - mission: Contains mission specific code which uses the Flight Software Framework (FSFW)
-- framework: Contains FSFW
+- fsfw: Contains FSFW
 - config: Mission specific configuration of FSFW and additions. Contains object factory and IDs
-- board/environment specific folders.
+- privlib: Contains non-public components like the HAL and HCC library provided by ISIS
+- sam9g20: Contains software depending on hardware components.
+- test: Contains test code which will not fly on SOURCE.
 
 ### Additional tools
 
