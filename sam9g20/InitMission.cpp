@@ -138,7 +138,8 @@ void initMission(void) {
     /* Polling Sequence Table Default */
     FixedTimeslotTaskIF * PollingSequenceTableTaskDefault =
             TaskFactory::instance()-> createFixedTimeslotTask(
-                    "PST_TASK_DEFAULT", 5, 2048 * 4, 0.4, genericMissedDeadlineFunc);
+                    "PST_TASK_DEFAULT", 5, 2048 * 4, 0.4,
+                    genericMissedDeadlineFunc);
     result = pst::pollingSequenceInitDefault(PollingSequenceTableTaskDefault);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "InitMission: Creating PST failed!" << std::endl;
@@ -206,6 +207,7 @@ void initMission(void) {
     PeriodicTaskIF* PusMediumPriorityTask = TaskFactory::instance()->
             createPeriodicTask("PUS_MED_PRIO", 4, 2048 * 4, 0.8,
                     genericMissedDeadlineFunc);
+
     result = PusMediumPriorityTask->addComponent(
             objects::PUS_SERVICE_3_HOUSEKEEPING);
     if (result != HasReturnvaluesIF::RETURN_OK) {
@@ -236,7 +238,13 @@ void initMission(void) {
             createPeriodicTask("PUS_LOW_PRIO", 3, 2048 * 4, 1.6,
                     genericMissedDeadlineFunc);
     PusLowPriorityTask->addComponent(objects::PUS_SERVICE_20_PARAM_MGMT);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        printAddError(objects::PUS_SERVICE_20_PARAM_MGMT);
+    }
     PusLowPriorityTask->addComponent(objects::PUS_SERVICE_17_TEST);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        printAddError(objects::PUS_SERVICE_17_TEST);
+    }
 
     /* SD Card handler task */
     PeriodicTaskIF* SDCardTask = TaskFactory::instance()->
