@@ -4,18 +4,28 @@
 #include <fsfw/action/HasActionsIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
-#include <fsfw/timemanager/Countdown.h>
-
-extern "C" {
-#include <at91/memories/nandflash/NandCommon.h>
-}
 
 #if defined(ISIS_OBC_G20) && defined(AT91SAM9G20_EK)
 #error "Two board defined at once. Please check includes!"
 #endif
 
+class ImageCopyingHelper;
+class PeriodicTaskIF;
+class ScrubbingEngine;
+class Countdown;
+
+/** These generic states can be used inside the primary state machine */
+enum class GenericInternalState {
+    IDLE,
+    // Usually reserved for preparation steps like clearing memory
+    STEP_1,
+    // Usually reserved for the actual copy operation.
+    STEP_2
+};
+
 /**
- * @brief   Commandable handler object to manage software updates.
+ * @brief   Commandable handler object to manage software updates and
+ *          perform scrubbing.
  * @details
  * This class is used instead of a dedicated NORFlashHandler because
  * the NOR-Flash is only used for software images and only needs
@@ -40,6 +50,9 @@ class SoftwareImageHandler: public SystemObject,
 public:
 	static constexpr uint8_t SUBSYSTEM_ID = CLASS_ID::SW_IMAGE_HANDLER;
 	static constexpr ReturnValue_t TASK_PERIOD_OVER_SOON = MAKE_RETURN_CODE(0x00);
+
+	using ImageBuffer = std::array<uint8_t, 2048>;
+
     SoftwareImageHandler(object_id_t objectId);
 
     ReturnValue_t performOperation(uint8_t opCode) override;
@@ -56,9 +69,6 @@ public:
             MessageQueueId_t commandedBy, const uint8_t* data,
             size_t size) override;
 private:
-    PeriodicTaskIF* executingTask = nullptr;
-
-    std::array<uint8_t, 2048> readArray;
     /**
      * There are 2 SD cards available.
      * In normal cases, SD card 1 will be preferred
@@ -74,82 +84,60 @@ private:
         IMAGE_2 //!< Secondary image (or software update)
     };
 
-    enum class InternalState {
-    	IDLE,
-		// Usually reserved for preparation steps like clearing memory
-    	STEP_1,
-		// Usually reserved for the actual copy operation.
-		STEP_2
+    /** These internal states are used for the primary state machine */
+    enum class HandlerState {
+        IDLE,
+        COPY_BL,
+        COPY_OBSW,
+        SCRUB_BL,
+        SCRUB_OBSW_NOR_FLASH,
+        SCRUB_OBSW_SDC1_SL1,
+        SCRUB_OBSW_SDC1_SL2,
+        SCRUB_OBSW_SDC2_SL1,
+        SCRUB_OBSW_SDC2_SL2
     };
 
-#ifdef ISIS_OBC_G20
-    // Special functions, use with care!
-    // Overwrites the bootloader, which can either be stored in FRAM or in
-    // the SD card.
-    ReturnValue_t copySdBootloaderToNorFlash(bool performHammingCheck);
-#endif
-
-#ifdef AT91SAM9G20_EK
-    static constexpr size_t NAND_PAGE_SIZE = NandCommon_MAXPAGEDATASIZE;
-    static constexpr uint8_t PAGES_PER_BLOCK = NandCommon_MAXNUMPAGESPERBLOCK;
-
-    /**
-     * @param bootloader	Set to true if bootloader shall be copied
-     * @param performHammingCheck
-     * @param configureNandFlash NAND flash configuration only needs to be
-     * done once.
-     * @param obswSlot If bootloader is set to false, set to false for slot 0
-     * and to true for slot 1. Slot 0 by default.
-     * @return
-     */
-    ReturnValue_t copySdCardImageToNandFlash(bool bootloader,
-    		bool performHammingCheck,
-    		bool configureNandFlash,
-			bool obswSlot = false);
-    ReturnValue_t nandFlashInit();
-    /**
-     * Common function to set up NAND and also erase blocks for either
-     * the bootloader or the software image.
-     * @param configureNand
-     * @param bootloader
-     * @param softwareSlot	false for slot 0, true for slot 1
-     * @return
-     */
-    ReturnValue_t handleNandInitAndErasure(bool configureNand,
-    		bool bootloader, bool softwareSlot = false);
-    ReturnValue_t handleErasingForObsw(bool softwareSlot);
-    ReturnValue_t handleSdToNandCopyOperation(bool bootloader, bool obswSlot);
-#endif
-
-    // Handler functions for the SD cards
-    void copySdCardImageToNorFlash(SdCard sdCard, ImageSlot imageSlot,
-            bool performHammingCheck);
-    void copyNorFlashImageToSdCards(SdCard sdCard, ImageSlot imageSlot,
-            bool performHammingCheck);
-
-    // Scrubbing functions
-    void checkNorFlashImage();
-    void checkSdCardImage(SdCard sdCard, ImageSlot imageSlot);
-
+    PeriodicTaskIF* executingTask = nullptr;
     ActionHelper actionHelper;
-
+    ImageBuffer imgBuffer;
     Countdown* countdown = nullptr;
-    InternalState internalState = InternalState::IDLE;
-    uint16_t stepCounter = 0;
-    size_t currentByteIdx = 0;
-    size_t currentFileSize = 0;
-    uint16_t helperCounter1 = 0;
-    uint16_t helperCounter2 = 0;
-    uint8_t errorCount = 0;
+    ImageCopyingHelper* imgCpHelper = nullptr;
+    ScrubbingEngine* scrubbingEngine = nullptr;
+
+    HandlerState handlerState = HandlerState::IDLE;
 
     bool displayInfo = false;
-
     bool operationOngoing = false;
-    bool dataRead = false;
+    bool performHammingCodeCheck = false;
     bool oneShot = true;
-    bool blCopied = false;
-    bool obswCopied = false;
-    bool miscFlag = false;
+
+
+#ifdef ISIS_OBC_G20
+    /**
+     * Special functions, use with care!
+     * Overwrites the bootloader, which can either be stored in FRAM or in
+     * the SD card.
+     * @param sdCard
+     * @param imageSlot
+     */
+    ReturnValue_t copySdBootloaderToNorFlash();
+    ReturnValue_t copyFramBootloaderToNorFlash();
+
+    // Handler functions for the SD cards
+    ReturnValue_t copySdCardImageToNorFlash(SdCard sdCard, ImageSlot imageSlot,
+            bool performHammingCheck);
+    ReturnValue_t copyNorFlashImageToSdCards(SdCard sdCard, ImageSlot imageSlot,
+            bool performHammingCheck);
+    // Scrubbing functions
+    ReturnValue_t checkNorFlashImage();
+#else
+    ReturnValue_t copySdBootloaderToNandFlash();
+    ReturnValue_t copySdImageToNandFlash();
+    ReturnValue_t checkNandFlashImage();
+#endif
+
+    void checkSdCardImage(SdCard sdCard, ImageSlot imageSlot);
+
 };
 
 
