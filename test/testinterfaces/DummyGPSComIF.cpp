@@ -18,7 +18,7 @@ DummyGPSComIF::DummyGPSComIF(object_id_t object_id_):
 	gpsReplyCounter(0), packetSubCounter(0)
 {
 	tmQueue = QueueFactory::instance()->createMessageQueue();
-	funnel = objectManager->get<AcceptsTelemetryIF>(objects::PUS_FUNNEL);
+	funnel = objectManager->get<AcceptsTelemetryIF>(objects::TM_FUNNEL);
 	tmQueue->setDefaultDestination(funnel->getReportReceptionQueue());
 }
 

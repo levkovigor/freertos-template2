@@ -127,13 +127,22 @@ void initMission(void) {
     /* Packet Distributor Taks */
     PeriodicTaskIF* PacketDistributorTask =
             TaskFactory::instance()-> createPeriodicTask(
-                    "TMTC_DISTRIBUTOR", 6, 2048 * 4, 0.4, genericMissedDeadlineFunc);
+                    "TMTC_DISTRIBUTOR", 6, 2048 * 4, 0.4,
+                    genericMissedDeadlineFunc);
     result = PacketDistributorTask->
             addComponent(objects::CCSDS_PACKET_DISTRIBUTOR);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        printAddError(objects::CCSDS_PACKET_DISTRIBUTOR);
+    }
     result = PacketDistributorTask->addComponent(
             objects::PUS_PACKET_DISTRIBUTOR);
-    result = PacketDistributorTask->addComponent(objects::PUS_FUNNEL);
-
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        printAddError(objects::PUS_PACKET_DISTRIBUTOR);
+    }
+    result = PacketDistributorTask->addComponent(objects::TM_FUNNEL);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        printAddError(objects::TM_FUNNEL);
+    }
 
     /* Polling Sequence Table Default */
     FixedTimeslotTaskIF * PollingSequenceTableTaskDefault =

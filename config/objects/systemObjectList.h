@@ -22,7 +22,7 @@ namespace objects {
 		PUS_SERVICE_201_HEALTH = 0x51020100,
 
 		PUS_TIME = 0x52000001,
-		PUS_FUNNEL = 0x52000002,
+		TM_FUNNEL = 0x52000002,
 		FREERTOS_TASK_MONITOR = 0x53000003,
 
 		/* 0x44 ('D') for Device Handlers **/

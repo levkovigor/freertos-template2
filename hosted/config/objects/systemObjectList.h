@@ -18,7 +18,7 @@ namespace objects {
 		PUS_SERVICE_201_HEALTH = 0x51020100,
 
 		PUS_TIME = 0x52000001,
-		PUS_FUNNEL = 0x52000002,
+		TM_FUNNEL = 0x52000002,
 
 		/* Test Task */
 		TEST_TASK = 0x42694269,

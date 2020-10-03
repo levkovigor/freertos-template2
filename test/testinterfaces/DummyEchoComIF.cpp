@@ -11,7 +11,7 @@
 TestEchoComIF::TestEchoComIF(object_id_t object_id_, bool initFunnel):
 	SystemObject(object_id_) {
 	if(initFunnel) {
-		funnel = objectManager->get<AcceptsTelemetryIF>(objects::PUS_FUNNEL);
+		funnel = objectManager->get<AcceptsTelemetryIF>(objects::TM_FUNNEL);
 		if (funnel != nullptr) {
 			tmQueue->setDefaultDestination(funnel->getReportReceptionQueue());
 		}
