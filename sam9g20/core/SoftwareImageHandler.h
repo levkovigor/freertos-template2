@@ -6,6 +6,9 @@
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/timemanager/Countdown.h>
 
+extern "C" {
+#include <at91/memories/nandflash/NandCommon.h>
+}
 
 #if defined(ISIS_OBC_G20) && defined(AT91SAM9G20_EK)
 #error "Two board defined at once. Please check includes!"
@@ -87,10 +90,22 @@ private:
 #endif
 
 #ifdef AT91SAM9G20_EK
-    static constexpr size_t NAND_PAGE_SIZE = 2048;
-    static constexpr uint8_t PAGES_PER_BLOCK = 64;
-    ReturnValue_t copyBootloaderToNandFlash(bool performHammingCheck,
-    		bool configureNandFlash = true);
+    static constexpr size_t NAND_PAGE_SIZE = NandCommon_MAXPAGEDATASIZE;
+    static constexpr uint8_t PAGES_PER_BLOCK = NandCommon_MAXNUMPAGESPERBLOCK;
+
+    /**
+     * @param bootloader	Set to true if bootloader shall be copied
+     * @param performHammingCheck
+     * @param configureNandFlash NAND flash configuration only needs to be
+     * done once.
+     * @param obswSlot If bootloader is set to false, set to false for slot 0
+     * and to true for slot 1. Slot 0 by default.
+     * @return
+     */
+    ReturnValue_t copySdCardImageToNandFlash(bool bootloader,
+    		bool performHammingCheck,
+    		bool configureNandFlash,
+			bool obswSlot = false);
     ReturnValue_t nandFlashInit();
     /**
      * Common function to set up NAND and also erase blocks for either
@@ -103,7 +118,7 @@ private:
     ReturnValue_t handleNandInitAndErasure(bool configureNand,
     		bool bootloader, bool softwareSlot = false);
     ReturnValue_t handleErasingForObsw(bool softwareSlot);
-    ReturnValue_t handleSdToNandCopyOperation(bool bootloader);
+    ReturnValue_t handleSdToNandCopyOperation(bool bootloader, bool obswSlot);
 #endif
 
     // Handler functions for the SD cards
@@ -121,8 +136,10 @@ private:
     Countdown* countdown = nullptr;
     InternalState internalState = InternalState::IDLE;
     uint16_t stepCounter = 0;
-    size_t currentIdx = 0;
+    size_t currentByteIdx = 0;
     size_t currentFileSize = 0;
+    uint16_t helperCounter1 = 0;
+    uint16_t helperCounter2 = 0;
     uint8_t errorCount = 0;
 
     bool displayInfo = false;
@@ -130,6 +147,8 @@ private:
     bool operationOngoing = false;
     bool dataRead = false;
     bool oneShot = true;
+    bool blCopied = false;
+    bool obswCopied = false;
     bool miscFlag = false;
 };
 

@@ -1,6 +1,3 @@
-
-#ifdef AT91SAM9G20_EK
-
 #include <bootloader/core/bootAt91.h>
 #include <bootloaderConfig.h>
 #include <main.h>
@@ -9,6 +6,7 @@
 #include <at91/boards/at91sam9g20-ek/board_memories.h>
 #include <at91/utility/trace.h>
 #include <inttypes.h>
+#include <string.h>
 
 /// Nandflash memory size.
 static unsigned int memSize;
@@ -44,9 +42,11 @@ static const Pin nfRbPin = BOARD_NF_RB_PIN;
 #define BOOT_NAND_ERROR_GP           2
 
 int copy_nandflash_binary_to_sdram(bool enable_full_printout) {
+	TRACE_INFO("Alive!\r\n");
     if(!enable_full_printout) {
         setTrace(TRACE_LEVEL_WARNING);
     }
+
 
     NandInit();
     BOOT_NAND_CopyBin(0x20000, BINARY_SIZE);
@@ -165,19 +165,50 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
     }
 #endif
 
+    TRACE_WARNING("Access translation: Block %d and Page %d.\n\r", block, page);
+    // overwrite block, by specifying block one and page 0 now
+    // (block 0 reserved for bootloader)
+    block = 1;
+    page = 0;
     // Initialize to SDRAM start address
     ptr = (unsigned char*)SDRAM_DESTINATION;
     byteRead = binary_size;
+    TRACE_WARNING("Arm Vectors:\n\r");
 
     while(block < numBlocks)
     {
         for(page = 0; page < numPagesPerBlock; page++) {
 
-            do {
-                error = SkipBlockNandFlash_ReadPage(&skipBlockNf, block,
-                        page, ptr, 0);
-                if (error == NandCommon_ERROR_BADBLOCK)
-                    block++;
+        	do {
+        		error = SkipBlockNandFlash_ReadPage(&skipBlockNf, block,
+        				page, ptr, 0);
+        		if((block == 1) && (page == 0)) {
+        			unsigned int armVector1 = 0;
+        			unsigned int armVector2 = 0;
+        			unsigned int armVector3 = 0;
+        			unsigned int armVector4 = 0;
+        			unsigned int armVector5 = 0;
+        			unsigned int armVector6 = 0;
+        			unsigned int armVector7 = 0;
+        			memcpy(&armVector1, ptr, 4);
+        			memcpy(&armVector2, ptr + 4, 4);
+        			memcpy(&armVector3, ptr + 8, 4);
+        			memcpy(&armVector4, ptr + 12, 4);
+        			memcpy(&armVector5, ptr + 16, 4);
+        			memcpy(&armVector6, ptr + 20, 4);
+        			memcpy(&armVector7, ptr + 24, 4);
+        			TRACE_WARNING("1: %08x\n\r", armVector1);
+        			TRACE_WARNING("2: %08x\n\r", armVector2);
+        			TRACE_WARNING("3: %08x\n\r", armVector3);
+        			TRACE_WARNING("4: %08x\n\r", armVector4);
+        			TRACE_WARNING("5: %08x\n\r", armVector5);
+        			TRACE_WARNING("6: %08x\n\r", armVector6);
+        			TRACE_WARNING("7: %08x\n\r", armVector7);
+        		}
+//        		TRACE_WARNING("SkipBlockNandFlash_ReadBlock: Reading block %d "
+//       				"page %d.\n\r", block, page);
+        		if (error == NandCommon_ERROR_BADBLOCK)
+        			block++;
                 else
                     break;
             }
@@ -210,5 +241,3 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
     }
     return BOOT_NAND_SUCCESS;
 }
-
-#endif

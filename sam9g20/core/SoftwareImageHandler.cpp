@@ -21,6 +21,7 @@ extern "C" {
 #endif
 }
 
+#include <cinttypes>
 #include <config/OBSWConfig.h>
 #include <sam9g20/memory/SDCardAccess.h>
 
@@ -32,26 +33,43 @@ SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
 
 ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
 	//Stopwatch stopwatch;
-    if(not operationOngoing and oneShot) {
+	bool performingOne = false;
+	countdown->resetTimer();
 #if defined(AT91SAM9G20_EK)
+    if(not blCopied) {
 
         if(not displayInfo) {
             setTrace(TRACE_LEVEL_WARNING);
         }
 
-        ReturnValue_t result = copyBootloaderToNandFlash(false, true);
+        performingOne = true;
+        ReturnValue_t result = copySdCardImageToNandFlash(true, false, true);
         if(result != HasReturnvaluesIF::RETURN_OK) {
         	// major error, cancel operation
-        	oneShot = false;
+        	blCopied = true;
         }
 
         if(not displayInfo) {
             setTrace(TRACE_LEVEL_DEBUG);
         }
-
-#endif
     }
 
+    if(not obswCopied and not performingOne) {
+        if(not displayInfo) {
+            setTrace(TRACE_LEVEL_WARNING);
+        }
+
+        ReturnValue_t result = copySdCardImageToNandFlash(false, false, false);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+        	// major error, cancel operation
+        	obswCopied = false;
+        }
+
+        if(not displayInfo) {
+            setTrace(TRACE_LEVEL_DEBUG);
+        }
+    }
+#endif
 
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -243,8 +261,9 @@ static const Pin nfCePin = BOARD_NF_CE_PIN;
 /// Nandflash ready/busy pin.
 static const Pin nfRbPin = BOARD_NF_RB_PIN;
 
-ReturnValue_t SoftwareImageHandler::copyBootloaderToNandFlash(
-		bool performHammingCheck, bool configureNandFlash) {
+ReturnValue_t SoftwareImageHandler::copySdCardImageToNandFlash(
+		bool bootloader, bool performHammingCheck,
+		bool configureNandFlash, bool obswSlot) {
 	ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
 
     if(internalState == InternalState::IDLE) {
@@ -252,7 +271,7 @@ ReturnValue_t SoftwareImageHandler::copyBootloaderToNandFlash(
     }
 
     if(internalState == InternalState::STEP_1) {
-    	result = handleNandInitAndErasure(configureNandFlash, true);
+    	result = handleNandInitAndErasure(configureNandFlash, bootloader);
     	if(result == TASK_PERIOD_OVER_SOON) {
     		return HasReturnvaluesIF::RETURN_OK;
     	}
@@ -263,7 +282,7 @@ ReturnValue_t SoftwareImageHandler::copyBootloaderToNandFlash(
     }
 
     if(internalState == InternalState::STEP_2) {
-    	result = handleSdToNandCopyOperation(true);
+    	result = handleSdToNandCopyOperation(bootloader, obswSlot);
     	if(result == TASK_PERIOD_OVER_SOON) {
     		return HasReturnvaluesIF::RETURN_OK;
     	}
@@ -330,7 +349,7 @@ ReturnValue_t SoftwareImageHandler::handleNandInitAndErasure(bool configureNand,
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t SoftwareImageHandler::handleErasingForObsw(bool softwareSlot) {
+ReturnValue_t SoftwareImageHandler::handleErasingForObsw(bool obswSlot) {
 	// Make sure that the current file size is only cached once.
 	if(not dataRead) {
 		SDCardAccess sdCardAccess;
@@ -338,43 +357,45 @@ ReturnValue_t SoftwareImageHandler::handleErasingForObsw(bool softwareSlot) {
 		if(result != F_NO_ERROR) {
 			return HasReturnvaluesIF::RETURN_FAILED;
 		}
-		if(not softwareSlot) {
+		if(obswSlot == 0) {
 			currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
 		}
 		else {
 			currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
 		}
 		dataRead = true;
-		currentIdx = 0;
+		currentByteIdx = 0;
+		helperCounter2 = 0;
 	}
 
 	uint8_t requiredBlocks = std::ceil(
 			static_cast<float>(currentFileSize) /
 			(PAGES_PER_BLOCK * NAND_PAGE_SIZE));
 
-	while(currentIdx != requiredBlocks) {
+	while(helperCounter2 != requiredBlocks) {
 		// erase multiple blocks for required binary size.
 		// Don't erase first block, is reserved for bootloader.
 		int retval = SkipBlockNandFlash_EraseBlock(&skipBlockNf,
-				currentIdx + 1, NORMAL_ERASE);
+				helperCounter2 + 1, NORMAL_ERASE);
 		if(retval != 0) {
 			sif::error << "SoftwareImageHandler::copyBootloaderTo"
 					<<"NandFlash: Faulty block detected!" << std::endl;
 		}
-		stepCounter++;
+		helperCounter2 ++;
 		if(countdown->hasTimedOut()) {
 			return TASK_PERIOD_OVER_SOON;
 		}
 	}
 	stepCounter = 0;
-	currentIdx = 0;
+	helperCounter2 = 0;
+	currentByteIdx = 0;
 	dataRead = false;
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
 
 ReturnValue_t SoftwareImageHandler::handleSdToNandCopyOperation(
-		bool bootloader) {
+		bool bootloader, bool obswSlot) {
 	SDCardAccess sdCardAccess;
 	if(not miscFlag) {
 		//SDCardHandler::printSdCard();
@@ -416,13 +437,32 @@ ReturnValue_t SoftwareImageHandler::handleSdToNandCopyOperation(
 
 		// Current file size only needs to be cached once.
 		// Info output should only be printed once.
-		if(stepCounter == 0) {
+		if(stepCounter == 0 and obswSlot == 0) {
 			currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
-			sif::info << "Copying AT91 software image on SD card "
-					<< sdCardAccess.currentVolumeId << " to AT91 NAND-Flash.."
+			sif::info << "Copying AT91 software image SD card "
+					<< sdCardAccess.currentVolumeId << " slot"
+					<< static_cast<int>(obswSlot) << " to AT91 NAND-Flash.."
 					<< std::endl;
 			sif::info << "Binary size: " <<  currentFileSize
 					<< " bytes." << std::endl;
+
+		}
+		else if(stepCounter == 0) {
+			currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
+			sif::info << "Copying AT91 software image SD card "
+					<< sdCardAccess.currentVolumeId << " slot"
+					<< static_cast<int>(obswSlot) << " to AT91 NAND-Flash.."
+					<< std::endl;
+			sif::info << "Binary size: " <<  currentFileSize
+					<< " bytes." << std::endl;
+
+		}
+
+		if(obswSlot == 0) {
+			binaryFile = f_open(config::SW_SLOT_0_NAME, "r");
+		}
+		else {
+			binaryFile = f_open(config::SW_SLOT_1_NAME, "r");
 		}
 	}
 
@@ -440,8 +480,8 @@ ReturnValue_t SoftwareImageHandler::handleSdToNandCopyOperation(
 			return HasReturnvaluesIF::RETURN_OK;
 		}
 
-		if(currentFileSize - currentIdx < NAND_PAGE_SIZE) {
-			sizeToRead = currentFileSize - currentIdx;
+		if(currentFileSize - currentByteIdx < NAND_PAGE_SIZE) {
+			sizeToRead = currentFileSize - currentByteIdx;
 			// set the rest of the buffer which will not be overwritten
 			// to 0.
 			std::memset(readArray.data() + sizeToRead, 0,
@@ -488,8 +528,32 @@ ReturnValue_t SoftwareImageHandler::handleSdToNandCopyOperation(
 					sizeof(uint32_t));
 		}
 
-		int result = SkipBlockNandFlash_WritePage(&skipBlockNf, 0,
-				stepCounter, readArray.data(), NULL);
+		if(not bootloader and stepCounter == 0){
+			TRACE_WARNING("Arm Vectors:\n\r");
+			uint32_t armVector;
+			memcpy(&armVector, readArray.data(), 4);
+			TRACE_WARNING("1: %" PRIx32 "\r\n", armVector);
+			memcpy(&armVector, readArray.data() + 4, 4);
+			TRACE_WARNING("2: %" PRIx32 "\r\n", armVector);
+			memcpy(&armVector, readArray.data() + 8, 4);
+			TRACE_WARNING("3: %" PRIx32 "\r\n", armVector);
+			memcpy(&armVector, readArray.data() + 12, 4);
+			TRACE_WARNING("4: %" PRIx32 "\r\n", armVector);
+			memcpy(&armVector, readArray.data() + 16, 4);
+			TRACE_WARNING("5: %" PRIx32 "\r\n", armVector);
+			memcpy(&armVector, readArray.data() + 20, 4);
+			TRACE_WARNING("6: %" PRIx32 "\r\n", armVector);
+			memcpy(&armVector, readArray.data() + 24, 4);
+			TRACE_WARNING("7: %" PRIx32 "\r\n", armVector);
+		}
+
+		if((stepCounter > 0) and (helperCounter2 == 64)) {
+			helperCounter1++;
+			helperCounter2 = 0;
+		}
+
+		int result = SkipBlockNandFlash_WritePage(&skipBlockNf, helperCounter1,
+				helperCounter2, readArray.data(), NULL);
 		if(result != 0) {
 			errorCount++;
 			if(errorCount >= 5) {
@@ -503,24 +567,35 @@ ReturnValue_t SoftwareImageHandler::handleSdToNandCopyOperation(
 		}
 		else {
 #ifdef DEBUG
-			sif::debug << "Written " << NAND_PAGE_SIZE << " bytes to "
-					<< "NAND-Flash Block 0 & Page " << stepCounter
-					<< std::endl;
+//			sif::debug << "Written " << NAND_PAGE_SIZE << " bytes to "
+//					<< "NAND-Flash Block " << helperCounter1 << " & Page "
+//					<< helperCounter2 << std::endl;
 #endif
+			helperCounter2++;
 			dataRead = false;
 			errorCount = 0;
 		}
 
 		stepCounter++;
-		currentIdx += NAND_PAGE_SIZE;
+		currentByteIdx += NAND_PAGE_SIZE;
 
-		if(currentIdx >= currentFileSize) {
+		if(currentByteIdx >= currentFileSize) {
 			// operation finished.
 			sif::info << "Copying bootloader to NAND-Flash finished with "
 					<< stepCounter << " cycles!" << std::endl;
 			operationOngoing = false;
 			stepCounter = 0;
-			oneShot = false;
+			if(not blCopied) {
+				blCopied = true;
+				helperCounter1 = 1;
+				helperCounter2 = 0;
+			}
+			else if(not obswCopied) {
+				obswCopied = true;
+				helperCounter1 = 1;
+				helperCounter2 = 0;
+			}
+
 			internalState = InternalState::IDLE;
 			return HasReturnvaluesIF::RETURN_OK;
 		}

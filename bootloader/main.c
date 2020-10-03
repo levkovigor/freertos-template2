@@ -169,9 +169,12 @@ void perform_bootloader_core_operation() {
     if(result != 0) {
         // error
     }
+
+    TRACE_INFO("Alive 2! \r\n");
     go_to_jump_address(SDRAM_DESTINATION, 0);
 }
 
+#ifdef ISIS_OBC_G20
 int perform_iobc_copy_operation_to_sdram() {
 	// determine which binary should be copied to SDRAM first.
 	BootSelect boot_select = BOOT_NOR_FLASH;
@@ -188,6 +191,7 @@ int perform_iobc_copy_operation_to_sdram() {
 	}
 	return result;
 }
+#endif
 
 void idle_loop() {
     uint32_t last_time = RTT_GetTime();
