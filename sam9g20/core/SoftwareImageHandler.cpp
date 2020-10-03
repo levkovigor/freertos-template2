@@ -1,4 +1,3 @@
-#include <fsfw/ipc/QueueFactory.h>
 #include "SoftwareImageHandler.h"
 #include "ImageCopyingHelper.h"
 
@@ -6,6 +5,7 @@
 #include <fsfw/tasks/PeriodicTaskIF.h>
 #include <fsfw/timemanager/Countdown.h>
 #include <fsfw/timemanager/Stopwatch.h>
+#include <fsfw/ipc/QueueFactory.h>
 
 #ifdef ISIS_OBC_G20
 extern "C" {
@@ -15,66 +15,63 @@ extern "C" {
 
 SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
         SystemObject(objectId), actionHelper(this, nullptr) {
-    handlerState = HandlerState::IDLE;
+    oneShot = true;
+    imgCpHelper->configureNand(true);
     receptionQueue = QueueFactory::instance()->createMessageQueue(
             SW_IMG_HANDLER_MQ_DEPTH);
 }
 
 ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
-	//Stopwatch stopwatch;
-	//bool performingOne = false;
-	countdown->resetTimer();
-    switch(handlerState) {
-    case(HandlerState::IDLE): {
-        // check for messages or whether periodic scrubbing is necessary
-        break;
-    }
-    case(HandlerState::COPYING): {
-        // continue current copy operation.
-        break;
-    }
-    case(HandlerState::SCRUBBING): {
-        // continue current scrubbing operation.
-        break;
-    }
+    countdown->resetTimer();
+    while(countdown->isBusy()) {
+        switch(handlerState) {
+        case(HandlerState::IDLE): {
+            if(oneShot) {
+                imgCpHelper->startBootloaderToFlashOperation(false);
+                handlerState = HandlerState::COPYING;
+                oneShot = false;
+            }
+            else {
+                return HasReturnvaluesIF::RETURN_OK;
+            }
+            // check for messages or whether periodic scrubbing is necessary
+            break;
+        }
+        case(HandlerState::COPYING): {
+            // continue current copy operation.
 
-    default: {
-        break;
+            ReturnValue_t result = imgCpHelper->continueCurrentOperation();
+            // timeout or failure.
+            if(result == TASK_PERIOD_OVER_SOON) {
+                return HasReturnvaluesIF::RETURN_OK;
+            }
+            else if(result == HasReturnvaluesIF::RETURN_FAILED) {
+                handlerState = HandlerState::IDLE;
+            }
+            else {
+                // copy op finished
+                if(imgCpHelper->getLastFinishedState() == ImageCopyingHelper::
+                        ImageHandlerStates::COPY_SDC_BL_TO_FLASH) {
+                    imgCpHelper->startSdcToFlashOperation(SdCard::SD_CARD_0,
+                            ImageSlot::IMAGE_0);
+                }
+                else {
+                    handlerState = HandlerState::IDLE;
+                }
+            }
+            break;
+        }
+        case(HandlerState::SCRUBBING): {
+            // continue current scrubbing operation.
+            break;
+        }
+
+        default: {
+            break;
+        }
+        }
+
     }
-    }
-
-//
-//        if(not displayInfo) {
-//            setTrace(TRACE_LEVEL_WARNING);
-//        }
-//
-//        performingOne = true;
-//        ReturnValue_t result = copySdCardImageToNandFlash(true, false, true);
-//        if(result != HasReturnvaluesIF::RETURN_OK) {
-//        	// major error, cancel operation
-//        	blCopied = true;
-//        }
-//
-//        if(not displayInfo) {
-//            setTrace(TRACE_LEVEL_DEBUG);
-//        }
-//    }
-
-//    if(not obswCopied and not performingOne) {
-//        if(not displayInfo) {
-//            setTrace(TRACE_LEVEL_WARNING);
-//        }
-//
-//        ReturnValue_t result = copySdCardImageToNandFlash(false, false, false);
-//        if(result != HasReturnvaluesIF::RETURN_OK) {
-//        	// major error, cancel operation
-//        	obswCopied = false;
-//        }
-//
-//        if(not displayInfo) {
-//            setTrace(TRACE_LEVEL_DEBUG);
-//        }
-
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -124,12 +121,12 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
 #ifdef ISIS_OBC_G20
 
 ReturnValue_t SoftwareImageHandler::copySdCardImageToNorFlash(SdCard sdCard,
-        ImageSlot imageSlot, bool performHammingCheck) {
+        ImageSlot imageSlot) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t SoftwareImageHandler::copyNorFlashImageToSdCards(SdCard sdCard,
-        ImageSlot imageSlot, bool performHammingCheck) {
+        ImageSlot imageSlot) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 

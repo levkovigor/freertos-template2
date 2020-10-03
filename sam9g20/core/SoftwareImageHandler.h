@@ -1,5 +1,5 @@
-#ifndef SAM9G20_CORE_SOFTWAREUPDATEHANDLER_H_
-#define SAM9G20_CORE_SOFTWAREUPDATEHANDLER_H_
+#ifndef SAM9G20_CORE_SOFTWAREIMAGEHANDLER_H_
+#define SAM9G20_CORE_SOFTWAREIMAGEHANDLER_H_
 
 #include <fsfw/action/HasActionsIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
@@ -14,13 +14,30 @@ class PeriodicTaskIF;
 class ScrubbingEngine;
 class Countdown;
 
-/** These generic states can be used inside the primary state machine */
+/**
+ * These generic states can be used inside the primary state machine.
+ * They will also be used by the action helper to generate step replies.
+ */
 enum class GenericInternalState {
     IDLE,
-    // Usually reserved for preparation steps like clearing memory
     STEP_1,
-    // Usually reserved for the actual copy operation.
-    STEP_2
+    STEP_2,
+    STEP_3
+};
+
+/**
+ * There are 2 SD cards available.
+ * In normal cases, SD card 0 will be preferred
+ */
+enum class SdCard {
+    SD_CARD_0,
+    SD_CARD_1
+};
+
+/** Image slots on SD cards */
+enum class ImageSlot {
+    IMAGE_0, //!< Primary Image
+    IMAGE_1 //!< Secondary image (or software update)
 };
 
 /**
@@ -49,7 +66,8 @@ class SoftwareImageHandler: public SystemObject,
         public HasActionsIF {
 public:
 	static constexpr uint8_t SUBSYSTEM_ID = CLASS_ID::SW_IMAGE_HANDLER;
-	static constexpr ReturnValue_t TASK_PERIOD_OVER_SOON = MAKE_RETURN_CODE(0x00);
+	static constexpr ReturnValue_t OPERATION_FINISHED = MAKE_RETURN_CODE(0x00);
+	static constexpr ReturnValue_t TASK_PERIOD_OVER_SOON = MAKE_RETURN_CODE(0x01);
 
 	static constexpr uint8_t SW_IMG_HANDLER_MQ_DEPTH = 5;
 
@@ -71,20 +89,7 @@ public:
             MessageQueueId_t commandedBy, const uint8_t* data,
             size_t size) override;
 private:
-    /**
-     * There are 2 SD cards available.
-     * In normal cases, SD card 1 will be preferred
-     */
-    enum class SdCard {
-        SD_CARD_1,
-        SD_CARD_2
-    };
 
-    /** Image slots on SD cards */
-    enum class ImageSlot {
-        IMAGE_1, //!< Primary Image
-        IMAGE_2 //!< Secondary image (or software update)
-    };
 
     /** These internal states are used for the primary state machine */
     enum class HandlerState {
@@ -107,9 +112,9 @@ private:
     HandlerState handlerState = HandlerState::IDLE;
 
     bool displayInfo = false;
-    bool operationOngoing = false;
     bool performHammingCodeCheck = false;
-    bool oneShot = true;
+    bool oneShot = false;
+    bool blWritten = false;
 
 
 #ifdef ISIS_OBC_G20
@@ -124,15 +129,15 @@ private:
     ReturnValue_t copyFramBootloaderToNorFlash();
 
     // Handler functions for the SD cards
-    ReturnValue_t copySdCardImageToNorFlash(SdCard sdCard, ImageSlot imageSlot,
-            bool performHammingCheck);
-    ReturnValue_t copyNorFlashImageToSdCards(SdCard sdCard, ImageSlot imageSlot,
-            bool performHammingCheck);
+    ReturnValue_t copySdCardImageToNorFlash(SdCard sdCard, ImageSlot imageSlot);
+    ReturnValue_t copyNorFlashImageToSdCards(SdCard sdCard,
+            ImageSlot imageSlot);
     // Scrubbing functions
     ReturnValue_t checkNorFlashImage();
 #else
-    ReturnValue_t copySdBootloaderToNandFlash();
-    ReturnValue_t copySdImageToNandFlash();
+    ReturnValue_t copySdBootloaderToNandFlash(SdCard sdCard,
+            ImageSlot imageSlot);
+    ReturnValue_t copySdImageToNandFlash(SdCard sdCard, ImageSlot imageSlot);
     ReturnValue_t checkNandFlashImage();
 #endif
 
@@ -142,4 +147,4 @@ private:
 
 
 
-#endif /* SAM9G20_CORE_SOFTWAREUPDATEHANDLER_H_ */
+#endif /* SAM9G20_CORE_SOFTWAREIMAGEHANDLER_H_ */
