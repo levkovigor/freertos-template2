@@ -55,13 +55,13 @@ public:
 
     SoftwareImageHandler(object_id_t objectId);
 
+    /** ExecutableObjectIF overrides */
     ReturnValue_t performOperation(uint8_t opCode) override;
-
-    ReturnValue_t initialize() override;
-
     ReturnValue_t initializeAfterTaskCreation() override;
-
     void setTaskIF(PeriodicTaskIF* executingTask) override;
+
+    /** SystemObject overridfes */
+    ReturnValue_t initialize() override;
 
     /** HasActionsIF overrides */
     MessageQueueId_t getCommandQueue() const override;
