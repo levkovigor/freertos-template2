@@ -1,4 +1,3 @@
-
 extern "C"{
 #include <board.h>
 #include <AT91SAM9G20.h>
