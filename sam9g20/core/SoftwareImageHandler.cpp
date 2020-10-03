@@ -36,39 +36,39 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
 	bool performingOne = false;
 	countdown->resetTimer();
 #if defined(AT91SAM9G20_EK)
-    if(not blCopied) {
-
-        if(not displayInfo) {
-            setTrace(TRACE_LEVEL_WARNING);
-        }
-
-        performingOne = true;
-        ReturnValue_t result = copySdCardImageToNandFlash(true, false, true);
-        if(result != HasReturnvaluesIF::RETURN_OK) {
-        	// major error, cancel operation
-        	blCopied = true;
-        }
-
-        if(not displayInfo) {
-            setTrace(TRACE_LEVEL_DEBUG);
-        }
-    }
-
-    if(not obswCopied and not performingOne) {
-        if(not displayInfo) {
-            setTrace(TRACE_LEVEL_WARNING);
-        }
-
-        ReturnValue_t result = copySdCardImageToNandFlash(false, false, true);
-        if(result != HasReturnvaluesIF::RETURN_OK) {
-        	// major error, cancel operation
-        	obswCopied = false;
-        }
-
-        if(not displayInfo) {
-            setTrace(TRACE_LEVEL_DEBUG);
-        }
-    }
+//    if(not blCopied) {
+//
+//        if(not displayInfo) {
+//            setTrace(TRACE_LEVEL_WARNING);
+//        }
+//
+//        performingOne = true;
+//        ReturnValue_t result = copySdCardImageToNandFlash(true, false, true);
+//        if(result != HasReturnvaluesIF::RETURN_OK) {
+//        	// major error, cancel operation
+//        	blCopied = true;
+//        }
+//
+//        if(not displayInfo) {
+//            setTrace(TRACE_LEVEL_DEBUG);
+//        }
+//    }
+//
+//    if(not obswCopied and not performingOne) {
+//        if(not displayInfo) {
+//            setTrace(TRACE_LEVEL_WARNING);
+//        }
+//
+//        ReturnValue_t result = copySdCardImageToNandFlash(false, false, false);
+//        if(result != HasReturnvaluesIF::RETURN_OK) {
+//        	// major error, cancel operation
+//        	obswCopied = false;
+//        }
+//
+//        if(not displayInfo) {
+//            setTrace(TRACE_LEVEL_DEBUG);
+//        }
+//    }
 #endif
 
     return HasReturnvaluesIF::RETURN_OK;
@@ -408,9 +408,9 @@ ReturnValue_t SoftwareImageHandler::handleSdToNandCopyOperation(
 
 
 	F_FILE*  binaryFile = nullptr;
-
+	int result = 0;
 	if(bootloader) {
-		int result = change_directory(config::BOOTLOADER_REPOSITORY, true);
+		result = change_directory(config::BOOTLOADER_REPOSITORY, true);
 		if(result != F_NO_ERROR) {
 			// changing directory failed!
 			return HasReturnvaluesIF::RETURN_FAILED;
@@ -430,7 +430,7 @@ ReturnValue_t SoftwareImageHandler::handleSdToNandCopyOperation(
 		binaryFile = f_open(config::BOOTLOADER_NAME, "r");
 	}
 	else {
-		int result = change_directory(config::SW_REPOSITORY, true);
+		result = change_directory(config::SW_REPOSITORY, true);
 		if(result != F_NO_ERROR) {
 			// changing directory failed!
 			return HasReturnvaluesIF::RETURN_FAILED;
@@ -471,6 +471,13 @@ ReturnValue_t SoftwareImageHandler::handleSdToNandCopyOperation(
 		// Opening file failed!
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
+	// Seek correct position in file.
+	result = f_seek(binaryFile, currentByteIdx, F_SEEK_SET);
+	if(result != F_NO_ERROR) {
+	    // should not happen!
+	    return HasReturnvaluesIF::RETURN_FAILED;
+	}
+
 	size_t sizeToRead = NAND_PAGE_SIZE;
 
 	while(true) {
@@ -529,31 +536,31 @@ ReturnValue_t SoftwareImageHandler::handleSdToNandCopyOperation(
 					sizeof(uint32_t));
 		}
 
-		if(not bootloader and stepCounter == 0){
-			TRACE_WARNING("Arm Vectors:\n\r");
-			uint32_t armVector;
-			memcpy(&armVector, readArray.data(), 4);
-			TRACE_WARNING("1: %" PRIx32 "\r\n", armVector);
-			memcpy(&armVector, readArray.data() + 4, 4);
-			TRACE_WARNING("2: %" PRIx32 "\r\n", armVector);
-			memcpy(&armVector, readArray.data() + 8, 4);
-			TRACE_WARNING("3: %" PRIx32 "\r\n", armVector);
-			memcpy(&armVector, readArray.data() + 12, 4);
-			TRACE_WARNING("4: %" PRIx32 "\r\n", armVector);
-			memcpy(&armVector, readArray.data() + 16, 4);
-			TRACE_WARNING("5: %" PRIx32 "\r\n", armVector);
-			memcpy(&armVector, readArray.data() + 20, 4);
-			TRACE_WARNING("6: %" PRIx32 "\r\n", armVector);
-			memcpy(&armVector, readArray.data() + 24, 4);
-			TRACE_WARNING("7: %" PRIx32 "\r\n", armVector);
-		}
+//		if(not bootloader and stepCounter == 0){
+//			TRACE_WARNING("Arm Vectors:\n\r");
+//			uint32_t armVector;
+//			memcpy(&armVector, readArray.data(), 4);
+//			TRACE_WARNING("1: %" PRIx32 "\r\n", armVector);
+//			memcpy(&armVector, readArray.data() + 4, 4);
+//			TRACE_WARNING("2: %" PRIx32 "\r\n", armVector);
+//			memcpy(&armVector, readArray.data() + 8, 4);
+//			TRACE_WARNING("3: %" PRIx32 "\r\n", armVector);
+//			memcpy(&armVector, readArray.data() + 12, 4);
+//			TRACE_WARNING("4: %" PRIx32 "\r\n", armVector);
+//			memcpy(&armVector, readArray.data() + 16, 4);
+//			TRACE_WARNING("5: %" PRIx32 "\r\n", armVector);
+//			memcpy(&armVector, readArray.data() + 20, 4);
+//			TRACE_WARNING("6: %" PRIx32 "\r\n", armVector);
+//			memcpy(&armVector, readArray.data() + 24, 4);
+//			TRACE_WARNING("7: %" PRIx32 "\r\n", armVector);
+//		}
 
 		if((stepCounter > 0) and (helperCounter2 == 64)) {
 			helperCounter1++;
 			helperCounter2 = 0;
 		}
 
-		int result = SkipBlockNandFlash_WritePage(&skipBlockNf, helperCounter1,
+		result = SkipBlockNandFlash_WritePage(&skipBlockNf, helperCounter1,
 				helperCounter2, readArray.data(), NULL);
 		if(result != 0) {
 			errorCount++;

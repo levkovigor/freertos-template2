@@ -58,7 +58,7 @@ public:
 private:
     PeriodicTaskIF* executingTask = nullptr;
 
-    std::array<uint8_t, 8192> readArray;
+    std::array<uint8_t, 2048> readArray;
     /**
      * There are 2 SD cards available.
      * In normal cases, SD card 1 will be preferred

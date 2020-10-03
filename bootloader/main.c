@@ -170,7 +170,6 @@ void perform_bootloader_core_operation() {
         // error
     }
 
-    TRACE_INFO("Alive 2! \r\n");
     go_to_jump_address(SDRAM_DESTINATION, 0);
 }
 
