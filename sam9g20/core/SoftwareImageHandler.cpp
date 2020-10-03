@@ -59,7 +59,7 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
             setTrace(TRACE_LEVEL_WARNING);
         }
 
-        ReturnValue_t result = copySdCardImageToNandFlash(false, false, false);
+        ReturnValue_t result = copySdCardImageToNandFlash(false, false, true);
         if(result != HasReturnvaluesIF::RETURN_OK) {
         	// major error, cancel operation
         	obswCopied = false;
@@ -371,6 +371,7 @@ ReturnValue_t SoftwareImageHandler::handleErasingForObsw(bool obswSlot) {
 	uint8_t requiredBlocks = std::ceil(
 			static_cast<float>(currentFileSize) /
 			(PAGES_PER_BLOCK * NAND_PAGE_SIZE));
+	requiredBlocks += 1;
 
 	while(helperCounter2 != requiredBlocks) {
 		// erase multiple blocks for required binary size.
