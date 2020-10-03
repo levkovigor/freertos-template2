@@ -51,6 +51,8 @@ public:
 	static constexpr uint8_t SUBSYSTEM_ID = CLASS_ID::SW_IMAGE_HANDLER;
 	static constexpr ReturnValue_t TASK_PERIOD_OVER_SOON = MAKE_RETURN_CODE(0x00);
 
+	static constexpr uint8_t SW_IMG_HANDLER_MQ_DEPTH = 5;
+
 	using ImageBuffer = std::array<uint8_t, 2048>;
 
     SoftwareImageHandler(object_id_t objectId);
@@ -94,6 +96,7 @@ private:
         SCRUBBING
     };
 
+    MessageQueueIF* receptionQueue = nullptr;
     PeriodicTaskIF* executingTask = nullptr;
     ActionHelper actionHelper;
     ImageBuffer imgBuffer;

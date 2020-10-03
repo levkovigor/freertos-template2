@@ -1,3 +1,4 @@
+#include <fsfw/ipc/QueueFactory.h>
 #include "SoftwareImageHandler.h"
 #include "ImageCopyingHelper.h"
 
@@ -15,6 +16,8 @@ extern "C" {
 SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
         SystemObject(objectId), actionHelper(this, nullptr) {
     handlerState = HandlerState::IDLE;
+    receptionQueue = QueueFactory::instance()->createMessageQueue(
+            SW_IMG_HANDLER_MQ_DEPTH);
 }
 
 ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
@@ -108,7 +111,7 @@ void SoftwareImageHandler::checkSdCardImage(SdCard sdCard,
 }
 
 MessageQueueId_t SoftwareImageHandler::getCommandQueue() const {
-    return 0;
+    return receptionQueue->getId();
 }
 
 ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
