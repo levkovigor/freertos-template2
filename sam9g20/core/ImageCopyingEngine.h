@@ -163,6 +163,24 @@ private:
      */
     void reset();
 
+    /**
+     * Generic function to read file which also simplfies error handling.
+     * Plese note that this only works if the file already has been opened.
+     * Also, the pointer from where to read inb the file
+     * should be set beforehand.
+     * @param buffer    Buffer where the read data will be stored
+     * @param sizeToRead
+     * @param sizeRead  Actual number of bytes read, can be smaller if close
+     *                  to end of file.
+     * @return
+     * -@c SoftwareImageHandler::TASK_PERIOD_OVER_SOON Reading failed,
+     *     new attempt should be made on next cycle
+     * -@c RETURN_FAILED Reading failed 3 times
+     * -@c RETURN_OK Read success
+     */
+    ReturnValue_t readFile(uint8_t* buffer, size_t sizeToRead,
+            size_t* sizeRead, F_FILE** file);
+
 };
 
 #endif /* SAM9G20_CORE_IMAGECOPYINGENGINE_H_ */

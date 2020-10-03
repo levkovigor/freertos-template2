@@ -66,7 +66,7 @@ int main(void)
 	}
 #endif
 
-    printf("\n\r-- Source On-Board Software --\n\r");
+    printf("\n\r-- SOURCE On-Board Software --\n\r");
     printf("-- %s --\n\r", BOARD_NAME);
     printf("-- Software version v%d.%d --\n\r", SW_VERSION, SW_SUBVERSION);
     printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);

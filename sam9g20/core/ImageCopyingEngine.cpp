@@ -362,7 +362,6 @@ ReturnValue_t ImageCopyingEngine::handleSdToNandCopyOperation(
 
 ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
         F_FILE** binaryFile) {
-
     // If reading or writing failed, the loop might be restarted
     // to have multiple attempts, so we need to check for a timeout
     // at the start as well.
@@ -379,29 +378,21 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
                 NAND_PAGE_SIZE - sizeToRead);
     }
 
-    ssize_t bytesRead = 0;
+    size_t bytesRead = 0;
 
     // If data has been read but still needs to be copied, don't read.
     if(not helperFlag1) {
-        bytesRead = f_read(imgBuffer->data(), sizeof(uint8_t),
-                sizeToRead, *binaryFile);
-        if(bytesRead < 0) {
-            errorCount++;
-            // if reading a file failed 3 times, exit.
-            if(errorCount >= 3) {
-                sif::error << "ImageCopyingHelper::performNandCopyAlgorithm: "
-                        << "Reading file failed!" << std::endl;
-                return HasReturnvaluesIF::RETURN_FAILED;
-            }
-            // reading file failed. retry next cycle
-            return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+        ReturnValue_t result = readFile(imgBuffer->data(), sizeToRead,
+                &bytesRead, binaryFile);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            return result;
         }
     }
 
     errorCount = 0;
     helperFlag1 = true;
 
-    if(static_cast<size_t>(bytesRead) < sizeToRead) {
+    if(bytesRead < sizeToRead) {
         // should not happen..
         sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash:"
                 << " Bytes read smaller than size to read!"
@@ -453,7 +444,7 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
 
     // This is the logic necessary so that the block is incremented when
     // all 64 pages of the current block have been written.
-    if((stepCounter > 0) and (helperCounter2 == 64)) {
+    if((stepCounter > 0) and (helperCounter2 == PAGES_PER_BLOCK)) {
         helperCounter1++;
         helperCounter2 = 0;
     }
@@ -567,14 +558,12 @@ ReturnValue_t ImageCopyingEngine::nandFlashInit()
 
 ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
     countdown->resetTimer();
-    // 1. step: Find out bootloader location and name
-    //read_nor_flash_reboot_counter()
-    // we should start a countdown and suspend the operation when coming
-    // close to the periodic operation frequency. That way, other low prio
-    // tasks get the chance to do stuff to.
+
+    // 1. step: Find out bootloader size
 
     // NOR-Flash:
-    // 4 small NOR-Flash sectors will be reserved for now: 8192 * 4 = 32768
+    // 5 small NOR-Flash sectors will be reserved and clear
+    // for now: 8192 * 4 = 40960 bytes
 
     // Erase the 4 small sectors first. measure how long that takes.
 
@@ -590,7 +579,7 @@ ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
         }
 
         if(countdown->hasTimedOut()) {
-            return HasReturnvaluesIF::RETURN_OK;
+            return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
         }
 
         if(stepCounter == 1) {
@@ -601,7 +590,7 @@ ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
         }
 
         if(countdown->hasTimedOut()) {
-            return HasReturnvaluesIF::RETURN_OK;
+            return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
         }
 
         if(stepCounter == 2) {
@@ -612,7 +601,7 @@ ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
         }
 
         if(countdown->hasTimedOut()) {
-            return HasReturnvaluesIF::RETURN_OK;
+            return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
         }
 
         if(stepCounter == 3) {
@@ -623,42 +612,43 @@ ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
         }
 
         if(countdown->hasTimedOut()) {
-            return HasReturnvaluesIF::RETURN_OK;
+            return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
         }
 
         if(stepCounter == 4) {
-            internalState = GenericInternalState::STEP_2;
+            result = NORFLASH_EraseSector(&NORFlash, NORFLASH_SA4_ADDRESS);
+            if(result != 0) {
+                return HasReturnvaluesIF::RETURN_FAILED;
+            }
+
         }
     }
 
+    internalState = GenericInternalState::STEP_2;
+    if(countdown->hasTimedOut()) {
+        return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+    }
 
-    //    stopwatch.stop(true);
-    //    stopwatch.start();
+    SDCardAccess sdCardAccess(SD_CARD_0);
+    F_FILE * binaryFile;
 
-    // lets ignore that for now and just write the SD card bootloader to
-    // the nor flash. lets assume the name is
-    // "bl.bin" and the repository is "BIN"
+    ReturnValue_t result = prepareGenericFileInformation(
+            sdCardAccess.currentVolumeId, &binaryFile);
 
-    SDCardAccess sdCardAccess;
-
-
-    //  result = change_directory("BIN", true);
-
-    currentFileSize = f_filelength("bl.bin");
-    F_FILE* blFile = f_open("bl.bin", "r");
-
+    size_t sizeToRead = 2048;
     while(true) {
         // read length of NOR-Flash small section
-        f_read(imgBuffer->data(), sizeof(uint8_t), 8192, blFile);
+        ssize_t bytesRead = f_read(imgBuffer->data(), sizeof(uint8_t),
+                sizeToRead, binaryFile);
 
-        // we should consider a critical section here and extracting this function
-        // to a special task with the highest priority so it can not be interrupted.
-
-        //      result = NORFLASH_WriteData(&NORFlash, NORFLASH_SA0_ADDRESS,
-        //              readArray.data(), NORFLASH_SMALL_SECTOR_SIZE);
-        //      if(result != 0) {
-        //          return HasReturnvaluesIF::RETURN_FAILED;
-        //      }
+        // we should consider a critical section here and extracting this
+        // function to a special task with the highest priority so it can not
+        // be interrupted.
+        result = NORFLASH_WriteData(&NORFlash, NORFLASH_SA0_ADDRESS,
+                imgBuffer->data(), bytesRead);
+        if(result != 0) {
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
     }
 
     return HasReturnvaluesIF::RETURN_OK;
@@ -759,4 +749,21 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-
+ReturnValue_t ImageCopyingEngine::readFile(uint8_t *buffer, size_t sizeToRead,
+        size_t *sizeRead, F_FILE** file) {
+    ssize_t bytesRead = f_read(imgBuffer->data(), sizeof(uint8_t),
+            sizeToRead, *file);
+    if(bytesRead < 0) {
+        errorCount++;
+        // if reading a file failed 3 times, exit.
+        if(errorCount >= 3) {
+            sif::error << "ImageCopyingHelper::performNandCopyAlgorithm: "
+                    << "Reading file failed!" << std::endl;
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+        // reading file failed. retry next cycle
+        return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+    }
+    *sizeRead = static_cast<size_t>(bytesRead);
+    return HasReturnvaluesIF::RETURN_OK;
+}

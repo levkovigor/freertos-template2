@@ -15,7 +15,9 @@ extern "C" {
 SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
         SystemObject(objectId), actionHelper(this, nullptr) {
     oneShot = true;
+#ifdef AT91SAM9G20_EK
     imgCpHelper->configureNand(true);
+#endif
     receptionQueue = QueueFactory::instance()->createMessageQueue(
             SW_IMG_HANDLER_MQ_DEPTH);
 }
