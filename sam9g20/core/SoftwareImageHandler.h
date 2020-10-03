@@ -87,14 +87,11 @@ private:
     /** These internal states are used for the primary state machine */
     enum class HandlerState {
         IDLE,
-        COPY_BL,
-        COPY_OBSW,
-        SCRUB_BL,
-        SCRUB_OBSW_NOR_FLASH,
-        SCRUB_OBSW_SDC1_SL1,
-        SCRUB_OBSW_SDC1_SL2,
-        SCRUB_OBSW_SDC2_SL1,
-        SCRUB_OBSW_SDC2_SL2
+        //! Copy operations will have priority over scrubbing operations
+        COPYING,
+        //! Scrubbing will be performed at fixed priorities or on command
+        //! if there is no copy operation going on.
+        SCRUBBING
     };
 
     PeriodicTaskIF* executingTask = nullptr;

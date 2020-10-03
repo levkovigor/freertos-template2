@@ -14,6 +14,7 @@
 #define DISPLAY_FACTORY_ALLOCATION_SIZE     0
 #define RS485_WITH_TERMINATION              1
 #define ADD_TEST_CODE                       1
+#define PRINT_MISSED_DEADLINES              1
 
 #ifdef __cplusplus
 namespace config {

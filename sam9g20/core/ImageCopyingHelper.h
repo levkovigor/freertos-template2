@@ -33,7 +33,22 @@ private:
     Countdown* countdown;
     SoftwareImageHandler::ImageBuffer* imgBuffer;
 
+    enum class ImageHandlerStates {
+        COPY_SDC_IMG_TO_FLASH,
+        COPY_FLASH_IMG_TO_SDC,
+        COPY_SDC_BL_TO_FLASH
+    };
+
     GenericInternalState internalState = GenericInternalState::IDLE;
+
+    /**
+     * Can be used by SoftwareImageHandler to check whether the handler is
+     * ready for a new operation.
+     * @return
+     */
+    bool getOperationOngoing() const;
+
+
     bool displayInfo = false;
     uint16_t stepCounter = 0;
     size_t currentByteIdx = 0;

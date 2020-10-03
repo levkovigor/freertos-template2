@@ -11,6 +11,15 @@ ImageCopyingHelper::ImageCopyingHelper(SoftwareImageHandler *owner,
         owner(owner), countdown(countdown), imgBuffer(imgBuffer) {}
 
 
+bool ImageCopyingHelper::getOperationOngoing() const {
+    if(internalState == GenericInternalState::IDLE) {
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
 #ifdef AT91SAM9G20_EK
 
 extern "C" {
@@ -94,7 +103,6 @@ ReturnValue_t ImageCopyingHelper::copySdCardImageToNandFlash(
             return result;
         }
     }
-
 
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -197,6 +205,7 @@ ReturnValue_t ImageCopyingHelper::handleErasingForObsw(bool obswSlot) {
     helperFlag1 = false;
     return HasReturnvaluesIF::RETURN_OK;
 }
+
 
 ReturnValue_t ImageCopyingHelper::handleSdToNandCopyOperation(
         bool bootloader, bool obswSlot, bool displayExtendedPrintout) {

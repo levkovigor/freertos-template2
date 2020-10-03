@@ -6,13 +6,15 @@
 #include <fsfw/timemanager/Countdown.h>
 #include <fsfw/timemanager/Stopwatch.h>
 
+#ifdef ISIS_OBC_G20
 extern "C" {
 #include <hal/Storage/NORflash.h>
 }
+#endif
 
 SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
         SystemObject(objectId), actionHelper(this, nullptr) {
-    handlerState = HandlerState::COPY_BL;
+    handlerState = HandlerState::IDLE;
 }
 
 ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
@@ -20,18 +22,19 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
 	//bool performingOne = false;
 	countdown->resetTimer();
     switch(handlerState) {
-    case(HandlerState::COPY_BL): {
+    case(HandlerState::IDLE): {
+        // check for messages or whether periodic scrubbing is necessary
         break;
     }
-    case(HandlerState::COPY_OBSW): {
+    case(HandlerState::COPYING): {
+        // continue current copy operation.
         break;
     }
-    case(HandlerState::SCRUB_BL): {
+    case(HandlerState::SCRUBBING): {
+        // continue current scrubbing operation.
         break;
     }
-    case(HandlerState::SCRUB_OBSW_NOR_FLASH): {
-        break;
-    }
+
     default: {
         break;
     }
@@ -116,7 +119,6 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
 
 
 #ifdef ISIS_OBC_G20
-
 
 ReturnValue_t SoftwareImageHandler::copySdCardImageToNorFlash(SdCard sdCard,
         ImageSlot imageSlot, bool performHammingCheck) {
