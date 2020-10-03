@@ -24,7 +24,7 @@ namespace config {
 extern const char* BOOTLOADER_REPOSITORY;
 extern const char* SW_REPOSITORY;
 #else
-extern char* BOOTLOADER_REPOSITORY;
+extern const char* BOOTLOADER_REPOSITORY;
 extern const char* SW_REPOSITORY;
 #endif
 

@@ -3,9 +3,12 @@
 
 #include <sam9g20/core/SoftwareImageHandler.h>
 
+#ifdef AT91SAM9G20_EK
 extern "C" {
 #include <at91/memories/nandflash/NandCommon.h>
 }
+#else
+#endif
 
 class ImageCopyingHelper {
 public:
@@ -73,6 +76,9 @@ private:
     ReturnValue_t handleErasingForObsw(bool softwareSlot);
     ReturnValue_t handleSdToNandCopyOperation(bool bootloader, bool obswSlot,
             bool displayExtendedPrintout = false);
+#else
+    ReturnValue_t copySdCardImageToNorFlash(bool bootloader,
+            bool performHammingCheck, bool obswSlot = false);
 #endif
 
 };

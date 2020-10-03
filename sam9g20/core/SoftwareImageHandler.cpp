@@ -6,6 +6,9 @@
 #include <fsfw/timemanager/Countdown.h>
 #include <fsfw/timemanager/Stopwatch.h>
 
+extern "C" {
+#include <hal/Storage/NORflash.h>
+}
 
 SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
         SystemObject(objectId), actionHelper(this, nullptr) {
@@ -115,116 +118,25 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
 #ifdef ISIS_OBC_G20
 
 
-void SoftwareImageHandler::copySdCardImageToNorFlash(SdCard sdCard,
+ReturnValue_t SoftwareImageHandler::copySdCardImageToNorFlash(SdCard sdCard,
         ImageSlot imageSlot, bool performHammingCheck) {
-}
-
-void SoftwareImageHandler::copyNorFlashImageToSdCards(SdCard sdCard,
-        ImageSlot imageSlot, bool performHammingCheck) {
-}
-
-void SoftwareImageHandler::checkNorFlashImage() {
-}
-
-ReturnValue_t SoftwareImageHandler::copySdBootloaderToNorFlash(
-        bool performHammingCheck) {
-	countdown->resetTimer();
-    // 1. step: Find out bootloader location and name
-	//read_nor_flash_reboot_counter()
-	// we should start a countdown and suspend the operation when coming
-	// close to the periodic operation frequency. That way, other low prio
-	// tasks get the chance to do stuff to.
-
-    // NOR-Flash:
-    // 4 small NOR-Flash sectors will be reserved for now: 8192 * 4 = 32768
-
-	// Erase the 4 small sectors first. measure how long that takes.
-
-
-	if(internalState == GenericInternalState::CLEARING_MEMORY) {
-		int result = 0;
-		if(stepCounter == 0) {
-
-			result = NORFLASH_EraseSector(&NORFlash, NORFLASH_SA0_ADDRESS);
-			if(result != 0) {
-				return HasReturnvaluesIF::RETURN_FAILED;
-			}
-		}
-
-		if(countdown->hasTimedOut()) {
-			return HasReturnvaluesIF::RETURN_OK;
-		}
-
-		if(stepCounter == 1) {
-			result = NORFLASH_EraseSector(&NORFlash, NORFLASH_SA1_ADDRESS);
-			if(result != 0) {
-				return HasReturnvaluesIF::RETURN_FAILED;
-			}
-		}
-
-		if(countdown->hasTimedOut()) {
-			return HasReturnvaluesIF::RETURN_OK;
-		}
-
-		if(stepCounter == 2) {
-			result = NORFLASH_EraseSector(&NORFlash, NORFLASH_SA2_ADDRESS);
-			if(result != 0) {
-				return HasReturnvaluesIF::RETURN_FAILED;
-			}
-		}
-
-		if(countdown->hasTimedOut()) {
-			return HasReturnvaluesIF::RETURN_OK;
-		}
-
-		if(stepCounter == 3) {
-			result = NORFLASH_EraseSector(&NORFlash, NORFLASH_SA3_ADDRESS);
-			if(result != 0) {
-				return HasReturnvaluesIF::RETURN_FAILED;
-			}
-		}
-
-		if(countdown->hasTimedOut()) {
-			return HasReturnvaluesIF::RETURN_OK;
-		}
-
-		if(stepCounter == 4) {
-			internalState = GenericInternalState::COPYING;
-		}
-	}
-
-
-//    stopwatch.stop(true);
-//    stopwatch.start();
-
-	// lets ignore that for now and just write the SD card bootloader to
-	// the nor flash. lets assume the name is
-	// "bl.bin" and the repository is "BIN"
-
-	SDCardAccess sdCardAccess;
-
-
-//	result = change_directory("BIN", true);
-
-	currentFileSize = f_filelength("bl.bin");
-	F_FILE* bootloader = f_open("bl.bin", "r");
-
-	while(true) {
-		// read length of NOR-Flash small section
-		f_read(readArray.data(), sizeof(uint8_t), 8192, bootloader);
-
-		// we should consider a critical section here and extracting this function
-		// to a special task with the highest priority so it can not be interrupted.
-
-//		result = NORFLASH_WriteData(&NORFlash, NORFLASH_SA0_ADDRESS,
-//				readArray.data(), NORFLASH_SMALL_SECTOR_SIZE);
-//		if(result != 0) {
-//			return HasReturnvaluesIF::RETURN_FAILED;
-//		}
-	}
-
     return HasReturnvaluesIF::RETURN_OK;
 }
+
+ReturnValue_t SoftwareImageHandler::copyNorFlashImageToSdCards(SdCard sdCard,
+        ImageSlot imageSlot, bool performHammingCheck) {
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t SoftwareImageHandler::checkNorFlashImage() {
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t copySdBootloaderToNorFlash() {
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+#else
 
 #endif
 
