@@ -9,7 +9,8 @@
 
 Service23FileManagement::Service23FileManagement(object_id_t objectId,
         uint16_t apid, uint8_t serviceId):
-        CommandingServiceBase(objectId, apid, serviceId, 4,60) {
+        CommandingServiceBase(objectId, apid, serviceId,
+        NUM_PARALLEL_COMMANDS, COMMAND_TIMEOUT_SECONDS) {
 }
 
 
@@ -64,125 +65,53 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
 		uint8_t subservice, const uint8_t *tcData, size_t tcDataLen,
 		uint32_t *state, object_id_t objectId) {
 	ReturnValue_t result;
+	store_address_t storeId;
+    switch(subservice) {
+    case(Subservice::CREATE_FILE):
+    case(Subservice::CREATE_DIRECTORY):
+    case(Subservice::DELETE_FILE):
+    case(Subservice::DELETE_DIRECTORY):
+    case(Subservice::WRITE):
+    case(Subservice::READ): {
+        result = addDataToStore(&storeId, tcData, tcDataLen);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            return result;
+        }
+        break;
+    }
+
+    default: {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    }
+
 	switch(subservice) {
 	case(Subservice::CREATE_FILE): {
+	    FileSystemMessage::setCreateFileCommand(message, storeId);
 		break;
 	}
 	case(Subservice::CREATE_DIRECTORY): {
-		result = prepareCreateDirectoryCommand(message, tcData, tcDataLen);
+	    FileSystemMessage::setCreateDirectoryCommand(message, storeId);
 		break;
 	}
 	case(Subservice::DELETE_FILE): {
-		result = prepareDeleteFileCommand(message, tcData, tcDataLen);
+	    FileSystemMessage::setDeleteFileCommand(message, storeId);
 		break;
 	}
 	case(Subservice::DELETE_DIRECTORY): {
-		result = prepareDeleteDirectoryCommand(message, tcData, tcDataLen);
+	    FileSystemMessage::setDeleteDirectoryCommand(message, storeId);
 		break;
 	}
 	case(Subservice::WRITE): {
-		result = prepareWriteCommand(message, tcData, tcDataLen);
+	    FileSystemMessage::setWriteCommand(message, storeId);
 		break;
 	}
 	case(Subservice::READ): {
-		result = prepareReadCommand(message, tcData, tcDataLen);
+	    FileSystemMessage::setReadCommand(message, storeId);
 		break;
 	}
-	default: {
-		result = HasReturnvaluesIF::RETURN_FAILED;
 	}
 
-	}
-
-	return result;
-}
-
-
-ReturnValue_t Service23FileManagement::prepareDeleteFileCommand(
-		CommandMessage *message, const uint8_t *tcData, uint32_t tcDataLen) {
-	store_address_t parameterAddress;
-	/* Add data without the objectId to the IPC store */
-	ReturnValue_t result = IPCStore->addData(&parameterAddress,
-			tcData + sizeof(object_id_t), tcDataLen - sizeof(object_id_t));
-	if(result == HasReturnvaluesIF::RETURN_OK){
-		FileSystemMessage::setDeleteFileCommand(message, parameterAddress);
-	}
-	else{
-		sif::info << "Failed to add data to IPC Store" << std::endl;
-		return HasReturnvaluesIF::RETURN_FAILED;
-	}
-	return HasReturnvaluesIF::RETURN_OK;
-}
-
-
-ReturnValue_t Service23FileManagement::prepareCreateDirectoryCommand(
-		CommandMessage *message, const uint8_t *tcData, uint32_t tcDataLen) {
-	store_address_t parameterAddress;
-	/* Add data without the objectId to the IPC store */
-	ReturnValue_t result = IPCStore->addData(&parameterAddress,
-			tcData + sizeof(object_id_t), tcDataLen - sizeof(object_id_t));
-	if(result == HasReturnvaluesIF::RETURN_OK){
-		FileSystemMessage::setCreateDirectoryCommand(message, parameterAddress);
-	}
-	else{
-		sif::info << "Failed to add data to IPC Store" << std::endl;
-		return HasReturnvaluesIF::RETURN_FAILED;
-	}
-	return HasReturnvaluesIF::RETURN_OK;
-}
-
-
-ReturnValue_t Service23FileManagement::prepareDeleteDirectoryCommand(
-		CommandMessage *message, const uint8_t *tcData, uint32_t tcDataLen) {
-	store_address_t parameterAddress;
-	/* Add data without the objectId to the IPC store */
-	ReturnValue_t result = IPCStore->addData(&parameterAddress,
-			tcData + sizeof(object_id_t), tcDataLen - sizeof(object_id_t));
-	if(result == HasReturnvaluesIF::RETURN_OK){
-		FileSystemMessage::setDeleteDirectoryCommand(message, parameterAddress);
-	}
-	else{
-		sif::info << "Failed to add data to IPC Store" << std::endl;
-		return HasReturnvaluesIF::RETURN_FAILED;
-	}
-	return HasReturnvaluesIF::RETURN_OK;
-}
-
-
-ReturnValue_t Service23FileManagement::prepareWriteCommand(
-		CommandMessage *message, const uint8_t *tcData,
-		uint32_t tcDataLen) {
-
-	// store additional parameters into the Inter Process Communication Store
-	store_address_t parameterAddress;
-	ReturnValue_t result = IPCStore->addData(&parameterAddress,
-			tcData + sizeof(object_id_t), tcDataLen - sizeof(object_id_t));
-	if(result == HasReturnvaluesIF::RETURN_OK){
-		// setWriteCommand expects a Command Message and a store address
-		// pointing to the write packet
-		FileSystemMessage::setWriteCommand(message, parameterAddress);
-	}
-	else{
-		sif::info << "Failed to add data to IPC Store" << std::endl;
-		return HasReturnvaluesIF::RETURN_FAILED;
-	}
-	return HasReturnvaluesIF::RETURN_OK;
-}
-
-
-ReturnValue_t Service23FileManagement::prepareReadCommand(
-		CommandMessage *message, const uint8_t *tcData,
-		uint32_t tcDataLen) {
-
-	store_address_t parameterAddress;
-	ReturnValue_t result = IPCStore->addData(&parameterAddress,
-			tcData + sizeof(object_id_t), tcDataLen - sizeof(object_id_t));
-	if (result == HasReturnvaluesIF::RETURN_OK) {
-		FileSystemMessage::setReadCommand(message, parameterAddress);
-	} else {
-		sif::info << "Failed to add data to IPC Store" << std::endl;
-		return HasReturnvaluesIF::RETURN_FAILED;
-	}
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -222,3 +151,17 @@ ReturnValue_t Service23FileManagement::handleReply(const CommandMessage* reply,
 	return result;
 }
 
+ReturnValue_t Service23FileManagement::addDataToStore(
+        store_address_t* storeId, const uint8_t* tcData,
+        size_t tcDataLen) {
+    // It is assumed the pointer to the tcData is passed unchanged,
+    // so we skip the objectId
+    store_address_t parameterAddress;
+    ReturnValue_t result = IPCStore->addData(&parameterAddress,
+            tcData + sizeof(object_id_t), tcDataLen - sizeof(object_id_t));
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        sif::error << "Service23FileManagement::addDataToStore: Failed to add "
+                << "data to IPC Store" << std::endl;
+    }
+    return result;
+}

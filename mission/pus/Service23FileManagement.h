@@ -34,79 +34,31 @@
  */
 class Service23FileManagement: public CommandingServiceBase {
 public:
+    static constexpr uint8_t NUM_PARALLEL_COMMANDS = 4;
+    static constexpr uint16_t COMMAND_TIMEOUT_SECONDS = 60;
 
 	Service23FileManagement(object_id_t objectId, uint16_t apid,
 	        uint8_t serviceId);
 	virtual ~Service23FileManagement();
 
 protected:
-	virtual ReturnValue_t isValidSubservice(uint8_t subservice);
-	/**
-	 * Once a TC Request is valid, the existence of the destination and interface is checked.
-	 * After that, its Message Queue ID is determined for the Commanding Service Base.
-	 * @param subservice
-	 * @param tcData Application Data of TC Packet
-	 * @param tcDataLen Application Data length
-	 * @param id MessageQueueId_t is stored here
-	 * @param objectId Target object ID
-	 * @return
-	 */
+
+	/** ComandingServiceBase overrides */
+	virtual ReturnValue_t isValidSubservice(uint8_t subservice) override;
 	virtual ReturnValue_t getMessageQueueAndObject(uint8_t subservice,
 			const uint8_t *tcData, size_t tcDataLen, MessageQueueId_t *id,
-			object_id_t *objectId);
-
-	/**
-	 * After the Message Queue and Object ID are determined,
-	 * the command is prepared by using a FileSystemMessage which is sent to
-	 * the target memory handler.
-	 * @param message DeviceHandlerMessage
-	 * @param subservice
-	 * @param tcData
-	 * @param tcDataLen
-	 * @param state
-	 * @param objectId
-	 * @return
-	 */
+			object_id_t *objectId) override;
 	virtual ReturnValue_t prepareCommand(CommandMessage* message,
 			uint8_t subservice, const uint8_t *tcData, size_t tcDataLen,
-			uint32_t *state, object_id_t objectId);
-
-	/**
-	 * Called by CSB template class and contains user specific implementation
-	 * of reply handling. Refer to CSB doc for more information
-	 * @param reply Command Message which contains information about the command
-	 * @param previousCommand
-	 * @param state
-	 * @param optionalNextCommand
-	 * @param objectId
-	 * @param isStep Flag value to mark steps of command execution
-	 * @return - @c RETURN_OK, @c EXECUTION_COMPLETE or @c NO_STEP_MESSAGE to generate TC verification success
-	 *         - @c INVALID_REPLY can handle unrequested replies
-	 *         - Anything else triggers a TC verification failure
-	 */
+			uint32_t *state, object_id_t objectId) override;
 	virtual ReturnValue_t handleReply(const CommandMessage *reply,
 			Command_t previousCommand, uint32_t *state,
 			CommandMessage *optionalNextCommand, object_id_t objectId,
-			bool *isStep);
+			bool *isStep) override;
 
 private:
 	ReturnValue_t checkInterfaceAndAcquireMessageQueue(
 	        MessageQueueId_t* messageQueueToSet, object_id_t* objectId);
-
-	ReturnValue_t prepareDeleteFileCommand(CommandMessage *message,
-					const uint8_t *tcData, uint32_t tcDataLen);
-
-	ReturnValue_t prepareCreateDirectoryCommand(CommandMessage *message,
-				const uint8_t *tcData, uint32_t tcDataLen);
-
-	ReturnValue_t prepareDeleteDirectoryCommand(CommandMessage *message,
-				const uint8_t *tcData, uint32_t tcDataLen);
-
-	ReturnValue_t prepareWriteCommand(CommandMessage *message,
-			const uint8_t *tcData, uint32_t tcDataLen);
-
-	ReturnValue_t prepareReadCommand(CommandMessage *message,
-			const uint8_t *tcData, uint32_t tcDataLen);
 
 
 	enum Subservice {
@@ -118,6 +70,9 @@ private:
 		READ= 129, //!< [EXPORT] : [COMMAND] Read data from a file
 		READ_REPLY = 130 //!< [EXPORT] : [REPLY] Reply of subservice 129
 	};
+
+	ReturnValue_t addDataToStore(store_address_t* storeId, const uint8_t* tcData,
+	        size_t tcDataLen);
 };
 
 

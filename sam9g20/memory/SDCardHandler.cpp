@@ -157,7 +157,7 @@ MessageQueueId_t SDCardHandler::getCommandQueue() const{
 
 ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
         const char* filename, const uint8_t* data, size_t size,
-        uint16_t packetNumber, void* args){
+        uint16_t packetNumber, void* args) {
     int result = changeDirectory(repositoryPath);
     if(result != HasReturnvaluesIF::RETURN_OK){
         return result;
@@ -178,12 +178,7 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
      *  "w" actually deletes the old file. This sounds dangerous. We should
      *  only append to existing files..
      */
-//    if(packetNumber == 0) {
-//        file = f_open(filename, "w");
-//    }
-//   else {
     file = f_open(filename, "r+");
-//    }
 
     /* File does not exist */
     result = f_getlasterror();
