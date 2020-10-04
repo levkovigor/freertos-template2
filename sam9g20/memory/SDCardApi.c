@@ -200,7 +200,7 @@ int create_file(const char* repository_path, const char* filename,
         // file already exists..
         return -1;
     }
-    F_FILE* file = f_open(filename, "a");
+    F_FILE* file = f_open(filename, "w");
     size_t bytes_written = 0;
     if((file != NULL) && (initial_data != NULL)) {
         bytes_written = f_write(initial_data, sizeof(uint8_t),

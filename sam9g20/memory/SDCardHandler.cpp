@@ -173,19 +173,36 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
      *  If file doesn't exist a new file is created
      *  For the first packet the file should be opened in write mode
      *  Subsequent packets are appended at the end of the file. Therefore file
-     *  is opened in append mode
+     *  is opened in append mode.
+     *
+     *  "w" actually deletes the old file. This sounds dangerous. We should
+     *  only append to existing files..
      */
-    if(packetNumber == 0) {
-        file = f_open(filename, "w");
-    }
-    else {
-        file = f_open(filename, "a");
-    }
+//    if(packetNumber == 0) {
+//        file = f_open(filename, "w");
+//    }
+//   else {
+    file = f_open(filename, "r+");
+//    }
 
-    /* Write to file if opening was successful or file has already been opened */
-    if(f_getlasterror() != F_NO_ERROR){
-        sif::error << "SDCardHandler::writeToFile: File could not be opened"
-                << f_getlasterror() << std::endl;
+    /* File does not exist */
+    result = f_getlasterror();
+    if(result != F_NO_ERROR){
+        if(result == F_ERR_NOTFOUND) {
+            // File to append to does not exist
+            sif::error << "SDCardHandler::appendToFile: File to append to "
+                    << "does not exist, error code" << result
+                    << std::endl;
+        }
+        else if(result == F_ERR_LOCKED) {
+            sif::error << "SDCardHandler::appendToFile: File to append to is "
+                    << "locked, error code" << result << std::endl;
+        }
+        else {
+            sif::error << "SDCardHandler::appendToFile: Opening file failed "
+                    << "with error code" << result << std::endl;
+        }
+
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
@@ -225,10 +242,10 @@ ReturnValue_t SDCardHandler::createFile(const char* dirname,
         void* args) {
     int result = create_file(dirname, filename, data, size);
     if(result == -2) {
-        return HasFileSystemIF::FILE_ALREADY_EXISTS;
+        return HasFileSystemIF::DIRECTORY_DOES_NOT_EXIST;
     }
     else if(result == -1) {
-        return HasFileSystemIF::DIRECTORY_DOES_NOT_EXIST;
+        return HasFileSystemIF::FILE_ALREADY_EXISTS;
     }
     else {
         //*bytesWritten = result;
