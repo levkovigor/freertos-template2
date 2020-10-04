@@ -193,20 +193,16 @@ ReturnValue_t SDCardHandler::writeToFile(const char* repositoryPath,
     long numberOfItemsWritten = f_write(data, sizeOfItems, size, file);
     /* if bytes written doesn't equal bytes to write, get the error */
     if (numberOfItemsWritten != (long) size) {
-        sif::error << "f_write pb: " << f_getlasterror() << std::endl;
+        sif::error << "SDCardHandler::writeToFile: Not all bytes written,"
+                " f_write error code" << f_getlasterror() << std::endl;
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
-    /* only after flushing can data be considered safe */
-    f_flush(file);
-    if(f_getlasterror() != F_NO_ERROR){
-        sif::error << "f_flush pb: " << f_getlasterror() << std::endl;
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
+    /* Close file */
     result = f_close(file);
     if (result != F_NO_ERROR){
-        sif::error << "f_close pb: " << result << std::endl;
+        sif::error << "SDCardHandler::writeToFile: Closing failed, f_close "
+                << "error code: " << result << std::endl;
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     return HasReturnvaluesIF::RETURN_OK;
