@@ -155,9 +155,9 @@ MessageQueueId_t SDCardHandler::getCommandQueue() const{
 
 
 
-ReturnValue_t SDCardHandler::writeToFile(const char* repositoryPath,
+ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
         const char* filename, const uint8_t* data, size_t size,
-        uint16_t packetNumber){
+        uint16_t packetNumber, void* args){
     int result = changeDirectory(repositoryPath);
     if(result != HasReturnvaluesIF::RETURN_OK){
         return result;
@@ -209,7 +209,7 @@ ReturnValue_t SDCardHandler::writeToFile(const char* repositoryPath,
 }
 
 ReturnValue_t SDCardHandler::deleteFile(const char* repositoryPath,
-        const char* filename) {
+        const char* filename, void* args) {
     int result = delete_file(repositoryPath, filename);
     if(result == F_NO_ERROR) {
         return HasReturnvaluesIF::RETURN_OK;
@@ -222,7 +222,7 @@ ReturnValue_t SDCardHandler::deleteFile(const char* repositoryPath,
 
 ReturnValue_t SDCardHandler::createFile(const char* dirname,
         const char* filename, const uint8_t* data, size_t size,
-        size_t* bytesWritten) {
+        void* args) {
     int result = create_file(dirname, filename, data, size);
     if(result == -2) {
         return HasFileSystemIF::FILE_ALREADY_EXISTS;
@@ -231,7 +231,7 @@ ReturnValue_t SDCardHandler::createFile(const char* dirname,
         return HasFileSystemIF::DIRECTORY_DOES_NOT_EXIST;
     }
     else {
-        *bytesWritten = result;
+        //*bytesWritten = result;
         return HasReturnvaluesIF::RETURN_OK;
     }
 }
@@ -446,7 +446,7 @@ ReturnValue_t SDCardHandler::handleWriteCommand(CommandMessage* message){
         return result;
     }
 
-    result = writeToFile(command.getRepositoryPath(),
+    result = appendToFile(command.getRepositoryPath(),
             command.getFilename(), command.getFileData(),
             command.getFileSize(), command.getPacketNumber());
     if(result != HasReturnvaluesIF::RETURN_OK){

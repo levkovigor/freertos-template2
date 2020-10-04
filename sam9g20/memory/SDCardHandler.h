@@ -51,20 +51,28 @@ private:
 
     ReturnValue_t handleMessage(CommandMessage* message);
 
+    /** HasFilesystemIF overrides */
+    ReturnValue_t createFile(const char* repositoryPath, const char* filename,
+            const uint8_t* data, size_t size, void* args = nullptr) override;
+    ReturnValue_t appendToFile(const char* repositoryPath, const char* filename,
+            const uint8_t* data, size_t size, uint16_t packetNumber,
+            void* args = nullptr) override;
+    ReturnValue_t deleteFile(const char* repositoryPath,
+            const char* filename, void* args = nullptr) override;
+
     ReturnValue_t handleDeleteFileCommand(CommandMessage* message);
     ReturnValue_t handleCreateDirectoryCommand(CommandMessage* message);
     ReturnValue_t handleDeleteDirectoryCommand(CommandMessage* message);
     ReturnValue_t handleWriteCommand(CommandMessage* message);
     ReturnValue_t handleReadCommand(CommandMessage* message);
-    ReturnValue_t createFile(const char* repositoryPath, const char* filename,
-            const uint8_t* data, size_t size, size_t* bytesWritten) override;
-    ReturnValue_t deleteFile(const char* repositoryPath, const char* filename);
+
+
+
     ReturnValue_t createDirectory(const char* repositoryPath,
             const char* dirname);
     ReturnValue_t deleteDirectory(const char* repositoryPath,
             const char* dirname);
-    ReturnValue_t writeToFile(const char* repositoryPath, const char* filename,
-            const uint8_t* data, size_t size, uint16_t packetNumber) override;
+
     ReturnValue_t read(const char* repositoryPath, const char* filename,
             uint8_t* tmData, size_t* tmDataLen);
     void sendCompletionReply(bool success = true,
