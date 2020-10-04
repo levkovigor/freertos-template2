@@ -4,6 +4,8 @@
 #include <fsfw/objectmanager/SystemObjectIF.h>
 
 namespace Factory {
+    size_t calculateStorage(uint8_t numberOfPools, uint16_t* numberOfElements,
+            uint16_t* sizeOfElements);
 	/**
 	 * @brief   Creates all SystemObject elements which are persistent
 	 *          during execution.

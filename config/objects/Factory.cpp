@@ -8,6 +8,7 @@
 #include <config/tmtc/pusIds.h>
 
 /* Flight Software Framework */
+#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/internalError/InternalErrorReporter.h>
 #include <fsfw/storagemanager/PoolManager.h>
 #include <fsfw/tcdistribution/CCSDSDistributor.h>
@@ -78,6 +79,8 @@
 #include <cstdint>
 
 
+
+
 /**
  * Build tasks by using SystemObject Interface (Interface).
  * Header files of all tasks must be included
@@ -97,11 +100,49 @@ void Factory::produce(void) {
 
 	/* Pool manager handles storage und mutexes */
 	/* Data Stores. Currently reserving 9600 bytes of memory */
-	uint16_t numberOfElements[4] = {100, 30, 20, 10};
-	uint16_t sizeofElements[4] = {32, 64, 128, 265};
-	new PoolManager<4>(objects::IPC_STORE,sizeofElements, numberOfElements);
-	new PoolManager<4>(objects::TM_STORE,sizeofElements, numberOfElements);
-	new PoolManager<4>(objects::TC_STORE,sizeofElements, numberOfElements);
+	{
+	    // TODO: make this configurable via OBSWConfig.h
+	    const uint8_t numberOfIpcPools = 7;
+	    uint16_t numberOfElements[numberOfIpcPools] = {250, 120, 100, 50,
+	            25, 10, 10};
+	    uint16_t sizeofElements[numberOfIpcPools] = {32, 64, 128, 256,
+	            512, 1024, 2048};
+	    new PoolManager<numberOfIpcPools>(objects::IPC_STORE,sizeofElements,
+	            numberOfElements);
+        size_t requiredSize = calculateStorage(numberOfIpcPools,
+                numberOfElements, sizeofElements);
+        sif::info << "Allocating " << requiredSize << " bytes for the IPC "
+                << "Store.." << std::endl;
+	}
+
+	{
+	    const uint8_t numberOfTmPools = 7;
+	    uint16_t numberOfElements[numberOfTmPools] = {500, 250, 120, 60,
+	            30, 15, 10};
+	    uint16_t sizeofElements[numberOfTmPools] = {32, 64, 128, 256, 512,
+	            1024, 2048};
+	    new PoolManager<numberOfTmPools>(objects::TM_STORE,sizeofElements,
+	            numberOfElements);
+        size_t requiredSize = calculateStorage(numberOfTmPools,
+                numberOfElements, sizeofElements);
+        sif::info << "Allocating " << requiredSize << "  bytes for the "
+                << "TM Store.." << std::endl;
+	}
+
+	{
+	    const uint8_t numberOfTcPools = 7;
+	    uint16_t numberOfElements[numberOfTcPools] = {500, 250, 120, 60,
+	            20, 20, 20};
+	    uint16_t sizeofElements[numberOfTcPools] = {32, 64, 128, 256,
+	            512, 1024, 2048};
+	    new PoolManager<numberOfTcPools>(objects::TC_STORE,sizeofElements,
+	            numberOfElements);
+	    size_t requiredSize = calculateStorage(numberOfTcPools,
+	            numberOfElements, sizeofElements);
+	    sif::info << "Allocating " << requiredSize << " bytes for the "
+	            << "TC Store.." << std::endl;
+	}
+
 
 	/* Utility */
 	new TimeStamper(objects::PUS_TIME);
@@ -270,5 +311,15 @@ void Factory::setStaticFrameworkObjectIds() {
 #else
 	TmFunnel::downlinkDestination = objects::SERIAL_TMTC_BRIDGE;
 #endif
+}
+
+size_t Factory:: calculateStorage(uint8_t numberOfPools,
+        uint16_t* numberOfElements,
+        uint16_t* sizeOfElements) {
+    size_t size = 0;
+    for(uint8_t idx = 0; idx < numberOfPools; idx ++) {
+        size += numberOfElements[idx] * sizeOfElements[idx];
+    }
+    return size;
 }
 
