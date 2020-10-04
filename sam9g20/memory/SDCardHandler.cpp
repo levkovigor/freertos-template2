@@ -158,9 +158,7 @@ MessageQueueId_t SDCardHandler::getCommandQueue() const{
 ReturnValue_t SDCardHandler::writeToFile(const char* repositoryPath,
         const char* filename, const uint8_t* data, size_t size,
         uint16_t packetNumber){
-    int result;
-
-    result = changeDirectory(repositoryPath);
+    int result = changeDirectory(repositoryPath);
     if(result != HasReturnvaluesIF::RETURN_OK){
         return result;
     }
@@ -316,24 +314,26 @@ ReturnValue_t SDCardHandler::sendDataReply(MessageQueueId_t receivedFromQueueId,
 ReturnValue_t SDCardHandler::handleDeleteFileCommand(CommandMessage* message){
     //MessageQueueId_t receivedFromQueueId = message->getSender();
     store_address_t storeId = FileSystemMessage::getStoreId(message);
-    size_t ipcStoreBufferSize = 0;
-    const uint8_t* ipcStoreBuffer = nullptr;
-    ReturnValue_t result = IPCStore->getData(storeId, &ipcStoreBuffer,
-            &ipcStoreBufferSize);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
+
+    auto resultPair = IPCStore->getData(storeId);
+    if (resultPair.first != HasReturnvaluesIF::RETURN_OK) {
         sif::info << "SDCardHandler::handleDeleteFileCommand: "
                << "Invalid IPC storage ID" << std::endl;
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
     DeleteFileCommand command;
+    const uint8_t* ipcStoreBuffer = resultPair.second.data();
+    size_t remainingSize = resultPair.second.size();
     /* Extract the repository path and the filename from the
         application data field */
-    result = command.deSerialize(&ipcStoreBuffer, ipcStoreBufferSize);
+    ReturnValue_t result = command.deSerialize(&ipcStoreBuffer,
+            &remainingSize, SerializeIF::Endianness::BIG);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         sendCompletionReply(false, result);
         return HasReturnvaluesIF::RETURN_FAILED;
     }
+
     result = deleteFile(command.getRepositoryPath(), command.getFilename());
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "SDCardHandler::handleDeleteFileCommand: Deleting file "
@@ -343,13 +343,6 @@ ReturnValue_t SDCardHandler::handleDeleteFileCommand(CommandMessage* message){
     else {
         sendCompletionReply();
     }
-
-    if (IPCStore->deleteData(storeId) != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "SDCardHandler::handleDeleteFileCommand: "
-                << "Failed to delete data in IPC store" << std::endl;
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -367,12 +360,12 @@ ReturnValue_t SDCardHandler::handleCreateDirectoryCommand(
     }
 
     const uint8_t* ipcStoreBuffer = returnPair.second.data();
-    size_t ipcStoreBufferSize = returnPair.second.size();
+    size_t remainingSize = returnPair.second.size();
     CreateDirectoryCommand command;
     // Extract the repository path and the directory name
     // from the application data field
-    ReturnValue_t result = command.deSerialize(&ipcStoreBuffer,
-            ipcStoreBufferSize);
+    ReturnValue_t result = command.deSerialize(&ipcStoreBuffer, &remainingSize,
+            SerializeIF::Endianness::BIG);
     if(result != HasReturnvaluesIF::RETURN_OK){
         sendCompletionReply(false, result);
         return HasReturnvaluesIF::RETURN_FAILED;
@@ -472,37 +465,33 @@ ReturnValue_t SDCardHandler::handleWriteCommand(CommandMessage* message){
 ReturnValue_t SDCardHandler::handleReadCommand(CommandMessage* message) {
     MessageQueueId_t receivedFromQueueId = message -> getSender();
     store_address_t storeId = FileSystemMessage::getStoreId(message);
-    size_t ipcStoreBufferSize = 0;
-    const uint8_t* ipcStoreBuffer = NULL;
-    ReturnValue_t result = IPCStore->getData(storeId, &ipcStoreBuffer,
-            &ipcStoreBufferSize);
-    if (result == HasReturnvaluesIF::RETURN_OK) {
-        ReadCommand command;
-        result = command.deSerialize(&ipcStoreBuffer, ipcStoreBufferSize);
-        if (result != HasReturnvaluesIF::RETURN_OK) {
-            return result;
-        }
 
-        uint8_t tmData[readReplyMaxLen];
-        size_t tmDataLen = 0;
-        result = read(command.getRepositoryPath(), command.getFilename(),
-                tmData, &tmDataLen);
-        if (result != HasReturnvaluesIF::RETURN_OK) {
-            sif::error << "Reading from file " << command.getFilename()
-                    << " failed" << std::endl;
-            sendCompletionReply(false, result);
-        } else {
-            sendDataReply(receivedFromQueueId, tmData, tmDataLen);
-        }
-        if (IPCStore->deleteData(storeId) != HasReturnvaluesIF::RETURN_OK) {
-            sif::error << "Failed to delete data in IPC store" << std::endl;
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
-    } else {
-        sif::info << "Invalid IPC storage ID" << std::endl;
+    auto resultPair = IPCStore->getData(storeId);
+    if(resultPair.first != HasReturnvaluesIF::RETURN_OK) {
+        return resultPair.first;
+    }
+
+    size_t remainingSize = resultPair.second.size();
+    const uint8_t* ipcStoreBuffer =  resultPair.second.data();
+    ReadCommand command;
+    ReturnValue_t result = command.deSerialize(&ipcStoreBuffer,
+            &remainingSize, SerializeIF::Endianness::BIG);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    uint8_t tmData[readReplyMaxLen];
+    size_t tmDataLen = 0;
+    result = read(command.getRepositoryPath(), command.getFilename(),
+            tmData, &tmDataLen);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        sif::error << "Reading from file " << command.getFilename()
+                            << " failed" << std::endl;
+        sendCompletionReply(false, result);
         return HasReturnvaluesIF::RETURN_FAILED;
     }
-    return HasReturnvaluesIF::RETURN_OK;
+
+    return sendDataReply(receivedFromQueueId, tmData, tmDataLen);
 }
 
 
