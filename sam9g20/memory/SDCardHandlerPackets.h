@@ -9,6 +9,8 @@ extern "C"{
 #include <privlib/hcc/include/config/config_fat.h>
 }
 
+#include <etl/string.h>
+#include <config/OBSWConfig.h>
 
 /**
  * @brief   This class helps to handle a delete-file command.
@@ -134,24 +136,79 @@ private:
  * 			   The packet number counts the number of packets.
  * 			4. The data to write to the file
  */
-class WriteCommand : public SerialLinkedListAdapter<SerializeIF>{
+class WriteCommand: public SerializeIF {
 public:
 
 	WriteCommand(){}
 
-	ReturnValue_t deSerialize(const uint8_t* dataBuffer, uint32_t size){
-		repositoryPath = std::string(reinterpret_cast<const char*>(dataBuffer));
-		/* +1 because repositoryPath.size() is the size of the string without the string terminator */
-		dataBuffer = dataBuffer + repositoryPath.size() + 1;
-		filename = std::string(reinterpret_cast<const char*>(dataBuffer));
-		/* +1 because filename.size() is the size of the string without the string terminator */
-		dataBuffer = dataBuffer + filename.size() + 1;
-		std::memcpy(&packetNumber, dataBuffer, sizeof(packetNumber));
-		dataBuffer = dataBuffer + sizeof(packetNumber);
-		/* -2 because of the two string terminators within the dataBuffer */
-		filesize = size - repositoryPath.size() - filename.size() - sizeof(packetNumber) - 2;
-		std::memcpy(fileData, dataBuffer, filesize);
+	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
+            Endianness streamEndianness) override {
+	    if(*buffer == nullptr) {
+	        // This should not happen!
+	        return HasReturnvaluesIF::RETURN_FAILED;
+	    }
+
+	    /* Deserialize repository first. */
+	    size_t repositoryLength = std::strlen(
+	            reinterpret_cast<const char*>(*buffer));
+		if(repositoryLength > MAX_REPOSITORY_PATH_LENGTH) {
+		    // Packet too short or repository length to large.
+            sif::warning << "WriteCommand: Repository path longer than "
+                    << MAX_REPOSITORY_PATH_LENGTH << " or no '\0 terminator"
+                    << std::endl;
+		}
+		if(*size < repositoryLength) {
+		    return SerializeIF::STREAM_TOO_SHORT;
+		}
+        repositoryPath.append(reinterpret_cast<const char*>(*buffer));
+		/* +1 because repositoryPath.size() is the size of the string
+		without the string terminator */
+		*buffer += repositoryPath.size() + 1;
+		*size -= repositoryPath.size() + 1;
+
+        if(*buffer == nullptr) {
+            // This should not happen!
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+
+        /* Deserialize filename next */
+		size_t filenameLength = std::strlen(
+		        reinterpret_cast<const char*>(*buffer));
+		if(filenameLength > MAX_FILENAME_LENGTH) {
+            sif::warning << "WriteCommand: Repository path longer than "
+                    << MAX_FILENAME_LENGTH << " or no '\0 terminator"
+                    << "detected!" << std::endl;
+		    return HasReturnvaluesIF::RETURN_OK;
+		}
+        if(*size < filenameLength) {
+            return SerializeIF::STREAM_TOO_SHORT;
+        }
+		filename.append(reinterpret_cast<const char*>(*buffer));
+		/* +1 because filename.size() is the size of the string without
+		the string terminator */
+		*buffer += filename.size() + 1;
+		*size -= filename.size() + 1;
+
+		/* Deserialize packet number */
+		ReturnValue_t result = SerializeAdapter::deSerialize(&packetNumber,
+		        buffer, size, streamEndianness);
+		if(result != HasReturnvaluesIF::RETURN_OK) {
+		    return result;
+		}
+
+		/* Just keep internal pointer of rest of data, no copying */
+		filesize = *size;
+		fileData = *buffer;
 		return HasReturnvaluesIF::RETURN_OK;
+	}
+
+	size_t getSerializedSize() const override {
+	    return 0;
+	}
+
+	ReturnValue_t serialize(uint8_t **buffer, size_t *size,
+            size_t maxSize, Endianness streamEndianness) const override {
+	    return HasReturnvaluesIF::RETURN_FAILED;
 	}
 
 	const char* getRepositoryPath(){
@@ -176,13 +233,11 @@ public:
 
 private:
 
-	/* For now the size of the PUS packet is limited. */
-	const static uint32_t maxFileSize = 300;
-	std::string repositoryPath;
-	std::string filename;
+	etl::string<MAX_REPOSITORY_PATH_LENGTH> repositoryPath;
+	etl::string<MAX_FILENAME_LENGTH> filename;
 	uint16_t packetNumber = 0;
-	uint32_t filesize = 0;
-	uint8_t fileData[maxFileSize];
+	size_t filesize = 0; //! [EXPORT] : [IGNORE]
+	const uint8_t* fileData = nullptr;
 };
 
 /**

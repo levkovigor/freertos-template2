@@ -24,7 +24,7 @@ class SDCardHandler : public SystemObject,
         public HasFileSystemIF {
     friend class SDCardAccess;
 public:
-
+    // todo: make this configurable via OBSWConfig.h
     static constexpr uint8_t MAX_FILE_MESSAGES_HANDLED_PER_CYCLE = 5;
 
     static constexpr uint8_t INTERFACE_ID = CLASS_ID::SD_CARD_HANDLER;

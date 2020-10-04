@@ -178,35 +178,35 @@ ReturnValue_t SDCardHandler::writeToFile(const char* repositoryPath,
     if(packetNumber == 0){
         file = f_open(filename, "w");
     }
-    else{
+    else {
         file = f_open(filename, "a");
     }
 
     /* Write to file if opening was successful or file has already been opened */
-    if(f_getlasterror() == F_NO_ERROR){
-        uint8_t sizeOfItems = sizeof(uint8_t);
-        long numberOfItemsWritten = f_write(data, sizeOfItems, size, file);
-        /* if bytes written doesn't equal bytes to write, get the error */
-        if (numberOfItemsWritten != (long) size) {
-            sif::error << "f_write pb: " << f_getlasterror() << std::endl;
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
-
-        /* only after flushing can data be considered safe */
-        f_flush(file);
-        if(f_getlasterror() != F_NO_ERROR){
-            sif::error << "f_flush pb: " << f_getlasterror() << std::endl;
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
-
-        result = f_close(file);
-        if (result != F_NO_ERROR){
-            sif::error << "f_close pb: " << result << std::endl;
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
+    if(f_getlasterror() != F_NO_ERROR){
+        sif::error << "SDCardHandler::writeToFile: File could not be opened"
+                << f_getlasterror() << std::endl;
+        return HasReturnvaluesIF::RETURN_FAILED;
     }
-    else{
-        sif::error << "f_open pb: " << f_getlasterror() << std::endl;
+
+    uint8_t sizeOfItems = sizeof(uint8_t);
+    long numberOfItemsWritten = f_write(data, sizeOfItems, size, file);
+    /* if bytes written doesn't equal bytes to write, get the error */
+    if (numberOfItemsWritten != (long) size) {
+        sif::error << "f_write pb: " << f_getlasterror() << std::endl;
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    /* only after flushing can data be considered safe */
+    f_flush(file);
+    if(f_getlasterror() != F_NO_ERROR){
+        sif::error << "f_flush pb: " << f_getlasterror() << std::endl;
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    result = f_close(file);
+    if (result != F_NO_ERROR){
+        sif::error << "f_close pb: " << result << std::endl;
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     return HasReturnvaluesIF::RETURN_OK;
@@ -438,33 +438,35 @@ ReturnValue_t SDCardHandler::handleDeleteDirectoryCommand(
 ReturnValue_t SDCardHandler::handleWriteCommand(CommandMessage* message){
     //MessageQueueId_t receivedFromQueueId = message->getSender();
     store_address_t storeId = FileSystemMessage::getStoreId(message);
-    size_t ipcStoreBufferSize = 0;
-    const uint8_t* ipcStoreBuffer = NULL;
-    ReturnValue_t result = IPCStore->getData(storeId, &ipcStoreBuffer,
-            &ipcStoreBufferSize);
-    if(result == HasReturnvaluesIF::RETURN_OK){
-        WriteCommand command;
-        command.deSerialize(ipcStoreBuffer, ipcStoreBufferSize);
-        result = writeToFile(command.getRepositoryPath(), command.getFilename(),
-                command.getFileData(), command.getFileSize(),
-                command.getPacketNumber());
-        if(result != HasReturnvaluesIF::RETURN_OK){
-            sif::info << "Writing to file " << command.getFilename()
-                    << " failed" << std::endl;
-            sendCompletionReply(false, result);
-        }
-        else{
-            sendCompletionReply();
-        }
-        if(IPCStore->deleteData(storeId) != HasReturnvaluesIF::RETURN_OK){
-            sif::error << "Failed to delete data in IPC store" << std::endl;
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
-    }
-    else{
-        sif::info << "Invalid IPC storage ID" << std::endl;
+    auto resultPair = IPCStore->getData(storeId);
+    if(resultPair.first != HasReturnvaluesIF::RETURN_OK){
+        // Should not happen!
+        sif::error << "SDCardHandler::handleWriteCommand: "
+               <<  "Invalid IPC storage ID" << std::endl;
         return HasReturnvaluesIF::RETURN_FAILED;
     }
+
+    size_t sizeRemaining = resultPair.second.size();
+    const uint8_t* pointer = resultPair.second.data();
+    WriteCommand command;
+    ReturnValue_t result = command.deSerialize(&pointer, &sizeRemaining,
+            SerializeIF::Endianness::BIG);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    result = writeToFile(command.getRepositoryPath(),
+            command.getFilename(), command.getFileData(),
+            command.getFileSize(), command.getPacketNumber());
+    if(result != HasReturnvaluesIF::RETURN_OK){
+        sif::error << "SDCardHandler::handleWriteCommand: Writing to file "
+                << command.getFilename()  << " failed" << std::endl;
+        sendCompletionReply(false, result);
+    }
+    else {
+        sendCompletionReply();
+    }
+
     return HasReturnvaluesIF::RETURN_OK;
 }
 
