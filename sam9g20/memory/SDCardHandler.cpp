@@ -125,14 +125,14 @@ ReturnValue_t SDCardHandler::handleMessage(CommandMessage* message) {
         }
         break;
     }
-    case FileSystemMessage::WRITE: {
+    case FileSystemMessage::APPEND_TO_FILE: {
         result = handleWriteCommand(message);
         if(result != HasReturnvaluesIF::RETURN_OK){
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         break;
     }
-    case FileSystemMessage::READ: {
+    case FileSystemMessage::READ_FROM_FILE: {
         result = handleReadCommand(message);
         if(result != HasReturnvaluesIF::RETURN_OK){
             return HasReturnvaluesIF::RETURN_FAILED;
