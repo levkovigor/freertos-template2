@@ -7,7 +7,7 @@
 /**
  * @brief File Management Service
  *
- * Full Documentation: ECSS-E-ST-70-41C p.403
+ * Full Documentation: ECSS-E-ST-70-41C p.403, p.653
  *
  * The file management service provides the capability to manage on-board file
  * systems and files. Not all subservices listed below are yet implemented.
@@ -66,8 +66,8 @@ private:
 		DELETE_FILE = 2, //!< [EXPORT] : [COMMADND] Delete file
 		CREATE_DIRECTORY = 9, //!<  [EXPORT] : [COMMAND] Create a directory
 		DELETE_DIRECTORY = 10, //!<  [EXPORT] : [COMMAND] Delete a directory
-		WRITE = 128, //!< [EXPORT] : [COMMAND] Write data to file
-		READ= 129, //!< [EXPORT] : [COMMAND] Read data from a file
+		APPEND_TO_FILE = 128, //!< [EXPORT] : [COMMAND] Append data to file
+		READ_FROM_FILE = 129, //!< [EXPORT] : [COMMAND] Read data from a file
 		READ_REPLY = 130 //!< [EXPORT] : [REPLY] Reply of subservice 129
 	};
 

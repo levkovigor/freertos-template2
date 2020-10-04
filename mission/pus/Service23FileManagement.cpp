@@ -24,8 +24,8 @@ ReturnValue_t Service23FileManagement::isValidSubservice(uint8_t subservice) {
     case Subservice::DELETE_FILE:
     case Subservice::CREATE_DIRECTORY:
     case Subservice::DELETE_DIRECTORY:
-    case Subservice::WRITE:
-    case Subservice::READ:
+    case Subservice::APPEND_TO_FILE:
+    case Subservice::READ_FROM_FILE :
         sif::info << "Service 23 detected valid subservice" << std::endl;
         return HasReturnvaluesIF::RETURN_OK;
     default:
@@ -71,8 +71,8 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
     case(Subservice::CREATE_DIRECTORY):
     case(Subservice::DELETE_FILE):
     case(Subservice::DELETE_DIRECTORY):
-    case(Subservice::WRITE):
-    case(Subservice::READ): {
+    case(Subservice::APPEND_TO_FILE):
+    case(Subservice::READ_FROM_FILE ): {
         result = addDataToStore(&storeId, tcData, tcDataLen);
         if(result != HasReturnvaluesIF::RETURN_OK) {
             return result;
@@ -102,11 +102,11 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
 	    FileSystemMessage::setDeleteDirectoryCommand(message, storeId);
 		break;
 	}
-	case(Subservice::WRITE): {
+	case(Subservice::APPEND_TO_FILE): {
 	    FileSystemMessage::setWriteCommand(message, storeId);
 		break;
 	}
-	case(Subservice::READ): {
+	case(Subservice::READ_FROM_FILE ): {
 	    FileSystemMessage::setReadCommand(message, storeId);
 		break;
 	}
