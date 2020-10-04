@@ -112,6 +112,9 @@ private:
 
     static ReturnValue_t printHelper(uint8_t recursionDepth);
 
+    // Special member of extended debug output.
+    bool extendedDebugOutput = false;
+
 };
 
 #endif /* SAM9G20_MEMORY_SDCARDHANDLER_H_ */

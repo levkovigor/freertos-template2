@@ -165,8 +165,10 @@ ReturnValue_t SDCardHandler::writeToFile(const char* repositoryPath,
         return result;
     }
 
-    sif::debug << "SDCardHandler: Packet to write with packet number: "
-            << packetNumber << " received" << std::endl;
+    if(extendedDebugOutput) {
+        sif::debug << "SDCardHandler: Packet to write with packet number: "
+                << packetNumber << " received" << std::endl;
+    }
 
     /**
      *  Try to open file
@@ -175,7 +177,7 @@ ReturnValue_t SDCardHandler::writeToFile(const char* repositoryPath,
      *  Subsequent packets are appended at the end of the file. Therefore file
      *  is opened in append mode
      */
-    if(packetNumber == 0){
+    if(packetNumber == 0) {
         file = f_open(filename, "w");
     }
     else {
