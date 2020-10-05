@@ -15,7 +15,7 @@
 //! also determines how many commands a CSB service can handle in one cycle
 //! simulataneously. This will increase the required RAM for
 //! each CSB service !
-#define FSFW_CSB_FIFO_DEPTH			8
+#define FSFW_CSB_FIFO_DEPTH			6
 
 //! If -DDEBUG is supplied in the build defines, there will be
 //! additional output which requires the translation files translateObjects

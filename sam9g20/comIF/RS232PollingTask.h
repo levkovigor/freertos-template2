@@ -38,7 +38,8 @@ public:
     /** The frame size will be set to this value if no other value is
      *  supplied in the constructor. */
     static constexpr size_t RS232_MAX_SERIAL_FRAME_SIZE =
-    		config::RS232_MAX_SERIAL_FRAME_SIZE;
+    		config::RS232_MAX_SERIAL_FRAME_SIZE +
+			config::TRANSPORT_LAYER_ADDITION;
     static constexpr float RS232_SERIAL_TIMEOUT_BAUDTICKS =
     		config::RS232_SERIAL_TIMEOUT_BAUDTICKS;
 

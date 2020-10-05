@@ -103,6 +103,7 @@ ReturnValue_t RingBufferAnalyzer::parseForDleEncodedPackets(
 		if(analysisVector[vectorIdx] == DleEncoder::ETX_CHAR) {
 			if(stxFound) {
 				// This is propably a packet, so we decode it.
+
 				ReturnValue_t result = DleEncoder::decode(
 						&analysisVector[stxIdx],
 						bytesToRead - stxIdx, readSize,
