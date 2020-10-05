@@ -83,18 +83,27 @@ private:
 		RENAME_DIRECTORY = 14,
 
 		/** Custom subservices */
-		APPEND_TO_FILE = 130, //!< [EXPORT] : [COMMAND] Append data to file
-		READ_FROM_FILE = 131, //!< [EXPORT] : [COMMAND] Read data from a file
-		READ_REPLY = 132, //!< [EXPORT] : [REPLY] Reply of subservice 129
+		APPEND_TO_FILE = 128, //!< [EXPORT] : [COMMAND] Append data to file
+		READ_FROM_FILE = 129, //!< [EXPORT] : [COMMAND] Read data from a file
+		READ_REPLY = 130, //!< [EXPORT] : [REPLY] Reply of subservice 129
 
-		DUMP_FILE_STRUCTURE = 133, //!< [EXPORT] : [COMMAND] Dump structure of whole SD card as ASCII file.
-		DUMP_FILE_STRUCTURE_REPLY = 134, //!< [EXPORT] : [REPLY] ASCII reply if file is small enough, otherwise only repository name and filename.
-		PRINT_SD_CARD = 135, //!< [EXPORT] : [COMMAND] Print SD card to console.
+		DUMP_FILE_STRUCTURE = 131, //!< [EXPORT] : [COMMAND] Dump structure of whole SD card as ASCII file.
+		DUMP_FILE_STRUCTURE_REPLY = 132, //!< [EXPORT] : [REPLY] ASCII reply if file is small enough, otherwise only repository name and filename.
+		PRINT_SD_CARD = 133, //!< [EXPORT] : [COMMAND] Print SD card to console.
 
+		/**
+		 * Select the active SD card. All other tasks using SD cards will
+		 * be notified as well.
+		 */
 		SELECT_ACTIVE_SD_CARD = 150, //!< [EXPORT] : [COMMAND] Swap the active SD card.
 		REPORT_ACTIVE_SD_CARD = 151, //!< [EXPORT] : [REPLY] Reply which contains now active SD card
 		ACTIVE_SD_CARD_REPLY = 152,
 
+		/**
+		 * Select the SD card which will be chosen on start-up. The value
+		 * is stored in FRAM and used by all other tasks using the SD cards
+		 * as well.
+		 */
 		SELECT_PREFERED_SD_CARD = 160, //!< [EXPORT] : [COMMAND] Select the preferred SD card which will be picked on reboot. (value stored in FRAM)
 		REPORT_PREFERED_SD_CARD = 161, //!< [EXPORT] : [COMMAND] Report currently prefered SD card.
 		PREFERED_SD_CARD_REPLY = 162, //!< [EXPORT] : [REPLY] Report currently prefered SD card.

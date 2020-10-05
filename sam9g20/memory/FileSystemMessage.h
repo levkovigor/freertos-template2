@@ -50,8 +50,18 @@ public:
     /** Print the structure of the SD card to the debug console */
     static const Command_t PRINT_SD_CARD = MAKE_COMMAND_ID(133);
 
+    static const Command_t SELECT_ACTIVE_SD_CARD = MAKE_COMMAND_ID(150);
+    static const Command_t REPORT_ACTIVE_SD_CARD = MAKE_COMMAND_ID(151);
+    static const Command_t ACTIVE_SD_CARD_REPLY = MAKE_COMMAND_ID(152);
+
+    static const Command_t SELECT_PREFERED_SD_CARD = MAKE_COMMAND_ID(160);
+    static const Command_t REPORT_PREFERED_SD_CARD = MAKE_COMMAND_ID(161);
+    static const Command_t PREFERED_SD_CARD_REPLY = MAKE_COMMAND_ID(162);
+
+    /** Removes a folder (rm -rf equivalent!). Use with care ! */
+    static const Command_t CLEAR_REPOSITORY = MAKE_COMMAND_ID(180);
     /** Clears the whole SD card. Use with care ! */
-    static const Command_t CLEAR_SD_CARD = MAKE_COMMAND_ID(150);
+    static const Command_t CLEAR_SD_CARD = MAKE_COMMAND_ID(181);
 
 	static const Command_t COMPLETION_SUCCESS = MAKE_COMMAND_ID(200);
 	static const Command_t COMPLETION_FAILED = MAKE_COMMAND_ID(201);
