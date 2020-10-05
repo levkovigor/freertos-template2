@@ -147,6 +147,14 @@ ReturnValue_t SDCardHandler::handleMessage(CommandMessage* message) {
         }
         break;
     }
+    case FileSystemMessage::CLEAR_SD_CARD: {
+    	int result = clear_sd_card();
+    }
+    case FileSystemMessage::PRINT_SD_CARD: {
+    	this->printSdCard();
+    	sendCompletionReply();
+    	break;
+    }
     default: {
         sif::error << "SDCardHandler::handleMessages: "
                 << "Invalid filesystem command" << std::endl;
@@ -349,7 +357,7 @@ ReturnValue_t SDCardHandler::handleReadCommand(CommandMessage* message) {
 
     uint8_t tmData[readReplyMaxLen];
     size_t tmDataLen = 0;
-    result = read(command.getRepositoryPath(), command.getFilename(),
+    result = readFile(command.getRepositoryPath(), command.getFilename(),
             tmData, &tmDataLen);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "Reading from file " << command.getFilename()
@@ -387,7 +395,7 @@ ReturnValue_t SDCardHandler::sendDataReply(MessageQueueId_t receivedFromQueueId,
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t SDCardHandler::read(const char* repositoryPath,
+ReturnValue_t SDCardHandler::readFile(const char* repositoryPath,
         const char* filename, uint8_t* tmData, size_t* tmDataLen) {
     int result = changeDirectory(repositoryPath);
     if (result != HasReturnvaluesIF::RETURN_OK) {
@@ -631,6 +639,7 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
      *  "w" will delete any old file! Important files will be protected by a
      *  lock.
      */
+    F_FILE* file = nullptr;
     if(packetNumber == 0){
         file = f_open(filename, "w");
     }

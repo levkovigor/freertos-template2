@@ -276,7 +276,7 @@ int delete_directory_force(const char *repository_path, const char *dirname,
         return result;
     }
 
-    int file_found = f_findfirst("*", &find_result);
+    int file_found = f_findfirst("*.*", &find_result);
     if(file_found != F_NO_ERROR) {
         return file_found;
     }
@@ -325,7 +325,7 @@ int clear_sd_card() {
     int result = F_NO_ERROR;
     int status = F_NO_ERROR;
     f_chdir("/");
-    file_found = f_findfirst("*", &find_result);
+    file_found = f_findfirst("*.*", &find_result);
     if(file_found != F_NO_ERROR) {
         return F_NO_ERROR;
     }
@@ -351,8 +351,15 @@ int clear_sd_card() {
 
         result = delete_file_system_object(find_result.filename);
         if(result != F_NO_ERROR) {
-            TRACE_ERROR("clear_sd_card: delete_file_system_object failed with "
-                    "code %d!\n\r", result);
+        	if(result == F_ERR_LOCKED) {
+        		TRACE_WARNING("clear_sd_card: %s is protected!\n\r",
+        				find_result.filename);
+        	}
+        	else {
+                TRACE_ERROR("clear_sd_card: delete_file_system_object failed "
+                		"with code %d!\n\r", result);
+        	}
+
             status = result;
         }
     }

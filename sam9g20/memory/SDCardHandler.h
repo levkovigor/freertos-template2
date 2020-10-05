@@ -24,8 +24,10 @@ class SDCardHandler : public SystemObject,
         public HasFileSystemIF {
     friend class SDCardAccess;
 public:
-    // todo: make this configurable via OBSWConfig.h
+    // todo: make these configurable via OBSWConfig.h
     static constexpr uint8_t MAX_FILE_MESSAGES_HANDLED_PER_CYCLE = 5;
+    static constexpr uint32_t MAX_MESSAGE_QUEUE_DEPTH = 20;
+    static constexpr size_t MAX_READ_LENGTH = 1024;
 
     static constexpr uint8_t INTERFACE_ID = CLASS_ID::SD_CARD_HANDLER;
 
@@ -60,54 +62,42 @@ private:
     ReturnValue_t deleteFile(const char* repositoryPath,
             const char* filename, void* args = nullptr) override;
 
-    ReturnValue_t handleDeleteFileCommand(CommandMessage* message);
-    ReturnValue_t handleCreateFileCommand(CommandMessage* message);
-    ReturnValue_t handleCreateDirectoryCommand(CommandMessage* message);
-    ReturnValue_t handleDeleteDirectoryCommand(CommandMessage* message);
-    ReturnValue_t handleAppendCommand(CommandMessage* message);
-    ReturnValue_t handleReadCommand(CommandMessage* message);
-
-
-
     ReturnValue_t createDirectory(const char* repositoryPath,
             const char* dirname);
     ReturnValue_t deleteDirectory(const char* repositoryPath,
             const char* dirname);
+    ReturnValue_t changeDirectory(const char* repositoryPath);
 
-    ReturnValue_t read(const char* repositoryPath, const char* filename,
+    ReturnValue_t handleCreateFileCommand(CommandMessage* message);
+    ReturnValue_t handleDeleteFileCommand(CommandMessage* message);
+
+    ReturnValue_t handleCreateDirectoryCommand(CommandMessage* message);
+    ReturnValue_t handleDeleteDirectoryCommand(CommandMessage* message);
+
+    ReturnValue_t handleAppendCommand(CommandMessage* message);
+    ReturnValue_t handleReadCommand(CommandMessage* message);
+
+    ReturnValue_t readFile(const char* repositoryPath, const char* filename,
             uint8_t* tmData, size_t* tmDataLen);
+
     void sendCompletionReply(bool success = true,
             ReturnValue_t errorCode = HasReturnvaluesIF::RETURN_OK);
     ReturnValue_t sendDataReply(MessageQueueId_t receivedFromQueueId,
             uint8_t* tmData, size_t tmDataLen);
 
     /**
-     * @brief   This function can be used to switch to a directory provided
-     *          with the repositoryPath
-     * @param repositoryPath
-     * Pointer to a string holding the repositoryPath to the directory.
-     * The repositoryPath must be absolute.
-     * @return
-     * -@c RETURN_OK if command was executed successfully.
-     * -@c Filesystem errorcode otherwise
-     */
-    ReturnValue_t changeDirectory(const char* repositoryPath);
-
-    /**
      * The MessageQueue used to receive commands, data and to send replies.
      */
     MessageQueueIF* commandQueue;
 
-    uint32_t queueDepth = 20;
+    uint32_t queueDepth = MAX_MESSAGE_QUEUE_DEPTH;
 
     StorageManagerIF *IPCStore;
     MessageQueueId_t sender = MessageQueueIF::NO_QUEUE;
 
-    F_FILE *file = nullptr;
-
     /* For now  max size of reply is set to 300.
      * For larger sizes the software needs to be adapted. */
-    uint32_t readReplyMaxLen = 300;
+    uint32_t readReplyMaxLen = MAX_READ_LENGTH;
 
     bool fileSystemWasUsedOnce = false;
     bool fileSystemOpen = false;

@@ -68,7 +68,7 @@ public:
 	        store_address_t storeId);
 	static void setReadCommand(CommandMessage* message,
 	        store_address_t storeId);
-	static void printSdCardCommand(CommandMessage* message);
+	static void setPrintSdCardCommand(CommandMessage* message);
 	static void setClearSdCardCommand(CommandMessage* message);
 	static void setReadReply(CommandMessage* message, store_address_t storeId);
     static void setSuccessReply(CommandMessage* message);

@@ -71,12 +71,16 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
     case(Subservice::DELETE_FILE):
     case(Subservice::DELETE_DIRECTORY):
     case(Subservice::APPEND_TO_FILE):
-    case(Subservice::READ_FROM_FILE ): {
+    case(Subservice::READ_FROM_FILE): {
         result = addDataToStore(&storeId, tcData, tcDataLen);
         if(result != HasReturnvaluesIF::RETURN_OK) {
             return result;
         }
         break;
+    }
+    case(Subservice::PRINT_SD_CARD):
+    case(Subservice::CLEAR_SD_CARD): {
+    	break;
     }
 
     default: {
@@ -105,8 +109,16 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
 	    FileSystemMessage::setWriteCommand(message, storeId);
 		break;
 	}
-	case(Subservice::READ_FROM_FILE ): {
+	case(Subservice::READ_FROM_FILE): {
 	    FileSystemMessage::setReadCommand(message, storeId);
+		break;
+	}
+	case(Subservice::PRINT_SD_CARD): {
+		FileSystemMessage::setPrintSdCardCommand(message);
+		break;
+	}
+	case(Subservice::CLEAR_SD_CARD): {
+		FileSystemMessage::setClearSdCardCommand(message);
 		break;
 	}
 	}

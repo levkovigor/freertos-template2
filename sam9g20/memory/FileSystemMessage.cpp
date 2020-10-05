@@ -63,7 +63,7 @@ void FileSystemMessage::setClearSdCardCommand(CommandMessage *message) {
 	message->setCommand(CLEAR_SD_CARD);
 }
 
-void FileSystemMessage::printSdCardCommand(CommandMessage *message) {
+void FileSystemMessage::setPrintSdCardCommand(CommandMessage *message) {
 	message->setCommand(PRINT_SD_CARD);
 }
 
