@@ -77,6 +77,10 @@ ReturnValue_t UartPollingBase::handleTransferResult(
         parityErrorCount++;
         break;
     }
+    case(UARTtransferStatus::overrunError_uart): {
+    	overrunErrorCount++;
+    	break;
+    }
     case(UARTtransferStatus::error_uart): {
         otherErrorCount++;
         break;
@@ -84,7 +88,7 @@ ReturnValue_t UartPollingBase::handleTransferResult(
 
     default:
         sif::error << "RS232PollingTask::handleTransferResult: Unknown error"
-                << " occured!" << std::endl;
+                << " with code " << status << " occured!" << std::endl;
         break;
     }
     return result;

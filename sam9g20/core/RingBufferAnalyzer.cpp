@@ -71,7 +71,7 @@ ReturnValue_t RingBufferAnalyzer::handleDleParsing(uint8_t* receptionBuffer,
 		ringBuffer->deleteData(readSize);
 	}
 	else if(result == POSSIBLE_PACKET_LOSS) {
-		// STX or ETX found at wrong placer
+		// STX or ETX found at wrong place
 		// which might be a hint for a possibly lost packet.
 		currentBytesRead = 0;
 		ringBuffer->deleteData(readSize);
