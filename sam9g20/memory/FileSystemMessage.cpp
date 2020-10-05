@@ -1,15 +1,15 @@
 #include <sam9g20/memory/FileSystemMessage.h>
-#include "../objectmanager/ObjectManagerIF.h"
+#include <fsfw/objectmanager/ObjectManagerIF.h>
 
 void FileSystemMessage::setCreateFileCommand(CommandMessage* message,
         store_address_t storeId) {
-    message->setCommand(CREATE_FILE_CMD);
+    message->setCommand(CREATE_FILE);
     message->setParameter2(storeId.raw);
 }
 
 void FileSystemMessage::setDeleteFileCommand(
         CommandMessage* message, store_address_t storeId) {
-    message->setCommand(DELETE_FILE_CMD);
+    message->setCommand(DELETE_FILE);
     message->setParameter2(storeId.raw);
 }
 

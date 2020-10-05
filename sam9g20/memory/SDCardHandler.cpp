@@ -105,14 +105,14 @@ ReturnValue_t SDCardHandler::handleMessage(CommandMessage* message) {
 	sender = message->getSender();
 
     switch(message->getCommand()) {
-    case FileSystemMessage::CREATE_FILE_CMD: {
+    case FileSystemMessage::CREATE_FILE: {
         result = handleCreateFileCommand(message);
         if(result != HasReturnvaluesIF::RETURN_OK){
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         break;
     }
-    case FileSystemMessage::DELETE_FILE_CMD: {
+    case FileSystemMessage::DELETE_FILE: {
         result = handleDeleteFileCommand(message);
         if(result != HasReturnvaluesIF::RETURN_OK){
             return HasReturnvaluesIF::RETURN_FAILED;

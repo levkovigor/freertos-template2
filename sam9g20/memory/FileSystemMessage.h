@@ -1,9 +1,9 @@
 #ifndef SAM9G20_MEMORY_FILESYSTEMMESSAGE_H_
 #define SAM9G20_MEMORY_FILESYSTEMMESSAGE_H_
 
-#include "../ipc/CommandMessage.h"
-#include "../storagemanager/StorageManagerIF.h"
-#include "../objectmanager/SystemObject.h"
+#include <fsfw/ipc/CommandMessage.h>
+#include <fsfw/storagemanager/StorageManagerIF.h>
+#include <fsfw/objectmanager/SystemObject.h>
 
 /**
  * @author  Jakob Meier
@@ -15,15 +15,15 @@ public:
 
 	static const uint8_t MESSAGE_ID = messagetypes::FILE_SYSTEM_MESSAGE;
 	/* PUS standard  (ECSS-E-ST-70-41C15 2016 p.654) */
-	static const Command_t CREATE_FILE_CMD = MAKE_COMMAND_ID(1);
-	static const Command_t DELETE_FILE_CMD = MAKE_COMMAND_ID(2);
+	static const Command_t CREATE_FILE = MAKE_COMMAND_ID(1);
+	static const Command_t DELETE_FILE = MAKE_COMMAND_ID(2);
 	/** Report file attributes */
-	static const Command_t REPORT_FILE_ATTRIBUTES_CMD = MAKE_COMMAND_ID(3);
+	static const Command_t REPORT_FILE_ATTRIBUTES = MAKE_COMMAND_ID(3);
 	static const Command_t REPORT_FILE_ATTRIBUTES_REPLY = MAKE_COMMAND_ID(4);
 	/** Command to lock a file, setting it read-only */
-	static const Command_t LOCK_FILE_CMD = MAKE_COMMAND_ID(5);
+	static const Command_t LOCK_FILE = MAKE_COMMAND_ID(5);
 	/** Command to unlock a file, enabling further operations on it */
-	static const Command_t UNLOCK_FILE_CMD = MAKE_COMMAND_ID(6);
+	static const Command_t UNLOCK_FILE = MAKE_COMMAND_ID(6);
 	/**
 	 * Find file in repository, using a search pattern.
 	 * Please note that * is the wildcard character.
