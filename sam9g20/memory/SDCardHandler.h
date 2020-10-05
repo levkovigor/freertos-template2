@@ -6,6 +6,7 @@
 #include <fsfw/memory/AcceptsMemoryMessagesIF.h>
 #include <fsfw/ipc/MessageQueueIF.h>
 #include <fsfw/memory/HasFileSystemIF.h>
+#include <fsfw/osal/FreeRTOS/PeriodicTask.h>
 #include <sam9g20/memory/SDCardApi.h>
 
 extern "C"{
@@ -14,6 +15,7 @@ extern "C"{
 
 #include <config/events/subsystemIdRanges.h>
 
+class PeriodicTaskIF;
 
 /**
  * Additional abstraction layer to encapsulate access to SD cards
@@ -39,9 +41,11 @@ public:
     SDCardHandler(object_id_t objectId_);
     virtual ~SDCardHandler();
 
-    MessageQueueId_t getCommandQueue() const;
+    MessageQueueId_t getCommandQueue() const override;
 
-    ReturnValue_t performOperation(uint8_t operationCode = 0);
+    ReturnValue_t performOperation(uint8_t operationCode = 0) override;
+    ReturnValue_t initializeAfterTaskCreation() override;
+    void setTaskIF(PeriodicTaskIF* executingTask) override;
 
     // Useful functions for development
     static ReturnValue_t printRepository(const char* repository);
@@ -50,6 +54,41 @@ public:
     // This function will dump the current SD card format in ASCII format
     static ReturnValue_t dumpSdCard();
 private:
+
+    /**
+     * The MessageQueue used to receive commands, data and to send replies.
+     */
+    MessageQueueIF* commandQueue;
+    PeriodicTaskIF* executingTask = nullptr;
+    dur_millis_t periodMs = 0;
+
+    uint32_t queueDepth = MAX_MESSAGE_QUEUE_DEPTH;
+
+    StorageManagerIF *IPCStore;
+
+    /* For now  max size of reply is set to 300.
+     * For larger sizes the software needs to be adapted. */
+    uint32_t readReplyMaxLen = MAX_READ_LENGTH;
+
+    bool fileSystemWasUsedOnce = false;
+    bool fileSystemOpen = false;
+
+    ReturnValue_t getStoreData(store_address_t& storeId,
+            ConstStorageAccessor& accessor,
+            const uint8_t** ptr, size_t* size);
+
+    VolumeId preferedVolume = SD_CARD_0; // will also be moved to FRAM!
+    VolumeId activeVolume = SD_CARD_0;
+
+    VolumeId determineVolumeToOpen();
+    ReturnValue_t handleAccessResult(ReturnValue_t accessResult);
+    ReturnValue_t handleMultipleMessages(CommandMessage* message);
+
+    static ReturnValue_t printHelper(uint8_t recursionDepth);
+
+    // Special member of extended debug output.
+    bool extendedDebugOutput = true;
+
 
     ReturnValue_t handleMessage(CommandMessage* message);
 
@@ -84,41 +123,6 @@ private:
             ReturnValue_t errorCode = HasReturnvaluesIF::RETURN_OK);
     ReturnValue_t sendDataReply(MessageQueueId_t receivedFromQueueId,
             uint8_t* tmData, size_t tmDataLen);
-
-    /**
-     * The MessageQueue used to receive commands, data and to send replies.
-     */
-    MessageQueueIF* commandQueue;
-
-    uint32_t queueDepth = MAX_MESSAGE_QUEUE_DEPTH;
-
-    StorageManagerIF *IPCStore;
-    MessageQueueId_t sender = MessageQueueIF::NO_QUEUE;
-
-    /* For now  max size of reply is set to 300.
-     * For larger sizes the software needs to be adapted. */
-    uint32_t readReplyMaxLen = MAX_READ_LENGTH;
-
-    bool fileSystemWasUsedOnce = false;
-    bool fileSystemOpen = false;
-
-    ReturnValue_t getStoreData(store_address_t& storeId,
-            ConstStorageAccessor& accessor,
-            const uint8_t** ptr, size_t* size);
-
-    // TODO: make this configurable parameter.
-    VolumeId preferredVolume = SD_CARD_0;
-    VolumeId activeVolume = SD_CARD_0;
-
-    VolumeId determineVolumeToOpen();
-    ReturnValue_t handleAccessResult(ReturnValue_t accessResult);
-    ReturnValue_t handleMultipleMessages(CommandMessage* message);
-
-    static ReturnValue_t printHelper(uint8_t recursionDepth);
-
-    // Special member of extended debug output.
-    bool extendedDebugOutput = true;
-
 };
 
 #endif /* SAM9G20_MEMORY_SDCARDHANDLER_H_ */

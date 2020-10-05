@@ -62,6 +62,8 @@ public:
     static const Command_t CLEAR_REPOSITORY = MAKE_COMMAND_ID(180);
     /** Clears the whole SD card. Use with care ! */
     static const Command_t CLEAR_SD_CARD = MAKE_COMMAND_ID(181);
+    /** Formats the SD card (which also clears it!). Use with care ! */
+    static const Command_t FORMAT_SD_CARD = MAKE_COMMAND_ID(182);
 
 	static const Command_t COMPLETION_SUCCESS = MAKE_COMMAND_ID(200);
 	static const Command_t COMPLETION_FAILED = MAKE_COMMAND_ID(201);
@@ -78,8 +80,11 @@ public:
 	        store_address_t storeId);
 	static void setReadCommand(CommandMessage* message,
 	        store_address_t storeId);
+
 	static void setPrintSdCardCommand(CommandMessage* message);
 	static void setClearSdCardCommand(CommandMessage* message);
+	static void setFormatSdCardCommand(CommandMessage* message);
+
 	static void setReadReply(CommandMessage* message, store_address_t storeId);
     static void setSuccessReply(CommandMessage* message);
     static void setFailureReply(CommandMessage* message,

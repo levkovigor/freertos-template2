@@ -29,7 +29,7 @@
  *   - TC[23,15]: Move a file
  *   - TC[23,16]: Suspend file copy operations
  *   - TC[23,17]: Resume file copy operations
- * @author  Jakob Meier
+ * @author  Jakob Meier, R. Mueller
  * @ingroup pus_services
  */
 class Service23FileManagement: public CommandingServiceBase {
@@ -109,7 +109,8 @@ private:
 		PREFERED_SD_CARD_REPLY = 162, //!< [EXPORT] : [REPLY] Report currently prefered SD card.
 
 		CLEAR_REPOSITORY = 180, //!< [EXPORT] : [COMMAND] Clears a folder, and also deletes all contained files and folders recursively. Use with care!
-		CLEAR_SD_CARD = 181 //!< [EXPORT] : [COMMAND] Clears SD card. Use with care!
+		CLEAR_SD_CARD = 181, //!< [EXPORT] : [COMMAND] Clears SD card. Use with care!
+		FORMAT_SD_CARD = 182 //! [EXPORT] : [COMMAND] Formats SD card which also deletes everything. Use with care!
 	};
 
 	ReturnValue_t addDataToStore(store_address_t* storeId, const uint8_t* tcData,

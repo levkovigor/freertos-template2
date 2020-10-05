@@ -10,11 +10,18 @@
 SDCardHandler::SDCardHandler(object_id_t objectId): SystemObject(objectId) {
     commandQueue = QueueFactory::instance()->createMessageQueue(queueDepth);
     IPCStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
+
 }
 
 
 SDCardHandler::~SDCardHandler(){
     QueueFactory::instance()->deleteMessageQueue(commandQueue);
+}
+
+
+ReturnValue_t SDCardHandler::initializeAfterTaskCreation() {
+    periodMs = executingTask->getPeriodMs();
+    return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode){
@@ -47,7 +54,7 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode){
 
 VolumeId SDCardHandler::determineVolumeToOpen() {
     if(not fileSystemWasUsedOnce) {
-    	return preferredVolume;
+    	return preferedVolume;
     }
     else {
     	return activeVolume;
@@ -59,7 +66,7 @@ ReturnValue_t SDCardHandler::handleAccessResult(ReturnValue_t accessResult) {
     	fileSystemWasUsedOnce = true;
     }
     else if(accessResult == SDCardAccess::OTHER_VOLUME_ACTIVE) {
-    	if(preferredVolume == SD_CARD_0) {
+    	if(preferedVolume == SD_CARD_0) {
     		activeVolume = SD_CARD_1;
     	}
     	else {
@@ -102,7 +109,6 @@ ReturnValue_t SDCardHandler::handleMultipleMessages(CommandMessage *message) {
 
 ReturnValue_t SDCardHandler::handleMessage(CommandMessage* message) {
 	ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
-	sender = message->getSender();
 
     switch(message->getCommand()) {
     case FileSystemMessage::CREATE_FILE: {
@@ -160,6 +166,20 @@ ReturnValue_t SDCardHandler::handleMessage(CommandMessage* message) {
     case FileSystemMessage::PRINT_SD_CARD: {
     	this->printSdCard();
     	sendCompletionReply();
+    	break;
+    }
+    case FileSystemMessage::FORMAT_SD_CARD: {
+    	// formats the currently active filesystem!
+    	sif::info << "SDCardHandler::handleMessage: Formatting SD-Card "
+    			<< activeVolume << "!" << std::endl;
+    	int retval = f_format(0, F_FAT32_MEDIA);
+    	if(retval != F_NO_ERROR) {
+    		sif::info << "SD-Card was formatted successfully!" << std::endl;
+    		sendCompletionReply();
+    	}
+    	else {
+    		sendCompletionReply(true, retval);
+    	}
     	break;
     }
     default: {
@@ -494,47 +514,7 @@ ReturnValue_t SDCardHandler::printRepository(const char *repository) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t SDCardHandler::printSdCard() {
-    F_FIND findResult;
-    int fileFound = 0;
-    uint8_t recursionDepth = 0;
-    f_chdir("/");
-    // find directories first
-    fileFound = f_findfirst("*.*", &findResult);
-    if(fileFound != F_NO_ERROR) {
-        // might be empty.
-        sif::info << "SD Card empty." << std::endl;
-        return HasReturnvaluesIF::RETURN_OK;
-    }
 
-    sif::info << "Printing SD Card: " << std::endl;
-    sif::info << "F = File, D = Directory, - = Subdir Depth" << std::endl;
-
-    for(int idx = 0; idx < 255; idx++) {
-        if(idx > 0) {
-            fileFound = f_findnext(&findResult);
-        }
-
-        if(fileFound != F_NO_ERROR) {
-            break;
-        }
-
-        // check whether file object is directory or file.
-        if(change_directory(findResult.filename, false) == F_NO_ERROR) {
-            sif::info << "D: " << findResult.filename << std::endl;
-            printHelper(recursionDepth + 1);
-            change_directory("..", false);
-        }
-        else {
-        	// Normally files should have a three letter extension, but
-        	// we always check whether there is a file without extension
-            sif::info << "F: " << findResult.filename << std::endl;
-        }
-
-    }
-
-    return HasReturnvaluesIF::RETURN_OK;
-}
 
 ReturnValue_t SDCardHandler::getStoreData(store_address_t& storeId,
         ConstStorageAccessor& accessor,
@@ -551,49 +531,6 @@ ReturnValue_t SDCardHandler::getStoreData(store_address_t& storeId,
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-
-ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
-    F_FIND findResult;
-    int fileFound = f_findfirst("*.*", &findResult);
-    if(fileFound != F_NO_ERROR) {
-        return HasReturnvaluesIF::RETURN_OK;
-    }
-
-    if(findResult.filename[0] == '.') {
-        // we are not in root, so the next search result is going
-        // to be the parent folder, and the third result is going to be
-        // the first file or directory.
-        f_findnext(&findResult);
-        fileFound = f_findnext(&findResult);
-    }
-
-    for(uint8_t idx = 0; idx < 255; idx ++) {
-        if(idx > 0) {
-            fileFound = f_findnext(&findResult);
-        }
-
-        if(fileFound != F_NO_ERROR) {
-            return HasReturnvaluesIF::RETURN_OK;
-        }
-
-
-        if(change_directory(findResult.filename, false) == F_NO_ERROR) {
-            for(uint8_t j = 0; j < recursionDepth; j++) {
-                sif::info << "-";
-            }
-            sif::info << "D: " << findResult.filename << std::endl;
-            printHelper(recursionDepth + 1);
-            change_directory("..", false);
-        }
-        else {
-            for(uint8_t j = 0; j < recursionDepth; j++) {
-                sif::info << "-";
-            }
-            sif::info << "F: " << findResult.filename << std::endl;
-        }
-    }
-    return HasReturnvaluesIF::RETURN_OK;
-}
 
 
 ReturnValue_t SDCardHandler::dumpSdCard() {
@@ -754,3 +691,92 @@ MessageQueueId_t SDCardHandler::getCommandQueue() const{
     return commandQueue->getId();
 }
 
+
+ReturnValue_t SDCardHandler::printSdCard() {
+    F_FIND findResult;
+    int fileFound = 0;
+    uint8_t recursionDepth = 0;
+    f_chdir("/");
+    // find directories first
+    fileFound = f_findfirst("*.*", &findResult);
+    if(fileFound != F_NO_ERROR) {
+        // might be empty.
+        sif::info << "SD Card empty." << std::endl;
+        return HasReturnvaluesIF::RETURN_OK;
+    }
+
+    sif::info << "Printing SD Card: " << std::endl;
+    sif::info << "F = File, D = Directory, - = Subdir Depth" << std::endl;
+
+    for(int idx = 0; idx < 255; idx++) {
+        if(idx > 0) {
+            fileFound = f_findnext(&findResult);
+        }
+
+        if(fileFound != F_NO_ERROR) {
+            break;
+        }
+
+        // check whether file object is directory or file.
+        if(change_directory(findResult.filename, false) == F_NO_ERROR) {
+            sif::info << "D: " << findResult.filename << std::endl;
+            printHelper(recursionDepth + 1);
+            change_directory("..", false);
+        }
+        else {
+        	// Normally files should have a three letter extension, but
+        	// we always check whether there is a file without extension
+            sif::info << "F: " << findResult.filename << std::endl;
+        }
+
+    }
+
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+void SDCardHandler::setTaskIF(PeriodicTaskIF *executingTask) {
+	this->executingTask = executingTask;
+}
+
+ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
+    F_FIND findResult;
+    int fileFound = f_findfirst("*.*", &findResult);
+    if(fileFound != F_NO_ERROR) {
+        return HasReturnvaluesIF::RETURN_OK;
+    }
+
+    if(findResult.filename[0] == '.') {
+        // we are not in root, so the next search result is going
+        // to be the parent folder, and the third result is going to be
+        // the first file or directory.
+        f_findnext(&findResult);
+        fileFound = f_findnext(&findResult);
+    }
+
+    for(uint8_t idx = 0; idx < 255; idx ++) {
+        if(idx > 0) {
+            fileFound = f_findnext(&findResult);
+        }
+
+        if(fileFound != F_NO_ERROR) {
+            return HasReturnvaluesIF::RETURN_OK;
+        }
+
+
+        if(change_directory(findResult.filename, false) == F_NO_ERROR) {
+            for(uint8_t j = 0; j < recursionDepth; j++) {
+                sif::info << "-";
+            }
+            sif::info << "D: " << findResult.filename << std::endl;
+            printHelper(recursionDepth + 1);
+            change_directory("..", false);
+        }
+        else {
+            for(uint8_t j = 0; j < recursionDepth; j++) {
+                sif::info << "-";
+            }
+            sif::info << "F: " << findResult.filename << std::endl;
+        }
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+}

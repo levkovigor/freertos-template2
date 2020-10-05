@@ -72,3 +72,6 @@ ReturnValue_t FileSystemMessage::getFailureReply(
 	return message->getParameter();
 }
 
+void FileSystemMessage::setFormatSdCardCommand(CommandMessage *message) {
+	message->setCommand(FORMAT_SD_CARD);
+}

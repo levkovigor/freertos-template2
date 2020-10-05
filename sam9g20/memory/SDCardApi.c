@@ -63,6 +63,8 @@ int select_sd_card(VolumeId volumeId){
 	}
 
 	if(result == F_ERR_NOTFORMATTED) {
+		TRACE_INFO("select_sd_card: Formatting SD-Card %d for Safe-FAT\r\n",
+				volumeId);
 		/**
 		 *  The file system has not been formatted to safeFat yet
 		 *  Therefore format filesystem now
@@ -75,6 +77,23 @@ int select_sd_card(VolumeId volumeId){
 		}
 	}
 	return 0;
+}
+
+int switch_sd_card(VolumeId volumeId) {
+	VolumeId oldVolumeId;
+	if(volumeId == SD_CARD_0) {
+		 oldVolumeId = SD_CARD_1;
+	}
+	else {
+		oldVolumeId = SD_CARD_0;
+	}
+	int result = f_delvolume(oldVolumeId);
+	if(result != 0) {
+		TRACE_WARNING("switch_sd_card: f_delvolume failed with code %d\n\r",
+				result);
+	}
+
+	return select_sd_card(volumeId);
 }
 
 int create_directory(const char *repository_path, const char *dirname) {

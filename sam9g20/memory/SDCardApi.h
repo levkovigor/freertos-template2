@@ -25,6 +25,7 @@ typedef enum {
 int open_filesystem(VolumeId volumeId);
 int close_filesystem(VolumeId volumeId);
 int select_sd_card(VolumeId volumeId);
+int switch_sd_card(VolumeId volumeId);
 
 /**
  * Create directory in specified path.
