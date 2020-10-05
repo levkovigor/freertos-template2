@@ -60,10 +60,9 @@ Note that make and git are required (installation guide below)
    ```sh
    git checkout <branch>
    ```
-4. Import Flight Software Framework (FSFW)
+4. Initialize and update all submodules
    ```sh
-   git submodule init
-   git submodule update
+   git submodule update --init --recursive
    ```
 
 5. Run Makefile to create binaries. If running on linux and .exe ending is
