@@ -16,19 +16,6 @@
 #define ADD_TEST_CODE                       1
 #define PRINT_MISSED_DEADLINES              1
 
-//! If this is not enabled, filenames may only have
-//! a length of 8 (+3 bytes extension, e.g. .bin or .csv)
-#define USE_LONGFILENAMES                   0
-#define MAX_REPOSITORY_PATH_LENGTH          64
-//! If USE_LONGFILENAMES is set to 1, this will specify
-//! the maximum file name length allowed.
-#if USE_LONGFILENAMES == 1
-#define MAX_FILENAME_LENGTH                 16
-#else
-//! 8 bytes name + 1 bytes for dot + 3 byte extension.
-#define MAX_FILENAME_LENGTH                 12
-#endif
-
 #ifdef __cplusplus
 namespace config {
 #endif
