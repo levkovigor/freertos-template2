@@ -61,9 +61,10 @@ private:
             const char* filename, void* args = nullptr) override;
 
     ReturnValue_t handleDeleteFileCommand(CommandMessage* message);
+    ReturnValue_t handleCreateFileCommand(CommandMessage* message);
     ReturnValue_t handleCreateDirectoryCommand(CommandMessage* message);
     ReturnValue_t handleDeleteDirectoryCommand(CommandMessage* message);
-    ReturnValue_t handleWriteCommand(CommandMessage* message);
+    ReturnValue_t handleAppendCommand(CommandMessage* message);
     ReturnValue_t handleReadCommand(CommandMessage* message);
 
 
@@ -109,6 +110,10 @@ private:
 
     bool fileSystemWasUsedOnce = false;
     bool fileSystemOpen = false;
+
+    ReturnValue_t getStoreData(store_address_t& storeId,
+            ConstStorageAccessor& accessor,
+            const uint8_t** ptr, size_t* size);
 
     // TODO: make this configurable parameter.
     VolumeId preferredVolume = SD_CARD_0;
