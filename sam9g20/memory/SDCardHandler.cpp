@@ -178,7 +178,7 @@ ReturnValue_t SDCardHandler::handleCreateFileCommand(CommandMessage *message) {
     }
 
     result = createFile(command.getRepositoryPath(), command.getFilename(),
-            command.getFileData(), command.getFileSize());
+            command.getFileData(), command.getFileSize(), nullptr);
     if(result == HasReturnvaluesIF::RETURN_OK) {
         sendCompletionReply();
     }

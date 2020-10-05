@@ -252,7 +252,7 @@ public:
 		return fileData;
 	}
 
-	uint32_t getFileSize(){
+	size_t getFileSize(){
 		return filesize;
 	}
 
