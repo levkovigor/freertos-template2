@@ -220,26 +220,26 @@ void initMission(void) {
     result = PusMediumPriorityTask->addComponent(
             objects::PUS_SERVICE_3_HOUSEKEEPING);
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        printAddError(objects::PUS_SERVICE_2_DEVICE_ACCESS);
+        printAddError(objects::PUS_SERVICE_3_HOUSEKEEPING);
     }
     result = PusMediumPriorityTask->addComponent(
             objects::PUS_SERVICE_8_FUNCTION_MGMT);
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        printAddError(objects::PUS_SERVICE_2_DEVICE_ACCESS);
+        printAddError(objects::PUS_SERVICE_8_FUNCTION_MGMT);
     }
     result = PusMediumPriorityTask->addComponent(
             objects::PUS_SERVICE_200_MODE_MGMT);
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        printAddError(objects::PUS_SERVICE_2_DEVICE_ACCESS);
+        printAddError(objects::PUS_SERVICE_200_MODE_MGMT);
     }
     result = PusMediumPriorityTask->addComponent(
             objects::PUS_SERVICE_201_HEALTH);
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        printAddError(objects::PUS_SERVICE_2_DEVICE_ACCESS);
+        printAddError(objects::PUS_SERVICE_201_HEALTH);
     }
     result = PusMediumPriorityTask->addComponent(objects::PUS_SERVICE_23);
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        printAddError(objects::PUS_SERVICE_2_DEVICE_ACCESS);
+        printAddError(objects::PUS_SERVICE_23);
     }
 
     /* PUS Low Priority */
