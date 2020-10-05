@@ -4,12 +4,15 @@
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/ipc/CommandMessage.h>
+#include <fsfw/timemanager/Countdown.h>
+#include <fsfw/timemanager/Stopwatch.h>
 #include <sam9g20/memory/FileSystemMessage.h>
 #include <sam9g20/memory/SDCardAccess.h>
 
 SDCardHandler::SDCardHandler(object_id_t objectId): SystemObject(objectId) {
     commandQueue = QueueFactory::instance()->createMessageQueue(queueDepth);
     IPCStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
+    countdown = new Countdown(0);
 
 }
 
@@ -21,11 +24,13 @@ SDCardHandler::~SDCardHandler(){
 
 ReturnValue_t SDCardHandler::initializeAfterTaskCreation() {
     periodMs = executingTask->getPeriodMs();
+    countdown->setTimeout(periodMs * 0.85);
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode){
 	CommandMessage message;
+	countdown->resetTimer();
 
 	// Check for first message
 	ReturnValue_t result = commandQueue->receiveMessage(&message);
@@ -36,6 +41,7 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode){
 		return result;
 	}
 
+	Stopwatch stopwatch;
     VolumeId volumeToOpen = determineVolumeToOpen();
     // File system message received, open access to SD Card which will
     // be closed automatically on function exit.
@@ -46,8 +52,13 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode){
     	return result;
     }
 
+
     // handle first message. Returnvalue ignored for now.
 	result = handleMessage(&message);
+
+    if(countdown->hasTimedOut()) {
+    	return HasReturnvaluesIF::RETURN_OK;
+    }
 	// Returnvalue ignored for now.
 	return handleMultipleMessages(&message);
 }
@@ -102,6 +113,10 @@ ReturnValue_t SDCardHandler::handleMultipleMessages(CommandMessage *message) {
 		if(result != HasReturnvaluesIF::RETURN_OK) {
 			status = result;
 		}
+
+	    if(countdown->hasTimedOut()) {
+	    	return status;
+	    }
 	}
 	return status;
 }

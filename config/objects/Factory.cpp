@@ -1,11 +1,13 @@
+#include "Factory.h"
+
 /* Config */
-#include <config/cdatapool/dataPoolInit.h>
-#include <config/objects/Factory.h>
+#include <config/OBSWConfig.h>
 #include <config/tmtc/apid.h>
 #include <config/objects/systemObjectList.h>
 #include <config/devices/logicalAddresses.h>
 #include <config/devices/powerSwitcherList.h>
 #include <config/tmtc/pusIds.h>
+
 
 /* Flight Software Framework */
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
@@ -77,8 +79,6 @@
 #endif
 
 #include <cstdint>
-
-
 
 
 /**
@@ -172,7 +172,8 @@ void Factory::produce(void) {
 
 	/* PUS Standalone Services using PusServiceBase */
 	new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,
-	        apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::TM_FUNNEL);
+	        apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::TM_FUNNEL,
+			SERVICE_1_MQ_DEPTH);
 	new Service3Housekeeping(objects::PUS_SERVICE_3_HOUSEKEEPING,
 			apid::SOURCE_OBSW, pus::PUS_SERVICE_3);
 	new Service5EventReporting(objects::PUS_SERVICE_5_EVENT_REPORTING,

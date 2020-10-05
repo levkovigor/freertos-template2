@@ -16,6 +16,7 @@ extern "C"{
 #include <config/events/subsystemIdRanges.h>
 
 class PeriodicTaskIF;
+class Countdown;
 
 /**
  * Additional abstraction layer to encapsulate access to SD cards
@@ -27,7 +28,7 @@ class SDCardHandler : public SystemObject,
     friend class SDCardAccess;
 public:
     // todo: make these configurable via OBSWConfig.h
-    static constexpr uint8_t MAX_FILE_MESSAGES_HANDLED_PER_CYCLE = 5;
+    static constexpr uint8_t MAX_FILE_MESSAGES_HANDLED_PER_CYCLE = 10;
     static constexpr uint32_t MAX_MESSAGE_QUEUE_DEPTH = 20;
     static constexpr size_t MAX_READ_LENGTH = 1024;
 
@@ -60,6 +61,7 @@ private:
      */
     MessageQueueIF* commandQueue;
     PeriodicTaskIF* executingTask = nullptr;
+    Countdown* countdown;
     dur_millis_t periodMs = 0;
 
     uint32_t queueDepth = MAX_MESSAGE_QUEUE_DEPTH;

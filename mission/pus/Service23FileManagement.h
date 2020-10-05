@@ -34,7 +34,7 @@
  */
 class Service23FileManagement: public CommandingServiceBase {
 public:
-    static constexpr uint8_t NUM_PARALLEL_COMMANDS = 4;
+    static constexpr uint8_t NUM_PARALLEL_COMMANDS = 15;
     static constexpr uint16_t COMMAND_TIMEOUT_SECONDS = 60;
 
 	Service23FileManagement(object_id_t objectId, uint16_t apid,

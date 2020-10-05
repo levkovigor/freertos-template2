@@ -2,6 +2,7 @@
 #define FACTORY_H_
 
 #include <fsfw/objectmanager/SystemObjectIF.h>
+#include <cstddef>
 
 namespace Factory {
     size_t calculateStorage(uint8_t numberOfPools, uint16_t* numberOfElements,

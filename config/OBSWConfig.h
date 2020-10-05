@@ -11,6 +11,7 @@
 
 #include <portmacro.h>
 
+#define SERVICE_1_MQ_DEPTH					10
 #define DISPLAY_FACTORY_ALLOCATION_SIZE     0
 #define RS485_WITH_TERMINATION              1
 #define ADD_TEST_CODE                       1
