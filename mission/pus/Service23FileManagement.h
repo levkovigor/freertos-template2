@@ -97,8 +97,10 @@ private:
 
 		SELECT_PREFERRED_SD_CARD = 153, //!< [EXPORT] : [COMMAND] Select the preferred SD card which will be picked on reboot. (value stored in FRAM)
 		REPORT_PREFERRED_SD_CARD = 154, //!< [EXPORT] : [COMMAND] Report currently prefered SD card.
-		PREFERRED_SD_CARD_REPLY = 155,
-		CLEAR_SD_CARD = 180 //!< [EXPORT] : [COMMAND] Clears SD card. Use with care!
+		PREFERRED_SD_CARD_REPLY = 155, //!< [EXPORT] : [REPLY] Report currently prefered SD card.
+
+		CLEAR_REPOSITORY = 180, //!< [EXPORT] : [COMMAND] Clears a folder, and also deletes all contained files and folders recursively. Use with care!
+		CLEAR_SD_CARD = 181 //!< [EXPORT] : [COMMAND] Clears SD card. Use with care!
 	};
 
 	ReturnValue_t addDataToStore(store_address_t* storeId, const uint8_t* tcData,
