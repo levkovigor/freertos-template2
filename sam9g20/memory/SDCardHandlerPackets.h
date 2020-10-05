@@ -200,8 +200,12 @@ private:
  */
 class WriteCommand: public SerializeIF {
 public:
+    enum WriteType {
+        NEW_FILE,
+        APPEND_TO_FILE
+    };
 
-	WriteCommand(){}
+	WriteCommand(WriteType writeType): writeType(writeType){}
 
 	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
             Endianness streamEndianness) override {
@@ -212,11 +216,14 @@ public:
 	    }
 
 		/* Deserialize packet number */
-		result = SerializeAdapter::deSerialize(&packetNumber,
-		        buffer, size, streamEndianness);
-		if(result != HasReturnvaluesIF::RETURN_OK) {
-		    return result;
-		}
+	    if(writeType == WriteType::APPEND_TO_FILE) {
+	        result = SerializeAdapter::deSerialize(&packetSequenceNumber,
+	                buffer, size, streamEndianness);
+	        if(result != HasReturnvaluesIF::RETURN_OK) {
+	            return result;
+	        }
+	    }
+
 
 		/* Just keep internal pointer of rest of data, no copying */
 		filesize = *size;
@@ -250,14 +257,16 @@ public:
 	}
 
 	uint16_t getPacketNumber(){
-		return packetNumber;
+		return packetSequenceNumber;
 	}
 
 private:
 
-	etl::string<MAX_REPOSITORY_PATH_LENGTH> repositoryPath;
-	etl::string<MAX_FILENAME_LENGTH> filename;
-	uint16_t packetNumber = 0;
+	WriteType writeType;
+
+	RepositoryPath repositoryPath;
+	FileName filename;
+	uint16_t packetSequenceNumber = 0;
 	size_t filesize = 0; //! [EXPORT] : [IGNORE]
 	const uint8_t* fileData = nullptr;
 };

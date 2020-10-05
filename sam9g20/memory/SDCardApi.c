@@ -201,6 +201,13 @@ int create_file(const char* repository_path, const char* filename,
         return -1;
     }
     F_FILE* file = f_open(filename, "w");
+
+    result = f_getlasterror();
+    if(result != F_NO_ERROR) {
+        TRACE_DEBUG("create_file: f_open call failed with code %d!\n\r", result);
+        return result;
+    }
+
     size_t bytes_written = 0;
     if((file != NULL) && (initial_data != NULL)) {
         bytes_written = f_write(initial_data, sizeof(uint8_t),
@@ -208,19 +215,11 @@ int create_file(const char* repository_path, const char* filename,
         if(bytes_written != initial_data_size) {
             TRACE_DEBUG("create_file: f_write did not write all bytes!\n\r");
         }
-        return bytes_written;
-    }
-    else if(file == NULL) {
-        TRACE_ERROR("create_file: f_open failed with code %d\n\r",
-                f_getlasterror());
     }
 
-    if(file != NULL) {
-        result = f_close(file);
-        if (result != F_NO_ERROR) {
-            TRACE_ERROR("create_file: f_close failed with code %d\n\r",
-                    f_getlasterror());
-        }
+    result = f_close(file);
+    if (result != F_NO_ERROR) {
+        TRACE_ERROR("create_file: f_close failed with code %d\n\r", result);
     }
 
     if(repository_path != NULL) {
@@ -242,7 +241,13 @@ int delete_file(const char* repository_path,
 
     result = f_delete(filename);
     if(result != F_NO_ERROR){
-        TRACE_ERROR("delete_file: f_delete failed with code %d!\n\r",result);
+        if(result == F_ERR_NOTFOUND) {
+            TRACE_WARNING("delete_file: File not found, code %d.\r\n", result);
+        }
+        else {
+            TRACE_ERROR("delete_file: f_delete failed with code %d!\n\r",
+                    result);
+        }
         return result;
     }
     return result;

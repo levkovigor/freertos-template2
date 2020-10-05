@@ -1,4 +1,4 @@
-#include <mission/pus/Service23FileManagement.h>
+#include "Service23FileManagement.h"
 
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <config/objects/systemObjectList.h>
@@ -26,7 +26,6 @@ ReturnValue_t Service23FileManagement::isValidSubservice(uint8_t subservice) {
     case Subservice::DELETE_DIRECTORY:
     case Subservice::APPEND_TO_FILE:
     case Subservice::READ_FROM_FILE :
-        sif::info << "Service 23 detected valid subservice" << std::endl;
         return HasReturnvaluesIF::RETURN_OK;
     default:
         return HasReturnvaluesIF::RETURN_FAILED;

@@ -101,6 +101,7 @@ private:
     uint32_t queueDepth = 20;
 
     StorageManagerIF *IPCStore;
+    MessageQueueId_t sender = MessageQueueIF::NO_QUEUE;
 
     F_FILE *file = nullptr;
 
@@ -126,7 +127,7 @@ private:
     static ReturnValue_t printHelper(uint8_t recursionDepth);
 
     // Special member of extended debug output.
-    bool extendedDebugOutput = false;
+    bool extendedDebugOutput = true;
 
 };
 

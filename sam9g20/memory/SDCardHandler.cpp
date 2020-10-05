@@ -102,6 +102,7 @@ ReturnValue_t SDCardHandler::handleMultipleMessages(CommandMessage *message) {
 
 ReturnValue_t SDCardHandler::handleMessage(CommandMessage* message) {
 	ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
+	sender = message->getSender();
 
     switch(message->getCommand()) {
     case FileSystemMessage::CREATE_FILE: {
@@ -168,7 +169,7 @@ ReturnValue_t SDCardHandler::handleCreateFileCommand(CommandMessage *message) {
         return result;
     }
 
-    WriteCommand command;
+    WriteCommand command(WriteCommand::WriteType::NEW_FILE);
     result = command.deSerialize(&readPtr, &sizeRemaining,
             SerializeIF::Endianness::BIG);
     if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -305,7 +306,7 @@ ReturnValue_t SDCardHandler::handleAppendCommand(CommandMessage* message){
     }
 
 
-    WriteCommand command;
+    WriteCommand command(WriteCommand::WriteType::APPEND_TO_FILE);
     result = command.deSerialize(&readPtr, &sizeRemaining,
             SerializeIF::Endianness::BIG);
     if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -530,6 +531,8 @@ ReturnValue_t SDCardHandler::getStoreData(store_address_t& storeId,
                <<  "Getting data failed!" << std::endl;
         return HasReturnvaluesIF::RETURN_FAILED;
     }
+    *size = accessor.size();
+    *ptr = accessor.data();
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -619,16 +622,21 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
     }
 
     /**
-     *  Try to open file
+     *  Try to open file.
      *  If file doesn't exist a new file is created
-     *  For the first packet the file should be opened in write mode
+     *  For the first packet the file should be opened in write mode.
      *  Subsequent packets are appended at the end of the file. Therefore file
      *  is opened in append mode.
      *
-     *  "w" actually deletes the old file. This sounds dangerous. We should
-     *  only append to existing files..
+     *  "w" will delete any old file! Important files will be protected by a
+     *  lock.
      */
-    file = f_open(filename, "r+");
+    if(packetNumber == 0){
+        file = f_open(filename, "w");
+    }
+    else {
+        file = f_open(filename, "a");
+    }
 
     /* File does not exist */
     result = f_getlasterror();
