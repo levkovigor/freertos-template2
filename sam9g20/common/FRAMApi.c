@@ -125,57 +125,24 @@ int reset_sdc1sl1_reboot_counter() {
             SDC1SL1_REBOOT_COUNTER_ADDR, sizeof(new_reboot_counter));
 }
 
-int update_seconds_since_epoch(uint64_t secondsSinceEpoch) {
+int update_seconds_since_epoch(uint32_t secondsSinceEpoch) {
 	return FRAM_writeAndVerify((unsigned char*) &secondsSinceEpoch,
 			SEC_SINCE_EPOCH_ADDR, sizeof(secondsSinceEpoch));
 }
 
-int read_seconds_since_epoch(uint64_t *secondsSinceEpoch) {
+int read_seconds_since_epoch(uint32_t *secondsSinceEpoch) {
 	return FRAM_read((unsigned char*) secondsSinceEpoch,
 			SEC_SINCE_EPOCH_ADDR,
 			sizeof(((FRAMCriticalData*)0)->seconds_since_epoch));
 }
 
-
-int read_sdc_bin_folder_name(char *binary_folder) {
-	return FRAM_read((unsigned char*) binary_folder,
-			SDC_BINARY_FOLDER_ADDR,
-			sizeof(((FRAMCriticalData*)0)->sd_card_binary_folder));
-
+int set_prefered_sd_card(VolumeId volumeId) {
+	return FRAM_writeAndVerify((unsigned char*) &volumeId,
+			PREFERED_SD_CARD_ADDR, sizeof(VolumeId));
 }
 
-int write_sd_card_bin_folder(const char* binary_folder, size_t length) {
-	if(length > sizeof(((FRAMCriticalData*)0)->sd_card_binary_folder)) {
-		return -1;
-	}
-	return FRAM_writeAndVerify((unsigned char*) &binary_folder,
-			SDC_BINARY_FOLDER_ADDR, length);
+int get_prefered_sd_card(VolumeId *volumeId) {
+	return FRAM_read((unsigned char*) volumeId,
+			PREFERED_SD_CARD_ADDR,
+			sizeof(((FRAMCriticalData*)0)->preferedSdCard));
 }
-
-
-//int read_sdc1sl1_bin_names(char *bin_name, char* hamm_name) {
-//	int result = FRAM_read((unsigned char*) bin_name,
-//			SDC1SL1_FILE_NAME_ADDR,
-//			sizeof(((FRAMCriticalData*)0)->sdc1sl1_binary_file_name));
-//	if(result != 0) {
-//		return result;
-//	}
-//	return FRAM_read((unsigned char*) hamm_name,
-//			SDC1SL1_HAMM_CODE_NAME_ADDR,
-//			sizeof(((FRAMCriticalData*)0)->sdc1sl1_hamming_code_file_name));
-//
-//}
-//
-//int write_sdc1sl1_bin_names(const char *bin_name, size_t length_bin ,
-//		const char* hamm_name, size_t length_hamm) {
-//	int result = FRAM_writeAndVerify((unsigned char*) bin_name,
-//			SDC1SL1_FILE_NAME_ADDR,
-//			length_bin);
-//	if(result != 0) {
-//		return result;
-//	}
-//	return FRAM_writeAndVerify((unsigned char*) bin_name,
-//			SDC1SL1_HAMM_CODE_NAME_ADDR,
-//			length_hamm);
-//}
-

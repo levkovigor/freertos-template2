@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <sam9g20/memory/SDCardApi.h>
 
 /**
  * @brief	This common API can be used by both C++ and C code
@@ -39,32 +40,15 @@ typedef struct __attribute__((__packed__))  _FRAMCriticalData {
 	uint8_t filler_nor_flash[3];
 	uint8_t nor_flash_reboot_counter;
 
-	/* SD-Card Binaries information */
-	char sd_card_binary_folder[16];
-
-	/* SD-card 1 binary slot 1 information */
-//	char sdc1sl1_binary_file_name [16];
-//	char sdc1sl1_hamming_code_file_name [16];
-	uint8_t filler_sdc1sl1[3];
-	uint8_t sdc1sl1_reboot_counter;
-
-	/* SD-card 1 binary slot 2 information */
-//	char sdc1sl2_file_name [16];
-//	char sdc1sl2_hamming_code_file_name [16];
-	uint8_t filler_sdc1sl2[3];
-	uint8_t sdc1sl2_reboot_counter;
-
-	/* SD-card 2 binary slot 1 information */
-//	char sdc2sl1_binary_file_name [16];
-//	char sdc2sl1_hamming_code_file_name [16];
-	uint8_t filler_sdc2sl1[3];
-	uint8_t sdc2sl1_reboot_counter;
-
-	/* SD-card 2 binary slot 2 information */
-//	char sdc2sl2_binary_file_name [16];
-//	char sdc2sl2_hamming_code_file_name[16];
-	uint8_t filler_sdc2sl2[3];
-	uint8_t sdc2sl2_reboot_counter;
+	/* SD-Card */
+	// This value will be used on reboot to determine which SD card is the
+	// default SD card on reboot.
+	// 0: None, 1: SD Card 0, 2: SD Card 1
+	VolumeId preferedSdCard;
+	uint32_t sdc1sl1_reboot_counter;
+	uint32_t sdc1sl2_reboot_counter;
+	uint32_t sdc2sl1_reboot_counter;
+	uint32_t sdc2sl2_reboot_counter;
 
 	/*
 	 * Bootloader binary information. Bootloader itself could also be stored
@@ -108,35 +92,15 @@ static const uint32_t NOR_FLASH_HAMMING_CODE_OFFSET_ADDRESS =
 static const uint32_t NOR_FLASH_REBOOT_COUNTER_ADDRESS =
         offsetof(FRAMCriticalData, nor_flash_reboot_counter);
 
-/* SD-Card offsets */
-static const uint32_t SDC_BINARY_FOLDER_ADDR =
-        offsetof(FRAMCriticalData, sd_card_binary_folder);
 
-//static const uint32_t SDC1SL1_FILE_NAME_ADDR =
-//		offsetof(FRAMCriticalData, sdc1sl1_binary_file_name);
-//static const uint32_t SDC1SL1_HAMM_CODE_NAME_ADDR =
-//		offsetof(FRAMCriticalData, sdc1sl1_hamming_code_file_name);
+static const uint32_t PREFERED_SD_CARD_ADDR =
+		offsetof(FRAMCriticalData, preferedSdCard);
 static const uint32_t SDC1SL1_REBOOT_COUNTER_ADDR =
         offsetof(FRAMCriticalData, sdc1sl1_reboot_counter);
-
-//static const uint32_t SDC1SL2_FILE_NAME_ADDR =
-//		offsetof(FRAMCriticalData, sdc1sl2_file_name);
-//static const uint32_t SDC1SL2_HAMM_CODE_NAME_ADDR =
-//		offsetof(FRAMCriticalData, sdc1sl2_hamming_code_file_name);
 static const uint32_t SDC1SL2_REBOOT_COUNTER_ADDR =
         offsetof(FRAMCriticalData, sdc1sl2_reboot_counter);
-
-//static const uint32_t SDC2SL1_FILE_NAME_ADDR =
-//		offsetof(FRAMCriticalData, sdc2sl1_binary_file_name);
-//static const uint32_t SDC2SL1_HAMM_CODE_NAME_ADDR =
-//		offsetof(FRAMCriticalData, sdc2sl1_hamming_code_file_name);
 static const uint32_t SDC2SL1_REBOOT_COUNTER_ADDR =
         offsetof(FRAMCriticalData, sdc2sl1_reboot_counter);
-
-//static const uint32_t SDC2SL2_FILE_NAME_ADDR  =
-//		offsetof(FRAMCriticalData, sdc2sl2_binary_file_name);
-//static const uint32_t SDC2SL2_HAMM_CODE_NAME_ADDR =
-//		offsetof(FRAMCriticalData, sdc2sl2_hamming_code_file_name);
 static const uint32_t SDC2SL2_REBOOT_COUNTER_ADDR =
         offsetof(FRAMCriticalData, sdc2sl2_reboot_counter);
 
@@ -161,8 +125,8 @@ int read_software_version(uint8_t* software_version, uint8_t* software_subversio
 int increment_reboot_counter();
 int read_reboot_counter(uint16_t* reboot_counter);
 
-int update_seconds_since_epoch(uint64_t secondsSinceEpoch);
-int read_seconds_since_epoch(uint64_t* secondsSinceEpoch);
+int update_seconds_since_epoch(uint32_t secondsSinceEpoch);
+int read_seconds_since_epoch(uint32_t* secondsSinceEpoch);
 
 int write_nor_flash_binary_info(size_t binary_size, size_t hamming_code_offset);
 int read_nor_flash_binary_info(size_t* binary_size, size_t* hamming_code_offset);
@@ -170,23 +134,6 @@ int increment_nor_flash_reboot_counter();
 int read_nor_flash_reboot_counter(uint8_t* nor_flash_reboot_counter);
 int reset_nor_flash_reboot_counter();
 
-int read_sdc_bin_folder_name(char* binary_folder);
-
-/**
- * Please provide a buffer with sufficient size!
- * @param bin_name 		Provide buffer with 16 bytes
- * @param hamm_name 	Provide buffer with 16 bytes
- * @return
- */
-int read_sdc1sl1_bin_names(char* bin_name, char* hamm_name);
-/**
- * Make sure to provide a '\0' terminated name!
- * @param bin_name
- * @param hamm_name
- * @return
- */
-int write_sdc1sl1_bin_names(const char* bin_name, size_t length_bin,
-		const char* hamm_name, size_t lenght_hamm);
 
 int increment_sdc1sl1_reboot_counter();
 int read_sdc1sl1_reboot_counter(uint8_t* sdc1sl1_reboot_counter);
@@ -194,6 +141,9 @@ int reset_sdc1sl1_reboot_counter();
 
 int set_bootloader_faulty(bool faulty);
 int is_bootloader_faulty(bool* faulty);
+
+int set_prefered_sd_card(VolumeId volumeId);
+int get_prefered_sd_card(VolumeId* volumeId);
 
 #ifdef __cplusplus
 }

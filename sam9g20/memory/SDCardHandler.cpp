@@ -4,7 +4,7 @@
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/ipc/CommandMessage.h>
-#include <fsfw/memory/FileSystemMessage.h>
+#include <sam9g20/memory/FileSystemMessage.h>
 #include <sam9g20/memory/SDCardAccess.h>
 
 SDCardHandler::SDCardHandler(object_id_t objectId): SystemObject(objectId) {
@@ -105,14 +105,14 @@ ReturnValue_t SDCardHandler::handleMessage(CommandMessage* message) {
 	sender = message->getSender();
 
     switch(message->getCommand()) {
-    case FileSystemMessage::CREATE_FILE: {
+    case FileSystemMessage::CREATE_FILE_CMD: {
         result = handleCreateFileCommand(message);
         if(result != HasReturnvaluesIF::RETURN_OK){
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         break;
     }
-    case FileSystemMessage::DELETE_FILE: {
+    case FileSystemMessage::DELETE_FILE_CMD: {
         result = handleDeleteFileCommand(message);
         if(result != HasReturnvaluesIF::RETURN_OK){
             return HasReturnvaluesIF::RETURN_FAILED;

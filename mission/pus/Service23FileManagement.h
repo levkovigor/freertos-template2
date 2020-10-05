@@ -64,11 +64,41 @@ private:
 	enum Subservice {
 		CREATE_FILE = 1, //!< [EXPORT] : [COMMAND] Create file
 		DELETE_FILE = 2, //!< [EXPORT] : [COMMADND] Delete file
+
+		REPORT_FILE_ATTRIBUTES = 3,
+		REPORT_FILE_ATTRIBUTES_REPLY = 4,
+
+		LOCK_FILE = 5,
+		UNLOCK_FILE = 6,
+
+		FIND_FILE = 7,
+		FOUND_FILES_REPLY = 8,
+
 		CREATE_DIRECTORY = 9, //!<  [EXPORT] : [COMMAND] Create a directory
 		DELETE_DIRECTORY = 10, //!<  [EXPORT] : [COMMAND] Delete a directory
-		APPEND_TO_FILE = 128, //!< [EXPORT] : [COMMAND] Append data to file
-		READ_FROM_FILE = 129, //!< [EXPORT] : [COMMAND] Read data from a file
-		READ_REPLY = 130 //!< [EXPORT] : [REPLY] Reply of subservice 129
+
+		REPORT_REPOSITORY = 12,
+		REPORT_REPOSTIROY_REPLY = 13,
+
+		RENAME_DIRECTORY = 14,
+
+		/** Custom subservices */
+		APPEND_TO_FILE = 130, //!< [EXPORT] : [COMMAND] Append data to file
+		READ_FROM_FILE = 131, //!< [EXPORT] : [COMMAND] Read data from a file
+		READ_REPLY = 132, //!< [EXPORT] : [REPLY] Reply of subservice 129
+
+		DUMP_FILE_STRUCTURE = 133, //!< [EXPORT] : [COMMAND] Dump structure of whole SD card as ASCII file.
+		DUMP_FILE_STRUCTURE_REPLY = 134, //!< [EXPORT] : [REPLY] ASCII reply if file is small enough, otherwise only repository name and filename.
+		PRINT_SD_CARD = 135, //!< [EXPORT] : [COMMAND] Print SD card to console.
+
+		SELECT_ACTIVE_SD_CARD = 150, //!< [EXPORT] : [COMMAND] Swap the active SD card.
+		REPORT_ACTIVE_SD_CARD = 151, //!< [EXPORT] : [REPLY] Reply which contains now active SD card
+		ACTIVE_SD_CARD_REPLY = 152,
+
+		SELECT_PREFERRED_SD_CARD = 153, //!< [EXPORT] : [COMMAND] Select the preferred SD card which will be picked on reboot. (value stored in FRAM)
+		REPORT_PREFERRED_SD_CARD = 154, //!< [EXPORT] : [COMMAND] Report currently prefered SD card.
+		PREFERRED_SD_CARD_REPLY = 155,
+		CLEAR_SD_CARD = 180 //!< [EXPORT] : [COMMAND] Clears SD card. Use with care!
 	};
 
 	ReturnValue_t addDataToStore(store_address_t* storeId, const uint8_t* tcData,

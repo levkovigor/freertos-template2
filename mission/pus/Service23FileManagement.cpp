@@ -4,8 +4,8 @@
 #include <config/objects/systemObjectList.h>
 #include <fsfw/tmtcpacket/pus/TmPacketStored.h>
 #include <fsfw/memory/HasFileSystemIF.h>
-#include <fsfw/memory/FileSystemMessage.h>
 #include <fsfw/action/ActionMessage.h>
+#include <sam9g20/memory/FileSystemMessage.h>
 
 Service23FileManagement::Service23FileManagement(object_id_t objectId,
         uint16_t apid, uint8_t serviceId):
