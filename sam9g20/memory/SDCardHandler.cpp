@@ -12,8 +12,6 @@
 SDCardHandler::SDCardHandler(object_id_t objectId): SystemObject(objectId) {
     commandQueue = QueueFactory::instance()->createMessageQueue(queueDepth);
     IPCStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
-    countdown = new Countdown(0);
-
 }
 
 
@@ -24,13 +22,11 @@ SDCardHandler::~SDCardHandler(){
 
 ReturnValue_t SDCardHandler::initializeAfterTaskCreation() {
     periodMs = executingTask->getPeriodMs();
-    countdown->setTimeout(periodMs * 0.85);
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode){
 	CommandMessage message;
-	countdown->resetTimer();
 
 	// Check for first message
 	ReturnValue_t result = commandQueue->receiveMessage(&message);
@@ -41,7 +37,7 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode){
 		return result;
 	}
 
-	Stopwatch stopwatch;
+	//Stopwatch stopwatch;
     VolumeId volumeToOpen = determineVolumeToOpen();
     // File system message received, open access to SD Card which will
     // be closed automatically on function exit.
@@ -56,11 +52,9 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode){
     // handle first message. Returnvalue ignored for now.
 	result = handleMessage(&message);
 
-    if(countdown->hasTimedOut()) {
-    	return HasReturnvaluesIF::RETURN_OK;
-    }
 	// Returnvalue ignored for now.
-	return handleMultipleMessages(&message);
+	//return handleMultipleMessages(&message);
+	return HasReturnvaluesIF::RETURN_OK;
 }
 
 VolumeId SDCardHandler::determineVolumeToOpen() {
@@ -95,31 +89,31 @@ ReturnValue_t SDCardHandler::handleAccessResult(ReturnValue_t accessResult) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t SDCardHandler::handleMultipleMessages(CommandMessage *message) {
-	ReturnValue_t status = HasReturnvaluesIF::RETURN_OK;
-	for(uint8_t counter = 1;
-			counter < MAX_FILE_MESSAGES_HANDLED_PER_CYCLE;
-			counter++)
-	{
-		ReturnValue_t result = commandQueue->receiveMessage(message);
-		if(result == MessageQueueIF::EMPTY) {
-			return HasReturnvaluesIF::RETURN_OK;
-		}
-		else if(result != HasReturnvaluesIF::RETURN_OK) {
-			return result;
-		}
-
-		result = handleMessage(message);
-		if(result != HasReturnvaluesIF::RETURN_OK) {
-			status = result;
-		}
-
-	    if(countdown->hasTimedOut()) {
-	    	return status;
-	    }
-	}
-	return status;
-}
+//ReturnValue_t SDCardHandler::handleMultipleMessages(CommandMessage *message) {
+//	ReturnValue_t status = HasReturnvaluesIF::RETURN_OK;
+//	for(uint8_t counter = 1;
+//			counter < MAX_FILE_MESSAGES_HANDLED_PER_CYCLE;
+//			counter++)
+//	{
+// 		ReturnValue_t result = commandQueue->receiveMessage(message);
+//		if(result == MessageQueueIF::EMPTY) {
+//			return HasReturnvaluesIF::RETURN_OK;
+//		}
+//		else if(result != HasReturnvaluesIF::RETURN_OK) {
+//			return result;
+//		}
+//
+//		result = handleMessage(message);
+//		if(result != HasReturnvaluesIF::RETURN_OK) {
+//			status = result;
+//		}
+//
+//	    if(countdown->hasTimedOut()) {
+//	    	return status;
+//	    }
+//	}
+//	return status;
+//}
 
 
 ReturnValue_t SDCardHandler::handleMessage(CommandMessage* message) {
@@ -583,21 +577,38 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
         return result;
     }
 
+    // todo: check whether packet number is a sequence.
+    if(packetNumber == 0){
+    	// todo: what if we miss packet number 0?
+    	lastPacketNumber = 0;
+    }
+    else if((packetNumber == 1) and (lastPacketNumber != 0)) {
+    	sif::debug << "SDCardHandler::appendToFile: First sequence "
+    			<< "packet missed!" << std::endl;
+    	return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    else if((packetNumber - lastPacketNumber) > 1) {
+    	sif::debug << "SDCardHandler::appendToFile: Packet missing between "
+    			<< packetNumber << " and " << lastPacketNumber << std::endl;
+    	return HasReturnvaluesIF::RETURN_FAILED;
+
+    }
+    else {
+    	lastPacketNumber = packetNumber;
+    }
+
+
     if(extendedDebugOutput) {
-        sif::debug << "SDCardHandler: Packet to write with packet number: "
+        sif::debug << "SDCardHandler::appendToFile: Packet with packet number: "
                 << packetNumber << " received" << std::endl;
     }
 
-    /**
-     *  Try to open file.
-     *  If file doesn't exist a new file is created
-     *  For the first packet the file should be opened in write mode.
-     *  Subsequent packets are appended at the end of the file. Therefore file
-     *  is opened in append mode.
-     *
-     *  "w" will delete any old file! Important files will be protected by a
-     *  lock.
-     */
+    /* Try to open file. If file doesn't exist a new file is created
+    For the first packet the file should be opened in write mode.
+    Subsequent packets are appended at the end of the file. Therefore file
+    is opened in append mode.
+    "w" will delete any old file! Important files will be protected by a
+    lock. */
     F_FILE* file = nullptr;
     if(packetNumber == 0){
         file = f_open(filename, "w");

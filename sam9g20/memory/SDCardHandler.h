@@ -61,7 +61,6 @@ private:
      */
     MessageQueueIF* commandQueue;
     PeriodicTaskIF* executingTask = nullptr;
-    Countdown* countdown;
     dur_millis_t periodMs = 0;
 
     uint32_t queueDepth = MAX_MESSAGE_QUEUE_DEPTH;
@@ -84,13 +83,15 @@ private:
 
     VolumeId determineVolumeToOpen();
     ReturnValue_t handleAccessResult(ReturnValue_t accessResult);
-    ReturnValue_t handleMultipleMessages(CommandMessage* message);
+    //ReturnValue_t handleMultipleMessages(CommandMessage* message);
 
     static ReturnValue_t printHelper(uint8_t recursionDepth);
 
     // Special member of extended debug output.
     bool extendedDebugOutput = true;
 
+    // Right now, only supports one file upload at a time..
+    uint16_t lastPacketNumber = -1;
 
     ReturnValue_t handleMessage(CommandMessage* message);
 

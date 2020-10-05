@@ -237,10 +237,7 @@ void initMission(void) {
     if (result != HasReturnvaluesIF::RETURN_OK) {
         printAddError(objects::PUS_SERVICE_201_HEALTH);
     }
-    result = PusMediumPriorityTask->addComponent(objects::PUS_SERVICE_23);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        printAddError(objects::PUS_SERVICE_23);
-    }
+
 
     /* PUS Low Priority */
     PeriodicTaskIF* PusLowPriorityTask = TaskFactory::instance()->
@@ -252,12 +249,20 @@ void initMission(void) {
     }
     PusLowPriorityTask->addComponent(objects::PUS_SERVICE_17_TEST);
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        printAddError(objects::PUS_SERVICE_17_TEST);
+    	printAddError(objects::PUS_SERVICE_17_TEST);
     }
 
+    /* PUS File Management */
+    PeriodicTaskIF* PusFileManagement = TaskFactory::instance()->
+    		createPeriodicTask("PUS_FILE_MGMT", 4, 2048 * 4, 0.4,
+    				genericMissedDeadlineFunc);
+    result = PusFileManagement->addComponent(objects::PUS_SERVICE_23_FILE_MGMT);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+    	printAddError(objects::PUS_SERVICE_23_FILE_MGMT);
+    }
     /* SD Card handler task */
     PeriodicTaskIF* SDCardTask = TaskFactory::instance()->
-            createPeriodicTask("SD_CARD_TASK", 3, 2048 * 4, 1.0,
+            createPeriodicTask("SD_CARD_TASK", 3, 2048 * 4, 0.4,
                     genericMissedDeadlineFunc);
     result = SDCardTask->addComponent(objects::SD_CARD_HANDLER);
     if (result != HasReturnvaluesIF::RETURN_OK) {
@@ -323,6 +328,7 @@ void initMission(void) {
     PusService01 -> startTask();
     PusService05 -> startTask();
 
+    PusFileManagement->startTask();
     PusHighPriorityTask->startTask();
     PusMediumPriorityTask->startTask();
     PusLowPriorityTask->startTask();
