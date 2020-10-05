@@ -148,7 +148,14 @@ ReturnValue_t SDCardHandler::handleMessage(CommandMessage* message) {
         break;
     }
     case FileSystemMessage::CLEAR_SD_CARD: {
-    	int result = clear_sd_card();
+    	int retval = clear_sd_card();
+    	if(retval == 0) {
+    		sendCompletionReply();
+    	}
+    	else {
+    		sendCompletionReply(false, retval);
+    	}
+    	break;
     }
     case FileSystemMessage::PRINT_SD_CARD: {
     	this->printSdCard();
