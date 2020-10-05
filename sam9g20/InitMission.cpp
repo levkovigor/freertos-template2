@@ -257,7 +257,7 @@ void initMission(void) {
 
     /* SD Card handler task */
     PeriodicTaskIF* SDCardTask = TaskFactory::instance()->
-            createPeriodicTask("SD_CARD_TASK", 3, 2048 * 4, 5.0,
+            createPeriodicTask("SD_CARD_TASK", 3, 2048 * 4, 2.0,
                     genericMissedDeadlineFunc);
     result = SDCardTask->addComponent(objects::SD_CARD_HANDLER);
     if (result != HasReturnvaluesIF::RETURN_OK) {

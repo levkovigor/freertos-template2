@@ -156,8 +156,7 @@ ReturnValue_t Service23FileManagement::addDataToStore(
         size_t tcDataLen) {
     // It is assumed the pointer to the tcData is passed unchanged,
     // so we skip the objectId
-    store_address_t parameterAddress;
-    ReturnValue_t result = IPCStore->addData(&parameterAddress,
+    ReturnValue_t result = IPCStore->addData(storeId,
             tcData + sizeof(object_id_t), tcDataLen - sizeof(object_id_t));
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "Service23FileManagement::addDataToStore: Failed to add "
