@@ -307,7 +307,9 @@ ReturnValue_t ImageCopyingEngine::handleErasingForObsw() {
         uint8_t requiredBlocks = std::ceil(
                 static_cast<float>(currentFileSize) /
                 (PAGES_PER_BLOCK * NAND_PAGE_SIZE));
-        helperCounter2 = requiredBlocks;
+        // We start counting at one to skip the bootloader,
+        // so we need to add one here.
+        helperCounter2 = requiredBlocks + 1;
     }
 
     while(helperCounter1 < helperCounter2) {
