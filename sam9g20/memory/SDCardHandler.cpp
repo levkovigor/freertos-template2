@@ -674,15 +674,19 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
                 << packetNumber << " received" << std::endl;
     }
 
-    /* Try to open file. If file doesn't exist a new file is created
-    For the first packet the file should be opened in write mode.
-    Subsequent packets are appended at the end of the file. Therefore file
-    is opened in append mode.
-    "w" will delete any old file! Important files will be protected by a
-    lock. */
+    /* Try to open file. File should already exist, therefore "r+" for first
+    packet. Subsequent packets are appended at the end of the file.
+    Therefore file is opened in append mode. */
     F_FILE* file = nullptr;
-    if(packetNumber == 0){
-        file = f_open(filename, "w");
+    if(packetNumber == 0) {
+        file = f_open(filename, "r+");
+        if(file != nullptr) {
+            result = f_seek(file, 0, F_SEEK_END);
+            if(result != F_NO_ERROR) {
+                sif::error << "SDCardHandler::appendToFile: f_seek failed with "
+                        << "error code" << result << "!" << std::endl;
+            }
+        }
     }
     else {
         file = f_open(filename, "a");
@@ -693,11 +697,13 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
     if(result != F_NO_ERROR){
         if(result == F_ERR_NOTFOUND) {
             // File to append to does not exist
+            // TODO: error codes
             sif::error << "SDCardHandler::appendToFile: File to append to "
                     << "does not exist, error code" << result
                     << std::endl;
         }
         else if(result == F_ERR_LOCKED) {
+            // TODO: error codes
             sif::error << "SDCardHandler::appendToFile: File to append to is "
                     << "locked, error code" << result << std::endl;
         }
@@ -714,12 +720,13 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
     /* if bytes written doesn't equal bytes to write, get the error */
     if (numberOfItemsWritten != (long) size) {
         sif::error << "SDCardHandler::writeToFile: Not all bytes written,"
-                " f_write error code" << f_getlasterror() << std::endl;
+                << " f_write error code " << f_getlasterror() << std::endl;
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
     /* Close file */
     result = f_close(file);
+
     if (result != F_NO_ERROR){
         sif::error << "SDCardHandler::writeToFile: Closing failed, f_close "
                 << "error code: " << result << std::endl;
