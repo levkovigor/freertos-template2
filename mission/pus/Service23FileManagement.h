@@ -10,23 +10,54 @@
  * Full Documentation: ECSS-E-ST-70-41C p.403, p.653
  *
  * The file management service provides the capability to manage on-board file
- * systems and files. Not all subservices listed below are yet implemented.
- * Service capability:
+ * systems and files.
  *   - TC[23,1]: Create a file
  *   - TC[23,2]: Delete a file
  *   - TC[23,3]: Report the attributes of a file
- *   - TM[23,4]: Response of TC[23,3]
+ *   - TM[23,4]: Response to TC[23,3]
  *   - TC[23,5]: Lock a file
  *   - TC[23,6]: Unlock a file
  *   - TC[23,7]: Find files
- *   - TM[23,8]: Response of TC[23,7]
+ *   - TM[23,8]: Response to TC[23,7]
  *   - TC[23,9]: Create a directory
  *   - TC[23,10]: Delete a directory
  *   - TC[23,11]: Rename a directory
  *   - TC[23,12]: Summary-report the content of a repository
  *   - TM[23,13]: Response of TC[23,12]
- *   - TC[23,14]: Copy a file
  *   - TC[23,15]: Move a file
+ *
+ * A set of custom subservices will be implemented:
+ *  - TC[23,130]: Append to file. The service will  implement sequence checking
+ *    for consecutive append operations on the same file but only support one
+ *    append operation at a time.
+ *  - TC[23,131]: Stop or finish append operation. This service will stop or
+ *    finish the append operation so that another append operation can be
+ *    started. A telemetry packet containing the last valid sequence number,
+ *    the repository and file name of the current operation will be generated.
+ *  - TC[23,132]: Stop append reply.
+ *
+ *  - TC[23,135]: Read from a file. The service will also only support
+ *    one read operation at a time, but will implement sequence checking
+ *    for consecutive read operations on the same file.
+ *  - TC[23,136]: Read reply.
+ *  - TC[23,137]: Stop or finish read operation. This service will stop or
+ *    finish the read operation so that another read operation can be started.
+ *    A telemetry packet containing the last valid sequence number, the
+ *    repository and file name of the current operation will be generated.
+ *  - TC[23,138]: Stop read reply.
+ *
+ *  Actually those belong in service 8..
+ *  - TC[23,150]: Select active SD-card.
+ *  - TC[23,151]: Report active SD-card.
+ *  - TC[23,152]: Active SD-card reply.
+ *
+ *  - TC[23,160]:
+ *
+ * The file copy subservice might only be partially implemented.
+ * The last byte of the operation ID might be used to specify whether a
+ * file is copied inside the SD-card or to the other SD-card.
+ * Service capability:
+ *   - TC[23,14]: Copy a file
  *   - TC[23,16]: Suspend file copy operations
  *   - TC[23,17]: Resume file copy operations
  * @author  Jakob Meier, R. Mueller
@@ -77,15 +108,19 @@ private:
 		CREATE_DIRECTORY = 9, //!<  [EXPORT] : [COMMAND] Create a directory
 		DELETE_DIRECTORY = 10, //!<  [EXPORT] : [COMMAND] Delete a directory
 
+        RENAME_DIRECTORY = 11,
 		REPORT_REPOSITORY = 12,
 		REPORT_REPOSTIROY_REPLY = 13,
 
-		RENAME_DIRECTORY = 14,
+		MOVE_FILE = 15,
 
 		/** Custom subservices */
-		APPEND_TO_FILE = 128, //!< [EXPORT] : [COMMAND] Append data to file
-		READ_FROM_FILE = 129, //!< [EXPORT] : [COMMAND] Read data from a file
-		READ_REPLY = 130, //!< [EXPORT] : [REPLY] Reply of subservice 129
+		APPEND_TO_FILE = 130, //!< [EXPORT] : [COMMAND] Append data to file
+		FINISH_APPEND_TO_FILE = 131,
+		FINISH_APPEND_REPLY = 132,
+
+		READ_FROM_FILE = 135, //!< [EXPORT] : [COMMAND] Read data from a file
+		READ_REPLY = 136, //!< [EXPORT] : [REPLY] Reply of subservice 129
 
 		DUMP_FILE_STRUCTURE = 131, //!< [EXPORT] : [COMMAND] Dump structure of whole SD card as ASCII file.
 		DUMP_FILE_STRUCTURE_REPLY = 132, //!< [EXPORT] : [REPLY] ASCII reply if file is small enough, otherwise only repository name and filename.
