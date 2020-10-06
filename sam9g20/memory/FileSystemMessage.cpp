@@ -63,10 +63,6 @@ void FileSystemMessage::setClearSdCardCommand(CommandMessage *message) {
 	message->setCommand(CLEAR_SD_CARD);
 }
 
-void FileSystemMessage::setPrintSdCardCommand(CommandMessage *message) {
-	message->setCommand(PRINT_SD_CARD);
-}
-
 ReturnValue_t FileSystemMessage::getFailureReply(
 		const CommandMessage *message) {
 	return message->getParameter();

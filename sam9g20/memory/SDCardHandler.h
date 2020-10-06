@@ -92,8 +92,6 @@ private:
     PeriodicTaskIF* executingTask = nullptr;
     dur_millis_t periodMs = 0;
 
-    uint32_t queueDepth = MAX_MESSAGE_QUEUE_DEPTH;
-
     StorageManagerIF *IPCStore;
 
     /* For now  max size of reply is set to 300.

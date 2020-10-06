@@ -21,28 +21,12 @@ int open_filesystem(VolumeId volume){
 		return result;
 	}
 
-	/* Register this task with filesystem */
-	result = f_enterFS();
-	if(result != F_NO_ERROR){
-		TRACE_ERROR("open_filesystem: fs_enterFS failed with "
-				"code %d\n\r", result);
-		return result;
-	}
-
-	result = select_sd_card(volume);
-	if(result != F_NO_ERROR){
-		TRACE_ERROR("open_filesystem: SD Card %d not present or "
-				"defect.\n\r", volume);
-		return result;
-	}
 	return result;
 }
 
 int close_filesystem(VolumeId volumeId) {
-	f_delvolume(volumeId);
-	f_releaseFS();
 	int result = fs_delete();
-	if(result != 0) {
+	if(result != F_NO_ERROR) {
 		TRACE_ERROR("close_filesystem: fs_delete failed with "
 				"code %d\n\r", result);
 		return result;

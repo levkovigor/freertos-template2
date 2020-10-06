@@ -10,11 +10,11 @@
 #include <sam9g20/memory/SDCardAccess.h>
 
 SDCardHandler::SDCardHandler(object_id_t objectId): SystemObject(objectId),
-    commandQueue(QueueFactory::instance()->createMessageQueue(queueDepth)),
+    commandQueue(QueueFactory::instance()->
+    createMessageQueue(MAX_MESSAGE_QUEUE_DEPTH)),
     actionHelper(this, commandQueue) {
     IPCStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
     countdown = new Countdown(0);
-
 }
 
 

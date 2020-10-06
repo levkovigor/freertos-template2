@@ -40,23 +40,25 @@ public:
 	/** Repository dump reply */
 	static const Command_t DUMY_REPOSITORY_REPLY = MAKE_COMMAND_ID(13);
 
-    static const Command_t APPEND_TO_FILE = MAKE_COMMAND_ID(128);
-    static const Command_t READ_FROM_FILE = MAKE_COMMAND_ID(129);
-    static const Command_t READ_REPLY = MAKE_COMMAND_ID(130);
+    static const Command_t APPEND_TO_FILE = MAKE_COMMAND_ID(130);
+    static const Command_t READ_FROM_FILE = MAKE_COMMAND_ID(131);
+    static const Command_t READ_REPLY = MAKE_COMMAND_ID(132);
+
+    /** Print the structure of the SD card to the debug console */
+//    static const Command_t PRINT_SD_CARD = MAKE_COMMAND_ID(133);
 
     /** Dump the structure of the whole SD card as an ASCII file */
-    static const Command_t DUMP_FILE_STRUCTURE = MAKE_COMMAND_ID(131);
-    static const Command_t DUMP_FILE_STRUCTURE_REPLY = MAKE_COMMAND_ID(132);
-    /** Print the structure of the SD card to the debug console */
-    static const Command_t PRINT_SD_CARD = MAKE_COMMAND_ID(133);
+//    static const Command_t DUMP_FILE_STRUCTURE = MAKE_COMMAND_ID(200);
+//    static const Command_t DUMP_FILE_STRUCTURE_REPLY = MAKE_COMMAND_ID(201);
 
-    static const Command_t SELECT_ACTIVE_SD_CARD = MAKE_COMMAND_ID(150);
-    static const Command_t REPORT_ACTIVE_SD_CARD = MAKE_COMMAND_ID(151);
-    static const Command_t ACTIVE_SD_CARD_REPLY = MAKE_COMMAND_ID(152);
 
-    static const Command_t SELECT_PREFERED_SD_CARD = MAKE_COMMAND_ID(160);
-    static const Command_t REPORT_PREFERED_SD_CARD = MAKE_COMMAND_ID(161);
-    static const Command_t PREFERED_SD_CARD_REPLY = MAKE_COMMAND_ID(162);
+//    static const Command_t SELECT_ACTIVE_SD_CARD = MAKE_COMMAND_ID(150);
+//    static const Command_t REPORT_ACTIVE_SD_CARD = MAKE_COMMAND_ID(151);
+//    static const Command_t ACTIVE_SD_CARD_REPLY = MAKE_COMMAND_ID(152);
+
+//    static const Command_t SELECT_PREFERED_SD_CARD = MAKE_COMMAND_ID(160);
+//    static const Command_t REPORT_PREFERED_SD_CARD = MAKE_COMMAND_ID(161);
+//    static const Command_t PREFERED_SD_CARD_REPLY = MAKE_COMMAND_ID(162);
 
     /** Removes a folder (rm -rf equivalent!). Use with care ! */
     static const Command_t CLEAR_REPOSITORY = MAKE_COMMAND_ID(180);
@@ -81,7 +83,6 @@ public:
 	static void setReadCommand(CommandMessage* message,
 	        store_address_t storeId);
 
-	static void setPrintSdCardCommand(CommandMessage* message);
 	static void setClearSdCardCommand(CommandMessage* message);
 	static void setFormatSdCardCommand(CommandMessage* message);
 

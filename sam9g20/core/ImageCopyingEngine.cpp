@@ -49,18 +49,16 @@ void ImageCopyingEngine::enableExtendedDebugOutput(bool enableMoreOutput) {
     this->extendedDebugOutput = enableMoreOutput;
 }
 
-ReturnValue_t ImageCopyingEngine::startSdcToFlashOperation(SdCard sdCard,
+ReturnValue_t ImageCopyingEngine::startSdcToFlashOperation(
         ImageSlot imageSlot) {
     imageHandlerState = ImageHandlerStates::COPY_SDC_IMG_TO_FLASH;
-    this->sdCard = sdCard;
     this->imageSlot = imageSlot;
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t ImageCopyingEngine::startFlashToSdcOperation(SdCard sdCard,
+ReturnValue_t ImageCopyingEngine::startFlashToSdcOperation(
         ImageSlot imageSlot) {
     imageHandlerState = ImageHandlerStates::COPY_FLASH_IMG_TO_SDC;
-    this->sdCard = sdCard;
     this->imageSlot = imageSlot;
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -144,6 +142,10 @@ GenericInternalState ImageCopyingEngine::getInternalState() const {
 ImageCopyingEngine::ImageHandlerStates
 ImageCopyingEngine::getLastFinishedState() const {
     return lastFinishedState;
+}
+
+void ImageCopyingEngine::setActiveSdCard(SdCard sdCard) {
+    this->activeSdCard = sdCard;
 }
 
 void ImageCopyingEngine::reset() {
@@ -294,8 +296,11 @@ ReturnValue_t ImageCopyingEngine::handleErasingForObsw() {
         if(imageSlot == ImageSlot::IMAGE_0) {
             currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
         }
-        else {
+        else if(imageSlot == ImageSlot::IMAGE_1) {
             currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
+        }
+        else {
+            currentFileSize = f_filelength(config::SW_UPDATE_SLOT_NAME);
         }
         helperFlag1 = true;
         helperCounter1 = 0;
@@ -693,13 +698,18 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
 
         // Current file size only needs to be cached once.
         // Info output should only be printed once.
-        if(stepCounter == 0 and imageSlot == ImageSlot::IMAGE_0) {
-            currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
+        if(stepCounter == 0) {
+            if(imageSlot == ImageSlot::IMAGE_0) {
+                currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
+            }
+            else if(imageSlot == ImageSlot::IMAGE_1) {
+                currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
+            }
+            else if(imageSlot == ImageSlot::IMAGE_1) {
+                currentFileSize = f_filelength(config::SW_UPDATE_SLOT_NAME);
+            }
+        }
 
-        }
-        else if(stepCounter == 0) {
-            currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
-        }
 
         if(stepCounter == 0) {
 #ifdef AT91SAM9G20_EK
@@ -721,8 +731,11 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         if(imageSlot == ImageSlot::IMAGE_0) {
             *filePtr = f_open(config::SW_SLOT_0_NAME, "r");
         }
-        else {
+        else if(imageSlot == ImageSlot::IMAGE_1) {
             *filePtr = f_open(config::SW_SLOT_1_NAME, "r");
+        }
+        else {
+            *filePtr = f_open(config::SW_UPDATE_SLOT_NAME, "r");
         }
     }
 

@@ -13,13 +13,12 @@ extern "C" {
 #endif
 
 SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
-        SystemObject(objectId), actionHelper(this, nullptr) {
-    //oneShot = true;
+        SystemObject(objectId), receptionQueue(QueueFactory::instance()->
+        createMessageQueue(SW_IMG_HANDLER_MQ_DEPTH)),
+        actionHelper(this, receptionQueue) {
 #ifdef AT91SAM9G20_EK
     imgCpHelper->configureNand(true);
 #endif
-    receptionQueue = QueueFactory::instance()->createMessageQueue(
-            SW_IMG_HANDLER_MQ_DEPTH);
 }
 
 ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
@@ -37,14 +36,7 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
     while(countdown->isBusy()) {
         switch(handlerState) {
         case(HandlerState::IDLE): {
-            if(oneShot) {
-                imgCpHelper->startBootloaderToFlashOperation(false);
-                handlerState = HandlerState::COPYING;
-                oneShot = false;
-            }
-            else {
-                return HasReturnvaluesIF::RETURN_OK;
-            }
+
             // check for messages or whether periodic scrubbing is necessary
             break;
         }
@@ -60,15 +52,11 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
                 handlerState = HandlerState::IDLE;
             }
             else {
-                // copy op finished
-                if(imgCpHelper->getLastFinishedState() == ImageCopyingEngine::
-                        ImageHandlerStates::COPY_SDC_BL_TO_FLASH) {
-                    imgCpHelper->startSdcToFlashOperation(SdCard::SD_CARD_0,
-                            ImageSlot::IMAGE_0);
-                }
-                else {
-                    handlerState = HandlerState::IDLE;
-                }
+                actionHelper.finish(recipient, currentAction,
+                        HasReturnvaluesIF::RETURN_OK);
+                currentAction = 0xffffffff;
+                recipient = MessageQueueIF::NO_QUEUE;
+                handlerState = HandlerState::IDLE;
             }
             break;
         }
@@ -128,7 +116,48 @@ MessageQueueId_t SoftwareImageHandler::getCommandQueue() const {
 
 ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
         MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
-    return HasReturnvaluesIF::RETURN_OK;
+    ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
+    switch(actionId) {
+    case(COPY_BOOTLOADER_TO_FLASH): {
+        if(handlerState == HandlerState::COPYING) {
+            actionHelper.finish(commandedBy, actionId, BUSY);
+        }
+        if(size != 1) {
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+
+        imgCpHelper->startBootloaderToFlashOperation(false);
+        currentAction = actionId;
+        recipient = commandedBy;
+        handlerState = HandlerState::COPYING;
+        actionHelper.step(1, commandedBy, actionId, result);
+        break;
+    }
+    case(COPY_OBSW_SDC_TO_FLASH): {
+        if(handlerState == HandlerState::COPYING) {
+            actionHelper.finish(commandedBy, actionId, BUSY);
+        }
+        if(size != 1) {
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+        uint8_t targetBinary = data[0];
+        if(targetBinary == 0) {
+            imgCpHelper->startSdcToFlashOperation(ImageSlot::IMAGE_0);
+        }
+        else if(targetBinary == 1) {
+            imgCpHelper->startSdcToFlashOperation(ImageSlot::IMAGE_1);
+        }
+        else {
+            imgCpHelper->startSdcToFlashOperation(ImageSlot::SW_UPDATE);
+        }
+        currentAction = actionId;
+        recipient = commandedBy;
+        handlerState = HandlerState::COPYING;
+        actionHelper.step(1, commandedBy, actionId, result);
+        break;
+    }
+    }
+    return result;
 }
 
 

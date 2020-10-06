@@ -95,7 +95,8 @@ int copy_sdcard_binary_to_sdram(BootSelect boot_select) {
 	case(BOOT_SD_CARD_0): {
 		// get repostiory
 		char bin_folder_name[16];
-		int result = read_sdc_bin_folder_name(bin_folder_name);
+		// hardcoded
+		//int result = read_sdc_bin_folder_name(bin_folder_name);
 		if(result != 0) {
 			// not good
 		}
@@ -105,7 +106,8 @@ int copy_sdcard_binary_to_sdram(BootSelect boot_select) {
 		}
 		char binary_name[16];
 		char hamming_name[16];
-		result = read_sdc1sl1_bin_names(binary_name, hamming_name);
+		// hardcoded
+		//result = read_sdc1sl1_bin_names(binary_name, hamming_name);
 		if(result != 0) {
 
 		}

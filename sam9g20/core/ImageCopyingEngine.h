@@ -45,6 +45,8 @@ public:
      */
     void setHammingCodeCheck(bool enableHammingCodeCheck);
 
+    void setActiveSdCard(SdCard sdCard);
+
     void enableExtendedDebugOutput(bool enableMoreOutput);
 
 #ifdef AT91SAM9G20_EK
@@ -78,7 +80,7 @@ public:
      * @param imageSlot     Select the image slot (if OBSW is copied)
      * @return
      */
-    ReturnValue_t startSdcToFlashOperation(SdCard sdCard, ImageSlot imageSlot);
+    ReturnValue_t startSdcToFlashOperation(ImageSlot imageSlot);
 
     /**
      * Starts to copy the bootloader to the flash. Use with care!
@@ -98,7 +100,7 @@ public:
      * @param imageSlot
      * @return
      */
-    ReturnValue_t startFlashToSdcOperation(SdCard sdCard, ImageSlot imageSlot);
+    ReturnValue_t startFlashToSdcOperation(ImageSlot imageSlot);
 
     /**
      * Continue the current operation.
@@ -115,9 +117,8 @@ private:
     Countdown* countdown;
     SoftwareImageHandler::ImageBuffer* imgBuffer;
 
-
     ImageHandlerStates imageHandlerState = ImageHandlerStates::IDLE;
-    SdCard sdCard = SdCard::SD_CARD_0;
+    SdCard activeSdCard = SdCard::SD_CARD_0;
     ImageSlot imageSlot = ImageSlot::IMAGE_0;
     GenericInternalState internalState = GenericInternalState::IDLE;
     bool performHammingCodeCheck = false;

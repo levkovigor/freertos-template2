@@ -37,7 +37,8 @@ enum class SdCard {
 /** Image slots on SD cards */
 enum class ImageSlot {
     IMAGE_0, //!< Primary Image
-    IMAGE_1 //!< Secondary image (or software update)
+    IMAGE_1, //!< Secondary image
+    SW_UPDATE //!< Software update slot.
 };
 
 /**
@@ -68,6 +69,7 @@ public:
 	static constexpr uint8_t SUBSYSTEM_ID = CLASS_ID::SW_IMAGE_HANDLER;
 	static constexpr ReturnValue_t OPERATION_FINISHED = MAKE_RETURN_CODE(0x00);
 	static constexpr ReturnValue_t TASK_PERIOD_OVER_SOON = MAKE_RETURN_CODE(0x01);
+	static constexpr ReturnValue_t BUSY = MAKE_RETURN_CODE(0x02);
 
 	static constexpr uint8_t SW_IMG_HANDLER_MQ_DEPTH = 5;
 
@@ -136,8 +138,7 @@ private:
     //! start-up memory. Two uint8_t data field should be supplied, which have
     //! the following meaning:
     //!
-    //! First byte:     SD-Card Volume ID, 0 for SD-Card 0 and 1 for SD-Card 1
-    //! Second byte:    Binary slot, 0 for slot 1, 1 for slot 2, 2 for the
+    //! First byte:     Binary slot, 0 for slot 1, 1 for slot 2, 2 for the
     //!                 software update slot
     static constexpr ActionId_t COPY_OBSW_SDC_TO_FLASH = 4;
     //! Copies the image on the flash memory to the SD-card. Two uint8_t data
@@ -174,11 +175,12 @@ private:
     //!                2 for the software update slot
     static constexpr ActionId_t SCRUB_OBSW_ON_SDC = 8;
 
-
     //! Scrub the primary bootloader
     static constexpr ActionId_t SCRUB_BOOTLOADER_ON_FLASH = 10;
     //! Copy bootloader backup to flash, will be performed in uninterruptible
-    //! task with highest priority.
+    //! task with highest priority. One byte of data should be provided which
+    //! has the following meaning:
+    //!  First byte:     1 for FRAM bootloader or 0 for SDC bootloader.
     static constexpr ActionId_t COPY_BOOTLOADER_TO_FLASH = 11;
     //! Might not be needed, FRAM image is a lot safer..
     static constexpr ActionId_t COPY_BOOTLOADER_FLASH_TO_BACKUP = 15;
@@ -193,6 +195,8 @@ private:
 
     HandlerState handlerState = HandlerState::IDLE;
 
+    MessageQueueId_t recipient = MessageQueueIF::NO_QUEUE;
+    ActionId_t currentAction = 0xffffffff;
     bool displayInfo = false;
     bool performHammingCodeCheck = false;
     bool oneShot = false;
