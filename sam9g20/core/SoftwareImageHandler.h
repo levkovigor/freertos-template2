@@ -90,7 +90,6 @@ public:
             size_t size) override;
 private:
 
-
     /** These internal states are used for the primary state machine */
     enum class HandlerState {
         IDLE,
@@ -100,6 +99,89 @@ private:
         //! if there is no copy operation going on.
         SCRUBBING
     };
+
+    /** HasActionIF (Service 8) definitions */
+
+    // TODO: make manual scrubbing work first..
+    //! Configure whether periodic scrubbing will be performed and how often.
+    //! TODO: This belongs in HasParametersIF
+    //! The data field has the following form:
+    //! First 4 bytes: Bucket size. Number of 256 byte buckets which will
+    //!                be read in one scrubbing cycle.
+    //! Second 4 bytes: Scrubbing interval for the flash bootloader in seconds.
+    //! Third 4 bytes: Scrubbing interval for the flash OBSW in seconds
+    //!
+    //! All other memories need to be scrubbed manually for now!
+    //! Only one scrubbing operation can be perfomed at once.
+    //! If there are mutliple outstanding scrubbing operations, the scrubbing
+    //! engine will keep an internal list of those operations. Up to three
+    //! operations can be queue inside that list.
+    //!
+    //! Please note that the scrubbing engine will only scrub the active
+    //! SD card. If the SD card is switched, any ongoing scrubbing operation
+    //! on an SD card will be cancelled.
+    //!
+    static constexpr ActionId_t SET_PERIODIC_SCRUBBING = 1;
+
+    //! Report the status of the scrubbing engine
+    //! First byte: Number of scrubbing operations ongoing.
+    //! Second, third and fourth byte: ID of any ongoing scrubbing operations.
+    static constexpr ActionId_t REPORT_SCRUBBING_STATUS = 2;
+
+    //! Specify whether a hamming code check will be performed during
+    //! copy operations.
+    static constexpr ActionId_t SET_HAMMING_CODE_CHECK_FOR_COPYING = 3;
+
+    //! Instruct the image handler to copy a SD-card binary to the flash
+    //! start-up memory. Two uint8_t data field should be supplied, which have
+    //! the following meaning:
+    //!
+    //! First byte:     SD-Card Volume ID, 0 for SD-Card 0 and 1 for SD-Card 1
+    //! Second byte:    Binary slot, 0 for slot 1, 1 for slot 2, 2 for the
+    //!                 software update slot
+    static constexpr ActionId_t COPY_OBSW_SDC_TO_FLASH = 4;
+    //! Copies the image on the flash memory to the SD-card. Two uint8_t data
+    //! fields should be supplied, which have the following meaning:
+    //!
+    //! First byte:     SD-Card Volume ID, 0 for SD-Card 0 and 1 for SD-Card 1
+    //! Second byte:    Binary slot, 0 for slot 1, 1 for slot 2, 2 for the
+    //!                 software update slot
+    static constexpr ActionId_t COPY_OBSW_FLASH_TO_SDC = 5;
+    //! Copies the image on the flash memory to the SD-card. Please note that
+    //! SD-card files can only be copied inside the same SD-card for now.
+    //! Two uint8_t data fields should be supplied, which have the following
+    //! meaning:
+    //!
+    //! First byte:     Source data binary slot, 0 for slot 1, 1 for slot 2,
+    //!                 2 for the software update slot
+    //! Second byte:    Target binary slot, 0 for slot 1, 1 for slot 2,
+    //!                 2 for the software update slot
+    static constexpr ActionId_t COPY_OBSW_SDC_TO_SDC = 5;
+
+    /** Scurbbing operation IDs */
+
+    //! Scrub the backup bootloader. One uint8_t data field should be supplied
+    //! which has the following meaning
+    //! First byte:     0 for FRAM bootloader or 1 for SDC bootloader.
+    //!                 On AT91, 0 will be ignored and the image handler will
+    //!                 always try to scrub the SDC bootloader.
+    static constexpr ActionId_t SCRUB_BACKUP_BOOTLOADER = 6;
+    //! Scrub the OBSW on the boot flash memory manually.
+    static constexpr ActionId_t SCRUB_OBSW_ON_FLASH = 7;
+    //! Scrub the OBSW on the active SDC manually.
+    //! One uint8_t field has to be provided which has the following meaning:
+    //! First byte:    Target binary slot, 0 for slot 1, 1 for slot 2,
+    //!                2 for the software update slot
+    static constexpr ActionId_t SCRUB_OBSW_ON_SDC = 8;
+
+
+    //! Scrub the primary bootloader
+    static constexpr ActionId_t SCRUB_BOOTLOADER_ON_FLASH = 10;
+    //! Copy bootloader backup to flash, will be performed in uninterruptible
+    //! task with highest priority.
+    static constexpr ActionId_t COPY_BOOTLOADER_TO_FLASH = 11;
+    //! Might not be needed, FRAM image is a lot safer..
+    static constexpr ActionId_t COPY_BOOTLOADER_FLASH_TO_BACKUP = 15;
 
     MessageQueueIF* receptionQueue = nullptr;
     PeriodicTaskIF* executingTask = nullptr;

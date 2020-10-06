@@ -24,6 +24,16 @@ SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
 
 ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
     countdown->resetTimer();
+    CommandMessage message;
+    ReturnValue_t result = receptionQueue->receiveMessage(&message);
+    if(result == HasReturnvaluesIF::RETURN_OK) {
+        result = actionHelper.handleActionMessage(&message);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            sif::debug << "SoftwareImageHandler::performOperation: Unknown"
+                    << "  command with command ID " << message.getCommand()
+                    << " received!" << std::endl;
+        }
+    }
     while(countdown->isBusy()) {
         switch(handlerState) {
         case(HandlerState::IDLE): {
@@ -41,7 +51,7 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
         case(HandlerState::COPYING): {
             // continue current copy operation.
 
-            ReturnValue_t result = imgCpHelper->continueCurrentOperation();
+            result = imgCpHelper->continueCurrentOperation();
             // timeout or failure.
             if(result == TASK_PERIOD_OVER_SOON) {
                 return HasReturnvaluesIF::RETURN_OK;
@@ -78,6 +88,10 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
 
 ReturnValue_t SoftwareImageHandler::initialize() {
     // set action helper queue here.
+    ReturnValue_t result = actionHelper.initialize(receptionQueue);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
 #ifdef ISIS_OBC_G20
     int result = NORflash_start();
 
@@ -92,8 +106,8 @@ ReturnValue_t SoftwareImageHandler::initialize() {
 
 
 ReturnValue_t SoftwareImageHandler::initializeAfterTaskCreation() {
-	countdown = new Countdown(
-			static_cast<float>(this->executingTask->getPeriodMs()) * 0.8);
+	countdown = new Countdown(static_cast<float>(
+	        this->executingTask->getPeriodMs()) * 0.85);
 	imgCpHelper = new ImageCopyingEngine(this, countdown, &imgBuffer);
 	return HasReturnvaluesIF::RETURN_OK;
 }
