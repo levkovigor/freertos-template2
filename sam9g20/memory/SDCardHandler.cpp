@@ -480,10 +480,12 @@ ReturnValue_t SDCardHandler::sendDataReply(MessageQueueId_t receivedFromQueueId,
     store_address_t parameterAddress;
     ReturnValue_t result = IPCStore->addData(&parameterAddress, tmData, tmDataLen);
     if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "Failed to store data in IPC store" << std::endl;
+        sif::error << "SDCardHandler::sendDataReply: Failed to store data in "
+                << "IPC store" << std::endl;
         result = IPCStore->deleteData(parameterAddress);
         if(result != HasReturnvaluesIF::RETURN_OK){
-            sif::error << "Failed to delete IPC store entry" << std::endl;
+            sif::error << "SDCardHandler::sendDataReply:"
+                    << "Failed to delete IPC store entry" << std::endl;
         }
         return HasReturnvaluesIF::RETURN_FAILED;
     }
@@ -492,8 +494,8 @@ ReturnValue_t SDCardHandler::sendDataReply(MessageQueueId_t receivedFromQueueId,
     result = commandQueue->sendMessage(receivedFromQueueId, &reply);
     if(result != HasReturnvaluesIF::RETURN_OK){
         if(result == MessageQueueIF::FULL){
-            sif::info << "SD card handler fails to send data reply. "
-                    "Queue of receiver is  full" << std::endl;
+            sif::debug << "SDCardHandler::sendDataReply: Could not send data "
+                    << "reply, queue of receiver is full!" << std::endl;
         }
         return HasReturnvaluesIF::RETURN_FAILED;
     }
