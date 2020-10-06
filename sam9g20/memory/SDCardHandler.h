@@ -1,6 +1,7 @@
 #ifndef SAM9G20_MEMORY_SDCARDHANDLER_H_
 #define SAM9G20_MEMORY_SDCARDHANDLER_H_
 
+#include <fsfw/action/HasActionsIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/memory/AcceptsMemoryMessagesIF.h>
@@ -24,7 +25,8 @@ class Countdown;
  */
 class SDCardHandler : public SystemObject,
         public ExecutableObjectIF,
-        public HasFileSystemIF {
+        public HasFileSystemIF,
+        public HasActionsIF {
     friend class SDCardAccess;
 public:
     // todo: make these configurable via OBSWConfig.h
@@ -39,14 +41,39 @@ public:
     static constexpr Event SD_CARD_SWITCHED = MAKE_EVENT(0x00, SEVERITY::MEDIUM); //!< It was not possible to open the preferred SD card so the other was used. P1: Active volume
     static constexpr Event SD_CARD_ACCESS_FAILED = MAKE_EVENT(0x01, SEVERITY::HIGH); //!< Opening failed for both SD cards.
 
+
+    /** Service 8 Commands */
+
+    //! [EXPORT] : [COMMAND] Dump structure of whole SD card as ASCII file.
+    static constexpr ActionId_t DUMP_FILE_STRUCTURE = 1;
+    //! [EXPORT] : [COMMAND] Print SD card to console.
+    static constexpr ActionId_t PRINT_SD_CARD = 2;
+
+    //! [EXPORT] : [COMMAND] Swap the active SD card.
+    static constexpr ActionId_t SELECT_ACTIVE_SD_CARD = 5;
+    static constexpr ActionId_t REPORT_ACTIVE_SD_CARD = 6;
+    static constexpr ActionId_t SELECT_PREFERED_SD_CARD = 10;
+    static constexpr ActionId_t REPORT_PREFERED_SD_CARD = 11;
+
+    //! [EXPORT] : [COMMAND] Clears SD card. Use with care!
+    static constexpr ActionId_t CLEAR_SD_CARD = 20;
+    //! [EXPORT] : [COMMAND] Formats SD card which also deletes everything.
+    //! Use with care!
+    static constexpr ActionId_t FORMAT_SD_CARD = 21;
+
     SDCardHandler(object_id_t objectId_);
     virtual ~SDCardHandler();
 
     MessageQueueId_t getCommandQueue() const override;
-
     ReturnValue_t performOperation(uint8_t operationCode = 0) override;
+    ReturnValue_t initialize() override;
     ReturnValue_t initializeAfterTaskCreation() override;
     void setTaskIF(PeriodicTaskIF* executingTask) override;
+
+    /** HasActionIF */
+    ReturnValue_t executeAction(ActionId_t actionId,
+        MessageQueueId_t commandedBy, const uint8_t* data,
+        size_t size) override;
 
     // Useful functions for development
     static ReturnValue_t printRepository(const char* repository);
@@ -55,11 +82,13 @@ public:
     // This function will dump the current SD card format in ASCII format
     static ReturnValue_t dumpSdCard();
 private:
-
     /**
      * The MessageQueue used to receive commands, data and to send replies.
      */
     MessageQueueIF* commandQueue;
+    ActionHelper actionHelper;
+    Countdown* countdown;
+
     PeriodicTaskIF* executingTask = nullptr;
     dur_millis_t periodMs = 0;
 
@@ -83,7 +112,7 @@ private:
 
     VolumeId determineVolumeToOpen();
     ReturnValue_t handleAccessResult(ReturnValue_t accessResult);
-    //ReturnValue_t handleMultipleMessages(CommandMessage* message);
+    ReturnValue_t handleMultipleMessages(CommandMessage* message);
 
     static ReturnValue_t printHelper(uint8_t recursionDepth);
 
@@ -94,6 +123,7 @@ private:
     uint16_t lastPacketNumber = -1;
 
     ReturnValue_t handleMessage(CommandMessage* message);
+    ReturnValue_t handleFileMessage(CommandMessage* message);
 
     /** HasFilesystemIF overrides */
     ReturnValue_t createFile(const char* repositoryPath, const char* filename,

@@ -214,7 +214,7 @@ void initMission(void) {
 
     /* PUS Medium Priority */
     PeriodicTaskIF* PusMediumPriorityTask = TaskFactory::instance()->
-            createPeriodicTask("PUS_MED_PRIO", 4, 2048 * 4, 0.8,
+            createPeriodicTask("PUS_MED_PRIO", 4, 2048 * 4, 0.4,
                     genericMissedDeadlineFunc);
 
     result = PusMediumPriorityTask->addComponent(

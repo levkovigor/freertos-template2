@@ -26,6 +26,15 @@ using FileName = etl::string<MAX_FILENAME_LENGTH>;
 ReturnValue_t deSerializeRepositoryAndFilename(const uint8_t **buffer,
         size_t* size, RepositoryPath& path, FileName& filename);
 
+class ActivePreferedVolumeReport: public SerialLinkedListAdapter<SerializeIF> {
+public:
+    ActivePreferedVolumeReport(VolumeId volumeId): volumeId(volumeId) {
+        setStart(&(this->volumeId));
+    }
+private:
+    SerializeElement<uint8_t> volumeId;
+};
+
 /**
  * @brief   This class helps to handle a delete-file command.
  *

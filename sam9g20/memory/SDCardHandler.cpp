@@ -9,9 +9,12 @@
 #include <sam9g20/memory/FileSystemMessage.h>
 #include <sam9g20/memory/SDCardAccess.h>
 
-SDCardHandler::SDCardHandler(object_id_t objectId): SystemObject(objectId) {
-    commandQueue = QueueFactory::instance()->createMessageQueue(queueDepth);
+SDCardHandler::SDCardHandler(object_id_t objectId): SystemObject(objectId),
+    commandQueue(QueueFactory::instance()->createMessageQueue(queueDepth)),
+    actionHelper(this, commandQueue) {
     IPCStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
+    countdown = new Countdown(0);
+
 }
 
 
@@ -20,14 +23,24 @@ SDCardHandler::~SDCardHandler(){
 }
 
 
+ReturnValue_t SDCardHandler::initialize() {
+    ReturnValue_t result = actionHelper.initialize(commandQueue);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+    return SystemObject::initialize();
+}
+
+
 ReturnValue_t SDCardHandler::initializeAfterTaskCreation() {
     periodMs = executingTask->getPeriodMs();
+    countdown->setTimeout(0.85 * periodMs);
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode){
 	CommandMessage message;
-
+	countdown->resetTimer();
 	// Check for first message
 	ReturnValue_t result = commandQueue->receiveMessage(&message);
 	if(result == MessageQueueIF::EMPTY) {
@@ -48,13 +61,11 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode){
     	return result;
     }
 
-
     // handle first message. Returnvalue ignored for now.
 	result = handleMessage(&message);
 
 	// Returnvalue ignored for now.
-	//return handleMultipleMessages(&message);
-	return HasReturnvaluesIF::RETURN_OK;
+	return handleMultipleMessages(&message);
 }
 
 VolumeId SDCardHandler::determineVolumeToOpen() {
@@ -89,36 +100,124 @@ ReturnValue_t SDCardHandler::handleAccessResult(ReturnValue_t accessResult) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-//ReturnValue_t SDCardHandler::handleMultipleMessages(CommandMessage *message) {
-//	ReturnValue_t status = HasReturnvaluesIF::RETURN_OK;
-//	for(uint8_t counter = 1;
-//			counter < MAX_FILE_MESSAGES_HANDLED_PER_CYCLE;
-//			counter++)
-//	{
-// 		ReturnValue_t result = commandQueue->receiveMessage(message);
-//		if(result == MessageQueueIF::EMPTY) {
-//			return HasReturnvaluesIF::RETURN_OK;
-//		}
-//		else if(result != HasReturnvaluesIF::RETURN_OK) {
-//			return result;
-//		}
-//
-//		result = handleMessage(message);
-//		if(result != HasReturnvaluesIF::RETURN_OK) {
-//			status = result;
-//		}
-//
-//	    if(countdown->hasTimedOut()) {
-//	    	return status;
-//	    }
-//	}
-//	return status;
-//}
+ReturnValue_t SDCardHandler::handleMultipleMessages(CommandMessage *message) {
+	ReturnValue_t status = HasReturnvaluesIF::RETURN_OK;
+	for(uint8_t counter = 1;
+			counter < MAX_FILE_MESSAGES_HANDLED_PER_CYCLE;
+			counter++)
+	{
+ 		ReturnValue_t result = commandQueue->receiveMessage(message);
+		if(result == MessageQueueIF::EMPTY) {
+			return HasReturnvaluesIF::RETURN_OK;
+		}
+		else if(result != HasReturnvaluesIF::RETURN_OK) {
+			return result;
+		}
+
+		result = handleMessage(message);
+		if(result != HasReturnvaluesIF::RETURN_OK) {
+			status = result;
+		}
+
+	    if(countdown->hasTimedOut()) {
+	    	return status;
+	    }
+	}
+	return status;
+}
 
 
 ReturnValue_t SDCardHandler::handleMessage(CommandMessage* message) {
-	ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
+	ReturnValue_t result = actionHelper.handleActionMessage(message);
+	if(result == HasReturnvaluesIF::RETURN_OK) {
+	    return result;
+	}
 
+	return handleFileMessage(message);
+}
+
+ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
+        MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
+    ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
+    switch(actionId) {
+    case(SELECT_ACTIVE_SD_CARD): {
+        uint8_t volumeId;
+        result = SerializeAdapter::deSerialize(&volumeId, &data, &size,
+                SerializeIF::Endianness::BIG);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            actionHelper.finish(commandedBy, actionId, result);
+            return HasReturnvaluesIF::RETURN_OK;
+        }
+
+        VolumeId enumeratedId;
+        if(volumeId == 0) {
+            enumeratedId = SD_CARD_0;
+        }
+        else {
+            enumeratedId = SD_CARD_1;
+        }
+        if((activeVolume == SD_CARD_0 and enumeratedId == SD_CARD_1)
+                or (activeVolume == SD_CARD_1 and enumeratedId == SD_CARD_0)) {
+            int retval = switch_sd_card(enumeratedId);
+            if(retval == F_NO_ERROR) {
+                activeVolume = enumeratedId;
+            }
+            else {
+                result = retval;
+            }
+        }
+
+        actionHelper.finish(commandedBy, actionId, result);
+        break;
+    }
+    case(PRINT_SD_CARD): {
+        this->printSdCard();
+        actionHelper.finish(commandedBy, actionId);
+        break;
+    }
+    case(CLEAR_SD_CARD): {
+        int retval = clear_sd_card();
+        if(retval != F_NO_ERROR) {
+            result = retval;
+        }
+        actionHelper.finish(commandedBy, actionId, result);
+        break;
+    }
+    case(FORMAT_SD_CARD): {
+        // formats the currently active filesystem!
+        sif::info << "SDCardHandler::handleMessage: Formatting SD-Card "
+                << activeVolume << "!" << std::endl;
+        int retval = f_format(0, F_FAT32_MEDIA);
+        if(retval != F_NO_ERROR) {
+            sif::info << "SD-Card was formatted successfully!" << std::endl;
+            result = retval;
+        }
+        actionHelper.finish(commandedBy, actionId, result);
+        break;
+    }
+    case(REPORT_ACTIVE_SD_CARD): {
+        ActivePreferedVolumeReport reply(activeVolume);
+        result = actionHelper.reportData(commandedBy, actionId, &reply);
+        actionHelper.finish(commandedBy, actionId, result);
+        break;
+    }
+    case(REPORT_PREFERED_SD_CARD): {
+        ActivePreferedVolumeReport reply(preferedVolume);
+        result = actionHelper.reportData(commandedBy, actionId, &reply);
+        actionHelper.finish(commandedBy, actionId, result);
+        break;
+    }
+    default: {
+        return CommandMessage::UNKNOWN_COMMAND;
+    }
+    }
+
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+
+ReturnValue_t SDCardHandler::handleFileMessage(CommandMessage* message) {
+    ReturnValue_t  result = HasReturnvaluesIF::RETURN_OK;
     switch(message->getCommand()) {
     case FileSystemMessage::CREATE_FILE: {
         result = handleCreateFileCommand(message);
@@ -162,42 +261,12 @@ ReturnValue_t SDCardHandler::handleMessage(CommandMessage* message) {
         }
         break;
     }
-    case FileSystemMessage::CLEAR_SD_CARD: {
-    	int retval = clear_sd_card();
-    	if(retval == 0) {
-    		sendCompletionReply();
-    	}
-    	else {
-    		sendCompletionReply(false, retval);
-    	}
-    	break;
-    }
-    case FileSystemMessage::PRINT_SD_CARD: {
-    	this->printSdCard();
-    	sendCompletionReply();
-    	break;
-    }
-    case FileSystemMessage::FORMAT_SD_CARD: {
-    	// formats the currently active filesystem!
-    	sif::info << "SDCardHandler::handleMessage: Formatting SD-Card "
-    			<< activeVolume << "!" << std::endl;
-    	int retval = f_format(0, F_FAT32_MEDIA);
-    	if(retval != F_NO_ERROR) {
-    		sif::info << "SD-Card was formatted successfully!" << std::endl;
-    		sendCompletionReply();
-    	}
-    	else {
-    		sendCompletionReply(true, retval);
-    	}
-    	break;
-    }
     default: {
-        sif::error << "SDCardHandler::handleMessages: "
+        sif::debug << "SDCardHandler::handleFileMessage: "
                 << "Invalid filesystem command" << std::endl;
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     }
-
     return HasReturnvaluesIF::RETURN_OK;
 }
 

@@ -11,6 +11,9 @@
  *
  * The file management service provides the capability to manage on-board file
  * systems and files.
+ *
+ * The following standardized PUS subservices were implemented at allow
+ * basic file handling:
  *   - TC[23,1]: Create a file
  *   - TC[23,2]: Delete a file
  *   - TC[23,3]: Report the attributes of a file
@@ -26,7 +29,7 @@
  *   - TM[23,13]: Response of TC[23,12]
  *   - TC[23,15]: Move a file
  *
- * A set of custom subservices will be implemented:
+ * A set of custom subservices will be implemented for uploading files:
  *  - TC[23,130]: Append to file. The service will  implement sequence checking
  *    for consecutive append operations on the same file but only support one
  *    append operation at a time.
@@ -36,22 +39,33 @@
  *    the repository and file name of the current operation will be generated.
  *  - TC[23,132]: Stop append reply.
  *
- *  - TC[23,135]: Read from a file. The service will also only support
+ * A set of custom subservices will be implemented for downloading files:
+ *  - TC[23,135]: Automatically read a file. The service will take care of
+ *    splitting the file into telemetry packets of appropriate size
+ *    which are stored on the heap and linked to the TM storage or downlink
+ *    handler immediately.
+ *    Up to three simultaneous read operations will be permitted. After
+ *    an operation has finished, the operation parameters will be moved to a
+ *    different list which can be used to delete the file if TM reception was
+ *    successfull. A step reply will be generated periodically for
+ *    large files with an interval of 5 telemetry packets.
+ *  - TC[23,136]: Clear finished read operation. This service will take care
+ *    of deleting the files of older automatic read operations which already
+ *    have been finished. There will be options to either clear specific
+ *    files or clear the whole list.
+ *  - TC[23,137]: Stop the automatic read operation in one or more of the read
+ *    operation slots, so another read operation can be started.
+ *
+ *  - TC[23,140]: Manually read from a file. The service will also only support
  *    one read operation at a time, but will implement sequence checking
  *    for consecutive read operations on the same file.
- *  - TC[23,136]: Read reply.
- *  - TC[23,137]: Stop or finish read operation. This service will stop or
+ *  - TC[23,141]: Read reply.
+ *  - TC[23,142]: Stop or finish read operation. This service will stop or
  *    finish the read operation so that another read operation can be started.
  *    A telemetry packet containing the last valid sequence number, the
  *    repository and file name of the current operation will be generated.
- *  - TC[23,138]: Stop read reply.
- *
- *  Actually those belong in service 8..
- *  - TC[23,150]: Select active SD-card.
- *  - TC[23,151]: Report active SD-card.
- *  - TC[23,152]: Active SD-card reply.
- *
- *  - TC[23,160]:
+ *  - TC[23,143]: Stop read reply.
+
  *
  * The file copy subservice might only be partially implemented.
  * The last byte of the operation ID might be used to specify whether a
@@ -122,30 +136,7 @@ private:
 		READ_FROM_FILE = 135, //!< [EXPORT] : [COMMAND] Read data from a file
 		READ_REPLY = 136, //!< [EXPORT] : [REPLY] Reply of subservice 129
 
-		DUMP_FILE_STRUCTURE = 131, //!< [EXPORT] : [COMMAND] Dump structure of whole SD card as ASCII file.
-		DUMP_FILE_STRUCTURE_REPLY = 132, //!< [EXPORT] : [REPLY] ASCII reply if file is small enough, otherwise only repository name and filename.
-		PRINT_SD_CARD = 133, //!< [EXPORT] : [COMMAND] Print SD card to console.
-
-		/**
-		 * Select the active SD card. All other tasks using SD cards will
-		 * be notified as well.
-		 */
-		SELECT_ACTIVE_SD_CARD = 150, //!< [EXPORT] : [COMMAND] Swap the active SD card.
-		REPORT_ACTIVE_SD_CARD = 151, //!< [EXPORT] : [REPLY] Reply which contains now active SD card
-		ACTIVE_SD_CARD_REPLY = 152,
-
-		/**
-		 * Select the SD card which will be chosen on start-up. The value
-		 * is stored in FRAM and used by all other tasks using the SD cards
-		 * as well.
-		 */
-		SELECT_PREFERED_SD_CARD = 160, //!< [EXPORT] : [COMMAND] Select the preferred SD card which will be picked on reboot. (value stored in FRAM)
-		REPORT_PREFERED_SD_CARD = 161, //!< [EXPORT] : [COMMAND] Report currently prefered SD card.
-		PREFERED_SD_CARD_REPLY = 162, //!< [EXPORT] : [REPLY] Report currently prefered SD card.
-
 		CLEAR_REPOSITORY = 180, //!< [EXPORT] : [COMMAND] Clears a folder, and also deletes all contained files and folders recursively. Use with care!
-		CLEAR_SD_CARD = 181, //!< [EXPORT] : [COMMAND] Clears SD card. Use with care!
-		FORMAT_SD_CARD = 182 //! [EXPORT] : [COMMAND] Formats SD card which also deletes everything. Use with care!
 	};
 
 	ReturnValue_t addDataToStore(store_address_t* storeId, const uint8_t* tcData,

@@ -26,9 +26,6 @@ ReturnValue_t Service23FileManagement::isValidSubservice(uint8_t subservice) {
     case Subservice::DELETE_DIRECTORY:
     case Subservice::APPEND_TO_FILE:
     case Subservice::READ_FROM_FILE:
-    case Subservice::PRINT_SD_CARD:
-    case Subservice::CLEAR_SD_CARD:
-    case Subservice::FORMAT_SD_CARD:
         return HasReturnvaluesIF::RETURN_OK;
     default:
         return HasReturnvaluesIF::RETURN_FAILED;
@@ -81,11 +78,6 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
         }
         break;
     }
-    case(Subservice::PRINT_SD_CARD):
-    case(Subservice::CLEAR_SD_CARD):
-    case(Subservice::FORMAT_SD_CARD): {
-    	break;
-    }
 
     default: {
         return HasReturnvaluesIF::RETURN_FAILED;
@@ -116,17 +108,6 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
 	case(Subservice::READ_FROM_FILE): {
 	    FileSystemMessage::setReadCommand(message, storeId);
 		break;
-	}
-	case(Subservice::PRINT_SD_CARD): {
-		FileSystemMessage::setPrintSdCardCommand(message);
-		break;
-	}
-	case(Subservice::CLEAR_SD_CARD): {
-		FileSystemMessage::setClearSdCardCommand(message);
-		break;
-	}
-	case(Subservice::FORMAT_SD_CARD): {
-		FileSystemMessage::setFormatSdCardCommand(message);
 	}
 	}
 
