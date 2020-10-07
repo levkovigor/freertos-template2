@@ -1,11 +1,13 @@
 #include "SDCardHandler.h"
 #include "SDCardHandlerPackets.h"
 
-#include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/ipc/CommandMessage.h>
 #include <fsfw/timemanager/Countdown.h>
+#include <fsfw/tasks/PeriodicTaskIF.h>
 #include <fsfw/timemanager/Stopwatch.h>
+
 #include <sam9g20/memory/FileSystemMessage.h>
 #include <sam9g20/memory/SDCardAccess.h>
 
@@ -221,53 +223,39 @@ ReturnValue_t SDCardHandler::handleFileMessage(CommandMessage* message) {
     switch(message->getCommand()) {
     case FileSystemMessage::CREATE_FILE: {
         result = handleCreateFileCommand(message);
-        if(result != HasReturnvaluesIF::RETURN_OK){
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
         break;
     }
     case FileSystemMessage::DELETE_FILE: {
         result = handleDeleteFileCommand(message);
-        if(result != HasReturnvaluesIF::RETURN_OK){
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
         break;
     }
     case FileSystemMessage::CREATE_DIRECTORY: {
         result = handleCreateDirectoryCommand(message);
-        if(result != HasReturnvaluesIF::RETURN_OK){
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
         break;
     }
     case FileSystemMessage::DELETE_DIRECTORY: {
         result = handleDeleteDirectoryCommand(message);
-        if(result != HasReturnvaluesIF::RETURN_OK){
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
         break;
     }
     case FileSystemMessage::APPEND_TO_FILE: {
         result = handleAppendCommand(message);
-        if(result != HasReturnvaluesIF::RETURN_OK){
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
         break;
+    }
+    case FileSystemMessage::FINISH_APPEND_TO_FILE: {
+    	result = handleFinishAppendCommand(message);
+    	break;
     }
     case FileSystemMessage::READ_FROM_FILE: {
         result = handleReadCommand(message);
-        if(result != HasReturnvaluesIF::RETURN_OK){
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
         break;
     }
     default: {
         sif::debug << "SDCardHandler::handleFileMessage: "
-                << "Invalid filesystem command" << std::endl;
+                << "Invalid filesystem command!" << std::endl;
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     }
-    return HasReturnvaluesIF::RETURN_OK;
+    return result;
 }
 
 
@@ -387,7 +375,8 @@ ReturnValue_t SDCardHandler::handleDeleteDirectoryCommand(
     DeleteDirectoryCommand command;
     /* Extract the repository path and the directory name from the
         application data field */
-    result = command.deSerialize(&ipcStoreBuffer, remainingSize);
+    result = command.deSerialize(&ipcStoreBuffer, &remainingSize,
+            SerializeIF::Endianness::BIG);
     if(result != HasReturnvaluesIF::RETURN_OK){
         sendCompletionReply(false, result);
         return HasReturnvaluesIF::RETURN_FAILED;
@@ -447,6 +436,24 @@ ReturnValue_t SDCardHandler::handleAppendCommand(CommandMessage* message){
     }
 
     return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t SDCardHandler::handleFinishAppendCommand(
+		CommandMessage* message) {
+    store_address_t storeId = FileSystemMessage::getStoreId(message);
+    ConstStorageAccessor accessor(storeId);
+    size_t sizeRemaining = 0;
+    const uint8_t* readPtr = nullptr;
+    ReturnValue_t result = getStoreData(storeId, accessor, &readPtr,
+            &sizeRemaining);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    // Reset last packet sequence number
+    lastPacketNumber = 0;
+
+    return result;
 }
 
 
@@ -663,7 +670,6 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
     			<< std::endl;
     }
 
-    // todo: check whether packet number is a sequence.
     if(packetNumber == 0) {
     	lastPacketNumber = 0;
     }

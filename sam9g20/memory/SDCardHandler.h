@@ -1,20 +1,16 @@
 #ifndef SAM9G20_MEMORY_SDCARDHANDLER_H_
 #define SAM9G20_MEMORY_SDCARDHANDLER_H_
 
+#include <subsystemIdRanges.h>
+
 #include <fsfw/action/HasActionsIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/memory/AcceptsMemoryMessagesIF.h>
 #include <fsfw/ipc/MessageQueueIF.h>
 #include <fsfw/memory/HasFileSystemIF.h>
-#include <fsfw/osal/FreeRTOS/PeriodicTask.h>
 #include <sam9g20/memory/SDCardApi.h>
 
-extern "C"{
-    #include <hcc/api_fat.h>
-}
-
-#include <config/events/subsystemIdRanges.h>
 
 class PeriodicTaskIF;
 class Countdown;
@@ -43,7 +39,7 @@ public:
 
     static constexpr Event SD_CARD_SWITCHED = MAKE_EVENT(0x00, SEVERITY::MEDIUM); //!< It was not possible to open the preferred SD card so the other was used. P1: Active volume
     static constexpr Event SD_CARD_ACCESS_FAILED = MAKE_EVENT(0x01, SEVERITY::HIGH); //!< Opening failed for both SD cards.
-    static constexpr Event SEQUENCE_PACKET_MISSING_EVENT = MAKE_EVENT(0x02, SEVERITY::LOW);
+    static constexpr Event SEQUENCE_PACKET_MISSING_EVENT = MAKE_EVENT(0x02, SEVERITY::LOW); //!< P1: Sequence packet missing.
 
     /** Service 8 Commands */
 
@@ -108,7 +104,8 @@ private:
             ConstStorageAccessor& accessor,
             const uint8_t** ptr, size_t* size);
 
-    VolumeId preferedVolume = SD_CARD_0; // will also be moved to FRAM!
+    // will also be moved to FRAM!
+    VolumeId preferedVolume = SD_CARD_0;
     VolumeId activeVolume = SD_CARD_0;
 
     VolumeId determineVolumeToOpen();
@@ -120,7 +117,7 @@ private:
     // Special member of extended debug output.
     bool extendedDebugOutput = true;
 
-    // Right now, only supports one file upload at a time..
+    // Right now, only supports one file upload at a time.
     uint16_t lastPacketNumber = -1;
 
     ReturnValue_t handleMessage(CommandMessage* message);
@@ -148,8 +145,9 @@ private:
     ReturnValue_t handleDeleteDirectoryCommand(CommandMessage* message);
 
     ReturnValue_t handleAppendCommand(CommandMessage* message);
-    ReturnValue_t handleReadCommand(CommandMessage* message);
+    ReturnValue_t handleFinishAppendCommand(CommandMessage* message);
 
+    ReturnValue_t handleReadCommand(CommandMessage* message);
     ReturnValue_t readFile(const char* repositoryPath, const char* filename,
             uint8_t* tmData, size_t* tmDataLen);
 
