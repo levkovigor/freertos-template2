@@ -81,9 +81,9 @@ ReturnValue_t SoftwareImageHandler::initialize() {
         return result;
     }
 #ifdef ISIS_OBC_G20
-    int result = NORflash_start();
+    int retval = NORflash_start();
 
-    if(result != 0) {
+    if(retval != 0) {
         // should never happen ! we should power cycle if this happens.
         return result;
     }

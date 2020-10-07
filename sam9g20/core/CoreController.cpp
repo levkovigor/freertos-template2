@@ -16,6 +16,8 @@ extern "C" {
 #include <hal/Timing/RTT.h>
 }
 
+#include <utility/exithandler.h>
+
 #include <utility/portwrapper.h>
 #include <utility/compile_time.h>
 #include <cinttypes>
@@ -99,9 +101,27 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
 	switch(actionId) {
 	case(REQUEST_CPU_STATS_CHECK_STACK): {
 		if(not systemStateTask->readAndGenerateStats()) {
-			return HasReturnvaluesIF::RETURN_FAILED;
+			return HasActionsIF::IS_BUSY;
 		}
 		return HasReturnvaluesIF::RETURN_OK;
+	}
+	case(RESET_OBC): {
+#ifdef AT91SAM9G20_EK
+	    restart();
+#else
+	    supervisor_generic_reply_t reply;
+	    Supervisor_reset(&reply, SUPERVISOR_INDEX);
+#endif
+	    return HasReturnvaluesIF::RETURN_OK;
+	}
+	case(POWERCYCLE_OBC): {
+#ifdef AT91SAM9G20_EK
+        restart();
+#else
+        supervisor_generic_reply_t reply;
+        Supervisor_powerCycleIobc(&reply, SUPERVISOR_INDEX);
+#endif
+        return HasReturnvaluesIF::RETURN_OK;
 	}
 	default:
 		return HasActionsIF::INVALID_ACTION_ID;
@@ -197,7 +217,7 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
-    uint64_t secSinceEpoch = 0;
+    uint32_t secSinceEpoch = 0;
     retval = read_seconds_since_epoch(&secSinceEpoch);
     if(retval != 0) {
         return HasReturnvaluesIF::RETURN_FAILED;
