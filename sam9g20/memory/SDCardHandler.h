@@ -36,11 +36,14 @@ public:
 
     static constexpr uint8_t INTERFACE_ID = CLASS_ID::SD_CARD_HANDLER;
 
+    static constexpr ReturnValue_t SEQUENCE_PACKET_MISSING = MAKE_RETURN_CODE(0x0);
+
     static const uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::SD_CARD_HANDLER;
+
 
     static constexpr Event SD_CARD_SWITCHED = MAKE_EVENT(0x00, SEVERITY::MEDIUM); //!< It was not possible to open the preferred SD card so the other was used. P1: Active volume
     static constexpr Event SD_CARD_ACCESS_FAILED = MAKE_EVENT(0x01, SEVERITY::HIGH); //!< Opening failed for both SD cards.
-
+    static constexpr Event SEQUENCE_PACKET_MISSING_EVENT = MAKE_EVENT(0x02, SEVERITY::LOW);
 
     /** Service 8 Commands */
 
@@ -151,7 +154,8 @@ private:
             uint8_t* tmData, size_t* tmDataLen);
 
     void sendCompletionReply(bool success = true,
-            ReturnValue_t errorCode = HasReturnvaluesIF::RETURN_OK);
+            ReturnValue_t errorCode = HasReturnvaluesIF::RETURN_OK,
+			uint32_t errorParam = 0);
     ReturnValue_t sendDataReply(MessageQueueId_t receivedFromQueueId,
             uint8_t* tmData, size_t tmDataLen);
 };

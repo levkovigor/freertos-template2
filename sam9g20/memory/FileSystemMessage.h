@@ -83,10 +83,11 @@ public:
 	static void setReadReply(CommandMessage* message, store_address_t storeId);
     static void setSuccessReply(CommandMessage* message);
     static void setFailureReply(CommandMessage* message,
-            ReturnValue_t errorCode);
+            ReturnValue_t errorCode, uint32_t errorParam = 0);
 
 	static store_address_t getStoreId(const CommandMessage* message);
-	static ReturnValue_t getFailureReply(const CommandMessage* message);
+	static ReturnValue_t getFailureReply(const CommandMessage* message,
+			uint32_t* errorParam = nullptr);
 };
 
 #endif /* SAM9G20_MEMORY_FILESYSTEMMESSAGE_H_ */

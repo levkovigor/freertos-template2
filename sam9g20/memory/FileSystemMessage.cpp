@@ -47,12 +47,6 @@ void FileSystemMessage::setSuccessReply(CommandMessage *message) {
     message->setCommand(COMPLETION_SUCCESS);
 }
 
-void FileSystemMessage::setFailureReply(CommandMessage *message,
-        ReturnValue_t errorCode) {
-    message->setCommand(COMPLETION_FAILED);
-    message->setParameter(errorCode);
-}
-
 void FileSystemMessage::setClearSdCardCommand(CommandMessage *message) {
 	message->setCommand(CLEAR_SD_CARD);
 }
@@ -74,6 +68,12 @@ void FileSystemMessage::setFinishStopWriteReply(CommandMessage *message,
 	message->setParameter2(storeId.raw);
 }
 
+void FileSystemMessage::setFailureReply(CommandMessage *message,
+        ReturnValue_t errorCode, uint32_t errorParam) {
+    message->setCommand(COMPLETION_FAILED);
+    message->setParameter(errorCode);
+    message->setParameter2(errorParam);
+}
 
 store_address_t FileSystemMessage::getStoreId(const CommandMessage* message) {
 	store_address_t temp;
@@ -81,9 +81,11 @@ store_address_t FileSystemMessage::getStoreId(const CommandMessage* message) {
 	return temp;
 }
 
-
 ReturnValue_t FileSystemMessage::getFailureReply(
-		const CommandMessage *message) {
+		const CommandMessage *message, uint32_t* errorParam) {
+	if(errorParam != nullptr) {
+		*errorParam = message->getParameter2();
+	}
 	return message->getParameter();
 }
 

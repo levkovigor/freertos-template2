@@ -426,13 +426,21 @@ ReturnValue_t SDCardHandler::handleAppendCommand(CommandMessage* message){
         return result;
     }
 
+    uint32_t packetSequenceIfMissing;
     result = appendToFile(command.getRepositoryPath(),
             command.getFilename(), command.getFileData(),
-            command.getFileSize(), command.getPacketNumber());
+            command.getFileSize(), command.getPacketNumber(),
+			&packetSequenceIfMissing);
     if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "SDCardHandler::handleWriteCommand: Writing to file "
-                << command.getFilename()  << " failed" << std::endl;
-        sendCompletionReply(false, result);
+    	if(result == SEQUENCE_PACKET_MISSING) {
+    		sendCompletionReply(false, result, packetSequenceIfMissing);
+    	}
+    	else {
+            sif::error << "SDCardHandler::handleWriteCommand: Writing to file "
+                    << command.getFilename()  << " failed" << std::endl;
+            sendCompletionReply(false, result);
+    	}
+
     }
     else {
         sendCompletionReply();
@@ -620,13 +628,14 @@ ReturnValue_t SDCardHandler::dumpSdCard() {
 }
 
 
-void SDCardHandler::sendCompletionReply(bool success, ReturnValue_t errorCode) {
+void SDCardHandler::sendCompletionReply(bool success, ReturnValue_t errorCode,
+		uint32_t errorParam) {
     CommandMessage reply;
     if(success) {
         FileSystemMessage::setSuccessReply(&reply);
     }
     else {
-        FileSystemMessage::setFailureReply(&reply, errorCode);
+        FileSystemMessage::setFailureReply(&reply, errorCode, errorParam);
     }
 
     ReturnValue_t result = commandQueue->reply(&reply);
@@ -648,6 +657,12 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
         return result;
     }
 
+    uint32_t* packetSeqIfMissing = static_cast<uint32_t*>(args);
+    if(packetSeqIfMissing == nullptr) {
+    	sif::error << "SDCardHandler::appendToFile: Args invalid!"
+    			<< std::endl;
+    }
+
     // todo: check whether packet number is a sequence.
     if(packetNumber == 0) {
     	lastPacketNumber = 0;
@@ -655,14 +670,16 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
     else if((packetNumber == 1) and (lastPacketNumber != 0)) {
     	sif::debug << "SDCardHandler::appendToFile: First sequence "
     			<< "packet missed!" << std::endl;
-    	// todo: trigger event containing the last packet number 0
-    	return HasReturnvaluesIF::RETURN_FAILED;
+    	triggerEvent(SEQUENCE_PACKET_MISSING, 0, 0);
+    	*packetSeqIfMissing = 0;
+    	return SEQUENCE_PACKET_MISSING;
     }
     else if((packetNumber - lastPacketNumber) > 1) {
     	sif::debug << "SDCardHandler::appendToFile: Packet missing between "
     			<< packetNumber << " and " << lastPacketNumber << std::endl;
-    	// todo: trigger event containing the last packet number + 1.
-    	return HasReturnvaluesIF::RETURN_FAILED;
+    	triggerEvent(SEQUENCE_PACKET_MISSING, lastPacketNumber + 1, 0);
+    	*packetSeqIfMissing = lastPacketNumber + 1;
+    	return SEQUENCE_PACKET_MISSING;
 
     }
     else {
