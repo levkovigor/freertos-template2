@@ -162,6 +162,11 @@ ReturnValue_t Service23FileManagement::handleReply(const CommandMessage* reply,
 				Subservice::FINISH_APPEND_REPLY);
 		break;
 	}
+	case(FileSystemMessage::REPORT_FILE_ATTRIBUTES_REPLY): {
+        return forwardFileSystemReply(reply, objectId,
+                Subservice::REPORT_FILE_ATTRIBUTES_REPLY);
+        break;
+	}
 
 	default:
 		result = INVALID_REPLY;

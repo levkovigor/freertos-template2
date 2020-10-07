@@ -46,7 +46,6 @@ public:
     static const Command_t FINISH_APPEND_TO_FILE = MAKE_COMMAND_ID(131);
     static const Command_t FINISH_APPEND_REPLY = MAKE_COMMAND_ID(132);
 
-
     static const Command_t READ_FROM_FILE = MAKE_COMMAND_ID(140);
     static const Command_t READ_REPLY = MAKE_COMMAND_ID(141);
 
