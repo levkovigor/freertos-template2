@@ -62,4 +62,26 @@ Format active SD card
 python3 obsw_tmtc_client.py -m 3 -s SD -o A21 -c 1
 ```
 
+###  Software Update Procedure
+
+Upload the bootloader or the software image using the special
+binary upload mode. For the command line it is assumed that the software was built previously, 
+using the instructions in the [main REAMDE](https://git.ksat-stuttgart.de/source/sourceobsw/-/blob/master/README.md) and is located in the \_bin folder (the software will 
+only look for bin files in that folder!).
+For the GUI mode, the binary can be located anywhere.
+
+Upload bootloader of software image
+```sh
+python3 obsw_tmtc_client.py -m 5 -c 1
+```
+
+Copy OBSW image to boot memory
+```sh
+python3 obsw_tmtc_client.py -m 3 -s Img -o A4U -c 1
+```
+
+Copy bootloader image to boot memory 
+```sh
+python3 obsw_tmtc_client.py -m 3 -s Img -o A11S -c 1 
+```
 
