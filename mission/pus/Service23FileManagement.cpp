@@ -71,6 +71,7 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
     case(Subservice::DELETE_FILE):
     case(Subservice::DELETE_DIRECTORY):
     case(Subservice::APPEND_TO_FILE):
+    case(Subservice::FINISH_APPEND_TO_FILE):
     case(Subservice::READ_FROM_FILE): {
         result = addDataToStore(&storeId, tcData, tcDataLen);
         if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -105,6 +106,10 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
 	    FileSystemMessage::setWriteCommand(message, storeId);
 		break;
 	}
+	case(Subservice::FINISH_APPEND_TO_FILE): {
+		FileSystemMessage::setFinishStopWriteCommand(message, storeId);
+		break;
+	}
 	case(Subservice::READ_FROM_FILE): {
 	    FileSystemMessage::setReadCommand(message, storeId);
 		break;
@@ -120,7 +125,7 @@ ReturnValue_t Service23FileManagement::handleReply(const CommandMessage* reply,
 		CommandMessage* optionalNextCommand, object_id_t objectId,
 		bool* isStep) {
 	Command_t replyId = reply->getCommand();
-	ReturnValue_t result;
+	ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
 	switch(replyId)  {
 	case FileSystemMessage::COMPLETION_SUCCESS: {
 		return CommandingServiceBase::EXECUTION_COMPLETE;
@@ -131,16 +136,13 @@ ReturnValue_t Service23FileManagement::handleReply(const CommandMessage* reply,
 	}
 
 	case FileSystemMessage::READ_REPLY: {
-		store_address_t storeId = FileSystemMessage::getStoreId(reply);
-		size_t size = 0;
-		const uint8_t * buffer = NULL;
-		result = IPCStore->getData(storeId, &buffer, &size);
-		if(result != RETURN_OK) {
-			sif::error << "Service 23: Could not retrieve data for data reply";
-			return result;
-		}
-		sendTmPacket(Subservice::READ_REPLY, objectId, buffer, size);
-		result = IPCStore ->deleteData(storeId);
+		return forwardFileSystemReply(reply, objectId,
+				Subservice::READ_REPLY);
+		break;
+	}
+	case(FileSystemMessage::FINISH_APPEND_REPLY): {
+		return forwardFileSystemReply(reply, objectId,
+				Subservice::FINISH_APPEND_REPLY);
 		break;
 	}
 
@@ -162,4 +164,26 @@ ReturnValue_t Service23FileManagement::addDataToStore(
                 << "data to IPC Store" << std::endl;
     }
     return result;
+}
+
+ReturnValue_t Service23FileManagement::forwardFileSystemReply(
+		const CommandMessage* reply, object_id_t objectId,
+		Subservice subservice) {
+	store_address_t storeId = FileSystemMessage::getStoreId(reply);
+	ConstStorageAccessor accessor(storeId);
+	ReturnValue_t result = IPCStore->getData(storeId, accessor);
+	if(result != RETURN_OK) {
+		sif::error << "Service23FileManagement::forwardFileSystemReply: Could "
+				<<"not retrieve data for data reply for subservice"
+				<< subservice << "!";
+		return result;
+	}
+	result = sendTmPacket(subservice, objectId,
+			accessor.data(), accessor.size());
+	if(result != HasReturnvaluesIF::RETURN_OK) {
+		sif::error << "Service23FileManagement::handleReply: Could not "
+				<< "send TM packet for subservice"
+				<< subservice << "!";
+	}
+	return HasReturnvaluesIF::RETURN_OK;
 }

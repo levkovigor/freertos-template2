@@ -43,12 +43,6 @@ void FileSystemMessage::setReadReply(CommandMessage* message,
 	message->setParameter2(storageID.raw);
 }
 
-store_address_t FileSystemMessage::getStoreId(const CommandMessage* message) {
-	store_address_t temp;
-	temp.raw = message->getParameter2();
-	return temp;
-}
-
 void FileSystemMessage::setSuccessReply(CommandMessage *message) {
     message->setCommand(COMPLETION_SUCCESS);
 }
@@ -63,11 +57,34 @@ void FileSystemMessage::setClearSdCardCommand(CommandMessage *message) {
 	message->setCommand(CLEAR_SD_CARD);
 }
 
+void FileSystemMessage::setFormatSdCardCommand(CommandMessage *message) {
+	message->setCommand(FORMAT_SD_CARD);
+}
+
+
+void FileSystemMessage::setFinishStopWriteCommand(CommandMessage *message,
+		store_address_t storeId) {
+	message->setCommand(FINISH_APPEND_TO_FILE);
+	message->setParameter2(storeId.raw);
+}
+
+void FileSystemMessage::setFinishStopWriteReply(CommandMessage *message,
+		store_address_t storeId) {
+	message->setCommand(FINISH_APPEND_REPLY);
+	message->setParameter2(storeId.raw);
+}
+
+
+store_address_t FileSystemMessage::getStoreId(const CommandMessage* message) {
+	store_address_t temp;
+	temp.raw = message->getParameter2();
+	return temp;
+}
+
+
 ReturnValue_t FileSystemMessage::getFailureReply(
 		const CommandMessage *message) {
 	return message->getParameter();
 }
 
-void FileSystemMessage::setFormatSdCardCommand(CommandMessage *message) {
-	message->setCommand(FORMAT_SD_CARD);
-}
+

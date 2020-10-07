@@ -649,18 +649,19 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
     }
 
     // todo: check whether packet number is a sequence.
-    if(packetNumber == 0){
-    	// todo: what if we miss packet number 0?
+    if(packetNumber == 0) {
     	lastPacketNumber = 0;
     }
     else if((packetNumber == 1) and (lastPacketNumber != 0)) {
     	sif::debug << "SDCardHandler::appendToFile: First sequence "
     			<< "packet missed!" << std::endl;
+    	// todo: trigger event containing the last packet number 0
     	return HasReturnvaluesIF::RETURN_FAILED;
     }
     else if((packetNumber - lastPacketNumber) > 1) {
     	sif::debug << "SDCardHandler::appendToFile: Packet missing between "
     			<< packetNumber << " and " << lastPacketNumber << std::endl;
+    	// todo: trigger event containing the last packet number + 1.
     	return HasReturnvaluesIF::RETURN_FAILED;
 
     }
