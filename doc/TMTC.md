@@ -70,7 +70,7 @@ using the instructions in the [main REAMDE](https://git.ksat-stuttgart.de/source
 only look for bin files in that folder!).
 For the GUI mode, the binary can be located anywhere.
 
-Upload bootloader of software image
+Upload bootloader or software image
 ```sh
 python3 obsw_tmtc_client.py -m 5 -c 1
 ```
