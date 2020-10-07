@@ -62,6 +62,11 @@ Format active SD card
 python3 obsw_tmtc_client.py -m 3 -s SD -o A21 -c 1
 ```
 
+Generate generic folder structure, C0A for AT91, C0I for iOBC
+```sh
+python3 obsw_tmtc_client.py -m 3 -s SD -o C0A -c 1
+```
+
 ###  Software Update Procedure
 
 Upload the bootloader or the software image using the special

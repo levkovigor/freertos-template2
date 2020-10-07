@@ -25,10 +25,11 @@ ReturnValue_t Service23FileManagement::isValidSubservice(uint8_t subservice) {
     case Subservice::CREATE_DIRECTORY:
     case Subservice::DELETE_DIRECTORY:
     case Subservice::APPEND_TO_FILE:
+    case Subservice::FINISH_APPEND_TO_FILE:
     case Subservice::READ_FROM_FILE:
         return HasReturnvaluesIF::RETURN_OK;
     default:
-        return HasReturnvaluesIF::RETURN_FAILED;
+        return CommandingServiceBase::INVALID_SUBSERVICE;
     }
 }
 
@@ -72,7 +73,11 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
     case(Subservice::DELETE_DIRECTORY):
     case(Subservice::APPEND_TO_FILE):
     case(Subservice::FINISH_APPEND_TO_FILE):
+    case(Subservice::LOCK_FILE):
+    case(Subservice::UNLOCK_FILE):
     case(Subservice::READ_FROM_FILE): {
+        if(subservice == Subservice::FINISH_APPEND_TO_FILE) {
+        }
         result = addDataToStore(&storeId, tcData, tcDataLen);
         if(result != HasReturnvaluesIF::RETURN_OK) {
             return result;
@@ -105,6 +110,12 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
 	case(Subservice::APPEND_TO_FILE): {
 	    FileSystemMessage::setWriteCommand(message, storeId);
 		break;
+	}
+	case(Subservice::LOCK_FILE): {
+	    break;
+	}
+	case(Subservice::UNLOCK_FILE): {
+	    break;
 	}
 	case(Subservice::FINISH_APPEND_TO_FILE): {
 		FileSystemMessage::setFinishStopWriteCommand(message, storeId);
@@ -178,8 +189,8 @@ ReturnValue_t Service23FileManagement::forwardFileSystemReply(
 				<< subservice << "!";
 		return result;
 	}
-	result = sendTmPacket(subservice, objectId,
-			accessor.data(), accessor.size());
+	result = sendTmPacket(subservice, objectId, accessor.data(),
+	        accessor.size());
 	if(result != HasReturnvaluesIF::RETURN_OK) {
 		sif::error << "Service23FileManagement::handleReply: Could not "
 				<< "send TM packet for subservice"

@@ -237,6 +237,14 @@ ReturnValue_t SDCardHandler::handleFileMessage(CommandMessage* message) {
         result = handleDeleteDirectoryCommand(message);
         break;
     }
+    case FileSystemMessage::LOCK_FILE: {
+        result = handleLockFileCommand(message, true);
+        break;
+    }
+    case FileSystemMessage::UNLOCK_FILE: {
+        result = handleLockFileCommand(message, false);
+        break;
+    }
     case FileSystemMessage::APPEND_TO_FILE: {
         result = handleAppendCommand(message);
         break;
@@ -540,6 +548,45 @@ ReturnValue_t SDCardHandler::handleReadCommand(CommandMessage* message) {
     }
 
     return handleReadReply(command);
+}
+
+ReturnValue_t SDCardHandler::handleLockFileCommand(CommandMessage *message,
+        bool lock) {
+    store_address_t storeId = FileSystemMessage::getStoreId(message);
+    ConstStorageAccessor accessor(storeId);
+    size_t sizeRemaining = 0;
+    const uint8_t* readPtr = nullptr;
+    ReturnValue_t result = getStoreData(storeId, accessor, &readPtr,
+            &sizeRemaining);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    LockFileCommand command;
+    result = command.deSerialize(&readPtr, &sizeRemaining,
+            SerializeIF::Endianness::BIG);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        sendCompletionReply(false, result);
+    }
+
+    int retval = 0;
+    if(lock) {
+        retval = lock_file(command.getRepositoryPathRaw(),
+                command.getFilenameRaw());
+    }
+    else {
+        retval = unlock_file(command.getRepositoryPathRaw(),
+                command.getFilenameRaw());
+    }
+
+    if(retval == F_NO_ERROR) {
+        sendCompletionReply(true);
+    }
+    else {
+        result = HasReturnvaluesIF::RETURN_FAILED;
+        sendCompletionReply(false, result, retval);
+    }
+    return result;
 }
 
 ReturnValue_t SDCardHandler::handleReadReply(ReadCommand& command) {

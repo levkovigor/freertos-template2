@@ -25,6 +25,18 @@ void FileSystemMessage::setDeleteDirectoryCommand(
 	message->setParameter2(storeId.raw);
 }
 
+void FileSystemMessage::setLockFileCommand(CommandMessage *message,
+        store_address_t storeId) {
+    message->setCommand(LOCK_FILE);
+    message->setParameter2(storeId.raw);
+}
+
+void FileSystemMessage::setUnlockFileCommand(CommandMessage *message,
+        store_address_t storeId) {
+    message->setCommand(UNLOCK_FILE);
+    message->setParameter2(storeId.raw);
+}
+
 void FileSystemMessage::setWriteCommand(CommandMessage* message,
 		store_address_t storeId) {
 	message->setCommand(APPEND_TO_FILE);

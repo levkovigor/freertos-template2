@@ -154,6 +154,8 @@ class CreateDirectoryCommand: public GenericDirectoryPacket {};
  */
 class DeleteDirectoryCommand: public GenericDirectoryPacket {};
 
+class LockFileCommand: public GenericFilePacket {};
+
 /**
  * @brief   This class extracts the data buffer containing a file system
  * 			write command
