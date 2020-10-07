@@ -22,6 +22,8 @@ ReturnValue_t Service23FileManagement::isValidSubservice(uint8_t subservice) {
     switch(subservice){
     case Subservice::CREATE_FILE:
     case Subservice::DELETE_FILE:
+    case Subservice::LOCK_FILE:
+    case Subservice::UNLOCK_FILE:
     case Subservice::CREATE_DIRECTORY:
     case Subservice::DELETE_DIRECTORY:
     case Subservice::REPORT_FILE_ATTRIBUTES:
@@ -100,6 +102,7 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
         break;
     }
     case(Subservice::REPORT_FILE_ATTRIBUTES): {
+        FileSystemMessage::setReportFileAttributesCommand(message, storeId);
         break;
     }
     case(Subservice::LOCK_FILE): {

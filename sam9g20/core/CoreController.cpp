@@ -162,12 +162,19 @@ ReturnValue_t CoreController::initializeAfterTaskCreation() {
 }
 
 ReturnValue_t CoreController::initialize() {
+
 #ifdef ISIS_OBC_G20
     framHandler = objectManager->get<FRAMHandler>(objects::FRAM_HANDLER);
     if(framHandler == nullptr) {
+        sif::error << "CoreController::initialize: No FRAM handler found!"
+                << std::endl;
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 #endif
+    ReturnValue_t result = actionHelper.initialize(commandQueue);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
     return SystemObject::initialize();
 }
 
