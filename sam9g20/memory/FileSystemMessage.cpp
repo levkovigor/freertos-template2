@@ -37,6 +37,12 @@ void FileSystemMessage::setReadCommand(CommandMessage* message,
 	message->setParameter2(storeId.raw);
 }
 
+void FileSystemMessage::setFinishAppendReply(CommandMessage* message,
+		store_address_t storageID) {
+	message->setCommand(FINISH_APPEND_REPLY);
+	message->setParameter2(storageID.raw);
+}
+
 void FileSystemMessage::setReadReply(CommandMessage* message,
 		store_address_t storageID) {
 	message->setCommand(READ_REPLY);

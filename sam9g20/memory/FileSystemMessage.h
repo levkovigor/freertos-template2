@@ -81,6 +81,8 @@ public:
 	static void setFormatSdCardCommand(CommandMessage* message);
 
 	static void setReadReply(CommandMessage* message, store_address_t storeId);
+	static  void setFinishAppendReply(CommandMessage* message,
+			store_address_t storeId);
     static void setSuccessReply(CommandMessage* message);
     static void setFailureReply(CommandMessage* message,
             ReturnValue_t errorCode, uint32_t errorParam = 0);

@@ -1,6 +1,7 @@
 #ifndef SAM9G20_MEMORY_SDCARDHANDLER_H_
 #define SAM9G20_MEMORY_SDCARDHANDLER_H_
 
+#include "SDCardDefinitions.h"
 #include <subsystemIdRanges.h>
 
 #include <fsfw/action/HasActionsIF.h>
@@ -14,6 +15,7 @@
 
 class PeriodicTaskIF;
 class Countdown;
+class ReadCommand;
 
 /**
  * Additional abstraction layer to encapsulate access to SD cards
@@ -28,7 +30,7 @@ public:
     // todo: make these configurable via OBSWConfig.h
     static constexpr uint8_t MAX_FILE_MESSAGES_HANDLED_PER_CYCLE = 10;
     static constexpr uint32_t MAX_MESSAGE_QUEUE_DEPTH = 20;
-    static constexpr size_t MAX_READ_LENGTH = 1024;
+
 
     static constexpr uint8_t INTERFACE_ID = CLASS_ID::SD_CARD_HANDLER;
 
@@ -91,11 +93,8 @@ private:
 
     StorageManagerIF *IPCStore;
 
-    /* For now  max size of reply is set to 300.
-     * For larger sizes the software needs to be adapted. */
-    uint32_t readReplyMaxLen = MAX_READ_LENGTH;
-
     bool fileSystemWasUsedOnce = false;
+    size_t currentReadPos = 0;
     bool fileSystemOpen = false;
 
     ReturnValue_t getStoreData(store_address_t& storeId,
@@ -116,7 +115,8 @@ private:
     bool extendedDebugOutput = true;
 
     // Right now, only supports one file upload at a time.
-    uint16_t lastPacketNumber = -1;
+    static constexpr uint16_t UNSET_SEQUENCE = 0xffff;
+    uint16_t lastPacketNumber = UNSET_SEQUENCE;
 
     ReturnValue_t handleMessage(CommandMessage* message);
     ReturnValue_t handleFileMessage(CommandMessage* message);
@@ -146,14 +146,19 @@ private:
     ReturnValue_t handleFinishAppendCommand(CommandMessage* message);
 
     ReturnValue_t handleReadCommand(CommandMessage* message);
-    ReturnValue_t readFile(const char* repositoryPath, const char* filename,
-            uint8_t* tmData, size_t* tmDataLen);
+    ReturnValue_t openFileForReading(const char* repositoryPath,
+    		const char* filename, F_FILE** file,
+    		size_t readPosition, size_t* fileSize);
+    ReturnValue_t handleReadReply(ReadCommand& command);
 
     void sendCompletionReply(bool success = true,
             ReturnValue_t errorCode = HasReturnvaluesIF::RETURN_OK,
 			uint32_t errorParam = 0);
-    ReturnValue_t sendDataReply(MessageQueueId_t receivedFromQueueId,
-            uint8_t* tmData, size_t tmDataLen);
+    ReturnValue_t generateFinishAppendReply(RepositoryPath* repoPath,
+    		FileName* fileName, size_t filesize, bool locked);
+
+
+
 };
 
 #endif /* SAM9G20_MEMORY_SDCARDHANDLER_H_ */

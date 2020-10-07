@@ -1,19 +1,14 @@
-#ifndef SAM9G20_MEMORY_MEMORY_SDCARDHANDLERPACKETS_H_
-#define SAM9G20_MEMORY_MEMORY_SDCARDHANDLERPACKETS_H_
+#ifndef SAM9G20_MEMORY_SDCARDHANDLERPACKETS_H_
+#define SAM9G20_MEMORY_SDCARDHANDLERPACKETS_H_
+
+#include "SDCardDefinitions.h"
 
 #include <fsfw/serialize/SerialLinkedListAdapter.h>
 #include <fsfw/serialize/SerialFixedArrayListAdapter.h>
 #include <fsfw/serialize/EndianConverter.h>
+#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <sam9g20/memory/SDCardApi.h>
 
-extern "C"{
-#include <privlib/hcc/include/config/config_fat.h>
-}
-
-#include <etl/string.h>
-#include <config/OBSWConfig.h>
-
-using RepositoryPath = etl::string<MAX_REPOSITORY_PATH_LENGTH>;
-using FileName = etl::string<MAX_FILENAME_LENGTH>;
 
 /**
  * Common helper function to deserialize repository and filename
@@ -84,11 +79,11 @@ public:
 		return filename.c_str();
 	}
 
-	const RepositoryPath* getRepoPath() const {
+	RepositoryPath* getRepoPath() {
 		return &repositoryPath;
 	}
 
-	const FileName* getFilename() const {
+	FileName* getFilename() {
 		return &filename;
 	}
 
@@ -99,7 +94,7 @@ protected:
 
 /**
  * @brief 	Generic class for all packets containg a repository and directory
- * 			name
+ * 			nameprivlib/hcc/include/
  * @details
  * Content:
  *  1. The repository path as string
@@ -319,38 +314,8 @@ private:
  * @brief This Class extracts the repository path and the filename from the
  *        data buffer of a read command file system message
  */
-class ReadCommand: public SerializeIF {
-public:
+class ReadCommand: public GenericFilePacket {
 
-	ReadCommand() {}
-
-	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
-	            Endianness streamEndianness) override {
-		return deSerializeRepositoryAndFilename(buffer, size, repositoryPath,
-		        filename);
-	}
-
-    size_t getSerializedSize() const override {
-        return 0;
-    }
-
-    ReturnValue_t serialize(uint8_t **buffer, size_t *size,
-            size_t maxSize, Endianness streamEndianness) const override {
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-	const char * getRepositoryPath() {
-		return repositoryPath.c_str();
-	}
-
-	const char* getFilename() {
-		return filename.c_str();
-	}
-
-private:
-
-	RepositoryPath repositoryPath;
-	FileName filename;
 };
 
 
@@ -358,41 +323,62 @@ private:
  * @brief   This class serves as a helper to put the parameters of a reply to
  *          the file system read command into one common buffer.
  */
-class ReadReply {
+class ReadReply: public SerializeIF {
 public:
 
-	ReadReply(const char* repositoryPath_, const char* filename_,
-	        uint8_t* data_, uint16_t filesize_) :
-			repositoryPath(repositoryPath_), filename(filename_),
-			filesize(filesize_) {
-		std::memcpy(data, data_, filesize_);
+	ReadReply(RepositoryPath* repoPath, FileName* fileName,
+			F_FILE** fileHandle, size_t sizeToRead) :
+			repoPath(repoPath), fileName(fileName),
+			sizeToRead(sizeToRead), fileHandle(*fileHandle) {
 	}
 
-	ReturnValue_t serialize(uint8_t* tmData, size_t* tmDataLen) {
-		uint8_t* tmp = tmData;
-		repositoryPath.copy(reinterpret_cast<char*>(tmp), repositoryPath.size());
-		tmp = tmp + repositoryPath.size();
-		/* Adding string terminator */
-		*tmp = 0;
-		tmp = tmp + 1;
-		filename.copy(reinterpret_cast<char*>(tmp), filename.size());
-		tmp = tmp + filename.size();
-		/* Adding string terminator */
-		*tmp = 0;
-		tmp = tmp + 1;
-		std::memcpy(tmp, data, filesize);
-		/* +2 for the two string terminators */
-		*tmDataLen = repositoryPath.size() + filename.size() + filesize + 2;
+    ReturnValue_t serialize(uint8_t **buffer, size_t *size,
+            size_t maxSize, Endianness streamEndianness) const override {
+		ReturnValue_t result = serializeRepositoryAndFilename(buffer , size,
+				maxSize, *repoPath, *fileName);
+		if(result != HasReturnvaluesIF::RETURN_OK) {
+			return result;
+		}
+
+		if(*size + sizeToRead > maxSize) {
+			// Should not happen!
+			sif::error << "SDCardHandlerPackets::ReadReply: Max Size specified "
+					<<"is not large enough" << std::endl;
+			return SerializeIF::BUFFER_TOO_SHORT;
+		}
+
+		size_t sizeRead = static_cast<size_t>(f_read(*buffer, sizeof(uint8_t),
+				sizeToRead, fileHandle));
+		if(sizeRead != sizeToRead) {
+			// Should not happen!
+			sif::error << "SDCardHandlerPackets::ReadReply: Did not read"
+					<<"all bytes." << std::endl;
+			return HasReturnvaluesIF::RETURN_FAILED;
+		}
+
+		*buffer += sizeRead;
+		*size += sizeRead;
 		return HasReturnvaluesIF::RETURN_OK;
 	}
 
+	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
+	            Endianness streamEndianness) override {
+		return HasReturnvaluesIF::RETURN_FAILED;
+	}
+
+    size_t getSerializedSize() const override {
+	    return repoPath->size() + fileName->size() + 2 + sizeToRead;
+    }
+
+
 private:
 
-	const static uint32_t maxFileSize = 300;
-	RepositoryPath repositoryPath;
-	FileName filename;
-	uint16_t filesize;
-	uint8_t data[maxFileSize];
+	RepositoryPath* repoPath;
+	FileName* fileName;
+	uint8_t* fileData = nullptr;
+
+	size_t sizeToRead;
+	F_FILE* fileHandle;
 };
 
 class FileAttributesReply: public GenericFilePacket {

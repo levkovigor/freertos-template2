@@ -451,8 +451,11 @@ ReturnValue_t SDCardHandler::handleFinishAppendCommand(
     }
 
     FinishAppendCommand finishAppendCommand;
-    finishAppendCommand.deSerialize(&readPtr, &sizeRemaining,
+    result = finishAppendCommand.deSerialize(&readPtr, &sizeRemaining,
     		SerializeIF::Endianness::BIG);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+    	return result;
+    }
 
     if(finishAppendCommand.getLockFile()) {
     	int retval = lock_file(finishAppendCommand.getRepositoryPathRaw(),
@@ -473,112 +476,176 @@ ReturnValue_t SDCardHandler::handleFinishAppendCommand(
     			<< " failed with error code " << result << "!" << std::endl;
     }
 
-    FinishAppendReply reply(finishAppendCommand.getRepoPath(),
-    		finishAppendCommand.getFilename(),
-    		lastPacketNumber, fileSize, locked);
-
-    // Reset last packet sequence number
-    lastPacketNumber = 0;
+    return generateFinishAppendReply(finishAppendCommand.getRepoPath(),
+    		finishAppendCommand.getFilename(), fileSize, locked);
+}
 
 
+ReturnValue_t SDCardHandler::generateFinishAppendReply(RepositoryPath *repoPath,
+		FileName *fileName, size_t filesize, bool locked) {
+	store_address_t storeId;
+    FinishAppendReply replyPacket(repoPath, fileName,
+    		lastPacketNumber, filesize, locked);
+
+    uint8_t* ptr = nullptr;
+    size_t serializedSize = 0;
+    ReturnValue_t result = IPCStore->getFreeElement(&storeId,
+    		replyPacket.getSerializedSize(), &ptr);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        // Reset last packet sequence number
+        lastPacketNumber = UNSET_SEQUENCE;
+    	return result;
+    }
+    result = replyPacket.serialize(&ptr, &serializedSize,
+    		replyPacket.getSerializedSize(),
+    		SerializeIF::Endianness::BIG);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        lastPacketNumber = UNSET_SEQUENCE;
+    	return result;
+    }
+
+    CommandMessage reply;
+    FileSystemMessage::setFinishAppendReply(&reply, storeId);
+    result = commandQueue->reply(&reply);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        lastPacketNumber = UNSET_SEQUENCE;
+    	return result;
+    }
+
+    lastPacketNumber = UNSET_SEQUENCE;
     return result;
+
 }
 
 
 ReturnValue_t SDCardHandler::handleReadCommand(CommandMessage* message) {
-    MessageQueueId_t receivedFromQueueId = message -> getSender();
     store_address_t storeId = FileSystemMessage::getStoreId(message);
-
-    auto resultPair = IPCStore->getData(storeId);
-    if(resultPair.first != HasReturnvaluesIF::RETURN_OK) {
-        return resultPair.first;
-    }
-
-    size_t remainingSize = resultPair.second.size();
-    const uint8_t* ipcStoreBuffer =  resultPair.second.data();
-    ReadCommand command;
-    ReturnValue_t result = command.deSerialize(&ipcStoreBuffer,
-            &remainingSize, SerializeIF::Endianness::BIG);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
+    ConstStorageAccessor accessor(storeId);
+    size_t sizeRemaining = 0;
+    const uint8_t* readPtr = nullptr;
+    ReturnValue_t result = getStoreData(storeId, accessor, &readPtr,
+            &sizeRemaining);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
         return result;
     }
 
-    uint8_t tmData[readReplyMaxLen];
-    size_t tmDataLen = 0;
-    result = readFile(command.getRepositoryPath(), command.getFilename(),
-            tmData, &tmDataLen);
+    ReadCommand command;
+    result = command.deSerialize(&readPtr, &sizeRemaining,
+    		SerializeIF::Endianness::BIG);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+    	return result;
+    }
+
+    return handleReadReply(command);
+}
+
+ReturnValue_t SDCardHandler::handleReadReply(ReadCommand& command) {
+	// Open file for reading and get file size
+    F_FILE* file = nullptr;
+    size_t fileSize = 0;
+    ReturnValue_t result = openFileForReading(command.getRepositoryPathRaw(),
+    		command.getFilenameRaw(), &file, currentReadPos, &fileSize);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+    	return result;
+    }
+
+    // Set correct size to read
+    size_t sizeToRead = 0;
+    if(fileSize > MAX_READ_LENGTH) {
+    	sizeToRead = MAX_READ_LENGTH;
+    }
+    else {
+    	sizeToRead = fileSize;
+    }
+
+    // Generate and serialize the reply packet.
+    ReadReply replyPacket(command.getRepoPath(), command.getFilename(),
+			&file, sizeToRead);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "Reading from file " << command.getFilename()
                             << " failed" << std::endl;
         sendCompletionReply(false, result);
         return HasReturnvaluesIF::RETURN_FAILED;
     }
-
-    return sendDataReply(receivedFromQueueId, tmData, tmDataLen);
-}
-
-
-ReturnValue_t SDCardHandler::sendDataReply(MessageQueueId_t receivedFromQueueId,
-        uint8_t* tmData, size_t tmDataLen){
-    store_address_t parameterAddress;
-    ReturnValue_t result = IPCStore->addData(&parameterAddress, tmData, tmDataLen);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        sif::error << "SDCardHandler::sendDataReply: Failed to store data in "
-                << "IPC store" << std::endl;
-        result = IPCStore->deleteData(parameterAddress);
-        if(result != HasReturnvaluesIF::RETURN_OK){
-            sif::error << "SDCardHandler::sendDataReply:"
-                    << "Failed to delete IPC store entry" << std::endl;
+    // Get space in IPC store to serialize packet.
+    uint8_t* writePtr = nullptr;
+    store_address_t storeId;
+    result = IPCStore->getFreeElement(&storeId,
+    		replyPacket.getSerializedSize(), &writePtr);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        int retval = f_close(file);
+        if(retval != F_NO_ERROR) {
+        	sif::error << "SDCardHandler::handleReadCommand: Closing file"
+        			<< " failed!" << std::endl;
         }
-        return HasReturnvaluesIF::RETURN_FAILED;
+    	return result;
     }
+    size_t serializedSize = 0;
+    result = replyPacket.serialize(&writePtr, &serializedSize,
+    		sizeToRead,SerializeIF::Endianness::BIG);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        int retval = f_close(file);
+        if(retval != F_NO_ERROR) {
+        	sif::error << "SDCardHandler::handleReadCommand: Closing file"
+        			<< " failed!" << std::endl;
+        }
+    	return result;
+    }
+
+    // Generate the reply.
     CommandMessage reply;
-    FileSystemMessage::setReadReply(&reply, parameterAddress);
-    result = commandQueue->sendMessage(receivedFromQueueId, &reply);
+    FileSystemMessage::setReadReply(&reply, storeId);
+    result = commandQueue->reply(&reply);
     if(result != HasReturnvaluesIF::RETURN_OK){
         if(result == MessageQueueIF::FULL){
             sif::debug << "SDCardHandler::sendDataReply: Could not send data "
                     << "reply, queue of receiver is full!" << std::endl;
         }
-        return HasReturnvaluesIF::RETURN_FAILED;
     }
-    return HasReturnvaluesIF::RETURN_OK;
+    else {
+    	// Increment read position
+    	currentReadPos += sizeToRead;
+    }
+
+    int retval = f_close(file);
+    if(retval != F_NO_ERROR) {
+    	sif::error << "SDCardHandler::handleReadCommand: Closing file"
+    			<< " failed!" << std::endl;
+    }
+    return result;
+
 }
 
-ReturnValue_t SDCardHandler::readFile(const char* repositoryPath,
-        const char* filename, uint8_t* tmData, size_t* tmDataLen) {
+
+ReturnValue_t SDCardHandler::openFileForReading(const char* repositoryPath,
+		const char* filename, F_FILE** file,
+		size_t readPosition, size_t* fileSize) {
     int result = changeDirectory(repositoryPath);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         return result;
     }
 
-    F_FILE* file = f_open(filename, "r");
+    *file = f_open(filename, "r");
     if (f_getlasterror() != F_NO_ERROR) {
-        sif::error << "f_open pb: " << f_getlasterror() << std::endl;
+        sif::error << "SDCardHandler::readFile: Opening file failed with code "
+        		 << f_getlasterror() << std::endl;
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
-    long filesize = f_filelength(filename);
-    // TODO: sanity check for file size. (limited)
-    uint8_t filecontent[filesize];
-    if (f_read(filecontent, sizeof(uint8_t), filesize, file) != filesize) {
-        sif::error << "Not all items read" << std::endl;
-        return HasReturnvaluesIF::RETURN_FAILED;
+    size_t filesize = f_filelength(filename);
+    if(readPosition > filesize) {
+    	sif::warning << "SDCardHandler::openFileForReading: Specified read"
+    			<< " position larger than file size!" << std::endl;
+        return HasReturnvaluesIF::RETURN_OK;
+    }
+    else {
+    	result = f_seek(*file, readPosition, F_SEEK_SET);
+    	if(result != F_NO_ERROR) {
+    		sif::error << "SDCardHandler::openFileForReading: Seeking read"
+    				<< " position failed with code" << result << std::endl;
+    	}
     }
 
-    result = f_close(file);
-    if (result != F_NO_ERROR) {
-        sif::error << "f_close pb: " << result << std::endl;
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-    ReadReply reply(repositoryPath,
-            filename, filecontent, (uint16_t) filesize);
-    result = reply.serialize(tmData, tmDataLen);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Serialization of read reply failed." << std::endl;
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -939,3 +1006,4 @@ ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
+
