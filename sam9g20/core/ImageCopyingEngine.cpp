@@ -493,6 +493,7 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
 
     if(currentByteIdx >= currentFileSize) {
         // operation finished.
+#if OBSW_REDUCED_PRINTOUT == 0
         if(bootloader) {
             sif::info << "Copying bootloader to NAND-Flash finished with "
                     << stepCounter << " cycles!" << std::endl;
@@ -501,6 +502,7 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
             sif::info << "Copying OBSW image to NAND-Flash finished with "
                     << stepCounter << " cycles!" << std::endl;
         }
+#endif
 
         // cache last finished state.
         lastFinishedState = imageHandlerState;
@@ -677,6 +679,7 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         // Info output should only be printed once.
         if(stepCounter == 0) {
             currentFileSize = f_filelength(config::BOOTLOADER_NAME);
+#if OBSW_REDUCED_PRINTOUT == 0
 #ifdef AT91SAM9G20_EK
             sif::info << "Copying AT91 bootloader on SD card "
                     << currentVolume << " to AT91 NAND-Flash.." << std::endl;
@@ -688,7 +691,7 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
             sif::info << "Bootloader size: " <<  currentFileSize
                     << " bytes." << std::endl;
         }
-
+#endif
         *filePtr = f_open(config::BOOTLOADER_NAME, "r");
     }
     else {
