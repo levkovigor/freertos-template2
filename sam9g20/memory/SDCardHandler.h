@@ -139,6 +139,7 @@ private:
     ReturnValue_t handleCreateFileCommand(CommandMessage* message);
     ReturnValue_t handleDeleteFileCommand(CommandMessage* message);
 
+    ReturnValue_t handleReportAttributesCommand(CommandMessage* message);
     ReturnValue_t handleCreateDirectoryCommand(CommandMessage* message);
     ReturnValue_t handleDeleteDirectoryCommand(CommandMessage* message);
 

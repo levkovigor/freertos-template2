@@ -94,7 +94,7 @@ protected:
 
 /**
  * @brief 	Generic class for all packets containg a repository and directory
- * 			nameprivlib/hcc/include/
+ * 			name
  * @details
  * Content:
  *  1. The repository path as string
@@ -129,32 +129,14 @@ protected:
 	RepositoryPath dirname;
 };
 
-/**
- * @brief   This class encapsulates a delete-file command.
- * @author  Jakob Meier
- */
+
 class DeleteFileCommand: public GenericFilePacket {};
+class FileAttributesCommand: public GenericFilePacket {};
+class LockFileCommand: public GenericFilePacket {};
 
-/**
- * @brief This class helps to handle a create-directory command.
- *
- * @details A create-directory holds:
- * 	        1. The repository path as string
- * 	        2. The directory to create as string
- */
 class CreateDirectoryCommand: public GenericDirectoryPacket {};
-
-
-/**
- * @brief This class helps to handle a delete-directory command.
- *
- * @details A delete-directory holds:
- * 	        1. The repository path as string
- * 	        2. The directory to delete as string
- */
 class DeleteDirectoryCommand: public GenericDirectoryPacket {};
 
-class LockFileCommand: public GenericFilePacket {};
 
 /**
  * @brief   This class extracts the data buffer containing a file system
@@ -315,6 +297,8 @@ private:
 /**
  * @brief This Class extracts the repository path and the filename from the
  *        data buffer of a read command file system message
+ * @details
+ * TODO: Add sequence number..
  */
 class ReadCommand: public GenericFilePacket {
 
@@ -414,7 +398,6 @@ private:
 	FileName* fileName;
 	// In addition to the repository path and the directory name,
 	// this packet contains the file size and whether the file is locked.
-	// (It also contains the file time stamp of the file.)
 	uint32_t fileSize;
 	bool locked;
 

@@ -118,7 +118,6 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
 	    FileSystemMessage::setDeleteDirectoryCommand(message, storeId);
 		break;
 	}
-
 	case(Subservice::FINISH_APPEND_TO_FILE): {
 		FileSystemMessage::setFinishStopWriteCommand(message, storeId);
 		break;
