@@ -247,16 +247,38 @@ private:
 /**
  * @brief	This helps encapsulates a finish-append command.
  */
-class FinishAppendCommand: public GenericFilePacket {};
+class FinishAppendCommand: public GenericFilePacket {
+public:
+	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
+            Endianness streamEndianness) override {
+		ReturnValue_t result = GenericFilePacket::deSerialize(buffer ,size,
+				streamEndianness);
+		if(result != HasReturnvaluesIF::RETURN_OK) {
+			return result;
+		}
+		return SerializeAdapter::deSerialize(&lockFile, buffer ,size,
+				streamEndianness);
+	}
+
+	bool getLockFile() const {
+		return lockFile;
+	}
+
+private:
+	bool lockFile;
+};
 
 class FinishAppendReply: public SerialLinkedListAdapter<SerializeIF> {
 public:
 	FinishAppendReply(const RepositoryPath* repoPath, const FileName* fileName,
-			uint16_t lastValidSequenceNumber, size_t fileSize):
+			uint16_t lastValidSequenceNumber, size_t fileSize, bool fileLocked):
 		repoPath(repoPath), fileName(fileName),
-		lastValidSequenceNumber(lastValidSequenceNumber), fileSize(fileSize) {
+		lastValidSequenceNumber(lastValidSequenceNumber), fileSize(fileSize),
+		fileLocked(fileLocked) {
 		setStart(&this->lastValidSequenceNumber);
 		this->lastValidSequenceNumber.setNext(&this->fileSize);
+		this->fileSize.setNext(&this->fileLocked);
+		this->fileLocked.setEnd();
 	}
 
     ReturnValue_t serialize(uint8_t **buffer, size_t *size,
@@ -289,6 +311,7 @@ private:
 
 	SerializeElement<uint16_t> lastValidSequenceNumber;
 	SerializeElement<size_t> fileSize;
+	SerializeElement<uint8_t> fileLocked;
 
 };
 

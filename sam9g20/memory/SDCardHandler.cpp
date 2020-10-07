@@ -454,14 +454,28 @@ ReturnValue_t SDCardHandler::handleFinishAppendCommand(
     finishAppendCommand.deSerialize(&readPtr, &sizeRemaining,
     		SerializeIF::Endianness::BIG);
 
-    result = changeDirectory(finishAppendCommand.getRepositoryPathRaw());
-    if(result != HasReturnvaluesIF::RETURN_OK) {
-    	return result;
+    if(finishAppendCommand.getLockFile()) {
+    	int retval = lock_file(finishAppendCommand.getRepositoryPathRaw(),
+    		finishAppendCommand.getFilenameRaw());
+        if(retval != HasReturnvaluesIF::RETURN_OK) {
+        	sif::error << "SDCardHandler::handleFinishAppendCommand: Could"
+        			<< " not lock file, code " << result << "!" << std::endl;
+        }
     }
-    size_t fileSize = f_filelength(finishAppendCommand.getFilenameRaw());
+
+    size_t fileSize = 0;
+    bool locked = false;
+    int retval = get_file_info(finishAppendCommand.getRepositoryPathRaw(),
+    		finishAppendCommand.getFilenameRaw(), &fileSize, &locked, nullptr,
+			nullptr);
+    if(retval != HasReturnvaluesIF::RETURN_OK) {
+    	sif::error << "SDCardHandler::handleFinishAppendCommand: get_file_info"
+    			<< " failed with error code " << result << "!" << std::endl;
+    }
+
     FinishAppendReply reply(finishAppendCommand.getRepoPath(),
     		finishAppendCommand.getFilename(),
-    		lastPacketNumber, fileSize);
+    		lastPacketNumber, fileSize, locked);
 
     // Reset last packet sequence number
     lastPacketNumber = 0;
