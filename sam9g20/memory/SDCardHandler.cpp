@@ -457,6 +457,7 @@ ReturnValue_t SDCardHandler::handleFinishAppendCommand(
     	return result;
     }
 
+    // The file can be locked via the finish command optinally
     if(finishAppendCommand.getLockFile()) {
     	int retval = lock_file(finishAppendCommand.getRepositoryPathRaw(),
     		finishAppendCommand.getFilenameRaw());
@@ -466,6 +467,8 @@ ReturnValue_t SDCardHandler::handleFinishAppendCommand(
         }
     }
 
+    // Get file information for the reply packet. ctime and cdate not contained
+    // for now.
     size_t fileSize = 0;
     bool locked = false;
     int retval = get_file_info(finishAppendCommand.getRepositoryPathRaw(),
