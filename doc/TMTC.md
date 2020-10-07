@@ -80,7 +80,7 @@ Copy OBSW image to boot memory
 python3 obsw_tmtc_client.py -m 3 -s Img -o A4U -c 1
 ```
 
-Copy bootloader image to boot memory 
+Copy bootloader image to boot memory (A11S for image on SD-Card, A11F for image on FRAM)
 ```sh
 python3 obsw_tmtc_client.py -m 3 -s Img -o A11S -c 1 
 ```
