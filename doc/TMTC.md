@@ -1,4 +1,4 @@
-## Common TMTC commands and procedures
+# Common TMTC commands and procedures
 
 The TMTC commander is integrated into the repository as a submodule.
 It provides an easy way to developers and operators to test the software
@@ -20,6 +20,8 @@ UDP communication interface.
 A timeout for reply checking can be specified by adding the -t \<timeout duration\> flag to the
 command for sequential commands (all commands which are specified with -m 3).
 
+## General commands
+
 ### Display Help
 ```sh
 python3 obsw_tmtc_client.py -h
@@ -31,3 +33,33 @@ A ping command uses the PUS test service (17)
 ```sh
 python3 obsw_tmtc_client.py -m 3 -s 17 -c 1 
 ```
+
+### Service tests
+
+Perform a service test which should work without connected hardware.
+Service tests were implemented for the services 2, 5, 8, 9, 17 and 200.
+
+```sh
+python3 obsw_tmtc_client.py -m 3 -s <serviceNumber> -c 1
+```
+
+## SD-Card and Image Handling
+
+### General SD-Card commands
+
+Print contents of active SD card
+```sh
+python3 obsw_tmtc_client.py -m 3 -s SD -o A2 -c 1 
+``` 
+
+Clear active SD card
+```sh
+python3 obsw_tmtc_client.py -m 3 -s SD -o A20 -c 1
+``` 
+
+Format active SD card
+```sh
+python3 obsw_tmtc_client.py -m 3 -s SD -o A21 -c 1
+```
+
+
