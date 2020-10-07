@@ -1,40 +1,79 @@
-#ifndef CONFIG_TMTC_TMTCSIZE_H_
-#define CONFIG_TMTC_TMTCSIZE_H_
+#ifndef CONFIG_OBSWCONFIG_H_
+#define CONFIG_OBSWCONFIG_H_
 
+#ifdef __cplusplus
 #include <cstdint>
 #include <cstddef>
+#else
+#include <stdint.h>
+#include <stddef.h>
+#endif
+
 #include <portmacro.h>
 
+#define SERVICE_1_MQ_DEPTH					10
 #define DISPLAY_FACTORY_ALLOCATION_SIZE     0
 #define RS485_WITH_TERMINATION              1
 #define ADD_TEST_CODE                       1
+#define PRINT_MISSED_DEADLINES              1
 
+#define MAX_REPOSITORY_PATH_LENGTH 			64
+#define MAX_FILENAME_LENGTH 				12
+
+#ifdef __cplusplus
 namespace config {
-static constexpr uint32_t RS232_BAUDRATE = 230400;
-static constexpr size_t RS232_MAX_SERIAL_FRAME_SIZE = 1500;
-static constexpr uint32_t RS232_SERIAL_TIMEOUT_BAUDTICKS = 5;
-static constexpr uint16_t RS232_MUTEX_TIMEOUT = 20;
+#endif
 
-static constexpr uint32_t RS485_REGULAR_BAUD = 115200;
-static constexpr uint32_t RS485_FAST_BAUD = 115200;
-static constexpr size_t RS485_MAX_SERIAL_FRAME_SIZE = 1500;
-static constexpr uint32_t RS485_SERIAL_TIMEOUT_BAUDTICKS = 5;
-static constexpr uint16_t RS485_MUTEX_TIMEOUT = 20;
+/* Hardcoded file names */
+#ifdef AT91SAM9G20_EK
+extern const char* BOOTLOADER_REPOSITORY;
+extern const char* SW_REPOSITORY;
+#else
+extern const char* BOOTLOADER_REPOSITORY;
+extern const char* SW_REPOSITORY;
+#endif
+
+extern const char* BOOTLOADER_NAME;
+extern const char* SW_SLOT_0_NAME;
+extern const char* SW_SLOT_1_NAME;
+
+extern const char* BL_HAMMING_NAME;
+extern const char* SW_SLOT_0_HAMMING_NAME;
+extern const char* SW_SLOT_1_HAMMING_NAME;
+extern const char* SW_UPDATE_SLOT_NAME;
+
+static const uint32_t RS232_BAUDRATE = 230400;
+static const size_t RS232_MAX_SERIAL_FRAME_SIZE = 1500;
+// When performing timeout-based reading using DLE encoding, packet might
+// be larger than 1500 bytes because of the transport layer.
+static const size_t TRANSPORT_LAYER_ADDITION = 500;
+static const uint32_t RS232_SERIAL_TIMEOUT_BAUDTICKS = 5;
+static const uint16_t RS232_MUTEX_TIMEOUT = 20;
+
+static const uint32_t RS485_REGULAR_BAUD = 115200;
+static const uint32_t RS485_FAST_BAUD = 115200;
+static const size_t RS485_MAX_SERIAL_FRAME_SIZE = 1500;
+static const uint32_t RS485_SERIAL_TIMEOUT_BAUDTICKS = 5;
+static const uint16_t RS485_MUTEX_TIMEOUT = 20;
 
 /**
  * Set timeout for I2C transfers, specified as 1/10th of ticks.
  * Is set to one for values less than 1. Set to portMAXDELAY for debugging.
  */
-static constexpr uint32_t I2C_TRANSFER_TIMEOUT = portMAX_DELAY;
+static const uint32_t I2C_TRANSFER_TIMEOUT = portMAX_DELAY;
 
 /**
  * Consider setting this higher if some SPI devices take a longer time
  * (should never take 40ms though..)
  */
-static constexpr uint32_t SPI_DEFAULT_TIMEOUT_MS = 40;
+static const uint32_t SPI_DEFAULT_TIMEOUT_MS = 40;
 
-static constexpr size_t USB_FRAME_SIZE = 1500;
-static constexpr uint32_t MAX_STORED_TELECOMMANDS = 2000;
+static const size_t USB_FRAME_SIZE = 1500;
+static const uint32_t MAX_STORED_TELECOMMANDS = 2000;
+
+
+#ifdef __cplusplus
 }
+#endif
 
-#endif /* CONFIG_TMTC_TMTCSIZE_H_ */
+#endif /* CONFIG_OBSWCONFIG_H_ */

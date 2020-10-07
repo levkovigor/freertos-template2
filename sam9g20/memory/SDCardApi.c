@@ -21,28 +21,12 @@ int open_filesystem(VolumeId volume){
 		return result;
 	}
 
-	/* Register this task with filesystem */
-	result = f_enterFS();
-	if(result != F_NO_ERROR){
-		TRACE_ERROR("open_filesystem: fs_enterFS failed with "
-				"code %d\n\r", result);
-		return result;
-	}
-
-	result = select_sd_card(volume);
-	if(result != F_NO_ERROR){
-		TRACE_ERROR("open_filesystem: SD Card %d not present or "
-				"defect.\n\r", volume);
-		return result;
-	}
 	return result;
 }
 
 int close_filesystem(VolumeId volumeId) {
-	f_delvolume(volumeId);
-	f_releaseFS();
 	int result = fs_delete();
-	if(result != 0) {
+	if(result != F_NO_ERROR) {
 		TRACE_ERROR("close_filesystem: fs_delete failed with "
 				"code %d\n\r", result);
 		return result;
@@ -63,6 +47,8 @@ int select_sd_card(VolumeId volumeId){
 	}
 
 	if(result == F_ERR_NOTFORMATTED) {
+		TRACE_INFO("select_sd_card: Formatting SD-Card %d for Safe-FAT\r\n",
+				volumeId);
 		/**
 		 *  The file system has not been formatted to safeFat yet
 		 *  Therefore format filesystem now
@@ -75,6 +61,23 @@ int select_sd_card(VolumeId volumeId){
 		}
 	}
 	return 0;
+}
+
+int switch_sd_card(VolumeId volumeId) {
+	VolumeId oldVolumeId;
+	if(volumeId == SD_CARD_0) {
+		 oldVolumeId = SD_CARD_1;
+	}
+	else {
+		oldVolumeId = SD_CARD_0;
+	}
+	int result = f_delvolume(oldVolumeId);
+	if(result != 0) {
+		TRACE_WARNING("switch_sd_card: f_delvolume failed with code %d\n\r",
+				result);
+	}
+
+	return select_sd_card(volumeId);
 }
 
 int create_directory(const char *repository_path, const char *dirname) {
@@ -200,7 +203,14 @@ int create_file(const char* repository_path, const char* filename,
         // file already exists..
         return -1;
     }
-    F_FILE* file = f_open(filename, "a");
+    F_FILE* file = f_open(filename, "w");
+
+    result = f_getlasterror();
+    if(result != F_NO_ERROR) {
+        TRACE_DEBUG("create_file: f_open call failed with code %d!\n\r", result);
+        return result;
+    }
+
     size_t bytes_written = 0;
     if((file != NULL) && (initial_data != NULL)) {
         bytes_written = f_write(initial_data, sizeof(uint8_t),
@@ -208,19 +218,11 @@ int create_file(const char* repository_path, const char* filename,
         if(bytes_written != initial_data_size) {
             TRACE_DEBUG("create_file: f_write did not write all bytes!\n\r");
         }
-        return bytes_written;
-    }
-    else if(file == NULL) {
-        TRACE_ERROR("create_file: f_open failed with code %d\n\r",
-                f_getlasterror());
     }
 
-    if(file != NULL) {
-        result = f_close(file);
-        if (result != F_NO_ERROR) {
-            TRACE_ERROR("create_file: f_close failed with code %d\n\r",
-                    f_getlasterror());
-        }
+    result = f_close(file);
+    if (result != F_NO_ERROR) {
+        TRACE_ERROR("create_file: f_close failed with code %d\n\r", result);
     }
 
     if(repository_path != NULL) {
@@ -242,7 +244,13 @@ int delete_file(const char* repository_path,
 
     result = f_delete(filename);
     if(result != F_NO_ERROR){
-        TRACE_ERROR("delete_file: f_delete failed with code %d!\n\r",result);
+        if(result == F_ERR_NOTFOUND) {
+            TRACE_WARNING("delete_file: File not found, code %d.\r\n", result);
+        }
+        else {
+            TRACE_ERROR("delete_file: f_delete failed with code %d!\n\r",
+                    result);
+        }
         return result;
     }
     return result;
@@ -271,7 +279,7 @@ int delete_directory_force(const char *repository_path, const char *dirname,
         return result;
     }
 
-    int file_found = f_findfirst("*", &find_result);
+    int file_found = f_findfirst("*.*", &find_result);
     if(file_found != F_NO_ERROR) {
         return file_found;
     }
@@ -320,7 +328,7 @@ int clear_sd_card() {
     int result = F_NO_ERROR;
     int status = F_NO_ERROR;
     f_chdir("/");
-    file_found = f_findfirst("*", &find_result);
+    file_found = f_findfirst("*.*", &find_result);
     if(file_found != F_NO_ERROR) {
         return F_NO_ERROR;
     }
@@ -346,8 +354,15 @@ int clear_sd_card() {
 
         result = delete_file_system_object(find_result.filename);
         if(result != F_NO_ERROR) {
-            TRACE_ERROR("clear_sd_card: delete_file_system_object failed with "
-                    "code %d!\n\r", result);
+        	if(result == F_ERR_LOCKED) {
+        		TRACE_WARNING("clear_sd_card: %s is protected!\n\r",
+        				find_result.filename);
+        	}
+        	else {
+                TRACE_ERROR("clear_sd_card: delete_file_system_object failed "
+                		"with code %d!\n\r", result);
+        	}
+
             status = result;
         }
     }

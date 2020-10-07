@@ -1,13 +1,16 @@
+#include "Factory.h"
+
 /* Config */
-#include <config/cdatapool/dataPoolInit.h>
-#include <config/objects/Factory.h>
+#include <config/OBSWConfig.h>
 #include <config/tmtc/apid.h>
 #include <config/objects/systemObjectList.h>
 #include <config/devices/logicalAddresses.h>
 #include <config/devices/powerSwitcherList.h>
 #include <config/tmtc/pusIds.h>
 
+
 /* Flight Software Framework */
+#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/internalError/InternalErrorReporter.h>
 #include <fsfw/storagemanager/PoolManager.h>
 #include <fsfw/tcdistribution/CCSDSDistributor.h>
@@ -97,11 +100,49 @@ void Factory::produce(void) {
 
 	/* Pool manager handles storage und mutexes */
 	/* Data Stores. Currently reserving 9600 bytes of memory */
-	uint16_t numberOfElements[4] = {100, 30, 20, 10};
-	uint16_t sizeofElements[4] = {32, 64, 128, 265};
-	new PoolManager<4>(objects::IPC_STORE,sizeofElements, numberOfElements);
-	new PoolManager<4>(objects::TM_STORE,sizeofElements, numberOfElements);
-	new PoolManager<4>(objects::TC_STORE,sizeofElements, numberOfElements);
+	{
+	    // TODO: make this configurable via OBSWConfig.h
+	    const uint8_t numberOfIpcPools = 7;
+	    uint16_t numberOfElements[numberOfIpcPools] = {250, 120, 100, 50,
+	            25, 10, 10};
+	    uint16_t sizeofElements[numberOfIpcPools] = {32, 64, 128, 256,
+	            512, 1024, 2048};
+	    new PoolManager<numberOfIpcPools>(objects::IPC_STORE,sizeofElements,
+	            numberOfElements);
+        size_t requiredSize = calculateStorage(numberOfIpcPools,
+                numberOfElements, sizeofElements);
+        sif::info << "Allocating " << requiredSize << " bytes for the IPC "
+                << "Store.." << std::endl;
+	}
+
+	{
+	    const uint8_t numberOfTmPools = 7;
+	    uint16_t numberOfElements[numberOfTmPools] = {500, 250, 120, 60,
+	            30, 15, 10};
+	    uint16_t sizeofElements[numberOfTmPools] = {32, 64, 128, 256, 512,
+	            1024, 2048};
+	    new PoolManager<numberOfTmPools>(objects::TM_STORE,sizeofElements,
+	            numberOfElements);
+        size_t requiredSize = calculateStorage(numberOfTmPools,
+                numberOfElements, sizeofElements);
+        sif::info << "Allocating " << requiredSize << "  bytes for the "
+                << "TM Store.." << std::endl;
+	}
+
+	{
+	    const uint8_t numberOfTcPools = 7;
+	    uint16_t numberOfElements[numberOfTcPools] = {500, 250, 120, 60,
+	            20, 20, 20};
+	    uint16_t sizeofElements[numberOfTcPools] = {32, 64, 128, 256,
+	            512, 1024, 2048};
+	    new PoolManager<numberOfTcPools>(objects::TC_STORE,sizeofElements,
+	            numberOfElements);
+	    size_t requiredSize = calculateStorage(numberOfTcPools,
+	            numberOfElements, sizeofElements);
+	    sif::info << "Allocating " << requiredSize << " bytes for the "
+	            << "TC Store.." << std::endl;
+	}
+
 
 	/* Utility */
 	new TimeStamper(objects::PUS_TIME);
@@ -127,11 +168,12 @@ void Factory::produce(void) {
 	        objects::SERIAL_RING_BUFFER);
 
 	/* TM Destination */
-	new TmFunnel(objects::PUS_FUNNEL);
+	new TmFunnel(objects::TM_FUNNEL);
 
 	/* PUS Standalone Services using PusServiceBase */
 	new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,
-	        apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::PUS_FUNNEL);
+	        apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::TM_FUNNEL,
+			SERVICE_1_MQ_DEPTH);
 	new Service3Housekeeping(objects::PUS_SERVICE_3_HOUSEKEEPING,
 			apid::SOURCE_OBSW, pus::PUS_SERVICE_3);
 	new Service5EventReporting(objects::PUS_SERVICE_5_EVENT_REPORTING,
@@ -150,7 +192,7 @@ void Factory::produce(void) {
     new Service8FunctionManagement(objects::PUS_SERVICE_8_FUNCTION_MGMT,
     		apid::SOURCE_OBSW, pus::PUS_SERVICE_8);
 	new Service20ParameterManagement(objects::PUS_SERVICE_20_PARAM_MGMT);
-    new Service23FileManagement(objects::PUS_SERVICE_23, apid::SOURCE_OBSW,
+    new Service23FileManagement(objects::PUS_SERVICE_23_FILE_MGMT, apid::SOURCE_OBSW,
             pus::PUS_SERVICE_23);
 	new CService200ModeCommanding(objects::PUS_SERVICE_200_MODE_MGMT,
 			apid::SOURCE_OBSW, pus::PUS_SERVICE_200);
@@ -252,10 +294,10 @@ void Factory::produce(void) {
 
 void Factory::setStaticFrameworkObjectIds() {
 	PusServiceBase::packetSource = objects::PUS_PACKET_DISTRIBUTOR;
-	PusServiceBase::packetDestination = objects::PUS_FUNNEL;
+	PusServiceBase::packetDestination = objects::TM_FUNNEL;
 
 	CommandingServiceBase::defaultPacketSource = objects::PUS_PACKET_DISTRIBUTOR;
-	CommandingServiceBase::defaultPacketDestination = objects::PUS_FUNNEL;
+	CommandingServiceBase::defaultPacketDestination = objects::TM_FUNNEL;
 
 	VerificationReporter::messageReceiver = objects::PUS_SERVICE_1_VERIFICATION;
 
@@ -270,5 +312,15 @@ void Factory::setStaticFrameworkObjectIds() {
 #else
 	TmFunnel::downlinkDestination = objects::SERIAL_TMTC_BRIDGE;
 #endif
+}
+
+size_t Factory:: calculateStorage(uint8_t numberOfPools,
+        uint16_t* numberOfElements,
+        uint16_t* sizeOfElements) {
+    size_t size = 0;
+    for(uint8_t idx = 0; idx < numberOfPools; idx ++) {
+        size += numberOfElements[idx] * sizeOfElements[idx];
+    }
+    return size;
 }
 

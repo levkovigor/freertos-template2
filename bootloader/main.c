@@ -17,17 +17,18 @@
 // The AT91SAM9G20-EK does not have a pre-installed NOR-Flash. Therefore,
 // we only include the NorFlash boot header for iOBC projects.
 #ifdef ISIS_OBC_G20
-#include <core/bootNorFlash.h>
+#include <bootloader/core/bootIOBC.h>
 #else
-#include <core/bootNandFlash.h>
+#include <core/bootAt91.h>
 #endif
 
 
-#ifdef freeRTOS
+#ifdef ISIS_OBC_G20
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <FreeRTOSConfig.h>
 #include <hal/Timing/WatchDogTimer.h>
+#include <hal/Storage/FRAM.h>
 #else
 #include <core/watchdog.h>
 #endif
@@ -50,18 +51,17 @@
 #define WATCHDOG_KICK_INTERVAL_MS 10
 
 
-
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
 void initialize_iobc_peripherals();
 void idle_loop();
 void perform_bootloader_core_operation();
+int perform_iobc_copy_operation_to_sdram();
 
-#ifdef freeRTOS
+#ifdef ISIS_OBC_G20
 void init_task(void* args);
 void handler_task(void * args);
 static TaskHandle_t handler_task_handle_glob = NULL;
 #endif
-
 
 
 /**
@@ -126,13 +126,13 @@ int main()
     //-------------------------------------------------------------------------
     // iOBC Bootloader
     //-------------------------------------------------------------------------
-#ifdef freeRTOS
+#ifdef ISIS_OBC_G20
     // otherwise, try to copy SDCard binary to SDRAM
     // Core Task. Custom interrupts should be configured inside a task.
-    xTaskCreate(handler_task, "HANDLER_TASK", 1024, NULL, 2,
+    xTaskCreate(handler_task, "HANDLER_TASK", 1024, NULL, 7,
             &handler_task_handle_glob);
     xTaskCreate(init_task, "INIT_TASK", 1024, handler_task_handle_glob,
-            1, NULL);
+            8, NULL);
 #if DEBUG_IO_LIB == 1
     TRACE_INFO("Starting FreeRTOS task scheduler.\n\r");
 #endif
@@ -161,20 +161,36 @@ int main()
 
 
 void perform_bootloader_core_operation() {
-     // do all the fancy stuff here.
-     // verify hamming code of image in sdram. code size is either written in
-     // memory or extracted from FRAM.
-     // if successfull, copy norflash to sdram
 #ifdef ISIS_OBC_G20
-    int result = copy_norflash_binary_to_sdram(256);
+	int result = perform_iobc_copy_operation_to_sdram();
 #elif defined(AT91SAM9G20_EK)
     int result = copy_nandflash_binary_to_sdram(false);
 #endif
     if(result != 0) {
         // error
     }
+
     go_to_jump_address(SDRAM_DESTINATION, 0);
 }
+
+#ifdef ISIS_OBC_G20
+int perform_iobc_copy_operation_to_sdram() {
+	// determine which binary should be copied to SDRAM first.
+	BootSelect boot_select = BOOT_NOR_FLASH;
+	int result = 0;
+	if(boot_select == BOOT_NOR_FLASH) {
+		result = copy_norflash_binary_to_sdram(256);
+	}
+	else {
+		result = copy_sdcard_binary_to_sdram(boot_select);
+		if(result != 0) {
+			// fatal failure. boot from NOR-Flash
+			result = copy_norflash_binary_to_sdram(256);
+		}
+	}
+	return result;
+}
+#endif
 
 void idle_loop() {
     uint32_t last_time = RTT_GetTime();
@@ -189,13 +205,6 @@ void idle_loop() {
     }
 }
 
-void initialize_iobc_peripherals() {
-    RTT_start();
-#ifdef ISIS_OBC_G20
-
-#endif
-}
-
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
 {
     typedef void(*fctType)(volatile unsigned int, volatile unsigned int);
@@ -207,9 +216,9 @@ void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
     while(1);//never reach
 }
 
-#ifdef freeRTOS
+#ifdef ISIS_OBC_G20
 void init_task(void * args) {
-    TRACE_INFO("Running initialization task..\n\r");
+    TRACE_INFO("Running init_task..\n\r");
     initialize_iobc_peripherals();
     // perform initialization which needs to be inside a task.
 
@@ -226,9 +235,22 @@ void init_task(void * args) {
     vTaskDelete(NULL);
 }
 
+
+void initialize_iobc_peripherals() {
+    RTT_start();
+#ifdef ISIS_OBC_G20
+    int result = FRAM_start();
+    if(result != 0) {
+    	// This should not happen!
+    	TRACE_ERROR("initialize_iobc_peripherals: Coult not start FRAM!\r\n");
+    }
+#endif
+}
+
+
 void handler_task(void * args) {
 #if DEBUG_IO_LIB == 1
-    TRACE_INFO("Running Handler task..\n\r");
+    TRACE_INFO("Running handler_task..\n\r");
 #endif
     // Wait for initialization to finish
     vTaskSuspend(NULL);

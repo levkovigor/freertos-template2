@@ -1,4 +1,3 @@
-
 extern "C"{
 #include <board.h>
 #include <AT91SAM9G20.h>
@@ -66,7 +65,7 @@ int main(void)
 	}
 #endif
 
-    printf("\n\r-- Source On-Board Software --\n\r");
+    printf("\n\r-- SOURCE On-Board Software --\n\r");
     printf("-- %s --\n\r", BOARD_NAME);
     printf("-- Software version v%d.%d --\n\r", SW_VERSION, SW_SUBVERSION);
     printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
@@ -81,7 +80,7 @@ int main(void)
 #endif
 
     // Core Task. Custom interrupts should be configured inside a task.
-    xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, 1, nullptr);
+    xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, 9, nullptr);
     printf("-- Starting FreeRTOS task scheduler --\n\r");
     vTaskStartScheduler();
     // This should never be reached.

@@ -1,8 +1,9 @@
-#ifndef BOOTLOADER_BOOTNORFLASH_H_
-#define BOOTLOADER_BOOTNORFLASH_H_
+#ifndef BOOTLOADER_CORE_BOOTIOBC_H_
+#define BOOTLOADER_CORE_BOOTIOBC_H_
 
 #include <stddef.h>
 #include <stdint.h>
+#include <main.h>
 
 #include <hal/Storage/NORflash.h>
 
@@ -30,6 +31,6 @@ static const uint32_t BINARY_END_ADDRESS_READ = NOR_FLASH_END_ADDRESS_READ;
 
 
 int copy_norflash_binary_to_sdram(size_t binary_size);
+int copy_sdcard_binary_to_sdram(BootSelect boot_select);
 
-
-#endif /* BOOTLOADER_BOOTNORFLASH_H_ */
+#endif /* BOOTLOADER_CORE_BOOTIOBC_H_ */

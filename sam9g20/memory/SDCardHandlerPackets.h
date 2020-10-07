@@ -9,6 +9,31 @@ extern "C"{
 #include <privlib/hcc/include/config/config_fat.h>
 }
 
+#include <etl/string.h>
+#include <config/OBSWConfig.h>
+
+using RepositoryPath = etl::string<MAX_REPOSITORY_PATH_LENGTH>;
+using FileName = etl::string<MAX_FILENAME_LENGTH>;
+
+/**
+ * Common helper function to deserialize repository and filename
+ * @param buffer
+ * @param size
+ * @param path
+ * @param filename
+ * @return
+ */
+ReturnValue_t deSerializeRepositoryAndFilename(const uint8_t **buffer,
+        size_t* size, RepositoryPath& path, FileName& filename);
+
+class ActivePreferedVolumeReport: public SerialLinkedListAdapter<SerializeIF> {
+public:
+    ActivePreferedVolumeReport(VolumeId volumeId): volumeId(volumeId) {
+        setStart(&(this->volumeId));
+    }
+private:
+    SerializeElement<uint8_t> volumeId;
+};
 
 /**
  * @brief   This class helps to handle a delete-file command.
@@ -18,19 +43,24 @@ extern "C"{
  * 	        2. The name of the file to delete as string
  * @author  Jakob Meier
  */
-class DeleteFileCommand {
+class DeleteFileCommand: public SerializeIF {
 public:
 	DeleteFileCommand() {}
 
-	ReturnValue_t deSerialize(const uint8_t** dataBuffer, size_t size){
-		repositoryPath = std::string(reinterpret_cast<const char*>(*dataBuffer));
-		*dataBuffer = *dataBuffer + repositoryPath.size() + 1;
-		filename = std::string(reinterpret_cast<const char*>(*dataBuffer));
-		if(repositoryPath.size() + filename.size() + 2 != size){
-			return HasReturnvaluesIF::RETURN_FAILED;
-		}
-		return HasReturnvaluesIF::RETURN_OK;
+	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
+            Endianness streamEndianness) override {
+        return deSerializeRepositoryAndFilename(buffer, size,
+                repositoryPath, filename);
 	}
+
+	size_t getSerializedSize() const override {
+	    return 0;
+	}
+
+    ReturnValue_t serialize(uint8_t **buffer, size_t *size,
+            size_t maxSize, Endianness streamEndianness) const override {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
 
 	const char* getRepositoryPath() {
 		return repositoryPath.c_str();
@@ -42,10 +72,8 @@ public:
 
 private:
 
-	DeleteFileCommand(const DeleteFileCommand &command);
-
-	std::string repositoryPath;
-	std::string filename;
+	RepositoryPath repositoryPath;
+	FileName filename;
 };
 
 
@@ -56,19 +84,67 @@ private:
  * 	        1. The repository path as string
  * 	        2. The directory to create as string
  */
-class CreateDirectoryCommand {
+class CreateDirectoryCommand: public SerializeIF {
 public:
 	CreateDirectoryCommand() {}
 
-	ReturnValue_t deSerialize(const uint8_t** dataBuffer, size_t size){
-		repositoryPath = std::string(reinterpret_cast<const char*>(*dataBuffer));
-		*dataBuffer = *dataBuffer + repositoryPath.size() + 1;
-		dirname = std::string(reinterpret_cast<const char*>(*dataBuffer));
-		if(repositoryPath.size() + dirname.size() + 2 != size){
-			return HasReturnvaluesIF::RETURN_FAILED;
-		}
-		return HasReturnvaluesIF::RETURN_OK;
+    ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
+            Endianness streamEndianness) override {
+        if(*buffer == nullptr) {
+            // This should not happen!
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+
+        /* Deserialize repository first. */
+        size_t repositoryLength = std::strlen(
+                reinterpret_cast<const char*>(*buffer));
+        if(repositoryLength > MAX_REPOSITORY_PATH_LENGTH) {
+            // Packet too short or repository length to large.
+            sif::warning << "WriteCommand: Repository path longer than "
+                    << MAX_REPOSITORY_PATH_LENGTH << " or no '\0 terminator"
+                    << std::endl;
+        }
+        if(*size < repositoryLength) {
+            return SerializeIF::STREAM_TOO_SHORT;
+        }
+        repositoryPath.append(reinterpret_cast<const char*>(*buffer));
+        /* +1 because repositoryPath.size() is the size of the string
+        without the string terminator */
+        *buffer += repositoryPath.size() + 1;
+        *size -= repositoryPath.size() + 1;
+
+        size_t allowedRemainingSize = MAX_REPOSITORY_PATH_LENGTH -
+                repositoryPath.size();
+
+        /* Deserialize target directory name */
+        size_t dirnameLength = std::strlen(
+                reinterpret_cast<const char*>(*buffer));
+        if(dirnameLength > allowedRemainingSize) {
+            // Resulting path would be too long
+            sif::warning << "CreateDirectoryCommand::deSerialize: Directory "
+                    << " would result in repository path length too large!"
+                    << std::endl;
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+        if(*size < dirnameLength) {
+            return SerializeIF::STREAM_TOO_SHORT;
+        }
+        dirname.append(reinterpret_cast<const char*>(*buffer));
+        /* +1 because repositoryPath.size() is the size of the string
+        without the string terminator */
+        *buffer += dirname.size() + 1;
+        *size -= dirname.size() + 1;
+        return HasReturnvaluesIF::RETURN_OK;
 	}
+
+    size_t getSerializedSize() const override {
+        return 0;
+    }
+
+    ReturnValue_t serialize(uint8_t **buffer, size_t *size,
+            size_t maxSize, Endianness streamEndianness) const override {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
 
 	const char* getRepositoryPath() {
 		return repositoryPath.c_str();
@@ -79,11 +155,8 @@ public:
 	}
 
 private:
-
-	CreateDirectoryCommand(const CreateDirectoryCommand &command);
-
-	std::string repositoryPath;
-	std::string dirname;
+	RepositoryPath repositoryPath;
+	RepositoryPath dirname;
 };
 
 
@@ -134,24 +207,46 @@ private:
  * 			   The packet number counts the number of packets.
  * 			4. The data to write to the file
  */
-class WriteCommand : public SerialLinkedListAdapter<SerializeIF>{
+class WriteCommand: public SerializeIF {
 public:
+    enum WriteType {
+        NEW_FILE,
+        APPEND_TO_FILE
+    };
 
-	WriteCommand(){}
+	WriteCommand(WriteType writeType): writeType(writeType){}
 
-	ReturnValue_t deSerialize(const uint8_t* dataBuffer, uint32_t size){
-		repositoryPath = std::string(reinterpret_cast<const char*>(dataBuffer));
-		/* +1 because repositoryPath.size() is the size of the string without the string terminator */
-		dataBuffer = dataBuffer + repositoryPath.size() + 1;
-		filename = std::string(reinterpret_cast<const char*>(dataBuffer));
-		/* +1 because filename.size() is the size of the string without the string terminator */
-		dataBuffer = dataBuffer + filename.size() + 1;
-		std::memcpy(&packetNumber, dataBuffer, sizeof(packetNumber));
-		dataBuffer = dataBuffer + sizeof(packetNumber);
-		/* -2 because of the two string terminators within the dataBuffer */
-		filesize = size - repositoryPath.size() - filename.size() - sizeof(packetNumber) - 2;
-		std::memcpy(fileData, dataBuffer, filesize);
+	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
+            Endianness streamEndianness) override {
+	    ReturnValue_t result = deSerializeRepositoryAndFilename(buffer, size,
+	            repositoryPath, filename);
+	    if(result != HasReturnvaluesIF::RETURN_OK) {
+	        return result;
+	    }
+
+		/* Deserialize packet number */
+	    if(writeType == WriteType::APPEND_TO_FILE) {
+	        result = SerializeAdapter::deSerialize(&packetSequenceNumber,
+	                buffer, size, streamEndianness);
+	        if(result != HasReturnvaluesIF::RETURN_OK) {
+	            return result;
+	        }
+	    }
+
+
+		/* Just keep internal pointer of rest of data, no copying */
+		filesize = *size;
+		fileData = *buffer;
 		return HasReturnvaluesIF::RETURN_OK;
+	}
+
+	size_t getSerializedSize() const override {
+	    return 0;
+	}
+
+	ReturnValue_t serialize(uint8_t **buffer, size_t *size,
+            size_t maxSize, Endianness streamEndianness) const override {
+	    return HasReturnvaluesIF::RETURN_FAILED;
 	}
 
 	const char* getRepositoryPath(){
@@ -166,43 +261,48 @@ public:
 		return fileData;
 	}
 
-	uint32_t getFileSize(){
+	size_t getFileSize(){
 		return filesize;
 	}
 
 	uint16_t getPacketNumber(){
-		return packetNumber;
+		return packetSequenceNumber;
 	}
 
 private:
 
-	/* For now the size of the PUS packet is limited. */
-	const static uint32_t maxFileSize = 300;
-	std::string repositoryPath;
-	std::string filename;
-	uint16_t packetNumber = 0;
-	uint32_t filesize = 0;
-	uint8_t fileData[maxFileSize];
+	WriteType writeType;
+
+	RepositoryPath repositoryPath;
+	FileName filename;
+	uint16_t packetSequenceNumber = 0;
+	size_t filesize = 0; //! [EXPORT] : [IGNORE]
+	const uint8_t* fileData = nullptr;
 };
 
 /**
  * @brief This Class extracts the repository path and the filename from the
  *        data buffer of a read command file system message
  */
-class ReadCommand {
+class ReadCommand: public SerializeIF {
 public:
 
 	ReadCommand() {}
 
-	ReturnValue_t deSerialize(const uint8_t** dataBuffer, size_t size){
-		repositoryPath = std::string(reinterpret_cast<const char*>(*dataBuffer));
-		*dataBuffer = *dataBuffer + repositoryPath.size() + 1;
-		filename = std::string(reinterpret_cast<const char*>(*dataBuffer));
-		if(repositoryPath.size() + filename.size() + 2 != size){
-			return HasReturnvaluesIF::RETURN_FAILED;
-		}
-		return HasReturnvaluesIF::RETURN_OK;
+	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
+	            Endianness streamEndianness) override {
+		return deSerializeRepositoryAndFilename(buffer, size, repositoryPath,
+		        filename);
 	}
+
+    size_t getSerializedSize() const override {
+        return 0;
+    }
+
+    ReturnValue_t serialize(uint8_t **buffer, size_t *size,
+            size_t maxSize, Endianness streamEndianness) const override {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
 
 	const char * getRepositoryPath() {
 		return repositoryPath.c_str();
@@ -214,8 +314,8 @@ public:
 
 private:
 
-	std::string repositoryPath;
-	std::string filename;
+	RepositoryPath repositoryPath;
+	FileName filename;
 };
 
 /**
@@ -258,4 +358,56 @@ private:
 	uint16_t filesize;
 	uint8_t data[maxFileSize];
 };
+
+
+ReturnValue_t deSerializeRepositoryAndFilename(const uint8_t **buffer,
+        size_t* size, RepositoryPath& repositoryPath, FileName& filename) {
+    if(*buffer == nullptr) {
+        // This should not happen!
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    /* Deserialize repository first. */
+    size_t repositoryLength = std::strlen(
+            reinterpret_cast<const char*>(*buffer));
+    if(repositoryLength > MAX_REPOSITORY_PATH_LENGTH) {
+        // Packet too short or repository length to large.
+        sif::warning << "WriteCommand: Repository path longer than "
+                << MAX_REPOSITORY_PATH_LENGTH << " or no '\0 terminator"
+                << std::endl;
+    }
+    if(*size < repositoryLength) {
+        return SerializeIF::STREAM_TOO_SHORT;
+    }
+    repositoryPath.append(reinterpret_cast<const char*>(*buffer));
+    /* +1 because repositoryPath.size() is the size of the string
+    without the string terminator */
+    *buffer += repositoryPath.size() + 1;
+    *size -= repositoryPath.size() + 1;
+
+    if(*buffer == nullptr) {
+        // This should not happen!
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    /* Deserialize filename next */
+    size_t filenameLength = std::strlen(
+            reinterpret_cast<const char*>(*buffer));
+    if(filenameLength > MAX_FILENAME_LENGTH) {
+        sif::warning << "WriteCommand: Repository path longer than "
+                << MAX_FILENAME_LENGTH << " or no '\0 terminator"
+                << "detected!" << std::endl;
+        return HasReturnvaluesIF::RETURN_OK;
+    }
+    if(*size < filenameLength) {
+        return SerializeIF::STREAM_TOO_SHORT;
+    }
+    filename.append(reinterpret_cast<const char*>(*buffer));
+    /* +1 because filename.size() is the size of the string without
+    the string terminator */
+    *buffer += filename.size() + 1;
+    *size -= filename.size() + 1;
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
 #endif /* SAM9G20_MEMORY_MEMORY_SDCARDHANDLERPACKETS_H_ */

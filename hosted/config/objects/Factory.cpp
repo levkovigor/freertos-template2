@@ -74,7 +74,7 @@ void Factory::produce(void) {
 			objects::CCSDS_PACKET_DISTRIBUTOR);
 
 	/* TM Destination */
-	new TmFunnel(objects::PUS_FUNNEL);
+	new TmFunnel(objects::TM_FUNNEL);
 
 #ifdef LINUX
 	new TmTcUnixUdpBridge(objects::UDP_BRIDGE,
@@ -92,7 +92,7 @@ void Factory::produce(void) {
 
 	/* PUS Service Base Services */
 	new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,
-			apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::PUS_FUNNEL);
+			apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::TM_FUNNEL);
 	new Service3Housekeeping(objects::PUS_SERVICE_3_HOUSEKEEPING, apid::SOURCE_OBSW,
 			pus::PUS_SERVICE_3);
 	new Service5EventReporting(objects::PUS_SERVICE_5_EVENT_REPORTING, apid::SOURCE_OBSW,
@@ -119,10 +119,10 @@ void Factory::produce(void) {
 
 void Factory::setStaticFrameworkObjectIds() {
 	PusServiceBase::packetSource = objects::PUS_PACKET_DISTRIBUTOR;
-	PusServiceBase::packetDestination = objects::PUS_FUNNEL;
+	PusServiceBase::packetDestination = objects::TM_FUNNEL;
 
 	CommandingServiceBase::defaultPacketSource = objects::PUS_PACKET_DISTRIBUTOR;
-	CommandingServiceBase::defaultPacketDestination = objects::PUS_FUNNEL;
+	CommandingServiceBase::defaultPacketDestination = objects::TM_FUNNEL;
 
 	LocalDataPoolManager::defaultHkDestination = objects::PUS_SERVICE_3_HOUSEKEEPING;
 

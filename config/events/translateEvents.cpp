@@ -1,6 +1,6 @@
 /**
- * @brief    Auto-generated event translation file. Contains 83 translations.
- * Generated on: 2020-07-28 16:57:29 
+ * @brief    Auto-generated event translation file. Contains 81 translations.
+ * Generated on: 2020-10-06 18:59:25 
  */
 #include "translateEvents.h"
 
@@ -82,19 +82,17 @@ const char *RF_LOST_STRING = "RF_LOST";
 const char *BIT_LOCK_STRING = "BIT_LOCK";
 const char *BIT_LOCK_LOST_STRING = "BIT_LOCK_LOST";
 const char *FRAME_PROCESSING_FAILED_STRING = "FRAME_PROCESSING_FAILED";
-const char *TEST_STRING = "TEST";
-const char *POOL_ENTRY_DISABLED_STRING = "POOL_ENTRY_DISABLED";
-const char *SID_NOT_FOUND_STRING = "SID_NOT_FOUND";
 const char *CLOCK_SET_STRING = "CLOCK_SET";
-const char *TEST2_STRING = "TEST2";
+const char *CLOCK_SET_FAILURE_STRING = "CLOCK_SET_FAILURE";
+const char *TEST_STRING = "TEST";
 
 const char * translateEvents(Event event){
 	switch((event&0xFFFF)){
-		case 1000:
+		case 1200:
 			return GPS_STARTUP_FAILED_STRING;
-		case 1001:
+		case 1201:
 			return GPS_FIX_STRING;
-		case 1002:
+		case 1202:
 			return GPS_LOST_FIX_STRING;
 		case 2200:
 			return STORE_SEND_WRITE_FAILED_STRING;
@@ -246,16 +244,12 @@ const char * translateEvents(Event event){
 			return BIT_LOCK_LOST_STRING;
 		case 7905:
 			return FRAME_PROCESSING_FAILED_STRING;
-		case 8200:
-			return TEST_STRING;
-		case 8300:
-			return POOL_ENTRY_DISABLED_STRING;
-		case 8301:
-			return SID_NOT_FOUND_STRING;
 		case 8900:
 			return CLOCK_SET_STRING;
-		case 9100:
-			return TEST2_STRING;
+		case 8901:
+			return CLOCK_SET_FAILURE_STRING;
+		case 9700:
+			return TEST_STRING;
 		default:
 			return "UNKNOWN_EVENT";
 	}

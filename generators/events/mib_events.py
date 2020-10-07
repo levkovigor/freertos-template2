@@ -31,9 +31,9 @@ CPP_FILENAME = "translateEvents.cpp"
 CPP_COPY_DESTINATION = "../../config/events/"
 
 FILE_SEPARATOR = ";"
-SUBSYSTEM_DEFINITION_DESTINATIONS = ["../../config/tmtc/subsystemIdRanges.h",
+SUBSYSTEM_DEFINITION_DESTINATIONS = ["../../config/events/subsystemIdRanges.h",
                                      "../../fsfw/events/fwSubsystemIdRanges.h"]
-HEADER_DEFINITION_DESTINATIONS = ["../../mission/", "../../framework/"]
+HEADER_DEFINITION_DESTINATIONS = ["../../mission/", "../../fsfw/"]
 
 
 def main():

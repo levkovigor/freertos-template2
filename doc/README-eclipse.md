@@ -30,14 +30,10 @@ After that, it is recommended to perform following project configuration steps:
 1. Right click on the project folder in the Project Explorer panel left 
    and go to Properties
 2. Go to C/C++ General and enable Doxygen as the documentation tool
-3. Go to C/C++ Build &rarr; Indexer. It is recommened to enable project specific
-   settings, use the active build configuration and rebuild the index
-   on build configuration change.
-
-Example indexer settings:
-<br>
-<img src="./readme_img/eclipse/eclipse_indexer.png" width="50%">
-
+3. Go to C/C++ Build &rarr; Indexer. It is recommened to use the active build 
+   configuration by going to Configure Workspace Settings.. and setting the
+   correct option.
+   
 Special steps if developing for a MCU (like the AT91 or the iOBC) and using
 a special toolchain:
 

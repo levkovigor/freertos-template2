@@ -125,14 +125,24 @@ int reset_sdc1sl1_reboot_counter() {
             SDC1SL1_REBOOT_COUNTER_ADDR, sizeof(new_reboot_counter));
 }
 
-int update_seconds_since_epoch(uint64_t secondsSinceEpoch) {
+int update_seconds_since_epoch(uint32_t secondsSinceEpoch) {
 	return FRAM_writeAndVerify((unsigned char*) &secondsSinceEpoch,
 			SEC_SINCE_EPOCH_ADDR, sizeof(secondsSinceEpoch));
 }
 
-int read_seconds_since_epoch(uint64_t *secondsSinceEpoch) {
+int read_seconds_since_epoch(uint32_t *secondsSinceEpoch) {
 	return FRAM_read((unsigned char*) secondsSinceEpoch,
 			SEC_SINCE_EPOCH_ADDR,
 			sizeof(((FRAMCriticalData*)0)->seconds_since_epoch));
 }
 
+int set_prefered_sd_card(VolumeId volumeId) {
+	return FRAM_writeAndVerify((unsigned char*) &volumeId,
+			PREFERED_SD_CARD_ADDR, sizeof(VolumeId));
+}
+
+int get_prefered_sd_card(VolumeId *volumeId) {
+	return FRAM_read((unsigned char*) volumeId,
+			PREFERED_SD_CARD_ADDR,
+			sizeof(((FRAMCriticalData*)0)->preferedSdCard));
+}
