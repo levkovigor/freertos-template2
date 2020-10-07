@@ -19,10 +19,16 @@ void FileSystemMessage::setCreateDirectoryCommand(
 	message->setParameter2(storeId.raw);
 }
 
-void FileSystemMessage::setDeleteDirectoryCommand(
-		CommandMessage* message, store_address_t storeId) {
-	message->setCommand(DELETE_DIRECTORY);
-	message->setParameter2(storeId.raw);
+void FileSystemMessage::setReportFileAttributesCommand(CommandMessage *message,
+        store_address_t storeId) {
+    message->setCommand(REPORT_FILE_ATTRIBUTES);
+    message->setParameter2(storeId.raw);
+}
+
+void FileSystemMessage::setReportFileAttributesReply(CommandMessage *message,
+        store_address_t storeId) {
+    message->setCommand(REPORT_FILE_ATTRIBUTES_REPLY);
+    message->setParameter2(storeId.raw);
 }
 
 void FileSystemMessage::setLockFileCommand(CommandMessage *message,
@@ -34,6 +40,12 @@ void FileSystemMessage::setLockFileCommand(CommandMessage *message,
 void FileSystemMessage::setUnlockFileCommand(CommandMessage *message,
         store_address_t storeId) {
     message->setCommand(UNLOCK_FILE);
+    message->setParameter2(storeId.raw);
+}
+
+void FileSystemMessage::setDeleteDirectoryCommand(
+        CommandMessage* message, store_address_t storeId) {
+    message->setCommand(DELETE_DIRECTORY);
     message->setParameter2(storeId.raw);
 }
 

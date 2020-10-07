@@ -24,6 +24,7 @@ ReturnValue_t Service23FileManagement::isValidSubservice(uint8_t subservice) {
     case Subservice::DELETE_FILE:
     case Subservice::CREATE_DIRECTORY:
     case Subservice::DELETE_DIRECTORY:
+    case Subservice::REPORT_FILE_ATTRIBUTES:
     case Subservice::APPEND_TO_FILE:
     case Subservice::FINISH_APPEND_TO_FILE:
     case Subservice::READ_FROM_FILE:
@@ -73,11 +74,10 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
     case(Subservice::DELETE_DIRECTORY):
     case(Subservice::APPEND_TO_FILE):
     case(Subservice::FINISH_APPEND_TO_FILE):
+    case(Subservice::REPORT_FILE_ATTRIBUTES):
     case(Subservice::LOCK_FILE):
     case(Subservice::UNLOCK_FILE):
     case(Subservice::READ_FROM_FILE): {
-        if(subservice == Subservice::FINISH_APPEND_TO_FILE) {
-        }
         result = addDataToStore(&storeId, tcData, tcDataLen);
         if(result != HasReturnvaluesIF::RETURN_OK) {
             return result;
@@ -95,32 +95,38 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
 	    FileSystemMessage::setCreateFileCommand(message, storeId);
 		break;
 	}
+    case(Subservice::DELETE_FILE): {
+        FileSystemMessage::setDeleteFileCommand(message, storeId);
+        break;
+    }
+    case(Subservice::REPORT_FILE_ATTRIBUTES): {
+        break;
+    }
+    case(Subservice::LOCK_FILE): {
+        FileSystemMessage::setLockFileCommand(message, storeId);
+        break;
+    }
+    case(Subservice::UNLOCK_FILE): {
+        FileSystemMessage::setUnlockFileCommand(message, storeId);
+        break;
+    }
 	case(Subservice::CREATE_DIRECTORY): {
 	    FileSystemMessage::setCreateDirectoryCommand(message, storeId);
-		break;
-	}
-	case(Subservice::DELETE_FILE): {
-	    FileSystemMessage::setDeleteFileCommand(message, storeId);
 		break;
 	}
 	case(Subservice::DELETE_DIRECTORY): {
 	    FileSystemMessage::setDeleteDirectoryCommand(message, storeId);
 		break;
 	}
-	case(Subservice::APPEND_TO_FILE): {
-	    FileSystemMessage::setWriteCommand(message, storeId);
-		break;
-	}
-	case(Subservice::LOCK_FILE): {
-	    break;
-	}
-	case(Subservice::UNLOCK_FILE): {
-	    break;
-	}
+
 	case(Subservice::FINISH_APPEND_TO_FILE): {
 		FileSystemMessage::setFinishStopWriteCommand(message, storeId);
 		break;
 	}
+    case(Subservice::APPEND_TO_FILE): {
+        FileSystemMessage::setWriteCommand(message, storeId);
+        break;
+    }
 	case(Subservice::READ_FROM_FILE): {
 	    FileSystemMessage::setReadCommand(message, storeId);
 		break;

@@ -6,7 +6,8 @@
 #include <fsfw/objectmanager/SystemObject.h>
 
 /**
- * @author  Jakob Meier
+ * @brief   These messages are sent to an object implementing HasFilesystemIF.
+ * @author  Jakob Meier, R. Mueller
  */
 class FileSystemMessage {
 public:
@@ -63,20 +64,29 @@ public:
 	        store_address_t storeId);
 	static void setDeleteFileCommand(CommandMessage* message,
 	        store_address_t storeId);
+
+	static void setReportFileAttributesCommand(CommandMessage* message,
+            store_address_t storeId);
+	static void setReportFileAttributesReply(CommandMessage* message,
+            store_address_t storeId);
+
 	static void setCreateDirectoryCommand(CommandMessage* message,
 	        store_address_t storeId);
 	static void setDeleteDirectoryCommand(CommandMessage* message,
 	        store_address_t storeId);
+
     static void setLockFileCommand(CommandMessage* message,
             store_address_t storeId);
     static void setUnlockFileCommand(CommandMessage* message,
             store_address_t storeId);
+
 	static void setWriteCommand(CommandMessage* message,
 	        store_address_t storeId);
 	static void setFinishStopWriteCommand(CommandMessage* message,
 	        store_address_t storeId);
 	static void setFinishStopWriteReply(CommandMessage* message,
 			store_address_t storeId);
+
 	static void setReadCommand(CommandMessage* message,
 	        store_address_t storeId);
 
