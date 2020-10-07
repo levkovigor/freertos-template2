@@ -37,6 +37,10 @@ ReturnValue_t deSerializeRepositories(const uint8_t **buffer,
         size_t* size, RepositoryPath& repositoryPath,
 		RepositoryPath& dirname);
 
+ReturnValue_t serializeRepositoryAndFilename(uint8_t **buffer,
+        size_t* size, size_t maxSize, RepositoryPath& repositoryPath,
+		FileName& filename);
+
 class ActivePreferedVolumeReport: public SerialLinkedListAdapter<SerializeIF> {
 public:
     ActivePreferedVolumeReport(VolumeId volumeId): volumeId(volumeId) {
@@ -46,18 +50,17 @@ private:
     SerializeElement<uint8_t> volumeId;
 };
 
-/**
- * @brief   This class helps to handle a delete-file command.
- *
- * @details A delete-file command holds:
- * 	        1. The repository path as string
- * 	        2. The name of the file to delete as string
- * @author  Jakob Meier
- */
-class DeleteFileCommand: public SerializeIF {
-public:
-	DeleteFileCommand() {}
 
+/**
+ * @brief 	Generic class for all packets containg a repository and a file
+ * 			name
+ * @details
+ * Content:
+ *  1. The repository path as string
+ * 	2. The name of the file
+ */
+class GenericFilePacket: public SerializeIF {
+public:
 	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
             Endianness streamEndianness) override {
         return deSerializeRepositoryAndFilename(buffer, size,
@@ -73,40 +76,45 @@ public:
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
-	const char* getRepositoryPath() {
+	const char* getRepositoryPathRaw() {
 		return repositoryPath.c_str();
 	}
 
-	const char* getFilename() {
+	const char* getFilenameRaw() {
 		return filename.c_str();
 	}
 
-private:
+	const RepositoryPath* getRepoPath() const {
+		return &repositoryPath;
+	}
 
+	const FileName* getFilename() const {
+		return &filename;
+	}
+
+protected:
 	RepositoryPath repositoryPath;
 	FileName filename;
 };
 
-
 /**
- * @brief This class helps to handle a create-directory command.
- *
- * @details A create-directory holds:
- * 	        1. The repository path as string
- * 	        2. The directory to create as string
+ * @brief 	Generic class for all packets containg a repository and directory
+ * 			name
+ * @details
+ * Content:
+ *  1. The repository path as string
+ * 	2. The name of the file
  */
-class CreateDirectoryCommand: public SerializeIF {
+class GenericDirectoryPacket: public SerializeIF {
 public:
-	CreateDirectoryCommand() {}
-
-    ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
+	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
             Endianness streamEndianness) override {
         return deSerializeRepositories(buffer ,size, repositoryPath, dirname);
 	}
 
-    size_t getSerializedSize() const override {
-        return 0;
-    }
+	size_t getSerializedSize() const override {
+	    return 0;
+	}
 
     ReturnValue_t serialize(uint8_t **buffer, size_t *size,
             size_t maxSize, Endianness streamEndianness) const override {
@@ -121,10 +129,25 @@ public:
 		return dirname.c_str();
 	}
 
-private:
+protected:
 	RepositoryPath repositoryPath;
 	RepositoryPath dirname;
 };
+
+/**
+ * @brief   This class encapsulates a delete-file command.
+ * @author  Jakob Meier
+ */
+class DeleteFileCommand: public GenericFilePacket {};
+
+/**
+ * @brief This class helps to handle a create-directory command.
+ *
+ * @details A create-directory holds:
+ * 	        1. The repository path as string
+ * 	        2. The directory to create as string
+ */
+class CreateDirectoryCommand: public GenericDirectoryPacket {};
 
 
 /**
@@ -134,46 +157,18 @@ private:
  * 	        1. The repository path as string
  * 	        2. The directory to delete as string
  */
-class DeleteDirectoryCommand: public SerializeIF {
-public:
-	DeleteDirectoryCommand() {}
-
-	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
-	            Endianness streamEndianness) override {
-		return deSerializeRepositories(buffer ,size, repositoryPath, dirname);
-	}
-
-    size_t getSerializedSize() const override {
-        return 0;
-    }
-
-    ReturnValue_t serialize(uint8_t **buffer, size_t *size,
-            size_t maxSize, Endianness streamEndianness) const override {
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-	const char* getRepositoryPath() {
-		return repositoryPath.c_str();
-	}
-
-	const char* getDirname() {
-		return dirname.c_str();
-	}
-
-private:
-
-	RepositoryPath repositoryPath;
-	RepositoryPath dirname;
-};
+class DeleteDirectoryCommand: public GenericDirectoryPacket {};
 
 /**
- * @brief   This class extracts the data buffer containing a file system write command
+ * @brief   This class extracts the data buffer containing a file system
+ * 			write command
  *
  * @details The data buffer of a write command contains:
  * 			1. The repository path
  * 			2. The filename
- * 			3. The packet number: For large files the data to write is split in multiple packets.
- * 			   The packet number counts the number of packets.
+ * 			3. The packet number: For large files the data to write is split
+ * 			   in multiple packets. The packet number counts the number of
+ * 			   packets.
  * 			4. The data to write to the file
  */
 class WriteCommand: public SerializeIF {
@@ -239,20 +234,61 @@ public:
 	}
 
 private:
-
-	WriteType writeType;
-
 	RepositoryPath repositoryPath;
 	FileName filename;
 	uint16_t packetSequenceNumber = 0;
-	size_t filesize = 0; //! [EXPORT] : [IGNORE]
 	const uint8_t* fileData = nullptr;
+
+	WriteType writeType; //! [EXPORT] : [IGNORE]
+	size_t filesize = 0; //! [EXPORT] : [IGNORE]
 };
 
 
-class FinishAppendCommand: public SerialLinkedListAdapter<SerializeIF> {
+/**
+ * @brief	This helps encapsulates a finish-append command.
+ */
+class FinishAppendCommand: public GenericFilePacket {};
+
+class FinishAppendReply: public SerialLinkedListAdapter<SerializeIF> {
 public:
+	FinishAppendReply(const RepositoryPath* repoPath, const FileName* fileName,
+			uint16_t lastValidSequenceNumber, size_t fileSize):
+		repoPath(repoPath), fileName(fileName),
+		lastValidSequenceNumber(lastValidSequenceNumber), fileSize(fileSize) {
+		setStart(&this->lastValidSequenceNumber);
+		this->lastValidSequenceNumber.setNext(&this->fileSize);
+	}
+
+    ReturnValue_t serialize(uint8_t **buffer, size_t *size,
+            size_t maxSize, Endianness streamEndianness) const override {
+		ReturnValue_t result = serializeRepositoryAndFilename(buffer, size,
+				maxSize, const_cast<RepositoryPath&>(*repoPath),
+				const_cast<FileName&>(*fileName));
+		if(result != HasReturnvaluesIF::RETURN_OK) {
+			return result;
+		}
+
+		return SerialLinkedListAdapter::serialize(buffer, size, maxSize,
+				streamEndianness);
+	}
+
+    size_t getSerializedSize() const override {
+	    return repoPath->size() + fileName->size() + 2 +
+	    		SerialLinkedListAdapter::getSerializedSize();
+    }
+
+	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
+	            Endianness streamEndianness) override {
+		return HasReturnvaluesIF::RETURN_FAILED;
+	}
+
+
+	const RepositoryPath* repoPath;
+	const FileName* fileName;
 private:
+
+	SerializeElement<uint16_t> lastValidSequenceNumber;
+	SerializeElement<size_t> fileSize;
 
 };
 
@@ -294,6 +330,7 @@ private:
 	FileName filename;
 };
 
+
 /**
  * @brief   This class serves as a helper to put the parameters of a reply to
  *          the file system read command into one common buffer.
@@ -329,10 +366,47 @@ public:
 private:
 
 	const static uint32_t maxFileSize = 300;
-	std::string repositoryPath;
-	std::string filename;
+	RepositoryPath repositoryPath;
+	FileName filename;
 	uint16_t filesize;
 	uint8_t data[maxFileSize];
+};
+
+class FileAttributesReply: public GenericFilePacket {
+public:
+	FileAttributesReply(RepositoryPath* repoPath, FileName* fileName,
+			size_t fileSize, bool locked): repoPath(repoPath),
+			fileName(fileName), fileSize(fileSize), locked(locked) {}
+
+    ReturnValue_t serialize(uint8_t **buffer, size_t *size,
+            size_t maxSize, Endianness streamEndianness) const override {
+    	ReturnValue_t result = serializeRepositoryAndFilename(buffer, size,
+    			maxSize, *repoPath, *fileName);
+    	if(result != HasReturnvaluesIF::RETURN_OK) {
+    		return result;
+    	}
+    	result = SerializeAdapter::serialize(&fileSize, buffer ,size ,
+    			maxSize, streamEndianness);
+    	if(result != HasReturnvaluesIF::RETURN_OK) {
+    		return result;
+    	}
+    	return SerializeAdapter::serialize(&locked, buffer ,size ,
+    			maxSize, streamEndianness);
+    }
+
+	size_t getSerializedSize() const override {
+	    return repoPath->size() + fileName->size() + 2 + sizeof(fileSize) +
+	    		sizeof(locked);
+	}
+private:
+	RepositoryPath* repoPath;
+	FileName* fileName;
+	// In addition to the repository path and the directory name,
+	// this packet contains the file size and whether the file is locked.
+	// (It also contains the file time stamp of the file.)
+	uint32_t fileSize;
+	bool locked;
+
 };
 
 
@@ -412,6 +486,11 @@ ReturnValue_t deSerializeRepositories(const uint8_t **buffer,
     *buffer += repositoryPath.size() + 1;
     *size -= repositoryPath.size() + 1;
 
+    if(*buffer == nullptr) {
+        // This should not happen!
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
     size_t allowedRemainingSize = MAX_REPOSITORY_PATH_LENGTH -
             repositoryPath.size();
 
@@ -436,5 +515,42 @@ ReturnValue_t deSerializeRepositories(const uint8_t **buffer,
     return HasReturnvaluesIF::RETURN_OK;
 
 }
+
+ReturnValue_t serializeRepositoryAndFilename(uint8_t **buffer,
+        size_t* size, size_t maxSize, RepositoryPath& repositoryPath,
+		FileName& filename) {
+
+	// Check remaining size is large enough and check integer
+	// overflow of *size
+	size_t nextSize = repositoryPath.size();
+	size_t newSize =  nextSize + 1 + *size;
+	if ((newSize <= maxSize) and (newSize > *size)) {
+		repositoryPath.copy(reinterpret_cast<char*>(*buffer),
+				nextSize);
+		*size += nextSize + 1;
+		*buffer += nextSize;
+		**buffer = '\0';
+		*buffer += 1;
+	}
+	else {
+		return SerializeIF::BUFFER_TOO_SHORT;
+	}
+
+	nextSize = filename.size();
+	newSize =  nextSize + *size;
+	if ((newSize <= maxSize) and (newSize > *size)) {
+		filename.copy(reinterpret_cast<char*>(*buffer),
+				nextSize);
+		*size += nextSize + 1;
+		*buffer += nextSize;
+		**buffer = '\0';
+		*buffer += 1;
+	}
+	else {
+		return SerializeIF::BUFFER_TOO_SHORT;
+	}
+	return HasReturnvaluesIF::RETURN_OK;
+}
+
 
 #endif /* SAM9G20_MEMORY_MEMORY_SDCARDHANDLERPACKETS_H_ */

@@ -37,8 +37,8 @@
  *    start at 0 so that the last packet sequence counter is reset.
  *  - TC[23,131]: Stop or finish append operation. This service will stop or
  *    finish the append operation so that another append operation can be
- *    started. A telemetry packet containing the last valid sequence number,
- *    the repository and the current file size will be generated.
+ *    started. A telemetry packet containing the repository, the file path,
+ *    last valid sequence number, and the current file size will be generated.
  *  - TC[23,132]: Stop append reply.
  *
  * A set of custom subservices will be implemented for downloading files:

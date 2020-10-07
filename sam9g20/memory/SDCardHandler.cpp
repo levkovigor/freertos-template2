@@ -311,7 +311,7 @@ ReturnValue_t SDCardHandler::handleDeleteFileCommand(CommandMessage* message){
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
-    result = deleteFile(command.getRepositoryPath(), command.getFilename());
+    result = deleteFile(command.getRepositoryPathRaw(), command.getFilenameRaw());
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sendCompletionReply(false, result);
     }
@@ -450,8 +450,22 @@ ReturnValue_t SDCardHandler::handleFinishAppendCommand(
         return result;
     }
 
+    FinishAppendCommand finishAppendCommand;
+    finishAppendCommand.deSerialize(&readPtr, &sizeRemaining,
+    		SerializeIF::Endianness::BIG);
+
+    result = changeDirectory(finishAppendCommand.getRepositoryPathRaw());
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+    	return result;
+    }
+    size_t fileSize = f_filelength(finishAppendCommand.getFilenameRaw());
+    FinishAppendReply reply(finishAppendCommand.getRepoPath(),
+    		finishAppendCommand.getFilename(),
+    		lastPacketNumber, fileSize);
+
     // Reset last packet sequence number
     lastPacketNumber = 0;
+
 
     return result;
 }
@@ -562,6 +576,9 @@ ReturnValue_t SDCardHandler::changeDirectory(const char* repositoryPath) {
         return HasReturnvaluesIF::RETURN_OK;
     }
     else {
+        if(result == F_ERR_INVALIDDIR) {
+        	return HasFileSystemIF::DIRECTORY_DOES_NOT_EXIST;
+        }
         return result;
     }
 }

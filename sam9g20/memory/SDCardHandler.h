@@ -32,8 +32,6 @@ public:
 
     static constexpr uint8_t INTERFACE_ID = CLASS_ID::SD_CARD_HANDLER;
 
-    static constexpr ReturnValue_t SEQUENCE_PACKET_MISSING = MAKE_RETURN_CODE(0x0);
-
     static const uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::SD_CARD_HANDLER;
 
 

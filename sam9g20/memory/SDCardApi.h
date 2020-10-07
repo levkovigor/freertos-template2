@@ -14,12 +14,11 @@ typedef enum {
     SD_CARD_1 = 1
 } VolumeId;
 
-// Unless specifically documented, the functions return 0 or F_NO_ERROR
-// for successfull execution.
-
 /**
- * API to open and close the SD card filesystem. Written in C
+ * API as a thin abstraction layer for the HCC file API. Written in C
  * to be easily usable by the bootloader as well.
+ * Unless specifically documented, all functions return 0 or F_NO_ERROR
+ * for successfull execution.
  * @param volumeId
  */
 int open_filesystem(VolumeId volumeId);
@@ -79,13 +78,43 @@ int delete_directory_force(const char* repository_path, const char* dirname,
         bool delete_subfolder_recursively);
 
 /**
- * Clears the whole SD-Card by deleting all files and folders
- * except the SYSTEM folder. Use with care!
+ * Create a file. Data can be written to new file directly if desired.
+ * @param repository_path
+ * @param filename
+ * @param initial_data      Pointer to data to write. Set to NULL if not needed.
+ * @param initial_data_size Size of data to be written.
  * @return
- * F_NO_ERROR(0) is SD card was cleared successfully, error code if some
- * or all steps failed.
+ * Returns -2 if the path does not exists, -1 if the file already exists,
+ * and the number of bytes written otherwise.
  */
-int clear_sd_card();
+int create_file(const char* repository_path, const char* filename,
+        const uint8_t* initial_data, size_t initial_data_size);
+
+/**
+ * Get generic file information.
+ * @param filesize
+ * @param locked
+ * @return
+ */
+int get_file_info(const char* repository_path, const char* filename,
+		size_t* filesize, bool* locked, uint16_t* cdate,
+		uint16_t* ctime);
+
+/**
+ * Locks a file, making it read-only and preventing deletion.
+ * @param repository_path
+ * @param filename
+ * @return
+ */
+int lock_file(const char* repository_path, const char* filename);
+
+/**
+ * Unlocks a file, enabling writing and allowing deletion.
+ * @param repository_path
+ * @param filename
+ * @return
+ */
+int unlock_file(const char* repository_path, const char* filename);
 
 /**
  * Delete a file which resides in a give path.
@@ -110,19 +139,14 @@ int delete_file(const char* repository_path,
 int read_whole_file(const char* repository_path, const char* file_name,
         uint8_t* buffer, const size_t max_buffer_size);
 
-/***
- * Create a file. Data can be written to new file directly if desired.
- * @param repository_path
- * @param filename
- * @param initial_data      Pointer to data to write. Set to NULL if not needed.
- * @param initial_data_size Size of data to be written.
+/**
+ * Clears the whole SD-Card by deleting all files and folders
+ * except the SYSTEM folder. Use with care!
  * @return
- * Returns -2 if the path does not exists, -1 if the file already exists,
- * and the number of bytes written otherwise.
+ * F_NO_ERROR(0) is SD card was cleared successfully, error code if some
+ * or all steps failed.
  */
-int create_file(const char* repository_path, const char* filename,
-        const uint8_t* initial_data, size_t initial_data_size);
-
+int clear_sd_card();
 
 #ifdef __cplusplus
 }
