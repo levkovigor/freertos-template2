@@ -111,9 +111,6 @@ private:
 
     static ReturnValue_t printHelper(uint8_t recursionDepth);
 
-    // Special member of extended debug output.
-    bool extendedDebugOutput = true;
-
     // Right now, only supports one file upload at a time.
     static constexpr uint16_t UNSET_SEQUENCE = 0xffff;
     uint16_t lastPacketNumber = UNSET_SEQUENCE;

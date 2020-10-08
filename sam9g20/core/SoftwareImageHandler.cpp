@@ -37,8 +37,9 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
         switch(handlerState) {
         case(HandlerState::IDLE): {
 
-            // check for messages or whether periodic scrubbing is necessary
-            break;
+            // check whether periodic scrubbing is necessary
+            // otherwise, return.
+            return HasReturnvaluesIF::RETURN_OK;
         }
         case(HandlerState::COPYING): {
             // continue current copy operation.

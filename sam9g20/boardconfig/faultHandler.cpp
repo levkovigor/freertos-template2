@@ -2,6 +2,7 @@
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <at91/utility/exithandler.h>
 #include <at91/utility/trace.h>
+#include <sam9g20/common/FRAMApi.h>
 
 
 /*----------------------------------------------------------------------------
@@ -121,6 +122,11 @@ extern "C" void data_abort_irq_handler(void)
 	TRACE_ERROR("\r\nDATA ABORT EXCEPTION OCCURED! HALTING! \n\r");
 #endif
 
+    // Increment reboot counter in FRAM
+#ifdef ISIS_OBC_G20
+    increment_reboot_counter(false, false);
+#endif
+
 	// Call ISIS handler which also restarts the CPU
 	restartDataAbort();
 
@@ -150,10 +156,14 @@ extern "C" void prefetch_abort_irq_handler(void)
 	TRACE_ERROR("prefetch Fault occured at address: 0x%08x\r\n", (unsigned int)v2);
 	TRACE_ERROR("Prefetch Fault status register value: 0x%x\r\n", (unsigned int)v1);
 
-	// We could also write some error information into FRAM here.
 	TRACE_ERROR("####################\n\r");
 #else
 	TRACE_ERROR("\r\nPREFETCH ABORT EXCEPTION OCCURED! HALTING! \n\r");
+#endif
+
+    // Increment reboot counter in FRAM
+#ifdef ISIS_OBC_G20
+	increment_reboot_counter(false, false);
 #endif
 
 	// Call ISIS handler which also restarts the CPU

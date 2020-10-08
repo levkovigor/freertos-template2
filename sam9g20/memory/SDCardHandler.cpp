@@ -564,7 +564,7 @@ ReturnValue_t SDCardHandler::generateFinishAppendReply(RepositoryPath *repoPath,
 		FileName *fileName, size_t filesize, bool locked) {
 	store_address_t storeId;
     FinishAppendReply replyPacket(repoPath, fileName,
-    		lastPacketNumber, filesize, locked);
+    		lastPacketNumber + 1, filesize, locked);
 
     uint8_t* ptr = nullptr;
     size_t serializedSize = 0;
@@ -591,6 +591,12 @@ ReturnValue_t SDCardHandler::generateFinishAppendReply(RepositoryPath *repoPath,
     	return result;
     }
 
+#if OBSW_REDUCED_PRINTOUT == 0
+    sif::info << "Append operation on file " << fileName->c_str()
+            << " in repository " << repoPath->c_str()
+            << " finished with " << lastPacketNumber + 1 << " packets"
+            << std::endl;
+#endif
     lastPacketNumber = UNSET_SEQUENCE;
     return result;
 
@@ -906,12 +912,6 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
     }
     else {
     	lastPacketNumber = packetNumber;
-    }
-
-
-    if(extendedDebugOutput) {
-        sif::debug << "SDCardHandler::appendToFile: Packet with packet number: "
-                << packetNumber << " received" << std::endl;
     }
 
     /* Try to open file. File should already exist, therefore "r+" for first
