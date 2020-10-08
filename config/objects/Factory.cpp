@@ -237,8 +237,6 @@ void Factory::produce(void) {
 	/* Board dependant files */
 
 	new SoftwareImageHandler(objects::SOFTWARE_IMAGE_HANDLER);
-	#if defined(stm32)
-	#else
 	new SDCardHandler(objects::SD_CARD_HANDLER);
 #ifdef ISIS_OBC_G20
 	new FRAMHandler(objects::FRAM_HANDLER);
@@ -257,7 +255,7 @@ void Factory::produce(void) {
 	uint8_t delayBetweenChars = 5;
 	uint8_t delayBeforeSpck = 2;
 
-    CookieIF* spiCookie;
+    CookieIF* spiCookie = nullptr;
     spiCookie = new SpiCookie(addresses::SPI_Test_PT1000 ,
             5, SlaveType::DEMULTIPLEXER_1, DemultiplexerOutput::OUTPUT_3,
             SPImode::mode1_spi, 5 , 3'900'000, 1);
@@ -289,7 +287,6 @@ void Factory::produce(void) {
 	//new UART2TestTask("UART2 Test Task", objects::AT91_UART2_TEST_TASK);
 	//new TwiTestTask(objects::AT91_I2C_TEST_TASK, 16);
     //new SpiTestTask(objects::AT91_SPI_TEST_TASK, SpiTestTask::SpiTestMode::GYRO);
-	#endif
 }
 
 void Factory::setStaticFrameworkObjectIds() {
