@@ -49,7 +49,7 @@ int copy_nandflash_binary_to_sdram(bool enable_full_printout) {
 
 
     NandInit();
-    BOOT_NAND_CopyBin(0x20000, BINARY_SIZE);
+    BOOT_NAND_CopyBin(NAND_FLASH_OFFSET, BINARY_SIZE);
 
     if(!enable_full_printout) {
         setTrace(TRACE_LEVEL_DEBUG);
@@ -104,8 +104,8 @@ void NandInit()
 //------------------------------------------------------------------------------
 /// Initialize NAND devices and transfer one or sevral modules from Nand to the
 /// target memory (SRAM/SDRAM).
-/// \param pTd    Pointer to transfer descriptor array.
-/// \param nbTd   Number of transfer descriptors.
+/// \param binary_offset     Offset of start
+/// \param binary_size       Size of binary
 //------------------------------------------------------------------------------
 int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
 {
@@ -126,7 +126,8 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
     //-------------------------------------------------------------------------
 
     TRACE_INFO("Copying NAND-Flash binary  with %zu bytes from "
-            "NAND 0x%08" PRIx32 "to 0x20000000\n\r", binary_size, binary_offset);
+            "NAND 0x%08" PRIx32 "to 0x20000000\n\r", binary_size,
+            binary_offset);
 
 #if !defined(OP_BOOTSTRAP_on)
     // Check word alignment
@@ -168,8 +169,8 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
     //TRACE_WARNING("Access translation: Block %d and Page %d.\n\r", block, page);
     // overwrite block, by specifying block one and page 0 now
     // (block 0 reserved for bootloader)
-    //block = 1;
-    //page = 0;
+    // block = 1;
+    // page = 0;
 
     // Initialize to SDRAM start address
     ptr = (unsigned char*)SDRAM_DESTINATION;
@@ -180,6 +181,16 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
         for(page = 0; page < numPagesPerBlock; page++) {
 
         	do {
+#if USE_FIXED_BINARY_SIZE == 0
+        	    if((block == 1) && (page == 0)) {
+        	        // Set binary size to sixth ARM vector.
+        	        memcpy(&byteRead, ptr + 0x14, sizeof(uint32_t));
+        	        // Basic sanitization of value.
+        	        if(byteRead == 0 || byteRead == 0xffffffff) {
+        	            byteRead = binary_size;
+        	        }
+        	    }
+#endif
         		error = SkipBlockNandFlash_ReadPage(&skipBlockNf, block,
         				page, ptr, 0);
 //        		if((block == 1) && (page == 0)) {
