@@ -594,8 +594,14 @@ ReturnValue_t SDCardHandler::generateFinishAppendReply(RepositoryPath *repoPath,
 #if OBSW_REDUCED_PRINTOUT == 0
     sif::info << "Append operation on file " << fileName->c_str()
             << " in repository " << repoPath->c_str()
-            << " finished with " << lastPacketNumber + 1 << " packets"
-            << std::endl;
+            << " finished." << std::endl;
+    sif::info <<  "Filesize: " << filesize;
+    if(locked) {
+        sif::info << " File was locked." << std::endl;
+    }
+    else {
+        sif::info << " File was not locked." << std::endl;
+    }
 #endif
     lastPacketNumber = UNSET_SEQUENCE;
     return result;
