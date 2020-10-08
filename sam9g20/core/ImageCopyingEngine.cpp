@@ -236,8 +236,6 @@ ReturnValue_t ImageCopyingEngine::configureNand(bool disableDebugOutput) {
     if(disableDebugOutput) {
         setTrace(TRACE_LEVEL_WARNING);
     }
-    BOARD_ConfigureNandFlash(nfBusWidth);
-    PIO_Configure(pPinsNf, PIO_LISTSIZE(pPinsNf));
     ReturnValue_t result = nandFlashInit();
     if(result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "SoftwareImageHandler::copyBootloaderToNand"
