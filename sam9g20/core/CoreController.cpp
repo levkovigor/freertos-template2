@@ -94,17 +94,18 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
     switch(actionId) {
     case(REQUEST_CPU_STATS_CHECK_STACK): {
-        actionHelper.finish(commandedBy, actionId,
-                HasReturnvaluesIF::RETURN_OK);
         if(not systemStateTask->readAndGenerateStats()) {
             return HasActionsIF::IS_BUSY;
         }
+        actionHelper.finish(commandedBy, actionId,
+                HasReturnvaluesIF::RETURN_OK);
         return HasReturnvaluesIF::RETURN_OK;
     }
     case(RESET_OBC): {
-        actionHelper.finish(commandedBy, actionId,
-                HasReturnvaluesIF::RETURN_OK);
-        TaskFactory::delayTask(100);
+        // not necessary, we know we commanded a restart.
+//        actionHelper.finish(commandedBy, actionId,
+//                HasReturnvaluesIF::RETURN_OK);
+        //TaskFactory::delayTask(1500);
 #ifdef AT91SAM9G20_EK
         restart();
 #else
@@ -119,12 +120,13 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         return HasReturnvaluesIF::RETURN_OK;
     }
     case(POWERCYCLE_OBC): {
-        TaskFactory::delayTask(100);
+//        actionHelper.finish(commandedBy, actionId,
+//                HasReturnvaluesIF::RETURN_OK);
+        //TaskFactory::delayTask(1500);
 #ifdef AT91SAM9G20_EK
         restart();
 #else
-        actionHelper.finish(commandedBy, actionId,
-                HasReturnvaluesIF::RETURN_OK);
+
         int retval = increment_reboot_counter(true, true);
         if(retval != 0) {
             sif::error << "CoreController::executeAction: "
