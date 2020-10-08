@@ -201,7 +201,7 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
         		else {
         		    if((block == first_block) && (page == 0)) {
 #if USE_FIXED_BINARY_SIZE == 0
-        		        // Set binary size to sixth ARM vector.
+        		        // Set binary size from the sixth ARM vector.
         		        // bytes_read has not been decremented yet, so we can
         		        // use it to do this.
         		        memcpy(&bytes_read, ptr + 0x14, sizeof(uint32_t));
