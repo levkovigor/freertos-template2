@@ -95,9 +95,9 @@ ReturnValue_t SoftwareImageHandler::initializeAfterTaskCreation() {
 	countdown = new Countdown(static_cast<float>(
 	        this->executingTask->getPeriodMs()) * 0.85);
 	imgCpHelper = new ImageCopyingEngine(this, countdown, &imgBuffer);
-#ifdef AT91SAM9G20_EK
-    imgCpHelper->configureNand(true);
-#endif
+//#ifdef AT91SAM9G20_EK
+//    imgCpHelper->configureNand(true);
+//#endif
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
