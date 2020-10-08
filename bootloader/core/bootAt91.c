@@ -42,7 +42,6 @@ static const Pin nfRbPin = BOARD_NF_RB_PIN;
 #define BOOT_NAND_ERROR_GP           2
 
 int copy_nandflash_binary_to_sdram(bool enable_full_printout) {
-	TRACE_INFO("Alive!\r\n");
     if(!enable_full_printout) {
         setTrace(TRACE_LEVEL_WARNING);
     }
@@ -114,7 +113,7 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
     unsigned short offset;
 
     unsigned char *ptr;
-    unsigned byteRead;
+    unsigned bytes_read;
 
     // Errors returned by SkipNandFlash functions
     unsigned char error = 0;
@@ -124,10 +123,6 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
     NandInit();
     // Transfert data from Nand to External RAM
     //-------------------------------------------------------------------------
-
-    TRACE_INFO("Copying NAND-Flash binary  with %zu bytes from "
-            "NAND 0x%08" PRIx32 "to 0x20000000\n\r", binary_size,
-            binary_offset);
 
 #if !defined(OP_BOOTSTRAP_on)
     // Check word alignment
@@ -166,31 +161,18 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
     }
 #endif
 
-    //TRACE_WARNING("Access translation: Block %d and Page %d.\n\r", block, page);
-    // overwrite block, by specifying block one and page 0 now
-    // (block 0 reserved for bootloader)
-    // block = 1;
-    // page = 0;
+    TRACE_WARNING("Access translation: Start copying to block %d and "
+            "page %d.\n\r", block, page);
 
     // Initialize to SDRAM start address
     ptr = (unsigned char*)SDRAM_DESTINATION;
-    byteRead = binary_size;
+    bytes_read = binary_size;
 
     while(block < numBlocks)
     {
         for(page = 0; page < numPagesPerBlock; page++) {
 
         	do {
-#if USE_FIXED_BINARY_SIZE == 0
-        	    if((block == 1) && (page == 0)) {
-        	        // Set binary size to sixth ARM vector.
-        	        memcpy(&byteRead, ptr + 0x14, sizeof(uint32_t));
-        	        // Basic sanitization of value.
-        	        if(byteRead == 0 || byteRead == 0xffffffff) {
-        	            byteRead = binary_size;
-        	        }
-        	    }
-#endif
         		error = SkipBlockNandFlash_ReadPage(&skipBlockNf, block,
         				page, ptr, 0);
 //        		if((block == 1) && (page == 0)) {
@@ -213,10 +195,37 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
 //        		TRACE_WARNING("SkipBlockNandFlash_ReadBlock: Reading block %d "
 //       				"page %d.\n\r", block, page);
         		if (error == NandCommon_ERROR_BADBLOCK)
-        			block++;
-                else
-                    break;
-            }
+        		    block++;
+        		else {
+        		    if((block == 1) && (page == 0)) {
+#if USE_FIXED_BINARY_SIZE == 0
+
+        		        // Set binary size to sixth ARM vector.
+        		        // bytes_read has not been decremented yet, so we can
+        		        // use it to do this.
+        		        memcpy(&bytes_read, ptr + 0x14, sizeof(uint32_t));
+#if ENHANCED_DEBUG_OUTPUT == 1
+        		        TRACE_WARNING("Detected binary size from sixth ARM "
+        		                "vector: %u\n\r", bytes_read);
+#endif
+        		        // Basic sanitization of value.
+        		        if(bytes_read == 0 || bytes_read == 0xffffffff ||
+        		                bytes_read < 0) {
+        		            bytes_read = binary_size;
+        		        }
+
+
+#endif
+#if ENHANCED_DEBUG_OUTPUT == 1
+                    TRACE_WARNING("Copying NAND-Flash binary with %u bytes "
+                            "from NAND 0x%08x to 0x20000000\n\r",
+                            (unsigned int)bytes_read,
+                            (unsigned int)binary_offset);
+#endif
+        		    }
+        		    break;
+        		}
+        	}
             while(block < numBlocks && page == 0);
 
 #if !defined(OP_BOOTSTRAP_on)
@@ -228,16 +237,16 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
 #endif
             ptr += pageSize;
 
-            if(byteRead <= pageSize) {
-                byteRead = 0;
+            if(bytes_read <= pageSize) {
+                bytes_read = 0;
                 break;
             }
             else {
-                byteRead -= pageSize;
+                bytes_read -= pageSize;
             }
         }
 
-        if(byteRead == 0) {
+        if(bytes_read == 0) {
             break;
         }
         else {

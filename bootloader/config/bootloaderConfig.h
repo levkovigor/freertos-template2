@@ -10,19 +10,23 @@
 // a difference, most of the AT91 lib uses IO so it iss difficult to remove it)
 #define DEBUG_IO_LIB            1
 
+#define ENHANCED_DEBUG_OUTPUT   1
+
 /**
  * Specify whether the binary size will be fixed. If this is not set,
  * the binary size is expected to be at the sixth ARM vector location!
  * The value found there is still sanitized and the sizes here will be
  * used if it does not make sense.
  */
-#define USE_FIXED_BINARY_SIZE   0
+#define USE_FIXED_BINARY_SIZE   1
 /**
  *  Binary size in bytes.
  *  Adapt theses sizes as the binary grows.
  */
 #define DEBUG_BINARY_SIZE 0x100000 // 1.048.576 bytes
-#define MISSION_BINARY_SIZE 0xA0000 // 655.360 bytes
+
+#define MISSION_BINARY_SIZE 0x90000 //589.824 bytes
+//#define MISSION_BINARY_SIZE 0xA0000 // 655.360 bytes
 
 /**
  * Specify whether the current binary is the debug binary or the mission
