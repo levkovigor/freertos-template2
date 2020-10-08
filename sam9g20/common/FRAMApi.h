@@ -147,7 +147,10 @@ int increment_reboot_counter(bool verify_write, bool set_reboot_flag);
  */
 int verify_reboot_flag(bool* bootcounter_incremented);
 int read_reboot_counter(uint16_t* reboot_counter);
-// Should only be used during development!
+/**
+ * Should only be used during development!
+ * @return
+ */
 int reset_reboot_counter();
 
 int update_seconds_since_epoch(uint32_t secondsSinceEpoch);

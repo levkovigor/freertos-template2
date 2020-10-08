@@ -20,7 +20,6 @@ extern "C" {
 /**
  * @brief   Core Controller responsible for monitoring the OBC itself
  * @details
- * TODO:    Propably needs HasLocalDataPoolIF too
  * @author  R. Mueller
  *
  */

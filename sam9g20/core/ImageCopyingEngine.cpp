@@ -31,7 +31,6 @@ ImageCopyingEngine::ImageCopyingEngine(SoftwareImageHandler *owner,
         Countdown *countdown, SoftwareImageHandler::ImageBuffer *imgBuffer):
         owner(owner), countdown(countdown), imgBuffer(imgBuffer) {}
 
-
 bool ImageCopyingEngine::getIsOperationOngoing() const {
     if(imageHandlerState == ImageHandlerStates::IDLE) {
         return false;

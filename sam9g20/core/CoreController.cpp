@@ -12,6 +12,7 @@
 extern "C" {
 #ifdef ISIS_OBC_G20
 #include <hal/Timing/Time.h>
+#include <sam9g20/common/FRAMApi.h>
 #endif
 #include <hal/Timing/RTT.h>
 }
@@ -102,10 +103,6 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         return HasReturnvaluesIF::RETURN_OK;
     }
     case(RESET_OBC): {
-        // not necessary, we know we commanded a restart.
-//        actionHelper.finish(commandedBy, actionId,
-//                HasReturnvaluesIF::RETURN_OK);
-        //TaskFactory::delayTask(1500);
 #ifdef AT91SAM9G20_EK
         restart();
 #else
@@ -120,9 +117,6 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         return HasReturnvaluesIF::RETURN_OK;
     }
     case(POWERCYCLE_OBC): {
-//        actionHelper.finish(commandedBy, actionId,
-//                HasReturnvaluesIF::RETURN_OK);
-        //TaskFactory::delayTask(1500);
 #ifdef AT91SAM9G20_EK
         restart();
 #else
@@ -176,19 +170,24 @@ ReturnValue_t CoreController::initializeAfterTaskCreation() {
 }
 
 ReturnValue_t CoreController::initialize() {
+    ReturnValue_t result = actionHelper.initialize(commandQueue);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
 
 #ifdef ISIS_OBC_G20
     framHandler = objectManager->get<FRAMHandler>(objects::FRAM_HANDLER);
     if(framHandler == nullptr) {
         sif::error << "CoreController::initialize: No FRAM handler found!"
                 << std::endl;
-        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    bool bootloaderIncremented = false;
+    int retval = verify_reboot_flag(&bootloaderIncremented);
+    if(retval != 0) {
+        sif::error << "CoreController::initialize: Error verifying the boot"
+                << " counter!" << std::endl;
     }
 #endif
-    ReturnValue_t result = actionHelper.initialize(commandQueue);
-    if(result != HasReturnvaluesIF::RETURN_OK) {
-        return result;
-    }
     return SystemObject::initialize();
 }
 

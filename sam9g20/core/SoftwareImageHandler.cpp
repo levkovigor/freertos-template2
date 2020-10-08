@@ -16,9 +16,6 @@ SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
         SystemObject(objectId), receptionQueue(QueueFactory::instance()->
         createMessageQueue(SW_IMG_HANDLER_MQ_DEPTH)),
         actionHelper(this, receptionQueue) {
-#ifdef AT91SAM9G20_EK
-    imgCpHelper->configureNand(true);
-#endif
 }
 
 ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
@@ -98,6 +95,9 @@ ReturnValue_t SoftwareImageHandler::initializeAfterTaskCreation() {
 	countdown = new Countdown(static_cast<float>(
 	        this->executingTask->getPeriodMs()) * 0.85);
 	imgCpHelper = new ImageCopyingEngine(this, countdown, &imgBuffer);
+#ifdef AT91SAM9G20_EK
+    imgCpHelper->configureNand(true);
+#endif
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
