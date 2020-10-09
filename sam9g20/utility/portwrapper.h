@@ -4,7 +4,7 @@
 #include <sam9g20/utility/TCTimerHandler.h>
 #include <cstdint>
 
-extern uint16_t timerOverflowCounter;
+extern volatile uint16_t timerOverflowCounter;
 extern AT91S_TC* tcStatsPeripheral;
 
 void vRequestContextSwitchFromISR();
