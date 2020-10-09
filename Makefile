@@ -519,7 +519,6 @@ else
 endif
 
 # Build new objects for changed dependencies. 
-# For now, only link for changed makefile by rebuilding assembly files
 $(OBJDIR)/%.o: %.cpp
 $(OBJDIR)/%.o: %.cpp $(DEPENDDIR)/%.d | $(DEPENDDIR)
 	@echo 
@@ -528,7 +527,7 @@ $(OBJDIR)/%.o: %.cpp $(DEPENDDIR)/%.d | $(DEPENDDIR)
 ifdef SHOW_DETAILS
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_TIME_OPTIMIZATION) -c -o $@ $<
 else
-	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_TIME_OPTIMIZATION) -c -o $@ $<
 endif
 
 $(OBJDIR)/%.o: %.c
@@ -539,7 +538,7 @@ $(OBJDIR)/%.o: %.c $(DEPENDDIR)/%.d | $(DEPENDDIR)
 ifdef SHOW_DETAILS
 	$(CC) $(CXXFLAGS) $(CFLAGS) $(LINK_TIME_OPTIMIZATION) -c -o $@ $<
 else
-	@$(CC) $(CXXFLAGS) $(CFLAGS) -c -o $@ $<
+	@$(CC) $(CXXFLAGS) $(CFLAGS) $(LINK_TIME_OPTIMIZATION) -c -o $@ $<
 endif
 
 # Seperate rules for FreeRTOS to tweak build settings.

@@ -15,55 +15,23 @@ Service17CustomTest::~Service17CustomTest() {
 
 ReturnValue_t Service17CustomTest::handleRequest(uint8_t subservice) {
 	switch(subservice){
-	case CustomSubservice::MULTIPLE_EVENT_TRIGGER_TEST: {
-		for(int i=0; i < 5; i++) {
-			triggerEvent(TEST,1234,5678);
-		}
-		performMassEventTesting = true;
-		return RETURN_OK;
+	case CustomSubservice::ENABLE_PERIODIC_PRINT: {
+		periodicPrintoutEnabled = true;
+		break;
 	}
-	case CustomSubservice::MULTIPLE_CONNECTION_TEST: {
-		for(int i=0;i<12;i++) {
-			TmPacketStored connectionPacket(apid, serviceId,
-			        Subservice::CONNECTION_TEST_REPORT,
-					packetSubCounter++);
-			connectionPacket.sendPacket(requestQueue->getDefaultDestination(),
-					requestQueue->getId());
-		}
-		performMassConnectionTesting = true;
-		return RETURN_OK;
+	case CustomSubservice::DISABLE_PERIODIC_PRINT: {
+	    periodicPrintoutEnabled = false;
+	    break;
 	}
 	default:
 	    return Service17Test::handleRequest(subservice);
 	}
+	return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t Service17CustomTest::performService() {
-	if(performMassEventTesting && counter < 3)
-	{
-		for(int i=0;i<12;i++) {
-			triggerEvent(TEST,1234,5678);
-		}
-	counter ++;
-	}
-
-	if(performMassConnectionTesting && counter < 3)
-	{
-		for(int i=0;i<12;i++) {
-			TmPacketStored connection_packet(apid,
-					serviceId, Subservice::CONNECTION_TEST_REPORT,
-					packetSubCounter++);
-			connection_packet.sendPacket(requestQueue->getDefaultDestination(),
-			        requestQueue->getId());
-		}
-	counter ++;
-	}
-
-	if(counter == 3)
-	{
-		performMassEventTesting = false;
-		performMassConnectionTesting = false;
-		counter = 0;
+	if(periodicPrintoutEnabled) {
+	    sif::info << "Service17CustomTest::performService: Alive!" << std::endl;
 	}
 	return HasReturnvaluesIF::RETURN_OK;
 }
