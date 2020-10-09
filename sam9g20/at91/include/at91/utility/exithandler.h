@@ -1,6 +1,6 @@
 /*!
  * @file	exithandler.h
- * @brief	Driver for reading Analog data (including OBC board temperature) using the ADC.
+ * @brief	Driver for resetting the core.
  * @author	Akhil Piplani
  * @date    Jun 22, 2011
  */

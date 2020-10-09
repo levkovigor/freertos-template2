@@ -94,7 +94,7 @@ void defaultIrqHandler( void )
 /**
  * @brief Default handler for "Data Abort" exception
  */
-extern "C" void data_abort_irq_handler(void)
+void data_abort_irq_handler(void)
 {
 #ifdef DEBUG
 	uint32_t v1, v2, dfsr;
@@ -136,7 +136,7 @@ extern "C" void data_abort_irq_handler(void)
 /**
  * @brief Default handler for "Prefetch Abort" exception
  */
-extern "C" void prefetch_abort_irq_handler(void)
+void prefetch_abort_irq_handler(void)
 {
 #ifdef DEBUG
 	uint32_t v1, v2, ifsr;
