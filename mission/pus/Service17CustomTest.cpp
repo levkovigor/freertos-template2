@@ -24,7 +24,7 @@ ReturnValue_t Service17CustomTest::handleRequest(uint8_t subservice) {
 	    break;
 	}
 	case CustomSubservice::TRIGGER_EXCEPTION: {
-	    Service17CustomTest* exception;
+	    Service17CustomTest* exception = nullptr;
 	    exception->performService();
 	    break;
 	}
