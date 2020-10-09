@@ -408,7 +408,7 @@ all: executable
 # Link time optimization is added in the rules to disable it for certain source files
 mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION) # $(LINK_TIME_OPTIMIZATION)
 mission: TARGET = Mission binary
-mission: OPTIMIZATION_MESSAGE = On.
+mission: OPTIMIZATION_MESSAGE = On with Link Time Optimization.
 mission: DEBUG_LEVEL = -g0
 
 debug: CXXDEFINES += -DDEBUG
@@ -419,7 +419,7 @@ virtual: TARGET = Debug binary with virtualized interfaces
 virtual: DEBUG_MESSAGE = On
 virtual: DEBUG_LEVEL = -g3
 
-ifndef KEEP_UNUSED_CODE
+ifdef KEEP_UNUSED_CODE
 debug virtual mission: OPTIMIZATION_MESSAGE += , no unused code removal
 endif
 
@@ -475,7 +475,7 @@ ALL_OBJECTS =  $(ASM_OBJECTS) $(C_OBJECTS) $(CXX_OBJECTS) $(FREERTOS_OBJECTS) $(
 # Generates binary and displays all build properties
 # -p with mkdir ignores error and creates directory when needed.
 
-SHOW_DETAILS = 1
+# SHOW_DETAILS = 1
 
 $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).bin: $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).elf
 	@echo
