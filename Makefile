@@ -193,6 +193,7 @@ BINCOPY = $(CP) -O binary
 # See: http://make.mad-scientist.net/evaluation-and-expansion/
 CSRC := 
 FREERTOS_SRC :=
+AT91_SRC :=
 CXXSRC := 
 ASRC := 
 INCLUDES := 
@@ -270,6 +271,7 @@ ASRC +=
 # Objects built from C source files.
 C_OBJECTS += $(CSRC:.c=.o)
 FREERTOS_OBJECTS += $(FREERTOS_SRC:.c=.o)
+AT91_OBJECTS += $(AT91_SRC:.c=.o)
 # Objects built from assembler source files.
 ASM_OBJECTS += $(ASRC:.S=.o)
 # ASM_OBJECTS += $(ASRC:.s=.o)
@@ -320,6 +322,8 @@ UNUSED_CODE_REMOVAL = -Wl,--gc-sections
 # but resulting binary is smaller. Could be used in mission/deployment build
 # Requires -ffunction-section in linker call
 LINK_TIME_OPTIMIZATION = -flto
+FREERTOS_OPTIMIZATION = -fno-lto
+AT91_OPTIMIZATION = -fno-lto
 OPTIMIZATION += $(PROTOTYPE_OPTIMIZATION) 
 endif 
 # CPU specification
@@ -358,10 +362,10 @@ CXXDEFINES := -DTRACE_LEVEL=$(TRACE_LEVEL) -DDYN_TRACES=$(DYN_TRACES) \
 CFLAGS +=  
 CXXFLAGS += -I.  $(DEBUG_LEVEL) $(DEPFLAGS) $(WARNING_FLAGS) \
 		-fmessage-length=0 $(OPTIMIZATION) $(I_INCLUDES) $(CXXDEFINES) \
-		$(NEWLIB_NANO) $(CPU_FLAG) 
+		$(NEWLIB_NANO) $(CPU_FLAG)
 CPPFLAGS += -std=c++17 -fno-exceptions
 ASFLAGS =  -Wall -g $(OPTIMIZATION) $(I_INCLUDES) -D$(CHIP) -D__ASSEMBLY__ \
-           $(NEWLIB_NANO) $(CPU_FLAG) 
+           $(NEWLIB_NANO) $(CPU_FLAG)
 
 # Flags for the linker call
 # - specs=nosys.specs: this library contains system calls such as _sbrk(); 
@@ -371,7 +375,8 @@ ASFLAGS =  -Wall -g $(OPTIMIZATION) $(I_INCLUDES) -D$(CHIP) -D__ASSEMBLY__ \
 # - LINK_INCLUDES: Specify the path to used libraries and the linker script
 # - LINK_LIBRARIES: Link HCC and HAL library and enable float support
 
-LDFLAGS = $(DEBUG_LEVEL) $(CPU_FLAG) $(UNUSED_CODE_REMOVAL) $(OPTIMIZATION) $(NEWLIB_NANO) 
+LDFLAGS = $(DEBUG_LEVEL) $(CPU_FLAG) $(UNUSED_CODE_REMOVAL) $(OPTIMIZATION) \
+		$(LINK_TIME_OPTIMIZATION) $(NEWLIB_NANO) 
 LINK_INCLUDES = -L"$(HAL_PATH)/lib" -L"$(HCC_PATH)/lib" \
 		-T"$(LINKER_SCRIPT_PATH)/$(MEMORIES).lds" -Wl,-Map=$(BINDIR)/$(BINARY_NAME)-$(MEMORIES).map
 LINK_LIBRARIES = -lc -u _printf_float -u _scanf_float -lHCC -lHCCD -lHAL -lHALD 
@@ -400,10 +405,10 @@ all: executable
 
 # Build target configuration, which also includes information output.
 # See: https://www.gnu.org/software/make/manual/html_node/Target_002dspecific.html
-# Link time optimization disabled for now, issues with optimized binary..
-mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION) $(LINK_TIME_OPTIMIZATION)
+# Link time optimization is added in the rules to disable it for certain source files
+mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION) # $(LINK_TIME_OPTIMIZATION)
 mission: TARGET = Mission binary
-mission: OPTIMIZATION_MESSAGE = On without Link Time Optimization
+mission: OPTIMIZATION_MESSAGE = On.
 mission: DEBUG_LEVEL = -g0
 
 debug: CXXDEFINES += -DDEBUG
@@ -446,11 +451,12 @@ cleanbin:
 executable: $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).bin
 
 C_OBJECTS := $(addprefix $(OBJDIR)/, $(C_OBJECTS))
-FREERTOS_OBJECTS := $(addprefix $(OBJDIR)/, $(FREERTOS_OBJECTS))
+FREERTOS_OBJECTS := $(addprefix $(OBJDIR)/$(OS_FSFW)/, $(FREERTOS_OBJECTS))
+AT91_OBJECTS := $(addprefix $(OBJDIR)/at91/, $(AT91_OBJECTS))
 ASM_OBJECTS := $(addprefix $(OBJDIR)/, $(ASM_OBJECTS))
 CXX_OBJECTS := $(addprefix $(OBJDIR)/, $(CXX_OBJECTS))
 
-ALL_OBJECTS =  $(ASM_OBJECTS) $(C_OBJECTS) $(CXX_OBJECTS) 
+ALL_OBJECTS =  $(ASM_OBJECTS) $(C_OBJECTS) $(CXX_OBJECTS) $(FREERTOS_OBJECTS) $(AT91_OBJECTS)
 
 # Useful for debugging the Makefile
 # Also see: https://www.oreilly.com/openbook/make3/book/ch12.pdf
@@ -469,7 +475,7 @@ ALL_OBJECTS =  $(ASM_OBJECTS) $(C_OBJECTS) $(CXX_OBJECTS)
 # Generates binary and displays all build properties
 # -p with mkdir ignores error and creates directory when needed.
 
-# SHOW_DETAILS = 1
+SHOW_DETAILS = 1
 
 $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).bin: $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).elf
 	@echo
@@ -496,7 +502,7 @@ $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).hex: $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).e
 
 # Link with required libraries: HAL (Hardware Abstraction Layer) and 
 # HCC (File System Library)
-$(BINDIR)/$(BINARY_NAME)-$(MEMORIES).elf: $(ALL_OBJECTS) $(FREERTOS_OBJECTS)
+$(BINDIR)/$(BINARY_NAME)-$(MEMORIES).elf: $(ALL_OBJECTS) 
 	@echo
 	@echo $(MSG_LINKING) Target $@
 	@mkdir -p $(@D)
@@ -520,7 +526,7 @@ $(OBJDIR)/%.o: %.cpp $(DEPENDDIR)/%.d | $(DEPENDDIR)
 	@echo $(MSG_COMPILING) $<
 	@mkdir -p $(@D)
 ifdef SHOW_DETAILS
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LINK_TIME_OPTIMIZATION) -c -o $@ $<
 else
 	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 endif
@@ -531,20 +537,33 @@ $(OBJDIR)/%.o: %.c $(DEPENDDIR)/%.d | $(DEPENDDIR)
 	@echo $(MSG_COMPILING) $<
 	@mkdir -p $(@D)
 ifdef SHOW_DETAILS
-	$(CC) $(CXXFLAGS) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CXXFLAGS) $(CFLAGS) $(LINK_TIME_OPTIMIZATION) -c -o $@ $<
 else
 	@$(CC) $(CXXFLAGS) $(CFLAGS) -c -o $@ $<
 endif
 
-$(OBJDIR)/%.o: $(FREERTOS_SRC) 
-$(OBJDIR)/%.o: $(FREERTOS_SRC) $(DEPENDDIR)/%.d | $(DEPENDDIR) 
+# Seperate rules for FreeRTOS to tweak build settings.
+$(OBJDIR)/$(OS_FSFW)/%.o: %.c
+$(OBJDIR)/$(OS_FSFW)/%.o: %.c $(DEPENDDIR)/%.d | $(DEPENDDIR) 
 	@echo 
-	@echo Compiling FreeRTOS
+	@echo Compiling FreeRTOS source: $<
 	@mkdir -p $(@D)
 ifdef SHOW_DETAILS
-	$(CC) $(CXXFLAGS) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CXXFLAGS) $(CFLAGS) $(FREERTOS_OPTIMIZATION) -c -o $@ $<
 else
-	@$(CC) $(CXXFLAGS) $(CFLAGS) -c -o $@ $<
+	@$(CC) $(CXXFLAGS) $(CFLAGS) $(FREERTOS_OPTIMIZATION) -c -o $@ $<
+endif
+
+# Seperate rules for AT91 to tweak build settings.
+$(OBJDIR)/at91/%.o: %.c
+$(OBJDIR)/at91/%.o: %.c $(DEPENDDIR)/%.d | $(DEPENDDIR) 
+	@echo 
+	@echo Compiling AT91 library source: $<
+	@mkdir -p $(@D)
+ifdef SHOW_DETAILS
+	$(CC) $(CXXFLAGS) $(CFLAGS) $(AT91_OPTIMIZATION) -c -o $@ $<
+else
+	@$(CC) $(CXXFLAGS) $(CFLAGS) $(AT91_OPTIMIZATION) -c -o $@ $<
 endif
 
 $(OBJDIR)/%.o: %.S Makefile
@@ -568,7 +587,7 @@ endif
 # http://make.mad-scientist.net/papers/advanced-auto-dependency-generation/
 $(DEPENDDIR):
 	@mkdir -p $(@D)
-DEPENDENCY_RELATIVE = $(CSRC:.c=.d) $(CXXSRC:.cpp=.d) $(FREERTOS_SRC:.c=.d)
+DEPENDENCY_RELATIVE = $(CSRC:.c=.d) $(CXXSRC:.cpp=.d) $(FREERTOS_SRC:.c=.d) $(AT91_SRC:.c=.d)
 # This is the list of all dependencies
 DEPFILES = $(addprefix $(DEPENDDIR)/, $(DEPENDENCY_RELATIVE))
 # Create subdirectories for dependencies

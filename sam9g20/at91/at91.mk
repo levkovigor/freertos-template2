@@ -94,77 +94,77 @@ ASRC += cp15_asm.S
 
 # Objects built from C source files
 ifeq ($(BOARD), AT91SAM9G20_EK)
-CSRC += led.c
+AT91_SRC += led.c
 ifdef ETHERNET
-CSRC += emac.c
-CSRC += macb.c
-CSRC += emacif.c
-CSRC += lwip_init.c
+AT91_SRC += emac.c
+AT91_SRC += macb.c
+AT91_SRC += emacif.c
+AT91_SRC += lwip_init.c
 endif
 endif
 
 ifeq ($(BOARD), ISIS_OBC_G20)
-CSRC += NorFlashCFI.c
-CSRC += NorFlashApi.c
-CSRC += NorFlashCommon.c
-CSRC += NorFlashAmd.c
+AT91_SRC += NorFlashCFI.c
+AT91_SRC += NorFlashApi.c
+AT91_SRC += NorFlashCommon.c
+AT91_SRC += NorFlashAmd.c
 else
-CSRC += EccNandFlash.c
-CSRC += NandFlashModel.c
-CSRC += NandFlashModelList.c
-CSRC += NandSpareScheme.c
-CSRC += RawNandFlash.c
-CSRC += SkipBlockNandFlash.c
+AT91_SRC += EccNandFlash.c
+AT91_SRC += NandFlashModel.c
+AT91_SRC += NandFlashModelList.c
+AT91_SRC += NandSpareScheme.c
+AT91_SRC += RawNandFlash.c
+AT91_SRC += SkipBlockNandFlash.c
 endif
 ifeq ($(USE_AT91LIB_STDIO_AND_STRING), 1)
-CSRC += stdio.c
+AT91_SRC += stdio.c
 endif
-CSRC += dbgu.c
-CSRC += pio.c
-CSRC += pio_it.c
-CSRC += tc.c
-CSRC += twi_at91.c
-CSRC += pmc.c
-CSRC += hamming.c
-CSRC += board_lowlevel.c
-CSRC += trace.c
-CSRC += at91_math.c
-CSRC += board_memories.c
-CSRC += aic_iobc.c
-CSRC += cp15.c
-CSRC += pit.c
-CSRC += ExitHandler.c
-CSRC += spi_at91.c
-CSRC += rstc.c
-CSRC += usart_at91.c
-CSRC += SDCardTest.c
+AT91_SRC += dbgu.c
+AT91_SRC += pio.c
+AT91_SRC += pio_it.c
+AT91_SRC += tc.c
+AT91_SRC += twi_at91.c
+AT91_SRC += pmc.c
+AT91_SRC += hamming.c
+AT91_SRC += board_lowlevel.c
+AT91_SRC += trace.c
+AT91_SRC += at91_math.c
+AT91_SRC += board_memories.c
+AT91_SRC += aic_iobc.c
+AT91_SRC += cp15.c
+AT91_SRC += pit.c
+AT91_SRC += ExitHandler.c
+AT91_SRC += spi_at91.c
+AT91_SRC += rstc.c
+AT91_SRC += usart_at91.c
+AT91_SRC += SDCardTest.c
 ifeq ($(OS_APP),freeRTOS)
-CSRC += demo_sd.c
-CSRC += syscalls.c
+AT91_SRC += demo_sd.c
+AT91_SRC += syscalls.c
 ASRC += board_cstartup_freeRTOS.S
 else
 ASRC += board_cstartup.S
 endif
 
 # USB drivers
-CSRC += USBD_UDP.c
-CSRC += USBDDriver.c
-CSRC += USBGenericDescriptor.c
-CSRC += USBGenericRequest.c
-CSRC += USBConfigurationDescriptor.c
-CSRC += USBGetDescriptorRequest.c
-CSRC += USBInterfaceRequest.c
-CSRC += USBSetAddressRequest.c
-CSRC += USBSetConfigurationRequest.c
-CSRC += USBEndpointDescriptor.c
-CSRC += USBFeatureRequest.c
-CSRC += USBDCallbacks_Initialized.c
-CSRC += USBDCallbacks_Reset.c
-CSRC += USBDDriverCb_IfSettingChanged.c
+AT91_SRC += USBD_UDP.c
+AT91_SRC += USBDDriver.c
+AT91_SRC += USBGenericDescriptor.c
+AT91_SRC += USBGenericRequest.c
+AT91_SRC += USBConfigurationDescriptor.c
+AT91_SRC += USBGetDescriptorRequest.c
+AT91_SRC += USBInterfaceRequest.c
+AT91_SRC += USBSetAddressRequest.c
+AT91_SRC += USBSetConfigurationRequest.c
+AT91_SRC += USBEndpointDescriptor.c
+AT91_SRC += USBFeatureRequest.c
+AT91_SRC += USBDCallbacks_Initialized.c
+AT91_SRC += USBDCallbacks_Reset.c
+AT91_SRC += USBDDriverCb_IfSettingChanged.c
 
 # CDC device drivers
-CSRC += CDCDSerialDriver.c
-CSRC += CDCDSerialDriverDescriptors.c
-CSRC += CDCLineCoding.c
-CSRC += CDCSetControlLineStateRequest.c
+AT91_SRC += CDCDSerialDriver.c
+AT91_SRC += CDCDSerialDriverDescriptors.c
+AT91_SRC += CDCLineCoding.c
+AT91_SRC += CDCSetControlLineStateRequest.c
 
