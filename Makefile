@@ -148,11 +148,11 @@ CLEANBIN = $(BUILDPATH)
 ifeq ($(BOARD),at91sam9g20_ek)
 # Compile with chip specific features
 include $(AT91_PATH)/include/at91/boards/at91sam9g20-ek/$(CHIP)/chip.mak
-
+MEMORIES = sdram
 # Compile for all memories available on the board (this sets $(MEMORIES))
-include $(AT91_PATH)/include/at91/boards/at91sam9g20-ek/board.mak
+#include $(AT91_PATH)/include/at91/boards/at91sam9g20-ek/board.mak
 else
-MEMORIES = sdram 
+MEMORIES = sdram
 endif
 
 #-------------------------------------------------------------------------------
@@ -192,6 +192,7 @@ BINCOPY = $(CP) -O binary
 # operator can be used in the submakefiles to achieve immediate evaluation. 
 # See: http://make.mad-scientist.net/evaluation-and-expansion/
 CSRC := 
+FREERTOS_SRC :=
 CXXSRC := 
 ASRC := 
 INCLUDES := 
@@ -268,6 +269,7 @@ ASRC +=
 
 # Objects built from C source files.
 C_OBJECTS += $(CSRC:.c=.o)
+FREERTOS_OBJECTS += $(FREERTOS_SRC:.c=.o)
 # Objects built from assembler source files.
 ASM_OBJECTS += $(ASRC:.S=.o)
 # ASM_OBJECTS += $(ASRC:.s=.o)
@@ -352,7 +354,7 @@ WARNING_FLAGS = -Wall -Wshadow=local -Wextra -Wimplicit-fallthrough=1 \
 		-Wno-unused-parameter 
 		
 CXXDEFINES := -DTRACE_LEVEL=$(TRACE_LEVEL) -DDYN_TRACES=$(DYN_TRACES) \
-		$(CUSTOM_DEFINES)
+		$(CUSTOM_DEFINES) -D$(MEMORIES)
 CFLAGS +=  
 CXXFLAGS += -I.  $(DEBUG_LEVEL) $(DEPFLAGS) $(WARNING_FLAGS) \
 		-fmessage-length=0 $(OPTIMIZATION) $(I_INCLUDES) $(CXXDEFINES) \
@@ -371,7 +373,7 @@ ASFLAGS =  -Wall -g $(OPTIMIZATION) $(I_INCLUDES) -D$(CHIP) -D__ASSEMBLY__ \
 
 LDFLAGS = $(DEBUG_LEVEL) $(CPU_FLAG) $(UNUSED_CODE_REMOVAL) $(OPTIMIZATION) $(NEWLIB_NANO) 
 LINK_INCLUDES = -L"$(HAL_PATH)/lib" -L"$(HCC_PATH)/lib" \
-		-T"$(LINKER_SCRIPT_PATH)/$(1).lds" -Wl,-Map=$(BINDIR)/$(BINARY_NAME).map
+		-T"$(LINKER_SCRIPT_PATH)/$(MEMORIES).lds" -Wl,-Map=$(BINDIR)/$(BINARY_NAME)-$(MEMORIES).map
 LINK_LIBRARIES = -lc -u _printf_float -u _scanf_float -lHCC -lHCCD -lHAL -lHALD 
 
 # $(info $${I_INCLUDES} is [${I_INCLUDES}])
@@ -439,19 +441,22 @@ cleanbin:
 # The section defined between define and endef will be evaluated
 # for each memory type.
 # See: http://make.mad-scientist.net/the-eval-function/
-define MEMORY_BUILDS
+# define MEMORY_BUILDS
 
-executable: $(BINDIR)/$(BINARY_NAME)-$(1).bin
+executable: $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).bin
 
-C_OBJECTS_$(1) = $(addprefix $(OBJDIR)/$(1)/, $(C_OBJECTS))
-ASM_OBJECTS_$(1) = $(addprefix $(OBJDIR)/$(1)/, $(ASM_OBJECTS))
-CXX_OBJECTS_$(1) = $(addprefix $(OBJDIR)/$(1)/, $(CXX_OBJECTS))
+C_OBJECTS := $(addprefix $(OBJDIR)/, $(C_OBJECTS))
+FREERTOS_OBJECTS := $(addprefix $(OBJDIR)/, $(FREERTOS_OBJECTS))
+ASM_OBJECTS := $(addprefix $(OBJDIR)/, $(ASM_OBJECTS))
+CXX_OBJECTS := $(addprefix $(OBJDIR)/, $(CXX_OBJECTS))
 
-ALL_OBJECTS =  $$(ASM_OBJECTS_$(1)) $$(C_OBJECTS_$(1)) $$(CXX_OBJECTS_$(1)) 
+ALL_OBJECTS =  $(ASM_OBJECTS) $(C_OBJECTS) $(CXX_OBJECTS) 
 
 # Useful for debugging the Makefile
 # Also see: https://www.oreilly.com/openbook/make3/book/ch12.pdf
 # $$(info $${ALL_OBJECTS} is [${ALL_OBJECTS}])
+# $$(info {$$(OBJDIR)/$(C_OBJECTS)} is [$(OBJDIR)/$(1)/$(C_OBJECTS)}])
+# $$(info {$$(CSRC)} is [${CSRC}])
 # $$(info $${CXXSRC} is [${CXXSRC}])
 
 # Automatic variables are used here extensively. Some of them
@@ -466,84 +471,94 @@ ALL_OBJECTS =  $$(ASM_OBJECTS_$(1)) $$(C_OBJECTS_$(1)) $$(CXX_OBJECTS_$(1))
 
 # SHOW_DETAILS = 1
 
-$(BINDIR)/$(BINARY_NAME)-$(1).bin: $(BINDIR)/$(BINARY_NAME)-$(1).elf
+$(BINDIR)/$(BINARY_NAME)-$(MEMORIES).bin: $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).elf
 	@echo
-	@echo $$(MSG_INFO)
-	@echo $$(MSG_TARGET)
-	@echo $$(MSG_OPTIMIZATION)
-	@echo $$(MSG_DEBUG)
-	@echo $$(MSG_COMIF)
-	@echo $(MSG_BINARY) $$@
-	@mkdir -p $$(@D)
-	@$(BINCOPY) $$< $$@ 
+	@echo $(MSG_INFO)
+	@echo $(MSG_TARGET)
+	@echo $(MSG_OPTIMIZATION)
+	@echo $(MSG_DEBUG)
+	@echo $(MSG_COMIF)
+	@echo $(MSG_BINARY) $@
+	@mkdir -p $(@D)
+	@$(BINCOPY) $< $@ 
 ifeq ($(OS),Windows_NT)
-	@echo Binary Size: `busybox stat -c %s $$@` bytes
+	@echo Binary Size: `busybox stat -c %s $@` bytes
 else
-	@stat --printf='Binary Size: %s bytes' $$@
+	@stat --printf='Binary Size: %s bytes' $@
 endif
 	@echo
 
-$(BINDIR)/$(BINARY_NAME)-$(1).hex: $(BINDIR)/$(BINARY_NAME)-$(1).elf
+$(BINDIR)/$(BINARY_NAME)-$(MEMORIES).hex: $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).elf
 	@echo
 	@echo $(MSG_BINARY)
-	@mkdir -p $$(@D)
-	$(HEXCOPY) $$< $$@
+	@mkdir -p $(@D)
+	$(HEXCOPY) $< $@
 
 # Link with required libraries: HAL (Hardware Abstraction Layer) and 
 # HCC (File System Library)
-$(BINDIR)/$(BINARY_NAME)-$(1).elf: $$(ALL_OBJECTS) 
+$(BINDIR)/$(BINARY_NAME)-$(MEMORIES).elf: $(ALL_OBJECTS) $(FREERTOS_OBJECTS)
 	@echo
-	@echo $(MSG_LINKING) Target $$@
-	@mkdir -p $$(@D)
+	@echo $(MSG_LINKING) Target $@
+	@mkdir -p $(@D)
 ifdef SHOW_DETAILS
-	$(CXX) $(LDFLAGS) $(LINK_INCLUDES) -o $$@ $$^ $(LINK_LIBRARIES)
+	$(CXX) $(LDFLAGS) $(LINK_INCLUDES) -o $@ $^ $(LINK_LIBRARIES)
 else
-	@$(CXX) $(LDFLAGS) $(LINK_INCLUDES) -o $$@ $$^ $(LINK_LIBRARIES)
+	@$(CXX) $(LDFLAGS) $(LINK_INCLUDES) -o $@ $^ $(LINK_LIBRARIES)
 endif
 ifeq ($(BUILD_FOLDER), mission)
 # With Link Time Optimization, section size is not available
-	$(SIZE) $$@
+	$(SIZE) $@
 else
-	$(SIZE) $$^ $$@
+	$(SIZE) $^ $@
 endif
 
 # Build new objects for changed dependencies. 
 # For now, only link for changed makefile by rebuilding assembly files
-$(OBJDIR)/$(1)/%.o: %.cpp
-$(OBJDIR)/$(1)/%.o: %.cpp $(DEPENDDIR)/%.d | $(DEPENDDIR)
+$(OBJDIR)/%.o: %.cpp
+$(OBJDIR)/%.o: %.cpp $(DEPENDDIR)/%.d | $(DEPENDDIR)
 	@echo 
-	@echo $(MSG_COMPILING) $$<
-	@mkdir -p $$(@D)
+	@echo $(MSG_COMPILING) $<
+	@mkdir -p $(@D)
 ifdef SHOW_DETAILS
-	$(CXX) $$(CPPFLAGS) $$(CXXFLAGS) -D$(1) -c -o $$@ $$<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 else
-	@$(CXX) $$(CPPFLAGS) $$(CXXFLAGS) -D$(1) -c -o $$@ $$<
+	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 endif
 
-$(OBJDIR)/$(1)/%.o: %.c 
-$(OBJDIR)/$(1)/%.o: %.c $(DEPENDDIR)/%.d | $(DEPENDDIR) 
+$(OBJDIR)/%.o: %.c
+$(OBJDIR)/%.o: %.c $(DEPENDDIR)/%.d | $(DEPENDDIR) 
 	@echo 
-	@echo $(MSG_COMPILING) $$<
-	@mkdir -p $$(@D)
+	@echo $(MSG_COMPILING) $<
+	@mkdir -p $(@D)
 ifdef SHOW_DETAILS
-	$(CC) $$(CXXFLAGS) $$(CFLAGS) -D$(1) -c -o $$@ $$<
+	$(CC) $(CXXFLAGS) $(CFLAGS) -c -o $@ $<
 else
-	@$(CC) $$(CXXFLAGS) $$(CFLAGS) -D$(1) -c -o $$@ $$<
+	@$(CC) $(CXXFLAGS) $(CFLAGS) -c -o $@ $<
 endif
 
-$(OBJDIR)/$(1)/%.o: %.S Makefile
+$(OBJDIR)/%.o: $(FREERTOS_SRC) 
+$(OBJDIR)/%.o: $(FREERTOS_SRC) $(DEPENDDIR)/%.d | $(DEPENDDIR) 
+	@echo 
+	@echo Compiling FreeRTOS
+	@mkdir -p $(@D)
+ifdef SHOW_DETAILS
+	$(CC) $(CXXFLAGS) $(CFLAGS) -c -o $@ $<
+else
+	@$(CC) $(CXXFLAGS) $(CFLAGS) -c -o $@ $<
+endif
+
+$(OBJDIR)/%.o: %.S Makefile
 	@echo
-	@echo $(MSG_ASSEMBLING) $$<
-	@mkdir -p $$(@D)
+	@echo $(MSG_ASSEMBLING) $<
+	@mkdir -p $(@D)
 ifdef SHOW_DETAILS
-	$(CC) $$(ASFLAGS) -D$(1) -c -o $$@ $$<
+	$(CC) $(ASFLAGS) -c -o $@ $<
 else
-	@$(CC) $$(ASFLAGS) -D$(1) -c -o $$@ $$<
+	@$(CC) $(ASFLAGS) -c -o $@ $<
 endif
 
-endef
-
-$(foreach MEMORY, $(MEMORIES), $(eval $(call MEMORY_BUILDS,$(MEMORY))))
+#endef
+# $(foreach MEMORY, $(MEMORIES), $(eval $(call MEMORY_BUILDS,$(MEMORY))))
 
 #-------------------------------------------------------------------------------
 #		Dependency Handling
@@ -553,7 +568,7 @@ $(foreach MEMORY, $(MEMORIES), $(eval $(call MEMORY_BUILDS,$(MEMORY))))
 # http://make.mad-scientist.net/papers/advanced-auto-dependency-generation/
 $(DEPENDDIR):
 	@mkdir -p $(@D)
-DEPENDENCY_RELATIVE = $(CSRC:.c=.d) $(CXXSRC:.cpp=.d)
+DEPENDENCY_RELATIVE = $(CSRC:.c=.d) $(CXXSRC:.cpp=.d) $(FREERTOS_SRC:.c=.d)
 # This is the list of all dependencies
 DEPFILES = $(addprefix $(DEPENDDIR)/, $(DEPENDENCY_RELATIVE))
 # Create subdirectories for dependencies
