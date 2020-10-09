@@ -27,8 +27,9 @@ typedef struct __attribute__((__packed__))  _FRAMCriticalData {
     uint8_t filler_sw_version[2];
 
     /* Reboot information [4, 4-7] */
-    uint8_t filler_reboot_counter[1];
 	uint16_t reboot_counter;
+	uint16_t reboot_flag;
+
 	bool bootloader_faulty;
 
 	/* Second counter [4, 8 - 11] */
@@ -73,16 +74,20 @@ static const uint8_t SOFTWARE_VERSION_ADDR =
         offsetof(FRAMCriticalData, software_version);
 static const uint8_t SOFTWARE_SUBVERSION_ADDR =
         offsetof(FRAMCriticalData, software_subversion);
+/* Reboot info offset */
 static const uint32_t REBOOT_COUNTER_ADDR =
 		offsetof(FRAMCriticalData, reboot_counter);
+static const uint32_t REBOOT_FLAG_ADDR =
+        offsetof(FRAMCriticalData, reboot_flag);
+static const uint32_t BOOTLOADER_FAULTY_ADDRESS =
+        offsetof(FRAMCriticalData, bootloader_faulty);
+
 static const uint32_t SEC_SINCE_EPOCH_ADDR =
 		offsetof(FRAMCriticalData, seconds_since_epoch);
 static const uint32_t SOFTWARE_UPDATE_BOOL_ADDR =
         offsetof(FRAMCriticalData, software_update_available);
 
-/* Reboot info offset */
-static const uint32_t BOOTLOADER_FAULTY_ADDRESS =
-		offsetof(FRAMCriticalData, bootloader_faulty);
+
 
 /* NOR-Flash binary offsets */
 static const uint32_t NOR_FLASH_BINARY_SIZE_ADDRESS =
@@ -122,8 +127,31 @@ extern "C" {
 int write_software_version(uint8_t software_version, uint8_t software_subversion);
 int read_software_version(uint8_t* software_version, uint8_t* software_subversion);
 
-int increment_reboot_counter();
+/**
+ * Helper function to increment the reboot counter.
+ * @param verify_write  If this is set to true, the write operation will be
+ * verified. This should be disabled when incrementing for exceptions.
+ * @param set_reboot_flag
+ * If the reboot was intended (e.g. commanded), this flag should be set.
+ * The flag is used to be able to track restarts from exceptions.
+ * @return
+ */
+int increment_reboot_counter(bool verify_write, bool set_reboot_flag);
+
+/**
+ * This helper function will be called on reboot to verify whether the
+ * last restart was commanded (which should ideally always be the case)
+ * or whether an exception or something else occured where the restart was
+ * not intentional
+ * @return
+ */
+int verify_reboot_flag(bool* bootcounter_incremented);
 int read_reboot_counter(uint16_t* reboot_counter);
+/**
+ * Should only be used during development!
+ * @return
+ */
+int reset_reboot_counter();
 
 int update_seconds_since_epoch(uint32_t secondsSinceEpoch);
 int read_seconds_since_epoch(uint32_t* secondsSinceEpoch);

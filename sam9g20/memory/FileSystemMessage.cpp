@@ -19,10 +19,34 @@ void FileSystemMessage::setCreateDirectoryCommand(
 	message->setParameter2(storeId.raw);
 }
 
+void FileSystemMessage::setReportFileAttributesCommand(CommandMessage *message,
+        store_address_t storeId) {
+    message->setCommand(REPORT_FILE_ATTRIBUTES);
+    message->setParameter2(storeId.raw);
+}
+
+void FileSystemMessage::setReportFileAttributesReply(CommandMessage *message,
+        store_address_t storeId) {
+    message->setCommand(REPORT_FILE_ATTRIBUTES_REPLY);
+    message->setParameter2(storeId.raw);
+}
+
+void FileSystemMessage::setLockFileCommand(CommandMessage *message,
+        store_address_t storeId) {
+    message->setCommand(LOCK_FILE);
+    message->setParameter2(storeId.raw);
+}
+
+void FileSystemMessage::setUnlockFileCommand(CommandMessage *message,
+        store_address_t storeId) {
+    message->setCommand(UNLOCK_FILE);
+    message->setParameter2(storeId.raw);
+}
+
 void FileSystemMessage::setDeleteDirectoryCommand(
-		CommandMessage* message, store_address_t storeId) {
-	message->setCommand(DELETE_DIRECTORY);
-	message->setParameter2(storeId.raw);
+        CommandMessage* message, store_address_t storeId) {
+    message->setCommand(DELETE_DIRECTORY);
+    message->setParameter2(storeId.raw);
 }
 
 void FileSystemMessage::setWriteCommand(CommandMessage* message,
@@ -37,10 +61,48 @@ void FileSystemMessage::setReadCommand(CommandMessage* message,
 	message->setParameter2(storeId.raw);
 }
 
+void FileSystemMessage::setFinishAppendReply(CommandMessage* message,
+		store_address_t storageID) {
+	message->setCommand(FINISH_APPEND_REPLY);
+	message->setParameter2(storageID.raw);
+}
+
 void FileSystemMessage::setReadReply(CommandMessage* message,
 		store_address_t storageID) {
 	message->setCommand(READ_REPLY);
 	message->setParameter2(storageID.raw);
+}
+
+void FileSystemMessage::setSuccessReply(CommandMessage *message) {
+    message->setCommand(COMPLETION_SUCCESS);
+}
+
+void FileSystemMessage::setClearSdCardCommand(CommandMessage *message) {
+	message->setCommand(CLEAR_SD_CARD);
+}
+
+void FileSystemMessage::setFormatSdCardCommand(CommandMessage *message) {
+	message->setCommand(FORMAT_SD_CARD);
+}
+
+
+void FileSystemMessage::setFinishStopWriteCommand(CommandMessage *message,
+		store_address_t storeId) {
+	message->setCommand(FINISH_APPEND_TO_FILE);
+	message->setParameter2(storeId.raw);
+}
+
+void FileSystemMessage::setFinishStopWriteReply(CommandMessage *message,
+		store_address_t storeId) {
+	message->setCommand(FINISH_APPEND_REPLY);
+	message->setParameter2(storeId.raw);
+}
+
+void FileSystemMessage::setFailureReply(CommandMessage *message,
+        ReturnValue_t errorCode, uint32_t errorParam) {
+    message->setCommand(COMPLETION_FAILED);
+    message->setParameter(errorCode);
+    message->setParameter2(errorParam);
 }
 
 store_address_t FileSystemMessage::getStoreId(const CommandMessage* message) {
@@ -49,25 +111,12 @@ store_address_t FileSystemMessage::getStoreId(const CommandMessage* message) {
 	return temp;
 }
 
-void FileSystemMessage::setSuccessReply(CommandMessage *message) {
-    message->setCommand(COMPLETION_SUCCESS);
-}
-
-void FileSystemMessage::setFailureReply(CommandMessage *message,
-        ReturnValue_t errorCode) {
-    message->setCommand(COMPLETION_FAILED);
-    message->setParameter(errorCode);
-}
-
-void FileSystemMessage::setClearSdCardCommand(CommandMessage *message) {
-	message->setCommand(CLEAR_SD_CARD);
-}
-
 ReturnValue_t FileSystemMessage::getFailureReply(
-		const CommandMessage *message) {
+		const CommandMessage *message, uint32_t* errorParam) {
+	if(errorParam != nullptr) {
+		*errorParam = message->getParameter2();
+	}
 	return message->getParameter();
 }
 
-void FileSystemMessage::setFormatSdCardCommand(CommandMessage *message) {
-	message->setCommand(FORMAT_SD_CARD);
-}
+

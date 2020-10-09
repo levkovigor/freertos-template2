@@ -16,9 +16,6 @@ SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
         SystemObject(objectId), receptionQueue(QueueFactory::instance()->
         createMessageQueue(SW_IMG_HANDLER_MQ_DEPTH)),
         actionHelper(this, receptionQueue) {
-#ifdef AT91SAM9G20_EK
-    imgCpHelper->configureNand(true);
-#endif
 }
 
 ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
@@ -37,8 +34,9 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
         switch(handlerState) {
         case(HandlerState::IDLE): {
 
-            // check for messages or whether periodic scrubbing is necessary
-            break;
+            // check whether periodic scrubbing is necessary
+            // otherwise, return.
+            return HasReturnvaluesIF::RETURN_OK;
         }
         case(HandlerState::COPYING): {
             // continue current copy operation.
@@ -81,9 +79,9 @@ ReturnValue_t SoftwareImageHandler::initialize() {
         return result;
     }
 #ifdef ISIS_OBC_G20
-    int result = NORflash_start();
+    int retval = NORflash_start();
 
-    if(result != 0) {
+    if(retval != 0) {
         // should never happen ! we should power cycle if this happens.
         return result;
     }
@@ -120,7 +118,7 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
     switch(actionId) {
     case(COPY_BOOTLOADER_TO_FLASH): {
         if(handlerState == HandlerState::COPYING) {
-            actionHelper.finish(commandedBy, actionId, BUSY);
+            return HasActionsIF::IS_BUSY;
         }
         if(size != 1) {
             return HasActionsIF::INVALID_PARAMETERS;

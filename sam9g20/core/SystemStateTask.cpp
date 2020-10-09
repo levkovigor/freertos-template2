@@ -1,5 +1,6 @@
 #include "SystemStateTask.h"
 
+#include <config/OBSWConfig.h>
 #include <fsfw/objectmanager/ObjectManagerIF.h>
 #include <sam9g20/core/CoreController.h>
 
@@ -101,7 +102,8 @@ ReturnValue_t SystemStateTask::initializeAfterTaskCreation() {
 }
 
 void SystemStateTask::generateStatsCsvAndCheckStack() {
-    // TODO: write to file directly.
+    // TODO: write to file directly? or generate raw telemetry as service 8
+    // data reply, but data might become too big.
     uint64_t uptimeTicks = coreController->getTotalRunTimeCounter();
     uint64_t idleTicks = coreController->getTotalIdleRunTimeCounter();
 
@@ -120,9 +122,11 @@ void SystemStateTask::generateStatsCsvAndCheckStack() {
     std::string infoColumn = "10 kHz time base used for CPU statistics\n\r";
     std::string headerColumn = "Task Name\tAbsTime [Ticks]\tRelTime [%]\t"
             "LstRemStack [bytes]\n\r";
-    std::memcpy(statsVector.data() + statsIdx, infoColumn.data(), infoColumn.size());
+    std::memcpy(statsVector.data() + statsIdx, infoColumn.data(),
+            infoColumn.size());
     statsIdx += infoColumn.size();
-    std::memcpy(statsVector.data() + statsIdx, headerColumn.data(), headerColumn.size());
+    std::memcpy(statsVector.data() + statsIdx, headerColumn.data(),
+            headerColumn.size());
     statsIdx += headerColumn.size();
 
     /* For percentage calculations. */
@@ -143,6 +147,7 @@ void SystemStateTask::generateStatsCsvAndCheckStack() {
     		triggerEvent(LOW_REM_STACK, firstFourLetters, secondFourLetters);
     	}
         if(task.pcTaskName != nullptr) {
+
 #ifdef DEBUG
         	// human readable format here, tab seperator
         	writeDebugStatLine(task, statsIdx, idleTicks, uptimeTicks);
@@ -157,9 +162,11 @@ void SystemStateTask::generateStatsCsvAndCheckStack() {
         }
     }
     statsVector[statsIdx] = '\0';
+#if OBSW_REDUCED_PRINTOUT == 0
 #ifdef DEBUG
     printf("%s\r\n",statsVector.data());
     printf("Number of bytes written: %d\r\n", statsIdx);
+#endif
 #endif
 
 }

@@ -31,7 +31,6 @@ ImageCopyingEngine::ImageCopyingEngine(SoftwareImageHandler *owner,
         Countdown *countdown, SoftwareImageHandler::ImageBuffer *imgBuffer):
         owner(owner), countdown(countdown), imgBuffer(imgBuffer) {}
 
-
 bool ImageCopyingEngine::getIsOperationOngoing() const {
     if(imageHandlerState == ImageHandlerStates::IDLE) {
         return false;
@@ -107,8 +106,14 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
         return HasReturnvaluesIF::RETURN_OK;
     }
     case(ImageHandlerStates::COPY_SDC_IMG_TO_FLASH): {
+        if(not nandConfigured) {
+            ReturnValue_t result = configureNand(true);
+            if(result != HasReturnvaluesIF::RETURN_OK) {
+                return result;
+            }
+            nandConfigured = true;
+        }
         return copySdCardImageToNandFlash();
-        break;
     }
     case(ImageHandlerStates::REPLACE_SDC_IMG): {
         break;
@@ -120,6 +125,13 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     case(ImageHandlerStates::COPY_SDC_BL_TO_FLASH): {
+        if(not nandConfigured) {
+            ReturnValue_t result = configureNand(true);
+            if(result != HasReturnvaluesIF::RETURN_OK) {
+                return result;
+            }
+            nandConfigured = true;
+        }
         return copySdCardImageToNandFlash();
         break;
     }
@@ -224,8 +236,6 @@ ReturnValue_t ImageCopyingEngine::configureNand(bool disableDebugOutput) {
     if(disableDebugOutput) {
         setTrace(TRACE_LEVEL_WARNING);
     }
-    BOARD_ConfigureNandFlash(nfBusWidth);
-    PIO_Configure(pPinsNf, PIO_LISTSIZE(pPinsNf));
     ReturnValue_t result = nandFlashInit();
     if(result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "SoftwareImageHandler::copyBootloaderToNand"
@@ -408,15 +418,16 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
     }
 
     if(stepCounter == 0) {
-        if(bootloader) {
-            // We need to write the size of the binary to the
+            // We will write the size of the binary to the
             // sixth ARM vector (see p.72 SAM9G20 datasheet)
             // This is only necessary for the bootloader which is copied
-            // to SRAM by the ROM-Boot program.
+            // to SRAM by the ROM-Boot program, but we will still do it for
+            // the main binary so the bootloader can copy the appropriate
+            // amount of memory to the SDRAM.
             std::memcpy(imgBuffer->data() + 0x14, &currentFileSize,
                     sizeof(uint32_t));
-        }
-        else {
+            sif::info << "Copied ARM vector.." << std::endl;
+        if(not bootloader) {
             // This counter will be used to specify the block to write.
             // The first block (0) is reserved for the bootloader, so
             // we have to start at one.
@@ -493,6 +504,7 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
 
     if(currentByteIdx >= currentFileSize) {
         // operation finished.
+#if OBSW_REDUCED_PRINTOUT == 0
         if(bootloader) {
             sif::info << "Copying bootloader to NAND-Flash finished with "
                     << stepCounter << " cycles!" << std::endl;
@@ -501,6 +513,7 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
             sif::info << "Copying OBSW image to NAND-Flash finished with "
                     << stepCounter << " cycles!" << std::endl;
         }
+#endif
 
         // cache last finished state.
         lastFinishedState = imageHandlerState;
@@ -677,6 +690,7 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         // Info output should only be printed once.
         if(stepCounter == 0) {
             currentFileSize = f_filelength(config::BOOTLOADER_NAME);
+#if OBSW_REDUCED_PRINTOUT == 0
 #ifdef AT91SAM9G20_EK
             sif::info << "Copying AT91 bootloader on SD card "
                     << currentVolume << " to AT91 NAND-Flash.." << std::endl;
@@ -688,7 +702,7 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
             sif::info << "Bootloader size: " <<  currentFileSize
                     << " bytes." << std::endl;
         }
-
+#endif
         *filePtr = f_open(config::BOOTLOADER_NAME, "r");
     }
     else {

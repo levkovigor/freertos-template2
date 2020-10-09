@@ -25,17 +25,16 @@ namespace objects {
 		TM_FUNNEL = 0x52000002,
 		FREERTOS_TASK_MONITOR = 0x53000003,
 
-		/* 0x44 ('D') for Device Handlers **/
-		/* Second Byte: ComIF -> 0x00: UART,0x10 SPI,0x20: I2C,30: GPIO,40: PWM */
-		/* Third Byte: Device ID */
-		CORE_CONTROLLER = 0x4001000,
-        SYSTEM_STATE_TASK = 0x4001005,
-		RS485_CONTROLLER = 0x4002000,
+		CORE_CONTROLLER = 0x40001000,
+        SYSTEM_STATE_TASK = 0x40001005,
+		RS485_CONTROLLER = 0x40002000,
 
+        /* 0x44 ('D') for Device Handlers **/
+        /* Second Byte: ComIF -> 0x00: UART,0x10 SPI,0x20: I2C,30: GPIO,40: PWM */
+        /* Third Byte: Device ID */
 		PCDU_HANDLER = 0x44003200,
 		GPS0_HANDLER = 0x44101F00,
 		GPS1_HANDLER = 0x44202000,
-
 
 		DLR_PVCH = 0x44104000,
 		GYRO1 = 0x44105000,

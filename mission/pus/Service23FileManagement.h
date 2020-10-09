@@ -32,11 +32,13 @@
  * A set of custom subservices will be implemented for uploading files:
  *  - TC[23,130]: Append to file. The service will  implement sequence checking
  *    for consecutive append operations on the same file but only support one
- *    append operation at a time.
+ *    append operation at a time. Please note that if an append operation
+ *    was stopped and has to be continued, the packet counter should
+ *    start at 0 so that the last packet sequence counter is reset.
  *  - TC[23,131]: Stop or finish append operation. This service will stop or
  *    finish the append operation so that another append operation can be
- *    started. A telemetry packet containing the last valid sequence number,
- *    the repository and file name of the current operation will be generated.
+ *    started. A telemetry packet containing the repository, the file path,
+ *    last valid sequence number, and the current file size will be generated.
  *  - TC[23,132]: Stop append reply.
  *
  * A set of custom subservices will be implemented for downloading files:
@@ -141,6 +143,8 @@ private:
 
 	ReturnValue_t addDataToStore(store_address_t* storeId, const uint8_t* tcData,
 	        size_t tcDataLen);
+	ReturnValue_t forwardFileSystemReply(const CommandMessage* reply,
+			object_id_t objectId, Subservice subservice);
 };
 
 

@@ -6,7 +6,8 @@
 #include <fsfw/objectmanager/SystemObject.h>
 
 /**
- * @author  Jakob Meier
+ * @brief   These messages are sent to an object implementing HasFilesystemIF.
+ * @author  Jakob Meier, R. Mueller
  */
 class FileSystemMessage {
 public:
@@ -40,25 +41,13 @@ public:
 	/** Repository dump reply */
 	static const Command_t DUMY_REPOSITORY_REPLY = MAKE_COMMAND_ID(13);
 
+	/** Append operation commands */
     static const Command_t APPEND_TO_FILE = MAKE_COMMAND_ID(130);
-    static const Command_t READ_FROM_FILE = MAKE_COMMAND_ID(131);
-    static const Command_t READ_REPLY = MAKE_COMMAND_ID(132);
+    static const Command_t FINISH_APPEND_TO_FILE = MAKE_COMMAND_ID(131);
+    static const Command_t FINISH_APPEND_REPLY = MAKE_COMMAND_ID(132);
 
-    /** Print the structure of the SD card to the debug console */
-//    static const Command_t PRINT_SD_CARD = MAKE_COMMAND_ID(133);
-
-    /** Dump the structure of the whole SD card as an ASCII file */
-//    static const Command_t DUMP_FILE_STRUCTURE = MAKE_COMMAND_ID(200);
-//    static const Command_t DUMP_FILE_STRUCTURE_REPLY = MAKE_COMMAND_ID(201);
-
-
-//    static const Command_t SELECT_ACTIVE_SD_CARD = MAKE_COMMAND_ID(150);
-//    static const Command_t REPORT_ACTIVE_SD_CARD = MAKE_COMMAND_ID(151);
-//    static const Command_t ACTIVE_SD_CARD_REPLY = MAKE_COMMAND_ID(152);
-
-//    static const Command_t SELECT_PREFERED_SD_CARD = MAKE_COMMAND_ID(160);
-//    static const Command_t REPORT_PREFERED_SD_CARD = MAKE_COMMAND_ID(161);
-//    static const Command_t PREFERED_SD_CARD_REPLY = MAKE_COMMAND_ID(162);
+    static const Command_t READ_FROM_FILE = MAKE_COMMAND_ID(140);
+    static const Command_t READ_REPLY = MAKE_COMMAND_ID(141);
 
     /** Removes a folder (rm -rf equivalent!). Use with care ! */
     static const Command_t CLEAR_REPOSITORY = MAKE_COMMAND_ID(180);
@@ -74,25 +63,46 @@ public:
 	        store_address_t storeId);
 	static void setDeleteFileCommand(CommandMessage* message,
 	        store_address_t storeId);
+
+	static void setReportFileAttributesCommand(CommandMessage* message,
+            store_address_t storeId);
+	static void setReportFileAttributesReply(CommandMessage* message,
+            store_address_t storeId);
+
 	static void setCreateDirectoryCommand(CommandMessage* message,
 	        store_address_t storeId);
 	static void setDeleteDirectoryCommand(CommandMessage* message,
 	        store_address_t storeId);
+
+    static void setLockFileCommand(CommandMessage* message,
+            store_address_t storeId);
+    static void setUnlockFileCommand(CommandMessage* message,
+            store_address_t storeId);
+
 	static void setWriteCommand(CommandMessage* message,
 	        store_address_t storeId);
+	static void setFinishStopWriteCommand(CommandMessage* message,
+	        store_address_t storeId);
+	static void setFinishStopWriteReply(CommandMessage* message,
+			store_address_t storeId);
+
 	static void setReadCommand(CommandMessage* message,
 	        store_address_t storeId);
+
 
 	static void setClearSdCardCommand(CommandMessage* message);
 	static void setFormatSdCardCommand(CommandMessage* message);
 
 	static void setReadReply(CommandMessage* message, store_address_t storeId);
+	static  void setFinishAppendReply(CommandMessage* message,
+			store_address_t storeId);
     static void setSuccessReply(CommandMessage* message);
     static void setFailureReply(CommandMessage* message,
-            ReturnValue_t errorCode);
+            ReturnValue_t errorCode, uint32_t errorParam = 0);
 
 	static store_address_t getStoreId(const CommandMessage* message);
-	static ReturnValue_t getFailureReply(const CommandMessage* message);
+	static ReturnValue_t getFailureReply(const CommandMessage* message,
+			uint32_t* errorParam = nullptr);
 };
 
 #endif /* SAM9G20_MEMORY_FILESYSTEMMESSAGE_H_ */

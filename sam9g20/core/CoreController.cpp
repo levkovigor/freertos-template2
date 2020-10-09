@@ -1,4 +1,3 @@
-
 #include "CoreController.h"
 
 #include <systemObjectList.h>
@@ -6,15 +5,19 @@
 #include <FreeRTOSConfig.h>
 
 #include <fsfw/ipc/QueueFactory.h>
+#include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/timemanager/Stopwatch.h>
 
 extern "C" {
 #ifdef ISIS_OBC_G20
 #include <hal/Timing/Time.h>
+#include <sam9g20/common/FRAMApi.h>
 #endif
 #include <hal/Timing/RTT.h>
 }
+
+#include <utility/exithandler.h>
 
 #include <utility/portwrapper.h>
 #include <utility/compile_time.h>
@@ -66,8 +69,8 @@ void CoreController::performControlOperation() {
     mission time. */
     uint32_t currentUptimeSeconds = RTT_GetTime();
     if(currentUptimeSeconds - lastCounterUpdateSeconds >= DAY_IN_SECONDS) {
-    	update64bitCounter();
-    	lastCounterUpdateSeconds = currentUptimeSeconds;
+        update64bitCounter();
+        lastCounterUpdateSeconds = currentUptimeSeconds;
     }
 
     // Store current uptime in seconds in FRAM, using the FRAM handler.
@@ -77,12 +80,6 @@ void CoreController::performControlOperation() {
         // should not happen!
     }
 #endif
-
-//    if(currentUptimeSeconds - lastDumpSecond >= 20) {
-//        systemStateTask->readAndGenerateStats();
-//        lastDumpSecond = currentUptimeSeconds;
-//    }
-
 }
 
 ReturnValue_t CoreController::checkModeCommand(Mode_t mode, Submode_t submode,
@@ -96,39 +93,70 @@ MessageQueueId_t CoreController::getCommandQueue() const {
 
 ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
-	switch(actionId) {
-	case(REQUEST_CPU_STATS_CHECK_STACK): {
-		if(not systemStateTask->readAndGenerateStats()) {
-			return HasReturnvaluesIF::RETURN_FAILED;
-		}
-		return HasReturnvaluesIF::RETURN_OK;
-	}
-	default:
-		return HasActionsIF::INVALID_ACTION_ID;
-	}
+    switch(actionId) {
+    case(REQUEST_CPU_STATS_CHECK_STACK): {
+        if(not systemStateTask->readAndGenerateStats()) {
+            return HasActionsIF::IS_BUSY;
+        }
+        actionHelper.finish(commandedBy, actionId,
+                HasReturnvaluesIF::RETURN_OK);
+        return HasReturnvaluesIF::RETURN_OK;
+    }
+    case(RESET_OBC): {
+#ifdef AT91SAM9G20_EK
+        restart();
+#else
+        int retval = increment_reboot_counter(true, true);
+        if(retval != 0) {
+            sif::error << "CoreController::executeAction: "
+                    << "Incrementing reboot counter failed!" << std::endl;
+        }
+        supervisor_generic_reply_t reply;
+        Supervisor_reset(&reply, SUPERVISOR_INDEX);
+#endif
+        return HasReturnvaluesIF::RETURN_OK;
+    }
+    case(POWERCYCLE_OBC): {
+#ifdef AT91SAM9G20_EK
+        restart();
+#else
+
+        int retval = increment_reboot_counter(true, true);
+        if(retval != 0) {
+            sif::error << "CoreController::executeAction: "
+                    << "Incrementing reboot counter failed!" << std::endl;
+        }
+        supervisor_generic_reply_t reply;
+        Supervisor_powerCycleIobc(&reply, SUPERVISOR_INDEX);
+#endif
+        return HasReturnvaluesIF::RETURN_OK;
+    }
+    default:
+        return HasActionsIF::INVALID_ACTION_ID;
+    }
 }
 
 uint64_t CoreController::getTotalRunTimeCounter() {
-	return static_cast<uint64_t>(counterOverflows) << 32 |
-			vGetCurrentTimerCounterValue();
+    return static_cast<uint64_t>(counterOverflows) << 32 |
+            vGetCurrentTimerCounterValue();
 }
 
 uint64_t CoreController::getTotalIdleRunTimeCounter() {
-	return static_cast<uint64_t>(idleCounterOverflows) << 32 |
-			ulTaskGetIdleRunTimeCounter();
+    return static_cast<uint64_t>(idleCounterOverflows) << 32 |
+            ulTaskGetIdleRunTimeCounter();
 }
 
 void CoreController::update64bitCounter() {
     uint32_t currentCounter = vGetCurrentTimerCounterValue();
     uint32_t currentIdleCounter = ulTaskGetIdleRunTimeCounter();
     if(currentCounter < last32bitCounterValue) {
-    	// overflow occured.
-    	counterOverflows ++;
+        // overflow occured.
+        counterOverflows ++;
     }
 
     if(currentIdleCounter < last32bitIdleCounterValue) {
-    	// overflow occured.
-    	idleCounterOverflows ++;
+        // overflow occured.
+        idleCounterOverflows ++;
     }
 
     last32bitCounterValue = currentCounter;
@@ -142,10 +170,22 @@ ReturnValue_t CoreController::initializeAfterTaskCreation() {
 }
 
 ReturnValue_t CoreController::initialize() {
+    ReturnValue_t result = actionHelper.initialize(commandQueue);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
 #ifdef ISIS_OBC_G20
     framHandler = objectManager->get<FRAMHandler>(objects::FRAM_HANDLER);
     if(framHandler == nullptr) {
-        return HasReturnvaluesIF::RETURN_FAILED;
+        sif::error << "CoreController::initialize: No FRAM handler found!"
+                << std::endl;
+    }
+    bool bootloaderIncremented = false;
+    int retval = verify_reboot_flag(&bootloaderIncremented);
+    if(retval != 0) {
+        sif::error << "CoreController::initialize: Error verifying the boot"
+                << " counter!" << std::endl;
     }
 #endif
     return SystemObject::initialize();
@@ -197,7 +237,7 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
-    uint64_t secSinceEpoch = 0;
+    uint32_t secSinceEpoch = 0;
     retval = read_seconds_since_epoch(&secSinceEpoch);
     if(retval != 0) {
         return HasReturnvaluesIF::RETURN_FAILED;

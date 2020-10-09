@@ -1,6 +1,8 @@
 #ifndef SAM9G20_MEMORY_SDCARDACCESS_H_
 #define SAM9G20_MEMORY_SDCARDACCESS_H_
 
+#include "SDCardDefinitions.h"
+
 #include <fsfw/osal/FreeRTOS/CountingSemaphore.h>
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
 #include <sam9g20/memory/SDCardApi.h>

@@ -207,7 +207,6 @@ int create_file(const char* repository_path, const char* filename,
 
     result = f_getlasterror();
     if(result != F_NO_ERROR) {
-        TRACE_DEBUG("create_file: f_open call failed with code %d!\n\r", result);
         return result;
     }
 
@@ -244,17 +243,93 @@ int delete_file(const char* repository_path,
 
     result = f_delete(filename);
     if(result != F_NO_ERROR){
-        if(result == F_ERR_NOTFOUND) {
-            TRACE_WARNING("delete_file: File not found, code %d.\r\n", result);
-        }
-        else {
-            TRACE_ERROR("delete_file: f_delete failed with code %d!\n\r",
-                    result);
-        }
         return result;
     }
     return result;
 }
+
+int lock_file(const char* repository_path, const char* filename) {
+	int result = 0;
+    if(repository_path != NULL) {
+        result = change_directory(repository_path, true);
+        if(result != F_NO_ERROR) {
+            return result;
+        }
+    }
+
+    uint8_t current_attribute;
+	result = f_getattr(filename, &current_attribute);
+	if(result != F_NO_ERROR) {
+		return result;
+	}
+
+	current_attribute |= F_ATTR_READONLY;
+
+	return f_setattr(filename, current_attribute);
+}
+
+
+int unlock_file(const char* repository_path, const char* filename) {
+	int result = 0;
+    if(repository_path != NULL) {
+        result = change_directory(repository_path, true);
+        if(result != F_NO_ERROR) {
+            return result;
+        }
+    }
+
+    uint8_t current_attribute;
+	result = f_getattr(filename, &current_attribute);
+	if(result != F_NO_ERROR) {
+		return result;
+	}
+
+	current_attribute &= ~(F_ATTR_READONLY);
+	return f_setattr(filename, current_attribute);
+}
+
+
+int get_file_info(const char* repository_path, const char* filename,
+		size_t* filesize, bool *locked, uint16_t* cdate,
+		uint16_t* ctime) {
+	int result = 0;
+    if(repository_path != NULL) {
+        result = change_directory(repository_path, true);
+        if(result != F_NO_ERROR) {
+            return result;
+        }
+    }
+
+    f_open(filename, "r");
+
+    result = f_getlasterror();
+    if(result != F_NO_ERROR) {
+        return result;
+    }
+
+    *filesize = f_filelength(filename);
+
+    if(locked != NULL) {
+    	uint8_t attribute;
+    	result = f_getattr(filename, &attribute);
+    	if(result != F_NO_ERROR) {
+    		return result;
+    	}
+
+    	if((attribute & F_ATTR_READONLY) == F_ATTR_READONLY) {
+    		*locked = true;
+    	}
+    	else {
+    		*locked = false;
+    	}
+    }
+
+    if((cdate != NULL) && (ctime != NULL)) {
+    	result = f_gettimedate(filename, cdate, ctime);
+    }
+    return result;
+}
+
 
 int delete_directory_force(const char *repository_path, const char *dirname,
         bool delete_subfolder_recursively) {
@@ -381,3 +456,4 @@ int delete_file_system_object(const char* name) {
     }
     return result;
 }
+

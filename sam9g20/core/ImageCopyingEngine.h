@@ -2,7 +2,7 @@
 #define SAM9G20_CORE_IMAGECOPYINGENGINE_H_
 
 #include <sam9g20/core/SoftwareImageHandler.h>
-
+#include <sam9g20/memory/SDCardDefinitions.h>
 #include <sam9g20/memory/SDCardAccess.h>
 #include <sam9g20/memory/SDCardApi.h>
 
@@ -137,6 +137,7 @@ private:
 
 
 #ifdef AT91SAM9G20_EK
+    bool nandConfigured = false;
     static constexpr size_t NAND_PAGE_SIZE = NandCommon_MAXPAGEDATASIZE;
     static constexpr uint8_t PAGES_PER_BLOCK = NandCommon_MAXNUMPAGESPERBLOCK;
 
