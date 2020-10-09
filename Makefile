@@ -398,8 +398,7 @@ all: executable
 
 # Build target configuration, which also includes information output.
 # See: https://www.gnu.org/software/make/manual/html_node/Target_002dspecific.html
-mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION) $(LINK_TIME_OPTIMIZATION)
-mission: LINK_TIME_OPTIMIZATION = -flto
+mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION) # $(LINK_TIME_OPTIMIZATION)
 mission: TARGET = Mission binary
 mission: OPTIMIZATION_MESSAGE = On with Link Time Optimization
 mission: DEBUG_LEVEL = -g0
