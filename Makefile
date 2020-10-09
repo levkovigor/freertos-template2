@@ -369,7 +369,7 @@ ASFLAGS =  -Wall -g $(OPTIMIZATION) $(I_INCLUDES) -D$(CHIP) -D__ASSEMBLY__ \
 # - LINK_INCLUDES: Specify the path to used libraries and the linker script
 # - LINK_LIBRARIES: Link HCC and HAL library and enable float support
 
-LDFLAGS = $(DEBUG_LEVEL) $(UNUSED_CODE_REMOVAL) $(OPTIMIZATION) $(NEWLIB_NANO) 
+LDFLAGS = $(DEBUG_LEVEL) $(CPU_FLAG) $(UNUSED_CODE_REMOVAL) $(OPTIMIZATION) $(NEWLIB_NANO) 
 LINK_INCLUDES = -L"$(HAL_PATH)/lib" -L"$(HCC_PATH)/lib" \
 		-T"$(LINKER_SCRIPT_PATH)/$(1).lds" -Wl,-Map=$(BINDIR)/$(BINARY_NAME).map
 LINK_LIBRARIES = -lc -u _printf_float -u _scanf_float -lHCC -lHCCD -lHAL -lHALD 
@@ -398,9 +398,10 @@ all: executable
 
 # Build target configuration, which also includes information output.
 # See: https://www.gnu.org/software/make/manual/html_node/Target_002dspecific.html
-mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION) # $(LINK_TIME_OPTIMIZATION)
+# Link time optimization disabled for now, issues with optimized binary..
+mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION) $(LINK_TIME_OPTIMIZATION)
 mission: TARGET = Mission binary
-mission: OPTIMIZATION_MESSAGE = On with Link Time Optimization
+mission: OPTIMIZATION_MESSAGE = On without Link Time Optimization
 mission: DEBUG_LEVEL = -g0
 
 debug: CXXDEFINES += -DDEBUG
