@@ -407,7 +407,8 @@ all: executable
 # See: https://www.gnu.org/software/make/manual/html_node/Target_002dspecific.html
 # Link time optimization is added in the rules to disable it for certain source files
 mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION) 
-mission: LINK_TIME_OPTIMIZATION = -flto
+# Disabled until hard fault handler problem is sorted out..
+# mission: LINK_TIME_OPTIMIZATION = -flto
 mission: TARGET = Mission binary
 mission: OPTIMIZATION_MESSAGE = On with Link Time Optimization.
 mission: DEBUG_LEVEL = -g0
