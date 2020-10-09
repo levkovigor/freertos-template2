@@ -23,6 +23,11 @@ ReturnValue_t Service17CustomTest::handleRequest(uint8_t subservice) {
 	    periodicPrintoutEnabled = false;
 	    break;
 	}
+	case CustomSubservice::TRIGGER_EXCEPTION: {
+	    Service17CustomTest* exception;
+	    exception->performService();
+	    break;
+	}
 	default:
 	    return Service17Test::handleRequest(subservice);
 	}

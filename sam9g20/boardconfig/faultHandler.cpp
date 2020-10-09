@@ -2,7 +2,9 @@
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <at91/utility/exithandler.h>
 #include <at91/utility/trace.h>
+#ifdef ISIS_OBC_G20
 #include <sam9g20/common/FRAMApi.h>
+#endif
 
 
 /*----------------------------------------------------------------------------
@@ -97,10 +99,10 @@ void defaultIrqHandler( void )
 void data_abort_irq_handler(void)
 {
 #ifdef DEBUG
-	uint32_t v1, v2, dfsr;
+	uint32_t v1, v2, dfsr = 0;
 
-	asm("mrc p15, 0, %0, c5, c0, 0" : "=r"(v1));
-	asm("mrc p15, 0, %0, c6, c0, 0" : "=r"(v2));
+	asm volatile ("mrc p15, 0, %0, c5, c0, 0" : "=r"(v1));
+	asm volatile ("mrc p15, 0, %0, c6, c0, 0" : "=r"(v2));
 	printf("\r\n");
 	TRACE_ERROR("####################\r\n");
 	dfsr = ((v1 >> 4) & 0x0F);
@@ -139,10 +141,10 @@ void data_abort_irq_handler(void)
 void prefetch_abort_irq_handler(void)
 {
 #ifdef DEBUG
-	uint32_t v1, v2, ifsr;
+	uint32_t v1, v2, ifsr = 0;
 
-	asm("mrc p15, 0, %0, c5, c0, 1" : "=r"(v1));
-	asm("mrc p15, 0, %0, c6, c0, 2" : "=r"(v2));
+	asm volatile ("mrc p15, 0, %0, c5, c0, 1" : "=r"(v1));
+	asm volatile ("mrc p15, 0, %0, c6, c0, 2" : "=r"(v2));
 
 	printf("\r\n");
 	TRACE_ERROR("####################\r\n");

@@ -321,7 +321,7 @@ UNUSED_CODE_REMOVAL = -Wl,--gc-sections
 # Link time is larger and size of object files can not be retrieved
 # but resulting binary is smaller. Could be used in mission/deployment build
 # Requires -ffunction-section in linker call
-LINK_TIME_OPTIMIZATION = -flto
+LINK_TIME_OPTIMIZATION =
 FREERTOS_OPTIMIZATION = -fno-lto
 AT91_OPTIMIZATION = -fno-lto
 OPTIMIZATION += $(PROTOTYPE_OPTIMIZATION) 
@@ -406,7 +406,8 @@ all: executable
 # Build target configuration, which also includes information output.
 # See: https://www.gnu.org/software/make/manual/html_node/Target_002dspecific.html
 # Link time optimization is added in the rules to disable it for certain source files
-mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION) # $(LINK_TIME_OPTIMIZATION)
+mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION) 
+mission: LINK_TIME_OPTIMIZATION = -flto
 mission: TARGET = Mission binary
 mission: OPTIMIZATION_MESSAGE = On with Link Time Optimization.
 mission: DEBUG_LEVEL = -g0

@@ -24,6 +24,10 @@ public:
         ENABLE_PERIODIC_PRINT = 128,
         //! [EXPORT] : [COMMAND] Disable periodic output
         DISABLE_PERIODIC_PRINT = 129,
+
+        //! [EXPORT] : [COMMAND] Trigger a software exception which should lead
+        //! to a restart.
+        TRIGGER_EXCEPTION = 150
     };
 
 	Service17CustomTest(object_id_t objectId, uint16_t apid, uint8_t serviceId);
