@@ -18,7 +18,6 @@ extern "C" {
 }
 
 #include <utility/exithandler.h>
-
 #include <utility/portwrapper.h>
 #include <utility/compile_time.h>
 #include <cinttypes>
@@ -29,8 +28,7 @@ uint32_t CoreController::idleCounterOverflows = 0;
 
 CoreController::CoreController(object_id_t objectId,
         object_id_t systemStateTaskId):
-        ControllerBase(objectId, objects::NO_OBJECT),
-        actionHelper(this, commandQueue), poolManager(this, commandQueue),
+        ExtendedControllerBase(objectId, objects::NO_OBJECT),
         systemStateTaskId(systemStateTaskId) {
 #ifdef ISIS_OBC_G20
     sif::info << "CoreController: Starting Supervisor component." << std::endl;
@@ -39,12 +37,6 @@ CoreController::CoreController(object_id_t objectId,
 }
 
 ReturnValue_t CoreController::handleCommandMessage(CommandMessage *message) {
-    ReturnValue_t result = actionHelper.handleActionMessage(message);
-    if(result == HasReturnvaluesIF::RETURN_OK) {
-        return result;
-    }
-
-    // handle other messages here.
     return CommandMessageIF::UNKNOWN_COMMAND;
 }
 
@@ -85,10 +77,6 @@ void CoreController::performControlOperation() {
 ReturnValue_t CoreController::checkModeCommand(Mode_t mode, Submode_t submode,
         uint32_t *msToReachTheMode) {
     return HasReturnvaluesIF::RETURN_OK;
-}
-
-MessageQueueId_t CoreController::getCommandQueue() const {
-    return ControllerBase::getCommandQueue();
 }
 
 ReturnValue_t CoreController::executeAction(ActionId_t actionId,
@@ -165,16 +153,18 @@ void CoreController::update64bitCounter() {
 
 
 ReturnValue_t CoreController::initializeAfterTaskCreation() {
-    setUpSystemStateTask();
+    ReturnValue_t result = ExtendedControllerBase::initializeAfterTaskCreation();
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+    result = setUpSystemStateTask();
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
     return initializeIsisTimerDrivers();
 }
 
 ReturnValue_t CoreController::initialize() {
-    ReturnValue_t result = actionHelper.initialize(commandQueue);
-    if(result != HasReturnvaluesIF::RETURN_OK) {
-        return result;
-    }
-
 #ifdef ISIS_OBC_G20
     framHandler = objectManager->get<FRAMHandler>(objects::FRAM_HANDLER);
     if(framHandler == nullptr) {
@@ -188,7 +178,7 @@ ReturnValue_t CoreController::initialize() {
                 << " counter!" << std::endl;
     }
 #endif
-    return SystemObject::initialize();
+    return ExtendedControllerBase::initialize();
 }
 
 
@@ -201,10 +191,6 @@ ReturnValue_t CoreController::setUpSystemStateTask() {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     return HasReturnvaluesIF::RETURN_OK;
-}
-
-object_id_t CoreController::getObjectId() const {
-    return SystemObject::getObjectId();
 }
 
 ReturnValue_t CoreController::initializeIsisTimerDrivers() {
@@ -277,14 +263,6 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
 ReturnValue_t CoreController::initializeLocalDataPool(
         LocalDataPool &localDataPoolMap, LocalDataPoolManager &poolManager) {
     return HasReturnvaluesIF::RETURN_OK;
-}
-
-LocalDataPoolManager* CoreController::getHkManagerHandle() {
-    return &poolManager;
-}
-
-dur_millis_t CoreController::getPeriodicOperationFrequency() const {
-    return executingTask->getPeriodMs();
 }
 
 LocalPoolDataSetBase* CoreController::getDataSetHandle(sid_t sid) {
