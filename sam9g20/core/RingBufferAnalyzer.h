@@ -12,6 +12,7 @@ enum class AnalyzerModes {
  * @brief 	Analyzer task which checks a supplied ring buffer for
  * 			encoded packets.
  * @details
+ * @author  R. Mueller
  */
 class RingBufferAnalyzer {
 public:
