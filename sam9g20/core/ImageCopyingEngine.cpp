@@ -426,7 +426,6 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
             // amount of memory to the SDRAM.
             std::memcpy(imgBuffer->data() + 0x14, &currentFileSize,
                     sizeof(uint32_t));
-            sif::info << "Copied ARM vector.." << std::endl;
         if(not bootloader) {
             // This counter will be used to specify the block to write.
             // The first block (0) is reserved for the bootloader, so
