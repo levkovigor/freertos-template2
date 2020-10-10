@@ -12,7 +12,7 @@
 AT91S_TC* tcStatsPeripheral = AT91C_BASE_TC5;
 TcPeripherals tcPeripheralSelect = TcPeripherals::TC5;
 
-uint16_t timerOverflowCounter = 0;
+volatile uint16_t timerOverflowCounter = 0;
 
 void vRequestContextSwitchFromISR() {
      portYIELD_FROM_ISR(); // @suppress("Function cannot be resolved")

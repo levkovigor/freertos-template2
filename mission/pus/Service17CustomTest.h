@@ -20,10 +20,14 @@
 class Service17CustomTest: public Service17Test {
 public:
     enum CustomSubservice {
-        //! [EXPORT] : [COMMAND] Trigger multiple events (5)
-        MULTIPLE_EVENT_TRIGGER_TEST = 129,
-        //! [EXPORT] : [COMMAND] Trigger multiple connection tests
-        MULTIPLE_CONNECTION_TEST = 130
+        //! [EXPORT] : [COMMAND] Enable periodic output
+        ENABLE_PERIODIC_PRINT = 129,
+        //! [EXPORT] : [COMMAND] Disable periodic output
+        DISABLE_PERIODIC_PRINT = 130,
+
+        //! [EXPORT] : [COMMAND] Trigger a software exception which should lead
+        //! to a restart.
+        TRIGGER_EXCEPTION = 150
     };
 
 	Service17CustomTest(object_id_t objectId, uint16_t apid, uint8_t serviceId);
@@ -31,8 +35,7 @@ public:
 	virtual ReturnValue_t handleRequest(uint8_t subservice) override;
 	virtual ReturnValue_t performService() override;
 private:
-	bool performMassEventTesting = false;
-	bool performMassConnectionTesting = false;
+	bool periodicPrintoutEnabled = false;
 	uint8_t counter = 0;
 };
 

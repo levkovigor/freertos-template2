@@ -106,8 +106,14 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
         return HasReturnvaluesIF::RETURN_OK;
     }
     case(ImageHandlerStates::COPY_SDC_IMG_TO_FLASH): {
+        if(not nandConfigured) {
+            ReturnValue_t result = configureNand(true);
+            if(result != HasReturnvaluesIF::RETURN_OK) {
+                return result;
+            }
+            nandConfigured = true;
+        }
         return copySdCardImageToNandFlash();
-        break;
     }
     case(ImageHandlerStates::REPLACE_SDC_IMG): {
         break;
@@ -119,6 +125,13 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     case(ImageHandlerStates::COPY_SDC_BL_TO_FLASH): {
+        if(not nandConfigured) {
+            ReturnValue_t result = configureNand(true);
+            if(result != HasReturnvaluesIF::RETURN_OK) {
+                return result;
+            }
+            nandConfigured = true;
+        }
         return copySdCardImageToNandFlash();
         break;
     }
@@ -223,8 +236,6 @@ ReturnValue_t ImageCopyingEngine::configureNand(bool disableDebugOutput) {
     if(disableDebugOutput) {
         setTrace(TRACE_LEVEL_WARNING);
     }
-    BOARD_ConfigureNandFlash(nfBusWidth);
-    PIO_Configure(pPinsNf, PIO_LISTSIZE(pPinsNf));
     ReturnValue_t result = nandFlashInit();
     if(result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "SoftwareImageHandler::copyBootloaderToNand"

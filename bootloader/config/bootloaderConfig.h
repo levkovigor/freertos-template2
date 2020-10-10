@@ -15,10 +15,9 @@
 /**
  * Specify whether the binary size will be fixed. If this is not set,
  * the binary size is expected to be at the sixth ARM vector location!
- * The value found there is still sanitized and the sizes here will be
- * used if it does not make sense.
+ * Enable this when using SAM-BA!
  */
-#define USE_FIXED_BINARY_SIZE   1
+#define USE_FIXED_BINARY_SIZE   0
 /**
  *  Binary size in bytes.
  *  Adapt theses sizes as the binary grows.

@@ -127,8 +127,8 @@ SECTIONS
         . = ALIGN(4);
         _spostrelocate = .;
         KEEP(*(.vectors));
-		*(.sramfunc)
-        *(.ramfunc)
+		KEEP(*(.sramfunc));
+        KEEP(*(.ramfunc));
         . = ALIGN(4);
         _epostrelocate = .;
     } >sram0 

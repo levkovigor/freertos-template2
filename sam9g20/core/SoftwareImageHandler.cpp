@@ -95,9 +95,6 @@ ReturnValue_t SoftwareImageHandler::initializeAfterTaskCreation() {
 	countdown = new Countdown(static_cast<float>(
 	        this->executingTask->getPeriodMs()) * 0.85);
 	imgCpHelper = new ImageCopyingEngine(this, countdown, &imgBuffer);
-#ifdef AT91SAM9G20_EK
-    imgCpHelper->configureNand(true);
-#endif
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -121,7 +118,7 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
     switch(actionId) {
     case(COPY_BOOTLOADER_TO_FLASH): {
         if(handlerState == HandlerState::COPYING) {
-            actionHelper.finish(commandedBy, actionId, BUSY);
+            return HasActionsIF::IS_BUSY;
         }
         if(size != 1) {
             return HasActionsIF::INVALID_PARAMETERS;

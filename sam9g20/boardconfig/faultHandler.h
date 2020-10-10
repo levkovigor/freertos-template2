@@ -9,6 +9,9 @@ void defaultSpuriousHandler( void );
 void defaultFiqHandler( void );
 void defaultIrqHandler(void);
 
+void prefetch_abort_irq_handler(void);
+void data_abort_irq_handler(void);
+
 #ifdef __cplusplus
 }
 #endif

@@ -161,12 +161,13 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
     }
 #endif
 
-    TRACE_WARNING("Access translation: Start copying to block %d and "
+    TRACE_WARNING("Access translation: Start copying from block %d and "
             "page %d.\n\r", block, page);
 
     // Initialize to SDRAM start address
     ptr = (unsigned char*)SDRAM_DESTINATION;
     bytes_read = binary_size;
+    unsigned short first_block = block;
 
     while(block < numBlocks)
     {
@@ -194,39 +195,30 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
 //        		}
 //        		TRACE_WARNING("SkipBlockNandFlash_ReadBlock: Reading block %d "
 //       				"page %d.\n\r", block, page);
-        		if (error == NandCommon_ERROR_BADBLOCK)
+        		if (error == NandCommon_ERROR_BADBLOCK) {
         		    block++;
+        		}
         		else {
-        		    if((block == 1) && (page == 0)) {
+        		    if((block == first_block) && (page == 0)) {
 #if USE_FIXED_BINARY_SIZE == 0
-
-        		        // Set binary size to sixth ARM vector.
+        		        // Set binary size from the sixth ARM vector.
         		        // bytes_read has not been decremented yet, so we can
         		        // use it to do this.
         		        memcpy(&bytes_read, ptr + 0x14, sizeof(uint32_t));
+#endif
 #if ENHANCED_DEBUG_OUTPUT == 1
         		        TRACE_WARNING("Detected binary size from sixth ARM "
         		                "vector: %u\n\r", bytes_read);
-#endif
-        		        // Basic sanitization of value.
-        		        if(bytes_read == 0 || bytes_read == 0xffffffff ||
-        		                bytes_read < 0) {
-        		            bytes_read = binary_size;
-        		        }
-
-
-#endif
-#if ENHANCED_DEBUG_OUTPUT == 1
-                    TRACE_WARNING("Copying NAND-Flash binary with %u bytes "
-                            "from NAND 0x%08x to 0x20000000\n\r",
-                            (unsigned int)bytes_read,
-                            (unsigned int)binary_offset);
+        		        TRACE_WARNING("Copying NAND-Flash binary with %u bytes "
+        		                "from NAND 0x%08x to 0x20000000\n\r",
+        		                (unsigned int)bytes_read,
+        		                (unsigned int)binary_offset);
 #endif
         		    }
         		    break;
         		}
         	}
-            while(block < numBlocks && page == 0);
+        	while(block < numBlocks && page == 0);
 
 #if !defined(OP_BOOTSTRAP_on)
             if (error) {
