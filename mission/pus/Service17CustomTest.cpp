@@ -14,7 +14,11 @@ Service17CustomTest::~Service17CustomTest() {
 }
 
 ReturnValue_t Service17CustomTest::handleRequest(uint8_t subservice) {
-	switch(subservice){
+	switch(subservice) {
+	case Subservice::CONNECTION_TEST:
+	case Subservice::EVENT_TRIGGER_TEST: {
+	    return Service17Test::handleRequest(subservice);
+	}
 	case CustomSubservice::ENABLE_PERIODIC_PRINT: {
 		periodicPrintoutEnabled = true;
 		break;

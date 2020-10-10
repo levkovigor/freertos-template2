@@ -21,9 +21,9 @@ class Service17CustomTest: public Service17Test {
 public:
     enum CustomSubservice {
         //! [EXPORT] : [COMMAND] Enable periodic output
-        ENABLE_PERIODIC_PRINT = 128,
+        ENABLE_PERIODIC_PRINT = 129,
         //! [EXPORT] : [COMMAND] Disable periodic output
-        DISABLE_PERIODIC_PRINT = 129,
+        DISABLE_PERIODIC_PRINT = 130,
 
         //! [EXPORT] : [COMMAND] Trigger a software exception which should lead
         //! to a restart.
