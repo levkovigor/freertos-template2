@@ -1,13 +1,18 @@
 #ifndef MISSION_CONTROLLER_THERMALCONTROLLER_H_
 #define MISSION_CONTROLLER_THERMALCONTROLLER_H_
 
-#include <fsfw/controller/ControllerBase.h>
+#include <fsfw/controller/ExtendedControllerBase.h>
 
 
-class ThermalController: public ControllerBase {
+class ThermalController: public ExtendedControllerBase {
 public:
 	ThermalController(object_id_t objectId);
 private:
+
+	/** ExtendedControllerBase overrides */
+    virtual ReturnValue_t handleCommandMessage(
+            CommandMessage *message) override;
+    virtual void performControlOperation() override;
 };
 
 
