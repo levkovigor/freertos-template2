@@ -407,8 +407,13 @@ all: executable
 # See: https://www.gnu.org/software/make/manual/html_node/Target_002dspecific.html
 # Link time optimization is added in the rules to disable it for certain source files
 mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION) 
-# Disabled until hard fault handler problem is sorted out..
-# mission: LINK_TIME_OPTIMIZATION = -flto
+# This detects nullptr deferences and turns them into traps. We don't want that,
+# we actually want the core to reboot immediately, so we suppress this 
+# optimization.
+mission: OPTIMIZATION += -fno-isolate-erroneous-paths-dereference 
+# Link time optimization can lead to issues, so if there is an issue with the
+# mission binary, try to disable it to see if that fixes the problem.
+mission: LINK_TIME_OPTIMIZATION = -flto
 mission: TARGET = Mission binary
 mission: OPTIMIZATION_MESSAGE = On with Link Time Optimization.
 mission: DEBUG_LEVEL = -g0
