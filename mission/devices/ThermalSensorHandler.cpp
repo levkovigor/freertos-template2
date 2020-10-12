@@ -307,9 +307,9 @@ void ThermalSensorHandler::doTransition(Mode_t modeFrom,
 
 ReturnValue_t ThermalSensorHandler::initializeLocalDataPool(
         LocalDataPool& localDataPoolMap, LocalDataPoolManager& poolManager) {
-    localDataPoolMap.emplace(ThermalSensorPoolIds::TEMPERATURE_C,
+    localDataPoolMap.emplace(ThermalSensors::PoolIds::TEMPERATURE_C,
             new PoolEntry<float>({0}, 1, true));
-    localDataPoolMap.emplace(ThermalSensorPoolIds::FAULT_BYTE,
+    localDataPoolMap.emplace(ThermalSensors::PoolIds::FAULT_BYTE,
             new PoolEntry<uint8_t>({0}));
     poolManager.subscribeForPeriodicPacket(sensorDatasetSid,
             false, 4.0, false);

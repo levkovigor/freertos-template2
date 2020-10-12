@@ -97,7 +97,7 @@ private:
 	static constexpr DeviceCommandId_t REQUEST_RTD = 0x01;
 	static constexpr DeviceCommandId_t REQUEST_FAULT_BYTE = 0x07;
 
-	ThermalSensorDataset sensorDataset;
+	ThermalSensors::ThermalSensorDataset sensorDataset;
 	sid_t sensorDatasetSid;
 
 #ifdef DEBUG

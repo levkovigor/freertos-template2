@@ -2,6 +2,7 @@
 #define MISSION_CONTROLLER_THERMALCONTROLLER_H_
 
 #include <fsfw/controller/ExtendedControllerBase.h>
+#include "ctrldefinitions/ThermalCtrlPackets.h"
 
 
 class ThermalController: public ExtendedControllerBase {
@@ -13,6 +14,8 @@ private:
     virtual ReturnValue_t handleCommandMessage(
             CommandMessage *message) override;
     virtual void performControlOperation() override;
+
+    ThermalCtrl::ThermalControllerTemperatureSet thermalControllerSet;
 };
 
 
