@@ -12,13 +12,15 @@ ReturnValue_t pst::pollingSequenceInitDefault(FixedTimeslotTaskIF *thisSequence)
 	uint32_t length = thisSequence->getPeriodMs();
 
     thisSequence->addSlot(objects::DUMMY_HANDLER,
-            length * 0,  DeviceHandlerIF::SEND_WRITE);
+            length * 0,  DeviceHandlerIF::PERFORM_OPERATION);
     thisSequence->addSlot(objects::DUMMY_HANDLER,
-            length * 0.25, DeviceHandlerIF::GET_WRITE);
+            length * 0.4,  DeviceHandlerIF::SEND_WRITE);
     thisSequence->addSlot(objects::DUMMY_HANDLER,
-            length * 0.5,  DeviceHandlerIF::SEND_READ);
+            length * 0.55, DeviceHandlerIF::GET_WRITE);
     thisSequence->addSlot(objects::DUMMY_HANDLER,
-            length * 0.75, DeviceHandlerIF::GET_READ);
+            length * 0.7,  DeviceHandlerIF::SEND_READ);
+    thisSequence->addSlot(objects::DUMMY_HANDLER,
+            length * 0.85, DeviceHandlerIF::GET_READ);
 
 	if (thisSequence->checkSequence() == HasReturnvaluesIF::RETURN_OK) {
 		return HasReturnvaluesIF::RETURN_OK;
