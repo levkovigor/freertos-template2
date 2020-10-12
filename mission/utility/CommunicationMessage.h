@@ -1,11 +1,11 @@
 #ifndef MISSION_UTILITY_COMMUNICATIONMESSAGE_H_
 #define MISSION_UTILITY_COMMUNICATIONMESSAGE_H_
 
+#include <fsfw/devicehandlers/DeviceHandlerBase.h>
 #include <mission/utility/CommunicationMessage.h>
-#include "DeviceHandlerBase.h"
 
-#include "../ipc/MessageQueueMessage.h"
-#include "../storagemanager/StorageManagerIF.h"
+#include <fsfw/ipc/MessageQueueMessage.h>
+#include <fsfw/storagemanager/StorageManagerIF.h>
 
 /**
  * @brief Message type to send larger messages

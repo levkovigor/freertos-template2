@@ -1,5 +1,6 @@
 #include <mission/utility/CommunicationMessage.h>
-#include "../serviceinterface/ServiceInterfaceStream.h"
+#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+
 #include <cstring>
 
 CommunicationMessage::CommunicationMessage(): uninitialized(true) {
