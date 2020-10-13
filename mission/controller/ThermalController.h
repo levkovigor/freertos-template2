@@ -13,7 +13,10 @@ private:
 	/** ExtendedControllerBase overrides */
     virtual ReturnValue_t handleCommandMessage(
             CommandMessage *message) override;
+
     virtual void performControlOperation() override;
+
+    ReturnValue_t initializeAfterTaskCreation() override;
 
     ThermalCtrl::ThermalControllerTemperatureSet thermalControllerSet;
 };
