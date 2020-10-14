@@ -16,7 +16,12 @@ private:
 
     virtual void performControlOperation() override;
 
+    virtual ReturnValue_t checkModeCommand(Mode_t mode, Submode_t submode,
+            uint32_t *msToReachTheMode) override;
+
     ReturnValue_t initializeAfterTaskCreation() override;
+
+    void handleChangedDataset(sid_t sid, store_address_t storeId) override;
 
     ThermalCtrl::ThermalControllerTemperatureSet thermalControllerSet;
 };

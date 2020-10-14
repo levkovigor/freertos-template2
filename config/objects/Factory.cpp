@@ -29,6 +29,7 @@
 #include <fsfw/pus/Service3Housekeeping.h>
 #include <fsfw/pus/Service5EventReporting.h>
 #include <fsfw/pus/Service8FunctionManagement.h>
+#include <mission/controller/ThermalController.h>
 #include <mission/pus/Service6MemoryManagement.h>
 #include <mission/pus/Service17CustomTest.h>
 #include <mission/pus/Service20ParameterManagement.h>
@@ -213,6 +214,8 @@ void Factory::produce(void) {
 
 	new CoreController(objects::CORE_CONTROLLER, objects::SYSTEM_STATE_TASK);
 	new SystemStateTask(objects::SYSTEM_STATE_TASK, objects::CORE_CONTROLLER);
+	new ThermalController(objects::THERMAL_CONTROLLER);
+
 	TestCookie * dummyCookie2 = new TestCookie(addresses::DUMMY_GPS0);
 #if defined(VIRTUAL_BUILD)
 	new GPSHandler(objects::GPS0_HANDLER, objects::DUMMY_GPS_COM_IF,

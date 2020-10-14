@@ -14,6 +14,14 @@ void ThermalController::performControlOperation() {
 
 }
 
+void ThermalController::handleChangedDataset(sid_t sid,
+        store_address_t storeId) {
+    if(sid == sid_t(TSensorDefinitions::ObjIds::TEST_HKB_HANDLER,
+            TSensorDefinitions::THERMAL_SENSOR_SET_ID)) {
+        sif::info << "Update registered!" << std::endl;
+    }
+}
+
 ReturnValue_t ThermalController::initializeAfterTaskCreation() {
     ReturnValue_t result =
             ExtendedControllerBase::initializeAfterTaskCreation();
@@ -32,4 +40,9 @@ ReturnValue_t ThermalController::initializeAfterTaskCreation() {
             TSensorDefinitions::THERMAL_SENSOR_SET_ID,
             this->getObjectId(), commandQueue->getId(), false);
     return result;
+}
+
+ReturnValue_t ThermalController::checkModeCommand(Mode_t mode,
+        Submode_t submode, uint32_t *msToReachTheMode) {
+    return HasReturnvaluesIF::RETURN_OK;
 }

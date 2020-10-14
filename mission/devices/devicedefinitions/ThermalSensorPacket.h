@@ -31,7 +31,6 @@ static constexpr uint32_t THERMAL_SENSOR_SET_ID = REQUEST_RTD;
 class ThermalSensorDataset:
         public StaticLocalDataSet<sizeof(float) + sizeof(uint8_t)> {
 public:
-
     /**
      * Constructor used by owner and data creators like device handlers.
      * @param owner

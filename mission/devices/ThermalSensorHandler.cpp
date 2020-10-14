@@ -222,6 +222,7 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
         			"resistance is " << rtdValue << " Ohms." << std::endl;
         	sif::info << "ThermalSensorHandler::interpretDeviceReply: Approximated"
         			" temperature is " << approxTemp << " C" << std::endl;
+        	 sensorDataset.setChanged(true);
         }
 #endif
 
@@ -232,7 +233,6 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
         			<< " Error reading dataset!" << std::endl;
         	return result;
         }
-
 
         if(not sensorDataset.isValid()) {
         	sensorDataset.temperatureCelcius.setValid(true);

@@ -294,6 +294,14 @@ void initMission(void) {
         printAddError(objects::SYSTEM_STATE_TASK);
     }
 
+    PeriodicTaskIF* ThermalController = TaskFactory::instance()->
+            createPeriodicTask("THERMAL_CTRL", 6, 2048 * 4, 1,
+                    genericMissedDeadlineFunc);
+    result = ThermalController->addComponent(objects::THERMAL_CONTROLLER);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        printAddError(objects::THERMAL_CONTROLLER);
+    }
+
     /* SPI Communication Interface*/
     PeriodicTaskIF* SpiComTask = TaskFactory::instance()->
             createPeriodicTask("SPI_COM_IF", 8, 1024 * 4, 0.4,
@@ -336,8 +344,9 @@ void initMission(void) {
     SDCardTask -> startTask();
     SoftwareImageTask -> startTask();
 
-    SystemStateTask -> startTask();
     CoreController->startTask();
+    SystemStateTask -> startTask();
+    ThermalController -> startTask();
     SpiComTask->startTask();
 
     sif::info << "Remaining FreeRTOS heap size: " << std::dec
@@ -419,7 +428,7 @@ void boardTestTaskInit() {
 
     sif::info << "Starting test tasks.." << std::endl;
 
-    //PollingSequenceTableTaskTest -> startTask ();
+    PollingSequenceTableTaskTest -> startTask ();
     TestTask -> startTask();
     //SPITask -> startTask();
     //I2CTask -> startTask();
