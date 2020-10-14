@@ -85,8 +85,8 @@ private:
     uint8_t gyroConfiguration[2];
     uint8_t commandBuffer[12] = {};
 
-    GyroPrimaryDataset gyroData;
-    GyroAuxilliaryDataset gyroConfigSet;
+    GyroDefinitions::GyroPrimaryDataset gyroData;
+    GyroDefinitions::GyroAuxilliaryDataset gyroConfigSet;
 
     PeriodicOperationDivider selfTestDivider;
 #ifdef DEBUG

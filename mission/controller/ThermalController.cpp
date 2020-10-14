@@ -22,11 +22,14 @@ ReturnValue_t ThermalController::initializeAfterTaskCreation() {
                 << " class initialization failed!" << std::endl;
     }
     HasLocalDataPoolIF* testHkbHandler = objectManager->get<HasLocalDataPoolIF>(
-            ThermalSensors::ObjIds::TEST_HKB_HANDLER);
+            TSensorDefinitions::ObjIds::TEST_HKB_HANDLER);
     if(testHkbHandler == nullptr) {
         sif::warning << "ThermalController::initializeAfterTaskCreation: Test"
                 << " HKB Handler invalid!" << std::endl;
     }
-    //testHkbHandler->getHkManagerHandle()->subscribeForUpdate()
+    // Test normal notifications without data packet first.
+    testHkbHandler->getHkManagerHandle()->subscribeForSetUpdateMessages(
+            TSensorDefinitions::THERMAL_SENSOR_SET_ID,
+            this->getObjectId(), commandQueue->getId(), false);
     return result;
 }

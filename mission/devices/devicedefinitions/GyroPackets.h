@@ -59,44 +59,47 @@ static constexpr DeviceCommandId_t WRITE_POWER = POWER_REGISTER;
 static constexpr DeviceCommandId_t WRITE_RANGE = RANGE_REGISTER;
 static constexpr DeviceCommandId_t READ_PMU = PMU_REGISTER | GYRO_READ_MASK;
 
-}
-
+static constexpr uint32_t GYRO_DATA_SET_ID = GyroDefinitions::GYRO_DATA;
+static constexpr uint32_t GYRO_AUX_SET_ID = GyroDefinitions::READ_CONFIG;
 
 class GyroPrimaryDataset: public StaticLocalDataSet<3 * sizeof(float)> {
 public:
-	static constexpr uint32_t DATA_SET_ID = GyroDefinitions::GYRO_DATA;
 
-	GyroPrimaryDataset(HasLocalDataPoolIF* hkOwner):
-		StaticLocalDataSet(hkOwner, DATA_SET_ID) {}
+    GyroPrimaryDataset(HasLocalDataPoolIF* hkOwner):
+        StaticLocalDataSet(hkOwner, GYRO_DATA_SET_ID) {}
 
-	GyroPrimaryDataset(object_id_t gyroId):
-		StaticLocalDataSet(sid_t(gyroId, DATA_SET_ID)) {}
+    GyroPrimaryDataset(object_id_t gyroId):
+        StaticLocalDataSet(sid_t(gyroId, GYRO_DATA_SET_ID)) {}
 
     lp_var_t<float> angVelocityX = lp_var_t<float>(
-    		GyroDefinitions::ANGULAR_VELOCITY_X,
-			sid.objectId, this);
+            ANGULAR_VELOCITY_X,
+            sid.objectId, this);
     lp_var_t<float> angVelocityY = lp_var_t<float>(
-            GyroDefinitions::ANGULAR_VELOCITY_Y,
-			sid.objectId, this);
+            ANGULAR_VELOCITY_Y,
+            sid.objectId, this);
     lp_var_t<float> angVelocityZ = lp_var_t<float>(
-            GyroDefinitions::ANGULAR_VELOCITY_Z,
-			sid.objectId, this);
+            ANGULAR_VELOCITY_Z,
+            sid.objectId, this);
 };
 
 class GyroAuxilliaryDataset: public StaticLocalDataSet<2 * sizeof(uint8_t)> {
 public:
-	static constexpr uint32_t DATA_SET_ID = GyroDefinitions::READ_CONFIG;
-	GyroAuxilliaryDataset(HasLocalDataPoolIF* hkOwner):
-		StaticLocalDataSet(hkOwner, DATA_SET_ID) {}
+    GyroAuxilliaryDataset(HasLocalDataPoolIF* hkOwner):
+        StaticLocalDataSet(hkOwner, GYRO_AUX_SET_ID) {}
 
-	GyroAuxilliaryDataset(object_id_t gyroId):
-		StaticLocalDataSet(sid_t(gyroId, DATA_SET_ID)) {}
+    GyroAuxilliaryDataset(object_id_t gyroId):
+        StaticLocalDataSet(sid_t(gyroId, GYRO_AUX_SET_ID)) {}
 
-	lp_var_t<uint8_t> gyroGeneralConfigReg42 = lp_var_t<uint8_t>(
-	        GyroDefinitions::GENERAL_CONFIG_REG42, sid.objectId, this);
-	lp_var_t<uint8_t> gyroRangeConfigReg43 =  lp_var_t<uint8_t>(
-	        GyroDefinitions::RANGE_CONFIG_REG43,
-			sid.objectId, this);
+    lp_var_t<uint8_t> gyroGeneralConfigReg42 = lp_var_t<uint8_t>(
+            GENERAL_CONFIG_REG42, sid.objectId, this);
+    lp_var_t<uint8_t> gyroRangeConfigReg43 =  lp_var_t<uint8_t>(
+            RANGE_CONFIG_REG43,
+            sid.objectId, this);
 };
+
+
+}
+
+
 
 #endif /* MISSION_DEVICES_DEVICEPACKETS_GYROPACKETS_H_ */

@@ -6,8 +6,7 @@
 ThermalSensorHandler::ThermalSensorHandler(object_id_t objectId,
 		object_id_t comIF, CookieIF *comCookie, uint8_t switchId):
 		DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId),
-		sensorDataset(this, REQUEST_RTD),
-		sensorDatasetSid(sensorDataset.getSid())
+		sensorDataset(this), sensorDatasetSid(sensorDataset.getSid())
 #ifdef DEBUG
 , debugDivider(20)
 #endif
@@ -55,11 +54,11 @@ void ThermalSensorHandler::doShutDown() {
 ReturnValue_t ThermalSensorHandler::buildNormalDeviceCommand(
 		DeviceCommandId_t *id) {
     if(internalState == InternalState::RUNNING) {
-        *id = REQUEST_RTD;
+        *id = TSensorDefinitions::REQUEST_RTD;
         return buildCommandFromCommand(*id, nullptr, 0);
     }
     else if(internalState == InternalState::REQUEST_FAULT_BYTE) {
-        *id = REQUEST_FAULT_BYTE;
+        *id = TSensorDefinitions::REQUEST_FAULT_BYTE;
         return buildCommandFromCommand(*id, nullptr, 0);
     }
     else {
@@ -75,12 +74,12 @@ ReturnValue_t ThermalSensorHandler::buildTransitionDeviceCommand(
 	case(InternalState::RUNNING):
 		return DeviceHandlerBase::NOTHING_TO_SEND;
 	case(InternalState::CONFIGURE): {
-		*id = CONFIG_CMD;
+		*id = TSensorDefinitions::CONFIG_CMD;
 		uint8_t config[1] = {DEFAULT_CONFIG};
 		return buildCommandFromCommand(*id, config, 1);
 	}
 	case(InternalState::REQUEST_CONFIG): {
-		*id = REQUEST_CONFIG;
+		*id = TSensorDefinitions::REQUEST_CONFIG;
 		return buildCommandFromCommand(*id, nullptr, 0);
 	}
 
@@ -94,8 +93,8 @@ ReturnValue_t ThermalSensorHandler::buildCommandFromCommand(
 		DeviceCommandId_t deviceCommand, const uint8_t *commandData,
 		size_t commandDataLen) {
 	switch(deviceCommand) {
-	case(CONFIG_CMD) : {
-	    commandBuffer[0] = static_cast<uint8_t>(CONFIG_CMD);
+	case(TSensorDefinitions::CONFIG_CMD) : {
+	    commandBuffer[0] = static_cast<uint8_t>(TSensorDefinitions::CONFIG_CMD);
 	    if(commandDataLen == 1) {
 	        commandBuffer[1] = commandData[0];
 	        DeviceHandlerBase::rawPacketLen = 2;
@@ -106,15 +105,17 @@ ReturnValue_t ThermalSensorHandler::buildCommandFromCommand(
 	        return DeviceHandlerIF::NO_COMMAND_DATA;
 	    }
 	}
-	case(REQUEST_CONFIG): {
+	case(TSensorDefinitions::REQUEST_CONFIG): {
 		commandBuffer[0] = 0x00; // dummy byte
-		commandBuffer[1] = static_cast<uint8_t>(REQUEST_CONFIG);
+		commandBuffer[1] = static_cast<uint8_t>(
+		        TSensorDefinitions::REQUEST_CONFIG);
 		DeviceHandlerBase::rawPacketLen = 2;
 		DeviceHandlerBase::rawPacket = commandBuffer.data();
 		return HasReturnvaluesIF::RETURN_OK;
 	}
-	case(REQUEST_RTD): {
-	    commandBuffer[0] = static_cast<uint8_t>(REQUEST_RTD);
+	case(TSensorDefinitions::REQUEST_RTD): {
+	    commandBuffer[0] = static_cast<uint8_t>(
+	            TSensorDefinitions::REQUEST_RTD);
 	    // two dummy bytes
 	    commandBuffer[1] = 0x00;
 	    commandBuffer[2] = 0x00;
@@ -122,8 +123,9 @@ ReturnValue_t ThermalSensorHandler::buildCommandFromCommand(
 	    DeviceHandlerBase::rawPacket = commandBuffer.data();
 	    return HasReturnvaluesIF::RETURN_OK;
 	}
-	case(REQUEST_FAULT_BYTE): {
-	    commandBuffer[0] = static_cast<uint8_t>(REQUEST_FAULT_BYTE);
+	case(TSensorDefinitions::REQUEST_FAULT_BYTE): {
+	    commandBuffer[0] = static_cast<uint8_t>(
+	            TSensorDefinitions::REQUEST_FAULT_BYTE);
 	    commandBuffer[1] = 0x00;
 	    DeviceHandlerBase::rawPacketLen = 2;
 	    DeviceHandlerBase::rawPacket = commandBuffer.data();
@@ -136,10 +138,11 @@ ReturnValue_t ThermalSensorHandler::buildCommandFromCommand(
 }
 
 void ThermalSensorHandler::fillCommandAndReplyMap() {
-    insertInCommandAndReplyMap(CONFIG_CMD, 3);
-    insertInCommandAndReplyMap(REQUEST_CONFIG, 3);
-    insertInCommandAndReplyMap(REQUEST_RTD, 3, &sensorDataset);
-    insertInCommandAndReplyMap(REQUEST_FAULT_BYTE, 3);
+    insertInCommandAndReplyMap(TSensorDefinitions::CONFIG_CMD, 3);
+    insertInCommandAndReplyMap(TSensorDefinitions::REQUEST_CONFIG, 3);
+    insertInCommandAndReplyMap(TSensorDefinitions::REQUEST_RTD, 3,
+            &sensorDataset);
+    insertInCommandAndReplyMap(TSensorDefinitions::REQUEST_FAULT_BYTE, 3);
 }
 
 ReturnValue_t ThermalSensorHandler::scanForReply(const uint8_t *start,
@@ -149,7 +152,7 @@ ReturnValue_t ThermalSensorHandler::scanForReply(const uint8_t *start,
 
 	if(remainingSize == rtdReplySize and
 	        internalState == InternalState::RUNNING) {
-		*foundId = REQUEST_RTD;
+		*foundId = TSensorDefinitions::REQUEST_RTD;
 		*foundLen = rtdReplySize;
 	}
 
@@ -157,15 +160,15 @@ ReturnValue_t ThermalSensorHandler::scanForReply(const uint8_t *start,
 	    if(internalState == InternalState::CONFIGURE) {
 	        commandExecuted = true;
 	        *foundLen = configReplySize;
-	        *foundId = CONFIG_CMD;
+	        *foundId = TSensorDefinitions::CONFIG_CMD;
 	    }
 	    else if(internalState == InternalState::REQUEST_FAULT_BYTE) {
-	        *foundId = REQUEST_FAULT_BYTE;
+	        *foundId = TSensorDefinitions::REQUEST_FAULT_BYTE;
 	        *foundLen = 2;
 	        internalState = InternalState::RUNNING;
 	    }
 	    else {
-	        *foundId = REQUEST_CONFIG;
+	        *foundId = TSensorDefinitions::REQUEST_CONFIG;
 	        *foundLen = configReplySize;
 	    }
 	}
@@ -176,7 +179,7 @@ ReturnValue_t ThermalSensorHandler::scanForReply(const uint8_t *start,
 ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
         DeviceCommandId_t id, const uint8_t *packet) {
     switch(id) {
-    case(REQUEST_CONFIG): {
+    case(TSensorDefinitions::REQUEST_CONFIG): {
         if(packet[1] != DEFAULT_CONFIG) {
             // it propably would be better if we at least try one restart..
             sif::error << "ThermalSensorHandler: "
@@ -193,7 +196,7 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
         }
         break;
     }
-    case(REQUEST_RTD): {
+    case(TSensorDefinitions::REQUEST_RTD): {
         // first bit of LSB reply byte is the fault bit
         uint8_t faultBit = packet[2] & 0b0000'0001;
         if(faultBit == 1) {
@@ -248,7 +251,7 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
 
         break;
     }
-    case(REQUEST_FAULT_BYTE): {
+    case(TSensorDefinitions::REQUEST_FAULT_BYTE): {
         faultByte = packet[1];
 #ifdef DEBUG
         sif::info << "ThermalSensorHandler::interpretDeviceReply: Fault byte"
@@ -307,9 +310,9 @@ void ThermalSensorHandler::doTransition(Mode_t modeFrom,
 
 ReturnValue_t ThermalSensorHandler::initializeLocalDataPool(
         LocalDataPool& localDataPoolMap, LocalDataPoolManager& poolManager) {
-    localDataPoolMap.emplace(ThermalSensors::PoolIds::TEMPERATURE_C,
+    localDataPoolMap.emplace(TSensorDefinitions::PoolIds::TEMPERATURE_C,
             new PoolEntry<float>({0}, 1, true));
-    localDataPoolMap.emplace(ThermalSensors::PoolIds::FAULT_BYTE,
+    localDataPoolMap.emplace(TSensorDefinitions::PoolIds::FAULT_BYTE,
             new PoolEntry<uint8_t>({0}));
     poolManager.subscribeForPeriodicPacket(sensorDatasetSid,
             false, 4.0, false);
