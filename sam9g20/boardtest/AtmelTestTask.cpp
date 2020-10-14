@@ -75,39 +75,39 @@ void AtmelTestTask::performExceptionTest() {
 }
 
 
-void AtmelTestTask::performNewPoolManagerAccessTests() {
-	uint16_t numberOfElements[1] = {1};
-	uint16_t sizeofElements[1] = {10};
-	PoolManager<1> testPool = PoolManager<1>(0, sizeofElements, numberOfElements);
-	std::array<uint8_t, 20> testDataArray;
-	std::array<uint8_t, 20> receptionArray;
-	store_address_t testStoreId;
-	ReturnValue_t result = HasReturnvaluesIF::RETURN_FAILED;
-
-	for(size_t i = 0; i < testDataArray.size(); i++) {
-		testDataArray[i] = i;
-	}
-	size_t size = 10;
-
-	result = testPool.addData(&testStoreId, testDataArray.data(), size);
-	if(result != RETURN_OK) {
-		sif::error << "Error when adding data" << std::endl;
-	}
-
-	auto accessorPair = testPool.modifyData(testStoreId);
-	if(accessorPair.first != RETURN_OK) {
-		sif::error << "Error when modifying data" << std::endl;
-	}
-	accessorPair.second.print();
-	accessorPair.second.getDataCopy(receptionArray.data(), receptionArray.size());
-	accessorPair.second.release();
-
-	auto constAccess = testPool.getData(testStoreId);
-	if(constAccess.first != RETURN_OK) {
-		sif::error << "Error when modifying data" << std::endl;
-	}
-	accessorPair.second.print();
-}
+//void AtmelTestTask::performNewPoolManagerAccessTests() {
+//	uint16_t numberOfElements[1] = {1};
+//	uint16_t sizeofElements[1] = {10};
+//	PoolManager<1> testPool = PoolManager<1>(0, sizeofElements, numberOfElements);
+//	std::array<uint8_t, 20> testDataArray;
+//	std::array<uint8_t, 20> receptionArray;
+//	store_address_t testStoreId;
+//	ReturnValue_t result = HasReturnvaluesIF::RETURN_FAILED;
+//
+//	for(size_t i = 0; i < testDataArray.size(); i++) {
+//		testDataArray[i] = i;
+//	}
+//	size_t size = 10;
+//
+//	result = testPool.addData(&testStoreId, testDataArray.data(), size);
+//	if(result != RETURN_OK) {
+//		sif::error << "Error when adding data" << std::endl;
+//	}
+//
+//	auto accessorPair = testPool.modifyData(testStoreId);
+//	if(accessorPair.first != RETURN_OK) {
+//		sif::error << "Error when modifying data" << std::endl;
+//	}
+//	accessorPair.second.print();
+//	accessorPair.second.getDataCopy(receptionArray.data(), receptionArray.size());
+//	accessorPair.second.release();
+//
+//	auto constAccess = testPool.getData(testStoreId);
+//	if(constAccess.first != RETURN_OK) {
+//		sif::error << "Error when modifying data" << std::endl;
+//	}
+//	accessorPair.second.print();
+//}
 
 void AtmelTestTask::performSDCardDemo() {
     /* Demo for SD Card 0, SD card slot J35 at at91sam9g20-ek */

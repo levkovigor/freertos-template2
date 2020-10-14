@@ -11,6 +11,9 @@
 //! Be careful, this also turns off most diagnostic prinouts!
 #define FSFW_REDUCED_PRINTOUT		0
 
+//! Can be used to enable debugging printouts for developing the FSFW
+#define FSFW_DEBUGGING              0
+
 //! Defines the FIFO depth of each commanding service base which
 //! also determines how many commands a CSB service can handle in one cycle
 //! simulataneously. This will increase the required RAM for
