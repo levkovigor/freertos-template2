@@ -92,7 +92,7 @@ void Factory::produce(void) {
 
 	/* PUS Service Base Services */
 	new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,
-			apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::TM_FUNNEL);
+			apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::TM_FUNNEL, 30);
 	new Service3Housekeeping(objects::PUS_SERVICE_3_HOUSEKEEPING, apid::SOURCE_OBSW,
 			pus::PUS_SERVICE_3);
 	new Service5EventReporting(objects::PUS_SERVICE_5_EVENT_REPORTING, apid::SOURCE_OBSW,
