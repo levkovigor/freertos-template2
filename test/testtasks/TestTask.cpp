@@ -63,20 +63,6 @@ ReturnValue_t TestTask::performOneShotAction() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-void TestTask::performEtlTemplateTest() {
-    const uint32_t poolId = 0;
-    insertNewTmManagerStruct<templateSizes[poolId]>(poolId);
-    // now we should be able to access it like this
-    auto iter = testMap.find(poolId);
-    if(iter == testMap.end()) {
-        return;
-    }
-    struct TmManagerStruct<templateSizes[poolId]>* test = dynamic_cast<
-            struct TmManagerStruct<templateSizes[poolId]>*>(iter->second);
-    sif::info << test->testMap.size() << std::endl;
-    sif::info << test->testMap.max_size() << std::endl;
-}
-
 ReturnValue_t TestTask::performPeriodicAction() {
 	ReturnValue_t result = RETURN_OK;
 	return result;
@@ -161,3 +147,17 @@ void TestTask::examplePacketTest() {
 	}
 }
 
+
+void TestTask::performEtlTemplateTest() {
+    const uint32_t poolId = 0;
+    insertNewTmManagerStruct<templateSizes[poolId]>(poolId);
+    // now we should be able to access it like this
+    auto iter = testMap.find(poolId);
+    if(iter == testMap.end()) {
+        return;
+    }
+    struct TmManagerStruct<templateSizes[poolId]>* test = dynamic_cast<
+            struct TmManagerStruct<templateSizes[poolId]>*>(iter->second);
+    sif::info << test->testMap.size() << std::endl;
+    sif::info << test->testMap.max_size() << std::endl;
+}
