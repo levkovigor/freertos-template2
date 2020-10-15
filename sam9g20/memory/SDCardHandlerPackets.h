@@ -311,6 +311,10 @@ public:
         return SerializeAdapter::deSerialize(&sequenceNumber, buffer ,size,
                 streamEndianness);
     }
+
+    uint16_t getSequenceNumber() {
+        return sequenceNumber;
+    }
 private:
     uint16_t sequenceNumber;
 };

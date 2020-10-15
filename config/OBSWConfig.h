@@ -16,6 +16,7 @@
 #define RS485_WITH_TERMINATION              1
 #define ADD_TEST_CODE                       1
 #define PRINT_MISSED_DEADLINES              1
+//! Should be enabled for mission code.
 #define OBSW_REDUCED_PRINTOUT				0
 
 #define MAX_REPOSITORY_PATH_LENGTH 			64

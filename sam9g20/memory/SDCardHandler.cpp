@@ -491,13 +491,13 @@ ReturnValue_t SDCardHandler::handleAppendCommand(CommandMessage* message){
         return result;
     }
 
-    uint32_t packetSequenceIfMissing;
+    uint16_t packetSequenceIfMissing;
     result = appendToFile(command.getRepositoryPath(),
             command.getFilename(), command.getFileData(),
             command.getFileSize(), command.getPacketNumber(),
 			&packetSequenceIfMissing);
     if(result != HasReturnvaluesIF::RETURN_OK){
-    	if(result == SEQUENCE_PACKET_MISSING) {
+    	if(result == SEQUENCE_PACKET_MISSING_WRITE) {
     		sendCompletionReply(false, result, packetSequenceIfMissing);
     	}
     	else {
@@ -564,7 +564,7 @@ ReturnValue_t SDCardHandler::generateFinishAppendReply(RepositoryPath *repoPath,
 		FileName *fileName, size_t filesize, bool locked) {
 	store_address_t storeId;
     FinishAppendReply replyPacket(repoPath, fileName,
-    		lastPacketNumber + 1, filesize, locked);
+    		lastPacketWriteNumber + 1, filesize, locked);
 
     uint8_t* ptr = nullptr;
     size_t serializedSize = 0;
@@ -572,14 +572,14 @@ ReturnValue_t SDCardHandler::generateFinishAppendReply(RepositoryPath *repoPath,
     		replyPacket.getSerializedSize(), &ptr);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         // Reset last packet sequence number
-        lastPacketNumber = UNSET_SEQUENCE;
+        lastPacketWriteNumber = UNSET_SEQUENCE;
     	return result;
     }
     result = replyPacket.serialize(&ptr, &serializedSize,
     		replyPacket.getSerializedSize(),
     		SerializeIF::Endianness::BIG);
     if(result != HasReturnvaluesIF::RETURN_OK) {
-        lastPacketNumber = UNSET_SEQUENCE;
+        lastPacketWriteNumber = UNSET_SEQUENCE;
     	return result;
     }
 
@@ -587,7 +587,7 @@ ReturnValue_t SDCardHandler::generateFinishAppendReply(RepositoryPath *repoPath,
     FileSystemMessage::setFinishAppendReply(&reply, storeId);
     result = commandQueue->reply(&reply);
     if(result != HasReturnvaluesIF::RETURN_OK) {
-        lastPacketNumber = UNSET_SEQUENCE;
+        lastPacketWriteNumber = UNSET_SEQUENCE;
     	return result;
     }
 
@@ -603,31 +603,9 @@ ReturnValue_t SDCardHandler::generateFinishAppendReply(RepositoryPath *repoPath,
         sif::info << " File was not locked." << std::endl;
     }
 #endif
-    lastPacketNumber = UNSET_SEQUENCE;
+    lastPacketWriteNumber = UNSET_SEQUENCE;
     return result;
 
-}
-
-
-ReturnValue_t SDCardHandler::handleReadCommand(CommandMessage* message) {
-    store_address_t storeId = FileSystemMessage::getStoreId(message);
-    ConstStorageAccessor accessor(storeId);
-    size_t sizeRemaining = 0;
-    const uint8_t* readPtr = nullptr;
-    ReturnValue_t result = getStoreData(storeId, accessor, &readPtr,
-            &sizeRemaining);
-    if(result != HasReturnvaluesIF::RETURN_OK) {
-        return result;
-    }
-
-    ReadCommand command;
-    result = command.deSerialize(&readPtr, &sizeRemaining,
-    		SerializeIF::Endianness::BIG);
-    if(result != HasReturnvaluesIF::RETURN_OK) {
-    	return result;
-    }
-
-    return handleReadReply(command);
 }
 
 ReturnValue_t SDCardHandler::handleLockFileCommand(CommandMessage *message,
@@ -667,6 +645,54 @@ ReturnValue_t SDCardHandler::handleLockFileCommand(CommandMessage *message,
         sendCompletionReply(false, result, retval);
     }
     return result;
+}
+
+
+ReturnValue_t SDCardHandler::handleReadCommand(CommandMessage* message) {
+    store_address_t storeId = FileSystemMessage::getStoreId(message);
+    ConstStorageAccessor accessor(storeId);
+    size_t sizeRemaining = 0;
+    const uint8_t* readPtr = nullptr;
+    ReturnValue_t result = getStoreData(storeId, accessor, &readPtr,
+            &sizeRemaining);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    ReadCommand command;
+    result = command.deSerialize(&readPtr, &sizeRemaining,
+            SerializeIF::Endianness::BIG);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    uint16_t sequenceNumber = command.getSequenceNumber();
+    if(sequenceNumber == 0) {
+        lastPacketReadNumber = 0;
+    }
+    else if((sequenceNumber == 1) and (lastPacketReadNumber != 0)) {
+#if OBSW_REDUCED_PRINTOUT == 0
+        sif::debug << "SDCardHandler::appendToFile: First sequence "
+                << "packet missed!" << std::endl;
+#endif
+        triggerEvent(SEQUENCE_PACKET_MISSING_READ_EVENT, 0, 0);
+        return SEQUENCE_PACKET_MISSING_READ;
+    }
+    else if((sequenceNumber - lastPacketReadNumber) > 1) {
+#if OBSW_REDUCED_PRINTOUT == 0
+        sif::debug << "SDCardHandler::appendToFile: Packet missing between "
+                << sequenceNumber << " and " << lastPacketReadNumber
+                << std::endl;
+#endif
+        triggerEvent(SEQUENCE_PACKET_MISSING_READ_EVENT,
+                lastPacketReadNumber + 1, 0);
+        return SEQUENCE_PACKET_MISSING_READ;
+    }
+    else {
+        lastPacketReadNumber = sequenceNumber;
+    }
+
+    return handleReadReply(command);
 }
 
 ReturnValue_t SDCardHandler::handleReadReply(ReadCommand& command) {
@@ -854,15 +880,6 @@ ReturnValue_t SDCardHandler::getStoreData(store_address_t& storeId,
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-
-
-ReturnValue_t SDCardHandler::dumpSdCard() {
-    // TODO: implement. This dumps the file structure of the SD card and will
-    // be one of the most important functionalities for operators.
-    return HasReturnvaluesIF::RETURN_OK;
-}
-
-
 void SDCardHandler::sendCompletionReply(bool success, ReturnValue_t errorCode,
 		uint32_t errorParam) {
     CommandMessage reply;
@@ -887,38 +904,22 @@ void SDCardHandler::sendCompletionReply(bool success, ReturnValue_t errorCode,
 ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
         const char* filename, const uint8_t* data, size_t size,
         uint16_t packetNumber, void* args) {
-    int result = changeDirectory(repositoryPath);
-    if(result != HasReturnvaluesIF::RETURN_OK){
+    ReturnValue_t result = changeDirectory(repositoryPath);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
         return result;
     }
 
-    uint32_t* packetSeqIfMissing = static_cast<uint32_t*>(args);
+    uint16_t* packetSeqIfMissing = static_cast<uint16_t*>(args);
     if(packetSeqIfMissing == nullptr) {
     	sif::error << "SDCardHandler::appendToFile: Args invalid!"
     			<< std::endl;
     }
 
-    if(packetNumber == 0) {
-    	lastPacketNumber = 0;
+    result = handleSequenceNumberWrite(packetNumber, packetSeqIfMissing);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
     }
-    else if((packetNumber == 1) and (lastPacketNumber != 0)) {
-    	sif::debug << "SDCardHandler::appendToFile: First sequence "
-    			<< "packet missed!" << std::endl;
-    	triggerEvent(SEQUENCE_PACKET_MISSING, 0, 0);
-    	*packetSeqIfMissing = 0;
-    	return SEQUENCE_PACKET_MISSING;
-    }
-    else if((packetNumber - lastPacketNumber) > 1) {
-    	sif::debug << "SDCardHandler::appendToFile: Packet missing between "
-    			<< packetNumber << " and " << lastPacketNumber << std::endl;
-    	triggerEvent(SEQUENCE_PACKET_MISSING, lastPacketNumber + 1, 0);
-    	*packetSeqIfMissing = lastPacketNumber + 1;
-    	return SEQUENCE_PACKET_MISSING;
 
-    }
-    else {
-    	lastPacketNumber = packetNumber;
-    }
 
     /* Try to open file. File should already exist, therefore "r+" for first
     packet. Subsequent packets are appended at the end of the file.
@@ -942,16 +943,15 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
     result = f_getlasterror();
     if(result != F_NO_ERROR){
         if(result == F_ERR_NOTFOUND) {
-            // File to append to does not exist
-            // TODO: error codes
             sif::error << "SDCardHandler::appendToFile: File to append to "
                     << "does not exist, error code" << result
                     << std::endl;
+            return FILE_DOES_NOT_EXIST;
         }
         else if(result == F_ERR_LOCKED) {
-            // TODO: error codes
             sif::error << "SDCardHandler::appendToFile: File to append to is "
                     << "locked, error code" << result << std::endl;
+            return FILE_LOCKED;
         }
         else {
             sif::error << "SDCardHandler::appendToFile: Opening file failed "
@@ -977,6 +977,37 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
         sif::error << "SDCardHandler::writeToFile: Closing failed, f_close "
                 << "error code: " << result << std::endl;
         return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t SDCardHandler::handleSequenceNumberWrite(uint16_t sequenceNumber,
+        uint16_t* packetSeqIfMissing) {
+    if(sequenceNumber == 0) {
+        lastPacketWriteNumber = 0;
+    }
+    else if((sequenceNumber == 1) and (lastPacketWriteNumber != 0)) {
+#if OBSW_REDUCED_PRINTOUT == 0
+        sif::debug << "SDCardHandler::appendToFile: First sequence "
+                << "packet missed!" << std::endl;
+#endif
+        triggerEvent(SEQUENCE_PACKET_MISSING_WRITE_EVENT, 0, 0);
+        *packetSeqIfMissing = 0;
+        return SEQUENCE_PACKET_MISSING_WRITE;
+    }
+    else if((sequenceNumber - lastPacketWriteNumber) > 1) {
+#if OBSW_REDUCED_PRINTOUT == 0
+        sif::debug << "SDCardHandler::appendToFile: Packet missing between "
+                << sequenceNumber << " and " << lastPacketWriteNumber
+                << std::endl;
+#endif
+        triggerEvent(SEQUENCE_PACKET_MISSING_WRITE_EVENT,
+                lastPacketWriteNumber + 1, 0);
+        *packetSeqIfMissing = lastPacketWriteNumber + 1;
+        return SEQUENCE_PACKET_MISSING_WRITE;
+    }
+    else {
+        lastPacketWriteNumber = sequenceNumber;
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -1130,4 +1161,12 @@ ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
+
+
+ReturnValue_t SDCardHandler::dumpSdCard() {
+    // TODO: implement. This dumps the file structure of the SD card and will
+    // be one of the most important functionalities for operators.
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
 

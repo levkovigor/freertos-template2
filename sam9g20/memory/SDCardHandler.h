@@ -30,7 +30,7 @@ public:
     // todo: make these configurable via OBSWConfig.h
     static constexpr uint8_t MAX_FILE_MESSAGES_HANDLED_PER_CYCLE = 10;
     static constexpr uint32_t MAX_MESSAGE_QUEUE_DEPTH = 20;
-
+    static constexpr size_t MAX_READ_LENGTH = 1024;
 
     static constexpr uint8_t INTERFACE_ID = CLASS_ID::SD_CARD_HANDLER;
 
@@ -39,7 +39,8 @@ public:
 
     static constexpr Event SD_CARD_SWITCHED = MAKE_EVENT(0x00, SEVERITY::MEDIUM); //!< It was not possible to open the preferred SD card so the other was used. P1: Active volume
     static constexpr Event SD_CARD_ACCESS_FAILED = MAKE_EVENT(0x01, SEVERITY::HIGH); //!< Opening failed for both SD cards.
-    static constexpr Event SEQUENCE_PACKET_MISSING_EVENT = MAKE_EVENT(0x02, SEVERITY::LOW); //!< P1: Sequence packet missing.
+    static constexpr Event SEQUENCE_PACKET_MISSING_WRITE_EVENT = MAKE_EVENT(0x02, SEVERITY::LOW); //!< P1: Sequence packet missing.
+    static constexpr Event SEQUENCE_PACKET_MISSING_READ_EVENT = MAKE_EVENT(0x03, SEVERITY::LOW); //!< P1: Sequence packet missing.
 
     /** Service 8 Commands */
 
@@ -94,7 +95,6 @@ private:
     StorageManagerIF *IPCStore;
 
     bool fileSystemWasUsedOnce = false;
-    size_t currentReadPos = 0;
     bool fileSystemOpen = false;
 
     ReturnValue_t getStoreData(store_address_t& storeId,
@@ -111,9 +111,14 @@ private:
 
     static ReturnValue_t printHelper(uint8_t recursionDepth);
 
-    // Right now, only supports one file upload at a time.
-    static constexpr uint16_t UNSET_SEQUENCE = 0xffff;
-    uint16_t lastPacketNumber = UNSET_SEQUENCE;
+    // Right now, only supports one manual file upload or read at a time.
+    static constexpr uint16_t UNSET_SEQUENCE = -1;
+    uint16_t lastPacketWriteNumber = UNSET_SEQUENCE;
+    uint16_t lastPacketReadNumber = UNSET_SEQUENCE;
+    // This will cache the offset of the current file. The offset can also
+    // be calculated manually by multiplying the read sequence number
+    // with MAX_READ_LENGTH.
+    size_t currentReadPos = 0;
 
     ReturnValue_t handleMessage(CommandMessage* message);
     ReturnValue_t handleFileMessage(CommandMessage* message);
@@ -124,6 +129,9 @@ private:
     ReturnValue_t appendToFile(const char* repositoryPath, const char* filename,
             const uint8_t* data, size_t size, uint16_t packetNumber,
             void* args = nullptr) override;
+    ReturnValue_t handleSequenceNumberWrite(uint16_t sequenceNumber,
+            uint16_t* packetSeqIfMissing);
+
     ReturnValue_t deleteFile(const char* repositoryPath,
             const char* filename, void* args = nullptr) override;
 

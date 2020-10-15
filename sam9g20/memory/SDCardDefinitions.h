@@ -7,6 +7,4 @@
 using RepositoryPath = etl::string<MAX_REPOSITORY_PATH_LENGTH>;
 using FileName = etl::string<MAX_FILENAME_LENGTH>;
 
-static constexpr size_t MAX_READ_LENGTH = 1024;
-
 #endif /* SAM9G20_MEMORY_SDCARDDEFINITIONS_H_ */
