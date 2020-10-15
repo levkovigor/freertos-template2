@@ -298,10 +298,21 @@ private:
  * @brief This Class extracts the repository path and the filename from the
  *        data buffer of a read command file system message
  * @details
- * TODO: Add sequence number..
  */
 class ReadCommand: public GenericFilePacket {
-
+public:
+    ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
+            Endianness streamEndianness) override {
+        ReturnValue_t result = GenericFilePacket::deSerialize(buffer ,size,
+                streamEndianness);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            return result;
+        }
+        return SerializeAdapter::deSerialize(&sequenceNumber, buffer ,size,
+                streamEndianness);
+    }
+private:
+    uint16_t sequenceNumber;
 };
 
 
