@@ -59,7 +59,7 @@ ReturnValue_t TestTask::performOperation(uint8_t operationCode) {
 ReturnValue_t TestTask::performOneShotAction() {
 	// Everything here will only be performed once.
 
-    performEtlTemplateTest();
+    //performEtlTemplateTest();
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -82,8 +82,9 @@ ReturnValue_t TestTask::performActionB() {
 
 
 void TestTask::performPusInjectorTest() {
-	PusTcInjector tcInjector(objects::TC_INJECTOR, objects::CCSDS_PACKET_DISTRIBUTOR,
-			objects::TC_STORE, apid::SOURCE_OBSW);
+	PusTcInjector tcInjector(objects::TC_INJECTOR,
+	        objects::CCSDS_PACKET_DISTRIBUTOR, objects::TC_STORE,
+	        apid::SOURCE_OBSW);
 	tcInjector.initialize();
 	sif::info << "TestTask: injecting pus telecommand" << std::endl;
 	tcInjector.injectPusTelecommand(17,1);
