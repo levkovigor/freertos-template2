@@ -57,6 +57,8 @@ private:
 	static MutexIF* testLock;
 	StorageManagerIF* IPCStore;
 
+	void performEtlTemplateTest();
+
     struct TmManagerStructBase {
         virtual~TmManagerStructBase() = default;
     };
