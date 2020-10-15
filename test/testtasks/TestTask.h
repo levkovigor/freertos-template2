@@ -9,11 +9,13 @@
 #include <fsfw/serialize/SerializeElement.h>
 #include <fsfw/serialize/SerialLinkedListAdapter.h>
 #include <fsfw/storagemanager/StorageManagerIF.h>
+#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 
 #include <vector>
 #include <memory>
 #include <cstddef>
-
+#include <etl/map.h>
+#include <map>
 
 /**
  * @brief 	Test class for general C++ testing.
@@ -54,8 +56,28 @@ private:
 	static bool oneShotAction;
 	static MutexIF* testLock;
 	StorageManagerIF* IPCStore;
+
+    struct TmManagerStructBase {
+        virtual~TmManagerStructBase() = default;
+    };
+
+    template<size_t SIZE>
+    struct TmManagerStruct: public TmManagerStructBase {
+        etl::map<int, int, SIZE> testMap;
+    };
+
+    std::map<uint32_t, struct TmManagerStructBase*> testMap;
+    static constexpr std::array<size_t, 5> templateSizes = {30, 0, 0, 0, 0};
+
+    template<size_t size>
+	void insertNewTmManagerStruct(const uint32_t poolId);
 };
 
+template<size_t size>
+inline void TestTask::insertNewTmManagerStruct(const uint32_t poolId) {
+    // has to be a constant, e.g. a #define or a static constexpr of the class.
+    testMap.emplace(poolId, new TmManagerStruct<size>);
+}
 
 class TestDummyClass {
 public:
@@ -64,6 +86,7 @@ public:
 private:
     uint8_t dummyMember = 0;
 };
+
 
 class TestExamplePacket: public SerialLinkedListAdapter<SerializeIF> {
 public:
@@ -115,6 +138,5 @@ private:
 	SerializeElement<SerialBufferAdapter<uint8_t>> buffer;
 	SerializeElement<uint32_t> tail = 0;
 };
-
 
 #endif /* TESTTASK_H_ */

@@ -6,15 +6,17 @@
 #include <unittest/internal/InternalUnitTester.h>
 
 #include <fsfw/objectmanager/ObjectManagerIF.h>
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
 #include <etl/vector.h>
+
 #include <array>
 #include <cstring>
 
+
 bool TestTask::oneShotAction = true;
 MutexIF* TestTask::testLock = nullptr;
+//static constexpr std::array<size_t, 5> TestTask::templateSizes =
 
 TestTask::TestTask(object_id_t objectId_):
 	SystemObject(objectId_), testMode(testModes::A) {
@@ -22,6 +24,8 @@ TestTask::TestTask(object_id_t objectId_):
 		testLock = MutexFactory::instance()->createMutex();
 	}
 	IPCStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
+
+	//subscribeInTmManager(service, subservice);
 }
 
 TestTask::~TestTask() {
@@ -54,8 +58,27 @@ ReturnValue_t TestTask::performOperation(uint8_t operationCode) {
 
 ReturnValue_t TestTask::performOneShotAction() {
 	// Everything here will only be performed once.
+    //const size_t thisWillBeADefineLater = 30;
+    const uint32_t poolId = 0;
+    //insertNewTmManagerStruct();
+    insertNewTmManagerStruct<templateSizes[poolId]>(poolId);
+
+    // now we should be able to access it like this
+    auto iter = testMap.find(poolId);
+    if(iter == testMap.end()) {
+        return HasReturnvaluesIF::RETURN_OK;
+    }
+    struct TmManagerStruct<templateSizes[poolId]>* test = dynamic_cast<
+            struct TmManagerStruct<templateSizes[poolId]>*>(iter->second);
+    sif::info << test->testMap.size() << std::endl;
+    sif::info << test->testMap.max_size() << std::endl;
     return HasReturnvaluesIF::RETURN_OK;
 }
+
+
+//void TestTask::insertNewTmManagerStruct() {
+//
+//}
 
 
 ReturnValue_t TestTask::performPeriodicAction() {
