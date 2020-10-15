@@ -154,6 +154,7 @@ private:
     ReturnValue_t handleFinishAppendCommand(CommandMessage* message);
 
     ReturnValue_t handleReadCommand(CommandMessage* message);
+    ReturnValue_t handleSequenceNumberRead(uint16_t sequenceNumber);
     ReturnValue_t openFileForReading(const char* repositoryPath,
     		const char* filename, F_FILE** file,
     		size_t readPosition, size_t* fileSize);

@@ -666,7 +666,15 @@ ReturnValue_t SDCardHandler::handleReadCommand(CommandMessage* message) {
         return result;
     }
 
-    uint16_t sequenceNumber = command.getSequenceNumber();
+    result = handleSequenceNumberRead(command.getSequenceNumber());
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    return handleReadReply(command);
+}
+
+ReturnValue_t SDCardHandler::handleSequenceNumberRead(uint16_t sequenceNumber) {
     if(sequenceNumber == 0) {
         lastPacketReadNumber = 0;
     }
@@ -691,14 +699,14 @@ ReturnValue_t SDCardHandler::handleReadCommand(CommandMessage* message) {
     else {
         lastPacketReadNumber = sequenceNumber;
     }
-
-    return handleReadReply(command);
+    return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t SDCardHandler::handleReadReply(ReadCommand& command) {
 	// Open file for reading and get file size
     F_FILE* file = nullptr;
     size_t fileSize = 0;
+    currentReadPos = command.getSequenceNumber() * MAX_READ_LENGTH;
     ReturnValue_t result = openFileForReading(command.getRepositoryPathRaw(),
     		command.getFilenameRaw(), &file, currentReadPos, &fileSize);
     if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -718,11 +726,12 @@ ReturnValue_t SDCardHandler::handleReadReply(ReadCommand& command) {
     ReadReply replyPacket(command.getRepoPath(), command.getFilename(),
 			&file, sizeToRead);
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Reading from file " << command.getFilename()
-                            << " failed" << std::endl;
+        sif::error << "SDCardHandler::handleReadReply: Reading from file "
+                << command.getFilename() << " failed" << std::endl;
         sendCompletionReply(false, result);
         return HasReturnvaluesIF::RETURN_FAILED;
     }
+
     // Get space in IPC store to serialize packet.
     uint8_t* writePtr = nullptr;
     store_address_t storeId;
