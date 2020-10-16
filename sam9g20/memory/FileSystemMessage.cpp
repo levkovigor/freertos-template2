@@ -134,4 +134,7 @@ ReturnValue_t FileSystemMessage::getFailureReply(
 	return message->getParameter();
 }
 
-
+void FileSystemMessage::setCeaseSdCardOperationNotification(
+        CommandMessage *command) {
+    command->setCommand(NOTIFICATION_CEASE_SD_CARD_OPERATION);
+}

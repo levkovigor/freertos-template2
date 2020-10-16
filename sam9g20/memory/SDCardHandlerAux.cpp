@@ -1,5 +1,244 @@
 #include "SDCardHandler.h"
+#include "SDCardHandlerPackets.h"
+#include "FileSystemMessage.h"
 
+ReturnValue_t SDCardHandler::handleCreateFileCommand(CommandMessage *message) {
+    store_address_t storeId = FileSystemMessage::getStoreId(message);
+    ConstStorageAccessor accessor(storeId);
+    const uint8_t* readPtr = nullptr;
+    size_t sizeRemaining = 0;
+    ReturnValue_t result = getStoreData(storeId, accessor, &readPtr,
+            &sizeRemaining);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    WriteCommand command(WriteCommand::WriteType::NEW_FILE);
+    result = command.deSerialize(&readPtr, &sizeRemaining,
+            SerializeIF::Endianness::BIG);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        sendCompletionReply(false, result);
+        return result;
+    }
+
+    result = createFile(command.getRepositoryPath(), command.getFilename(),
+            command.getFileData(), command.getFileSize(), nullptr);
+    if(result == HasReturnvaluesIF::RETURN_OK) {
+        sendCompletionReply();
+    }
+    else {
+        sendCompletionReply(false, result);
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+
+ReturnValue_t SDCardHandler::handleDeleteFileCommand(CommandMessage* message){
+    store_address_t storeId = FileSystemMessage::getStoreId(message);
+    ConstStorageAccessor accessor(storeId);
+    const uint8_t* ipcStoreBuffer = nullptr;
+    size_t remainingSize = 0;
+    ReturnValue_t result = getStoreData(storeId, accessor, &ipcStoreBuffer,
+            &remainingSize);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    DeleteFileCommand command;
+    /* Extract the repository path and the filename from the
+        application data field */
+    result = command.deSerialize(&ipcStoreBuffer,
+            &remainingSize, SerializeIF::Endianness::BIG);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        sendCompletionReply(false, result);
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    result = deleteFile(command.getRepositoryPathRaw(),
+            command.getFilenameRaw());
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        sendCompletionReply(false, result);
+    }
+    else {
+        sendCompletionReply();
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t SDCardHandler::handleReportAttributesCommand(
+        CommandMessage* message) {
+    store_address_t storeId = FileSystemMessage::getStoreId(message);
+    ConstStorageAccessor accessor(storeId);
+    const uint8_t* ipcStoreBuffer = nullptr;
+    size_t remainingSize = 0;
+    ReturnValue_t result = getStoreData(storeId, accessor, &ipcStoreBuffer,
+            &remainingSize);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    FileAttributesCommand command;
+    /* Extract the repository path and the filename from the
+        application data field */
+    result = command.deSerialize(&ipcStoreBuffer,
+            &remainingSize, SerializeIF::Endianness::BIG);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        sendCompletionReply(false, result);
+        return result;
+    }
+
+    size_t filesize = 0;
+    bool locked = false;
+    int retval = get_file_info(command.getRepositoryPathRaw(),
+            command.getFilenameRaw(), &filesize, &locked, nullptr, nullptr);
+    if(retval != F_NO_ERROR) {
+        result = HasReturnvaluesIF::RETURN_FAILED;
+        sendCompletionReply(false, result, retval);
+    }
+
+    uint8_t* writePtr = nullptr;
+
+    FileAttributesReply replyPacket(command.getRepoPath(),
+            command.getFilename(), filesize, locked);
+    size_t sizeToSerialize = replyPacket.getSerializedSize();
+    result = IPCStore->getFreeElement(&storeId,
+            sizeToSerialize, &writePtr);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        sendCompletionReply(false, result);
+        return result;
+    }
+
+    size_t serializedSize = 0;
+    result = replyPacket.serialize(&writePtr, &serializedSize, sizeToSerialize,
+            SerializeIF::Endianness::BIG);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        sendCompletionReply(false, result);
+        return result;
+    }
+
+    CommandMessage reply;
+    FileSystemMessage::setReportFileAttributesReply(&reply, storeId);
+    result = commandQueue->reply(&reply);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        sendCompletionReply(false, result);
+        return result;
+    }
+    sendCompletionReply();
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t SDCardHandler::handleCreateDirectoryCommand(
+        CommandMessage* message){
+    store_address_t storeId = FileSystemMessage::getStoreId(message);
+    ConstStorageAccessor accessor(storeId);
+    const uint8_t* ipcStoreBuffer = nullptr;
+    size_t remainingSize = 0;
+    ReturnValue_t result = getStoreData(storeId, accessor, &ipcStoreBuffer,
+            &remainingSize);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    CreateDirectoryCommand command;
+    // Extract the repository path and the directory name
+    // from the application data field
+    result = command.deSerialize(&ipcStoreBuffer, &remainingSize,
+            SerializeIF::Endianness::BIG);
+    if(result != HasReturnvaluesIF::RETURN_OK){
+        sendCompletionReply(false, result);
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    result = createDirectory(command.getRepositoryPath(),
+            command.getDirname());
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        // If the folder already exists, count that as success..
+        if(result != HasFileSystemIF::DIRECTORY_ALREADY_EXISTS) {
+            sif::error << "SDCardHandler::handleCreateDirectoryCommand: "
+                    << "Creating directory " << command.getDirname()
+                    << " failed" << std::endl;
+            sendCompletionReply(false, result);
+        }
+    }
+
+    sendCompletionReply();
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t SDCardHandler::handleDeleteDirectoryCommand(
+        CommandMessage* message){
+    store_address_t storeId = FileSystemMessage::getStoreId(message);
+    ConstStorageAccessor accessor(storeId);
+    const uint8_t* ipcStoreBuffer = nullptr;
+    size_t remainingSize = 0;
+    ReturnValue_t result = getStoreData(storeId, accessor, &ipcStoreBuffer,
+            &remainingSize);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    DeleteDirectoryCommand command;
+    /* Extract the repository path and the directory name from the
+        application data field */
+    result = command.deSerialize(&ipcStoreBuffer, &remainingSize,
+            SerializeIF::Endianness::BIG);
+    if(result != HasReturnvaluesIF::RETURN_OK){
+        sendCompletionReply(false, result);
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    result = deleteDirectory(command.getRepositoryPath(),
+            command.getDirname());
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        sif::error << "Deleting directory " << command.getDirname()
+                                    << " failed" << std::endl;
+        sendCompletionReply(false, result);
+    }
+    else {
+        sendCompletionReply();
+    }
+
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t SDCardHandler::handleLockFileCommand(CommandMessage *message,
+        bool lock) {
+    store_address_t storeId = FileSystemMessage::getStoreId(message);
+    ConstStorageAccessor accessor(storeId);
+    size_t sizeRemaining = 0;
+    const uint8_t* readPtr = nullptr;
+    ReturnValue_t result = getStoreData(storeId, accessor, &readPtr,
+            &sizeRemaining);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    LockFileCommand command;
+    result = command.deSerialize(&readPtr, &sizeRemaining,
+            SerializeIF::Endianness::BIG);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        sendCompletionReply(false, result);
+    }
+
+    int retval = 0;
+    if(lock) {
+        retval = lock_file(command.getRepositoryPathRaw(),
+                command.getFilenameRaw());
+    }
+    else {
+        retval = unlock_file(command.getRepositoryPathRaw(),
+                command.getFilenameRaw());
+    }
+
+    if(retval == F_NO_ERROR) {
+        sendCompletionReply(true);
+    }
+    else {
+        result = HasReturnvaluesIF::RETURN_FAILED;
+        sendCompletionReply(false, result, retval);
+    }
+    return result;
+}
 
 ReturnValue_t SDCardHandler::printRepository(const char *repository) {
     int result = change_directory(repository, true);

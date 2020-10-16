@@ -45,37 +45,37 @@ extern const char* SW_SLOT_0_HAMMING_NAME;
 extern const char* SW_SLOT_1_HAMMING_NAME;
 extern const char* SW_UPDATE_SLOT_NAME;
 
-static const uint32_t SD_CARD_ACCESS_MUTEX_TIMEOUT = 50;
-static const uint32_t OBSW_SERVICE_1_MQ_DEPTH = 10;
+static const uint32_t SD_CARD_ACCESS_MUTEX_TIMEOUT =    50;
+static const uint32_t OBSW_SERVICE_1_MQ_DEPTH =         10;
 
-static const uint32_t RS232_BAUDRATE = 230400;
-static const size_t RS232_MAX_SERIAL_FRAME_SIZE = 1500;
+static const uint32_t RS232_BAUDRATE =                  230400;
+static const size_t RS232_MAX_SERIAL_FRAME_SIZE =       1500;
 // When performing timeout-based reading using DLE encoding, packet might
 // be larger than 1500 bytes because of the transport layer.
-static const size_t TRANSPORT_LAYER_ADDITION = 500;
-static const uint32_t RS232_SERIAL_TIMEOUT_BAUDTICKS = 5;
-static const uint16_t RS232_MUTEX_TIMEOUT = 20;
+static const size_t TRANSPORT_LAYER_ADDITION =          500;
+static const uint32_t RS232_SERIAL_TIMEOUT_BAUDTICKS =  5;
+static const uint16_t RS232_MUTEX_TIMEOUT =             20;
 
-static const uint32_t RS485_REGULAR_BAUD = 115200;
-static const uint32_t RS485_FAST_BAUD = 115200;
-static const size_t RS485_MAX_SERIAL_FRAME_SIZE = 1500;
-static const uint32_t RS485_SERIAL_TIMEOUT_BAUDTICKS = 5;
-static const uint16_t RS485_MUTEX_TIMEOUT = 20;
+static const uint32_t RS485_REGULAR_BAUD =              115200;
+static const uint32_t RS485_FAST_BAUD =                 115200;
+static const size_t RS485_MAX_SERIAL_FRAME_SIZE =       1500;
+static const uint32_t RS485_SERIAL_TIMEOUT_BAUDTICKS =  5;
+static const uint16_t RS485_MUTEX_TIMEOUT =             20;
 
 /**
  * Set timeout for I2C transfers, specified as 1/10th of ticks.
  * Is set to one for values less than 1. Set to portMAXDELAY for debugging.
  */
-static const uint32_t I2C_TRANSFER_TIMEOUT = portMAX_DELAY;
+static const uint32_t I2C_TRANSFER_TIMEOUT =            portMAX_DELAY;
 
 /**
  * Consider setting this higher if some SPI devices take a longer time
  * (should never take 40ms though..)
  */
-static const uint32_t SPI_DEFAULT_TIMEOUT_MS = 40;
+static const uint32_t SPI_DEFAULT_TIMEOUT_MS =          40;
 
-static const size_t USB_FRAME_SIZE = 1500;
-static const uint32_t MAX_STORED_TELECOMMANDS = 2000;
+static const size_t USB_FRAME_SIZE =                    1500;
+static const uint32_t MAX_STORED_TELECOMMANDS =         2000;
 
 
 #ifdef __cplusplus

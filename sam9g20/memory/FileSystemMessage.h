@@ -61,6 +61,9 @@ public:
 	static const Command_t COMPLETION_SUCCESS = MAKE_COMMAND_ID(200);
 	static const Command_t COMPLETION_FAILED = MAKE_COMMAND_ID(201);
 
+    static const Command_t NOTIFICATION_CEASE_SD_CARD_OPERATION =
+            MAKE_COMMAND_ID(205);
+
 	static void setCreateFileCommand(CommandMessage* message,
 	        store_address_t storeId);
 	static void setDeleteFileCommand(CommandMessage* message,
@@ -101,7 +104,7 @@ public:
 	static bool getReadReply(const CommandMessage* message,
 	        store_address_t* storeId);
 
-	static  void setFinishAppendReply(CommandMessage* message,
+	static void setFinishAppendReply(CommandMessage* message,
 			store_address_t storeId);
     static void setSuccessReply(CommandMessage* message);
     static void setFailureReply(CommandMessage* message,
@@ -110,6 +113,8 @@ public:
 	static store_address_t getStoreId(const CommandMessage* message);
 	static ReturnValue_t getFailureReply(const CommandMessage* message,
 			uint32_t* errorParam = nullptr);
+
+	static void setCeaseSdCardOperationNotification( CommandMessage* command);
 };
 
 #endif /* SAM9G20_MEMORY_FILESYSTEMMESSAGE_H_ */

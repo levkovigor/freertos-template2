@@ -12,6 +12,8 @@
 #include <fsfw/memory/HasFileSystemIF.h>
 #include <sam9g20/memory/SDCardApi.h>
 
+#include <vector>
+
 
 class PeriodicTaskIF;
 class Countdown;
@@ -75,6 +77,8 @@ public:
         MessageQueueId_t commandedBy, const uint8_t* data,
         size_t size) override;
 
+    void subscribeForSdCardNotifications(MessageQueueId_t queueId);
+
     // Useful functions for development
     static ReturnValue_t printRepository(const char* repository);
     static ReturnValue_t printSdCard();
@@ -88,6 +92,7 @@ private:
     MessageQueueIF* commandQueue;
     ActionHelper actionHelper;
     Countdown* countdown;
+    std::vector<MessageQueueId_t> sdCardNotificationRecipients;
 
     PeriodicTaskIF* executingTask = nullptr;
     dur_millis_t periodMs = 0;
@@ -145,10 +150,10 @@ private:
     ReturnValue_t handleDeleteFileCommand(CommandMessage* message);
 
     ReturnValue_t handleReportAttributesCommand(CommandMessage* message);
+    ReturnValue_t handleLockFileCommand(CommandMessage* message, bool lock);
+
     ReturnValue_t handleCreateDirectoryCommand(CommandMessage* message);
     ReturnValue_t handleDeleteDirectoryCommand(CommandMessage* message);
-
-    ReturnValue_t handleLockFileCommand(CommandMessage* message, bool lock);
 
     ReturnValue_t handleAppendCommand(CommandMessage* message);
     ReturnValue_t handleFinishAppendCommand(CommandMessage* message);
@@ -165,9 +170,6 @@ private:
 			uint32_t errorParam = 0);
     ReturnValue_t generateFinishAppendReply(RepositoryPath* repoPath,
     		FileName* fileName, size_t filesize, bool locked);
-
-
-
 };
 
 #endif /* SAM9G20_MEMORY_SDCARDHANDLER_H_ */

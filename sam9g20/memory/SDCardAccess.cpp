@@ -9,10 +9,6 @@ extern "C" {
 #include <at91/utility/trace.h>
 }
 
-
-// I think we need this manager because if we tear down a filesystem while
-// another task is still busy in there, we might get into trouble..
-
 SDCardAccessManager* SDCardAccessManager::factoryInstance =
         new SDCardAccessManager();
 
