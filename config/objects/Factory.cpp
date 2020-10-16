@@ -174,7 +174,7 @@ void Factory::produce(void) {
 	/* PUS Standalone Services using PusServiceBase */
 	new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,
 	        apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::TM_FUNNEL,
-			SERVICE_1_MQ_DEPTH);
+			config::OBSW_SERVICE_1_MQ_DEPTH);
 	new Service3Housekeeping(objects::PUS_SERVICE_3_HOUSEKEEPING,
 			apid::SOURCE_OBSW, pus::PUS_SERVICE_3);
 	new Service5EventReporting(objects::PUS_SERVICE_5_EVENT_REPORTING,

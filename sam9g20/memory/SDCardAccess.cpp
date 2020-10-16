@@ -1,5 +1,9 @@
 #include "SDCardAccess.h"
 
+#include <fsfw/ipc/MutexFactory.h>
+#include <fsfw/ipc/MutexHelper.h>
+#include <OBSWConfig.h>
+
 extern "C" {
 #include <hcc/api_fs_err.h>
 #include <at91/utility/trace.h>
@@ -14,7 +18,9 @@ SDCardAccessManager* SDCardAccessManager::factoryInstance =
 
 SDCardAccessManager::~SDCardAccessManager() {}
 
-SDCardAccessManager::SDCardAccessManager(): countingSemaphore(5, 0) {}
+SDCardAccessManager::SDCardAccessManager() {
+    mutex = MutexFactory::instance()->createMutex();
+}
 
 SDCardAccessManager* SDCardAccessManager::instance() {
     return SDCardAccessManager::factoryInstance;
@@ -24,9 +30,10 @@ SDCardAccessManager* SDCardAccessManager::instance() {
 SDCardAccess::SDCardAccess(VolumeId volumeId):
 		currentVolumeId(volumeId) {
     int result = 0;
-    SDCardAccessManager::instance()->countingSemaphore.release();
-    if(SDCardAccessManager::instance()->
-            countingSemaphore.getSemaphoreCounter() == 1) {
+    MutexHelper(SDCardAccessManager::instance()->mutex,
+            MutexIF::TimeoutType::WAITING,
+            config::SD_CARD_ACCESS_MUTEX_TIMEOUT);
+    if(SDCardAccessManager::instance()->activeAccesses == 0) {
         result = open_filesystem(volumeId);
         if(result != F_NO_ERROR) {
             // try to open other SD card.
@@ -45,6 +52,7 @@ SDCardAccess::SDCardAccess(VolumeId volumeId):
             }
         }
     }
+    SDCardAccessManager::instance()->activeAccesses++;
 
     /* Register this task with filesystem */
     result = f_enterFS();
@@ -68,10 +76,11 @@ SDCardAccess::~SDCardAccess() {
                 " %d.\n\r", result);
     }
     f_releaseFS();
-    SDCardAccessManager::instance()->
-            countingSemaphore.acquire(SemaphoreIF::TimeoutType::POLLING);
-    if(SDCardAccessManager::instance()->
-            countingSemaphore.getSemaphoreCounter() == 0) {
+    MutexHelper(SDCardAccessManager::instance()->mutex,
+            MutexIF::TimeoutType::WAITING,
+            config::SD_CARD_ACCESS_MUTEX_TIMEOUT);
+    SDCardAccessManager::instance()->activeAccesses--;
+    if(SDCardAccessManager::instance()->activeAccesses == 0) {
         close_filesystem(currentVolumeId);
     }
 }

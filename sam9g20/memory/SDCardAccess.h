@@ -3,7 +3,7 @@
 
 #include "SDCardDefinitions.h"
 
-#include <fsfw/osal/FreeRTOS/CountingSemaphore.h>
+#include <fsfw/ipc/MutexIF.h>
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
 #include <sam9g20/memory/SDCardApi.h>
 
@@ -19,7 +19,9 @@ public:
      * Thus, we choose link-time variability of the  instance.
      */
     static SDCardAccessManager* instance();
-    CountingSemaphore countingSemaphore;
+    //CountingSemaphore countingSemaphore;
+    MutexIF* mutex;
+    uint8_t activeAccesses = 0;
 private:
     SDCardAccessManager();
 

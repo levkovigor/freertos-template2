@@ -11,16 +11,17 @@
 
 #include <portmacro.h>
 
-#define SERVICE_1_MQ_DEPTH					10
-#define DISPLAY_FACTORY_ALLOCATION_SIZE     0
-#define RS485_WITH_TERMINATION              1
-#define ADD_TEST_CODE                       1
-#define PRINT_MISSED_DEADLINES              1
-//! Should be enabled for mission code.
-#define OBSW_REDUCED_PRINTOUT				0
+#define OBSW_RS485_WITH_TERMINATION             1
 
-#define MAX_REPOSITORY_PATH_LENGTH 			64
-#define MAX_FILENAME_LENGTH 				12
+//! Should be disabled for mission code.
+#define OBSW_DISPLAY_FACTORY_ALLOCATION_SIZE    0
+#define OBSW_ADD_TEST_CODE                      1
+#define OBSW_PRINT_MISSED_DEADLINES             1
+//! Should be enabled for mission code.
+#define OBSW_REDUCED_PRINTOUT				    0
+
+#define MAX_REPOSITORY_PATH_LENGTH 			    64
+#define MAX_FILENAME_LENGTH 				    12
 
 #ifdef __cplusplus
 namespace config {
@@ -43,6 +44,9 @@ extern const char* BL_HAMMING_NAME;
 extern const char* SW_SLOT_0_HAMMING_NAME;
 extern const char* SW_SLOT_1_HAMMING_NAME;
 extern const char* SW_UPDATE_SLOT_NAME;
+
+static const uint32_t SD_CARD_ACCESS_MUTEX_TIMEOUT = 50;
+static const uint32_t OBSW_SERVICE_1_MQ_DEPTH = 10;
 
 static const uint32_t RS232_BAUDRATE = 230400;
 static const size_t RS232_MAX_SERIAL_FRAME_SIZE = 1500;
