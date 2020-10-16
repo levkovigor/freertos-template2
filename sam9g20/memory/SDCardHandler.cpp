@@ -221,43 +221,43 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
 ReturnValue_t SDCardHandler::handleFileMessage(CommandMessage* message) {
     ReturnValue_t  result = HasReturnvaluesIF::RETURN_OK;
     switch(message->getCommand()) {
-    case FileSystemMessage::CREATE_FILE: {
+    case FileSystemMessage::CMD_CREATE_FILE: {
         result = handleCreateFileCommand(message);
         break;
     }
-    case FileSystemMessage::DELETE_FILE: {
+    case FileSystemMessage::CMD_DELETE_FILE: {
         result = handleDeleteFileCommand(message);
         break;
     }
-    case FileSystemMessage::REPORT_FILE_ATTRIBUTES: {
+    case FileSystemMessage::CMD_REPORT_FILE_ATTRIBUTES: {
         result = handleReportAttributesCommand(message);
         break;
     }
-    case FileSystemMessage::CREATE_DIRECTORY: {
+    case FileSystemMessage::CMD_CREATE_DIRECTORY: {
         result = handleCreateDirectoryCommand(message);
         break;
     }
-    case FileSystemMessage::DELETE_DIRECTORY: {
+    case FileSystemMessage::CMD_DELETE_DIRECTORY: {
         result = handleDeleteDirectoryCommand(message);
         break;
     }
-    case FileSystemMessage::LOCK_FILE: {
+    case FileSystemMessage::CMD_LOCK_FILE: {
         result = handleLockFileCommand(message, true);
         break;
     }
-    case FileSystemMessage::UNLOCK_FILE: {
+    case FileSystemMessage::CMD_UNLOCK_FILE: {
         result = handleLockFileCommand(message, false);
         break;
     }
-    case FileSystemMessage::APPEND_TO_FILE: {
+    case FileSystemMessage::CMD_APPEND_TO_FILE: {
         result = handleAppendCommand(message);
         break;
     }
-    case FileSystemMessage::FINISH_APPEND_TO_FILE: {
+    case FileSystemMessage::CMD_FINISH_APPEND_TO_FILE: {
     	result = handleFinishAppendCommand(message);
     	break;
     }
-    case FileSystemMessage::READ_FROM_FILE: {
+    case FileSystemMessage::CMD_READ_FROM_FILE: {
         result = handleReadCommand(message);
         break;
     }
@@ -671,7 +671,7 @@ ReturnValue_t SDCardHandler::handleReadCommand(CommandMessage* message) {
         return result;
     }
 
-    return handleReadReply(command);
+    return handleReadReplies(command);
 }
 
 ReturnValue_t SDCardHandler::handleSequenceNumberRead(uint16_t sequenceNumber) {
@@ -702,24 +702,22 @@ ReturnValue_t SDCardHandler::handleSequenceNumberRead(uint16_t sequenceNumber) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t SDCardHandler::handleReadReply(ReadCommand& command) {
+ReturnValue_t SDCardHandler::handleReadReplies(ReadCommand& command) {
 	// Open file for reading and get file size
     F_FILE* file = nullptr;
     size_t fileSize = 0;
+    size_t sizeToRead = 0;
     currentReadPos = command.getSequenceNumber() * MAX_READ_LENGTH;
     ReturnValue_t result = openFileForReading(command.getRepositoryPathRaw(),
-    		command.getFilenameRaw(), &file, currentReadPos, &fileSize);
+    		command.getFilenameRaw(), &file, currentReadPos, &fileSize,
+    		&sizeToRead);
     if(result != HasReturnvaluesIF::RETURN_OK) {
     	return result;
     }
 
-    // Set correct size to read
-    size_t sizeToRead = 0;
-    if(fileSize > MAX_READ_LENGTH) {
-    	sizeToRead = MAX_READ_LENGTH;
-    }
-    else {
-    	sizeToRead = fileSize;
+    bool readOpFinished = false;
+    if(sizeToRead < MAX_READ_LENGTH) {
+        readOpFinished = true;
     }
 
     // Generate and serialize the reply packet.
@@ -758,33 +756,44 @@ ReturnValue_t SDCardHandler::handleReadReply(ReadCommand& command) {
     }
 
     // Generate the reply.
-    CommandMessage reply;
-    FileSystemMessage::setReadReply(&reply, storeId);
-    result = commandQueue->reply(&reply);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        if(result == MessageQueueIF::FULL){
-            sif::debug << "SDCardHandler::sendDataReply: Could not send data "
-                    << "reply, queue of receiver is full!" << std::endl;
+    {
+        CommandMessage reply;
+        if(readOpFinished) {
+            FileSystemMessage::setReadReply(&reply, true, storeId);
         }
-    }
-    else {
-    	// Increment read position
-    	currentReadPos += sizeToRead;
+        else {
+            FileSystemMessage::setReadReply(&reply, false, storeId);
+        }
+
+        result = commandQueue->reply(&reply);
+        if(result != HasReturnvaluesIF::RETURN_OK){
+            if(result == MessageQueueIF::FULL){
+                sif::debug << "SDCardHandler::sendDataReply: Could not send "
+                        << "data reply, queue of receiver is full!"
+                        << std::endl;
+            }
+        }
     }
 
     int retval = f_close(file);
     if(retval != F_NO_ERROR) {
-    	sif::error << "SDCardHandler::handleReadCommand: Closing file"
-    			<< " failed!" << std::endl;
+        sif::error << "SDCardHandler::handleReadCommand: Closing file"
+                << " failed!" << std::endl;
+    }
+
+    if(readOpFinished) {
+        CommandMessage reply;
+        // TODO: implement packing this;
+        FileSystemMessage::setReadFinishedReply(&reply, storeId);
+        result = commandQueue->reply(&reply);
     }
     return result;
-
 }
 
 
 ReturnValue_t SDCardHandler::openFileForReading(const char* repositoryPath,
 		const char* filename, F_FILE** file,
-		size_t readPosition, size_t* fileSize) {
+		size_t readPosition, size_t* fileSize, size_t* sizeToRead) {
     int result = changeDirectory(repositoryPath);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         return result;
@@ -797,18 +806,32 @@ ReturnValue_t SDCardHandler::openFileForReading(const char* repositoryPath,
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
-    size_t filesize = f_filelength(filename);
-    if(readPosition > filesize) {
+    *fileSize = f_filelength(filename);
+
+    // Set correct size to read and read position
+    if(readPosition > *fileSize) {
+        // Configuration error.
+        *sizeToRead = 0;
     	sif::warning << "SDCardHandler::openFileForReading: Specified read"
     			<< " position larger than file size!" << std::endl;
         return HasReturnvaluesIF::RETURN_OK;
     }
-    else {
+    // This also covers the case *fileSize == readPosition
+    else if(*fileSize - readPosition < MAX_READ_LENGTH) {
     	result = f_seek(*file, readPosition, F_SEEK_SET);
+    	*sizeToRead = *fileSize - readPosition;
     	if(result != F_NO_ERROR) {
     		sif::error << "SDCardHandler::openFileForReading: Seeking read"
     				<< " position failed with code" << result << std::endl;
     	}
+    }
+    else {
+        result = f_seek(*file, readPosition, F_SEEK_SET);
+        *sizeToRead = MAX_READ_LENGTH;
+        if(result != F_NO_ERROR) {
+            sif::error << "SDCardHandler::openFileForReading: Seeking read"
+                    << " position failed with code" << result << std::endl;
+        }
     }
 
     return HasReturnvaluesIF::RETURN_OK;

@@ -37,7 +37,7 @@
  *    start at 0 so that the last packet sequence counter is reset.
  *  - TC[23,131]: Stop or finish append operation. This service will stop or
  *    finish the append operation so that another append operation can be
- *    started. A telemetry packet containing the repository, the file path,
+ *    started. A telemetry packet containing the repository, the file name,
  *    last valid sequence number, and the current file size will be generated.
  *  - TC[23,132]: Stop append reply.
  *
@@ -64,9 +64,11 @@
  *  - TC[23,141]: Read reply.
  *  - TC[23,142]: Stop or finish read operation. This service will stop or
  *    finish the read operation so that another read operation can be started.
- *    A telemetry packet containing the last valid sequence number, the
- *    repository and file name of the current operation will be generated.
- *  - TC[23,143]: Stop read reply.
+ *    A telemetry packet containing the repository, the file name and
+ *    last valid sequence number will be generated.
+ *  - TC[23,143]: Stop or finish read reply. This packet will be generated
+ *    automatically if the last rest of a file is read or as a reply to the
+ *    command subservice 142.
 
  *
  * The file copy subservice might only be partially implemented.
@@ -103,20 +105,22 @@ protected:
 			CommandMessage *optionalNextCommand, object_id_t objectId,
 			bool *isStep) override;
 
+	virtual void handleUnrequestedReply(const CommandMessage *reply);
+
 private:
 	ReturnValue_t checkInterfaceAndAcquireMessageQueue(
 	        MessageQueueId_t* messageQueueToSet, object_id_t* objectId);
 
 
 	enum Subservice {
-		CREATE_FILE = 1, //!< [EXPORT] : [COMMAND] Create file
-		DELETE_FILE = 2, //!< [EXPORT] : [COMMADND] Delete file
+		CMD_CREATE_FILE = 1, //!< [EXPORT] : [COMMAND] Create file
+		CMD_DELETE_FILE = 2, //!< [EXPORT] : [COMMADND] Delete file
 
-		REPORT_FILE_ATTRIBUTES = 3,
-		REPORT_FILE_ATTRIBUTES_REPLY = 4,
+		CMD_REPORT_FILE_ATTRIBUTES = 3,
+		REPLY_REPORT_FILE_ATTRIBUTES = 4,
 
-		LOCK_FILE = 5,
-		UNLOCK_FILE = 6,
+		CMD_LOCK_FILE = 5,
+		CMD_UNLOCK_FILE = 6,
 
 		FIND_FILE = 7,
 		FOUND_FILES_REPLY = 8,
@@ -135,10 +139,12 @@ private:
 		FINISH_APPEND_TO_FILE = 131,
 		FINISH_APPEND_REPLY = 132,
 
-		READ_FROM_FILE = 135, //!< [EXPORT] : [COMMAND] Read data from a file
-		READ_REPLY = 136, //!< [EXPORT] : [REPLY] Reply of subservice 129
+		CMD_READ_FROM_FILE = 140, //!< [EXPORT] : [COMMAND] Read data from a file
+		REPLY_READ_FROM_FILE = 141, //!< [EXPORT] : [REPLY] Reply of subservice 140
+		CMD_STOP_READ_FROM_FILE = 142, //!< [EXPORT] : [COMMAND] Stop read from file
+		REPLY_READ_STOPED_OR_FINISHED = 143, //!< [EXPORT] : [REPLY] Reply on stop command or sent when reading is finished.
 
-		CLEAR_REPOSITORY = 180, //!< [EXPORT] : [COMMAND] Clears a folder, and also deletes all contained files and folders recursively. Use with care!
+		CMD_CLEAR_REPOSITORY = 180, //!< [EXPORT] : [COMMAND] Clears a folder, and also deletes all contained files and folders recursively. Use with care!
 	};
 
 	ReturnValue_t addDataToStore(store_address_t* storeId, const uint8_t* tcData,

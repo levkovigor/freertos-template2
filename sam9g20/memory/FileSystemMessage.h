@@ -16,45 +16,47 @@ public:
 
 	static const uint8_t MESSAGE_ID = messagetypes::FILE_SYSTEM_MESSAGE;
 	/* PUS standard  (ECSS-E-ST-70-41C15 2016 p.654) */
-	static const Command_t CREATE_FILE = MAKE_COMMAND_ID(1);
-	static const Command_t DELETE_FILE = MAKE_COMMAND_ID(2);
+	static const Command_t CMD_CREATE_FILE = MAKE_COMMAND_ID(1);
+	static const Command_t CMD_DELETE_FILE = MAKE_COMMAND_ID(2);
 	/** Report file attributes */
-	static const Command_t REPORT_FILE_ATTRIBUTES = MAKE_COMMAND_ID(3);
-	static const Command_t REPORT_FILE_ATTRIBUTES_REPLY = MAKE_COMMAND_ID(4);
+	static const Command_t CMD_REPORT_FILE_ATTRIBUTES = MAKE_COMMAND_ID(3);
+	static const Command_t REPLY_REPORT_FILE_ATTRIBUTES = MAKE_COMMAND_ID(4);
 	/** Command to lock a file, setting it read-only */
-	static const Command_t LOCK_FILE = MAKE_COMMAND_ID(5);
+	static const Command_t CMD_LOCK_FILE = MAKE_COMMAND_ID(5);
 	/** Command to unlock a file, enabling further operations on it */
-	static const Command_t UNLOCK_FILE = MAKE_COMMAND_ID(6);
+	static const Command_t CMD_UNLOCK_FILE = MAKE_COMMAND_ID(6);
 	/**
 	 * Find file in repository, using a search pattern.
 	 * Please note that * is the wildcard character.
 	 * For example, when looking for all files which start with have the
 	 * structure tm<something>.bin, tm*.bin can be used.
 	 */
-	static const Command_t FIND_FILE = MAKE_COMMAND_ID(7);
-	static const Command_t CREATE_DIRECTORY = MAKE_COMMAND_ID(9);
-    static const Command_t DELETE_DIRECTORY = MAKE_COMMAND_ID(10);
-	static const Command_t RENAME_DIRECTORY = MAKE_COMMAND_ID(11);
+	static const Command_t CMD_FIND_FILE = MAKE_COMMAND_ID(7);
+	static const Command_t CMD_CREATE_DIRECTORY = MAKE_COMMAND_ID(9);
+    static const Command_t CMD_DELETE_DIRECTORY = MAKE_COMMAND_ID(10);
+	static const Command_t CMD_RENAME_DIRECTORY = MAKE_COMMAND_ID(11);
 
 	/** Dump contents of a repository */
-	static const Command_t DUMP_REPOSITORY = MAKE_COMMAND_ID(12);
+	static const Command_t CMD_DUMP_REPOSITORY = MAKE_COMMAND_ID(12);
 	/** Repository dump reply */
-	static const Command_t DUMY_REPOSITORY_REPLY = MAKE_COMMAND_ID(13);
+	static const Command_t REPLY_DUMY_REPOSITORY = MAKE_COMMAND_ID(13);
 
 	/** Append operation commands */
-    static const Command_t APPEND_TO_FILE = MAKE_COMMAND_ID(130);
-    static const Command_t FINISH_APPEND_TO_FILE = MAKE_COMMAND_ID(131);
-    static const Command_t FINISH_APPEND_REPLY = MAKE_COMMAND_ID(132);
+    static const Command_t CMD_APPEND_TO_FILE = MAKE_COMMAND_ID(130);
+    static const Command_t CMD_FINISH_APPEND_TO_FILE = MAKE_COMMAND_ID(131);
+    static const Command_t REPLY_FINISH_APPEND = MAKE_COMMAND_ID(132);
 
-    static const Command_t READ_FROM_FILE = MAKE_COMMAND_ID(140);
-    static const Command_t READ_REPLY = MAKE_COMMAND_ID(141);
+    static const Command_t CMD_READ_FROM_FILE = MAKE_COMMAND_ID(140);
+    static const Command_t REPLY_READ_FROM_FILE = MAKE_COMMAND_ID(141);
+    static const Command_t CMD_STOP_READ = MAKE_COMMAND_ID(142);
+    static const Command_t REPLY_READ_FINISHED_STOP = MAKE_COMMAND_ID(143);
 
     /** Removes a folder (rm -rf equivalent!). Use with care ! */
-    static const Command_t CLEAR_REPOSITORY = MAKE_COMMAND_ID(180);
+    static const Command_t CMD_CLEAR_REPOSITORY = MAKE_COMMAND_ID(180);
     /** Clears the whole SD card. Use with care ! */
-    static const Command_t CLEAR_SD_CARD = MAKE_COMMAND_ID(181);
+    static const Command_t CMD_CLEAR_SD_CARD = MAKE_COMMAND_ID(181);
     /** Formats the SD card (which also clears it!). Use with care ! */
-    static const Command_t FORMAT_SD_CARD = MAKE_COMMAND_ID(182);
+    static const Command_t CMD_FORMAT_SD_CARD = MAKE_COMMAND_ID(182);
 
 	static const Command_t COMPLETION_SUCCESS = MAKE_COMMAND_ID(200);
 	static const Command_t COMPLETION_FAILED = MAKE_COMMAND_ID(201);
@@ -86,14 +88,19 @@ public:
 	static void setFinishStopWriteReply(CommandMessage* message,
 			store_address_t storeId);
 
-	static void setReadCommand(CommandMessage* message,
-	        store_address_t storeId);
-
-
 	static void setClearSdCardCommand(CommandMessage* message);
 	static void setFormatSdCardCommand(CommandMessage* message);
 
-	static void setReadReply(CommandMessage* message, store_address_t storeId);
+
+    static void setReadCommand(CommandMessage* message,
+            store_address_t storeId);
+    static void setReadFinishedReply(CommandMessage* message,
+            store_address_t storeId);
+	static void setReadReply(CommandMessage* message, bool readFinished,
+	        store_address_t storeId);
+	static bool getReadReply(const CommandMessage* message,
+	        store_address_t* storeId);
+
 	static  void setFinishAppendReply(CommandMessage* message,
 			store_address_t storeId);
     static void setSuccessReply(CommandMessage* message);

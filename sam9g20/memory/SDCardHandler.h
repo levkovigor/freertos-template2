@@ -157,8 +157,8 @@ private:
     ReturnValue_t handleSequenceNumberRead(uint16_t sequenceNumber);
     ReturnValue_t openFileForReading(const char* repositoryPath,
     		const char* filename, F_FILE** file,
-    		size_t readPosition, size_t* fileSize);
-    ReturnValue_t handleReadReply(ReadCommand& command);
+    		size_t readPosition, size_t* fileSize, size_t* sizeToRead);
+    ReturnValue_t handleReadReplies(ReadCommand& command);
 
     void sendCompletionReply(bool success = true,
             ReturnValue_t errorCode = HasReturnvaluesIF::RETURN_OK,
