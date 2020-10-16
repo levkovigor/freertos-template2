@@ -103,10 +103,7 @@ ReturnValue_t SDCardHandler::handleAccessResult(ReturnValue_t accessResult) {
 
 ReturnValue_t SDCardHandler::handleMultipleMessages(CommandMessage *message) {
 	ReturnValue_t status = HasReturnvaluesIF::RETURN_OK;
-	for(uint8_t counter = 1;
-			counter < MAX_FILE_MESSAGES_HANDLED_PER_CYCLE;
-			counter++)
-	{
+	while(true) {
  		ReturnValue_t result = commandQueue->receiveMessage(message);
 		if(result == MessageQueueIF::EMPTY) {
 			return HasReturnvaluesIF::RETURN_OK;
@@ -281,42 +278,6 @@ MessageQueueId_t SDCardHandler::getCommandQueue() const{
 void SDCardHandler::setTaskIF(PeriodicTaskIF *executingTask) {
 	this->executingTask = executingTask;
 }
-
-ReturnValue_t SDCardHandler::getStoreData(store_address_t& storeId,
-        ConstStorageAccessor& accessor,
-        const uint8_t** ptr, size_t* size) {
-    ReturnValue_t result = IPCStore->getData(storeId, accessor);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        // Should not happen!
-        sif::error << "SDCardHandler::getStoreData: "
-               <<  "Getting data failed!" << std::endl;
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-    *size = accessor.size();
-    *ptr = accessor.data();
-    return HasReturnvaluesIF::RETURN_OK;
-}
-
-void SDCardHandler::sendCompletionReply(bool success, ReturnValue_t errorCode,
-        uint32_t errorParam) {
-    CommandMessage reply;
-    if(success) {
-        FileSystemMessage::setSuccessReply(&reply);
-    }
-    else {
-        FileSystemMessage::setFailureReply(&reply, errorCode, errorParam);
-    }
-
-    ReturnValue_t result = commandQueue->reply(&reply);
-    if(result != HasReturnvaluesIF::RETURN_OK){
-        if(result == MessageQueueIF::FULL) {
-            // Configuration error.
-            sif::error << "SDCardHandler::sendCompletionReply: "
-                    <<" Queue of receiver is full!" << std::endl;
-        }
-    }
-}
-
 
 
 

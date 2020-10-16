@@ -439,3 +439,39 @@ ReturnValue_t SDCardHandler::changeDirectory(const char* repositoryPath) {
     }
 }
 
+ReturnValue_t SDCardHandler::getStoreData(store_address_t& storeId,
+        ConstStorageAccessor& accessor,
+        const uint8_t** ptr, size_t* size) {
+    ReturnValue_t result = IPCStore->getData(storeId, accessor);
+    if(result != HasReturnvaluesIF::RETURN_OK){
+        // Should not happen!
+        sif::error << "SDCardHandler::getStoreData: "
+               <<  "Getting data failed!" << std::endl;
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    *size = accessor.size();
+    *ptr = accessor.data();
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+void SDCardHandler::sendCompletionReply(bool success, ReturnValue_t errorCode,
+        uint32_t errorParam) {
+    CommandMessage reply;
+    if(success) {
+        FileSystemMessage::setSuccessReply(&reply);
+    }
+    else {
+        FileSystemMessage::setFailureReply(&reply, errorCode, errorParam);
+    }
+
+    ReturnValue_t result = commandQueue->reply(&reply);
+    if(result != HasReturnvaluesIF::RETURN_OK){
+        if(result == MessageQueueIF::FULL) {
+            // Configuration error.
+            sif::error << "SDCardHandler::sendCompletionReply: "
+                    <<" Queue of receiver is full!" << std::endl;
+        }
+    }
+}
+
+

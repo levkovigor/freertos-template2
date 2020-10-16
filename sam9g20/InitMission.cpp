@@ -53,7 +53,9 @@ ServiceInterfaceStream error("ERROR", true);
 ObjectManagerIF* objectManager;
 
 /* Board Tests, not used in mission */
+#if OBSW_ADD_TEST_CODE == 1
 void boardTestTaskInit();
+#endif
 void genericMissedDeadlineFunc();
 void printAddError(object_id_t objectId);
 
@@ -356,14 +358,14 @@ void initMission(void) {
         sif::warning << "Factory Task: Remaining stack size: "
                 << remainingFactoryStack << " bytes" << std::endl;
     }
-#if DISPLAY_FACTORY_ALLOCATION_SIZE == 1
+#if OBSW_DISPLAY_FACTORY_ALLOCATION_SIZE == 1
     sif::info << "Allocated size by new function: " << allocatedSize
             << std::endl;
 #endif
     sif::info << "Tasks started." << std::endl;
 }
 
-#if ADD_TEST_CODE == 1
+#if OBSW_ADD_TEST_CODE == 1
 void boardTestTaskInit() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_FAILED;
 
@@ -443,7 +445,7 @@ void boardTestTaskInit() {
 #endif
 
 
-#if DISPLAY_FACTORY_ALLOCATION_SIZE == 1
+#if OBSW_DISPLAY_FACTORY_ALLOCATION_SIZE == 1
 void* operator new(size_t size) {
     allocatedSize += size;
     return std::malloc(size);
@@ -458,7 +460,7 @@ void printAddError(object_id_t objectId) {
 
 
 void genericMissedDeadlineFunc() {
-#if PRINT_MISSED_DEADLINES == 1
+#if OBSW_PRINT_MISSED_DEADLINES == 1
     sif::debug << "PeriodicTask: " << pcTaskGetName(NULL) <<
             " missed deadline!" << std::endl;
 #endif

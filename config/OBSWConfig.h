@@ -46,6 +46,9 @@ extern const char* SW_SLOT_1_HAMMING_NAME;
 extern const char* SW_UPDATE_SLOT_NAME;
 
 static const uint32_t SD_CARD_ACCESS_MUTEX_TIMEOUT =    50;
+static const uint8_t SD_CARD_MQ_DEPTH =                 20;
+static const size_t SD_CARD_MAX_READ_LENGTH =           1024;
+
 static const uint32_t OBSW_SERVICE_1_MQ_DEPTH =         10;
 
 static const uint32_t RS232_BAUDRATE =                  230400;
