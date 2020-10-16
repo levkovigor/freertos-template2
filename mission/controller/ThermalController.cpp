@@ -1,5 +1,6 @@
 #include "ThermalController.h"
 #include <mission/devices/devicedefinitions/ThermalSensorPacket.h>
+
 ThermalController::ThermalController(object_id_t objectId):
         ExtendedControllerBase(objectId, objects::NO_OBJECT),
         thermalControllerSet(objectId) {
