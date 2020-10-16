@@ -18,7 +18,7 @@
  * @param filename
  * @return
  */
-ReturnValue_t deSerializeRepositoryAndFilename(const uint8_t **buffer,
+static ReturnValue_t deSerializeRepositoryAndFilename(const uint8_t **buffer,
         size_t* size, RepositoryPath& path, FileName& filename);
 /**
  * Common helper function to deserialize two repositories.
@@ -28,11 +28,11 @@ ReturnValue_t deSerializeRepositoryAndFilename(const uint8_t **buffer,
  * @param dirname
  * @return
  */
-ReturnValue_t deSerializeRepositories(const uint8_t **buffer,
+static ReturnValue_t deSerializeRepositories(const uint8_t **buffer,
         size_t* size, RepositoryPath& repositoryPath,
 		RepositoryPath& dirname);
 
-ReturnValue_t serializeRepositoryAndFilename(uint8_t **buffer,
+static ReturnValue_t serializeRepositoryAndFilename(uint8_t **buffer,
         size_t* size, size_t maxSize, RepositoryPath& repositoryPath,
 		FileName& filename);
 
