@@ -2,13 +2,14 @@
 
 #include <fsfw/ipc/MutexFactory.h>
 #include <fsfw/ipc/MutexHelper.h>
-#include <OBSWConfig.h>
 
 extern "C" {
 #include <hcc/api_fs_err.h>
 #include <at91/utility/trace.h>
 #include <sam9g20/common/FRAMApi.h>
 }
+
+#include <OBSWConfig.h>
 
 SDCardAccessManager* SDCardAccessManager::factoryInstance = nullptr;
 
@@ -24,8 +25,8 @@ SDCardAccessManager* SDCardAccessManager::instance() {
 }
 
 SDCardAccessManager::SDCardAccessManager() {
-    // the active SD card is derived from a value in FRAM so the SD card
-    // access manager should not be used before the FRAM is active!
+    // On the iOBC, the active SD card is derived from a value in FRAM so the
+    // SD card access manager should not be used before the FRAM is active!
 #ifdef ISIS_OBC_G20
     int result = get_prefered_sd_card(&activeSdCard);
 #endif

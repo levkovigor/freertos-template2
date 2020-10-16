@@ -314,7 +314,7 @@ void initMission(void) {
     }
 
 
-#if ADD_TEST_CODE == 1
+#if OBSW_ADD_TEST_CODE == 1
     InternalUnitTester unitTestClass;
     result = unitTestClass.performTests();
     if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -430,7 +430,7 @@ void boardTestTaskInit() {
 
     sif::info << "Starting test tasks.." << std::endl;
 
-    PollingSequenceTableTaskTest -> startTask ();
+    //PollingSequenceTableTaskTest -> startTask ();
     TestTask -> startTask();
     //SPITask -> startTask();
     //I2CTask -> startTask();
