@@ -57,7 +57,7 @@ ReturnValue_t AtmelTestTask::performOneShotAction() {
 #ifdef ISIS_OBC_G20
 	performIOBCTest();
 #endif
-	//performHammingTest();
+	performHammingTest();
     return TestTask::performOneShotAction();
 }
 
@@ -295,7 +295,8 @@ void AtmelTestTask::performHammingTest() {
     }
     uint8_t hamming[3];
     Hamming_Compute256x(test, 256, hamming);
-    sif::info << "Hamming code: " << (int) hamming[0] << (int) hamming[1]
+    sif::info << "Hamming code: " << std::hex << "0x" << (int) hamming[0]
+             << ", 0x" << (int) hamming[1] << ", 0x"
              << (int) hamming[2] << std::endl;
     int result = Hamming_Verify256x(test, 256, hamming);
     if(result != 0) {
