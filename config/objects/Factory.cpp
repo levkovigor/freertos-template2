@@ -103,13 +103,8 @@ void Factory::produce(void) {
 	{
 	    // TODO: make this configurable via OBSWConfig.h
 	    LocalPool::LocalPoolConfig poolConfig = {
-	            LocalPool::LocalPoolCfgPair(250, 32),
-	            LocalPool::LocalPoolCfgPair(120, 64),
-	            LocalPool::LocalPoolCfgPair(100, 128),
-	            LocalPool::LocalPoolCfgPair(50, 256),
-	            LocalPool::LocalPoolCfgPair(25, 512),
-	            LocalPool::LocalPoolCfgPair(10, 1024),
-	            LocalPool::LocalPoolCfgPair(10, 2048),
+	            {250, 32}, {120, 64}, {100, 128}, {50, 256},
+	            {25, 512}, {10, 1024}, {10, 2048}
 	    };
 	    PoolManager* ipcStore = new PoolManager(objects::IPC_STORE, poolConfig);
 	    size_t additionalSize = 0;
@@ -120,13 +115,8 @@ void Factory::produce(void) {
 
 	{
         LocalPool::LocalPoolConfig poolConfig = {
-                LocalPool::LocalPoolCfgPair(500, 32),
-                LocalPool::LocalPoolCfgPair(250, 64),
-                LocalPool::LocalPoolCfgPair(120, 128),
-                LocalPool::LocalPoolCfgPair(60, 256),
-                LocalPool::LocalPoolCfgPair(30, 512),
-                LocalPool::LocalPoolCfgPair(15, 1024),
-                LocalPool::LocalPoolCfgPair(10, 2048),
+                {500, 32}, {250, 64}, {120, 128}, {60, 256},
+                {30, 512}, {15, 1024}, {10, 2048}
         };
         PoolManager* tmStore = new PoolManager(objects::TM_STORE, poolConfig);
         size_t additionalSize = 0;
@@ -137,13 +127,8 @@ void Factory::produce(void) {
 
 	{
         LocalPool::LocalPoolConfig poolConfig = {
-                LocalPool::LocalPoolCfgPair(500, 32),
-                LocalPool::LocalPoolCfgPair(250, 64),
-                LocalPool::LocalPoolCfgPair(120, 128),
-                LocalPool::LocalPoolCfgPair(60, 256),
-                LocalPool::LocalPoolCfgPair(30, 512),
-                LocalPool::LocalPoolCfgPair(15, 1024),
-                LocalPool::LocalPoolCfgPair(10, 2048),
+                {500, 32}, {250, 64}, {120, 128},
+                {60, 256}, {30, 512}, {15, 1024}, {10, 2048}
         };
         PoolManager* tcStore =new PoolManager(objects::TC_STORE, poolConfig);
         size_t additionalSize = 0;
