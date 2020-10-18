@@ -220,7 +220,7 @@ ReturnValue_t LocalPool::deleteDataNonLocking(store_address_t storeId) {
 void LocalPool::clearStore() {
 	for (uint16_t n = 0; n < NUMBER_OF_POOLS; n++) {
 		//TODO checkme
-		memset(size_list[n], 0xFF, (n_elements[n] * sizeof(STORAGE_FREE)));
+		memset(sizeList[n], 0xff, (numberOfElements[n] * sizeof(STORAGE_FREE)));
 	}
 }
 

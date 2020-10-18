@@ -100,48 +100,56 @@ void Factory::produce(void) {
 	new InternalErrorReporter(objects::INTERNAL_ERROR_REPORTER);
 
 	/* Pool manager handles storage und mutexes */
-	/* Data Stores. Currently reserving 9600 bytes of memory */
 	{
 	    // TODO: make this configurable via OBSWConfig.h
-	    const uint8_t numberOfIpcPools = 7;
-	    uint16_t numberOfElements[numberOfIpcPools] = {250, 120, 100, 50,
-	            25, 10, 10};
-	    uint16_t sizeofElements[numberOfIpcPools] = {32, 64, 128, 256,
-	            512, 1024, 2048};
-	    new PoolManager<numberOfIpcPools>(objects::IPC_STORE,sizeofElements,
-	            numberOfElements);
-        size_t requiredSize = calculateStorage(numberOfIpcPools,
-                numberOfElements, sizeofElements);
-        sif::info << "Allocating " << requiredSize << " bytes for the IPC "
-                << "Store.." << std::endl;
+	    LocalPool::LocalPoolConfig poolConfig = {
+	            LocalPool::LocalPoolCfgPair(250, 32),
+	            LocalPool::LocalPoolCfgPair(120, 64),
+	            LocalPool::LocalPoolCfgPair(100, 128),
+	            LocalPool::LocalPoolCfgPair(50, 256),
+	            LocalPool::LocalPoolCfgPair(25, 512),
+	            LocalPool::LocalPoolCfgPair(10, 1024),
+	            LocalPool::LocalPoolCfgPair(10, 2048),
+	    };
+	    PoolManager* ipcStore = new PoolManager(objects::IPC_STORE, poolConfig);
+	    size_t additionalSize = 0;
+	    size_t storeSize = ipcStore->getTotalSize(&additionalSize);
+        sif::info << "Allocating " << storeSize + additionalSize << " bytes "
+                <<"for the IPC Store.." << std::endl;
 	}
 
 	{
-	    const uint8_t numberOfTmPools = 7;
-	    uint16_t numberOfElements[numberOfTmPools] = {500, 250, 120, 60,
-	            30, 15, 10};
-	    uint16_t sizeofElements[numberOfTmPools] = {32, 64, 128, 256, 512,
-	            1024, 2048};
-	    new PoolManager<numberOfTmPools>(objects::TM_STORE,sizeofElements,
-	            numberOfElements);
-        size_t requiredSize = calculateStorage(numberOfTmPools,
-                numberOfElements, sizeofElements);
-        sif::info << "Allocating " << requiredSize << "  bytes for the "
-                << "TM Store.." << std::endl;
+        LocalPool::LocalPoolConfig poolConfig = {
+                LocalPool::LocalPoolCfgPair(500, 32),
+                LocalPool::LocalPoolCfgPair(250, 64),
+                LocalPool::LocalPoolCfgPair(120, 128),
+                LocalPool::LocalPoolCfgPair(60, 256),
+                LocalPool::LocalPoolCfgPair(30, 512),
+                LocalPool::LocalPoolCfgPair(15, 1024),
+                LocalPool::LocalPoolCfgPair(10, 2048),
+        };
+        PoolManager* tmStore = new PoolManager(objects::TM_STORE, poolConfig);
+        size_t additionalSize = 0;
+        size_t storeSize = tmStore->getTotalSize(&additionalSize);
+        sif::info << "Allocating " << storeSize + additionalSize << " bytes "
+                <<"for the TM Store.." << std::endl;
 	}
 
 	{
-	    const uint8_t numberOfTcPools = 7;
-	    uint16_t numberOfElements[numberOfTcPools] = {500, 250, 120, 60,
-	            20, 20, 20};
-	    uint16_t sizeofElements[numberOfTcPools] = {32, 64, 128, 256,
-	            512, 1024, 2048};
-	    new PoolManager<numberOfTcPools>(objects::TC_STORE,sizeofElements,
-	            numberOfElements);
-	    size_t requiredSize = calculateStorage(numberOfTcPools,
-	            numberOfElements, sizeofElements);
-	    sif::info << "Allocating " << requiredSize << " bytes for the "
-	            << "TC Store.." << std::endl;
+        LocalPool::LocalPoolConfig poolConfig = {
+                LocalPool::LocalPoolCfgPair(500, 32),
+                LocalPool::LocalPoolCfgPair(250, 64),
+                LocalPool::LocalPoolCfgPair(120, 128),
+                LocalPool::LocalPoolCfgPair(60, 256),
+                LocalPool::LocalPoolCfgPair(30, 512),
+                LocalPool::LocalPoolCfgPair(15, 1024),
+                LocalPool::LocalPoolCfgPair(10, 2048),
+        };
+        PoolManager* tcStore =new PoolManager(objects::TC_STORE, poolConfig);
+        size_t additionalSize = 0;
+        size_t storeSize = tcStore->getTotalSize(&additionalSize);
+        sif::info << "Allocating " << storeSize + additionalSize << " bytes "
+                <<"for the TC Store.." << std::endl;
 	}
 
 
