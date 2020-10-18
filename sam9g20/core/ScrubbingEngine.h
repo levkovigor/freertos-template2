@@ -6,8 +6,6 @@
 class ScrubbingEngine {
 public:
     ScrubbingEngine(SoftwareImageHandler* owner);
-private:
-    SoftwareImageHandler* owner;
 
     /**
      * The hamming code can be stored on FRAM or on the SD card.
@@ -15,6 +13,9 @@ private:
      * card. For the iOBC, the bootloader
      */
     bool hammingCodeOnSdCard = true;
+private:
+    SoftwareImageHandler* owner;
+
 };
 
 

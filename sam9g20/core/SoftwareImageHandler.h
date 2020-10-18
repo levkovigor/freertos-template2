@@ -3,6 +3,7 @@
 
 #include <fsfw/action/HasActionsIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
+#include <fsfw/parameters/HasParametersIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 
 #if defined(ISIS_OBC_G20) && defined(AT91SAM9G20_EK)
@@ -64,9 +65,11 @@ enum class ImageSlot {
  */
 class SoftwareImageHandler: public SystemObject,
         public ExecutableObjectIF,
-        public HasActionsIF {
+        public HasActionsIF,
+        public HasParametersIF {
 public:
-	static constexpr uint8_t SUBSYSTEM_ID = CLASS_ID::SW_IMAGE_HANDLER;
+	//static constexpr uint8_t SUBSYSTEM_ID = CLASS_ID::SW_IMAGE_HANDLER;
+	static constexpr uint8_t INTERFACE_ID = CLASS_ID::SW_IMAGE_HANDLER;
 	static constexpr ReturnValue_t OPERATION_FINISHED = MAKE_RETURN_CODE(0x00);
 	static constexpr ReturnValue_t TASK_PERIOD_OVER_SOON = MAKE_RETURN_CODE(0x01);
 	static constexpr ReturnValue_t BUSY = MAKE_RETURN_CODE(0x02);
@@ -102,6 +105,10 @@ private:
         SCRUBBING
     };
 
+    enum ParameterIds {
+        HAMMING_CODE_FROM_SDC = 0,
+    };
+
     /** HasActionIF (Service 8) definitions */
 
     // TODO: make manual scrubbing work first..
@@ -122,7 +129,7 @@ private:
     //! Please note that the scrubbing engine will only scrub the active
     //! SD card. If the SD card is switched, any ongoing scrubbing operation
     //! on an SD card will be cancelled.
-    //!
+    //! TODO: These should be parameters!
     static constexpr ActionId_t SET_PERIODIC_SCRUBBING = 1;
 
     //! Report the status of the scrubbing engine
@@ -132,6 +139,7 @@ private:
 
     //! Specify whether a hamming code check will be performed during
     //! copy operations.
+    //! TODO: Should be a prameter instead
     static constexpr ActionId_t SET_HAMMING_CODE_CHECK_FOR_COPYING = 3;
 
     //! Instruct the image handler to copy a SD-card binary to the flash
@@ -201,6 +209,9 @@ private:
     bool performHammingCodeCheck = false;
     bool oneShot = false;
 
+    ReturnValue_t getParameter(uint8_t domainId,
+            uint16_t uniqueIdentifier, ParameterWrapper *parameterWrapper,
+            const ParameterWrapper *newValues, uint16_t startAtIndex) override;
 
 #ifdef ISIS_OBC_G20
     /**

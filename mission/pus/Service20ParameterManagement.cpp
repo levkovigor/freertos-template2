@@ -10,14 +10,16 @@
 #include <fsfw/parameters/ReceivesParameterMessagesIF.h>
 
 
-Service20ParameterManagement::Service20ParameterManagement(object_id_t object_id) :
+Service20ParameterManagement::Service20ParameterManagement(
+        object_id_t object_id) :
 	CommandingServiceBase(object_id,apid::SOURCE_OBSW,pus::PUS_SERVICE_20,
 			NUM_OF_PARALLEL_COMMANDS,COMMAND_TIMEOUT_SECONDS) {}
 
 Service20ParameterManagement::~Service20ParameterManagement() {}
 
 
-ReturnValue_t Service20ParameterManagement::isValidSubservice(uint8_t subservice) {
+ReturnValue_t Service20ParameterManagement::isValidSubservice(
+        uint8_t subservice) {
 	switch(static_cast<Subservice>(subservice)) {
 	case Subservice::PARAMETER_LOAD:
 	case Subservice::PARAMETER_DUMP:
@@ -42,8 +44,8 @@ ReturnValue_t Service20ParameterManagement::getMessageQueueAndObject(
 
 ReturnValue_t Service20ParameterManagement::checkAndAcquireTargetID(
 		object_id_t* objectIdToSet, const uint8_t* tcData, size_t tcDataLen) {
-	if(SerializeAdapter::deSerialize(objectIdToSet, &tcData,
-			&tcDataLen, SerializeIF::Endianness::BIG) != HasReturnvaluesIF::RETURN_OK) {
+	if(SerializeAdapter::deSerialize(objectIdToSet, &tcData, &tcDataLen,
+	        SerializeIF::Endianness::BIG) != HasReturnvaluesIF::RETURN_OK) {
 		sif::error << "Service 20: Target ID not found. ID: " <<
 				std::hex << objectIdToSet ;
 		return CommandingServiceBase::INVALID_TC;
@@ -55,21 +57,25 @@ ReturnValue_t Service20ParameterManagement::checkAndAcquireTargetID(
 ReturnValue_t Service20ParameterManagement::checkInterfaceAndAcquireMessageQueue(
 		MessageQueueId_t* messageQueueToSet, object_id_t* objectId) {
 	// check ReceivesParameterMessagesIF property of target
-	ReceivesParameterMessagesIF* possibleTarget = objectManager->get<ReceivesParameterMessagesIF>(*objectId);
+	ReceivesParameterMessagesIF* possibleTarget =
+	        objectManager->get<ReceivesParameterMessagesIF>(*objectId);
 	if(possibleTarget == nullptr){
 		sif::error << "Service20ParameterManagement::checkInterfaceAndAcquire"
-			<<	"MessageQueue: Can't access object with ID: "
-			<< std::hex << objectId << "as ReceivesParameterMessagesIF"
-			<< std::dec << std::endl;
+			    <<"MessageQueue: Can't access object" << std::endl;
+		sif::error << "Object ID: " << std::hex << objectId << std::dec
+		        << std::endl;
+		sif::error << "Make sure it implements ReceivesParameterMessagesIF!"
+		        << std::endl;
+
 		return CommandingServiceBase::INVALID_OBJECT;
 	}
 	*messageQueueToSet = possibleTarget->getCommandQueue();
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t Service20ParameterManagement::prepareCommand(CommandMessage* message,
-		uint8_t subservice, const uint8_t* tcData, size_t tcDataLen,
-		uint32_t* state, object_id_t objectId) {
+ReturnValue_t Service20ParameterManagement::prepareCommand(
+        CommandMessage* message, uint8_t subservice, const uint8_t* tcData,
+        size_t tcDataLen, uint32_t* state, object_id_t objectId) {
 	switch(static_cast<Subservice>(subservice)){
 	case Subservice::PARAMETER_DUMP: {
 		return prepareDumpCommand(message, tcData, tcDataLen);
@@ -84,17 +90,19 @@ ReturnValue_t Service20ParameterManagement::prepareCommand(CommandMessage* messa
 	}
 }
 
-ReturnValue_t Service20ParameterManagement::prepareDumpCommand(CommandMessage* message,
-		const uint8_t* tcData, size_t tcDataLen) {
-	//the first part is the objectId, but we have extracted that earlier and only need the parameterId
+ReturnValue_t Service20ParameterManagement::prepareDumpCommand(
+        CommandMessage* message, const uint8_t* tcData, size_t tcDataLen) {
+	//the first part is the objectId, but we have extracted that earlier
+    //and only need the parameterId
 	tcData += sizeof(object_id_t);
 	tcDataLen -= sizeof(object_id_t);
 	ParameterId_t parameterId;
-	if(SerializeAdapter::deSerialize(&parameterId, &tcData,
-			&tcDataLen, SerializeIF::Endianness::BIG) != HasReturnvaluesIF::RETURN_OK) {
+	if(SerializeAdapter::deSerialize(&parameterId, &tcData, &tcDataLen,
+	        SerializeIF::Endianness::BIG) != HasReturnvaluesIF::RETURN_OK) {
 		return CommandingServiceBase::INVALID_TC;
 	}
-	if(tcDataLen != 0) {  //Autodeserialize should have decremented size to 0 by this point
+	//Autodeserialize should have decremented size to 0 by this point
+	if(tcDataLen != 0) {
 		return CommandingServiceBase::INVALID_TC;
 	}
 
@@ -102,8 +110,8 @@ ReturnValue_t Service20ParameterManagement::prepareDumpCommand(CommandMessage* m
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t Service20ParameterManagement::prepareLoadCommand(CommandMessage* message,
-		const uint8_t* tcData, size_t tcDataLen) {
+ReturnValue_t Service20ParameterManagement::prepareLoadCommand(
+        CommandMessage* message, const uint8_t* tcData, size_t tcDataLen) {
 	uint8_t* storePointer = nullptr;
 	store_address_t storeAddress;
 	size_t parameterDataLen = tcDataLen - sizeof(object_id_t) -
@@ -127,15 +135,16 @@ ReturnValue_t Service20ParameterManagement::prepareLoadCommand(CommandMessage* m
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t Service20ParameterManagement::handleReply(const CommandMessage* reply,
-		Command_t previousCommand, uint32_t* state,
+ReturnValue_t Service20ParameterManagement::handleReply(
+        const CommandMessage* reply, Command_t previousCommand, uint32_t* state,
 		CommandMessage* optionalNextCommand, object_id_t objectId,
 		bool* isStep) {
 	Command_t replyId = reply->getCommand();
 
 	switch(replyId) {
 	case ParameterMessage::REPLY_PARAMETER_DUMP: {
-		ConstAccessorPair parameterData = IPCStore->getData(ParameterMessage::getStoreId(reply));
+		ConstAccessorPair parameterData = IPCStore->getData(
+		        ParameterMessage::getStoreId(reply));
 		if(parameterData.first != HasReturnvaluesIF::RETURN_OK) {
 			return HasReturnvaluesIF::RETURN_FAILED;
 		}

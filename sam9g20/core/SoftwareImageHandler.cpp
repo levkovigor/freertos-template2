@@ -1,10 +1,12 @@
 #include "SoftwareImageHandler.h"
+#include "ImageCopyingEngine.h"
+#include "ScrubbingEngine.h"
 #include <sam9g20/memory/SDCardHandler.h>
 #include <fsfw/tasks/PeriodicTaskIF.h>
 #include <fsfw/timemanager/Countdown.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/ipc/QueueFactory.h>
-#include <sam9g20/core/ImageCopyingEngine.h>
+
 
 #ifdef ISIS_OBC_G20
 extern "C" {
@@ -158,7 +160,18 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
     return result;
 }
 
-
+ReturnValue_t SoftwareImageHandler::getParameter(uint8_t domainId,
+        uint16_t uniqueIdentifier, ParameterWrapper *parameterWrapper,
+        const ParameterWrapper *newValues, uint16_t startAtIndex) {
+    switch(uniqueIdentifier) {
+    case(ParameterIds::HAMMING_CODE_FROM_SDC): {
+        parameterWrapper->set(scrubbingEngine->hammingCodeOnSdCard);
+        return HasReturnvaluesIF::RETURN_OK;
+    }
+    default:
+        return HasParametersIF::INVALID_IDENTIFIER_ID;
+    }
+}
 
 #ifdef ISIS_OBC_G20
 
