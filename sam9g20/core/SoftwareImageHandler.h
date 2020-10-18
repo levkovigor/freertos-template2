@@ -200,7 +200,6 @@ private:
     bool displayInfo = false;
     bool performHammingCodeCheck = false;
     bool oneShot = false;
-    bool blWritten = false;
 
 
 #ifdef ISIS_OBC_G20

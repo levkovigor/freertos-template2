@@ -8,6 +8,13 @@ public:
     ScrubbingEngine(SoftwareImageHandler* owner);
 private:
     SoftwareImageHandler* owner;
+
+    /**
+     * The hamming code can be stored on FRAM or on the SD card.
+     * For the AT91 board, the bootloader will always be stored on the SD
+     * card. For the iOBC, the bootloader
+     */
+    bool hammingCodeOnSdCard = true;
 };
 
 

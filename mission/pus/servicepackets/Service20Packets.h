@@ -37,6 +37,22 @@ public:
 		return parameterBuffer.getSerializedSize();
 	}
 
+	uint8_t getPtc() const {
+	    return ccsdsType.entry >> 8 & 0xff;
+	}
+
+	uint8_t getPfc() const {
+	    return ccsdsType.entry & 0xff;
+	}
+
+	uint8_t getRows() const {
+	    return rows.entry;
+	}
+
+	uint8_t getColumns() const {
+	    return columns.entry;
+	}
+
 private:
 	void setLinks() {
 		setStart(&objectId);
@@ -47,8 +63,8 @@ private:
 	SerializeElement<object_id_t> objectId = 0;
 	SerializeElement<ParameterId_t> parameterId = 0;
 	SerializeElement<uint16_t> ccsdsType = 0; //!< [EXPORT] : [COMMENT] Type consisting of one byte PTC and one byte PFC.
-	SerializeElement<uint8_t> column = 0;
-	SerializeElement<uint8_t> row = 0;
+	SerializeElement<uint8_t> columns = 0;
+	SerializeElement<uint8_t> rows = 0;
 	SerializeElement<SerialBufferAdapter<uint8_t>> parameterBuffer;
 };
 

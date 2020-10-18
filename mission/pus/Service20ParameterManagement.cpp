@@ -115,13 +115,15 @@ ReturnValue_t Service20ParameterManagement::prepareLoadCommand(CommandMessage* m
 	}
 
 	ParameterLoadCommand command(storePointer,parameterDataLen);
-	result = command.deSerialize(&tcData, &tcDataLen, SerializeIF::Endianness::BIG);
+	result = command.deSerialize(&tcData, &tcDataLen,
+	        SerializeIF::Endianness::BIG);
 	if(result != HasReturnvaluesIF::RETURN_OK) {
 		return result;
 	}
 
 	ParameterMessage::setParameterLoadCommand(message,
-			command.getParameterId(), storeAddress);
+			command.getParameterId(), storeAddress, command.getPtc(),
+			command.getPfc(), command.getRows(), command.getColumns());
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
