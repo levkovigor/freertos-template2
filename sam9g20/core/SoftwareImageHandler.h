@@ -3,7 +3,8 @@
 
 #include <fsfw/action/HasActionsIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
-#include <fsfw/parameters/HasParametersIF.h>
+#include <fsfw/parameters/ParameterHelper.h>
+#include <fsfw/parameters/ReceivesParameterMessagesIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 
 #if defined(ISIS_OBC_G20) && defined(AT91SAM9G20_EK)
@@ -66,7 +67,7 @@ enum class ImageSlot {
 class SoftwareImageHandler: public SystemObject,
         public ExecutableObjectIF,
         public HasActionsIF,
-        public HasParametersIF {
+        public ReceivesParameterMessagesIF {
 public:
 	//static constexpr uint8_t SUBSYSTEM_ID = CLASS_ID::SW_IMAGE_HANDLER;
 	static constexpr uint8_t INTERFACE_ID = CLASS_ID::SW_IMAGE_HANDLER;
@@ -75,6 +76,7 @@ public:
 	static constexpr ReturnValue_t BUSY = MAKE_RETURN_CODE(0x02);
 
 	static constexpr uint8_t SW_IMG_HANDLER_MQ_DEPTH = 5;
+	static constexpr uint8_t MAX_MESSAGES_HANDLED  = 5;
 
 	using ImageBuffer = std::array<uint8_t, 2048>;
 
@@ -196,6 +198,7 @@ private:
     MessageQueueIF* receptionQueue = nullptr;
     PeriodicTaskIF* executingTask = nullptr;
     ActionHelper actionHelper;
+    ParameterHelper parameterHelper;
     ImageBuffer imgBuffer;
     Countdown* countdown = nullptr;
     ImageCopyingEngine* imgCpHelper = nullptr;

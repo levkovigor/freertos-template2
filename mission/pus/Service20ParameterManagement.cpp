@@ -46,8 +46,8 @@ ReturnValue_t Service20ParameterManagement::checkAndAcquireTargetID(
 		object_id_t* objectIdToSet, const uint8_t* tcData, size_t tcDataLen) {
 	if(SerializeAdapter::deSerialize(objectIdToSet, &tcData, &tcDataLen,
 	        SerializeIF::Endianness::BIG) != HasReturnvaluesIF::RETURN_OK) {
-		sif::error << "Service 20: Target ID not found. ID: " <<
-				std::hex << objectIdToSet ;
+		sif::error << "Service20ParameterManagement::checkAndAcquireTargetID: "
+		        << "Invalid data." << std::endl;
 		return CommandingServiceBase::INVALID_TC;
 	}
 	return HasReturnvaluesIF::RETURN_OK;
