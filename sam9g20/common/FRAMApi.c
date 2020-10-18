@@ -96,7 +96,7 @@ int read_nor_flash_binary_info(size_t* binary_size, size_t* hamming_code_offset)
 
 	return FRAM_read((unsigned char*) hamming_code_offset,
 			NOR_FLASH_HAMMING_CODE_OFFSET_ADDRESS,
-			sizeof(((FRAMCriticalData*)0)->nor_flash_hamming_code_offset));
+			sizeof(((FRAMCriticalData*)0)->nor_flash_hamming_code_size));
 	return 0;
 }
 
@@ -177,4 +177,30 @@ int get_prefered_sd_card(VolumeId *volumeId) {
 	return FRAM_read((unsigned char*) volumeId,
 			PREFERED_SD_CARD_ADDR,
 			sizeof(((FRAMCriticalData*)0)->preferedSdCard));
+}
+
+int write_bootloader_hamming_code(const uint8_t *code, size_t size) {
+    int result = FRAM_writeAndVerify((unsigned char*) code,
+            BOOTLOADER_HAMMING_ADDR, size);
+    if(result != 0) {
+        return result;
+    }
+    return FRAM_writeAndVerify((unsigned char*) &size,
+            BOOTLOADER_HAMMING_SIZE_ADDR, sizeof(size));
+}
+
+int read_bootloader_hamming_code(uint8_t *code, size_t *size) {
+    size_t size_to_read = 0;
+    int result = FRAM_read((unsigned char*) &size_to_read,
+            BOOTLOADER_HAMMING_SIZE_ADDR, sizeof(size_to_read));
+    if (result != 0) {
+        return result;
+    }
+    if(size_to_read > 512) {
+        return -1;
+    }
+    else if(size != NULL) {
+        *size = size_to_read;
+    }
+    return FRAM_read(code, BOOTLOADER_HAMMING_ADDR, size_to_read);
 }

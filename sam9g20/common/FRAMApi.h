@@ -31,13 +31,14 @@ typedef struct __attribute__((__packed__))  _FRAMCriticalData {
 	uint16_t reboot_flag;
 
 	bool bootloader_faulty;
+	size_t bootloader_hamming_code_size;
 
 	/* Second counter [4, 8 - 11] */
 	uint32_t seconds_since_epoch;
 
 	/* NOR-Flash binary information [4, 12 - 15] */
 	size_t nor_flash_binary_size;
-	size_t nor_flash_hamming_code_offset;
+	size_t nor_flash_hamming_code_size;
 	uint8_t filler_nor_flash[3];
 	uint8_t nor_flash_reboot_counter;
 
@@ -79,6 +80,9 @@ static const uint32_t REBOOT_COUNTER_ADDR =
 		offsetof(FRAMCriticalData, reboot_counter);
 static const uint32_t REBOOT_FLAG_ADDR =
         offsetof(FRAMCriticalData, reboot_flag);
+
+static const uint32_t BOOTLOADER_HAMMING_SIZE_ADDR =
+        offsetof(FRAMCriticalData, bootloader_hamming_code_size);
 static const uint32_t BOOTLOADER_FAULTY_ADDRESS =
         offsetof(FRAMCriticalData, bootloader_faulty);
 
@@ -93,7 +97,7 @@ static const uint32_t SOFTWARE_UPDATE_BOOL_ADDR =
 static const uint32_t NOR_FLASH_BINARY_SIZE_ADDRESS =
 		offsetof(FRAMCriticalData, nor_flash_binary_size);
 static const uint32_t NOR_FLASH_HAMMING_CODE_OFFSET_ADDRESS =
-		offsetof(FRAMCriticalData, nor_flash_hamming_code_offset);
+		offsetof(FRAMCriticalData, nor_flash_hamming_code_size);
 static const uint32_t NOR_FLASH_REBOOT_COUNTER_ADDRESS =
         offsetof(FRAMCriticalData, nor_flash_reboot_counter);
 
@@ -112,13 +116,21 @@ static const uint32_t SDC2SL2_REBOOT_COUNTER_ADDR =
 static const uint32_t NUMBER_OF_ACTIVE_TASKS_ADDRESS =
         offsetof(FRAMCriticalData, number_of_active_tasks);
 
-// 12 kB of the upper FRAM will be reserved for the NOR-Flash binary hamming
-// code.
-static const uint32_t NOR_FLASH_HAMMING_RESERVED_SIZE = 12000;
+/** Big blocks at the end of FRAM */
+static const uint32_t FRAM_END_ADDR = 0x100000;
 
 // 512 bytes of the upper FRAM will be reserved for the bootloader hamming
 // code.
-static const uint32_t BOOTLOADER_HAMMING_RESERVED_SIZE = 512;
+static const size_t BOOTLOADER_HAMMING_RESERVED_SIZE = 512;
+static const uint32_t BOOTLOADER_HAMMING_ADDR = FRAM_END_ADDR - \
+        BOOTLOADER_HAMMING_RESERVED_SIZE;
+
+// 12 kB of the upper FRAM will be reserved for the NOR-Flash binary hamming
+// code.
+static const uint32_t NOR_FLASH_HAMMING_RESERVED_SIZE = 12288;
+static const uint32_t NOR_FLASH_HAMMING_ADDR = BOOTLOADER_HAMMING_ADDR - \
+        NOR_FLASH_HAMMING_RESERVED_SIZE;
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -172,6 +184,9 @@ int is_bootloader_faulty(bool* faulty);
 
 int set_prefered_sd_card(VolumeId volumeId);
 int get_prefered_sd_card(VolumeId* volumeId);
+
+int write_bootloader_hamming_code(const uint8_t* code, size_t size);
+int read_bootloader_hamming_code(uint8_t* code, size_t* size);
 
 #ifdef __cplusplus
 }
