@@ -112,17 +112,22 @@ ReturnValue_t Service20ParameterManagement::prepareDumpCommand(
 
 ReturnValue_t Service20ParameterManagement::prepareLoadCommand(
         CommandMessage* message, const uint8_t* tcData, size_t tcDataLen) {
+    if(tcDataLen < sizeof(object_id_t) + sizeof(ParameterId_t) +
+            sizeof(uint32_t)) {
+        return CommandingServiceBase::INVALID_TC;
+    }
+
 	uint8_t* storePointer = nullptr;
 	store_address_t storeAddress;
 	size_t parameterDataLen = tcDataLen - sizeof(object_id_t) -
-			sizeof(ParameterId_t);
+			sizeof(ParameterId_t) - sizeof(uint32_t);
 	ReturnValue_t result = IPCStore->getFreeElement(&storeAddress,
-			parameterDataLen,&storePointer);
+			parameterDataLen, &storePointer);
 	if(result != HasReturnvaluesIF::RETURN_OK) {
 		return result;
 	}
 
-	ParameterLoadCommand command(storePointer,parameterDataLen);
+	ParameterLoadCommand command(storePointer, parameterDataLen);
 	result = command.deSerialize(&tcData, &tcDataLen,
 	        SerializeIF::Endianness::BIG);
 	if(result != HasReturnvaluesIF::RETURN_OK) {

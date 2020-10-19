@@ -43,6 +43,8 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
         result = parameterHelper.handleParameterMessage(&message);
     }
 
+    //sif::info << (int) scrubbingEngine->hammingCodeOnSdCard << std::endl;
+
     while(countdown->isBusy()) {
         switch(handlerState) {
         case(HandlerState::IDLE): {

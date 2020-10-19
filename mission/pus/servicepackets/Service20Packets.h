@@ -21,7 +21,7 @@ public:
 	ParameterCommand(object_id_t objectId, ParameterId_t parameterId,
 			const uint8_t* parameterBuffer, size_t parameterBufferSize):
 				objectId(objectId), parameterId(parameterId),
-				parameterBuffer(parameterBuffer, parameterBufferSize){
+				parameterBuffer(parameterBuffer, parameterBufferSize) {
 		setLinks();
 	}
 
@@ -57,7 +57,10 @@ private:
 	void setLinks() {
 		setStart(&objectId);
 		objectId.setNext(&parameterId);
-		parameterId.setNext(&parameterBuffer);
+		parameterId.setNext(&ccsdsType);
+		ccsdsType.setNext(&rows);
+		rows.setNext(&columns);
+		columns.setNext(&parameterBuffer);
 	}
 
 	SerializeElement<object_id_t> objectId = 0;
