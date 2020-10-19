@@ -203,7 +203,7 @@ portSTACK_TYPE *pxOriginalTOS;
 	return pxTopOfStack;
 }
 /*-----------------------------------------------------------*/
-
+portBASE_TYPE xPortStartScheduler( void ) __attribute__((optimize("O0")));
 portBASE_TYPE xPortStartScheduler( void )
 {
 	/* Start the timer that generates the tick ISR.  Interrupts are disabled
@@ -275,11 +275,12 @@ static void prvSetupTimerInterrupt( void )
  * The scheduler can only be started from ARM mode, hence the inclusion of this
  * function here.
  */
+static void vPortISRStartFirstTask( void ) __attribute__((noinline));
 static void vPortISRStartFirstTask( void )
 {
 	/* Simply start the scheduler.  This is included here as it can only be
 	called from ARM mode. */
-    portRESTORE_CONTEXT_LTO_VERSION();
+    portRESTORE_CONTEXT();
 }
 /*-----------------------------------------------------------*/
 

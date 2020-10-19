@@ -194,6 +194,7 @@ BINCOPY = $(CP) -O binary
 # See: http://make.mad-scientist.net/evaluation-and-expansion/
 CSRC := 
 FREERTOS_SRC :=
+FREERTOS_PORT :=
 AT91_SRC :=
 CXXSRC := 
 ASRC := 
@@ -272,6 +273,7 @@ ASRC +=
 # Objects built from C source files.
 C_OBJECTS += $(CSRC:.c=.o)
 FREERTOS_OBJECTS += $(FREERTOS_SRC:.c=.o)
+FREERTOS_PORT_OBJ = $(FREERTOS_PORT:.c=.o)
 AT91_OBJECTS += $(AT91_SRC:.c=.o)
 # Objects built from assembler source files.
 ASM_OBJECTS += $(ASRC:.S=.o)
@@ -407,14 +409,19 @@ all: executable
 # Build target configuration, which also includes information output.
 # See: https://www.gnu.org/software/make/manual/html_node/Target_002dspecific.html
 # Link time optimization is added in the rules to disable it for certain source files
-mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION) 
+mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION)
 # This detects nullptr deferences and turns them into traps. We don't want that,
 # we actually want the core to reboot immediately, so we suppress this 
 # optimization.
 mission: OPTIMIZATION += -fno-isolate-erroneous-paths-dereference 
-# Link time optimization can lead to issues, so if there is an issue with the
+# I don't understand why this is necessary, but it is.
+# mission: FREERTOS_OPTIMIZATION += -fno-omit-frame-pointer
+# Was necessary but the culprit function was marked ((noinline)) explicitely in the source code.
+# mission: FREERTOS_OPTIMIZATION += -fno-inline-small-functions
+
+# Link time optimization can lead to issues, so  if there is an issue with the
 # mission binary, try to disable it to see if that fixes the problem.
-# mission: LINK_TIME_OPTIMIZATION = -flto
+mission: LINK_TIME_OPTIMIZATION = -flto
 mission: TARGET = Mission binary
 mission: OPTIMIZATION_MESSAGE = On with Link Time Optimization.
 mission: DEBUG_LEVEL = -g0
@@ -422,6 +429,7 @@ mission: DEBUG_LEVEL = -g0
 debug: CXXDEFINES += -DDEBUG
 debug: DEBUG_MESSAGE = On
 debug: DEBUG_LEVEL = -g3
+
 virtual: CXXDEFINES += -DVIRTUAL_BUILD -DDEBUG
 virtual: TARGET = Debug binary with virtualized interfaces
 virtual: DEBUG_MESSAGE = On
@@ -460,11 +468,13 @@ executable: $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).bin
 
 C_OBJECTS := $(addprefix $(OBJDIR)/, $(C_OBJECTS))
 FREERTOS_OBJECTS := $(addprefix $(OBJDIR)/$(OS_FSFW)/, $(FREERTOS_OBJECTS))
+FREERTOS_PORT_OBJ := $(addprefix $(OBJDIR)/$(OS_FSFW)/port/, $(FREERTOS_PORT_OBJ))
 AT91_OBJECTS := $(addprefix $(OBJDIR)/at91/, $(AT91_OBJECTS))
 ASM_OBJECTS := $(addprefix $(OBJDIR)/, $(ASM_OBJECTS))
 CXX_OBJECTS := $(addprefix $(OBJDIR)/, $(CXX_OBJECTS))
 
-ALL_OBJECTS =  $(ASM_OBJECTS) $(C_OBJECTS) $(CXX_OBJECTS) $(FREERTOS_OBJECTS) $(AT91_OBJECTS)
+ALL_OBJECTS =  $(ASM_OBJECTS) $(C_OBJECTS) $(CXX_OBJECTS) $(FREERTOS_OBJECTS) $(AT91_OBJECTS) \
+		$(FREERTOS_PORT_OBJ)
 
 # Useful for debugging the Makefile
 # Also see: https://www.oreilly.com/openbook/make3/book/ch12.pdf
@@ -483,7 +493,7 @@ ALL_OBJECTS =  $(ASM_OBJECTS) $(C_OBJECTS) $(CXX_OBJECTS) $(FREERTOS_OBJECTS) $(
 # Generates binary and displays all build properties
 # -p with mkdir ignores error and creates directory when needed.
 
-# SHOW_DETAILS = 1
+SHOW_DETAILS = 1
 
 $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).bin: $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).elf
 	@echo
@@ -561,6 +571,18 @@ else
 	@$(CC) $(CXXFLAGS) $(CFLAGS) $(FREERTOS_OPTIMIZATION) -c -o $@ $<
 endif
 
+# Seperate rules for FreeRTOS to tweak build settings.
+$(OBJDIR)/$(OS_FSFW)/port/%.o: %.c
+$(OBJDIR)/$(OS_FSFW)/port/%.o: %.c $(DEPENDDIR)/%.d | $(DEPENDDIR) 
+	@echo 
+	@echo Compiling FreeRTOS port source: $<
+	@mkdir -p $(@D)
+ifdef SHOW_DETAILS
+	$(CC) $(CXXFLAGS) $(CFLAGS) $(FREERTOS_OPTIMIZATION) -fno-omit-frame-pointer -c -o $@ $<
+else
+	@$(CC) $(CXXFLAGS) $(CFLAGS) $(FREERTOS_OPTIMIZATION) -fno-omit-frame-pointer -c -o $@ $<
+endif
+
 # Seperate rules for AT91 to tweak build settings.
 $(OBJDIR)/at91/%.o: %.c
 $(OBJDIR)/at91/%.o: %.c $(DEPENDDIR)/%.d | $(DEPENDDIR) 
@@ -594,7 +616,8 @@ endif
 # http://make.mad-scientist.net/papers/advanced-auto-dependency-generation/
 $(DEPENDDIR):
 	@mkdir -p $(@D)
-DEPENDENCY_RELATIVE = $(CSRC:.c=.d) $(CXXSRC:.cpp=.d) $(FREERTOS_SRC:.c=.d) $(AT91_SRC:.c=.d)
+DEPENDENCY_RELATIVE = $(CSRC:.c=.d) $(CXXSRC:.cpp=.d) $(FREERTOS_SRC:.c=.d) $(AT91_SRC:.c=.d) \
+		$(FREERTOS_PORT:.c=.d)
 # This is the list of all dependencies
 DEPFILES = $(addprefix $(DEPENDDIR)/, $(DEPENDENCY_RELATIVE))
 # Create subdirectories for dependencies
