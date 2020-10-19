@@ -125,13 +125,21 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
 }
 
 uint64_t CoreController::getTotalRunTimeCounter() {
+#if configGENERATE_RUN_TIME_STATS == 1
     return static_cast<uint64_t>(counterOverflows) << 32 |
             vGetCurrentTimerCounterValue();
+#else
+    return 1;
+#endif
 }
 
 uint64_t CoreController::getTotalIdleRunTimeCounter() {
+#if configGENERATE_RUN_TIME_STATS == 1
     return static_cast<uint64_t>(idleCounterOverflows) << 32 |
             ulTaskGetIdleRunTimeCounter();
+#else
+    return 1;
+#endif
 }
 
 void CoreController::update64bitCounter() {

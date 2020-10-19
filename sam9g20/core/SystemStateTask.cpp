@@ -23,8 +23,12 @@ ReturnValue_t SystemStateTask::performOperation(uint8_t opCode) {
     	}
     	case(InternalState::READING_STATS): {
     		if(numberOfTasks > 0) {
+#if configGENERATE_RUN_TIME_STATS == 1
     			uxTaskGetSystemState(taskStatArray.data(),
     					numberOfTasks, nullptr);
+#else
+    			internalState = InternalState::IDLE;
+#endif
     			if(not readOnce) {
     				readOnce = true;
     			}

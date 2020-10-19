@@ -414,7 +414,7 @@ mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION)
 mission: OPTIMIZATION += -fno-isolate-erroneous-paths-dereference 
 # Link time optimization can lead to issues, so if there is an issue with the
 # mission binary, try to disable it to see if that fixes the problem.
-# mission: LINK_TIME_OPTIMIZATION = -flto
+mission: LINK_TIME_OPTIMIZATION = -flto
 mission: TARGET = Mission binary
 mission: OPTIMIZATION_MESSAGE = On with Link Time Optimization.
 mission: DEBUG_LEVEL = -g0
