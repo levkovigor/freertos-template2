@@ -2,9 +2,7 @@
 #define SAM9G20_CORE_CORECONTROLLER_H_
 
 #include "SystemStateTask.h"
-#include <fsfw/action/HasActionsIF.h>
-#include <fsfw/controller/ControllerBase.h>
-#include <fsfw/datapoollocal/LocalDataPoolManager.h>
+#include <fsfw/controller/ExtendedControllerBase.h>
 
 #ifdef ISIS_OBC_G20
 #include <sam9g20/memory/FRAMHandler.h>
@@ -23,9 +21,7 @@ extern "C" {
  * @author  R. Mueller
  *
  */
-class CoreController: public ControllerBase,
-        public HasActionsIF,
-        public HasLocalDataPoolIF {
+class CoreController: public ExtendedControllerBase {
 public:
     static constexpr uint8_t SUPERVISOR_INDEX = -1;
     static constexpr float RTC_RTT_SYNC_INTERVAL = 0.5;
@@ -33,7 +29,6 @@ public:
 
 	CoreController(object_id_t objectId, object_id_t systemStateTaskId);
 
-	MessageQueueId_t getCommandQueue() const override;
 	ReturnValue_t handleCommandMessage(CommandMessage *message) override;
 	void performControlOperation() override;
 	ReturnValue_t checkModeCommand(Mode_t mode, Submode_t submode,
@@ -48,10 +43,7 @@ public:
     ReturnValue_t initializeLocalDataPool(
             LocalDataPool& localDataPoolMap,
             LocalDataPoolManager& poolManager) override;
-    LocalDataPoolManager* getHkManagerHandle() override;
-    dur_millis_t getPeriodicOperationFrequency() const override;
     LocalPoolDataSetBase* getDataSetHandle(sid_t sid) override;
-    object_id_t getObjectId() const override;
 
 	ReturnValue_t initialize() override;
 	ReturnValue_t initializeAfterTaskCreation() override;
@@ -68,8 +60,6 @@ public:
 	static constexpr ActionId_t POWERCYCLE_OBC = 11;
 
 private:
-	ActionHelper actionHelper;
-	LocalDataPoolManager poolManager;
 
 #ifdef ISIS_OBC_G20
 	FRAMHandler* framHandler = nullptr;

@@ -3,6 +3,8 @@
 
 #include <fsfw/action/HasActionsIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
+#include <fsfw/parameters/ParameterHelper.h>
+#include <fsfw/parameters/ReceivesParameterMessagesIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 
 #if defined(ISIS_OBC_G20) && defined(AT91SAM9G20_EK)
@@ -64,14 +66,17 @@ enum class ImageSlot {
  */
 class SoftwareImageHandler: public SystemObject,
         public ExecutableObjectIF,
-        public HasActionsIF {
+        public HasActionsIF,
+        public ReceivesParameterMessagesIF {
 public:
-	static constexpr uint8_t SUBSYSTEM_ID = CLASS_ID::SW_IMAGE_HANDLER;
+	//static constexpr uint8_t SUBSYSTEM_ID = CLASS_ID::SW_IMAGE_HANDLER;
+	static constexpr uint8_t INTERFACE_ID = CLASS_ID::SW_IMAGE_HANDLER;
 	static constexpr ReturnValue_t OPERATION_FINISHED = MAKE_RETURN_CODE(0x00);
 	static constexpr ReturnValue_t TASK_PERIOD_OVER_SOON = MAKE_RETURN_CODE(0x01);
 	static constexpr ReturnValue_t BUSY = MAKE_RETURN_CODE(0x02);
 
 	static constexpr uint8_t SW_IMG_HANDLER_MQ_DEPTH = 5;
+	static constexpr uint8_t MAX_MESSAGES_HANDLED  = 5;
 
 	using ImageBuffer = std::array<uint8_t, 2048>;
 
@@ -102,6 +107,10 @@ private:
         SCRUBBING
     };
 
+    enum ParameterIds {
+        HAMMING_CODE_FROM_SDC = 0,
+    };
+
     /** HasActionIF (Service 8) definitions */
 
     // TODO: make manual scrubbing work first..
@@ -122,7 +131,7 @@ private:
     //! Please note that the scrubbing engine will only scrub the active
     //! SD card. If the SD card is switched, any ongoing scrubbing operation
     //! on an SD card will be cancelled.
-    //!
+    //! TODO: These should be parameters!
     static constexpr ActionId_t SET_PERIODIC_SCRUBBING = 1;
 
     //! Report the status of the scrubbing engine
@@ -132,6 +141,7 @@ private:
 
     //! Specify whether a hamming code check will be performed during
     //! copy operations.
+    //! TODO: Should be a prameter instead
     static constexpr ActionId_t SET_HAMMING_CODE_CHECK_FOR_COPYING = 3;
 
     //! Instruct the image handler to copy a SD-card binary to the flash
@@ -188,6 +198,7 @@ private:
     MessageQueueIF* receptionQueue = nullptr;
     PeriodicTaskIF* executingTask = nullptr;
     ActionHelper actionHelper;
+    ParameterHelper parameterHelper;
     ImageBuffer imgBuffer;
     Countdown* countdown = nullptr;
     ImageCopyingEngine* imgCpHelper = nullptr;
@@ -200,8 +211,10 @@ private:
     bool displayInfo = false;
     bool performHammingCodeCheck = false;
     bool oneShot = false;
-    bool blWritten = false;
 
+    ReturnValue_t getParameter(uint8_t domainId,
+            uint16_t uniqueIdentifier, ParameterWrapper *parameterWrapper,
+            const ParameterWrapper *newValues, uint16_t startAtIndex) override;
 
 #ifdef ISIS_OBC_G20
     /**

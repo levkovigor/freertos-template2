@@ -11,40 +11,48 @@ ReturnValue_t pst::pollingSequenceInitDefault(
 	uint32_t length = thisSequence->getPeriodMs();
 
 	thisSequence->addSlot(objects::PCDU_HANDLER,
-	        length * 0, DeviceHandlerIF::SEND_WRITE);
+	        length * 0, DeviceHandlerIF::PERFORM_OPERATION);
+    thisSequence->addSlot(objects::PCDU_HANDLER,
+            length * 0.4, DeviceHandlerIF::SEND_WRITE);
 	thisSequence->addSlot(objects::PCDU_HANDLER,
-	        length * 0.2, DeviceHandlerIF::GET_WRITE);
+	        length * 0.55, DeviceHandlerIF::GET_WRITE);
 	thisSequence->addSlot(objects::PCDU_HANDLER,
-	        length * 0.4,  DeviceHandlerIF::SEND_READ);
+	        length * 0.7,  DeviceHandlerIF::SEND_READ);
 	thisSequence->addSlot(objects::PCDU_HANDLER,
-	        length * 0.8, DeviceHandlerIF::GET_READ);
+	        length * 0.85, DeviceHandlerIF::GET_READ);
 
     thisSequence->addSlot(objects::GPS0_HANDLER,
-    		length * 0.3,  DeviceHandlerIF::SEND_WRITE);
+            length * 0, DeviceHandlerIF::PERFORM_OPERATION);
     thisSequence->addSlot(objects::GPS0_HANDLER,
-            length * 0.5,  DeviceHandlerIF::GET_WRITE);
+    		length * 0.4,  DeviceHandlerIF::SEND_WRITE);
     thisSequence->addSlot(objects::GPS0_HANDLER,
-            length * 0.55,  DeviceHandlerIF::SEND_READ);
+            length * 0.55,  DeviceHandlerIF::GET_WRITE);
     thisSequence->addSlot(objects::GPS0_HANDLER,
-            length * 0.8,  DeviceHandlerIF::GET_READ);
+            length * 0.7,  DeviceHandlerIF::SEND_READ);
+    thisSequence->addSlot(objects::GPS0_HANDLER,
+            length * 0.85,  DeviceHandlerIF::GET_READ);
 
+    thisSequence->addSlot(objects::GPS1_HANDLER,
+            length * 0, DeviceHandlerIF::PERFORM_OPERATION);
     thisSequence->addSlot(objects::GPS1_HANDLER,
     		length * 0.4,  DeviceHandlerIF::SEND_WRITE);
 	thisSequence->addSlot(objects::GPS1_HANDLER,
-			length * 0.5,  DeviceHandlerIF::GET_WRITE);
+			length * 0.55,  DeviceHandlerIF::GET_WRITE);
 	thisSequence->addSlot(objects::GPS1_HANDLER,
-			length * 0.55,  DeviceHandlerIF::SEND_READ);
+			length * 0.7,  DeviceHandlerIF::SEND_READ);
 	thisSequence->addSlot(objects::GPS1_HANDLER,
-			length * 0.9,  DeviceHandlerIF::GET_READ);
+			length * 0.85,  DeviceHandlerIF::GET_READ);
 
     thisSequence->addSlot(objects::DUMMY_HANDLER,
-            length * 0,  DeviceHandlerIF::SEND_WRITE);
+            length * 0, DeviceHandlerIF::PERFORM_OPERATION);
     thisSequence->addSlot(objects::DUMMY_HANDLER,
-            length * 0.2, DeviceHandlerIF::GET_WRITE);
+            length * 0.4,  DeviceHandlerIF::SEND_WRITE);
     thisSequence->addSlot(objects::DUMMY_HANDLER,
-            length * 0.4,  DeviceHandlerIF::SEND_READ);
+            length * 0.55, DeviceHandlerIF::GET_WRITE);
     thisSequence->addSlot(objects::DUMMY_HANDLER,
-            length * 0.8, DeviceHandlerIF::GET_READ);
+            length * 0.7,  DeviceHandlerIF::SEND_READ);
+    thisSequence->addSlot(objects::DUMMY_HANDLER,
+            length * 0.85, DeviceHandlerIF::GET_READ);
 
 	if (thisSequence->checkSequence() == HasReturnvaluesIF::RETURN_OK) {
 		return HasReturnvaluesIF::RETURN_OK;
@@ -83,23 +91,26 @@ ReturnValue_t pst::pollingSequenceInitTest(FixedTimeslotTaskIF *thisSequence) {
 	/* Length of a communication cycle */
 	uint32_t length = thisSequence->getPeriodMs();
 
-
-    thisSequence->addSlot(objects::SPI_Test_PT1000, length * 0.15,
+    thisSequence->addSlot(objects::SPI_Test_PT1000, length * 0,
+            DeviceHandlerIF::PERFORM_OPERATION);
+    thisSequence->addSlot(objects::SPI_Test_PT1000, length * 0.4,
             DeviceHandlerIF::SEND_WRITE);
-    thisSequence->addSlot(objects::SPI_Test_PT1000, length * 0.5,
-            DeviceHandlerIF::GET_WRITE);
     thisSequence->addSlot(objects::SPI_Test_PT1000, length * 0.55,
-            DeviceHandlerIF::SEND_READ);
+            DeviceHandlerIF::GET_WRITE);
     thisSequence->addSlot(objects::SPI_Test_PT1000, length * 0.7,
+            DeviceHandlerIF::SEND_READ);
+    thisSequence->addSlot(objects::SPI_Test_PT1000, length * 0.85,
             DeviceHandlerIF::GET_READ);
 
-    thisSequence->addSlot(objects::SPI_Test_Gyro, length * 0.15,
+    thisSequence->addSlot(objects::SPI_Test_Gyro, length * 0,
+            DeviceHandlerIF::PERFORM_OPERATION);
+    thisSequence->addSlot(objects::SPI_Test_Gyro, length * 0.4,
     		DeviceHandlerIF::SEND_WRITE);
-    thisSequence->addSlot(objects::SPI_Test_Gyro, length * 0.5,
-    		DeviceHandlerIF::GET_WRITE);
     thisSequence->addSlot(objects::SPI_Test_Gyro, length * 0.55,
-    		DeviceHandlerIF::SEND_READ);
+    		DeviceHandlerIF::GET_WRITE);
     thisSequence->addSlot(objects::SPI_Test_Gyro, length * 0.7,
+    		DeviceHandlerIF::SEND_READ);
+    thisSequence->addSlot(objects::SPI_Test_Gyro, length * 0.85,
     		DeviceHandlerIF::GET_READ);
 
 //	thisSequence->addSlot(objects::ARDUINO_0,

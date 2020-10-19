@@ -1,10 +1,13 @@
 #include "SoftwareImageHandler.h"
+#include "ImageCopyingEngine.h"
+#include "ScrubbingEngine.h"
+
 #include <sam9g20/memory/SDCardHandler.h>
 #include <fsfw/tasks/PeriodicTaskIF.h>
 #include <fsfw/timemanager/Countdown.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/ipc/QueueFactory.h>
-#include <sam9g20/core/ImageCopyingEngine.h>
+
 
 #ifdef ISIS_OBC_G20
 extern "C" {
@@ -15,25 +18,36 @@ extern "C" {
 SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
         SystemObject(objectId), receptionQueue(QueueFactory::instance()->
         createMessageQueue(SW_IMG_HANDLER_MQ_DEPTH)),
-        actionHelper(this, receptionQueue) {
+        actionHelper(this, receptionQueue), parameterHelper(this) {
 }
 
 ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
     countdown->resetTimer();
     CommandMessage message;
-    ReturnValue_t result = receptionQueue->receiveMessage(&message);
-    if(result == HasReturnvaluesIF::RETURN_OK) {
-        result = actionHelper.handleActionMessage(&message);
-        if(result != HasReturnvaluesIF::RETURN_OK) {
-            sif::debug << "SoftwareImageHandler::performOperation: Unknown"
-                    << "  command with command ID " << message.getCommand()
-                    << " received!" << std::endl;
+    ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
+    for(uint8_t idx = 0; idx < MAX_MESSAGES_HANDLED; idx ++) {
+        result = receptionQueue->receiveMessage(&message);
+        if(result == MessageQueueIF::EMPTY) {
+            break;
         }
+        else if(result != HasReturnvaluesIF::RETURN_OK) {
+            sif::debug << "SoftwareImageHandler::performOperation: Error"
+                    << " receiving message!" << std::endl;
+        }
+
+        result = actionHelper.handleActionMessage(&message);
+        if(result == HasReturnvaluesIF::RETURN_OK) {
+            continue;
+        }
+
+        result = parameterHelper.handleParameterMessage(&message);
     }
+
+    //sif::info << (int) scrubbingEngine->hammingCodeOnSdCard << std::endl;
+
     while(countdown->isBusy()) {
         switch(handlerState) {
         case(HandlerState::IDLE): {
-
             // check whether periodic scrubbing is necessary
             // otherwise, return.
             return HasReturnvaluesIF::RETURN_OK;
@@ -78,6 +92,12 @@ ReturnValue_t SoftwareImageHandler::initialize() {
     if(result != HasReturnvaluesIF::RETURN_OK) {
         return result;
     }
+
+    result = parameterHelper.initialize();
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
 #ifdef ISIS_OBC_G20
     int retval = NORflash_start();
 
@@ -95,6 +115,13 @@ ReturnValue_t SoftwareImageHandler::initializeAfterTaskCreation() {
 	countdown = new Countdown(static_cast<float>(
 	        this->executingTask->getPeriodMs()) * 0.85);
 	imgCpHelper = new ImageCopyingEngine(this, countdown, &imgBuffer);
+	if(imgCpHelper == nullptr) {
+	    return HasReturnvaluesIF::RETURN_FAILED;
+	}
+	scrubbingEngine = new ScrubbingEngine(this);
+    if(scrubbingEngine == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -158,7 +185,18 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
     return result;
 }
 
-
+ReturnValue_t SoftwareImageHandler::getParameter(uint8_t domainId,
+        uint16_t uniqueIdentifier, ParameterWrapper *parameterWrapper,
+        const ParameterWrapper *newValues, uint16_t startAtIndex) {
+    switch(uniqueIdentifier) {
+    case(ParameterIds::HAMMING_CODE_FROM_SDC): {
+        parameterWrapper->set(scrubbingEngine->hammingCodeOnSdCard);
+        return HasReturnvaluesIF::RETURN_OK;
+    }
+    default:
+        return HasParametersIF::INVALID_IDENTIFIER_ID;
+    }
+}
 
 #ifdef ISIS_OBC_G20
 

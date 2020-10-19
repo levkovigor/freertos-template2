@@ -229,7 +229,7 @@ void vPortEndScheduler( void )
  * The ISR used for the scheduler tick depends on whether the cooperative or
  * the preemptive scheduler is being used.
  */
-void vPortTickISR( void ) __attribute__ ((section(".sramfunc"), weak));
+void vPortTickISR( void ) __attribute__ ((section(".sramfunc"), weak, used));
 void vPortTickISR( void )
 {
 	volatile unsigned long ulDummy;
@@ -279,7 +279,7 @@ static void vPortISRStartFirstTask( void )
 {
 	/* Simply start the scheduler.  This is included here as it can only be
 	called from ARM mode. */
-	portRESTORE_CONTEXT();
+    portRESTORE_CONTEXT_LTO_VERSION();
 }
 /*-----------------------------------------------------------*/
 

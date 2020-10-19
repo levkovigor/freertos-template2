@@ -53,7 +53,9 @@ ServiceInterfaceStream error("ERROR", true);
 ObjectManagerIF* objectManager;
 
 /* Board Tests, not used in mission */
+#if OBSW_ADD_TEST_CODE == 1
 void boardTestTaskInit();
+#endif
 void genericMissedDeadlineFunc();
 void printAddError(object_id_t objectId);
 
@@ -294,6 +296,14 @@ void initMission(void) {
         printAddError(objects::SYSTEM_STATE_TASK);
     }
 
+    PeriodicTaskIF* ThermalController = TaskFactory::instance()->
+            createPeriodicTask("THERMAL_CTRL", 6, 2048 * 4, 1,
+                    genericMissedDeadlineFunc);
+    result = ThermalController->addComponent(objects::THERMAL_CONTROLLER);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        printAddError(objects::THERMAL_CONTROLLER);
+    }
+
     /* SPI Communication Interface*/
     PeriodicTaskIF* SpiComTask = TaskFactory::instance()->
             createPeriodicTask("SPI_COM_IF", 8, 1024 * 4, 0.4,
@@ -304,7 +314,7 @@ void initMission(void) {
     }
 
 
-#if ADD_TEST_CODE == 1
+#if OBSW_ADD_TEST_CODE == 1
     InternalUnitTester unitTestClass;
     result = unitTestClass.performTests();
     if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -336,8 +346,9 @@ void initMission(void) {
     SDCardTask -> startTask();
     SoftwareImageTask -> startTask();
 
-    SystemStateTask -> startTask();
     CoreController->startTask();
+    SystemStateTask -> startTask();
+    ThermalController -> startTask();
     SpiComTask->startTask();
 
     sif::info << "Remaining FreeRTOS heap size: " << std::dec
@@ -347,14 +358,14 @@ void initMission(void) {
         sif::warning << "Factory Task: Remaining stack size: "
                 << remainingFactoryStack << " bytes" << std::endl;
     }
-#if DISPLAY_FACTORY_ALLOCATION_SIZE == 1
+#if OBSW_DISPLAY_FACTORY_ALLOCATION_SIZE == 1
     sif::info << "Allocated size by new function: " << allocatedSize
             << std::endl;
 #endif
     sif::info << "Tasks started." << std::endl;
 }
 
-#if ADD_TEST_CODE == 1
+#if OBSW_ADD_TEST_CODE == 1
 void boardTestTaskInit() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_FAILED;
 
@@ -434,7 +445,7 @@ void boardTestTaskInit() {
 #endif
 
 
-#if DISPLAY_FACTORY_ALLOCATION_SIZE == 1
+#if OBSW_DISPLAY_FACTORY_ALLOCATION_SIZE == 1
 void* operator new(size_t size) {
     allocatedSize += size;
     return std::malloc(size);
@@ -449,7 +460,7 @@ void printAddError(object_id_t objectId) {
 
 
 void genericMissedDeadlineFunc() {
-#if PRINT_MISSED_DEADLINES == 1
+#if OBSW_PRINT_MISSED_DEADLINES == 1
     sif::debug << "PeriodicTask: " << pcTaskGetName(NULL) <<
             " missed deadline!" << std::endl;
 #endif

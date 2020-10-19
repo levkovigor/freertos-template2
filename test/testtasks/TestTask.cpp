@@ -6,15 +6,17 @@
 #include <unittest/internal/InternalUnitTester.h>
 
 #include <fsfw/objectmanager/ObjectManagerIF.h>
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
 #include <etl/vector.h>
+
 #include <array>
 #include <cstring>
 
+
 bool TestTask::oneShotAction = true;
 MutexIF* TestTask::testLock = nullptr;
+//static constexpr std::array<size_t, 5> TestTask::templateSizes =
 
 TestTask::TestTask(object_id_t objectId_):
 	SystemObject(objectId_), testMode(testModes::A) {
@@ -22,6 +24,8 @@ TestTask::TestTask(object_id_t objectId_):
 		testLock = MutexFactory::instance()->createMutex();
 	}
 	IPCStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
+
+	//subscribeInTmManager(service, subservice);
 }
 
 TestTask::~TestTask() {
@@ -54,9 +58,10 @@ ReturnValue_t TestTask::performOperation(uint8_t operationCode) {
 
 ReturnValue_t TestTask::performOneShotAction() {
 	// Everything here will only be performed once.
+
+    //performEtlTemplateTest();
     return HasReturnvaluesIF::RETURN_OK;
 }
-
 
 ReturnValue_t TestTask::performPeriodicAction() {
 	ReturnValue_t result = RETURN_OK;
@@ -77,8 +82,9 @@ ReturnValue_t TestTask::performActionB() {
 
 
 void TestTask::performPusInjectorTest() {
-	PusTcInjector tcInjector(objects::TC_INJECTOR, objects::CCSDS_PACKET_DISTRIBUTOR,
-			objects::TC_STORE, apid::SOURCE_OBSW);
+	PusTcInjector tcInjector(objects::TC_INJECTOR,
+	        objects::CCSDS_PACKET_DISTRIBUTOR, objects::TC_STORE,
+	        apid::SOURCE_OBSW);
 	tcInjector.initialize();
 	sif::info << "TestTask: injecting pus telecommand" << std::endl;
 	tcInjector.injectPusTelecommand(17,1);
@@ -142,3 +148,17 @@ void TestTask::examplePacketTest() {
 	}
 }
 
+
+void TestTask::performEtlTemplateTest() {
+    const uint32_t poolId = 0;
+    insertNewTmManagerStruct<templateSizes[poolId]>(poolId);
+    // now we should be able to access it like this
+    auto iter = testMap.find(poolId);
+    if(iter == testMap.end()) {
+        return;
+    }
+    struct TmManagerStruct<templateSizes[poolId]>* test = dynamic_cast<
+            struct TmManagerStruct<templateSizes[poolId]>*>(iter->second);
+    sif::info << test->testMap.size() << std::endl;
+    sif::info << test->testMap.max_size() << std::endl;
+}

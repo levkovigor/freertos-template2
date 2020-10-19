@@ -3,31 +3,45 @@
 
 #include "SDCardDefinitions.h"
 
-#include <fsfw/osal/FreeRTOS/CountingSemaphore.h>
+#include <fsfw/ipc/MutexIF.h>
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
 #include <sam9g20/memory/SDCardApi.h>
 
-class CountingSemaphore;
-
+/**
+ * This class will cache the currently active SD card. It is always
+ * used by the SD card access token automatically to get the currently
+ * active SD card in a  thread safe way.
+ */
 class SDCardAccessManager {
+    friend class SDCardHandler;
+    friend class SDCardAccess;
 public:
     virtual ~SDCardAccessManager();
 
+    static void create();
+
     /**
-     * Returns the single instance of TaskFactory.
-     * The implementation of #instance is found in its subclasses.
-     * Thus, we choose link-time variability of the  instance.
+     * Returns the single instance of the SD card manager.
      */
     static SDCardAccessManager* instance();
-    CountingSemaphore countingSemaphore;
+
+    /**
+     * Can be used by SD card users during a transition to check
+     * whether SD card change is complete.
+     * @return
+     */
+    bool getSdCardChangeOngoing() const;
 private:
     SDCardAccessManager();
+    bool tryActiveSdCardChange();
+
+    MutexIF* mutex;
+    bool changingSdCard = false;
+    uint8_t activeAccesses = 0;
+    VolumeId activeSdCard = SD_CARD_0;
 
     static SDCardAccessManager* factoryInstance;
-
 };
-
-
 
 /**
  * @brief   This access class can be created locally to initiate access to the
@@ -46,7 +60,6 @@ public:
     ReturnValue_t accessResult = HasReturnvaluesIF::RETURN_OK;
     VolumeId currentVolumeId;
 };
-
 
 
 #endif /* SAM9G20_MEMORY_SDCARDACCESS_H_ */

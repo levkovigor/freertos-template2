@@ -34,6 +34,41 @@ A ping command uses the PUS test service (17)
 python3 obsw_tmtc_client.py -m 3 -s 17 -c 1 
 ```
 
+Enable periodic printout, using PUS test service 17
+```sh
+python3 obsw_tmtc_client.py -m 3 -s 17 -o 129 -c 1
+```
+
+Disable periodic printout
+```sh
+python3 obsw_tmtc_client.py -m 3 -s 17 -o 130 -c 1
+```
+
+### Core Management
+
+These functions can be used to command and interface the core of the OBC
+or its supervisor.
+
+Software reset or supervisor reset
+```sh
+python3 obsw_tmtc_client.py -m 3 -s Core -o A10 -c 1
+```
+
+Supervisor power cycle
+```sh
+python3 obsw_tmtc_client.py -m 3 -s Core -o A11 -c 1
+```
+
+Print run time stats
+```sh
+python3 obsw_tmtc_client.py -m 3 -s Core -o A0 -c 1
+```
+
+Trigger a software exception which should lead to a restart
+```sh
+python3 obsw_tmtc_client.py -m 3 -s 17 -o 150 -c 1
+```
+
 ### Service tests
 
 Perform a service test which should work without connected hardware.
@@ -67,6 +102,17 @@ Generate generic folder structure, C0A for AT91, C0I for iOBC
 python3 obsw_tmtc_client.py -m 3 -s SD -o C0A -c 1
 ```
 
+Lock file on SD card. Locked files are read-only and can not be deleted.
+The all directories containing a locked file can not be deleted as well.
+```sh
+python3 obsw_tmtc_client.py -m 3 -s SD -o 5 -c 1
+```
+
+Unlock file on SD card
+```sh
+python3 obsw_tmtc_client.py -m 3 -s SD -o 6 -c 1
+```
+
 ###  Software Update Procedure
 
 Upload the bootloader or the software image using the special
@@ -89,4 +135,6 @@ Copy bootloader image to boot memory (A11S for image on SD-Card, A11F for image 
 ```sh
 python3 obsw_tmtc_client.py -m 3 -s Img -o A11S -c 1 
 ```
-
+Test whether binary was uploaded successfully: 
+Power cycle the OBC, either externally or via following commands
+shown above for core management.

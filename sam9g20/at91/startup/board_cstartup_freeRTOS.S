@@ -36,8 +36,8 @@
 //------------------------------------------------------------------------------
 //         Definitions
 //------------------------------------------------------------------------------
-#define UND_STACK_SIZE	0x00000100		/* Stack size for "undefined instruction" interrupts		*/
-#define ABT_STACK_SIZE	0x00000100		/* Stack size for "abort" interrupts						*/
+#define UND_STACK_SIZE	0x00000200		/* Stack size for "undefined instruction" interrupts    */
+#define ABT_STACK_SIZE	0x00000200		/* Stack size for "abort" interrupts					*/
 #define FIQ_STACK_SIZE	0x00000000		/* Stack size for "FIQ" interrupts						*/
 #define IRQ_STACK_SIZE	0x00018000		/* Stack size for "IRQ" normal interrupts				*/
 #define SVC_STACK_SIZE	0x00018000		/* Stack size for "SVC" supervisor mode					*/

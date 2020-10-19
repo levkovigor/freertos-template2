@@ -75,39 +75,39 @@ void AtmelTestTask::performExceptionTest() {
 }
 
 
-void AtmelTestTask::performNewPoolManagerAccessTests() {
-	uint16_t numberOfElements[1] = {1};
-	uint16_t sizeofElements[1] = {10};
-	PoolManager<1> testPool = PoolManager<1>(0, sizeofElements, numberOfElements);
-	std::array<uint8_t, 20> testDataArray;
-	std::array<uint8_t, 20> receptionArray;
-	store_address_t testStoreId;
-	ReturnValue_t result = HasReturnvaluesIF::RETURN_FAILED;
-
-	for(size_t i = 0; i < testDataArray.size(); i++) {
-		testDataArray[i] = i;
-	}
-	size_t size = 10;
-
-	result = testPool.addData(&testStoreId, testDataArray.data(), size);
-	if(result != RETURN_OK) {
-		sif::error << "Error when adding data" << std::endl;
-	}
-
-	auto accessorPair = testPool.modifyData(testStoreId);
-	if(accessorPair.first != RETURN_OK) {
-		sif::error << "Error when modifying data" << std::endl;
-	}
-	accessorPair.second.print();
-	accessorPair.second.getDataCopy(receptionArray.data(), receptionArray.size());
-	accessorPair.second.release();
-
-	auto constAccess = testPool.getData(testStoreId);
-	if(constAccess.first != RETURN_OK) {
-		sif::error << "Error when modifying data" << std::endl;
-	}
-	accessorPair.second.print();
-}
+//void AtmelTestTask::performNewPoolManagerAccessTests() {
+//	uint16_t numberOfElements[1] = {1};
+//	uint16_t sizeofElements[1] = {10};
+//	PoolManager<1> testPool = PoolManager<1>(0, sizeofElements, numberOfElements);
+//	std::array<uint8_t, 20> testDataArray;
+//	std::array<uint8_t, 20> receptionArray;
+//	store_address_t testStoreId;
+//	ReturnValue_t result = HasReturnvaluesIF::RETURN_FAILED;
+//
+//	for(size_t i = 0; i < testDataArray.size(); i++) {
+//		testDataArray[i] = i;
+//	}
+//	size_t size = 10;
+//
+//	result = testPool.addData(&testStoreId, testDataArray.data(), size);
+//	if(result != RETURN_OK) {
+//		sif::error << "Error when adding data" << std::endl;
+//	}
+//
+//	auto accessorPair = testPool.modifyData(testStoreId);
+//	if(accessorPair.first != RETURN_OK) {
+//		sif::error << "Error when modifying data" << std::endl;
+//	}
+//	accessorPair.second.print();
+//	accessorPair.second.getDataCopy(receptionArray.data(), receptionArray.size());
+//	accessorPair.second.release();
+//
+//	auto constAccess = testPool.getData(testStoreId);
+//	if(constAccess.first != RETURN_OK) {
+//		sif::error << "Error when modifying data" << std::endl;
+//	}
+//	accessorPair.second.print();
+//}
 
 void AtmelTestTask::performSDCardDemo() {
     /* Demo for SD Card 0, SD card slot J35 at at91sam9g20-ek */
@@ -295,7 +295,8 @@ void AtmelTestTask::performHammingTest() {
     }
     uint8_t hamming[3];
     Hamming_Compute256x(test, 256, hamming);
-    sif::info << "Hamming code: " << (int) hamming[0] << (int) hamming[1]
+    sif::info << "Hamming code: " << std::hex << "0x" << (int) hamming[0]
+             << ", 0x" << (int) hamming[1] << ", 0x"
              << (int) hamming[2] << std::endl;
     int result = Hamming_Verify256x(test, 256, hamming);
     if(result != 0) {

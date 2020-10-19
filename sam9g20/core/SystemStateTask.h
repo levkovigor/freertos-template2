@@ -15,7 +15,8 @@
 class CoreController;
 
 /**
- * Low priority task used to get system stats.
+ * @brief       Low priority task used to get system stats.
+ * @author      R. Mueller
  */
 class SystemStateTask: public SystemObject,
         public ExecutableObjectIF {

@@ -819,14 +819,17 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = ../../framework/ \
+INPUT                  = ../../fsfw/ \
                          ../../mission/ \
+						 ../../config/ \
                          ../../sam9g20/comIF/ \
-                         ../../config/ \
-						 ../../sam9g20/TmTcBridge/ \
-						 ../../sam9g20/hal/ \
+						 ../../sam9g20/tmtcBridge/ \
 						 ../../sam9g20/boardtest/ \
-						 
+						 ../../sam9g20/utility/ \
+						 ../../sam9g20/memory/ \
+						 ../../sam9g20/core/ \
+						 ../../sam9g20/pus/ \
+						 ../../privlib/ \
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses

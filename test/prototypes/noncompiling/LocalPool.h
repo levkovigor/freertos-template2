@@ -17,10 +17,6 @@
 #include <vector>
 #include <limits>
 
-using poolElementSize = uint16_t;
-using numberPoolElements = uint16_t;
-using localPoolPair_t = std::pair<poolElementSize, numberPoolElements>;
-using LocalPoolConfig = std::multiset<localPoolPair_t>;
 /**
  * @brief	The LocalPool class provides an intermediate data storage with
  * 			a fixed pool size policy.
@@ -37,6 +33,11 @@ using LocalPoolConfig = std::multiset<localPoolPair_t>;
  */
 class LocalPool: public SystemObject, public StorageManagerIF {
 public:
+    using poolElementSize = uint16_t;
+    using numberPoolElements = uint16_t;
+    using localPoolPair_t = std::pair<poolElementSize, numberPoolElements>;
+    using LocalPoolConfig = std::multiset<localPoolPair_t>;
+
 	/**
 	 * @brief	This definition generally sets the number of different sized pools.
 	 * @details This must be less than the maximum number of pools (currently 0xff).

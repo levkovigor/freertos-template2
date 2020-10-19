@@ -20,16 +20,16 @@ Service23FileManagement::~Service23FileManagement() {
 
 ReturnValue_t Service23FileManagement::isValidSubservice(uint8_t subservice) {
     switch(subservice){
-    case Subservice::CREATE_FILE:
-    case Subservice::DELETE_FILE:
-    case Subservice::LOCK_FILE:
-    case Subservice::UNLOCK_FILE:
+    case Subservice::CMD_CREATE_FILE:
+    case Subservice::CMD_DELETE_FILE:
+    case Subservice::CMD_LOCK_FILE:
+    case Subservice::CMD_UNLOCK_FILE:
     case Subservice::CREATE_DIRECTORY:
     case Subservice::DELETE_DIRECTORY:
-    case Subservice::REPORT_FILE_ATTRIBUTES:
+    case Subservice::CMD_REPORT_FILE_ATTRIBUTES:
     case Subservice::APPEND_TO_FILE:
     case Subservice::FINISH_APPEND_TO_FILE:
-    case Subservice::READ_FROM_FILE:
+    case Subservice::CMD_READ_FROM_FILE:
         return HasReturnvaluesIF::RETURN_OK;
     default:
         return CommandingServiceBase::INVALID_SUBSERVICE;
@@ -70,16 +70,16 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
 	ReturnValue_t result;
 	store_address_t storeId;
     switch(subservice) {
-    case(Subservice::CREATE_FILE):
+    case(Subservice::CMD_CREATE_FILE):
     case(Subservice::CREATE_DIRECTORY):
-    case(Subservice::DELETE_FILE):
+    case(Subservice::CMD_DELETE_FILE):
     case(Subservice::DELETE_DIRECTORY):
     case(Subservice::APPEND_TO_FILE):
     case(Subservice::FINISH_APPEND_TO_FILE):
-    case(Subservice::REPORT_FILE_ATTRIBUTES):
-    case(Subservice::LOCK_FILE):
-    case(Subservice::UNLOCK_FILE):
-    case(Subservice::READ_FROM_FILE): {
+    case(Subservice::CMD_REPORT_FILE_ATTRIBUTES):
+    case(Subservice::CMD_LOCK_FILE):
+    case(Subservice::CMD_UNLOCK_FILE):
+    case(Subservice::CMD_READ_FROM_FILE): {
         result = addDataToStore(&storeId, tcData, tcDataLen);
         if(result != HasReturnvaluesIF::RETURN_OK) {
             return result;
@@ -93,23 +93,23 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
     }
 
 	switch(subservice) {
-	case(Subservice::CREATE_FILE): {
+	case(Subservice::CMD_CREATE_FILE): {
 	    FileSystemMessage::setCreateFileCommand(message, storeId);
 		break;
 	}
-    case(Subservice::DELETE_FILE): {
+    case(Subservice::CMD_DELETE_FILE): {
         FileSystemMessage::setDeleteFileCommand(message, storeId);
         break;
     }
-    case(Subservice::REPORT_FILE_ATTRIBUTES): {
+    case(Subservice::CMD_REPORT_FILE_ATTRIBUTES): {
         FileSystemMessage::setReportFileAttributesCommand(message, storeId);
         break;
     }
-    case(Subservice::LOCK_FILE): {
+    case(Subservice::CMD_LOCK_FILE): {
         FileSystemMessage::setLockFileCommand(message, storeId);
         break;
     }
-    case(Subservice::UNLOCK_FILE): {
+    case(Subservice::CMD_UNLOCK_FILE): {
         FileSystemMessage::setUnlockFileCommand(message, storeId);
         break;
     }
@@ -129,7 +129,7 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
         FileSystemMessage::setWriteCommand(message, storeId);
         break;
     }
-	case(Subservice::READ_FROM_FILE): {
+	case(Subservice::CMD_READ_FROM_FILE): {
 	    FileSystemMessage::setReadCommand(message, storeId);
 		break;
 	}
@@ -154,27 +154,54 @@ ReturnValue_t Service23FileManagement::handleReply(const CommandMessage* reply,
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
 
-	case FileSystemMessage::READ_REPLY: {
+	case FileSystemMessage::REPLY_READ_FROM_FILE: {
+	    bool readFinished = FileSystemMessage::getReadReply(reply, nullptr);
+	    if(readFinished) {
+	        // Another reply will follow.
+	        *isStep = true;
+	    }
 		return forwardFileSystemReply(reply, objectId,
-				Subservice::READ_REPLY);
+				Subservice::REPLY_READ_FROM_FILE);
 		break;
 	}
-	case(FileSystemMessage::FINISH_APPEND_REPLY): {
+	case FileSystemMessage::REPLY_READ_FINISHED_STOP: {
+        return forwardFileSystemReply(reply, objectId,
+                Subservice::REPLY_READ_STOPED_OR_FINISHED);
+        break;
+	}
+	case(FileSystemMessage::REPLY_FINISH_APPEND): {
 		return forwardFileSystemReply(reply, objectId,
 				Subservice::FINISH_APPEND_REPLY);
 		break;
 	}
-	case(FileSystemMessage::REPORT_FILE_ATTRIBUTES_REPLY): {
+	case(FileSystemMessage::REPLY_REPORT_FILE_ATTRIBUTES): {
         return forwardFileSystemReply(reply, objectId,
-                Subservice::REPORT_FILE_ATTRIBUTES_REPLY);
+                Subservice::REPLY_REPORT_FILE_ATTRIBUTES);
         break;
 	}
-
 	default:
 		result = INVALID_REPLY;
 	}
 	return result;
 }
+
+
+void Service23FileManagement::handleUnrequestedReply(
+        const CommandMessage *reply) {
+    Command_t replyId = reply->getCommand();
+    switch(replyId) {
+    case FileSystemMessage::REPLY_READ_FINISHED_STOP: {
+        // Should not really happen.
+        forwardFileSystemReply(reply, objects::NO_OBJECT,
+                Subservice::REPLY_READ_STOPED_OR_FINISHED);
+        break;
+    }
+    default:
+        sif::debug << "Service23FileManagement::handleUnrequestedReply: "
+               << "Unknown reply with reply ID " << replyId << std::endl;
+    }
+}
+
 
 ReturnValue_t Service23FileManagement::addDataToStore(
         store_address_t* storeId, const uint8_t* tcData,

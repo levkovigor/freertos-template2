@@ -92,12 +92,7 @@ private:
 	uint8_t faultByte = 0;
 	std::array<uint8_t, 3> commandBuffer { 0 };
 
-	static constexpr DeviceCommandId_t CONFIG_CMD = 0x80;
-	static constexpr DeviceCommandId_t REQUEST_CONFIG = 0x00;
-	static constexpr DeviceCommandId_t REQUEST_RTD = 0x01;
-	static constexpr DeviceCommandId_t REQUEST_FAULT_BYTE = 0x07;
-
-	ThermalSensorDataset sensorDataset;
+	TSensorDefinitions::ThermalSensorDataset sensorDataset;
 	sid_t sensorDatasetSid;
 
 #ifdef DEBUG

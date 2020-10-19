@@ -29,6 +29,7 @@
 #include <fsfw/pus/Service3Housekeeping.h>
 #include <fsfw/pus/Service5EventReporting.h>
 #include <fsfw/pus/Service8FunctionManagement.h>
+#include <mission/controller/ThermalController.h>
 #include <mission/pus/Service6MemoryManagement.h>
 #include <mission/pus/Service17CustomTest.h>
 #include <mission/pus/Service20ParameterManagement.h>
@@ -99,48 +100,41 @@ void Factory::produce(void) {
 	new InternalErrorReporter(objects::INTERNAL_ERROR_REPORTER);
 
 	/* Pool manager handles storage und mutexes */
-	/* Data Stores. Currently reserving 9600 bytes of memory */
 	{
 	    // TODO: make this configurable via OBSWConfig.h
-	    const uint8_t numberOfIpcPools = 7;
-	    uint16_t numberOfElements[numberOfIpcPools] = {250, 120, 100, 50,
-	            25, 10, 10};
-	    uint16_t sizeofElements[numberOfIpcPools] = {32, 64, 128, 256,
-	            512, 1024, 2048};
-	    new PoolManager<numberOfIpcPools>(objects::IPC_STORE,sizeofElements,
-	            numberOfElements);
-        size_t requiredSize = calculateStorage(numberOfIpcPools,
-                numberOfElements, sizeofElements);
-        sif::info << "Allocating " << requiredSize << " bytes for the IPC "
-                << "Store.." << std::endl;
+	    LocalPool::LocalPoolConfig poolConfig = {
+	            {250, 32}, {120, 64}, {100, 128}, {50, 256},
+	            {25, 512}, {10, 1024}, {10, 2048}
+	    };
+	    PoolManager* ipcStore = new PoolManager(objects::IPC_STORE, poolConfig);
+	    size_t additionalSize = 0;
+	    size_t storeSize = ipcStore->getTotalSize(&additionalSize);
+        sif::info << "Allocating " << storeSize + additionalSize << " bytes "
+                <<"for the IPC Store.." << std::endl;
 	}
 
 	{
-	    const uint8_t numberOfTmPools = 7;
-	    uint16_t numberOfElements[numberOfTmPools] = {500, 250, 120, 60,
-	            30, 15, 10};
-	    uint16_t sizeofElements[numberOfTmPools] = {32, 64, 128, 256, 512,
-	            1024, 2048};
-	    new PoolManager<numberOfTmPools>(objects::TM_STORE,sizeofElements,
-	            numberOfElements);
-        size_t requiredSize = calculateStorage(numberOfTmPools,
-                numberOfElements, sizeofElements);
-        sif::info << "Allocating " << requiredSize << "  bytes for the "
-                << "TM Store.." << std::endl;
+        LocalPool::LocalPoolConfig poolConfig = {
+                {500, 32}, {250, 64}, {120, 128}, {60, 256},
+                {30, 512}, {15, 1024}, {10, 2048}
+        };
+        PoolManager* tmStore = new PoolManager(objects::TM_STORE, poolConfig);
+        size_t additionalSize = 0;
+        size_t storeSize = tmStore->getTotalSize(&additionalSize);
+        sif::info << "Allocating " << storeSize + additionalSize << " bytes "
+                <<"for the TM Store.." << std::endl;
 	}
 
 	{
-	    const uint8_t numberOfTcPools = 7;
-	    uint16_t numberOfElements[numberOfTcPools] = {500, 250, 120, 60,
-	            20, 20, 20};
-	    uint16_t sizeofElements[numberOfTcPools] = {32, 64, 128, 256,
-	            512, 1024, 2048};
-	    new PoolManager<numberOfTcPools>(objects::TC_STORE,sizeofElements,
-	            numberOfElements);
-	    size_t requiredSize = calculateStorage(numberOfTcPools,
-	            numberOfElements, sizeofElements);
-	    sif::info << "Allocating " << requiredSize << " bytes for the "
-	            << "TC Store.." << std::endl;
+        LocalPool::LocalPoolConfig poolConfig = {
+                {500, 32}, {250, 64}, {120, 128},
+                {60, 256}, {30, 512}, {15, 1024}, {10, 2048}
+        };
+        PoolManager* tcStore =new PoolManager(objects::TC_STORE, poolConfig);
+        size_t additionalSize = 0;
+        size_t storeSize = tcStore->getTotalSize(&additionalSize);
+        sif::info << "Allocating " << storeSize + additionalSize << " bytes "
+                <<"for the TC Store.." << std::endl;
 	}
 
 
@@ -173,7 +167,7 @@ void Factory::produce(void) {
 	/* PUS Standalone Services using PusServiceBase */
 	new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,
 	        apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::TM_FUNNEL,
-			SERVICE_1_MQ_DEPTH);
+			config::OBSW_SERVICE_1_MQ_DEPTH);
 	new Service3Housekeeping(objects::PUS_SERVICE_3_HOUSEKEEPING,
 			apid::SOURCE_OBSW, pus::PUS_SERVICE_3);
 	new Service5EventReporting(objects::PUS_SERVICE_5_EVENT_REPORTING,
@@ -213,6 +207,8 @@ void Factory::produce(void) {
 
 	new CoreController(objects::CORE_CONTROLLER, objects::SYSTEM_STATE_TASK);
 	new SystemStateTask(objects::SYSTEM_STATE_TASK, objects::CORE_CONTROLLER);
+	new ThermalController(objects::THERMAL_CONTROLLER);
+
 	TestCookie * dummyCookie2 = new TestCookie(addresses::DUMMY_GPS0);
 #if defined(VIRTUAL_BUILD)
 	new GPSHandler(objects::GPS0_HANDLER, objects::DUMMY_GPS_COM_IF,

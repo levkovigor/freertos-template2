@@ -187,6 +187,7 @@ endif
 
 HEXCOPY = $(CP) -O ihex
 BINCOPY = $(CP) -O binary
+
 # files to be compiled, will be filled in by include makefiles
 # := assignment here is neccessary as initialization so that the +=
 # operator can be used in the submakefiles to achieve immediate evaluation. 

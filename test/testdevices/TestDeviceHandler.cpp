@@ -260,7 +260,7 @@ ReturnValue_t TestDevice::getParameter(uint8_t domainId, uint16_t parameterId,
 		parameterWrapper->set(testParameter3);
 		break;
 	default:
-		return INVALID_MATRIX_ID;
+		return INVALID_IDENTIFIER_ID;
 	}
 	return HasReturnvaluesIF::RETURN_OK;
 }

@@ -24,7 +24,7 @@ private:
 
     void printDecoderOutput();
     ReturnValue_t performDataSetTesting(uint8_t testMode);
-    void performNewPoolManagerAccessTests();
+    //void performNewPoolManagerAccessTests();
 
     //GlobalTestDataSet testDataSet;
 
