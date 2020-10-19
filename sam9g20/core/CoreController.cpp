@@ -143,6 +143,7 @@ uint64_t CoreController::getTotalIdleRunTimeCounter() {
 }
 
 void CoreController::update64bitCounter() {
+#if configGENERATE_RUN_TIME_STATS == 1
     uint32_t currentCounter = vGetCurrentTimerCounterValue();
     uint32_t currentIdleCounter = ulTaskGetIdleRunTimeCounter();
     if(currentCounter < last32bitCounterValue) {
@@ -157,6 +158,7 @@ void CoreController::update64bitCounter() {
 
     last32bitCounterValue = currentCounter;
     last32bitIdleCounterValue = currentIdleCounter;
+#endif
 }
 
 
