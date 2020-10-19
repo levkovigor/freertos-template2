@@ -183,6 +183,10 @@ extern volatile unsigned portLONG ulCriticalNesting;					\
 	( void ) pxCurrentTCB;												\
 }
 
+/**
+ * Added for the SOURCE project which uses newer compiler and FreeRTOS version.
+ * The function above caused issues when using code optimized with -flto.
+ */
 #define portRESTORE_CONTEXT_LTO_VERSION()                               \
 {                                                                       \
                                                                         \
