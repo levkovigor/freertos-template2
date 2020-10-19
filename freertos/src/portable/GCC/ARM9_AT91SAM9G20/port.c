@@ -300,7 +300,7 @@ void vPortYieldProcessor( void )
 	asm volatile ( "ADD		LR, LR, #4" );
 
 	/* Perform the context switch.  First save the context of the current task. */
-	portSAVE_CONTEXT_LTO_VERSION();
+	portSAVE_CONTEXT();
 
 	/* Find the highest priority task that is ready to run. */
 	vTaskSwitchContext();
