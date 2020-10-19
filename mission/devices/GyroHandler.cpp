@@ -1,4 +1,5 @@
 #include "GyroHandler.h"
+#include <OBSWConfig.h>
 #include "devicedefinitions/GyroPackets.h"
 
 #if defined(at91sam9g20)
@@ -13,7 +14,7 @@ GyroHandler::GyroHandler(object_id_t objectId, object_id_t comIF,
         DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId),
 		gyroData(this), gyroConfigSet(this),
 		selfTestDivider(5) {
-#ifdef DEBUG
+#if OBSW_REDUCED_PRINTOUT == 0
     debugDivider = new PeriodicOperationDivider(20);
 #endif
     }
@@ -497,7 +498,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 			float angularVelocityZ =
 					angularVelocityBinaryZ / std::pow(2, 15) * GYRO_RANGE;
 
-#ifdef DEBUG
+#if OBSW_REDUCED_PRINTOUT == 0
 			if(debugDivider->checkAndIncrement()) {
 				sif::info << "GyroHandler: Angular velocities in degrees per "
 						"second:" << std::endl;
