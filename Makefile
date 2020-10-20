@@ -273,7 +273,6 @@ ASRC +=
 # Objects built from C source files.
 C_OBJECTS += $(CSRC:.c=.o)
 FREERTOS_OBJECTS += $(FREERTOS_SRC:.c=.o)
-FREERTOS_PORT_OBJ = $(FREERTOS_PORT:.c=.o)
 AT91_OBJECTS += $(AT91_SRC:.c=.o)
 # Objects built from assembler source files.
 ASM_OBJECTS += $(ASRC:.S=.o)
@@ -415,7 +414,7 @@ mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION)
 # optimization.
 mission: OPTIMIZATION += -fno-isolate-erroneous-paths-dereference 
 # I don't understand why this is necessary, but it is.
-# mission: FREERTOS_OPTIMIZATION += -fno-omit-frame-pointer
+mission: FREERTOS_OPTIMIZATION += -fno-omit-frame-pointer
 # Was necessary but the culprit function was marked ((noinline)) explicitely in the source code.
 # mission: FREERTOS_OPTIMIZATION += -fno-inline-small-functions
 
@@ -468,13 +467,11 @@ executable: $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).bin
 
 C_OBJECTS := $(addprefix $(OBJDIR)/, $(C_OBJECTS))
 FREERTOS_OBJECTS := $(addprefix $(OBJDIR)/$(OS_FSFW)/, $(FREERTOS_OBJECTS))
-FREERTOS_PORT_OBJ := $(addprefix $(OBJDIR)/$(OS_FSFW)/port/, $(FREERTOS_PORT_OBJ))
 AT91_OBJECTS := $(addprefix $(OBJDIR)/at91/, $(AT91_OBJECTS))
 ASM_OBJECTS := $(addprefix $(OBJDIR)/, $(ASM_OBJECTS))
 CXX_OBJECTS := $(addprefix $(OBJDIR)/, $(CXX_OBJECTS))
 
-ALL_OBJECTS =  $(ASM_OBJECTS) $(C_OBJECTS) $(CXX_OBJECTS) $(FREERTOS_OBJECTS) $(AT91_OBJECTS) \
-		$(FREERTOS_PORT_OBJ)
+ALL_OBJECTS =  $(ASM_OBJECTS) $(C_OBJECTS) $(CXX_OBJECTS) $(FREERTOS_OBJECTS) $(AT91_OBJECTS)
 
 # Useful for debugging the Makefile
 # Also see: https://www.oreilly.com/openbook/make3/book/ch12.pdf
@@ -493,7 +490,7 @@ ALL_OBJECTS =  $(ASM_OBJECTS) $(C_OBJECTS) $(CXX_OBJECTS) $(FREERTOS_OBJECTS) $(
 # Generates binary and displays all build properties
 # -p with mkdir ignores error and creates directory when needed.
 
-SHOW_DETAILS = 1
+# SHOW_DETAILS = 1
 
 $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).bin: $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).elf
 	@echo
@@ -571,18 +568,6 @@ else
 	@$(CC) $(CXXFLAGS) $(CFLAGS) $(FREERTOS_OPTIMIZATION) -c -o $@ $<
 endif
 
-# Seperate rules for FreeRTOS to tweak build settings.
-$(OBJDIR)/$(OS_FSFW)/port/%.o: %.c
-$(OBJDIR)/$(OS_FSFW)/port/%.o: %.c $(DEPENDDIR)/%.d | $(DEPENDDIR) 
-	@echo 
-	@echo Compiling FreeRTOS port source: $<
-	@mkdir -p $(@D)
-ifdef SHOW_DETAILS
-	$(CC) $(CXXFLAGS) $(CFLAGS) $(FREERTOS_OPTIMIZATION) -fno-omit-frame-pointer -c -o $@ $<
-else
-	@$(CC) $(CXXFLAGS) $(CFLAGS) $(FREERTOS_OPTIMIZATION) -fno-omit-frame-pointer -c -o $@ $<
-endif
-
 # Seperate rules for AT91 to tweak build settings.
 $(OBJDIR)/at91/%.o: %.c
 $(OBJDIR)/at91/%.o: %.c $(DEPENDDIR)/%.d | $(DEPENDDIR) 
@@ -616,8 +601,7 @@ endif
 # http://make.mad-scientist.net/papers/advanced-auto-dependency-generation/
 $(DEPENDDIR):
 	@mkdir -p $(@D)
-DEPENDENCY_RELATIVE = $(CSRC:.c=.d) $(CXXSRC:.cpp=.d) $(FREERTOS_SRC:.c=.d) $(AT91_SRC:.c=.d) \
-		$(FREERTOS_PORT:.c=.d)
+DEPENDENCY_RELATIVE = $(CSRC:.c=.d) $(CXXSRC:.cpp=.d) $(FREERTOS_SRC:.c=.d) $(AT91_SRC:.c=.d)
 # This is the list of all dependencies
 DEPFILES = $(addprefix $(DEPENDDIR)/, $(DEPENDENCY_RELATIVE))
 # Create subdirectories for dependencies

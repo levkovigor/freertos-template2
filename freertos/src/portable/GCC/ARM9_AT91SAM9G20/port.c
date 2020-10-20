@@ -280,7 +280,7 @@ static void vPortISRStartFirstTask( void )
 {
 	/* Simply start the scheduler.  This is included here as it can only be
 	called from ARM mode. */
-    portRESTORE_CONTEXT();
+    portRESTORE_CONTEXT_LTO_VERSION();
 }
 /*-----------------------------------------------------------*/
 
