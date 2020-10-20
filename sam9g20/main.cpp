@@ -67,7 +67,8 @@ int main(void)
 
     printf("\n\r-- SOURCE On-Board Software --\n\r");
     printf("-- %s --\n\r", BOARD_NAME);
-    printf("-- Software version v%d.%d --\n\r", SW_VERSION, SW_SUBVERSION);
+    printf("-- Software version v%d.%d.%d --\n\r", SW_VERSION, SW_SUBVERSION,
+            SW_SUBSUBVERSION);
     printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 
     // Enable Co-Processor instruction cache.

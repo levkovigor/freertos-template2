@@ -1,12 +1,12 @@
 #include "Factory.h"
 
 /* Config */
-#include <config/OBSWConfig.h>
-#include <config/tmtc/apid.h>
-#include <config/objects/systemObjectList.h>
-#include <config/devices/logicalAddresses.h>
-#include <config/devices/powerSwitcherList.h>
-#include <config/tmtc/pusIds.h>
+#include "../OBSWConfig.h"
+#include "../tmtc/apid.h"
+#include "../objects/systemObjectList.h"
+#include "../devices/logicalAddresses.h"
+#include "../devices/powerSwitcherList.h"
+#include "../tmtc/pusIds.h"
 
 
 /* Flight Software Framework */
@@ -67,6 +67,7 @@
 #include <sam9g20/memory/FRAMHandler.h>
 #include <sam9g20/memory/SDCardHandler.h>
 #include <sam9g20/pus/Service9CustomTimeManagement.h>
+#include <sam9g20/boardtest/LedTask.h>
 
 #include <test/testdevices/TestDeviceHandler.h>
 
@@ -75,9 +76,6 @@
 #include <sam9g20/tmtcbridge/TmTcUdpBridge.h>
 #endif
 
-#ifdef ISIS_OBC_G20
-#include <sam9g20/boardtest/LedTask.h>
-#endif
 
 #include <cstdint>
 
@@ -266,6 +264,7 @@ void Factory::produce(void) {
             objects::SPI_DEVICE_COM_IF, spiCookie, switches::GYRO1);
     gyroHandler->setStartUpImmediately();
 
+#if OBSW_ADD_TEST_CODE == 1
 	//CookieIF * i2cCookie_0 = new I2cCookie(addresses::I2C_ARDUINO_0,
 	//        I2C_MAX_REPLY_LEN);
 	spiCookie = new SpiCookie(addresses::SPI_ARDUINO_0,
@@ -277,12 +276,15 @@ void Factory::produce(void) {
 
 #ifdef ISIS_OBC_G20
 	new LedTask(objects::LED_TASK, "IOBC_LED_TASK", LedTask::LedModes::WAVE_UP);
+#else
+	new LedTask(objects::LED_TASK, "AT91_LED_TASK", LedTask::LedModes::WAVE_UP);
 #endif
 	// Don't use UART0 test together with Serial Polling Task!!
 	//new UART0TestTask("UART0 Test Task", objects::AT91_UART0_TEST_TASK);
 	//new UART2TestTask("UART2 Test Task", objects::AT91_UART2_TEST_TASK);
 	//new TwiTestTask(objects::AT91_I2C_TEST_TASK, 16);
     //new SpiTestTask(objects::AT91_SPI_TEST_TASK, SpiTestTask::SpiTestMode::GYRO);
+#endif
 }
 
 void Factory::setStaticFrameworkObjectIds() {

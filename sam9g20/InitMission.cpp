@@ -389,12 +389,10 @@ void boardTestTaskInit() {
     }
 
 
-#ifdef ISIS_OBC_G20
-    /* LED Test Task */
+    /* LED Task */
     PeriodicTaskIF* LedTask = TaskFactory::instance()->
             createPeriodicTask("LED_TASK", 1, 1024 * 4, 0.4, nullptr);
     result = LedTask->addComponent(objects::LED_TASK);
-#endif
 
     /* UART0 Test Task */
     //  PeriodicTaskIF* UART0Task = TaskFactory::instance()->
@@ -438,9 +436,7 @@ void boardTestTaskInit() {
 #ifdef ETHERNET
     //UART0Task -> startTask()
 #endif
-#ifdef ISIS_OBC_G20
     LedTask->startTask();
-#endif
 }
 #endif
 
