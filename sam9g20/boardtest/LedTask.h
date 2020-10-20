@@ -75,6 +75,7 @@ private:
     ActionHelper actionHelper;
     bool randMode = false;
     void switchModeRandom();
+    void resetLeds();
 };
 
 #endif /* TEST_LEDTASK_H_ */

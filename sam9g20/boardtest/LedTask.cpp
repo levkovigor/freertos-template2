@@ -146,13 +146,15 @@ ReturnValue_t LedTask::executeAction(ActionId_t actionId,
     case(ENABLE_LEDS): {
         // TODO: make it so led mode is sent as well.
         if(ledMode == LedModes::OFF) {
-            ledMode = LedModes::BLINKY;
+            ledMode = LedModes::WAVE_UP;
+            resetLeds();
         }
         actionHelper.finish(commandedBy, actionId);
         break;
     }
     case(DISABLE_LEDS): {
         ledMode = LedModes::OFF;
+        resetLeds();
         actionHelper.finish(commandedBy, actionId);
         break;
     }
@@ -188,5 +190,15 @@ void LedTask::switchModeRandom() {
 	}
 }
 
-
-
+void LedTask::resetLeds() {
+#ifdef ISIS_OBC_G20
+    LED_dark(led_1);
+    LED_dark(led_2);
+    LED_dark(led_3);
+    LED_dark(led_4);
+#else
+    // Set power LED.
+    LED_Set(0);
+    LED_Clear(1);
+#endif
+}
