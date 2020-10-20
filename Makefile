@@ -413,8 +413,8 @@ mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION)
 # we actually want the core to reboot immediately, so we suppress this 
 # optimization.
 mission: OPTIMIZATION += -fno-isolate-erroneous-paths-dereference 
-# I don't understand why this is necessary, but it is.
-mission: FREERTOS_OPTIMIZATION += -fno-omit-frame-pointer
+# I don't understand why this is necessary, but it (sometimes?) is.
+# mission: FREERTOS_OPTIMIZATION += -fno-omit-frame-pointer
 # Was necessary but the culprit function was marked ((noinline)) explicitely in the source code.
 # mission: FREERTOS_OPTIMIZATION += -fno-inline-small-functions
 
