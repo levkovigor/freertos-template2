@@ -5,7 +5,7 @@ extern "C" {
 #include <hal/Storage/FRAM.h>
 }
 
-#include <version.h>
+#include <config/OBSWVersion.h>
 
 FRAMHandler::FRAMHandler(object_id_t objectId): SystemObject(objectId) {
 }

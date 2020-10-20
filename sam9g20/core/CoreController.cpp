@@ -1,7 +1,7 @@
+#include <config/OBSWVersion.h>
 #include "CoreController.h"
 
 #include <systemObjectList.h>
-#include <version.h>
 #include <FreeRTOSConfig.h>
 
 #include <fsfw/ipc/QueueFactory.h>
@@ -64,13 +64,17 @@ void CoreController::performControlOperation() {
         update64bitCounter();
         lastCounterUpdateSeconds = currentUptimeSeconds;
     }
-
-    // Store current uptime in seconds in FRAM, using the FRAM handler.
 #ifdef ISIS_OBC_G20
+    // Store current uptime in seconds in FRAM, using the FRAM handler.
     result = update_seconds_since_epoch(currentUptimeSeconds);
     if( result != 0) {
         // should not happen!
     }
+
+    uint32_t epoch = 0;
+    int result = Time_getUnixEpoch(&epoch);
+    // todo: compare FSFW clock with RTT clock and sync FSFW clock to RTT
+    // clock if drift is too high.
 #endif
 }
 

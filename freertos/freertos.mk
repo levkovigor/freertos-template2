@@ -1,6 +1,7 @@
 FREERTOS_SRC += $(wildcard $(CURRENTPATH)/src/*.c)
 FREERTOS_SRC += $(wildcard $(CURRENTPATH)/src/portable/*.c)
 FREERTOS_SRC += $(wildcard $(CURRENTPATH)/src/portable/GCC/ARM9_AT91SAM9G20/*.c)
+# FREERTOS_PORT = $(CURRENTPATH)/src/portable/GCC/ARM9_AT91SAM9G20/port.c
 # Heap 4 memory management is used.
 FREERTOS_SRC += $(wildcard $(CURRENTPATH)/src/portable/MemMang/heap_4.c)
 

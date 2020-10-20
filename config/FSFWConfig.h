@@ -1,8 +1,6 @@
 #ifndef CONFIG_FSFWCONFIG_H_
 #define CONFIG_FSFWCONFIG_H_
 
-#include "version.h"
-
 //! Used to determine whether C++ ostreams are used
 //! Those can lead to code bloat.
 #define FSFW_CPP_OSTREAM_ENABLED 	1

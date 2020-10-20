@@ -33,7 +33,7 @@
 
 #include <board.h>
 #include <at91/peripherals/pio/pio.h>
-#include "LED.h"
+#include <led_ek.h>
 
 
 //------------------------------------------------------------------------------

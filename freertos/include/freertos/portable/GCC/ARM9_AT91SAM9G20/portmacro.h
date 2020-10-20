@@ -183,6 +183,10 @@ extern volatile unsigned portLONG ulCriticalNesting;					\
 	( void ) pxCurrentTCB;												\
 }
 
+/**
+ * Added for the SOURCE project which uses newer compiler and FreeRTOS version.
+ * The function above caused issues when using code optimized with -flto.
+ */
 #define portRESTORE_CONTEXT_LTO_VERSION()                               \
 {                                                                       \
                                                                         \
@@ -261,6 +265,48 @@ extern volatile unsigned portLONG ulCriticalNesting;					\
 	);																	\
 	( void ) ulCriticalNesting;											\
 	( void ) pxCurrentTCB;												\
+}
+
+
+#define portSAVE_CONTEXT_LTO_VERSION()                                  \
+{                                                                       \
+    /* Push R0 as we are going to use the register. */                  \
+    asm volatile (                                                      \
+    "STMDB  SP!, {R0}                                           \n\t"   \
+                                                                        \
+    /* Set R0 to point to the task stack pointer. */                    \
+    "STMDB  SP,{SP}^                                            \n\t"   \
+    "NOP                                                        \n\t"   \
+    "SUB    SP, SP, #4                                          \n\t"   \
+    "LDMIA  SP!,{R0}                                            \n\t"   \
+                                                                        \
+    /* Push the return address onto the stack. */                       \
+    "STMDB  R0!, {LR}                                           \n\t"   \
+                                                                        \
+    /* Now we have saved LR we can use it instead of R0. */             \
+    "MOV    LR, R0                                              \n\t"   \
+                                                                        \
+    /* Pop R0 so we can save it onto the system mode stack. */          \
+    "LDMIA  SP!, {R0}                                           \n\t"   \
+                                                                        \
+    /* Push all the system mode registers onto the task stack. */       \
+    "STMDB  LR,{R0-LR}^                                         \n\t"   \
+    "NOP                                                        \n\t"   \
+    "SUB    LR, LR, #60                                         \n\t"   \
+                                                                        \
+    /* Push the SPSR onto the task stack. */                            \
+    "MRS    R0, SPSR                                            \n\t"   \
+    "STMDB  LR!, {R0}                                           \n\t"   \
+                                                                        \
+    "LDR    R0, =ulCriticalNesting                              \n\t"   \
+    "LDR    R0, [R0]                                            \n\t"   \
+    "STMDB  LR!, {R0}                                           \n\t"   \
+                                                                        \
+    /* Store the new top of stack for the task. */                      \
+    "LDR    R1, =pxCurrentTCB                                   \n\t"   \
+    "LDR    R0, [R1]                                            \n\t"   \
+    "STR    LR, [R0]                                            \n\t"   \
+    );                                                                  \
 }
 
 

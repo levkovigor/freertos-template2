@@ -194,6 +194,7 @@ BINCOPY = $(CP) -O binary
 # See: http://make.mad-scientist.net/evaluation-and-expansion/
 CSRC := 
 FREERTOS_SRC :=
+FREERTOS_PORT :=
 AT91_SRC :=
 CXXSRC := 
 ASRC := 
@@ -407,12 +408,17 @@ all: executable
 # Build target configuration, which also includes information output.
 # See: https://www.gnu.org/software/make/manual/html_node/Target_002dspecific.html
 # Link time optimization is added in the rules to disable it for certain source files
-mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION) 
+mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION)
 # This detects nullptr deferences and turns them into traps. We don't want that,
 # we actually want the core to reboot immediately, so we suppress this 
 # optimization.
 mission: OPTIMIZATION += -fno-isolate-erroneous-paths-dereference 
-# Link time optimization can lead to issues, so if there is an issue with the
+# I don't understand why this is necessary, but it (sometimes?) is.
+# mission: FREERTOS_OPTIMIZATION += -fno-omit-frame-pointer
+# Was necessary but the culprit function was marked ((noinline)) explicitely in the source code.
+# mission: FREERTOS_OPTIMIZATION += -fno-inline-small-functions
+
+# Link time optimization can lead to issues, so  if there is an issue with the
 # mission binary, try to disable it to see if that fixes the problem.
 mission: LINK_TIME_OPTIMIZATION = -flto
 mission: TARGET = Mission binary
@@ -422,6 +428,7 @@ mission: DEBUG_LEVEL = -g0
 debug: CXXDEFINES += -DDEBUG
 debug: DEBUG_MESSAGE = On
 debug: DEBUG_LEVEL = -g3
+
 virtual: CXXDEFINES += -DVIRTUAL_BUILD -DDEBUG
 virtual: TARGET = Debug binary with virtualized interfaces
 virtual: DEBUG_MESSAGE = On
