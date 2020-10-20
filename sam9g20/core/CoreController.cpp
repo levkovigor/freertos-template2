@@ -1,7 +1,7 @@
+#include <config/OBSWVersion.h>
 #include "CoreController.h"
 
 #include <systemObjectList.h>
-#include <version.h>
 #include <FreeRTOSConfig.h>
 
 #include <fsfw/ipc/QueueFactory.h>

@@ -1,3 +1,4 @@
+
 extern "C"{
 #include <board.h>
 #include <AT91SAM9G20.h>
@@ -31,7 +32,7 @@ extern struct netif *netif;
 }
 
 #include <fsfw/tasks/TaskFactory.h>
-#include <version.h>
+#include <config/OBSWVersion.h>
 
 // quick fix to bypass link error
 extern "C" void __sync_synchronize() {}
