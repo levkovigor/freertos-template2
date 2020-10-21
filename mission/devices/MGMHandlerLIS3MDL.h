@@ -68,7 +68,7 @@ private:
 	 * e.g.: +- 4 gauss. See p.25 datasheet.
 	 *  @return The ReturnValue does not contain the sign of the value
 	 */
-	uint8_t getFullScale(uint8_t *reg2);
+	uint8_t getFullScale(uint8_t ctrlReg2);
 
 	/**
 	 * The 16 bit value needs to be divided by the full range of a 16bit value

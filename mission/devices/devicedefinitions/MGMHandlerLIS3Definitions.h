@@ -84,6 +84,8 @@ static const uint8_t DO2 = 4;       // Output data rate bit 4
 static const uint8_t OM0 = 5;       // XY operating mode bit 5
 static const uint8_t OM1 = 6;       // XY operating mode bit 6
 static const uint8_t TEMP_EN = 7;   // Temperature sensor enable enabled = 1
+static const uint8_t CTRL_REG1_DEFAULT = (1 << TEMP_EN) | (1 << OM1) |
+        (1 << DO0) | (1 << DO1) | (1 << DO2);
 
 /* CTRL_REG2 bits */
 //reset configuration registers and user registers
@@ -91,6 +93,7 @@ static const uint8_t SOFT_RST = 2;
 static const uint8_t REBOOT = 3;    //reboot memory content
 static const uint8_t FSO = 5;       //full-scale selection bit 5
 static const uint8_t FS1 = 6;       //full-scale selection bit 6
+static const uint8_t CTRL_REG2_DEFAULT = 0;
 
 /* CTRL_REG3 bits */
 static const uint8_t MD0 = 0;       //Operating mode bit 0
@@ -98,16 +101,19 @@ static const uint8_t MD1 = 1;       //Operating mode bit 1
 //SPI serial interface mode selection enabled = 3-wire-mode
 static const uint8_t SIM = 2;
 static const uint8_t LP = 5;        //low-power mode
+static const uint8_t CTRL_REG3_DEFAULT = 0;
 
 /* CTRL_REG4 bits */
 //big/little endian data selection enabled = MSb at lower adress
 static const uint8_t BLE = 1;
 static const uint8_t OMZ0 = 2;      //Z operating mode bit 2
 static const uint8_t OMZ1 = 3;      //Z operating mode bit 3
+static const uint8_t CTRL_REG4_DEFAULT = (1 << OMZ1);
 
 /* CTRL_REG5 bits */
 static const uint8_t BDU = 6;       //Block data update
 static const uint8_t FAST_READ = 7; //Fast read enabled = 1
+static const uint8_t CTRL_REG5_DEFAULT = 0;
 }
 
 

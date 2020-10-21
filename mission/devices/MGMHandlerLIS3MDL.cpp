@@ -90,13 +90,11 @@ uint8_t MGMHandlerLIS3MDL::writeCommand(uint8_t command, bool continuousCom) {
 
 ReturnValue_t MGMHandlerLIS3MDL::setupMGM() {
 
-	registers[0] = (1 << MGMLIS3MDL::TEMP_EN) | (1 << MGMLIS3MDL::OM1)
-	        | (1 << MGMLIS3MDL::DO0) | (1 << MGMLIS3MDL::DO1)
-			| (1 << MGMLIS3MDL::DO2);
-	registers[1] = 0;
-	registers[2] = 0;
-	registers[3] = (1 << MGMLIS3MDL::OMZ1);
-	registers[4] = 0;
+	registers[0] = MGMLIS3MDL::CTRL_REG1_DEFAULT;
+	registers[1] = MGMLIS3MDL::CTRL_REG2_DEFAULT;
+	registers[2] = MGMLIS3MDL::CTRL_REG3_DEFAULT;
+	registers[3] = MGMLIS3MDL::CTRL_REG4_DEFAULT;
+	registers[4] = MGMLIS3MDL::CTRL_REG5_DEFAULT;
 
 	return prepareRegisterWrite();
 
@@ -201,31 +199,26 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 		registers[3] = *(packet + 36);
 		registers[4] = *(packet + 37);
 
-		uint8_t reg2_value = *(packet + 34);
-		uint8_t scale = getFullScale(&reg2_value);
+		uint8_t scale = getFullScale(registers[2]);
 		float sensitivityFactor = getSensitivityFactor(scale);
 
-		int16_t x_value_raw;
-		int16_t y_value_raw;
-		int16_t z_value_raw;
-		int16_t temp_value_raw;
-		//size_t size = 2;
 		uint8_t *accessBuffer;
 		accessBuffer = const_cast<uint8_t*>(packet + 41);
 
-		x_value_raw = *(accessBuffer + 1) << 8 | *(accessBuffer);
+		int16_t mgmMeasurementRawX = *(accessBuffer + 1) << 8 | *(accessBuffer);
 		accessBuffer += 2;
-		y_value_raw = *(accessBuffer + 1) << 8 | *(accessBuffer);
+		int16_t mgmMeasurementRawY = *(accessBuffer + 1) << 8 | *(accessBuffer);
 		accessBuffer += 2;
-		z_value_raw = *(accessBuffer + 1) << 8 | *(accessBuffer);
+		int16_t mgmMeasurementRawZ = *(accessBuffer + 1) << 8 | *(accessBuffer);
 		accessBuffer += 2;
 
-		temp_value_raw = *(accessBuffer + 1) << 8 | *(accessBuffer);
+		int16_t tempValueRaw = *(accessBuffer + 1) << 8 | *(accessBuffer);
 
-		float x_value = static_cast<float>(x_value_raw) * sensitivityFactor;
-		float y_value = static_cast<float>(y_value_raw) * sensitivityFactor;
-		float z_value = static_cast<float>(z_value_raw) * sensitivityFactor;
-		float temp_value = 25.0 + ((static_cast<float>(temp_value_raw)) / 8.0);
+		// Target value in Gauss
+		float mgmX = static_cast<float>(mgmMeasurementRawX) * sensitivityFactor;
+		float mgmY = static_cast<float>(mgmMeasurementRawY) * sensitivityFactor;
+		float mgmZ = static_cast<float>(mgmMeasurementRawZ) * sensitivityFactor;
+		float tempValue = 25.0 + ((static_cast<float>(tempValueRaw)) / 8.0);
 
 		break;
 	}
@@ -238,12 +231,12 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 	return RETURN_OK;
 }
 
-uint8_t MGMHandlerLIS3MDL::getFullScale(uint8_t *reg2) {
+uint8_t MGMHandlerLIS3MDL::getFullScale(uint8_t ctrlRegister2) {
 	bool FS0 = false;
 	bool FS1 = false;
-	if ((*reg2 >> 5) == 1)
+	if ((ctrlRegister2 >> 5) == 1)
 		FS0 = true;
-	if ((*reg2 >> 6) == 1)
+	if ((ctrlRegister2 >> 6) == 1)
 		FS1 = true;
 	if ((FS0 == true) && (FS1 == true))
 		return 16;
