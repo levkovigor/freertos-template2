@@ -112,18 +112,15 @@ ReturnValue_t MGMHandlerLIS3MDL::buildNormalDeviceCommand(
 ReturnValue_t MGMHandlerLIS3MDL::buildCommandFromCommand(
         DeviceCommandId_t deviceCommand, const uint8_t *commandData,
 		size_t commandDataLen) {
-	lastSentCommand = deviceCommand;
-	switch(deviceCommand) {
-	case(MGMLIS3MDL::READALL_MGM): {
-	    if (commandDataLen == 0) {
-	        std::memset(commandBuffer, 0, sizeof(commandBuffer));
-	        commandBuffer[0] = readCommand(0, true);
+    lastSentCommand = deviceCommand;
+    switch(deviceCommand) {
+    case(MGMLIS3MDL::READALL_MGM): {
+        std::memset(commandBuffer, 0, sizeof(commandBuffer));
+        commandBuffer[0] = readCommand(0, true);
 
-	        rawPacket = commandBuffer;
-	        rawPacketLen = sizeof(commandBuffer);
-	        return RETURN_OK;
-	    }
-	    break;
+        rawPacket = commandBuffer;
+        rawPacketLen = sizeof(commandBuffer);
+        return RETURN_OK;
 	case(MGMLIS3MDL::IDENTIFY_DEVICE): {
 	    return identifyDevice();
 	}
