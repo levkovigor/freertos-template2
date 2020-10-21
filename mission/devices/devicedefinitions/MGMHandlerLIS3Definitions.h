@@ -1,0 +1,115 @@
+#ifndef MISSION_DEVICES_DEVICEDEFINITIONS_MGMHANDLERLIS3DEFINITIONS_H_
+#define MISSION_DEVICES_DEVICEDEFINITIONS_MGMHANDLERLIS3DEFINITIONS_H_
+
+#include <cstdint>
+
+namespace MGMLIS3MDL {
+
+enum set {
+    ON, OFF
+};
+enum opMode {
+    LOW, MEDIUM, HIGH, ULTRA
+};
+
+static const DeviceCommandId_t SETUP_MGM = 0x00;
+static const DeviceCommandId_t READALL_MGM = 0x01;
+static const DeviceCommandId_t IDENTIFY_DEVICE = 0x02;
+static const DeviceCommandId_t TEMP_SENSOR_ENABLE = 0x03;
+static const DeviceCommandId_t ACCURACY_OP_MODE_SET = 0x04;
+
+//Number of all control registers
+static const uint8_t NR_OF_CTRL_REGISTERS = 5;
+//Number of registers in the MGM
+static const uint8_t NR_OF_REGISTERS = 19;
+//Total number of adresses for all registers
+static const uint8_t TOTAL_NR_OF_ADRESSES = 52;
+static const uint8_t SETUP_REPLY = 6;
+
+/*------------------------------------------------------------------------*/
+/* Register adresses */
+/*------------------------------------------------------------------------*/
+// Register adress returns identifier of device with default 0b00111101
+static const uint8_t IDENTIFY_DEVICE_REG_ADDR = 0b00001111;
+static const uint8_t DEVICE_ID = 0b00111101;            // Identifier for Device
+
+//Register adress to access register 1
+static const uint8_t CTRL_REG1 = 0b00100000;
+//Register adress to access register 2
+static const uint8_t CTRL_REG2 = 0b00100001;
+//Register adress to access register 3
+static const uint8_t CTRL_REG3 = 0b00100010;
+//Register adress to access register 4
+static const uint8_t CTRL_REG4 = 0b00100011;
+//Register adress to access register 5
+static const uint8_t CTRL_REG5 = 0b00100100;
+
+//Register adress to access status register
+static const uint8_t STATUS_REG = 0b00100111;
+
+ //Register adress to access low byte of x-axis
+static const uint8_t X_LOWBYTE = 0b00101000;
+//Register adress to access high byte of x-axis
+static const uint8_t X_HIGHBYTE = 0b00101001;
+//Register adress to access low byte of y-axis
+static const uint8_t Y_LOWBYTE = 0b00101010;
+//Register adress to access high byte of y-axis
+static const uint8_t Y_HIGHBYTE = 0b00101011;
+//Register adress to access low byte of z-axis
+static const uint8_t Z_LOWBYTE = 0b00101100;
+//Register adress to access high byte of z-axis
+static const uint8_t Z_HIGHBYTE = 0b00101101;
+
+//Register adress to access low byte of temperature sensor
+static const uint8_t TEMP_LOWBYTE = 0b00101110;
+//Register adress to access high byte of temperature sensor
+static const uint8_t TEMP_HIGHBYTE = 0b00101111;
+
+/*------------------------------------------------------------------------*/
+/* Initialize Setup Register set bits                                     */
+/*------------------------------------------------------------------------*/
+/* General transfer bits */
+// Read=1 / Write=0 Bit
+static const uint8_t RW_BIT = 7;
+// Continous Read/Write Bit, increment adress
+static const uint8_t MS_BIT = 6;
+
+/* CTRL_REG1 bits */
+static const uint8_t ST = 0;        // Self test enable bit, enabled = 1
+// Enable rates higher than 80 Hz enabled = 1
+static const uint8_t FAST_ODR = 1;
+static const uint8_t DO0 = 2;       // Output data rate bit 2
+static const uint8_t DO1 = 3;       // Output data rate bit 3
+static const uint8_t DO2 = 4;       // Output data rate bit 4
+static const uint8_t OM0 = 5;       // XY operating mode bit 5
+static const uint8_t OM1 = 6;       // XY operating mode bit 6
+static const uint8_t TEMP_EN = 7;   // Temperature sensor enable enabled = 1
+
+/* CTRL_REG2 bits */
+//reset configuration registers and user registers
+static const uint8_t SOFT_RST = 2;
+static const uint8_t REBOOT = 3;    //reboot memory content
+static const uint8_t FSO = 5;       //full-scale selection bit 5
+static const uint8_t FS1 = 6;       //full-scale selection bit 6
+
+/* CTRL_REG3 bits */
+static const uint8_t MD0 = 0;       //Operating mode bit 0
+static const uint8_t MD1 = 1;       //Operating mode bit 1
+//SPI serial interface mode selection enabled = 3-wire-mode
+static const uint8_t SIM = 2;
+static const uint8_t LP = 5;        //low-power mode
+
+/* CTRL_REG4 bits */
+//big/little endian data selection enabled = MSb at lower adress
+static const uint8_t BLE = 1;
+static const uint8_t OMZ0 = 2;      //Z operating mode bit 2
+static const uint8_t OMZ1 = 3;      //Z operating mode bit 3
+
+/* CTRL_REG5 bits */
+static const uint8_t BDU = 6;       //Block data update
+static const uint8_t FAST_READ = 7; //Fast read enabled = 1
+}
+
+
+
+#endif /* MISSION_DEVICES_DEVICEDEFINITIONS_MGMHANDLERLIS3DEFINITIONS_H_ */
