@@ -211,7 +211,7 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
         uint16_t adcCode = ((packet[1] << 8) | packet[2]) >> 1;
         // do something with rtd value, will propbly be stored in
         // dataset.
-        float rtdValue = adcCode * RTD_RREF_PT1000 / std::pow(2, 15);
+        float rtdValue = adcCode * RTD_RREF_PT1000 / INT16_MAX;
 
         // calculate approximation
         float approxTemp = adcCode / 32.0 - 256.0;
