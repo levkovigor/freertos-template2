@@ -135,7 +135,7 @@ private:
 	 * saved register
 	 *
 	 */
-	ReturnValue_t prepareRegisterWrite();
+	ReturnValue_t prepareCtrlRegisterWrite();
 
 	enum InternalState {
 		STATE_NONE, STATE_FIRST_CONTACT, STATE_SETUP, STATE_CHECK_REGISTERS

@@ -38,7 +38,6 @@ void MGMHandlerLIS3MDL::doStartUp() {
             }
             setMode(_MODE_TO_ON);
         }
-
         break;
 
     default:
@@ -96,12 +95,17 @@ ReturnValue_t MGMHandlerLIS3MDL::setupMGM() {
 	registers[3] = MGMLIS3MDL::CTRL_REG4_DEFAULT;
 	registers[4] = MGMLIS3MDL::CTRL_REG5_DEFAULT;
 
-	return prepareRegisterWrite();
+	return prepareCtrlRegisterWrite();
 
 }
 
 ReturnValue_t MGMHandlerLIS3MDL::buildNormalDeviceCommand(
 		DeviceCommandId_t *id) {
+    // todo: actually the continous read will loop around when reading MGM
+    // values so we can't read everything at once. Adapt to perform
+    // read operations in 2 steps. also, we can propably ommit the
+    // WHO AM I register and read that manually so we don't have to read
+    // 20 reserved registers.
     //defines CommandID of MGM in normal operation and build command from command
 	*id = MGMLIS3MDL::READALL_MGM;
 	return buildCommandFromCommand(*id, NULL, 0);
@@ -312,7 +316,7 @@ ReturnValue_t MGMHandlerLIS3MDL::setOperatingMode(const uint8_t *commandData,
 		break;
 	}
 
-	return prepareRegisterWrite();
+	return prepareCtrlRegisterWrite();
 }
 
 void MGMHandlerLIS3MDL::fillCommandAndReplyMap() {
@@ -333,7 +337,7 @@ void MGMHandlerLIS3MDL::fillCommandAndReplyMap() {
 	insertInCommandAndReplyMap(MGMLIS3MDL::ACCURACY_OP_MODE_SET, 1);
 }
 
-ReturnValue_t MGMHandlerLIS3MDL::prepareRegisterWrite() {
+ReturnValue_t MGMHandlerLIS3MDL::prepareCtrlRegisterWrite() {
 
 	commandBuffer[0] = writeCommand(MGMLIS3MDL::CTRL_REG1, true);
 
