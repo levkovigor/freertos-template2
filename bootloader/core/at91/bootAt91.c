@@ -1,4 +1,6 @@
-#include <bootloader/core/bootAt91.h>
+#ifdef AT91SAM9G20_EK
+
+#include "bootAt91.h"
 #include <bootloaderConfig.h>
 #include <main.h>
 
@@ -247,3 +249,5 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
     }
     return BOOT_NAND_SUCCESS;
 }
+
+#endif

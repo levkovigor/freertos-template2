@@ -17,9 +17,9 @@
 // The AT91SAM9G20-EK does not have a pre-installed NOR-Flash. Therefore,
 // we only include the NorFlash boot header for iOBC projects.
 #ifdef ISIS_OBC_G20
-#include <bootloader/core/bootIOBC.h>
+#include <bootloader/core/iobc/bootIOBC.h>
 #else
-#include <core/bootAt91.h>
+#include <bootloader/core/at91/bootAt91.h>
 #endif
 
 
