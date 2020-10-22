@@ -266,7 +266,7 @@ void initMission(void) {
 #ifdef DEBUG
     float sdCardTaskPeriod = 0.6;
 #else
-    float sdCardTaskPeriod = 0.4;
+    float sdCardTaskPeriod = 0.6;
 #endif
     PeriodicTaskIF* SDCardTask = TaskFactory::instance()->
             createPeriodicTask("SD_CARD_TASK", 3, 2048 * 4, sdCardTaskPeriod,

@@ -43,7 +43,7 @@ ReturnValue_t SDCardHandler::initializeAfterTaskCreation() {
 }
 
 ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode) {
-    //Stopwatch stopwatch;
+    Stopwatch stopwatch;
 	CommandMessage message;
 	countdown->resetTimer();
 	// Check for first message
