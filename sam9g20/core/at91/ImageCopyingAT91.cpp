@@ -270,27 +270,27 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
                 NAND_PAGE_SIZE - sizeToRead);
     }
 
-    size_t bytesRead = 0;
+
 
     // If data has been read but still needs to be copied, don't read.
     if(not helperFlag1) {
+        size_t bytesRead = 0;
         ReturnValue_t result = readFile(imgBuffer->data(), sizeToRead,
                 &bytesRead, binaryFile);
         if(result != HasReturnvaluesIF::RETURN_OK) {
             return result;
         }
+        if(bytesRead < sizeToRead) {
+            // should not happen..
+            sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash:"
+                    << " Bytes read smaller than size to read!"
+                    << std::endl;
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
     }
 
     errorCount = 0;
     helperFlag1 = true;
-
-    if(bytesRead < sizeToRead) {
-        // should not happen..
-        sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash:"
-                << " Bytes read smaller than size to read!"
-                << std::endl;
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
 
     if(stepCounter == 0) {
             // We will write the size of the binary to the

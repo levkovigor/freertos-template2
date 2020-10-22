@@ -77,38 +77,6 @@ ReturnValue_t ImageCopyingEngine::handleNorflashErasure(bool bootloader) {
     return result;
 }
 
-uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
-        size_t* offset) {
-    if(bootloader) {
-        if(internalState == GenericInternalState::STEP_1) {
-            switch(stepCounter) {
-            case(0): return NORFLASH_SA0_ADDRESS;
-            case(1): return NORFLASH_SA1_ADDRESS;
-            case(2): return NORFLASH_SA2_ADDRESS;
-            case(3): return NORFLASH_SA3_ADDRESS;
-            case(4): return NORFLASH_SA4_ADDRESS;
-            }
-        }
-        else if(internalState == GenericInternalState::STEP_2) {
-            uint8_t baseIdx = currentByteIdx / NORFLASH_SMALL_SECTOR_SIZE;
-            if(offset != nullptr) {
-                *offset = currentByteIdx & NORFLASH_SMALL_SECTOR_SIZE;
-            }
-            switch(baseIdx) {
-            case(0): return NORFLASH_SA0_ADDRESS;
-            case(1): return NORFLASH_SA1_ADDRESS;
-            case(2): return NORFLASH_SA2_ADDRESS;
-            case(3): return NORFLASH_SA3_ADDRESS;
-            case(4): return NORFLASH_SA4_ADDRESS;
-            }
-        }
-    }
-    else {
-    }
-
-    return 0xffffffff;
-}
-
 ReturnValue_t ImageCopyingEngine::handleSdToNorCopyOperation() {
     SDCardAccess sdCardAccess;
     F_FILE * binaryFile;
@@ -121,14 +89,17 @@ ReturnValue_t ImageCopyingEngine::handleSdToNorCopyOperation() {
 
     while(true) {
         result = performNorCopyOperation(&binaryFile);
-
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            return result;
+        }
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
-    size_t bytesRead = 0;
+
+    // we will always copy in small buckets (8192 bytes)
     size_t sizeToRead = NORFLASH_SMALL_SECTOR_SIZE;
     if(currentFileSize - currentByteIdx < NORFLASH_SMALL_SECTOR_SIZE) {
         sizeToRead = currentFileSize - currentByteIdx;
@@ -136,23 +107,29 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
 
     // If data has been read but still needs to be copied, don't read.
     if(not helperFlag1) {
+        size_t bytesRead = 0;
         // read length of NOR-Flash small section
         result = readFile(imgBuffer->data(), sizeToRead, &bytesRead,
                 binaryFile);
         if(result != HasReturnvaluesIF::RETURN_OK) {
             return result;
         }
+        if(bytesRead < sizeToRead) {
+            // should not happen..
+            sif::error << "SoftwareImageHandler::performNorCopyOperation:"
+                    << " Bytes read smaller than size to read!" << std::endl;
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
     }
+
     helperFlag1 = true;
-
-
     // we should consider a critical section here and extracting this
     // function to a special task with the highest priority so it can not
     // be interrupted.
     size_t offset = 0;
     size_t baseAddress = getBaseAddress(stepCounter, &offset);
     result = NORFLASH_WriteData(&NORFlash,  baseAddress + offset,
-            imgBuffer->data(), bytesRead);
+            imgBuffer->data(), sizeToRead);
     if(result != 0) {
         errorCount++;
         if(errorCount >= 3) {
@@ -196,3 +173,36 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
     }
     return result;
 }
+
+
+uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
+        size_t* offset) {
+    if(bootloader) {
+        if(internalState == GenericInternalState::STEP_1) {
+            switch(stepCounter) {
+            case(0): return NORFLASH_SA0_ADDRESS;
+            case(1): return NORFLASH_SA1_ADDRESS;
+            case(2): return NORFLASH_SA2_ADDRESS;
+            case(3): return NORFLASH_SA3_ADDRESS;
+            case(4): return NORFLASH_SA4_ADDRESS;
+            }
+        }
+        else if(internalState == GenericInternalState::STEP_2) {
+            uint8_t baseIdx = currentByteIdx / NORFLASH_SMALL_SECTOR_SIZE;
+            if(offset != nullptr) {
+                *offset = currentByteIdx % NORFLASH_SMALL_SECTOR_SIZE;
+            }
+            switch(baseIdx) {
+            case(0): return NORFLASH_SA0_ADDRESS;
+            case(1): return NORFLASH_SA1_ADDRESS;
+            case(2): return NORFLASH_SA2_ADDRESS;
+            case(3): return NORFLASH_SA3_ADDRESS;
+            case(4): return NORFLASH_SA4_ADDRESS;
+            }
+        }
+    }
+    else {
+    }
+    return 0xffffffff;
+}
+
