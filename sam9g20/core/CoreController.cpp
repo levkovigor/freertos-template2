@@ -175,8 +175,6 @@ ReturnValue_t CoreController::initializeAfterTaskCreation() {
     if(result != HasReturnvaluesIF::RETURN_OK) {
         return result;
     }
-    sif::info << "SystemStateTask: " << systemStateTask->numberOfTasks
-            << " tasks counted." << std::endl;
 
 #ifdef ISIS_OBC_G20
     bool bootloaderIncremented = false;
@@ -210,6 +208,8 @@ ReturnValue_t CoreController::setUpSystemStateTask() {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     systemStateTask->initializeAfterTaskCreationNoOverride();
+    sif::info << "SystemStateTask: " << systemStateTask->numberOfTasks
+            << " tasks counted." << std::endl;
     return HasReturnvaluesIF::RETURN_OK;
 }
 
