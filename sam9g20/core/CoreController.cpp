@@ -209,6 +209,7 @@ ReturnValue_t CoreController::setUpSystemStateTask() {
                 "System state task invalid!" << std::endl;
         return HasReturnvaluesIF::RETURN_FAILED;
     }
+    systemStateTask->initializeAfterTaskCreationNoOverride();
     return HasReturnvaluesIF::RETURN_OK;
 }
 

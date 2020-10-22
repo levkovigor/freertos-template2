@@ -36,7 +36,11 @@ public:
     // Perform both operation at once
     bool readAndGenerateStats();
 
-    ReturnValue_t initializeAfterTaskCreation() override;
+    /**
+     * Called manually.
+     * @return
+     */
+    ReturnValue_t initializeAfterTaskCreationNoOverride();
 
     uint16_t numberOfTasks = 0;
 private:

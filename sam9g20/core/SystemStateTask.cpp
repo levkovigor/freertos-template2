@@ -86,7 +86,7 @@ bool SystemStateTask::generateStatsAndCheckStack() {
 	return true;
 }
 
-ReturnValue_t SystemStateTask::initializeAfterTaskCreation() {
+ReturnValue_t SystemStateTask::initializeAfterTaskCreationNoOverride() {
     semaphore = new BinarySemaphoreUsingTask();
     numberOfTasks = uxTaskGetNumberOfTasks();
     taskStatArray.reserve(numberOfTasks + 3);
