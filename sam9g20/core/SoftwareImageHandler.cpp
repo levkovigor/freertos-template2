@@ -9,12 +9,6 @@
 #include <fsfw/ipc/QueueFactory.h>
 
 
-#ifdef ISIS_OBC_G20
-extern "C" {
-#include <hal/Storage/NORflash.h>
-}
-#endif
-
 SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
         SystemObject(objectId), receptionQueue(QueueFactory::instance()->
         createMessageQueue(SW_IMG_HANDLER_MQ_DEPTH)),

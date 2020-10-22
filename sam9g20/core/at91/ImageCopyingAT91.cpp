@@ -348,29 +348,26 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
         if(errorCount >= 3) {
             // if writing to NAND failed 5 times, exit.
             sif::error << "SoftwareImageHandler::copyBootloaderToNand"
-                    << "Flash: " << "Error writing to first block."
-                    << std::endl;
+                    << "Flash: Write error!" << std::endl;
             return HasReturnvaluesIF::RETURN_FAILED;
         }
-        // Maybe SD card is busy, so try in next cycle..
+        // Try in next cycle..
         return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
     }
-    else {
 #ifdef DEBUG
-        if(extendedDebugOutput) {
-            sif::debug << "Written " << NAND_PAGE_SIZE << " bytes to "
-                    << "NAND-Flash Block " << helperCounter1 << " & Page "
-                    << helperCounter2 << std::endl;
-        }
-#endif
-        // Increment to write to next page.
-        helperCounter2++;
-        // Set this flag to false, so that the next page will be read
-        // from the SD card.
-        helperFlag1 = false;
-        // reset error counter.
-        errorCount = 0;
+    if(extendedDebugOutput) {
+        sif::debug << "Written " << NAND_PAGE_SIZE << " bytes to "
+                << "NAND-Flash Block " << helperCounter1 << " & Page "
+                << helperCounter2 << std::endl;
     }
+#endif
+    // Increment to write to next page.
+    helperCounter2++;
+    // Set this flag to false, so that the next page will be read
+    // from the SD card.
+    helperFlag1 = false;
+    // reset error counter.
+    errorCount = 0;
 
     // Page written successfully.
     stepCounter++;

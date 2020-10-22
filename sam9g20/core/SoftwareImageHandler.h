@@ -7,6 +7,14 @@
 #include <fsfw/parameters/ReceivesParameterMessagesIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 
+extern "C" {
+#ifdef ISIS_OBC_G20
+#include <hal/Storage/NORflash.h>
+#else
+#endif
+}
+
+
 #if defined(ISIS_OBC_G20) && defined(AT91SAM9G20_EK)
 #error "Two board defined at once. Please check includes!"
 #endif
@@ -78,7 +86,11 @@ public:
 	static constexpr uint8_t SW_IMG_HANDLER_MQ_DEPTH = 5;
 	static constexpr uint8_t MAX_MESSAGES_HANDLED  = 5;
 
+#ifdef AT91SAM9G20_EK
 	using ImageBuffer = std::array<uint8_t, 2048>;
+#else
+	using ImageBuffer = std::array<uint8_t, NORFLASH_SMALL_SECTOR_SIZE>;
+#endif
 
     SoftwareImageHandler(object_id_t objectId);
 
