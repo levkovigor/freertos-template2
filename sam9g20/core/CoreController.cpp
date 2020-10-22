@@ -207,9 +207,6 @@ ReturnValue_t CoreController::setUpSystemStateTask() {
                 "System state task invalid!" << std::endl;
         return HasReturnvaluesIF::RETURN_FAILED;
     }
-    systemStateTask->initializeAfterTaskCreationNoOverride();
-    sif::info << "SystemStateTask: " << systemStateTask->numberOfTasks
-            << " tasks counted." << std::endl;
     return HasReturnvaluesIF::RETURN_OK;
 }
 

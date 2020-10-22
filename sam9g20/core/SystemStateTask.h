@@ -40,7 +40,7 @@ public:
      * Called manually.
      * @return
      */
-    ReturnValue_t initializeAfterTaskCreationNoOverride();
+    ReturnValue_t initializeAfterTaskCreation() override;
 
     uint16_t numberOfTasks = 0;
 private:

@@ -3,6 +3,7 @@
 #include <config/OBSWConfig.h>
 #include <fsfw/objectmanager/ObjectManagerIF.h>
 #include <sam9g20/core/CoreController.h>
+#include <FreeRTOSConfig.h>
 
 #include <inttypes.h>
 
@@ -13,6 +14,8 @@ SystemStateTask::SystemStateTask(object_id_t objectId,
 }
 
 ReturnValue_t SystemStateTask::performOperation(uint8_t opCode) {
+    sif::info << "SystemStateTask: " << numberOfTasks << " tasks counted."
+            << std::endl;
     semaphore->acquire();
     while(true) {
     	switch(internalState) {
@@ -27,6 +30,8 @@ ReturnValue_t SystemStateTask::performOperation(uint8_t opCode) {
     			uxTaskGetSystemState(taskStatArray.data(),
     					numberOfTasks, nullptr);
 #else
+    			sif::info << "SystemStateTask::Generation of run time stats "
+    			        << "disabled!" << std::endl;
     			internalState = InternalState::IDLE;
 #endif
     			if(not readOnce) {
@@ -86,7 +91,7 @@ bool SystemStateTask::generateStatsAndCheckStack() {
 	return true;
 }
 
-ReturnValue_t SystemStateTask::initializeAfterTaskCreationNoOverride() {
+ReturnValue_t SystemStateTask::initializeAfterTaskCreation() {
     semaphore = new BinarySemaphoreUsingTask();
     numberOfTasks = uxTaskGetNumberOfTasks();
     taskStatArray.reserve(numberOfTasks + 3);
