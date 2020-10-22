@@ -55,10 +55,10 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode){
 	}
 
 	//Stopwatch stopwatch;
-    VolumeId volumeToOpen = determineVolumeToOpen();
+    // VolumeId volumeToOpen = determineVolumeToOpen();
     // File system message received, open access to SD Card which will
     // be closed automatically on function exit.
-    SDCardAccess sdCardAccess = SDCardAccess(volumeToOpen);
+    SDCardAccess sdCardAccess;
     result = handleAccessResult(sdCardAccess.accessResult);
     if(result == HasReturnvaluesIF::RETURN_FAILED) {
     	// No SD card could be opened.

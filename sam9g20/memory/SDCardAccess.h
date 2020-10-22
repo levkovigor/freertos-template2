@@ -54,7 +54,7 @@ public:
 	static constexpr uint8_t INTERFACE_ID = CLASS_ID::SD_CARD_HANDLER;
 	static constexpr ReturnValue_t OTHER_VOLUME_ACTIVE = MAKE_RETURN_CODE(0x01);
 
-    SDCardAccess(VolumeId volumeId = SD_CARD_0);
+    SDCardAccess();
     ~SDCardAccess();
 
     ReturnValue_t accessResult = HasReturnvaluesIF::RETURN_OK;

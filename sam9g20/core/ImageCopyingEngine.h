@@ -166,6 +166,7 @@ private:
      */
     ReturnValue_t handleNorflashErasure(bool bootloader);
     uint32_t getAddressToDelete(uint8_t stepCounter);
+    ReturnValue_t handleSdToNorCopyOperation();
 #endif
     ReturnValue_t prepareGenericFileInformation(VolumeId currentVolume,
             F_FILE** filePtr);

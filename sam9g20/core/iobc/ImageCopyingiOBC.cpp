@@ -33,11 +33,9 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
 
 
 ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
-    countdown->resetTimer();
-
-
+    ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     if(internalState == GenericInternalState::STEP_1) {
-        ReturnValue_t result = handleNorflashErasure(bootloader);
+        result = handleNorflashErasure(bootloader);
         if(result == SoftwareImageHandler::TASK_PERIOD_OVER_SOON) {
             return result;
         }
@@ -48,26 +46,9 @@ ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
         return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
     }
 
-    SDCardAccess sdCardAccess(SD_CARD_0);
-    F_FILE * binaryFile;
+    if(internalState == GenericInternalState::STEP_2) {
+        result = handleSdToNorCopyOperation();
 
-    ReturnValue_t result = prepareGenericFileInformation(
-            sdCardAccess.currentVolumeId, &binaryFile);
-
-    size_t sizeToRead = 2048;
-    while(true) {
-        // read length of NOR-Flash small section
-        ssize_t bytesRead = f_read(imgBuffer->data(), sizeof(uint8_t),
-                sizeToRead, binaryFile);
-
-        // we should consider a critical section here and extracting this
-        // function to a special task with the highest priority so it can not
-        // be interrupted.
-        result = NORFLASH_WriteData(&NORFlash, NORFLASH_SA0_ADDRESS,
-                imgBuffer->data(), bytesRead);
-        if(result != 0) {
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
     }
 
     return HasReturnvaluesIF::RETURN_OK;
@@ -87,6 +68,9 @@ ReturnValue_t ImageCopyingEngine::handleNorflashErasure(bool bootloader) {
             if(countdown->hasTimedOut()) {
                 return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
             }
+        }
+        if(stepCounter == RESERVED_NOR_FLASH_SECTORS) {
+            stepCounter = 0;
         }
     }
 
@@ -110,3 +94,30 @@ uint32_t ImageCopyingEngine::getAddressToDelete(uint8_t stepCounter) {
     }
 }
 
+ReturnValue_t ImageCopyingEngine::handleSdToNorCopyOperation() {
+    SDCardAccess sdCardAccess;
+    F_FILE * binaryFile;
+
+    ReturnValue_t result = prepareGenericFileInformation(
+            sdCardAccess.currentVolumeId, &binaryFile);
+
+    size_t sizeToRead = 2048;
+    if(currentFileSize - currentByteIdx < 2048) {
+        sizeToRead = currentFileSize - currentByteIdx;
+    }
+
+    while(true) {
+        // read length of NOR-Flash small section
+        ssize_t bytesRead = f_read(imgBuffer->data(), sizeof(uint8_t),
+                sizeToRead, binaryFile);
+
+        // we should consider a critical section here and extracting this
+        // function to a special task with the highest priority so it can not
+        // be interrupted.
+        result = NORFLASH_WriteData(&NORFlash, NORFLASH_SA0_ADDRESS,
+                imgBuffer->data(), bytesRead);
+        if(result != 0) {
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+    }
+}

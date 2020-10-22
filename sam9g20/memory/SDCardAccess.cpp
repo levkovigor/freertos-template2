@@ -66,8 +66,7 @@ bool SDCardAccessManager::tryActiveSdCardChange() {
     return false;
 }
 
-SDCardAccess::SDCardAccess(VolumeId volumeId):
-		currentVolumeId(volumeId) {
+SDCardAccess::SDCardAccess() {
     int result = 0;
     MutexHelper(SDCardAccessManager::instance()->mutex,
             MutexIF::TimeoutType::WAITING,
@@ -78,9 +77,10 @@ SDCardAccess::SDCardAccess(VolumeId volumeId):
         accessResult = HasReturnvaluesIF::RETURN_FAILED;
         return;
     }
+    currentVolumeId = SDCardAccessManager::instance()->activeSdCard;
 
     if(SDCardAccessManager::instance()->activeAccesses == 0) {
-        result = open_filesystem(SDCardAccessManager::instance()->activeSdCard);
+        result = open_filesystem(currentVolumeId);
         if(result != F_NO_ERROR) {
             // This could be major problem, maybe reboot or change of SD card
             // necessary!
@@ -96,12 +96,11 @@ SDCardAccess::SDCardAccess(VolumeId volumeId):
                 "code %d\n\r", result);
     }
 
-    result = select_sd_card(volumeId);
+    result = select_sd_card(currentVolumeId);
     if(result != F_NO_ERROR){
         TRACE_ERROR("open_filesystem: SD Card %d not present or "
-                "defect.\n\r", volumeId);
+                "defect.\n\r", currentVolumeId);
     }
-    currentVolumeId = volumeId;
 }
 
 SDCardAccess::~SDCardAccess() {
