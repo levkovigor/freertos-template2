@@ -1,5 +1,22 @@
 <a id="top"></a> <a name="flatsat"></a> 
 
+## Common commands
+
+Build software for debugging
+```sh
+make debug IOBC=1 -j
+```
+
+Build release software
+```sh
+make mission IOBC=1 -j
+```
+
+Build bootloader
+```sh
+make mission -f Makefile-Bootloader IOBC=1 -j
+```
+
 ## Basic instructions for Flatsat
 
 ### Connecting to the flatsat computer
