@@ -67,6 +67,9 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode){
 
     // handle first message. Returnvalue ignored for now.
 	result = handleMessage(&message);
+    if(countdown->hasTimedOut()) {
+        return result;
+    }
 
 	// Returnvalue ignored for now.
 	return handleMultipleMessages(&message);

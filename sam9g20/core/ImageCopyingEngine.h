@@ -156,6 +156,7 @@ private:
     ReturnValue_t performNandCopyAlgorithm(F_FILE** binaryFile);
 #else
     ReturnValue_t copySdCardImageToNorFlash();
+    ReturnValue_t handleNorflashErasure(bool bootloader);
 #endif
     ReturnValue_t prepareGenericFileInformation(VolumeId currentVolume,
             F_FILE** filePtr);
