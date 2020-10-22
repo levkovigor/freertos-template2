@@ -24,7 +24,7 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
         break;
     }
     case(ImageHandlerStates::COPY_SDC_BL_TO_FLASH): {
-        break;
+        return copySdCardImageToNorFlash();
     }
     }
     return HasReturnvaluesIF::RETURN_OK;
@@ -34,6 +34,10 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
 
 ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
+    if(internalState == GenericInternalState::IDLE) {
+        internalState = GenericInternalState::STEP_1;
+    }
+
     if(internalState == GenericInternalState::STEP_1) {
         result = handleNorflashErasure(bootloader);
         if(result == SoftwareImageHandler::TASK_PERIOD_OVER_SOON) {
@@ -58,6 +62,8 @@ ReturnValue_t ImageCopyingEngine::handleNorflashErasure(bool bootloader) {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
 
     if(bootloader) {
+        sif::info << "ImageCopyingEngine::handleNorflashErasure: Deleting old"
+                << " bootloader!" << std::endl;
         while(stepCounter <= RESERVED_NOR_FLASH_SECTORS) {
             result = NORFLASH_EraseSector(&NORFlash,
                     getBaseAddress(stepCounter, nullptr));
