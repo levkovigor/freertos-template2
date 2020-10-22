@@ -42,7 +42,8 @@ ReturnValue_t SDCardHandler::initializeAfterTaskCreation() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode){
+ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode) {
+    //Stopwatch stopwatch;
 	CommandMessage message;
 	countdown->resetTimer();
 	// Check for first message
@@ -54,7 +55,6 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode){
 		return result;
 	}
 
-	//Stopwatch stopwatch;
     // VolumeId volumeToOpen = determineVolumeToOpen();
     // File system message received, open access to SD Card which will
     // be closed automatically on function exit.
