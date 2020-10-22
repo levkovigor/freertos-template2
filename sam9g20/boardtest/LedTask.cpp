@@ -53,7 +53,7 @@ ReturnValue_t LedTask::performOperation(uint8_t operationCode) {
 #ifdef ISIS_OBC_G20
     LedTogglerFunc toggler;
     switch(ledMode) {
-    case(LedModes::NONE): break;
+    case(LedModes::OFF): break;
     case(LedModes::BLINKY): {
     	if(ledMapIter == ledMap.end()) {
     		ledMapIter = ledMap.begin();

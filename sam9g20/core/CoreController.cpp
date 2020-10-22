@@ -72,7 +72,7 @@ void CoreController::performControlOperation() {
     }
 
     uint32_t epoch = 0;
-    int result = Time_getUnixEpoch(&epoch);
+    result = Time_getUnixEpoch(reinterpret_cast<unsigned int*>(&epoch));
     // todo: compare FSFW clock with RTT clock and sync FSFW clock to RTT
     // clock if drift is too high.
 #endif
