@@ -12,7 +12,7 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
         return HasReturnvaluesIF::RETURN_OK;
     }
     case(ImageHandlerStates::COPY_SDC_IMG_TO_FLASH): {
-        break;
+        return copySdCardImageToNorFlash();
     }
     case(ImageHandlerStates::REPLACE_SDC_IMG): {
         break;
@@ -35,17 +35,8 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
 ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
     countdown->resetTimer();
 
-    // 1. step: Find out bootloader size
-
-    // NOR-Flash:
-    // 5 small NOR-Flash sectors will be reserved and clear
-    // for now: 8192 * 4 = 40960 bytes
-
-    // Erase the 4 small sectors first. measure how long that takes.
-
 
     if(internalState == GenericInternalState::STEP_1) {
-        int retval = 0;
         ReturnValue_t result = handleNorflashErasure(bootloader);
         if(result == SoftwareImageHandler::TASK_PERIOD_OVER_SOON) {
             return result;
@@ -84,61 +75,38 @@ ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
 
 ReturnValue_t ImageCopyingEngine::handleNorflashErasure(bool bootloader) {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
-    if(stepCounter == 0) {
-        result = NORFLASH_EraseSector(&NORFlash, NORFLASH_SA0_ADDRESS);
-        if(result != 0) {
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
-        stepCounter++;
-    }
-    if(countdown->hasTimedOut()) {
-        return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
-    }
 
-    if(stepCounter == 1) {
-        result = NORFLASH_EraseSector(&NORFlash, NORFLASH_SA1_ADDRESS);
-        if(result != 0) {
-            return HasReturnvaluesIF::RETURN_FAILED;
+    if(bootloader) {
+        while(stepCounter <= RESERVED_NOR_FLASH_SECTORS) {
+            result = NORFLASH_EraseSector(&NORFlash,
+                    getAddressToDelete(stepCounter));
+            if(result != 0) {
+                return HasReturnvaluesIF::RETURN_FAILED;
+            }
+            stepCounter++;
+            if(countdown->hasTimedOut()) {
+                return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+            }
         }
-        stepCounter++;
-    }
-    if(countdown->hasTimedOut()) {
-        return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
-    }
-
-    if(stepCounter == 2) {
-        result = NORFLASH_EraseSector(&NORFlash, NORFLASH_SA2_ADDRESS);
-        if(result != 0) {
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
-        stepCounter++;
-    }
-    if(countdown->hasTimedOut()) {
-        return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
-    }
-
-    if(stepCounter == 3) {
-        result = NORFLASH_EraseSector(&NORFlash, NORFLASH_SA3_ADDRESS);
-        if(result != 0) {
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
-        stepCounter++;
-    }
-    if(countdown->hasTimedOut()) {
-        return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
-    }
-
-    if(stepCounter == 4) {
-        result = NORFLASH_EraseSector(&NORFlash, NORFLASH_SA4_ADDRESS);
-        if(result != 0) {
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
-        stepCounter++;
-    }
-    if(countdown->hasTimedOut()) {
-        return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
     }
 
     return result;
+}
+
+uint32_t ImageCopyingEngine::getAddressToDelete(uint8_t stepCounter) {
+    if(bootloader) {
+        switch(stepCounter) {
+        case(0): return NORFLASH_SA0_ADDRESS;
+        case(1): return NORFLASH_SA1_ADDRESS;
+        case(2): return NORFLASH_SA2_ADDRESS;
+        case(3): return NORFLASH_SA3_ADDRESS;
+        case(4): return NORFLASH_SA4_ADDRESS;
+        default:
+            return 0xffffffff;
+        }
+    }
+    else {
+        return 0xffffffff;
+    }
 }
 

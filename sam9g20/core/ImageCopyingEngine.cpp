@@ -1,7 +1,5 @@
+#include "ImageCopyingEngine.h"
 #include <config/OBSWConfig.h>
-
-#include <fsfw/timemanager/Countdown.h>
-#include <sam9g20/core/ImageCopyingEngine.h>
 
 ImageCopyingEngine::ImageCopyingEngine(SoftwareImageHandler *owner,
         Countdown *countdown, SoftwareImageHandler::ImageBuffer *imgBuffer):

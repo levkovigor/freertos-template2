@@ -155,8 +155,17 @@ private:
     ReturnValue_t nandFlashInit();
     ReturnValue_t performNandCopyAlgorithm(F_FILE** binaryFile);
 #else
+    const uint8_t RESERVED_NOR_FLASH_SECTORS = 5;
     ReturnValue_t copySdCardImageToNorFlash();
+    /**
+     * For the bootloader, 5 small sectors (8192 * 5 = 40960 bytes) will
+     * be erased. For the primary image, all the remaining sectors will
+     * be deleted.
+     * @param bootloader
+     * @return
+     */
     ReturnValue_t handleNorflashErasure(bool bootloader);
+    uint32_t getAddressToDelete(uint8_t stepCounter);
 #endif
     ReturnValue_t prepareGenericFileInformation(VolumeId currentVolume,
             F_FILE** filePtr);
