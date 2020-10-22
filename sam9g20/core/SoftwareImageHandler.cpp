@@ -97,6 +97,8 @@ ReturnValue_t SoftwareImageHandler::initialize() {
 
     if(retval != 0) {
         // should never happen ! we should power cycle if this happens.
+        sif::error << "SoftwareImageHandler::initialize: NOR-Flash start failed"
+                << std::endl;
         return result;
     }
 #endif

@@ -43,6 +43,9 @@ ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
         if(result == SoftwareImageHandler::TASK_PERIOD_OVER_SOON) {
             return result;
         }
+        else if(result != HasReturnvaluesIF::RETURN_OK) {
+            return result;
+        }
     }
 
     internalState = GenericInternalState::STEP_2;
