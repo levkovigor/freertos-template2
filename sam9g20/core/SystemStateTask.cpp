@@ -96,8 +96,6 @@ ReturnValue_t SystemStateTask::initializeAfterTaskCreation() {
     statsVector.reserve(sizeToReserve);
     statsVector.resize(sizeToReserve);
 
-    sif::info << "SystemStateTask: " << numberOfTasks << " tasks counted."
-    		<< std::endl;
     coreController = objectManager->get<CoreController>(coreControllerId);
     if(coreController == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;

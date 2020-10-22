@@ -175,6 +175,17 @@ ReturnValue_t CoreController::initializeAfterTaskCreation() {
     if(result != HasReturnvaluesIF::RETURN_OK) {
         return result;
     }
+    sif::info << "SystemStateTask: " << systemStateTask->numberOfTasks
+            << " tasks counted." << std::endl;
+
+#ifdef ISIS_OBC_G20
+    bool bootloaderIncremented = false;
+    int retval = verify_reboot_flag(&bootloaderIncremented);
+    if(retval != 0) {
+        sif::error << "CoreController::initialize: Error verifying the boot"
+                << " counter!" << std::endl;
+    }
+#endif
     return initializeIsisTimerDrivers();
 }
 
@@ -184,12 +195,6 @@ ReturnValue_t CoreController::initialize() {
     if(framHandler == nullptr) {
         sif::error << "CoreController::initialize: No FRAM handler found!"
                 << std::endl;
-    }
-    bool bootloaderIncremented = false;
-    int retval = verify_reboot_flag(&bootloaderIncremented);
-    if(retval != 0) {
-        sif::error << "CoreController::initialize: Error verifying the boot"
-                << " counter!" << std::endl;
     }
 #endif
     return ExtendedControllerBase::initialize();
