@@ -1,4 +1,11 @@
 #!/bin/bash
+req_directory="../obc-qemu"
+if [ ! -d "$req_directory" ]; then
+	echo "Requirements to start QEMU not met."
+	echo "obc-qemu directory has to exist in same folder as the OBSW folder."
+	echo "Please make sure to clone and build QEMU properly."
+	exit
+fi
 
 directory=_bin
 files=$(find . -type f -name "*.bin")
