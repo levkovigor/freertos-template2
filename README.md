@@ -73,11 +73,20 @@ Note that make and git are required (installation guide below)
    Please note that there are different build options and configuration parameters
    for the make file available. An explanation and how to set up the Eclipse IDE
    for these configurations will be provided in a separate chapter.
+   There are following targets available:
+   
+   1. all and debug to build the debug binaries
+   2. mission to build the release binary
 
    General command for AT91:
    ```sh
    make all
    ```
+   General command for the iOBC:
+   ```sh
+   make IOBC=1 all
+   ```
+
    General command for STM32:
    ```sh
    make -f Makefile-STM32 all
@@ -126,9 +135,9 @@ Example call to build mission build:
 make mission
 ```
 
-Example call to build debug build on windows:
+Example call to build debug build in windows for the iOBC:
 ```sh
-make debug WINDOWS=1
+make debug WINDOWS=1 IOBC=1
 ```
 
 The provided TMTC has separate [instructions](https://git.ksat-stuttgart.de/source/tmtc)
