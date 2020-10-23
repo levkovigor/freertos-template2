@@ -24,7 +24,7 @@ for binary in ${binaries}; do
 done
 
 if [ "${target_binary_mission}" != "" ];then
-    if [ ${input_arg_2} == "mission" ];then
+    if [ "${input_arg_2}" == "mission" ];then
         target_binary=$target_binary_mission
         echo Mission binary $target_binary_mission selected
     else
@@ -56,10 +56,12 @@ echo
 if [ "$input_arg_1" == "no-wait" ];then
 ../obc-qemu/build/arm-softmmu/qemu-system-arm -M \
 isis-obc -serial stdio -monitor none \
+-drive if=sd,index=0,format=raw,file=../obc-qemu/build/sd0.img \
 -bios ${target_binary} -s 
 else
 ../obc-qemu/build/arm-softmmu/qemu-system-arm -M \
 isis-obc -serial stdio -monitor none \
+-drive if=sd,index=0,format=raw,file=../obc-qemu/build/sd0.img \
 -bios ${target_binary} -S -s 
 fi
 
