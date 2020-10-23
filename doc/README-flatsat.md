@@ -1,7 +1,9 @@
 <a id="top"></a> <a name="flatsat"></a> 
 
 ## Common commands
-
+When building on the flatsat computer directly, it is recommended to add
+ADD\_CR=1 so that debug output is readable.
+ 
 Build software for debugging
 ```sh
 make debug IOBC=1 -j
