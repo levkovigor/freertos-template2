@@ -366,7 +366,7 @@ CXXFLAGS += -I.  $(DEBUG_LEVEL) $(DEPFLAGS) $(WARNING_FLAGS) \
 		-fmessage-length=0 $(OPTIMIZATION) $(I_INCLUDES) $(CXXDEFINES) \
 		$(NEWLIB_NANO) $(CPU_FLAG)
 CPPFLAGS += -std=c++17 -fno-exceptions
-ASFLAGS =  -Wall -g $(OPTIMIZATION) $(I_INCLUDES) -D$(CHIP) -D__ASSEMBLY__ \
+ASFLAGS =  -Wall -g $(OPTIMIZATION) $(I_INCLUDES) -D$(MEMORIES) -D$(CHIP) -D__ASSEMBLY__ \
            $(NEWLIB_NANO) $(CPU_FLAG)
 
 # Flags for the linker call
