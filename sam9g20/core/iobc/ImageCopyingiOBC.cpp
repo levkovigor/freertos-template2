@@ -67,7 +67,7 @@ ReturnValue_t ImageCopyingEngine::handleNorflashErasure(bool bootloader) {
     if(bootloader) {
         sif::info << "ImageCopyingEngine::handleNorflashErasure: Deleting old"
                 << " bootloader!" << std::endl;
-        while(stepCounter <= RESERVED_NOR_FLASH_SECTORS) {
+        while(stepCounter < RESERVED_NOR_FLASH_SECTORS) {
             result = NORFLASH_EraseSector(&NORFlash,
                     getBaseAddress(stepCounter, nullptr));
             if(result != 0) {

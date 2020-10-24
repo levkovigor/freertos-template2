@@ -2,10 +2,13 @@
 
 #include <config/OBSWConfig.h>
 #include <fsfw/objectmanager/ObjectManagerIF.h>
+#include <fsfw/tasks/TaskFactory.h>
 #include <sam9g20/core/CoreController.h>
+
 #include <FreeRTOSConfig.h>
 
 #include <inttypes.h>
+
 
 SystemStateTask::SystemStateTask(object_id_t objectId,
         object_id_t coreControllerId): SystemObject(objectId),
@@ -14,8 +17,6 @@ SystemStateTask::SystemStateTask(object_id_t objectId,
 }
 
 ReturnValue_t SystemStateTask::performOperation(uint8_t opCode) {
-    sif::info << "SystemStateTask: " << numberOfTasks << " tasks counted."
-            << std::endl;
     semaphore->acquire();
     while(true) {
     	switch(internalState) {
@@ -105,6 +106,10 @@ ReturnValue_t SystemStateTask::initializeAfterTaskCreation() {
     if(coreController == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
+	// to prevent garbage output.
+	TaskFactory::delayTask(5);
+    sif::info << "SystemStateTask: " << numberOfTasks << " tasks counted."
+            << std::endl;
     return HasReturnvaluesIF::RETURN_OK;
 }
 

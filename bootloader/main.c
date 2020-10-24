@@ -127,19 +127,19 @@ int main()
     // iOBC Bootloader
     //-------------------------------------------------------------------------
 #ifdef ISIS_OBC_G20
-    // otherwise, try to copy SDCard binary to SDRAM
-    // Core Task. Custom interrupts should be configured inside a task.
-    xTaskCreate(handler_task, "HANDLER_TASK", 1024, NULL, 7,
-            &handler_task_handle_glob);
-    xTaskCreate(init_task, "INIT_TASK", 1024, handler_task_handle_glob,
-            8, NULL);
-#if DEBUG_IO_LIB == 1
-    TRACE_INFO("Starting FreeRTOS task scheduler.\n\r");
-#endif
-    vTaskStartScheduler();
-#if DEBUG_IO_LIB == 1
-    TRACE_ERROR("FreeRTOS scheduler error!\n\r");
-#endif
+//    // otherwise, try to copy SDCard binary to SDRAM
+//    // Core Task. Custom interrupts should be configured inside a task.
+//    xTaskCreate(handler_task, "HANDLER_TASK", 1024, NULL, 7,
+//            &handler_task_handle_glob);
+//    xTaskCreate(init_task, "INIT_TASK", 1024, handler_task_handle_glob,
+//            8, NULL);
+//#if DEBUG_IO_LIB == 1
+//    TRACE_INFO("Starting FreeRTOS task scheduler.\n\r");
+//#endif
+//    vTaskStartScheduler();
+//#if DEBUG_IO_LIB == 1
+//    TRACE_ERROR("FreeRTOS scheduler error!\n\r");
+//#endif
     for(;;) {};
 #else
     //-------------------------------------------------------------------------
