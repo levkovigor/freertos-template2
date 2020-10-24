@@ -40,14 +40,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#ifndef SW_VERSION
-#define SW_VERSION 0
-#endif
-
-#ifndef SW_SUBVERSION
-#define SW_SUBVERSION 0
-#endif
-
 #define WATCHDOG_KICK_INTERVAL_MS 10
 
 

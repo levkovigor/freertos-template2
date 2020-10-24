@@ -146,3 +146,4 @@ SECTIONS
     /* top of stack */
     _sstack = 0x304000;
 }
+end = .;
