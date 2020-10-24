@@ -64,8 +64,8 @@ SECTIONS
         *(.glue_7)
         *(.glue_7t)	 		
         *(.CP15_*)	
-        KEEP (*(.init))
-    	KEEP (*(.fini))
+        /* KEEP (*(.init)) */
+    	/* KEEP (*(.fini)) */
      	. = ALIGN(4);
         _efixedsec = .;
     } >ebi_cs0
