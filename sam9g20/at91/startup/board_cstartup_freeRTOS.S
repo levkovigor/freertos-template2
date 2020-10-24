@@ -304,9 +304,11 @@ resetHandler:
  * libc_init_array runs through the list of static constructor addresses
  * placed in the .init_array and calls all static constructors (in case of the FSFW for example the DataPool::DataPool)
  */
+#ifndef norflash
 		ldr r0,=__libc_init_array
 		mov lr,pc /* set the return address */
 		bx r0 /* the target code can be ARM or THUMB */
+#endif
 
 /* Branch to main()
  ******************/
