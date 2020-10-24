@@ -247,5 +247,3 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
     }
     return BOOT_NAND_SUCCESS;
 }
-
-#endif

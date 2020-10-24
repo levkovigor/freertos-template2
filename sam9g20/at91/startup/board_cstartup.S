@@ -36,11 +36,21 @@
 //------------------------------------------------------------------------------
 //         Definitions
 //------------------------------------------------------------------------------
-#define UND_STACK_SIZE	0x00000100		/* Stack size for "undefined instruction" interrupts		*/
-#define ABT_STACK_SIZE	0x00000100		/* Stack size for "abort" interrupts						*/
+#if defined(sram) || defined(norflash)
+// Let's assume 8192 bytes available stack space now for non-system modes.
+#define UND_STACK_SIZE	0x00000100		/* Stack size for "undefined instruction" interrupts	*/
+#define ABT_STACK_SIZE	0x00000100		/* Stack size for "abort" interrupts					*/
+#define FIQ_STACK_SIZE	0x00000000		/* Stack size for "FIQ" interrupts						*/
+#define IRQ_STACK_SIZE	0x00000400		/* Stack size for "IRQ" normal interrupts				*/
+#define SVC_STACK_SIZE	0x00000400		/* Stack size for "SVC" supervisor mode                 */
+#elif sdram
+// Around 200 kB of stack for non-system modes.
+#define UND_STACK_SIZE	0x00000200		/* Stack size for "undefined instruction" interrupts	*/
+#define ABT_STACK_SIZE	0x00000200		/* Stack size for "abort" interrupts					*/
 #define FIQ_STACK_SIZE	0x00000000		/* Stack size for "FIQ" interrupts						*/
 #define IRQ_STACK_SIZE	0x00018000		/* Stack size for "IRQ" normal interrupts				*/
 #define SVC_STACK_SIZE	0x00018000		/* Stack size for "SVC" supervisor mode                 */
+#endif
 
 #define ARM_MODE_ABT     0x17
 #define ARM_MODE_FIQ     0x11
