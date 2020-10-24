@@ -165,6 +165,27 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
         if(bootloader) {
             sif::info << "Copying bootloader to NOR-Flash finished with "
                     << stepCounter << " steps!" << std::endl;
+            std::array<uint8_t, 7 * 4> armVectors;
+            uint32_t currentArmVector = 0;
+            NORFLASH_ReadData(&NORFlash, NORFLASH_SA0_ADDRESS,
+                    armVectors.data(), armVectors.size());
+            sif::debug << std::hex << std::setfill('0') << std::setw(8);
+            sif::debug << "Written ARM vectors: " << std::endl;
+            std::memcpy(&currentArmVector, armVectors.data(), 4);
+            sif::debug << "1: 0x" << currentArmVector << std::endl;
+            std::memcpy(&currentArmVector, armVectors.data() + 4, 4);
+            sif::debug << "2: 0x" << currentArmVector << std::endl;
+            std::memcpy(&currentArmVector, armVectors.data() + 8, 4);
+            sif::debug << "3: 0x" << currentArmVector << std::endl;
+            std::memcpy(&currentArmVector, armVectors.data() + 12, 4);
+            sif::debug << "4: 0x" << currentArmVector << std::endl;
+            std::memcpy(&currentArmVector, armVectors.data() + 16, 4);
+            sif::debug << "5: 0x" << currentArmVector << std::endl;
+            std::memcpy(&currentArmVector, armVectors.data() + 20, 4);
+            sif::debug << "6: 0x" << currentArmVector << std::endl;
+            std::memcpy(&currentArmVector, armVectors.data() + 24, 4);
+            sif::debug << "7: 0x" << currentArmVector << std::endl;
+            sif::debug << std::dec << std::setfill(' ');
         }
         else {
             sif::info << "Copying OBSW image to NOR-Flash finished with "
