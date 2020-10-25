@@ -55,6 +55,7 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
                 return HasReturnvaluesIF::RETURN_OK;
             }
             else if(result == HasReturnvaluesIF::RETURN_FAILED) {
+                imgCpHelper->reset();
                 handlerState = HandlerState::IDLE;
             }
             else {
@@ -101,6 +102,10 @@ ReturnValue_t SoftwareImageHandler::initialize() {
                 << std::endl;
         return result;
     }
+//    retval = NORFLASH_EraseChip(&NORFlash);
+//    if(retval != 0) {
+//        sif::error << "Erasing NOR failed!" << std::endl;
+//    }
 #endif
 
     return HasReturnvaluesIF::RETURN_OK;

@@ -112,6 +112,10 @@ public:
      */
     ReturnValue_t continueCurrentOperation();
 
+    /**
+     * Reset the state of the helper class.
+     */
+    void reset();
 private:
     SoftwareImageHandler* owner;
     Countdown* countdown;
@@ -172,11 +176,6 @@ private:
 #endif
     ReturnValue_t prepareGenericFileInformation(VolumeId currentVolume,
             F_FILE** filePtr);
-
-    /**
-     * Reset the state of the helper class.
-     */
-    void reset();
 
     /**
      * Generic function to read file which also simplfies error handling.
