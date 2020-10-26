@@ -12,24 +12,32 @@ Usage:
     ${scriptname} [FLAGS] [OPTIONS]
 
 Flags:
-    -h, --help      Print this help message
-    -v, --verbose   Enable verbose output
+	-h, --help      Print this help message
+	-v, --verbose   Enable verbose output
 
 Options:
 	-g, --waitdbgu  Wait for debugger connection
 	-f, --profile <profile-name>
 
 Supported Profiles:
-    sdram           Debug configuration for SDRAM
-    norflash		NOR-Flash boot configuration
+	sdram           Debug configuration for SDRAM
+	norflash		NOR-Flash boot configuration
 
 Supported Register Overrides:
-    pmc-mclk        Override PMC master clock for debug-boot
+	pmc-mclk        Override PMC master clock for debug-boot
 
 Examples:
-    ${scriptname} -g 
-    ${scriptname} -f norflash
+	${scriptname} -g 
+	${scriptname} -f norflash
 EOD
+
+
+# -- QEMU IOBC Definitions -----------------------------------------------------
+
+declare -A iobc_mem_addr=(
+    "norflash"
+    "sdram"
+)
 
 # -- Command Line Parser -------------------------------------------------------
 
@@ -71,6 +79,8 @@ then
     echo "${cli_help}"
     exit 0
 fi
+
+[ ${arg_verbose} = y ] && printf "Info: Profile %s" "$arg_load_profile"
 
 # no profile specified, sdram
 
