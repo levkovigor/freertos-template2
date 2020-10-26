@@ -128,10 +128,11 @@ fi
 # -- Main Logic ----------------------------------------------------------------
 
 req_directory="../obc-qemu"
-if [ ! -d "$req_directory" ]; then
-	echo "Requirements to start QEMU not met."
-	echo "obc-qemu directory has to exist in same folder as the OBSW folder."
-	echo "Please make sure to clone and build QEMU properly."
+build_directory="../obc-qemu/build"
+if [ ! -d "$req_directory" ] || [ ! -d "$build_directory" ]; then
+	echo "Error: Requirements to start QEMU not met."
+	echo "       obc-qemu directory has to exist in same folder as the OBSW folder."
+	echo "       Please make sure to clone and build QEMU properly."
 	exit
 fi
 
@@ -154,12 +155,12 @@ if [[ -n ${selection//[0-9]/} ]]; then
 exit 
 fi
 
-if [[ $selection -lt	0 || $selection -gt ${#fileArray[@]} ]]; then
+if [[ $selection -lt 0 || $selection -gt ${#fileArray[@]} ]]; then
 	echo "Selection is invalid!"
 exit
 fi
 
-target_binary=${fileArray[0]}
+target_binary=${fileArray[$selection]}
 echo "Selected target file: $targetFile"
 
 echo "Launching QEMU:"
@@ -179,19 +180,33 @@ fi
 
 if [ "$arg_load_profile" == "sdram" ]; then
 	echo "Loading SDRAM configuration.."
-	loader_flags="-f sdram "${target_binary}" -s sdram -o pmc-mclk"
+	loader_flags=("-f" "sdram" "${target_binary}" "-s" "sdram" "-o" "pmc-mclk")
 else
 	echo "Loading NOR-Flash configuration.."
-	loader_flags="-f norflash ${target_binary} -s bootmem"
+	loader_flags=("-f"  "norflash" "${target_binary}" "-s" "bootmem")
 fi
 
 # TODO: Generate SD card image automatically after checking whether it already exists.
-	
+sdc_img_0="../obc-qemu/build/sd0.img"
+sdc_img_1="../obc-qemu/build/sd1.img"
+if [ ! -f "$sdc_img_0" ]; then
+echo "Info: SD-Card image 0 does not exist yet, creating it.."
+../obc-qemu/build/qemu-img create -f raw "$sdc_img_0" 2G
+fi
 
+if [ ! -f "$sdc_img_1" ]; then
+echo "Info: SD-Card image 1 does not exist yet, creating it.."
+../obc-qemu/build/qemu-img create -f raw "$sdc_img_1" 2G 
+fi
+
+	
 # Everything after -- is passed to QEMU directly, everything before
 # is passed to separate loader program.
-../obc-qemu/iobc-loader ${loader_flags} \
+../obc-qemu/iobc-loader "${loader_flags[@]}" \
 	-- -serial stdio -monitor none \
 	-drive if=sd,index=0,format=raw,file=../obc-qemu/build/sd0.img \
+	-drive if=sd,index=1,format=raw,file=../obc-qemu/build/sd1.img \
 	${dbgu_flags}
+
+
 
