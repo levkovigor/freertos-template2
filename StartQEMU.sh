@@ -1,4 +1,82 @@
-#!/bin/bash
+#!/bin/bash 
+
+# -- Command Line Interface Definitions ----------------------------------------
+
+scriptname="StartQEMU.sh"
+
+# help text
+read -r -d '' cli_help <<EOD
+QEMU startup helper for IOBC/AT91.
+
+Usage:
+    ${scriptname} [FLAGS] [OPTIONS]
+
+Flags:
+    -h, --help      Print this help message
+    -v, --verbose   Enable verbose output
+
+Options:
+	-g, --waitdbgu  Wait for debugger connection
+	-f, --profile <profile-name>
+
+Supported Profiles:
+    sdram           Debug configuration for SDRAM
+    norflash		NOR-Flash boot configuration
+
+Supported Register Overrides:
+    pmc-mclk        Override PMC master clock for debug-boot
+
+Examples:
+    ${scriptname} -g 
+    ${scriptname} -f norflash
+EOD
+
+# -- Command Line Parser -------------------------------------------------------
+
+arg_positionals=()
+arg_help=n
+arg_verbose=n
+arg_program_counter=
+arg_load_profile=("sdram")
+arg_overrides=()
+arg_qemu_args=()
+
+while (( "${#}" ))
+do
+    case "${1}" in
+        -h|--help)
+            arg_help=y
+            shift
+            ;;
+        -v|--verbose)
+            arg_verbose=y
+            shift
+            ;;
+        -f|--load)
+            if [ "${#}" -ge 2 ]
+            then
+                arg_load_profile+=("${2}")
+            else
+                echo "error: Missing argument for ${1}"
+                exit 1
+            fi
+            shift 3
+            ;;
+    esac
+done
+
+# handle help
+if [ ${arg_help} = y ]
+then
+    echo "${cli_help}"
+    exit 0
+fi
+
+# no profile specified, sdram
+
+
+# -- Main Logic ----------------------------------------------------------------
+
 req_directory="../obc-qemu"
 if [ ! -d "$req_directory" ]; then
 	echo "Requirements to start QEMU not met."
@@ -38,15 +116,17 @@ echo Launching QEMU:
 echo
 
 if [ "$input_arg_1" == "no-wait" ];then
-	../obc-qemu/iobc-loader -- \
-	-serial stdio -monitor none \
+	../obc-qemu/iobc-loader \
+	-f sdram ${target_binary} -s sdram -o pmc-mclk \
+	-- -serial stdio -monitor none \
 	-drive if=sd,index=0,format=raw,file=../obc-qemu/build/sd0.img \
-	${target_binary} -s 
+	-s
 else
-	../obc-qemu/iobc-loader -- \
-	-serial stdio -monitor none \
+	../obc-qemu/iobc-loader \
+	-f sdram ${target_binary} -s sdram -o pmc-mclk \
+	-- -serial stdio -monitor none \
 	-drive if=sd,index=0,format=raw,file=../obc-qemu/build/sd0.img \
-	${target_binary} -S -s 
+        -S -s	
 fi
 
 # Run this if you want to use telnet monitoring
