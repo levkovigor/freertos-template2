@@ -180,7 +180,7 @@ fi
 if [ "$arg_load_profile" == "sdram" ]; then
 	loader_flags="-f sdram "${target_binary}" -s sdram -o pmc-mclk"
 else
-	loader_flags="-f norflash ${target_binary} -s bootmem -o pmc-mclk"
+	loader_flags="-f norflash ${target_binary} -s bootmem"
 fi
 
 # TODO: Generate SD card image automatically after checking whether it already exists.
