@@ -143,9 +143,9 @@ index=0
 declare -a fileArray
 
 for file in $files; do
-printf "File $((index)): %s\r\n" "$file"
-fileArray=("${fileArray[@]}" "$file")
-index=$index+1
+	printf "File $((index)): %s\r\n" "$file"
+	fileArray=("${fileArray[@]}" "$file")
+	index=$index+1
 done;
 
 echo "Select file with given index: "
@@ -186,17 +186,17 @@ else
 	loader_flags=("-f"  "norflash" "${target_binary}" "-s" "bootmem")
 fi
 
-# TODO: Generate SD card image automatically after checking whether it already exists.
+# Generate SD card image automatically after checking whether it already exists.
 sdc_img_0="../obc-qemu/build/sd0.img"
 sdc_img_1="../obc-qemu/build/sd1.img"
 if [ ! -f "$sdc_img_0" ]; then
-echo "Info: SD-Card image 0 does not exist yet, creating it.."
-../obc-qemu/build/qemu-img create -f raw "$sdc_img_0" 2G
+	echo "Info: SD-Card image 0 does not exist yet, creating it.."
+	../obc-qemu/build/qemu-img create -f raw "$sdc_img_0" 2G
 fi
 
 if [ ! -f "$sdc_img_1" ]; then
-echo "Info: SD-Card image 1 does not exist yet, creating it.."
-../obc-qemu/build/qemu-img create -f raw "$sdc_img_1" 2G 
+	echo "Info: SD-Card image 1 does not exist yet, creating it.."
+	../obc-qemu/build/qemu-img create -f raw "$sdc_img_1" 2G 
 fi
 
 	
@@ -207,6 +207,4 @@ fi
 	-drive if=sd,index=0,format=raw,file=../obc-qemu/build/sd0.img \
 	-drive if=sd,index=1,format=raw,file=../obc-qemu/build/sd1.img \
 	${dbgu_flags}
-
-
 
