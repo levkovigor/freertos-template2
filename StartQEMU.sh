@@ -38,15 +38,15 @@ echo Launching QEMU:
 echo
 
 if [ "$input_arg_1" == "no-wait" ];then
-	../obc-qemu/build/arm-softmmu/qemu-system-arm -M \
-	isis-obc -serial stdio -monitor none \
+	../obc-qemu/iobc-loader -- \
+	-serial stdio -monitor none \
 	-drive if=sd,index=0,format=raw,file=../obc-qemu/build/sd0.img \
-	-bios ${target_binary} -s 
+	${target_binary} -s 
 else
-	../obc-qemu/build/arm-softmmu/qemu-system-arm -M \
-	isis-obc -serial stdio -monitor none \
+	../obc-qemu/iobc-loader -- \
+	-serial stdio -monitor none \
 	-drive if=sd,index=0,format=raw,file=../obc-qemu/build/sd0.img \
-	-bios ${target_binary} -S -s 
+	${target_binary} -S -s 
 fi
 
 # Run this if you want to use telnet monitoring
