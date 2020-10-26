@@ -92,7 +92,7 @@ do
             arg_verbose=y
             shift
             ;;
-        -g|--waitdbgu
+        -g|--waitdbgu)
         	arg_debug=y
         	shift
         	;;
@@ -167,17 +167,20 @@ echo "Selected target file: $targetFile"
 echo Launching QEMU:
 echo
 
+dbgu_flags=
+loader_flags=
+
 # Launch without waiting for debugger connection
 if [ "$arg_debug" == "n" ]; then
-	dbgu_flags=-s
+	dbgu_flags="-s"
 else
-	dbgu_flags=-s -S
+	dbgu_flags="-s -S"
 fi
 
 if [ "$arg_load_profile" == "sdram" ]; then
-	loader_flags=-f sdram ${target_binary} -s sdram -o pmc-mclk
+	loader_flags="-f sdram "${target_binary}" -s sdram -o pmc-mclk"
 else
-	loader_flags=-f norflash ${target_binary} -s bootmem -o pmc-mclk
+	loader_flags="-f norflash ${target_binary} -s bootmem -o pmc-mclk"
 fi
 
 # TODO: Generate SD card image automatically after checking whether it already exists.
