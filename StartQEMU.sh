@@ -12,19 +12,19 @@ Usage:
     ${scriptname} [FLAGS] [OPTIONS]
 
 Flags:
-	-h, --help      Print this help message
-	-v, --verbose   Enable verbose output
+	-h, --help  	Print this help message
+	-v, --verbose 	Enable verbose output
 
 Options:
 	-g, --waitdbgu  Wait for debugger connection
 	-f, --profile <profile-name>
 
 Supported Profiles:
-	sdram           Debug configuration for SDRAM
+	sdram    		Debug configuration for SDRAM
 	norflash		NOR-Flash boot configuration
 
 Supported Register Overrides:
-	pmc-mclk        Override PMC master clock for debug-boot
+	pmc-mclk		Override PMC master clock for debug-boot
 
 Examples:
 	${scriptname} -g 
@@ -35,9 +35,21 @@ EOD
 # -- QEMU IOBC Definitions -----------------------------------------------------
 
 declare -A iobc_mem_addr=(
-    "norflash"
-    "sdram"
+    ["bootmem"]=$((   0x00000000 ))
+    ["rom"]=$((       0x00100000 ))
+    ["sram0"]=$((     0x00200000 ))
+    ["sram1"]=$((     0x00300000 ))
+    ["norflash"]=$((  0x10000000 ))
+    ["sdram"]=$((     0x20000000 ))
 )
+
+# -- Helper Functions ----------------------------------------------------------
+
+# check if ${1} is an integer
+function is_integer() {
+    printf "%x" "${1}" > /dev/null 2>&1
+    return $?
+}
 
 # -- Command Line Parser -------------------------------------------------------
 
