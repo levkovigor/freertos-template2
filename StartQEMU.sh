@@ -39,16 +39,16 @@ declare -A iobc_mem_addr=(
 	# ["rom"]=$((		0x00100000 ))
 	# ["sram0"]=$((		0x00200000 ))
 	# ["sram1"]=$((		0x00300000 ))
-	["norflash"]=$((	0x10000000 ))
-	["sdram"]=$((		0x20000000 ))
+	["norflash"]=$((0x10000000))
+	["sdram"]=$((0x20000000))
 )
 
 # -- Helper Functions ----------------------------------------------------------
 
 # check if ${1} is an integer
 function is_integer() {
-		printf "%x" "${1}" > /dev/null 2>&1
-		return $?
+	printf "%x" "${1}" > /dev/null 2>&1
+	return $?
 }
 
 # try to convert ${1} to a valid memory address, using 
@@ -57,16 +57,14 @@ function iobc_mem_addr_to_integer() {
 	local addr="${1}"
 
 	if [ ${iobc_mem_addr["${addr}"]+x} ]; then
-					echo "${iobc_mem_addr["${addr}"]}"
-				return 0
-
-			elif is_integer "${addr}"; then
-					echo "${addr}"
-				return 0
-
-			else
-					return 1
-			fi
+		echo "${iobc_mem_addr["${addr}"]}"
+		return 0
+	elif is_integer "${addr}"; then
+		echo "${addr}"
+		return 0
+	else
+		return 1
+		fi
 }
 
 # -- Command Line Parser -------------------------------------------------------
@@ -118,7 +116,9 @@ fi
 
 # Using command substitution
 mapped_addr=$(iobc_mem_addr_to_integer "${arg_load_profile}")
-if [ "$arg_load_profile" != "sdram" ] && [ $? == 0 ]; then
+status_check=$?
+
+if [ "$arg_load_profile" != "sdram" ] && [ $status_check == 1 ]; then
 	echo "Error: Invalid memory address for program memory."
 	echo "       Expected integer or region, got '${arg_load_profile}'."
 	exit 1
