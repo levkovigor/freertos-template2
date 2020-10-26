@@ -327,7 +327,8 @@ is used in assert() statements. */
  * \ingroup Tasks
  */
 #if( configSUPPORT_DYNAMIC_ALLOCATION == 1 )
-	BaseType_t xTaskGenericCreate(	TaskFunction_t pxTaskCode,
+	// Added for ISIS compatibility!
+	extern BaseType_t xTaskGenericCreate(	TaskFunction_t pxTaskCode,
 							const char * const pcName,	/*lint !e971 Unqualified char types are allowed for strings and single characters only. */
 							const configSTACK_DEPTH_TYPE usStackDepth,
 							void * const pvParameters,

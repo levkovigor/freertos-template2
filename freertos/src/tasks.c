@@ -819,22 +819,6 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB ) PRIVILEGED_FUNCTION;
 
 		return xReturn;
 	}
-
-	BaseType_t xTaskGenericCreate(	TaskFunction_t pxTaskCode,
-			const char * const pcName,		/*lint !e971 Unqualified char types are allowed for strings and single characters only. */
-			const configSTACK_DEPTH_TYPE usStackDepth,
-			void * const pvParameters,
-			UBaseType_t uxPriority,
-			TaskHandle_t * const pxCreatedTask,
-			portSTACK_TYPE *puxStackBuffer,
-			const void * const xRegions) {
-		//printf("ISIS DEBUGGING:  xTaskGenericCreate called\n\r");
-		assert(puxStackBuffer == NULL);
-		assert(xRegions == NULL);
-		return xTaskCreate(pxTaskCode, pcName, usStackDepth, pvParameters, uxPriority, pxCreatedTask);
-	}
-
-
 #endif /* configSUPPORT_DYNAMIC_ALLOCATION */
 /*-----------------------------------------------------------*/
 
