@@ -119,19 +119,19 @@ int main()
     // iOBC Bootloader
     //-------------------------------------------------------------------------
 #ifdef ISIS_OBC_G20
-//    // otherwise, try to copy SDCard binary to SDRAM
-//    // Core Task. Custom interrupts should be configured inside a task.
-//    xTaskCreate(handler_task, "HANDLER_TASK", 1024, NULL, 7,
-//            &handler_task_handle_glob);
-//    xTaskCreate(init_task, "INIT_TASK", 1024, handler_task_handle_glob,
-//            8, NULL);
-//#if DEBUG_IO_LIB == 1
-//    TRACE_INFO("Starting FreeRTOS task scheduler.\n\r");
-//#endif
-//    vTaskStartScheduler();
-//#if DEBUG_IO_LIB == 1
-//    TRACE_ERROR("FreeRTOS scheduler error!\n\r");
-//#endif
+    // otherwise, try to copy SDCard binary to SDRAM
+    // Core Task. Custom interrupts should be configured inside a task.
+    xTaskCreate(handler_task, "HANDLER_TASK", 512, NULL, 7,
+            &handler_task_handle_glob);
+    xTaskCreate(init_task, "INIT_TASK", 512, handler_task_handle_glob,
+            8, NULL);
+#if DEBUG_IO_LIB == 1
+    TRACE_INFO("Starting FreeRTOS task scheduler.\n\r");
+#endif
+    vTaskStartScheduler();
+#if DEBUG_IO_LIB == 1
+    TRACE_ERROR("FreeRTOS scheduler error!\n\r");
+#endif
     for(;;) {};
 #else
     //-------------------------------------------------------------------------
@@ -188,7 +188,7 @@ void idle_loop() {
     uint32_t last_time = RTT_GetTime();
     for(;;) {
         uint32_t curr_time = RTT_GetTime();
-        if(curr_time - last_time > 60) {
+        if(curr_time - last_time > 2) {
 #if DEBUG_IO_LIB == 1
             TRACE_INFO("Bootloader idle..\n\r");
 #endif
@@ -210,7 +210,7 @@ void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
 
 #ifdef ISIS_OBC_G20
 void init_task(void * args) {
-    TRACE_INFO("Running init_task..\n\r");
+    TRACE_INFO("Running initialization task..\n\r");
     initialize_iobc_peripherals();
     // perform initialization which needs to be inside a task.
 
@@ -242,12 +242,12 @@ void initialize_iobc_peripherals() {
 
 void handler_task(void * args) {
 #if DEBUG_IO_LIB == 1
-    TRACE_INFO("Running handler_task..\n\r");
+    TRACE_INFO("Running handler task..\n\r");
 #endif
     // Wait for initialization to finish
     vTaskSuspend(NULL);
 
-    perform_bootloader_core_operation();
+    //perform_bootloader_core_operation();
 
     // will not be reached when bootloader is finished.
     idle_loop();
