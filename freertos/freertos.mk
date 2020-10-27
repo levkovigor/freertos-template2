@@ -1,3 +1,4 @@
+FREERTOS_SRC += $(wildcard $(CURRENTPATH)/*.c)
 FREERTOS_SRC += $(wildcard $(CURRENTPATH)/src/*.c)
 FREERTOS_SRC += $(wildcard $(CURRENTPATH)/src/portable/*.c)
 FREERTOS_SRC += $(wildcard $(CURRENTPATH)/src/portable/GCC/ARM9_AT91SAM9G20/*.c)
