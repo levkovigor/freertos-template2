@@ -247,7 +247,7 @@ void handler_task(void * args) {
     // Wait for initialization to finish
     vTaskSuspend(NULL);
 
-    //perform_bootloader_core_operation();
+    perform_bootloader_core_operation();
 
     // will not be reached when bootloader is finished.
     idle_loop();

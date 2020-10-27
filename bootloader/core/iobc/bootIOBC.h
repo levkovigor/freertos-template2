@@ -25,8 +25,9 @@ static const uint32_t BOOTLOADER_CRC16_ADDRESS_WRITE = BOOTLOADER_SIZE - 2;
 static const uint32_t BOOTLOADER_END_ADDRESS_READ = NOR_FLASH_BASE_ADDRESS +
         BOOTLOADER_END_ADDRESS_WRITE;
 
-// Note: This is the end addresses for read access!
-static const uint32_t BINARY_BASE_ADDRESS_READ = BOOTLOADER_END_ADDRESS_READ;
+// Note: This is the end addresses for read access for the OBSW binary.
+// 5 small sectors will be reserved for the bootloader.
+static const uint32_t BINARY_BASE_ADDRESS_READ = NORFLASH_SA5_ADDRESS;
 static const uint32_t BINARY_END_ADDRESS_READ = NOR_FLASH_END_ADDRESS_READ;
 
 
