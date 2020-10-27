@@ -234,7 +234,7 @@ void initialize_iobc_peripherals() {
     int result = FRAM_start();
     if(result != 0) {
     	// This should not happen!
-    	TRACE_ERROR("initialize_iobc_peripherals: Coult not start FRAM!\r\n");
+    	TRACE_ERROR("initialize_iobc_peripherals: Could not start FRAM!\n\r");
     }
 #endif
 }
