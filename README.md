@@ -42,7 +42,7 @@ and source files have to be setup and included accordingly!
 
 ## Prerequisites
 1. Make installed
-2. Development board binaries: GNU ARM Toolchain installed, hardware or QEMU set-up available.
+2. Development board binaries: [GNU ARM Toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/) installed, hardware or QEMU set-up available.
 3. For Linux and Unit Test binaries: Linux OS or virtual Machine, at leastfull C++
    build chain installed
 4. For QEMU: QEMU repository cloned and set up in same folder in which 
