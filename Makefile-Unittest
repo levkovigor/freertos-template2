@@ -154,8 +154,8 @@ include $(S)/$(notdir $S).mk
 endef
 $(foreach S,$(SUBDIRS),$(eval $(INCLUDE_FILE)))
 
-INCLUDES += $(FILE_ROOT)
-INCLUDES += $(FILE_ROOT)/catch2/
+INCLUDES += unittest
+INCLUDES += unittest/catch2
 
 #-------------------------------------------------------------------------------
 #		Source Files
