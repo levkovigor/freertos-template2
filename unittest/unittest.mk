@@ -8,7 +8,7 @@ CXXSRC += $(wildcard $(CURRENTPATH)/hosted/core/*.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/hosted/*.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/hosted/newtests/*.cpp)
 
-INCLUDES += $(UNIT_TEST_PATH)/hosted/catch2
+INCLUDES += $(UNIT_TEST_PATH)/catch2
 INCLUDES += $(UNIT_TEST_PATH)/hosted/core
 INCLUDES += $(UNIT_TEST_PATH)/hosted
 endif 
