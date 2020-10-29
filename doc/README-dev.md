@@ -47,39 +47,42 @@ notepad++.exe can be called. (or an alias like np='notepad++.exe' can be used)
 	```
 4. An alias (shortcut) in ubuntu is very useful to navigate to the
    windows and/or development directories quickly. Any editor can be used to create an alias
-```sh
- > cd ~
- > nano .bashrc
-````
+	```sh
+	cd ~
+ 	nano .bashrc
+	```
 Add new line
-```sh
- > alias shortcut="cd /mnt/c/Users/..."
-````
+	```sh
+ 	alias myalias="cd /mnt/c/Users/..."
+	```
 Restart command line programm and test the alias by typing
-```sh
-> shortcut
-````
+	```sh
+	myalias
+	```
+
 5. Update everything
 ```sh
   > sudo apt-get update
   > sudo apt-get
 ```
+
 ### git and doxygen
 
 #### git basics
 
 [Complicated git reference manual](https://git-scm.com/book/en/v2)<br>
 [Better git reference manual](https://rogerdudler.github.io/git-guide/)<br>
+
 General sequence to update:
-1. Please note that framework changes need to be commited and pushed automatically while being in the ksat_branch.
-git pull is not strictly necessary but ensures that any changes are included before pushing own content
+1. git pull is not strictly necessary but ensures that any changes are included before pushing own content
 ```sh
 git add .
 git status
 git commit -m "<commit message>"
 git pull
 git push
-````
+```
+
 2. Useful commands
 ```sh
 git checkout <branch>
@@ -88,17 +91,20 @@ git log
 git merge <branch to be merged into current branch>
 git remote update origin --prune
 ```
+
 3. Submodule Operations
 ```sh
 git submodule init
 git submodule update
 git submodule sync
 ```
+
 4. Create Tag for important branches/merges and push them to gitlab
 ```sh
 git tag -a <VersionTag> -m <VersionMessage>
 git push origin tag <VersionTag>
-````
+```
+
 5. Create new branch (personal branch like <name>\_branch or feature
 branch <feature>\_featureDetails). git checkout -b copies the state of the
 current branch
@@ -106,6 +112,7 @@ current branch
 git checkout -b <new branch name>
 git merge <any other branches to include>
 ```
+
 6. If you worked in wrong branch accidentally and want to apply changes to
 another branch
 ```sh
@@ -113,13 +120,15 @@ git stash
 git checkout <target branch>
 git stash apply
 ```
+
 7. Rename branch and remote branch
 ```sh
 > git checkout <target branch>
 git branch -m new-name
 git push origin -u new-name
 git push -d origin old-name
-````
+```
+
 8. Delete branch and remote branch
 ```sh
 git branch -d branch
@@ -143,16 +152,13 @@ git reset --soft HEAD~<numberOfCommitsToGoBack>
 
 The submodule commands are useful because the FSFW is integrated as a submodule.
 Generally, a new branch is created for each new user and for each new feature.
-Name convention:
-
 
 #### git branching models
 
 Generally, there are guidelines on how to use git and how to name branches.
 For the sourceobsw, the following guideline can be used:
 - lastname/master as personal branch
-- lastname/feature/featurename as feature branch
-- lastname/test/testname as a test branch
+- lastname/featurename as feature branch
 
 The feature branch is merged into the master once it has been tested thoroughly.
 If work was done in wrong branch accidentaly, use git stash, git apply or git
