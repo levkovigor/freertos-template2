@@ -99,8 +99,8 @@ Note that make and git are required (installation guide below)
    make -f  Makefile-Unittest all
    ```
    Command to start QEMU (inside sourceobsw folder). Please note this
-   only works if one binary file is located in \_bin for now 
-   (the shell script finds all files named *.bin inside that folder)
+   only works if the QEMU repository was cloned and built inside the same folder
+   the OBSW was cloned.
    ```sh
    ./StartQEMU.sh
    ``` 
