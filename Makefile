@@ -67,7 +67,7 @@ FRAMEWORK_PATH = fsfw
 MISSION_PATH = mission
 CONFIG_PATH = config
 TEST_PATH = test
-UNITTEST_PATH = unittest
+UNITTEST_PATH = $(FRAMEWORK_PATH)/unittest/internal
 PRIVLIB_PATH = privlib
 FREERTOS_PATH = freertos
 
@@ -203,8 +203,8 @@ INCLUDES :=
 # Directories where $(directoryname).mk files should be included from.
 # Source files and includes can be added in those submakefiles.
 SUBDIRS := $(CONFIG_PATH) $(FRAMEWORK_PATH) $(MISSION_PATH) $(BSP_PATH) \
-		$(AT91_PATH) $(TEST_PATH) $(TMTCBRIDGE_PATH) $(UNITTEST_PATH) \
-		$(PRIVLIB_PATH) $(FREERTOS_PATH) 
+		$(AT91_PATH) $(TEST_PATH) $(TMTCBRIDGE_PATH) $(PRIVLIB_PATH) \
+		$(FREERTOS_PATH) $(UNITTEST_PATH)
 		
 # $(info $${SUBDIRS} is [${SUBDIRS}])	
 # to include the lwip source files
