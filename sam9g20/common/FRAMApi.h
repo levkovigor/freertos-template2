@@ -24,7 +24,8 @@ typedef struct __attribute__((__packed__))  _FRAMCriticalData {
     /* Software information [4, 0-3] */
     uint8_t software_version;
     uint8_t software_subversion;
-    uint8_t filler_sw_version[2];
+    uint8_t software_subsubversion;
+    uint8_t filler_sw_version;
 
     /* Reboot information [4, 4-7] */
 	uint16_t reboot_counter;
@@ -75,6 +76,9 @@ static const uint8_t SOFTWARE_VERSION_ADDR =
         offsetof(FRAMCriticalData, software_version);
 static const uint8_t SOFTWARE_SUBVERSION_ADDR =
         offsetof(FRAMCriticalData, software_subversion);
+static const uint8_t SOFTWARE_SUBSUBVERSION_ADDR =
+        offsetof(FRAMCriticalData, software_subsubversion);
+
 /* Reboot info offset */
 static const uint32_t REBOOT_COUNTER_ADDR =
 		offsetof(FRAMCriticalData, reboot_counter);
@@ -136,8 +140,10 @@ static const uint32_t NOR_FLASH_HAMMING_ADDR = BOOTLOADER_HAMMING_ADDR - \
 extern "C" {
 #endif
 
-int write_software_version(uint8_t software_version, uint8_t software_subversion);
-int read_software_version(uint8_t* software_version, uint8_t* software_subversion);
+int write_software_version(uint8_t sw_version, uint8_t sw_subversion,
+        uint8_t sw_subsubversion);
+int read_software_version(uint8_t* sw_version, uint8_t* sw_subversion,
+        uint8_t* sw_subsubversion);
 
 /**
  * Helper function to increment the reboot counter.

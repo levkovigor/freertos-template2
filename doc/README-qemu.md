@@ -39,19 +39,15 @@ to enable automated building.
 3. After that, go to Run->Debug Configurations.. and create a new GDB QEMU Debugging Configurations.
 4. Go to the Configuration Editor by selecting the created debug configuration in the top left selector and clicking the
    settings button next to it. <br>
-   <img src="./readme_img/qemu/qemu-setup1.png" width="50%">
+   <img src="./readme_img/qemu/qemu-launchcfg.png" width="50%">
    
    Then go to Debugger. Make sure that the  Start QEMU locally option is not selected.
    
-   Also make sure that arm-none-eabi-gdb is used as the debugging executable. If the binary folder of the ARM toolchain has been
-   added to path, the full path does not have to be specified and it is sufficient to add arm-none-eabi-gdb.
-   Add the following line to Commands:
+   Also make sure that arm-none-eabi-gdb is used as the debugging executable. If the binary folder of the ARM toolchain has been not added to the system environmental variables, the full path has to be specified.
    
-   symbol-file _bin/[path-to-binay]/[name of the binary].elf <br>
-   Example set-up: <br>
-   <img src="./readme_img/qemu/qemu-setup2.png" width="60%">
-   <img src="./readme_img/qemu/qemu-setup3.png" width="60%">
-   
+   <img src="./readme_img/qemu/qemu-main.png" width="50%"><br>
+   <img src="./readme_img/qemu/qemu-debugger.png" width="50%"><br>
+   <img src="./readme_img/qemu/qemu-startup.png" width="50%"><br>
 5. Compile the software by pressing the build button if a proper build configuration has been set-up. <br>
    Example build configuration as specified in [eclipse build configuration guide](../sam9g20/README-at91.md#setting-up-eclipse-environment-for-build-targets)<br>: 
    <img src="./readme_img/qemu/build-config1.png" width="60%">

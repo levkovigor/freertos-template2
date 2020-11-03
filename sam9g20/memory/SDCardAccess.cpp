@@ -28,7 +28,8 @@ SDCardAccessManager::SDCardAccessManager() {
     // On the iOBC, the active SD card is derived from a value in FRAM so the
     // SD card access manager should not be used before the FRAM is active!
 #ifdef ISIS_OBC_G20
-    int result = get_prefered_sd_card(&activeSdCard);
+    // will be tested and allowed later.
+    //int result = get_prefered_sd_card(&activeSdCard);
 #endif
     mutex = MutexFactory::instance()->createMutex();
 }
@@ -66,8 +67,7 @@ bool SDCardAccessManager::tryActiveSdCardChange() {
     return false;
 }
 
-SDCardAccess::SDCardAccess(VolumeId volumeId):
-		currentVolumeId(volumeId) {
+SDCardAccess::SDCardAccess() {
     int result = 0;
     MutexHelper(SDCardAccessManager::instance()->mutex,
             MutexIF::TimeoutType::WAITING,
@@ -78,9 +78,9 @@ SDCardAccess::SDCardAccess(VolumeId volumeId):
         accessResult = HasReturnvaluesIF::RETURN_FAILED;
         return;
     }
-
+    currentVolumeId = SDCardAccessManager::instance()->activeSdCard;
     if(SDCardAccessManager::instance()->activeAccesses == 0) {
-        result = open_filesystem(SDCardAccessManager::instance()->activeSdCard);
+        result = open_filesystem(currentVolumeId);
         if(result != F_NO_ERROR) {
             // This could be major problem, maybe reboot or change of SD card
             // necessary!
@@ -96,18 +96,17 @@ SDCardAccess::SDCardAccess(VolumeId volumeId):
                 "code %d\n\r", result);
     }
 
-    result = select_sd_card(volumeId);
+    result = select_sd_card(currentVolumeId);
     if(result != F_NO_ERROR){
         TRACE_ERROR("open_filesystem: SD Card %d not present or "
-                "defect.\n\r", volumeId);
+                "defect.\n\r", currentVolumeId);
     }
-    currentVolumeId = volumeId;
 }
 
 SDCardAccess::~SDCardAccess() {
     int result = f_delvolume(currentVolumeId);
     if(result != F_NO_ERROR) {
-        TRACE_ERROR("open_filesystem: f_devlvolume failed with code"
+        TRACE_ERROR("SDCardAccess::~SDCardAccess: f_delvolume failed with code"
                 " %d.\n\r", result);
     }
     f_releaseFS();

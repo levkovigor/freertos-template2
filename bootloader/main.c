@@ -17,9 +17,9 @@
 // The AT91SAM9G20-EK does not have a pre-installed NOR-Flash. Therefore,
 // we only include the NorFlash boot header for iOBC projects.
 #ifdef ISIS_OBC_G20
-#include <bootloader/core/bootIOBC.h>
+#include <bootloader/core/iobc/bootIOBC.h>
 #else
-#include <core/bootAt91.h>
+#include <bootloader/core/at91/bootAt91.h>
 #endif
 
 
@@ -39,14 +39,6 @@
 
 #include <stdbool.h>
 #include <string.h>
-
-#ifndef SW_VERSION
-#define SW_VERSION 0
-#endif
-
-#ifndef SW_SUBVERSION
-#define SW_SUBVERSION 0
-#endif
 
 #define WATCHDOG_KICK_INTERVAL_MS 10
 
@@ -129,9 +121,9 @@ int main()
 #ifdef ISIS_OBC_G20
     // otherwise, try to copy SDCard binary to SDRAM
     // Core Task. Custom interrupts should be configured inside a task.
-    xTaskCreate(handler_task, "HANDLER_TASK", 1024, NULL, 7,
+    xTaskCreate(handler_task, "HANDLER_TASK", 512, NULL, 7,
             &handler_task_handle_glob);
-    xTaskCreate(init_task, "INIT_TASK", 1024, handler_task_handle_glob,
+    xTaskCreate(init_task, "INIT_TASK", 512, handler_task_handle_glob,
             8, NULL);
 #if DEBUG_IO_LIB == 1
     TRACE_INFO("Starting FreeRTOS task scheduler.\n\r");
@@ -196,7 +188,7 @@ void idle_loop() {
     uint32_t last_time = RTT_GetTime();
     for(;;) {
         uint32_t curr_time = RTT_GetTime();
-        if(curr_time - last_time > 60) {
+        if(curr_time - last_time > 2) {
 #if DEBUG_IO_LIB == 1
             TRACE_INFO("Bootloader idle..\n\r");
 #endif
@@ -218,7 +210,7 @@ void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
 
 #ifdef ISIS_OBC_G20
 void init_task(void * args) {
-    TRACE_INFO("Running init_task..\n\r");
+    TRACE_INFO("Running initialization task..\n\r");
     initialize_iobc_peripherals();
     // perform initialization which needs to be inside a task.
 
@@ -242,7 +234,7 @@ void initialize_iobc_peripherals() {
     int result = FRAM_start();
     if(result != 0) {
     	// This should not happen!
-    	TRACE_ERROR("initialize_iobc_peripherals: Coult not start FRAM!\r\n");
+    	TRACE_ERROR("initialize_iobc_peripherals: Could not start FRAM!\n\r");
     }
 #endif
 }
@@ -250,7 +242,7 @@ void initialize_iobc_peripherals() {
 
 void handler_task(void * args) {
 #if DEBUG_IO_LIB == 1
-    TRACE_INFO("Running handler_task..\n\r");
+    TRACE_INFO("Running handler task..\n\r");
 #endif
     // Wait for initialization to finish
     vTaskSuspend(NULL);

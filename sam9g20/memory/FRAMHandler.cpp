@@ -34,7 +34,8 @@ ReturnValue_t FRAMHandler::initialize() {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     // Write software version and subversion to FRAM
-    result = write_software_version(SW_VERSION, SW_SUBVERSION);
+    result = write_software_version(SW_VERSION, SW_SUBVERSION,
+            SW_SUBSUBVERSION);
     if(result != 0) {
         sif::error << "FRAMHandler::initialize: Error writing software version "
                 "to FRAM" << std::endl;

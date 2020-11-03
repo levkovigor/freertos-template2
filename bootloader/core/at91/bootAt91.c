@@ -1,4 +1,4 @@
-#include <bootloader/core/bootAt91.h>
+#include "bootAt91.h"
 #include <bootloaderConfig.h>
 #include <main.h>
 

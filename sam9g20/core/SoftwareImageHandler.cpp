@@ -9,12 +9,6 @@
 #include <fsfw/ipc/QueueFactory.h>
 
 
-#ifdef ISIS_OBC_G20
-extern "C" {
-#include <hal/Storage/NORflash.h>
-}
-#endif
-
 SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
         SystemObject(objectId), receptionQueue(QueueFactory::instance()->
         createMessageQueue(SW_IMG_HANDLER_MQ_DEPTH)),
@@ -61,6 +55,7 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
                 return HasReturnvaluesIF::RETURN_OK;
             }
             else if(result == HasReturnvaluesIF::RETURN_FAILED) {
+                imgCpHelper->reset();
                 handlerState = HandlerState::IDLE;
             }
             else {
@@ -103,8 +98,14 @@ ReturnValue_t SoftwareImageHandler::initialize() {
 
     if(retval != 0) {
         // should never happen ! we should power cycle if this happens.
+        sif::error << "SoftwareImageHandler::initialize: NOR-Flash start failed"
+                << std::endl;
         return result;
     }
+//    retval = NORFLASH_EraseChip(&NORFlash);
+//    if(retval != 0) {
+//        sif::error << "Erasing NOR failed!" << std::endl;
+//    }
 #endif
 
     return HasReturnvaluesIF::RETURN_OK;

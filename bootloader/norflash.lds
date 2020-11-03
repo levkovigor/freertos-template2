@@ -49,6 +49,7 @@ SECTIONS
     {
         . = ALIGN(4);
         _sprerelocate = .;
+        KEEP(*(.vectors));
         *(.sramfunc*)
         . = ALIGN(4);
         _eprerelocate = .;
@@ -116,7 +117,6 @@ SECTIONS
     {
         . = ALIGN(4);
         _spostrelocate = .;
-        KEEP(*(.vectors));
         *(.data) 
         *(.data*)
         *(.sramdata*)
@@ -146,3 +146,4 @@ SECTIONS
     /* top of stack */
     _sstack = 0x304000;
 }
+end = .;

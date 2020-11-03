@@ -263,8 +263,13 @@ void initMission(void) {
     	printAddError(objects::PUS_SERVICE_23_FILE_MGMT);
     }
     /* SD Card handler task */
+#ifdef DEBUG
+    float sdCardTaskPeriod = 0.6;
+#else
+    float sdCardTaskPeriod = 0.6;
+#endif
     PeriodicTaskIF* SDCardTask = TaskFactory::instance()->
-            createPeriodicTask("SD_CARD_TASK", 3, 2048 * 4, 0.4,
+            createPeriodicTask("SD_CARD_TASK", 3, 2048 * 4, sdCardTaskPeriod,
                     genericMissedDeadlineFunc);
     result = SDCardTask->addComponent(objects::SD_CARD_HANDLER);
     if (result != HasReturnvaluesIF::RETURN_OK) {

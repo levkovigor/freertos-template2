@@ -2,28 +2,42 @@
 #include <hal/Storage/FRAM.h>
 
 int write_software_version(uint8_t software_version,
-        uint8_t software_subversion) {
+        uint8_t software_subversion, uint8_t sw_subsubversion) {
     int result = FRAM_writeAndVerify((unsigned char*) &software_version,
             SOFTWARE_VERSION_ADDR, sizeof(software_version));
     if(result != 0) {
         return result;
     }
 
-    return FRAM_writeAndVerify((unsigned char*) &software_subversion,
+    result = FRAM_writeAndVerify((unsigned char*) &software_subversion,
             SOFTWARE_SUBVERSION_ADDR, sizeof(software_subversion));
+    if(result != 0) {
+        return result;
+    }
+
+    return FRAM_writeAndVerify((unsigned char*) &sw_subsubversion,
+            SOFTWARE_SUBSUBVERSION_ADDR, sizeof(sw_subsubversion));
 }
 
 int read_software_version(uint8_t *software_version,
-        uint8_t* software_subversion) {
+        uint8_t* software_subversion, uint8_t* sw_subsubversion) {
     int result = FRAM_read((unsigned char*) software_version,
             SOFTWARE_VERSION_ADDR,
             sizeof(((FRAMCriticalData*)0)->software_version));
     if(result != 0) {
         return result;
     }
-    return FRAM_read((unsigned char*) software_subversion,
+
+    result = FRAM_read((unsigned char*) software_subversion,
             SOFTWARE_SUBVERSION_ADDR,
             sizeof(((FRAMCriticalData*)0)->software_subversion));
+    if(result != 0) {
+        return result;
+    }
+
+    return FRAM_read((unsigned char*) sw_subsubversion,
+            SOFTWARE_SUBSUBVERSION_ADDR,
+            sizeof(((FRAMCriticalData*)0)->software_subsubversion));
 }
 
 int increment_reboot_counter(bool verify, bool set_reboot_flag) {

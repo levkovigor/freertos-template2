@@ -125,7 +125,7 @@ void AtmelTestTask::performSDCardDemo() {
 void AtmelTestTask::performIOBCTest() {
     //performNorFlashTest(false);
     //performSupervisorTest();
-    performFRAMTest();
+    //performFRAMTest();
 
 }
 
@@ -274,12 +274,16 @@ void AtmelTestTask::performNorFlashTest(bool displayDebugOutput) {
 void AtmelTestTask::performFRAMTest() {
     uint8_t swVersion = 0;
     uint8_t swSubversion = 0;
-    int result = read_software_version(&swVersion, &swSubversion);
+    uint8_t swSubsubversion = 0;
+    int result = read_software_version(&swVersion, &swSubversion,
+            &swSubsubversion);
     if(result == 0) {
-        sif::info << "AtmelTestTask::performFRAMTest: Software version " <<
-                (int) swVersion << std::endl;
-        sif::info << "AtmelTestTask::performFRAMTest: Software subversion " <<
-                (int) swSubversion << std::endl;
+        sif::info << "AtmelTestTask::performFRAMTest: Software version "
+                << (int) swVersion << std::endl;
+        sif::info << "AtmelTestTask::performFRAMTest: Software subversion "
+                << (int) swSubversion << std::endl;
+        sif::info << "AtmelTestTask::performFRAMTest: Software subsubversion "
+                << (int) swSubsubversion << std::endl;
     }
 }
 

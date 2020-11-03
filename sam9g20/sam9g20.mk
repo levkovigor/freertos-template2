@@ -12,6 +12,12 @@ CSRC += $(wildcard $(CURRENTPATH)/boardtest/*.c)
 CXXSRC += $(wildcard $(CURRENTPATH)/core/*.cpp)
 CSRC += $(wildcard $(CURRENTPATH)/core/*.c)
 
+ifeq ($(BOARD), AT91SAM9G20_EK)
+CXXSRC += $(wildcard $(CURRENTPATH)/core/at91/*.cpp)
+else
+CXXSRC += $(wildcard $(CURRENTPATH)/core/iobc/*.cpp)
+endif
+
 CXXSRC += $(wildcard $(CURRENTPATH)/pus/*.cpp)
 CSRC += $(wildcard $(CURRENTPATH)/pus/*.c)
 

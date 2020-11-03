@@ -72,7 +72,7 @@ void CoreController::performControlOperation() {
     }
 
     uint32_t epoch = 0;
-    int result = Time_getUnixEpoch(&epoch);
+    result = Time_getUnixEpoch(reinterpret_cast<unsigned int*>(&epoch));
     // todo: compare FSFW clock with RTT clock and sync FSFW clock to RTT
     // clock if drift is too high.
 #endif
@@ -175,6 +175,15 @@ ReturnValue_t CoreController::initializeAfterTaskCreation() {
     if(result != HasReturnvaluesIF::RETURN_OK) {
         return result;
     }
+
+#ifdef ISIS_OBC_G20
+    bool bootloaderIncremented = false;
+    int retval = verify_reboot_flag(&bootloaderIncremented);
+    if(retval != 0) {
+        sif::error << "CoreController::initialize: Error verifying the boot"
+                << " counter!" << std::endl;
+    }
+#endif
     return initializeIsisTimerDrivers();
 }
 
@@ -184,12 +193,6 @@ ReturnValue_t CoreController::initialize() {
     if(framHandler == nullptr) {
         sif::error << "CoreController::initialize: No FRAM handler found!"
                 << std::endl;
-    }
-    bool bootloaderIncremented = false;
-    int retval = verify_reboot_flag(&bootloaderIncremented);
-    if(retval != 0) {
-        sif::error << "CoreController::initialize: Error verifying the boot"
-                << " counter!" << std::endl;
     }
 #endif
     return ExtendedControllerBase::initialize();

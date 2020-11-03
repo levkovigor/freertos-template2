@@ -36,7 +36,13 @@ public:
     // Perform both operation at once
     bool readAndGenerateStats();
 
+    /**
+     * Called manually.
+     * @return
+     */
     ReturnValue_t initializeAfterTaskCreation() override;
+
+    uint16_t numberOfTasks = 0;
 private:
     enum class InternalState {
     	IDLE,
@@ -55,7 +61,7 @@ private:
     BinarySemaphoreUsingTask* semaphore = nullptr;
 
     TaskStatus_t* taskStatusWritePtr = nullptr;
-    uint16_t numberOfTasks = 0;
+
 
     void generateStatsCsvAndCheckStack();
     void writePaddedName(uint8_t* buffer,

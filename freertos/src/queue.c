@@ -1276,12 +1276,6 @@ Queue_t * const pxQueue = xQueue;
 	return xReturn;
 }
 /*-----------------------------------------------------------*/
-BaseType_t xQueueGenericReceive(QueueHandle_t xQueue, void * const pvBuffer,
-		TickType_t xTicksToWait, portBASE_TYPE xJustPeek) {
-	//printf("ISIS DEBUGGING:  xQueueGenericReceive called\n\r");
-	assert(xJustPeek == pdFALSE);
-	return xQueueReceive(xQueue, pvBuffer, xTicksToWait);
-}
 
 BaseType_t xQueueReceive( QueueHandle_t xQueue, void * const pvBuffer, TickType_t xTicksToWait )
 {

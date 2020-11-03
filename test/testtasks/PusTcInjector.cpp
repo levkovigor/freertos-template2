@@ -27,7 +27,7 @@ ReturnValue_t PusTcInjector::injectPusTelecommand(uint8_t service,
 		uint8_t subservice,uint16_t apid, const uint8_t* appData,
 		size_t appDataLen) {
 	// Prepare TC packet. Store into TC store immediately.
-	TcPacketStored tcPacket(service, subservice, apid, sequenceCount++);
+	TcPacketStored tcPacket(apid, service, subservice, sequenceCount++);
 
 	const uint8_t* packetPtr = nullptr;
 	size_t packetSize = 0;

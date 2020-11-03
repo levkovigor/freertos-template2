@@ -492,11 +492,11 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 			int16_t angularVelocityBinaryZ = packet[6] << 8 | packet[5];
 
 			float angularVelocityX =
-					angularVelocityBinaryX / std::pow(2, 15) * GYRO_RANGE;
+					angularVelocityBinaryX / INT16_MAX * GYRO_RANGE;
 			float angularVelocityY =
-					angularVelocityBinaryY / std::pow(2, 15) * GYRO_RANGE;
+					angularVelocityBinaryY / INT16_MAX * GYRO_RANGE;
 			float angularVelocityZ =
-					angularVelocityBinaryZ / std::pow(2, 15) * GYRO_RANGE;
+					angularVelocityBinaryZ / INT16_MAX * GYRO_RANGE;
 
 #if OBSW_REDUCED_PRINTOUT == 0
 			if(debugDivider->checkAndIncrement()) {

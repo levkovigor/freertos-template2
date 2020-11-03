@@ -36,11 +36,21 @@
 //------------------------------------------------------------------------------
 //         Definitions
 //------------------------------------------------------------------------------
-#define UND_STACK_SIZE	0x00000200		/* Stack size for "undefined instruction" interrupts    */
+#if defined(sram) || defined(norflash)
+// Let's assume 8192 bytes available stack space now for non-system modes.
+#define UND_STACK_SIZE	0x00000100		/* Stack size for "undefined instruction" interrupts	*/
+#define ABT_STACK_SIZE	0x00000100		/* Stack size for "abort" interrupts					*/
+#define FIQ_STACK_SIZE	0x00000000		/* Stack size for "FIQ" interrupts						*/
+#define IRQ_STACK_SIZE	0x00000400		/* Stack size for "IRQ" normal interrupts				*/
+#define SVC_STACK_SIZE	0x00000400		/* Stack size for "SVC" supervisor mode                 */
+#elif sdram
+// Around 200 kB of stack for non-system modes.
+#define UND_STACK_SIZE	0x00000200		/* Stack size for "undefined instruction" interrupts	*/
 #define ABT_STACK_SIZE	0x00000200		/* Stack size for "abort" interrupts					*/
 #define FIQ_STACK_SIZE	0x00000000		/* Stack size for "FIQ" interrupts						*/
 #define IRQ_STACK_SIZE	0x00018000		/* Stack size for "IRQ" normal interrupts				*/
-#define SVC_STACK_SIZE	0x00018000		/* Stack size for "SVC" supervisor mode					*/
+#define SVC_STACK_SIZE	0x00018000		/* Stack size for "SVC" supervisor mode                 */
+#endif
 
 #define ARM_MODE_USR	0x10	/* Normal User Mode											*/
 #define ARM_MODE_FIQ	0x11	/* FIQ Processing Fast Interrupts Mode						*/
@@ -304,9 +314,11 @@ resetHandler:
  * libc_init_array runs through the list of static constructor addresses
  * placed in the .init_array and calls all static constructors (in case of the FSFW for example the DataPool::DataPool)
  */
+#ifndef norflash
 		ldr r0,=__libc_init_array
 		mov lr,pc /* set the return address */
 		bx r0 /* the target code can be ARM or THUMB */
+#endif
 
 /* Branch to main()
  ******************/

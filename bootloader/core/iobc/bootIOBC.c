@@ -1,11 +1,13 @@
-#include <bootloader/core/bootIOBC.h>
-#include <core/watchdog.h>
+#include "bootIOBC.h"
+#include "../watchdog.h"
+
 #include <utility/trace.h>
 #include <utility/CRC.h>
 #include <sam9g20/memory/SDCardApi.h>
 #include <sam9g20/common/FRAMApi.h>
 
 #include <string.h>
+#include <bootloaderConfig.h>
 
 //static uint8_t read_buffer[256 * 11];
 
@@ -33,6 +35,11 @@ int copy_norflash_binary_to_sdram(size_t binary_size)
     // performed. The binary size is extracted from FRAM.
     uint32_t bucket_size = binary_size / binary_divisor;
     size_t last_packet_bytes = binary_size % bucket_size;
+#if ENHANCED_DEBUG_OUTPUT == 1
+    TRACE_INFO("Copying in %d buckets of %d times %d plus %d bytes",
+            binary_divisor, binary_divisor, (int) bucket_size,
+            (int) last_packet_bytes);
+#endif
 
     size_t offset = 0;
     for(uint16_t packet_idx = 0; packet_idx < bucket_size; packet_idx++) {
