@@ -137,7 +137,7 @@ void Factory::produce(void) {
 
 
 	/* Utility */
-	new TimeStamper(objects::PUS_TIME);
+	new TimeStamper(objects::TIME_STAMPER);
 
 	/* Distributor Tasks */
 	new CCSDSDistributor(apid::SOURCE_OBSW,objects::CCSDS_PACKET_DISTRIBUTOR);
@@ -301,7 +301,7 @@ void Factory::setStaticFrameworkObjectIds() {
 
 	DeviceHandlerFailureIsolation::powerConfirmationId = objects::PCDU_HANDLER;
 
-	TmPacketStored::timeStamperId = objects::PUS_TIME;
+	TmPacketStored::timeStamperId = objects::TIME_STAMPER;
 #if defined(ETHERNET)
 	TmFunnel::downlinkDestination = objects::UDP_TMTC_BRIDGE;
 #else
