@@ -40,6 +40,7 @@
 #include <mission/devices/GPSHandler.h>
 #include <mission/devices/ThermalSensorHandler.h>
 #include <mission/devices/GyroHandler.h>
+#include <mission/devices/MGMHandlerLIS3MDL.h>
 #include <mission/fdir/PCDUFailureIsolation.h>
 
 /* Test files */
@@ -258,11 +259,21 @@ void Factory::produce(void) {
 			switches::PT1000);
     thermalSensorHandler->setStartUpImmediately();
 
-    spiCookie = new SpiCookie(addresses::SPI_Test_Gyro, 10, SlaveType::DEMULTIPLEXER_1,
-    		DemultiplexerOutput::OUTPUT_4, SPImode::mode0_spi, 2, 3'900'000, 1);
+    spiCookie = new SpiCookie(addresses::SPI_Test_Gyro, 10,
+            SlaveType::DEMULTIPLEXER_1, DemultiplexerOutput::OUTPUT_4,
+            SPImode::mode0_spi, 2, 3'900'000, 1);
     GyroHandler* gyroHandler = new GyroHandler(objects::SPI_Test_Gyro,
             objects::SPI_DEVICE_COM_IF, spiCookie, switches::GYRO1);
     gyroHandler->setStartUpImmediately();
+
+    spiCookie = new SpiCookie(addresses::SPI_Test_MGM, 60,
+            SlaveType::SLAVE_SELECT_1,
+            DemultiplexerOutput::OWN_SLAVE_SELECT,
+            SPImode::mode3_spi, 2, 3'900'000, 1);
+    MGMHandlerLIS3MDL* mgmHandler = new MGMHandlerLIS3MDL(objects::SPI_Test_MGM,
+            objects::SPI_DEVICE_COM_IF, spiCookie);
+    mgmHandler->setStartUpImmediately();
+
 
 #if OBSW_ADD_TEST_CODE == 1
 	//CookieIF * i2cCookie_0 = new I2cCookie(addresses::I2C_ARDUINO_0,

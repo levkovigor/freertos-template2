@@ -43,8 +43,10 @@ namespace objects {
 		/* fourth byte decoder output ID */
 
 		// Devices connected to decoder 1
-		SPI_Test_PT1000 = 0x44115400,
-		SPI_Test_Gyro = 0x44115500,
+		SPI_Test_PT1000 = 0x44115000,
+		SPI_Test_Gyro = 0x44115001,
+		SPI_Test_MGM = 0x44115002,
+
 		PT1000_Syrlinks_DEC1_O1 = 0x44115401,
 		PT1000_Camera_DEC1_O2 = 0x44115402,
 		PT1000_SuS1_DEC1_O3 = 0x44115404,

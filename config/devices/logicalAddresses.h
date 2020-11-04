@@ -27,6 +27,7 @@ namespace addresses {
 		// Devices connected to decoder 1
 		SPI_Test_PT1000 = objects::SPI_Test_PT1000,
 		SPI_Test_Gyro = objects::SPI_Test_Gyro,
+		SPI_Test_MGM = objects::SPI_Test_MGM,
 		SPI_PT1000_Syrlinks_DEC1_O1 = objects::PT1000_Syrlinks_DEC1_O1,
 		SPI_PT1000_Camera_DEC1_O2 = objects::PT1000_Camera_DEC1_O2,
 		SPI_PT1000_SuS1_DEC1_O3 = objects::PT1000_SuS1_DEC1_O3,
