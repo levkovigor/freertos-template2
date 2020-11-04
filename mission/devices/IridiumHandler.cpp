@@ -6,6 +6,20 @@ IridiumHandler::IridiumHandler(object_id_t objectId, object_id_t deviceCom,
 }
 
 void IridiumHandler::doStartUp() {
+    switch(internalState) {
+    case(InternalStates::NONE): {
+        internalState = InternalStates::START_WAIT_FOR_PING_RESPONSE;
+        break;
+    }
+    case(InternalStates::START_WAIT_FOR_PING_RESPONSE): {
+        if(commandExecuted) {
+            internalState = InternalStates::START_CONFIGURE;
+        }
+        break;
+    }
+    default:
+        break;
+    }
 }
 
 void IridiumHandler::doShutDown() {
@@ -40,4 +54,14 @@ ReturnValue_t IridiumHandler::interpretDeviceReply(DeviceCommandId_t id,
 }
 
 void IridiumHandler::setNormalDatapoolEntriesInvalid() {
+}
+
+void IridiumHandler::calculateIsuChecksum(uint8_t *data, size_t dataSize) {
+    size_t dataSum;
+    for(size_t idx = 0; idx < dataSize; idx ++) {
+        dataSum += data[idx];
+    }
+    // Extract two least significant bytes. Those are the checksum
+    data[dataSize] = dataSum >> 8 & 0xff;
+    data[dataSize + 1] = dataSum & 0xff;
 }
