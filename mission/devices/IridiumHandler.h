@@ -29,6 +29,25 @@ private:
             const uint8_t *packet) override;
     void setNormalDatapoolEntriesInvalid() override;
 
+    enum class InternalStates {
+        NONE,
+        START_WAIT_FOR_PING_RESPONSE,
+        START_CONFIGURE,
+        NORMAL
+    };
+
+    InternalStates internalState = InternalStates::NONE;
+
+    bool commandExecuted = false;
+
+    /**
+     * Calculate the ISU checksum. Please note that this function will simply
+     * write to data at the position dataSize and dataSize + 1, so make sure
+     * to provide a buffer that accomodates the 2 byte checksum!
+     * @param data
+     * @param dataSize
+     */
+    void calculateIsuChecksum(uint8_t* data, size_t dataSize);
 };
 
 

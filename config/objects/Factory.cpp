@@ -29,12 +29,12 @@
 #include <fsfw/pus/Service3Housekeeping.h>
 #include <fsfw/pus/Service5EventReporting.h>
 #include <fsfw/pus/Service8FunctionManagement.h>
+#include <fsfw/timemanager/TimeStamper.h>
 #include <mission/controller/ThermalController.h>
 #include <mission/pus/Service6MemoryManagement.h>
 #include <mission/pus/Service17CustomTest.h>
 #include <mission/pus/Service20ParameterManagement.h>
 #include <mission/pus/Service23FileManagement.h>
-#include <mission/utility/TimeStamper.h>
 #include <mission/utility/TmFunnel.h>
 #include <mission/devices/PCDUHandler.h>
 #include <mission/devices/GPSHandler.h>
@@ -137,7 +137,7 @@ void Factory::produce(void) {
 
 
 	/* Utility */
-	new TimeStamper(objects::PUS_TIME);
+	new TimeStamper(objects::TIME_STAMPER);
 
 	/* Distributor Tasks */
 	new CCSDSDistributor(apid::SOURCE_OBSW,objects::CCSDS_PACKET_DISTRIBUTOR);
@@ -301,7 +301,7 @@ void Factory::setStaticFrameworkObjectIds() {
 
 	DeviceHandlerFailureIsolation::powerConfirmationId = objects::PCDU_HANDLER;
 
-	TmPacketStored::timeStamperId = objects::PUS_TIME;
+	TmPacketStored::timeStamperId = objects::TIME_STAMPER;
 #if defined(ETHERNET)
 	TmFunnel::downlinkDestination = objects::UDP_TMTC_BRIDGE;
 #else
