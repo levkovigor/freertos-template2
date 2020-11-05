@@ -89,7 +89,7 @@ private:
 	 */
 	ReturnValue_t identifyDevice();
 
-	virtual ReturnValue_t setupMGM();
+	virtual void setupMgm();
 
 	/*------------------------------------------------------------------------*/
 	/* Non normal commands */
@@ -145,6 +145,7 @@ private:
 	};
 
 	InternalState internalState = STATE_NONE;
+	bool commandExecuted = false;
 
 #if OBSW_REDUCED_PRINTOUT == 0
     PeriodicOperationDivider* debugDivider;

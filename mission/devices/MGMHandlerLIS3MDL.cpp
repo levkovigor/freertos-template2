@@ -32,18 +32,14 @@ void MGMHandlerLIS3MDL::doStartUp() {
         internalState = STATE_CHECK_REGISTERS;
         break;
 
-    case STATE_CHECK_REGISTERS:
-        if (setupMGM() == RETURN_OK) {
-            for (size_t i = 1; i <= MGMLIS3MDL::NR_OF_CTRL_REGISTERS; i++) {
-                if (registers[i - 1] != commandBuffer[i]) {
-                    break;
-                }
-            }
-            //setMode(_MODE_TO_ON);
+    case STATE_CHECK_REGISTERS: {
+        // Set up cached registers which will be used to configure the MGM.
+        if(commandExecuted) {
+            commandExecuted = false;
             setMode(MODE_NORMAL);
         }
         break;
-
+    }
     default:
         break;
     }
@@ -91,7 +87,7 @@ uint8_t MGMHandlerLIS3MDL::writeCommand(uint8_t command, bool continuousCom) {
 	return command;
 }
 
-ReturnValue_t MGMHandlerLIS3MDL::setupMGM() {
+void MGMHandlerLIS3MDL::setupMgm() {
 
 	registers[0] = MGMLIS3MDL::CTRL_REG1_DEFAULT;
 	registers[1] = MGMLIS3MDL::CTRL_REG2_DEFAULT;
@@ -99,8 +95,7 @@ ReturnValue_t MGMHandlerLIS3MDL::setupMGM() {
 	registers[3] = MGMLIS3MDL::CTRL_REG4_DEFAULT;
 	registers[4] = MGMLIS3MDL::CTRL_REG5_DEFAULT;
 
-	return prepareCtrlRegisterWrite();
-
+	prepareCtrlRegisterWrite();
 }
 
 ReturnValue_t MGMHandlerLIS3MDL::buildNormalDeviceCommand(
@@ -134,7 +129,8 @@ ReturnValue_t MGMHandlerLIS3MDL::buildCommandFromCommand(
 	    return enableTemperatureSensor(commandData, commandDataLen);
 	}
 	case(MGMLIS3MDL::SETUP_MGM): {
-	    return setupMGM();
+	    setupMgm();
+	    return HasReturnvaluesIF::RETURN_OK;
 	}
 	case(MGMLIS3MDL::ACCURACY_OP_MODE_SET): {
 	    return setOperatingMode(commandData, commandDataLen);
@@ -168,6 +164,9 @@ ReturnValue_t MGMHandlerLIS3MDL::scanForReply(const uint8_t *start,
 		if (*(start + 16) != MGMLIS3MDL::DEVICE_ID) {
 			return DeviceHandlerIF::INVALID_DATA;
 		}
+        if(mode == _MODE_START_UP) {
+            commandExecuted = true;
+        }
 
 	} else if (len == MGMLIS3MDL::SETUP_REPLY) {
 		*foundLen = len;

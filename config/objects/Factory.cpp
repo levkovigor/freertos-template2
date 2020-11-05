@@ -153,6 +153,7 @@ void Factory::produce(void) {
 
 	/* Serial TmTc Bridge */
 	// 6 kB for shared ring buffer now.
+	// TODO: move size to OBSWConfig.
 	new SharedRingBuffer(objects::SERIAL_RING_BUFFER, 6144, true, 30);
 	new TmTcSerialBridge(objects::SERIAL_TMTC_BRIDGE,
 			objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
@@ -169,8 +170,9 @@ void Factory::produce(void) {
 			config::OBSW_SERVICE_1_MQ_DEPTH);
 	new Service3Housekeeping(objects::PUS_SERVICE_3_HOUSEKEEPING,
 			apid::SOURCE_OBSW, pus::PUS_SERVICE_3);
+	// TODO: move 20 to OBSWConfig
 	new Service5EventReporting(objects::PUS_SERVICE_5_EVENT_REPORTING,
-			apid::SOURCE_OBSW, pus::PUS_SERVICE_5);
+			apid::SOURCE_OBSW, pus::PUS_SERVICE_5, 20);
 	new Service9CustomTimeManagement(objects::PUS_SERVICE_9_TIME_MGMT,
 			apid::SOURCE_OBSW, pus::PUS_SERVICE_9);
 	new Service17CustomTest(objects::PUS_SERVICE_17_TEST, apid::SOURCE_OBSW,
