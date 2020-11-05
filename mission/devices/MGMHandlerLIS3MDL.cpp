@@ -363,7 +363,7 @@ ReturnValue_t MGMHandlerLIS3MDL::prepareCtrlRegisterWrite() {
 		commandBuffer[i + 1] = registers[i];
 	}
 	rawPacket = commandBuffer;
-	rawPacketLen = MGMLIS3MDL::NR_OF_CTRL_REGISTERS;
+	rawPacketLen = MGMLIS3MDL::NR_OF_CTRL_REGISTERS + 1;
 
 	// We dont have to check if this is working because we just did it
 	return RETURN_OK;

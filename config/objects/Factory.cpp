@@ -322,13 +322,3 @@ void Factory::setStaticFrameworkObjectIds() {
 #endif
 }
 
-size_t Factory:: calculateStorage(uint8_t numberOfPools,
-        uint16_t* numberOfElements,
-        uint16_t* sizeOfElements) {
-    size_t size = 0;
-    for(uint8_t idx = 0; idx < numberOfPools; idx ++) {
-        size += numberOfElements[idx] * sizeOfElements[idx];
-    }
-    return size;
-}
-
