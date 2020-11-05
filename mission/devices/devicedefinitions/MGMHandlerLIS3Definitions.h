@@ -13,6 +13,8 @@ enum opMode {
     LOW, MEDIUM, HIGH, ULTRA
 };
 
+static constexpr uint8_t GAUSS_TO_MICROTESLA_FACTOR = 100;
+
 static const DeviceCommandId_t SETUP_MGM = 0x00;
 static const DeviceCommandId_t READALL_MGM = 0x01;
 static const DeviceCommandId_t IDENTIFY_DEVICE = 0x02;

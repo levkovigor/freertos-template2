@@ -222,10 +222,13 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 
 		int16_t tempValueRaw = *(accessBuffer + 1) << 8 | *(accessBuffer);
 
-		// Target value in Gauss
-		float mgmX = static_cast<float>(mgmMeasurementRawX) * sensitivityFactor;
-		float mgmY = static_cast<float>(mgmMeasurementRawY) * sensitivityFactor;
-		float mgmZ = static_cast<float>(mgmMeasurementRawZ) * sensitivityFactor;
+		// Target value in microtesla
+		float mgmX = static_cast<float>(mgmMeasurementRawX) * sensitivityFactor
+		        *  MGMLIS3MDL::GAUSS_TO_MICROTESLA_FACTOR;
+		float mgmY = static_cast<float>(mgmMeasurementRawY) * sensitivityFactor
+		        *  MGMLIS3MDL::GAUSS_TO_MICROTESLA_FACTOR;
+		float mgmZ = static_cast<float>(mgmMeasurementRawZ) * sensitivityFactor
+		        *  MGMLIS3MDL::GAUSS_TO_MICROTESLA_FACTOR;
 
 		// value is invalid because of register wrap around..
 		// float tempValue = 25.0 + ((static_cast<float>(tempValueRaw)) / 8.0);
