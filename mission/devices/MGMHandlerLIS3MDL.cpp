@@ -3,6 +3,9 @@
 MGMHandlerLIS3MDL::MGMHandlerLIS3MDL(object_id_t objectId,
         object_id_t deviceCommunication, CookieIF* comCookie):
 		DeviceHandlerBase(objectId, deviceCommunication, comCookie) {
+#if OBSW_REDUCED_PRINTOUT == 0
+    debugDivider = new PeriodicOperationDivider(20);
+#endif
 	registers[0] = 0x00;
 	registers[1] = 0x00;
 	registers[2] = 0x00;
@@ -36,7 +39,8 @@ void MGMHandlerLIS3MDL::doStartUp() {
                     break;
                 }
             }
-            setMode(_MODE_TO_ON);
+            //setMode(_MODE_TO_ON);
+            setMode(MODE_NORMAL);
         }
         break;
 
@@ -222,8 +226,19 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 		float mgmX = static_cast<float>(mgmMeasurementRawX) * sensitivityFactor;
 		float mgmY = static_cast<float>(mgmMeasurementRawY) * sensitivityFactor;
 		float mgmZ = static_cast<float>(mgmMeasurementRawZ) * sensitivityFactor;
-		float tempValue = 25.0 + ((static_cast<float>(tempValueRaw)) / 8.0);
 
+		// value is invalid because of register wrap around..
+		// float tempValue = 25.0 + ((static_cast<float>(tempValueRaw)) / 8.0);
+#if OBSW_REDUCED_PRINTOUT == 0
+		if(debugDivider->checkAndIncrement()) {
+            sif::info << "MGMHandlerLIS3: Magnetic field strength in"
+                    " microtesla:" << std::endl;
+            // Set terminal to utf-8 if there is an issue with micro printout.
+            sif::info << "X: " << mgmX << " \xC2\xB5T" << std::endl;
+            sif::info << "Y: " << mgmY << " \xC2\xB5T" << std::endl;
+            sif::info << "Z: " << mgmZ << " \xC2\xB5T" << std::endl;
+		}
+#endif
 		break;
 	}
 

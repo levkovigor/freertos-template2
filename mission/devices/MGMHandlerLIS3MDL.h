@@ -1,8 +1,11 @@
 #ifndef MISSION_DEVICES_MGMLIS3MDLHANDLER_H_
 #define MISSION_DEVICES_MGMLIS3MDLHANDLER_H_
 
-#include <fsfw/devicehandlers/DeviceHandlerBase.h>
 #include "devicedefinitions/MGMHandlerLIS3Definitions.h"
+
+#include <fsfw/devicehandlers/DeviceHandlerBase.h>
+#include <fsfw/globalfunctions/PeriodicOperationDivider.h>
+
 #include <subsystemIdRanges.h>
 
 /**
@@ -142,6 +145,10 @@ private:
 	};
 
 	InternalState internalState = STATE_NONE;
+
+#if OBSW_REDUCED_PRINTOUT == 0
+    PeriodicOperationDivider* debugDivider;
+#endif
 
 };
 

@@ -424,12 +424,12 @@ void boardTestTaskInit() {
     //  }
 
     /* SPI Test Task */
-    //    PeriodicTaskIF* SPITask = TaskFactory::instance()->
-    //            createPeriodicTask("SPI_TASK",4, 2048, 1, nullptr);
-    //    result = SPITask->addComponent(objects::AT91_SPI_TEST_TASK);
-    //    if (result != HasReturnvaluesIF::RETURN_OK) {
-    //        sif::error << "Add component SPI Task failed" << std::endl;
-    //    }
+//    PeriodicTaskIF* SPITask = TaskFactory::instance()->
+//            createPeriodicTask("SPI_TASK",4, 2048, 1, nullptr);
+//    result = SPITask->addComponent(objects::AT91_SPI_TEST_TASK);
+//    if (result != HasReturnvaluesIF::RETURN_OK) {
+//        sif::error << "Add component SPI Task failed" << std::endl;
+//    }
 
     sif::info << "Starting test tasks.." << std::endl;
 

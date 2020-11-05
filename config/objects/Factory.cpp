@@ -266,10 +266,12 @@ void Factory::produce(void) {
             objects::SPI_DEVICE_COM_IF, spiCookie, switches::GYRO1);
     gyroHandler->setStartUpImmediately();
 
+    // I have no idea why we have to pick SPI mode 0 here (CPOL == 0 and
+    // NCPHA == 1) instead of mode 3 (CPOL == 1 and NCPHA == 0) but we have to..
     spiCookie = new SpiCookie(addresses::SPI_Test_MGM, 60,
             SlaveType::SLAVE_SELECT_1,
             DemultiplexerOutput::OWN_SLAVE_SELECT,
-            SPImode::mode3_spi, 2, 3'900'000, 1);
+            SPImode::mode0_spi, 2, 3'900'000, 1);
     MGMHandlerLIS3MDL* mgmHandler = new MGMHandlerLIS3MDL(objects::SPI_Test_MGM,
             objects::SPI_DEVICE_COM_IF, spiCookie);
     mgmHandler->setStartUpImmediately();
@@ -294,7 +296,7 @@ void Factory::produce(void) {
 	//new UART0TestTask("UART0 Test Task", objects::AT91_UART0_TEST_TASK);
 	//new UART2TestTask("UART2 Test Task", objects::AT91_UART2_TEST_TASK);
 	//new TwiTestTask(objects::AT91_I2C_TEST_TASK, 16);
-    //new SpiTestTask(objects::AT91_SPI_TEST_TASK, SpiTestTask::SpiTestMode::GYRO);
+    //new SpiTestTask(objects::AT91_SPI_TEST_TASK, SpiTestTask::SpiTestMode::MGM_LIS3);
 #endif
 }
 
