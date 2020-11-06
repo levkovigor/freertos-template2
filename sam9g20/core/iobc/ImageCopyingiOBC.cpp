@@ -82,6 +82,22 @@ ReturnValue_t ImageCopyingEngine::handleNorflashErasure(bool bootloader) {
             stepCounter = 0;
         }
     }
+    else {
+    	sif::info << "ImageCopyingEngine::handleNorflashErasure: Deleting old"
+    			<< " binary!" << std::endl;
+    	// todo: only delete required sectors by finding out bin size
+    	while(stepCounter < NORFLASH_SECTORS_NUMBER) {
+    		result = NORFLASH_EraseSector(&NORFlash,
+    				getBaseAddress(stepCounter, nullptr));
+            if(result != 0) {
+                return HasReturnvaluesIF::RETURN_FAILED;
+            }
+            stepCounter++;
+            if(countdown->hasTimedOut()) {
+                return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+            }
+    	}
+    }
 
     return result;
 }
@@ -232,7 +248,57 @@ uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
         }
     }
     else {
+        if(internalState == GenericInternalState::STEP_1) {
+            switch(stepCounter) {
+            case(0): return NORFLASH_SA5_ADDRESS;
+            case(1): return NORFLASH_SA6_ADDRESS;
+            case(2): return NORFLASH_SA7_ADDRESS;
+            case(3): return NORFLASH_SA8_ADDRESS;
+            case(4): return NORFLASH_SA9_ADDRESS;
+            case(5): return NORFLASH_SA10_ADDRESS;
+            case(6): return NORFLASH_SA11_ADDRESS;
+            case(7): return NORFLASH_SA12_ADDRESS;
+            case(8): return NORFLASH_SA13_ADDRESS;
+            case(9): return NORFLASH_SA14_ADDRESS;
+            case(10): return NORFLASH_SA15_ADDRESS;
+            case(11): return NORFLASH_SA16_ADDRESS;
+            case(12): return NORFLASH_SA17_ADDRESS;
+            case(13): return NORFLASH_SA18_ADDRESS;
+            case(14): return NORFLASH_SA19_ADDRESS;
+            case(15): return NORFLASH_SA20_ADDRESS;
+            case(16): return NORFLASH_SA21_ADDRESS;
+            case(17): return NORFLASH_SA22_ADDRESS;
+            default: return NORFLASH_SA22_ADDRESS;
+            }
+        }
+        else if(internalState == GenericInternalState::STEP_2) {
+            switch(stepCounter) {
+            case(0): return NORFLASH_SA5_ADDRESS;
+            case(1): return NORFLASH_SA6_ADDRESS;
+            case(2): return NORFLASH_SA7_ADDRESS;
+            case(3): return NORFLASH_SA8_ADDRESS;
+            case(4): return NORFLASH_SA9_ADDRESS;
+            case(12): return NORFLASH_SA10_ADDRESS;
+            case(20): return NORFLASH_SA11_ADDRESS;
+            case(28): return NORFLASH_SA12_ADDRESS;
+            case(36): return NORFLASH_SA13_ADDRESS;
+            case(44): return NORFLASH_SA14_ADDRESS;
+            case(52): return NORFLASH_SA15_ADDRESS;
+            case(60): return NORFLASH_SA16_ADDRESS;
+            case(68): return NORFLASH_SA17_ADDRESS;
+            case(76): return NORFLASH_SA18_ADDRESS;
+            case(84): return NORFLASH_SA19_ADDRESS;
+            case(92): return NORFLASH_SA20_ADDRESS;
+            case(100): return NORFLASH_SA21_ADDRESS;
+            case(108): return NORFLASH_SA22_ADDRESS;
+            default:
+            	if(stepCounter < 108 + 8) {
+            		*offset = (stepCounter - 4 % 8) * NORFLASH_SMALL_SECTOR_SIZE;
+            	}
+            }
+        }
     }
     return 0xffffffff;
 }
+
 

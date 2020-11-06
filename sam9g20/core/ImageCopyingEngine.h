@@ -160,6 +160,7 @@ private:
     ReturnValue_t performNandCopyAlgorithm(F_FILE** binaryFile);
 #else
     const uint8_t RESERVED_NOR_FLASH_SECTORS = 5;
+    const uint8_t NORFLASH_SECTORS_NUMBER = 23;
     const size_t COPYING_BUCKET_SIZE = 2048;
     ReturnValue_t copySdCardImageToNorFlash();
     /**
