@@ -39,7 +39,7 @@ ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
     }
 
     if(internalState == GenericInternalState::STEP_1) {
-        result = handleNorflashErasure(bootloader);
+        result = handleNorflashErasure();
         if(result == SoftwareImageHandler::TASK_PERIOD_OVER_SOON) {
             return result;
         }
@@ -89,9 +89,9 @@ ReturnValue_t ImageCopyingEngine::handleNorflashErasure() {
 }
 
 ReturnValue_t ImageCopyingEngine::handleObswErasure() {
-    sif::info << "ImageCopyingEngine::handleNorflashErasure: Deleting old"
-            << " binary!" << std::endl;
     if(not helperFlag1) {
+        sif::info << "ImageCopyingEngine::handleNorflashErasure: Deleting old"
+                << " binary!" << std::endl;
         SDCardAccess sdCardAccess;
         int result = change_directory(config::SW_REPOSITORY, true);
         if(result != F_NO_ERROR) {
@@ -323,37 +323,42 @@ uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
             case(1): return NORFLASH_SA6_ADDRESS;
             case(2): return NORFLASH_SA7_ADDRESS;
             case(3): return NORFLASH_SA8_ADDRESS;
-            case(4): return NORFLASH_SA9_ADDRESS;
-            case(12): return NORFLASH_SA10_ADDRESS;
-            case(20): return NORFLASH_SA11_ADDRESS;
-            case(28): return NORFLASH_SA12_ADDRESS;
-            case(36): return NORFLASH_SA13_ADDRESS;
-            case(44): return NORFLASH_SA14_ADDRESS;
-            case(52): return NORFLASH_SA15_ADDRESS;
-            case(60): return NORFLASH_SA16_ADDRESS;
-            case(68): return NORFLASH_SA17_ADDRESS;
-            case(76): return NORFLASH_SA18_ADDRESS;
-            case(84): return NORFLASH_SA19_ADDRESS;
-            case(92): return NORFLASH_SA20_ADDRESS;
-            case(100): return NORFLASH_SA21_ADDRESS;
-            case(108): return NORFLASH_SA22_ADDRESS;
+            case(11): return NORFLASH_SA9_ADDRESS;
+            case(19): return NORFLASH_SA10_ADDRESS;
+            case(27): return NORFLASH_SA11_ADDRESS;
+            case(35): return NORFLASH_SA12_ADDRESS;
+            case(43): return NORFLASH_SA13_ADDRESS;
+            case(51): return NORFLASH_SA14_ADDRESS;
+            case(59): return NORFLASH_SA15_ADDRESS;
+            case(67): return NORFLASH_SA16_ADDRESS;
+            case(75): return NORFLASH_SA17_ADDRESS;
+            case(83): return NORFLASH_SA18_ADDRESS;
+            case(91): return NORFLASH_SA19_ADDRESS;
+            case(99): return NORFLASH_SA20_ADDRESS;
+            case(107): return NORFLASH_SA21_ADDRESS;
+            case(115): return NORFLASH_SA22_ADDRESS;
             default:
-                if(stepCounter < 108 + 8) {
-                    *offset = (stepCounter - 4 % 8) * NORFLASH_SMALL_SECTOR_SIZE;
+                if(stepCounter < 115 + 8) {
+                    // We always write one small sector at a time, so we need
+                    // to write big sectors in multiple steps. This required
+                    // calculating an offset.
+                    *offset = (stepCounter - 3 % 8) * NORFLASH_SMALL_SECTOR_SIZE;
                 }
-                if(stepCounter <= 12) return NORFLASH_SA10_ADDRESS;
-                if(stepCounter <= 20) return NORFLASH_SA11_ADDRESS;
-                if(stepCounter <= 28) return NORFLASH_SA12_ADDRESS;
-                if(stepCounter <= 36) return NORFLASH_SA13_ADDRESS;
-                if(stepCounter <= 44) return NORFLASH_SA14_ADDRESS;
-                if(stepCounter <= 52) return NORFLASH_SA15_ADDRESS;
-                if(stepCounter <= 60) return NORFLASH_SA16_ADDRESS;
-                if(stepCounter <= 68) return NORFLASH_SA17_ADDRESS;
-                if(stepCounter <= 76) return NORFLASH_SA18_ADDRESS;
-                if(stepCounter <= 84) return NORFLASH_SA19_ADDRESS;
-                if(stepCounter <= 92) return NORFLASH_SA20_ADDRESS;
-                if(stepCounter <= 100) return NORFLASH_SA21_ADDRESS;
-                if(stepCounter <= 108) return NORFLASH_SA22_ADDRESS;
+                if(stepCounter <= 11) return NORFLASH_SA8_ADDRESS;
+                if(stepCounter <= 19) return NORFLASH_SA9_ADDRESS;
+                if(stepCounter <= 27) return NORFLASH_SA10_ADDRESS;
+                if(stepCounter <= 35) return NORFLASH_SA11_ADDRESS;
+                if(stepCounter <= 43) return NORFLASH_SA12_ADDRESS;
+                if(stepCounter <= 51) return NORFLASH_SA13_ADDRESS;
+                if(stepCounter <= 59) return NORFLASH_SA14_ADDRESS;
+                if(stepCounter <= 67) return NORFLASH_SA15_ADDRESS;
+                if(stepCounter <= 75) return NORFLASH_SA16_ADDRESS;
+                if(stepCounter <= 83) return NORFLASH_SA17_ADDRESS;
+                if(stepCounter <= 91) return NORFLASH_SA18_ADDRESS;
+                if(stepCounter <= 99) return NORFLASH_SA19_ADDRESS;
+                if(stepCounter <= 107) return NORFLASH_SA20_ADDRESS;
+                if(stepCounter <= 115) return NORFLASH_SA21_ADDRESS;
+                if(stepCounter <= 123) return NORFLASH_SA22_ADDRESS;
             }
         }
     }
