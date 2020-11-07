@@ -198,6 +198,15 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
         }
     }
 
+    if(stepCounter == 0 and not bootloader) {
+        // We will write the size of the binary to the
+        // sixth ARM vector (see p.72 SAM9G20 datasheet)
+        // This will help for our custom bootloader to find out
+        // how big the binary is.
+        std::memcpy(imgBuffer->data() + 0x14, &currentFileSize,
+                sizeof(uint32_t));
+    }
+
     helperFlag1 = true;
     // we should consider a critical section here and extracting this
     // function to a special task with the highest priority so it can not
