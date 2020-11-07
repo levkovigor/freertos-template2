@@ -292,9 +292,22 @@ uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
             case(100): return NORFLASH_SA21_ADDRESS;
             case(108): return NORFLASH_SA22_ADDRESS;
             default:
-            	if(stepCounter < 108 + 8) {
-            		*offset = (stepCounter - 4 % 8) * NORFLASH_SMALL_SECTOR_SIZE;
-            	}
+                if(stepCounter < 108 + 8) {
+                    *offset = (stepCounter - 4 % 8) * NORFLASH_SMALL_SECTOR_SIZE;
+                }
+                if(stepCounter <= 12) return NORFLASH_SA10_ADDRESS;
+                if(stepCounter <= 20) return NORFLASH_SA11_ADDRESS;
+                if(stepCounter <= 28) return NORFLASH_SA12_ADDRESS;
+                if(stepCounter <= 36) return NORFLASH_SA13_ADDRESS;
+                if(stepCounter <= 44) return NORFLASH_SA14_ADDRESS;
+                if(stepCounter <= 52) return NORFLASH_SA15_ADDRESS;
+                if(stepCounter <= 60) return NORFLASH_SA16_ADDRESS;
+                if(stepCounter <= 68) return NORFLASH_SA17_ADDRESS;
+                if(stepCounter <= 76) return NORFLASH_SA18_ADDRESS;
+                if(stepCounter <= 84) return NORFLASH_SA19_ADDRESS;
+                if(stepCounter <= 92) return NORFLASH_SA20_ADDRESS;
+                if(stepCounter <= 100) return NORFLASH_SA21_ADDRESS;
+                if(stepCounter <= 108) return NORFLASH_SA22_ADDRESS;
             }
         }
     }
