@@ -61,9 +61,8 @@ ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t ImageCopyingEngine::handleNorflashErasure(bool bootloader) {
+ReturnValue_t ImageCopyingEngine::handleNorflashErasure() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
-
     if(bootloader) {
         sif::info << "ImageCopyingEngine::handleNorflashErasure: Deleting old"
                 << " bootloader!" << std::endl;
@@ -83,23 +82,70 @@ ReturnValue_t ImageCopyingEngine::handleNorflashErasure(bool bootloader) {
         }
     }
     else {
-    	sif::info << "ImageCopyingEngine::handleNorflashErasure: Deleting old"
-    			<< " binary!" << std::endl;
-    	// todo: only delete required sectors by finding out bin size
-    	while(stepCounter < NORFLASH_SECTORS_NUMBER) {
-    		result = NORFLASH_EraseSector(&NORFlash,
-    				getBaseAddress(stepCounter, nullptr));
-            if(result != 0) {
-                return HasReturnvaluesIF::RETURN_FAILED;
-            }
-            stepCounter++;
-            if(countdown->hasTimedOut()) {
-                return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
-            }
-    	}
+        result = handleObswErasure();
     }
 
     return result;
+}
+
+ReturnValue_t ImageCopyingEngine::handleObswErasure() {
+    sif::info << "ImageCopyingEngine::handleNorflashErasure: Deleting old"
+            << " binary!" << std::endl;
+    if(not helperFlag1) {
+        SDCardAccess sdCardAccess;
+        int result = change_directory(config::SW_REPOSITORY, true);
+        if(result != F_NO_ERROR) {
+            // The hardcoded repository does not exist. Exit!
+            sif::error << "ImageCopyingHelper::handleErasingForObsw: Software"
+                    << " repository does not exist. Cancelling erase operation"
+                    << "!" << std::endl;
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+        if(imageSlot == ImageSlot::IMAGE_0) {
+            currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
+        }
+        else if(imageSlot == ImageSlot::IMAGE_1) {
+            currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
+        }
+        else {
+            currentFileSize = f_filelength(config::SW_UPDATE_SLOT_NAME);
+        }
+        helperFlag1 = true;
+        helperCounter1 = 0;
+        uint8_t requiredBlocks = 0;
+        if(currentFileSize <=  NORFLASH_TOTAL_SMALL_SECTOR_MEM) {
+            requiredBlocks = std::ceil(
+                    static_cast<float>(currentFileSize) /
+                    (NORFLASH_SMALL_SECTOR_SIZE));
+        }
+        else {
+            requiredBlocks = NORFLASH_SMALL_SECTORS_NUMBER;
+            requiredBlocks += std::ceil(
+                    static_cast<float>(currentFileSize -
+                            NORFLASH_TOTAL_SMALL_SECTOR_MEM) /
+                    (NORFLASH_LARGE_SECTOR_SIZE));
+        }
+        helperCounter1 = requiredBlocks;
+
+    }
+    while(stepCounter < helperCounter1) {
+        int result = NORFLASH_EraseSector(&NORFlash,
+                getBaseAddress(stepCounter, nullptr));
+        if(result != 0) {
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+        stepCounter++;
+        if(countdown->hasTimedOut()) {
+            return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+        }
+    }
+    if(stepCounter == helperCounter1) {
+        // Reset counter and helper member.
+        stepCounter = 0;
+        helperFlag1 = false;
+        helperCounter1 = 0;
+    }
+    return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t ImageCopyingEngine::handleSdToNorCopyOperation() {
