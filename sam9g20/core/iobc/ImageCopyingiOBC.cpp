@@ -55,7 +55,12 @@ ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
 
     if(internalState == GenericInternalState::STEP_2) {
         result = handleSdToNorCopyOperation();
-
+        if(result == SoftwareImageHandler::TASK_PERIOD_OVER_SOON) {
+            return result;
+        }
+        else if(result != HasReturnvaluesIF::RETURN_OK) {
+            return result;
+        }
     }
 
     return HasReturnvaluesIF::RETURN_OK;
@@ -199,9 +204,11 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
     // be interrupted.
     size_t offset = 0;
     size_t baseAddress = getBaseAddress(stepCounter, &offset);
-    result = NORFLASH_WriteData(&NORFlash,  baseAddress + offset,
+    // sif::debug << "Base Address: " << baseAddress << ", Offset: "
+    //        << offset << std::endl;
+    int retval = NORFLASH_WriteData(&NORFlash,  baseAddress + offset,
             imgBuffer->data(), sizeToRead);
-    if(result != 0) {
+    if(retval != 0) {
         errorCount++;
         if(errorCount >= 3) {
             // if writing to NAND failed 5 times, exit.
@@ -212,9 +219,14 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
         // Maybe SD card is busy, so try in next cycle..
         return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
     }
+    else {
+        result = HasReturnvaluesIF::RETURN_OK;
+    }
 
     // bucket write success
     currentByteIdx += sizeToRead;
+    //sif::debug << "ImageCopyingEngine::performNorCopyOperation:
+    //      << "Current Byte Index: " << currentByteIdx << std::endl;
     stepCounter ++;
     // Set this flag to false so that the next bucket can be read from the
     // SD card.
@@ -342,7 +354,8 @@ uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
                     // We always write one small sector at a time, so we need
                     // to write big sectors in multiple steps. This required
                     // calculating an offset.
-                    *offset = (stepCounter - 3 % 8) * NORFLASH_SMALL_SECTOR_SIZE;
+                    *offset = ((stepCounter - 3) % 8) *
+                            NORFLASH_SMALL_SECTOR_SIZE;
                 }
                 if(stepCounter <= 11) return NORFLASH_SA8_ADDRESS;
                 if(stepCounter <= 19) return NORFLASH_SA9_ADDRESS;
