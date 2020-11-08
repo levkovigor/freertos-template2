@@ -366,21 +366,21 @@ uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
                     *offset = ((stepCounter - 3) % 8) *
                             NORFLASH_SMALL_SECTOR_SIZE;
                 }
-                if(stepCounter <= 11) return NORFLASH_SA8_ADDRESS;
-                if(stepCounter <= 19) return NORFLASH_SA9_ADDRESS;
-                if(stepCounter <= 27) return NORFLASH_SA10_ADDRESS;
-                if(stepCounter <= 35) return NORFLASH_SA11_ADDRESS;
-                if(stepCounter <= 43) return NORFLASH_SA12_ADDRESS;
-                if(stepCounter <= 51) return NORFLASH_SA13_ADDRESS;
-                if(stepCounter <= 59) return NORFLASH_SA14_ADDRESS;
-                if(stepCounter <= 67) return NORFLASH_SA15_ADDRESS;
-                if(stepCounter <= 75) return NORFLASH_SA16_ADDRESS;
-                if(stepCounter <= 83) return NORFLASH_SA17_ADDRESS;
-                if(stepCounter <= 91) return NORFLASH_SA18_ADDRESS;
-                if(stepCounter <= 99) return NORFLASH_SA19_ADDRESS;
-                if(stepCounter <= 107) return NORFLASH_SA20_ADDRESS;
-                if(stepCounter <= 115) return NORFLASH_SA21_ADDRESS;
-                if(stepCounter <= 123) return NORFLASH_SA22_ADDRESS;
+                if(stepCounter < 11) return NORFLASH_SA8_ADDRESS;
+                if(stepCounter < 19) return NORFLASH_SA9_ADDRESS;
+                if(stepCounter < 27) return NORFLASH_SA10_ADDRESS;
+                if(stepCounter < 35) return NORFLASH_SA11_ADDRESS;
+                if(stepCounter < 43) return NORFLASH_SA12_ADDRESS;
+                if(stepCounter < 51) return NORFLASH_SA13_ADDRESS;
+                if(stepCounter < 59) return NORFLASH_SA14_ADDRESS;
+                if(stepCounter < 67) return NORFLASH_SA15_ADDRESS;
+                if(stepCounter < 75) return NORFLASH_SA16_ADDRESS;
+                if(stepCounter < 83) return NORFLASH_SA17_ADDRESS;
+                if(stepCounter < 91) return NORFLASH_SA18_ADDRESS;
+                if(stepCounter < 99) return NORFLASH_SA19_ADDRESS;
+                if(stepCounter < 107) return NORFLASH_SA20_ADDRESS;
+                if(stepCounter < 115) return NORFLASH_SA21_ADDRESS;
+                if(stepCounter < 123) return NORFLASH_SA22_ADDRESS;
             }
         }
     }
