@@ -63,7 +63,7 @@ private:
 			AT91C_US_OVER_16 | AT91C_US_NBSTOP_1_BIT, .baudrate = 115200,
 			.timeGuard = 0, .busType = rs232_uart, .rxtimeout = 0xFFFF };
 
-	static bool uart0Started;
+	static volatile bool uart0Started;
 
 	UARTgenericTransfer uartTransfer1;
 	static volatile size_t transfer1bytesReceived;
