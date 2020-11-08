@@ -47,7 +47,7 @@ AT91_MEMORIES = $(AT91_PATH)/src/memories
 
 # if a target is not listed in the current directory, 
 # make searches in the directories specified with VPATH
-VPATH += $(AT91_PATH)/startup
+VPATH += $(AT91_PATH)/src/startup
 VPATH += $(AT91_PATH)/src
 VPATH += $(AT91_PATH)/src/utility
 # needed for USB device test
