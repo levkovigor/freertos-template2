@@ -2,7 +2,7 @@
  * @file	dataPoolInit.cpp
  * @brief	Auto-Generated datapool initialization
  */
-#include "dataPoolInit.h"
+#include <fsfwconfig/cdatapool/dataPoolInit.h>
 
 void datapool::dataPoolInit(GlobPoolMap * poolMap) {
 

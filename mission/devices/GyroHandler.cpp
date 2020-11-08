@@ -1,5 +1,5 @@
+#include <fsfwconfig/OBSWConfig.h>
 #include "GyroHandler.h"
-#include <OBSWConfig.h>
 #include "devicedefinitions/GyroPackets.h"
 
 #if defined(at91sam9g20)

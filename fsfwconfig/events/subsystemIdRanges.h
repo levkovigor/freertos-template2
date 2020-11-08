@@ -1,5 +1,5 @@
-#ifndef CONFIG_EVENTS_SUBSYSTEMIDRANGES_H_
-#define CONFIG_EVENTS_SUBSYSTEMIDRANGES_H_
+#ifndef FSFWCONFIG_EVENTS_SUBSYSTEMIDRANGES_H_
+#define FSFWCONFIG_EVENTS_SUBSYSTEMIDRANGES_H_
 
 #include <cstdint>
 #include <fsfw/events/fwSubsystemIdRanges.h>
@@ -34,4 +34,4 @@ enum: uint8_t {
 };
 }
 
-#endif /* CONFIG_EVENTS_SUBSYSTEMIDRANGES_H_ */
+#endif /* FSFWCONFIG_EVENTS_SUBSYSTEMIDRANGES_H_ */

@@ -1,15 +1,3 @@
-#include "Factory.h"
-
-/* Config */
-#include "../OBSWConfig.h"
-#include "../tmtc/apid.h"
-#include "../objects/systemObjectList.h"
-#include "../devices/logicalAddresses.h"
-#include "../devices/powerSwitcherList.h"
-#include "../tmtc/pusIds.h"
-
-
-/* Flight Software Framework */
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/internalError/InternalErrorReporter.h>
 #include <fsfw/storagemanager/PoolManager.h>
@@ -30,6 +18,13 @@
 #include <fsfw/pus/Service5EventReporting.h>
 #include <fsfw/pus/Service8FunctionManagement.h>
 #include <fsfw/timemanager/TimeStamper.h>
+#include <fsfwconfig/devices/logicalAddresses.h>
+#include <fsfwconfig/devices/powerSwitcherList.h>
+#include <fsfwconfig/objects/Factory.h>
+#include <fsfwconfig/objects/systemObjectList.h>
+#include <fsfwconfig/OBSWConfig.h>
+#include <fsfwconfig/tmtc/apid.h>
+#include <fsfwconfig/tmtc/pusIds.h>
 #include <mission/controller/ThermalController.h>
 #include <mission/pus/Service6MemoryManagement.h>
 #include <mission/pus/Service17CustomTest.h>

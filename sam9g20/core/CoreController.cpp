@@ -1,13 +1,13 @@
-#include <config/OBSWVersion.h>
 #include "CoreController.h"
 
-#include <systemObjectList.h>
 #include <FreeRTOSConfig.h>
 
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/timemanager/Stopwatch.h>
+#include <fsfwconfig/objects/systemObjectList.h>
+#include <fsfwconfig/OBSWVersion.h>
 
 extern "C" {
 #ifdef ISIS_OBC_G20

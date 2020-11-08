@@ -1,5 +1,5 @@
-#ifndef CONFIG_IPC_MISSIONMESSAGETYPES_H_
-#define CONFIG_IPC_MISSIONMESSAGETYPES_H_
+#ifndef FSFWCONFIG_IPC_MISSIONMESSAGETYPES_H_
+#define FSFWCONFIG_IPC_MISSIONMESSAGETYPES_H_
 
 #include <fsfw/ipc/CommandMessage.h>
 #include <fsfw/ipc/FwMessageTypes.h>
@@ -18,4 +18,4 @@ enum CustomMessageTypes {
 void clearMissionMessage(CommandMessage* message);
 }
 
-#endif /* CONFIG_IPC_MISSIONMESSAGETYPES_H_ */
+#endif /* FSFWCONFIG_IPC_MISSIONMESSAGETYPES_H_ */

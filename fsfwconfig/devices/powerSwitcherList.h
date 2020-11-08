@@ -4,8 +4,8 @@
  * @date 28.11.2019
  */
 
-#ifndef CONFIG_DEVICES_POWERSWITCHERLIST_H_
-#define CONFIG_DEVICES_POWERSWITCHERLIST_H_
+#ifndef FSFWCONFIG_DEVICES_POWERSWITCHERLIST_H_
+#define FSFWCONFIG_DEVICES_POWERSWITCHERLIST_H_
 
 namespace switches {
 	/* Switches are uint8_t datatype and go from 0 to 255 */
@@ -21,4 +21,4 @@ namespace switches {
 }
 
 
-#endif /* CONFIG_DEVICES_POWERSWITCHERLIST_H_ */
+#endif /* FSFWCONFIG_DEVICES_POWERSWITCHERLIST_H_ */

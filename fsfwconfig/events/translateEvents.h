@@ -5,12 +5,12 @@
  *      Author: Robin
  */
 
-#ifndef CONFIG_EVENTS_TRANSLATEEVENTS_H_
-#define CONFIG_EVENTS_TRANSLATEEVENTS_H_
+#ifndef FSFWCONFIG_EVENTS_TRANSLATEEVENTS_H_
+#define FSFWCONFIG_EVENTS_TRANSLATEEVENTS_H_
 
 #include <fsfw/events/Event.h>
 
 const char * translateEvents(Event event);
 
 
-#endif /* CONFIG_EVENTS_TRANSLATEEVENTS_H_ */
+#endif /* FSFWCONFIG_EVENTS_TRANSLATEEVENTS_H_ */

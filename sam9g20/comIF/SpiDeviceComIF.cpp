@@ -1,13 +1,12 @@
 #include "SpiDeviceComIF.h"
 #include "GpioDeviceComIF.h"
 
-#include <logicalAddresses.h>
-
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/ipc/MutexHelper.h>
 #include <fsfw/osal/FreeRTOS/Mutex.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
+#include <fsfwconfig/devices/logicalAddresses.h>
 
 extern "C" {
 #include <at91/utility/trace.h>

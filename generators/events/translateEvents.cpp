@@ -2,7 +2,7 @@
  * @brief    Auto-generated event translation file. Contains 81 translations.
  * Generated on: 2020-10-06 18:59:25 
  */
-#include "translateEvents.h"
+#include <fsfwconfig/events/translateEvents.h>
 
 const char *GPS_STARTUP_FAILED_STRING = "GPS_STARTUP_FAILED";
 const char *GPS_FIX_STRING = "GPS_FIX";

@@ -1,5 +1,5 @@
-#ifndef CONFIG_OBSWCONFIG_H_
-#define CONFIG_OBSWCONFIG_H_
+#ifndef FSFWCONFIG_OBSWCONFIG_H_
+#define FSFWCONFIG_OBSWCONFIG_H_
 
 #ifdef __cplusplus
 #include <cstdint>
@@ -85,4 +85,4 @@ static const uint32_t MAX_STORED_TELECOMMANDS =         2000;
 }
 #endif
 
-#endif /* CONFIG_OBSWCONFIG_H_ */
+#endif /* FSFWCONFIG_OBSWCONFIG_H_ */

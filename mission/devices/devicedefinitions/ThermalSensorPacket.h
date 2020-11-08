@@ -4,7 +4,7 @@
 #include <fsfw/datapoollocal/StaticLocalDataSet.h>
 #include <fsfw/datapoollocal/LocalPoolVariable.h>
 #include <fsfw/devicehandlers/DeviceHandlerIF.h>
-#include <systemObjectList.h>
+#include <fsfwconfig/objects/systemObjectList.h>
 
 namespace TSensorDefinitions {
 

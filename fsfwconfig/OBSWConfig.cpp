@@ -1,4 +1,4 @@
-#include "OBSWConfig.h"
+#include <fsfwconfig/OBSWConfig.h>
 
 #ifdef __cplusplus
 namespace config {

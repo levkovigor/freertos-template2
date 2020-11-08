@@ -1,5 +1,5 @@
-#ifndef CONFIG_CDATAPOOL_DATAPOOLINIT_H_
-#define CONFIG_CDATAPOOL_DATAPOOLINIT_H_
+#ifndef FSFWCONFIG_CDATAPOOL_DATAPOOLINIT_H_
+#define FSFWCONFIG_CDATAPOOL_DATAPOOLINIT_H_
 
 #include <fsfw/datapoolglob/GlobalDataPool.h>
 
@@ -44,4 +44,4 @@ namespace datapool{
 		TEST_FLOAT_VECTOR = 0x05050510			//!< [EXPORT] : [NAME] Test Float [UNIT] (-) [SIZE] 2 [TYPE] float
 	};
 }
-#endif /* CONFIG_CDATAPOOL_DATAPOOLINIT_H_ */
+#endif /* FSFWCONFIG_CDATAPOOL_DATAPOOLINIT_H_ */

@@ -1,5 +1,5 @@
-#ifndef CONFIG_FSFWCONFIG_H_
-#define CONFIG_FSFWCONFIG_H_
+#ifndef FSFWCONFIG_FSFWCONFIG_H_
+#define FSFWCONFIG_FSFWCONFIG_H_
 
 #include <cstddef>
 #include <cstdint>
@@ -51,4 +51,4 @@ static constexpr size_t FSFW_EVENTMGMT_EVENTIDMATCHERS = 120;
 static constexpr size_t FSFW_EVENTMGMR_RANGEMATCHERS   = 120;
 }
 
-#endif /* CONFIG_FSFWCONFIG_H_ */
+#endif /* FSFWCONFIG_FSFWCONFIG_H_ */

@@ -1,5 +1,5 @@
-#ifndef CONFIG_TMTC_APID_H_
-#define CONFIG_TMTC_APID_H_
+#ifndef FSFWCONFIG_TMTC_APID_H_
+#define FSFWCONFIG_TMTC_APID_H_
 
 #include <stdint.h>
 
@@ -16,4 +16,4 @@ namespace apid {
 }
 
 
-#endif /* CONFIG_TMTC_APID_H_ */
+#endif /* FSFWCONFIG_TMTC_APID_H_ */

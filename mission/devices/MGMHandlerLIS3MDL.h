@@ -6,7 +6,7 @@
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
 #include <fsfw/globalfunctions/PeriodicOperationDivider.h>
 
-#include <subsystemIdRanges.h>
+#include <fsfwconfig/events/subsystemIdRanges.h>
 
 /**
  * @brief   Device handler object for the LIS3MDL 3-axis magnetometer

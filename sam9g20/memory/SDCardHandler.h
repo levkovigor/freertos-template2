@@ -10,9 +10,9 @@
 #include <fsfw/memory/AcceptsMemoryMessagesIF.h>
 #include <fsfw/ipc/MessageQueueIF.h>
 #include <fsfw/memory/HasFileSystemIF.h>
+#include <fsfwconfig/events/subsystemIdRanges.h>
+#include <fsfwconfig/OBSWConfig.h>
 
-#include <subsystemIdRanges.h>
-#include <OBSWConfig.h>
 #include <vector>
 
 

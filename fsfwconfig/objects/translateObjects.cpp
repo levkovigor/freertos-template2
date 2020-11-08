@@ -2,7 +2,7 @@
  * @brief	Auto-generated object translation file. Contains 86 translations. 
  * Generated on: 2020-08-25 00:57:14
  **/ 
-#include "translateObjects.h"
+#include <fsfwconfig/objects/translateObjects.h>
 
 const char *AT91_UART2_TEST_TASK_STRING = "AT91_UART2_TEST_TASK";
 const char *ARDUINO_0_STRING = "ARDUINO_0";
