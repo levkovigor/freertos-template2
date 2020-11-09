@@ -53,14 +53,13 @@ protected:
             uint8_t *numberOfSwitches) override;
 	ReturnValue_t initializeLocalDataPool(LocalDataPool& localDataPoolMap,
 	        LocalDataPoolManager& poolManager) override;
+	void modeChanged(void) override;
 
-    ReturnValue_t initialize() override;
-    ReturnValue_t initializeAfterTaskCreation() override;
 
 private:
     const uint8_t switchId;
 
-    enum class InternalState {
+    enum class InternalStates {
     	NONE,
 		MODE_SELECT,
 		WRITE_POWER,
@@ -73,7 +72,7 @@ private:
 		RUNNING,
 		FAULTY
     };
-    InternalState internalState = InternalState::NONE;
+    InternalStates internalState = InternalStates::NONE;
 
     bool commandExecuted = false;
     bool checkSelfTestRegister = true;

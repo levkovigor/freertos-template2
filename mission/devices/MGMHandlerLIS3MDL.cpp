@@ -1,3 +1,4 @@
+#include <fsfw/datapool/PoolEntry.h>
 #include "MGMHandlerLIS3MDL.h"
 
 MGMHandlerLIS3MDL::MGMHandlerLIS3MDL(object_id_t objectId,
@@ -407,4 +408,17 @@ uint32_t MGMHandlerLIS3MDL::getTransitionDelayMs(Mode_t from, Mode_t to) {
 
 void MGMHandlerLIS3MDL::modeChanged(void) {
 	internalState = STATE_NONE;
+}
+
+ReturnValue_t MGMHandlerLIS3MDL::initializeLocalDataPool(
+        LocalDataPool &localDataPoolMap, LocalDataPoolManager &poolManager) {
+    localDataPoolMap.emplace(MGMLIS3MDL::FIELD_STRENGTH_X,
+            new PoolEntry<float>({0.0}));
+    localDataPoolMap.emplace(MGMLIS3MDL::FIELD_STRENGTH_Y,
+            new PoolEntry<float>({0.0}));
+    localDataPoolMap.emplace(MGMLIS3MDL::FIELD_STRENGTH_Z,
+            new PoolEntry<float>({0.0}));
+    localDataPoolMap.emplace(MGMLIS3MDL::TEMPERATURE_CELCIUS,
+            new PoolEntry<float>({0.0}));
+    return HasReturnvaluesIF::RETURN_OK;
 }

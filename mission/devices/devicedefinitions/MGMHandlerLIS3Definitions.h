@@ -1,6 +1,8 @@
 #ifndef MISSION_DEVICES_DEVICEDEFINITIONS_MGMHANDLERLIS3DEFINITIONS_H_
 #define MISSION_DEVICES_DEVICEDEFINITIONS_MGMHANDLERLIS3DEFINITIONS_H_
 
+#include <fsfw/datapoollocal/StaticLocalDataSet.h>
+#include <fsfw/datapoollocal/LocalPoolVariable.h>
 #include <fsfw/devicehandlers/DeviceHandlerIF.h>
 #include <cstdint>
 
@@ -127,8 +129,39 @@ static const uint8_t CTRL_REG4_DEFAULT = (1 << OMZ1);
 static const uint8_t BDU = 6;       //Block data update
 static const uint8_t FAST_READ = 7; //Fast read enabled = 1
 static const uint8_t CTRL_REG5_DEFAULT = 0;
-}
 
+static const uint32_t MGM_DATA_SET_ID = 0;
+
+enum MgmPoolIds: lp_id_t {
+    FIELD_STRENGTH_X,
+    FIELD_STRENGTH_Y,
+    FIELD_STRENGTH_Z,
+    TEMPERATURE_CELCIUS
+};
+
+class MgmPrimaryDataset: public StaticLocalDataSet<3 * sizeof(float)> {
+public:
+    MgmPrimaryDataset(HasLocalDataPoolIF* hkOwner):
+        StaticLocalDataSet(hkOwner, MGM_DATA_SET_ID) {}
+
+    MgmPrimaryDataset(object_id_t mgmId):
+        StaticLocalDataSet(sid_t(mgmId, MGM_DATA_SET_ID)) {}
+
+    lp_var_t<float> angVelocityX = lp_var_t<float>(
+            FIELD_STRENGTH_X,
+            sid.objectId, this);
+    lp_var_t<float> angVelocityY = lp_var_t<float>(
+            FIELD_STRENGTH_Y,
+            sid.objectId, this);
+    lp_var_t<float> angVelocityZ = lp_var_t<float>(
+            FIELD_STRENGTH_Z,
+            sid.objectId, this);
+    lp_var_t<float> temperature = lp_var_t<float>(
+            TEMPERATURE_CELCIUS,
+            sid.objectId, this);
+};
+
+}
 
 
 #endif /* MISSION_DEVICES_DEVICEDEFINITIONS_MGMHANDLERLIS3DEFINITIONS_H_ */

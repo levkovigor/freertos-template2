@@ -53,6 +53,9 @@ protected:
 	virtual void fillCommandAndReplyMap() override;
 	virtual void modeChanged(void) override;
 	void setNormalDatapoolEntriesInvalid() override;
+	ReturnValue_t initializeLocalDataPool(LocalDataPool &localDataPoolMap,
+	        LocalDataPoolManager &poolManager) override;
+
 
 private:
 
