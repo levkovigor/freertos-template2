@@ -1,8 +1,8 @@
 #include "SystemStateTask.h"
 
-#include <config/OBSWConfig.h>
 #include <fsfw/objectmanager/ObjectManagerIF.h>
 #include <fsfw/tasks/TaskFactory.h>
+#include <fsfwconfig/OBSWConfig.h>
 #include <sam9g20/core/CoreController.h>
 
 #include <FreeRTOSConfig.h>

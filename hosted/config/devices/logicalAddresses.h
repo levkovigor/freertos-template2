@@ -7,8 +7,8 @@
 #ifndef CONFIG_DEVICES_LOGICALADDRESSES_H_
 #define CONFIG_DEVICES_LOGICALADDRESSES_H_
 #include <stdint.h>
-#include <config/objects/systemObjectList.h>
 #include <fsfw/devicehandlers/CookieIF.h>
+#include <fsfwconfig/objects/systemObjectList.h>
 
 namespace addresses {
 	/* Logical addresses have uint32_t datatype */

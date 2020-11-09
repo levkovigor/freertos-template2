@@ -1,8 +1,7 @@
 #include "I2cDeviceComIF.h"
-#include <logicalAddresses.h>
-
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
+#include <fsfwconfig/devices/logicalAddresses.h>
 
 extern "C" {
 #include <at91/utility/trace.h>

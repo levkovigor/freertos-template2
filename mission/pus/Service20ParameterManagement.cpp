@@ -1,13 +1,12 @@
 #include <mission/pus/Service20ParameterManagement.h>
 #include <mission/pus/servicepackets/Service20Packets.h>
 
-#include <apid.h>
-#include <pusIds.h>
-#include <systemObjectList.h>
-
 #include <fsfw/parameters/HasParametersIF.h>
 #include <fsfw/parameters/ParameterMessage.h>
 #include <fsfw/parameters/ReceivesParameterMessagesIF.h>
+#include <fsfwconfig/objects/systemObjectList.h>
+#include <fsfwconfig/tmtc/apid.h>
+#include <fsfwconfig/tmtc/pusIds.h>
 
 
 Service20ParameterManagement::Service20ParameterManagement(

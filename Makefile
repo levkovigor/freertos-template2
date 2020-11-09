@@ -65,7 +65,7 @@ CUSTOM_DEFINES += -D$(OS_APP)
 # General folder paths
 FRAMEWORK_PATH = fsfw
 MISSION_PATH = mission
-CONFIG_PATH = config
+CONFIG_PATH = fsfwconfig
 TEST_PATH = test
 UNITTEST_PATH = $(FRAMEWORK_PATH)/unittest/internal
 PRIVLIB_PATH = privlib

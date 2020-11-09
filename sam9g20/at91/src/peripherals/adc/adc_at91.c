@@ -33,7 +33,7 @@
 
 #include <AT91SAM9G20.h>
 #include <board.h>
-#include <peripherals/adc/adc_at91.h>
+#include <at91/peripherals/adc/adc_at91.h>
 #include <at91/utility/assert.h>
 #include <at91/utility/trace.h>
 

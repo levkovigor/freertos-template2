@@ -1,7 +1,7 @@
-#include <config/OBSWConfig.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/globalfunctions/DleEncoder.h>
 #include <fsfw/ipc/MutexHelper.h>
+#include <fsfwconfig/OBSWConfig.h>
 #include <sam9g20/core/RingBufferAnalyzer.h>
 #include <cstring>
 
