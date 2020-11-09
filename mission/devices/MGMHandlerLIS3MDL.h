@@ -17,6 +17,12 @@
  */
 class MGMHandlerLIS3MDL: public DeviceHandlerBase {
 public:
+
+    enum class CommunicationStep {
+        DATA,
+        TEMPERATURE
+    };
+
 	static const uint8_t INTERFACE_ID = CLASS_ID::MGM_LIS3MDL;
 	static const uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::MGM_LIS3MDL;
 	//Notifies a command to change the setup parameters
@@ -49,6 +55,7 @@ protected:
 	void setNormalDatapoolEntriesInvalid() override;
 
 private:
+
 	/*------------------------------------------------------------------------*/
 	/* Device specific commands and variables */
 	/*------------------------------------------------------------------------*/
@@ -117,7 +124,7 @@ private:
 	//Single SPIcommand has 2 bytes, first for adress, second for content
 	size_t singleComandSize = 2;
 	//has the size for all adresses of the lis3mdl + the continous write bit
-	uint8_t commandBuffer[MGMLIS3MDL::TOTAL_NR_OF_ADRESSES + 1];
+	uint8_t commandBuffer[MGMLIS3MDL::NR_OF_DATA_AND_CFG_REGISTERS + 1];
 
 	/**
 	 * We want to save the registers we set, so we dont have to read the
@@ -125,6 +132,9 @@ private:
 	 * --> everytime we change set a register we have to save it
 	 */
 	uint8_t registers[MGMLIS3MDL::NR_OF_CTRL_REGISTERS];
+
+	uint8_t statusRegister = 0;
+
 
 	/**
 	 * As this is a SPI Device, we get the Answer of the last sent command in
@@ -145,6 +155,7 @@ private:
 	};
 
 	InternalState internalState = STATE_NONE;
+	CommunicationStep communicationStep = CommunicationStep::DATA;
 	bool commandExecuted = false;
 
 #if OBSW_REDUCED_PRINTOUT == 0

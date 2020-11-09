@@ -16,10 +16,11 @@ enum opMode {
 static constexpr uint8_t GAUSS_TO_MICROTESLA_FACTOR = 100;
 
 static const DeviceCommandId_t SETUP_MGM = 0x00;
-static const DeviceCommandId_t READALL_MGM = 0x01;
-static const DeviceCommandId_t IDENTIFY_DEVICE = 0x02;
-static const DeviceCommandId_t TEMP_SENSOR_ENABLE = 0x03;
-static const DeviceCommandId_t ACCURACY_OP_MODE_SET = 0x04;
+static const DeviceCommandId_t READ_CONFIG_AND_DATA = 0x01;
+static const DeviceCommandId_t READ_TEMPERATURE = 0x02;
+static const DeviceCommandId_t IDENTIFY_DEVICE = 0x03;
+static const DeviceCommandId_t TEMP_SENSOR_ENABLE = 0x04;
+static const DeviceCommandId_t ACCURACY_OP_MODE_SET = 0x05;
 
 //Number of all control registers
 static const uint8_t NR_OF_CTRL_REGISTERS = 5;
@@ -27,7 +28,9 @@ static const uint8_t NR_OF_CTRL_REGISTERS = 5;
 static const uint8_t NR_OF_REGISTERS = 19;
 //Total number of adresses for all registers
 static const uint8_t TOTAL_NR_OF_ADRESSES = 52;
-static const uint8_t SETUP_REPLY = 6;
+static const uint8_t NR_OF_DATA_AND_CFG_REGISTERS = 14;
+static const uint8_t TEMPERATURE_REPLY_LEN = 3;
+static const uint8_t SETUP_REPLY_LEN = 6;
 
 /*------------------------------------------------------------------------*/
 /* Register adresses */
@@ -48,19 +51,26 @@ static const uint8_t CTRL_REG4 = 0b00100011;
 static const uint8_t CTRL_REG5 = 0b00100100;
 
 //Register adress to access status register
+static const uint8_t STATUS_REG_IDX = 8;
 static const uint8_t STATUS_REG = 0b00100111;
 
  //Register adress to access low byte of x-axis
+static const uint8_t X_LOWBYTE_IDX = 9;
 static const uint8_t X_LOWBYTE = 0b00101000;
 //Register adress to access high byte of x-axis
+static const uint8_t X_HIGHBYTE_IDX = 10;
 static const uint8_t X_HIGHBYTE = 0b00101001;
 //Register adress to access low byte of y-axis
+static const uint8_t Y_LOWBYTE_IDX = 11;
 static const uint8_t Y_LOWBYTE = 0b00101010;
 //Register adress to access high byte of y-axis
+static const uint8_t Y_HIGHBYTE_IDX = 12;
 static const uint8_t Y_HIGHBYTE = 0b00101011;
 //Register adress to access low byte of z-axis
+static const uint8_t Z_LOWBYTE_IDX = 13;
 static const uint8_t Z_LOWBYTE = 0b00101100;
 //Register adress to access high byte of z-axis
+static const uint8_t Z_HIGHBYTE_IDX = 14;
 static const uint8_t Z_HIGHBYTE = 0b00101101;
 
 //Register adress to access low byte of temperature sensor
