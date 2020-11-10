@@ -51,6 +51,8 @@
 #include <at91/peripherals/pmc/pmc.h>
 #include <at91/utility/trace.h>
 
+#include <string.h>
+
 //------------------------------------------------------------------------------
 //         Internal definitions
 //------------------------------------------------------------------------------
@@ -180,3 +182,8 @@ void LowLevelInit(void)
 #endif    
 }
 
+void clearBssSection(void) __attribute__ ((section(".sramfunc"), weak));
+void clearBssSection(void) {
+    extern char _sbss, _ebss;
+    memset(&_sbss, 0, &_ebss - &_sbss);
+}

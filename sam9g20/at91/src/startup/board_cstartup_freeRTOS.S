@@ -250,13 +250,10 @@ resetHandler:
 #endif
 
 /* Clear the zero segment */
-	    ldr     r0, =__bss_start__
-        ldr     r1, =__bss_end__
-        mov     r2, #0
-1:
-        cmp     r0, r1
-        strcc   r2, [r0], #4
-        bcc     1b
+        ldr     sp, =_sstack
+        stmfd   sp!, {r0}
+	    ldr     r0, =clearBssSection
+        blx     r0
 
 #ifdef sdram
 /* Only execute this when the code is running from SDRAM */
