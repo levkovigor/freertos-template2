@@ -51,7 +51,6 @@ extern void defaultFiqHandler( void );
 extern void defaultIrqHandler(void);
 
 extern void initiateIsisWatchdog(void);
-extern void feedIsisWatchdog(void);
 
 extern void clearBssSection(void);
 

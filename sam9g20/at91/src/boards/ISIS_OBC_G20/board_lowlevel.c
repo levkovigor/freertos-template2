@@ -51,8 +51,8 @@
 #include <at91/utility/trace.h>
 
 #include <hal/Timing/WatchDogTimerNoOS.h>
-
-#include "faultHandler.h"
+#include <faultHandler.h>
+#include <string.h>
 
 //------------------------------------------------------------------------------
 //         Internal definitions
@@ -114,12 +114,6 @@ void assignBusMatrixPriorities() {
 	//AT91C_BASE_MATRIX->MATRIX_SCFG1 = AT91C_MATRIX_DEFMSTR_TYPE_FIXED_DEFMSTR | AT91C_MATRIX_FIXED_DEFMSTR3_HPDC3 | 1<<24 | 0x10;
 	// Bus-Matrix-Master-Priority for Slave-1(SRAM1): Highest to PDC, then ARM-core (data and instruction), then ISI and USB, then Ethernet. Slot-cycle=16(default).
 	//AT91C_BASE_MATRIX->MATRIX_PRAS3 = 1<<20 | 0<<16 | 1<<12 | 3<<8 | 2<<4 | 2<<0;
-}
-
-void initiateIsisWatchdog() __attribute__ ((section(".sramfunc")));
-void initiateIsisWatchdog() {
-    WDT_start();
-    WDT_forceKick();
 }
 
 //------------------------------------------------------------------------------
@@ -220,4 +214,22 @@ void LowLevelInit(void)
     BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
 #endif
 }
+
+void initiateIsisWatchdog() __attribute__ ((section(".sramfunc")));
+void initiateIsisWatchdog() {
+    WDT_start();
+    WDT_forceKick();
+}
+
+void clearBssSection(void) __attribute__ ((section(".sramfunc")));
+void clearBssSection(void) {
+    extern char _sbss, _ebss;
+    void * currentAddress = (void *) &_sbss;
+    while(currentAddress < (void *) &_ebss) {
+        memset(currentAddress, 0, 100000);
+        // WDT_forceKick();
+        currentAddress += 100000;
+    }
+}
+
 
