@@ -251,10 +251,10 @@ resetHandler:
 
 #ifdef ISIS_OBC_G20
 /* Initiate external watchdog to prevent restart */
-        ldr     sp, =_sstack
-        stmfd   sp!, {r0}
-	    ldr     r0, =initiateIsisWatchdog
-        blx     r0
+        //ldr     sp, =_sstack
+        //stmfd   sp!, {r0}
+	    //ldr     r0, =initiateIsisWatchdog
+        //blx     r0
 #endif
 
 #ifdef ISIS_OBC_G20

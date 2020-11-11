@@ -226,7 +226,6 @@ void initiateIsisWatchdog() {
 void clearBssSection(void) __attribute__ ((section(".sramfunc")));
 void clearBssSection(void) {
     extern char _sbss, _ebss;
-    LED_glow(led_3);
     void * currentAddress = (void *) &_sbss;
     int sizeToClear = 200000;
     while(currentAddress < (void *) &_ebss) {
