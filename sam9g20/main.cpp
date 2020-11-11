@@ -73,9 +73,10 @@ int main(void)
     configureEk();
     LED_Toggle(0);
 #endif
-
+    // Kick might be necessary
+    // WDT_forceKick();
     // Core Task. Custom interrupts should be configured inside a task.
-    xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, 1, nullptr);
+    xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, 6, nullptr);
     vTaskStartScheduler();
     // This should never be reached.
     for(;;) {}
@@ -83,12 +84,6 @@ int main(void)
 
 void initTask (void * args) {
 	configASSERT(args == nullptr);
-#ifdef ETHERNET
-	printf("-- Setting up lwIP Stack and EMAC for UDP/TCP Communication --\n\r");
-	emac_lwip_init();
-#else
-	printf("-- Using Serial Communication --\n\r");
-#endif
 
 	initMission();
 	// Delete self.
