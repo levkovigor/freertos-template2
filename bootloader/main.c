@@ -100,9 +100,6 @@ int main()
     //-------------------------------------------------------------------------
     // Configure SDRAM
     //-------------------------------------------------------------------------
-#if DEBUG_IO_LIB == 1
-    TRACE_INFO("Initiating SDRAM\n\r");
-#endif
     BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
 
 #ifndef ISIS_OBC_G20
@@ -119,9 +116,6 @@ int main()
             &handler_task_handle_glob);
     xTaskCreate(init_task, "INIT_TASK", 512, handler_task_handle_glob,
             3, NULL);
-#if DEBUG_IO_LIB == 1
-    TRACE_INFO("Starting FreeRTOS task scheduler.\n\r");
-#endif
     vTaskStartScheduler();
 #if DEBUG_IO_LIB == 1
     TRACE_ERROR("FreeRTOS scheduler error!\n\r");
@@ -205,7 +199,8 @@ void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
 #ifdef ISIS_OBC_G20
 void init_task(void * args) {
 #if DEBUG_IO_LIB == 1
-    TRACE_INFO_WP("\n\r-- SOURCE Bootloader --\n\r");
+	TRACE_INFO("\n\rStarting FreeRTOS task scheduler.\n\r");
+    TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
     TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME);
     TRACE_INFO_WP("-- Software version v%d.%d --\n\r", SW_VERSION, SW_SUBVERSION);
     TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
