@@ -50,8 +50,6 @@ extern void defaultSpuriousHandler( void );
 extern void defaultFiqHandler( void );
 extern void defaultIrqHandler(void);
 
-extern void initiateIsisWatchdog(void);
-
 extern void clearBssSection(void);
 
 extern void LowLevelInit(void);

@@ -30,6 +30,7 @@
 #include <FreeRTOSConfig.h>
 #include <hal/Timing/WatchDogTimer.h>
 #include <hal/Storage/FRAM.h>
+#include <hal/Storage/NORFlash.h>
 #else
 #include <core/watchdog.h>
 #endif
@@ -160,13 +161,15 @@ int perform_iobc_copy_operation_to_sdram() {
 	BootSelect boot_select = BOOT_NOR_FLASH;
 	int result = 0;
 	if(boot_select == BOOT_NOR_FLASH) {
-		result = copy_norflash_binary_to_sdram(256);
+		size_t sizeToCopy = 0;
+		memcpy(&sizeToCopy, (const void *) (NORFLASH_SA5_ADDRESS + 0x14), 4);
+		result = copy_norflash_binary_to_sdram(sizeToCopy);
 	}
 	else {
 		result = copy_sdcard_binary_to_sdram(boot_select);
 		if(result != 0) {
 			// fatal failure. boot from NOR-Flash
-			result = copy_norflash_binary_to_sdram(256);
+			//result = copy_norflash_binary_to_sdram(256);
 		}
 	}
 	return result;
@@ -247,7 +250,7 @@ void handler_task(void * args) {
     // Wait for initialization to finish
     vTaskSuspend(NULL);
 
-    //perform_bootloader_core_operation();
+    perform_bootloader_core_operation();
 
     // will not be reached when bootloader is finished.
     idle_loop();

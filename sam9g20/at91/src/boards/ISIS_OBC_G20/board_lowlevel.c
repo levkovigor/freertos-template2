@@ -50,8 +50,10 @@
 #include <at91/peripherals/pmc/pmc.h>
 #include <at91/utility/trace.h>
 
+#ifdef ISIS_OBC_G20
 #include <hal/Timing/WatchDogTimerNoOS.h>
 #include <hal/Drivers/LED.h>
+#endif
 
 #include <faultHandler.h>
 #include <string.h>
@@ -219,11 +221,6 @@ void LowLevelInit(void)
 #endif
 }
 
-void initiateIsisWatchdog() __attribute__ ((section(".sramfunc")));
-void initiateIsisWatchdog() {
-    WDT_start();
-    WDT_forceKick();
-}
 
 void clearBssSection(void) __attribute__ ((section(".sramfunc")));
 void clearBssSection(void) {
@@ -241,6 +238,18 @@ void clearBssSection(void) {
 //    }
 //   WDT_forceKick();
 }
+
+
+/* iOBC specific functions */
+
+#ifdef ISIS_OBC_G20
+
+void initiateIsisWatchdog() __attribute__ ((section(".sramfunc")));
+void initiateIsisWatchdog() {
+    WDT_start();
+    WDT_forceKick();
+}
+
 
 void initLed(void) __attribute__ ((section(".sramfunc")));
 void initLed(void) {
@@ -261,5 +270,7 @@ void toggleLed4(void) __attribute__ ((section(".sramfunc")));
 void toggleLed4(void) {
 	LED_toggle(led_4);
 }
+
+#endif
 
 
