@@ -51,6 +51,8 @@
 #include <at91/utility/trace.h>
 
 #include <hal/Timing/WatchDogTimerNoOS.h>
+#include <hal/Drivers/LED.h>
+
 #include <faultHandler.h>
 #include <string.h>
 
@@ -217,8 +219,8 @@ void LowLevelInit(void)
 
 //void initiateIsisWatchdog() __attribute__ ((section(".sramfunc")));
 void initiateIsisWatchdog() {
-    WDT_start();
-    WDT_forceKick();
+    //WDT_start();
+    //WDT_forceKick();
 }
 
 //void clearBssSection(void) __attribute__ ((section(".sramfunc")));
@@ -235,6 +237,12 @@ void clearBssSection(void) {
         currentAddress += sizeToClear;
     }
     //WDT_forceKick();
+}
+
+void initBlinkLed(void) __attribute__ ((section(".sramfunc")));
+void initBlinkLed(void) {
+	LED_start();
+	LED_toggle(led_2);
 }
 
 

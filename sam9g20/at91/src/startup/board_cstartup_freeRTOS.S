@@ -219,6 +219,37 @@ resetHandler:
         strcc   r3, [r1], #4
         bcc     1b
 
+#ifdef sdram
+/* Initialize the sram data segment */
+/* Only execute this when the code is running from SDRAM */
+/* When the code runs from NORFLASH this part of the postrelocate section which is handled above */
+        ldr     r1, =_ssramdata
+        ldr     r2, =_esramdata
+1:
+        cmp     r1, r2
+        ldrcc   r3, [r0], #4
+        strcc   r3, [r1], #4
+        bcc     1b
+
+/* Only execute this when the code is running from SDRAM */
+/* When the code runs from NORFLASH this is the same as normal bss which is handled above */
+/* Clear the SRAM zero segment */
+        ldr     r0, =_ssrambss
+        ldr     r1, =_esrambss
+        mov     r2, #0
+1:
+        cmp     r0, r1
+        strcc   r2, [r0], #4
+        bcc     1b
+#endif
+
+#ifdef ISIS_OBC_G20
+        ldr     sp, =_sstack
+        stmfd   sp!, {r0}
+	    ldr     r0, =initBlinkLed
+        blx     r0
+#endif
+
 /* Perform low-level initialization of the chip using LowLevelInit() */
         ldr     sp, =_sstack
         stmfd   sp!, {r0}
@@ -235,32 +266,6 @@ resetHandler:
         ldrcc   r3, [r0], #4
         strcc   r3, [r1], #4
         bcc     1b
-
-#ifdef sdram
-/* Initialize the sram data segment */
-/* Only execute this when the code is running from SDRAM */
-/* When the code runs from NORFLASH this part of the postrelocate section which is handled above */
-        ldr     r1, =_ssramdata
-        ldr     r2, =_esramdata
-1:
-        cmp     r1, r2
-        ldrcc   r3, [r0], #4
-        strcc   r3, [r1], #4
-        bcc     1b
-#endif
-
-#ifdef sdram
-/* Only execute this when the code is running from SDRAM */
-/* When the code runs from NORFLASH this is the same as normal bss which is handled above */
-/* Clear the SRAM zero segment */
-        ldr     r0, =_ssrambss
-        ldr     r1, =_esrambss
-        mov     r2, #0
-1:
-        cmp     r0, r1
-        strcc   r2, [r0], #4
-        bcc     1b
-#endif
 
 #ifdef ISIS_OBC_G20
 /* Initiate external watchdog to prevent restart */

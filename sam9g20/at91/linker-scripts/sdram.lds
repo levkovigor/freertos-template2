@@ -43,7 +43,7 @@ MEMORY
 }
 
 SECTIONS
-{ 
+{     
     .fixed :
 	{
         . = ALIGN(4);			/* tells the linker that these section ought to be word aligned */
@@ -113,27 +113,18 @@ SECTIONS
     
     . = ALIGN(4);
     _efixed = .;
-
+    
     .prerelocate : AT (_efixed)
     {
         . = ALIGN(4);
         _sprerelocate = .;
+        *(.vectors*);
+		*(.sramfunc*);
         . = ALIGN(4);
         _eprerelocate = .;
-    } 
-
-    .postrelocate : AT (_efixed + SIZEOF(.prerelocate))
-    {
-        . = ALIGN(4);
-        _spostrelocate = .;
-        KEEP(*(.vectors));
-		KEEP(*(.sramfunc));
-        KEEP(*(.ramfunc));
-        . = ALIGN(4);
-        _epostrelocate = .;
-    } >sram0 
-    
-    .sramdata : AT (_sprerelocate + SIZEOF(.prerelocate) + SIZEOF(.postrelocate))
+    } >sram0  
+        
+    .sramdata : AT (_efixed + SIZEOF(.prerelocate))
     {
         . = ALIGN(4);
         _ssramdata = .;
@@ -142,19 +133,27 @@ SECTIONS
         _esramdata = .;
     } >sram1
     
-    .srambss (NOLOAD) : {
+    .srambss : AT (_efixed + SIZEOF(.prerelocate) + SIZEOF(.sramdata))
+    {
         . = ALIGN(4);
         _ssrambss = .;
         *(.srambss)
         . = ALIGN(4);
         _esrambss = .;
     } >sram1
-    
+
+    .postrelocate : AT (_efixed + SIZEOF(.prerelocate) + SIZEOF(.sramdata) + SIZEOF(.srambss))
+    {
+        . = ALIGN(4);
+        _spostrelocate = .;
+        . = ALIGN(4);
+        _epostrelocate = .;
+    } >sram0 
 
     /* this section holds uninitialized global and static data  */
  	. = ALIGN(4);
-	.bss :
-  	{
+	.bss : AT (_efixed + SIZEOF(.prerelocate) + SIZEOF(.postrelocate) + SIZEOF(.sramdata) + SIZEOF(.srambss))
+	{
 	    /* This is used by the startup in order to initialize the .bss secion */
 	    _sbss = .;         /* define a global symbol at bss start */
 	    __bss_start__ = _sbss;

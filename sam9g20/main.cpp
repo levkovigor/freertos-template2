@@ -46,7 +46,7 @@ void initMission();
 void initTask(void * args);
 
 #ifdef ISIS_OBC_G20
-static const uint8_t WATCHDOG_KICK_INTERVAL_MS = 10;
+static const uint8_t WATCHDOG_KICK_INTERVAL_MS = 15;
 #endif
 
 int main(void)
@@ -59,7 +59,7 @@ int main(void)
 	// an iOBC restart. This should be done as soon as possible and before
     // anything is printed.
 	int retval = WDT_startWatchdogKickTask(
-			WATCHDOG_KICK_INTERVAL_MS / portTICK_RATE_MS, FALSE);
+			WATCHDOG_KICK_INTERVAL_MS / portTICK_RATE_MS, TRUE);
 	if(retval != 0) {
 		TRACE_ERROR("Starting iOBC Watchdog Feed Task failed!\r\n");
 	}
@@ -75,7 +75,7 @@ int main(void)
 #endif
 
     // Core Task. Custom interrupts should be configured inside a task.
-    xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, 4, nullptr);
+    xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, 1, nullptr);
     vTaskStartScheduler();
     // This should never be reached.
     for(;;) {}
