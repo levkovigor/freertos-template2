@@ -71,8 +71,8 @@ int main(void)
 #if defined(AT91SAM9G20_EK)
     ConfigureLeds();
     configureEk();
-    LED_Toggle(0);
 #endif
+
     // Kick might be necessary if initTask suppresses watchdog task for too long
 #ifdef ISIS_OBC_G20
     // WDT_forceKick();
