@@ -225,11 +225,16 @@ void clearBssSection(void) __attribute__ ((section(".sramfunc")));
 void clearBssSection(void) {
     extern char _sbss, _ebss;
     void * currentAddress = (void *) &_sbss;
+    int sizeToClear = 200000;
     while(currentAddress < (void *) &_ebss) {
-        memset(currentAddress, 0, 100000);
-        // WDT_forceKick();
-        currentAddress += 100000;
+    	if((void*) &_ebss - currentAddress < 200000) {
+    		sizeToClear = (void*) &_ebss - currentAddress;
+    	}
+        memset(currentAddress, 0, sizeToClear);
+        //WDT_forceKick();
+        currentAddress += sizeToClear;
     }
+    //WDT_forceKick();
 }
 
 
