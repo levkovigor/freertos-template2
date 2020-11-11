@@ -50,6 +50,8 @@ SECTIONS
         . = ALIGN(4);
         _sprerelocate = .;
         KEEP(*(.vectors));
+        *board_lowlevel.o(.text*)
+        *board_memories.o(.text*)
         *(.sramfunc*)
         . = ALIGN(4);
         _eprerelocate = .;

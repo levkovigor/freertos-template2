@@ -226,6 +226,7 @@ void initiateIsisWatchdog() {
 void clearBssSection(void) __attribute__ ((section(".sramfunc")));
 void clearBssSection(void) {
     extern char _sbss, _ebss;
+    LED_glow(led_3);
     void * currentAddress = (void *) &_sbss;
     int sizeToClear = 200000;
     while(currentAddress < (void *) &_ebss) {
@@ -236,6 +237,7 @@ void clearBssSection(void) {
         //WDT_forceKick();
         currentAddress += sizeToClear;
     }
+
     //WDT_forceKick();
 }
 
@@ -252,6 +254,11 @@ void toggleLed2(void) {
 void toggleLed3(void) __attribute__ ((section(".sramfunc")));
 void toggleLed3(void) {
 	LED_toggle(led_3);
+}
+
+void toggleLed4(void) __attribute__ ((section(".sramfunc")));
+void toggleLed4(void) {
+	LED_toggle(led_4);
 }
 
 
