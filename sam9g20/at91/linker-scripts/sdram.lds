@@ -118,7 +118,7 @@ SECTIONS
     {
         . = ALIGN(4);
         _sprerelocate = .;
-        *(.vectors*);
+        KEEP(*(.vectors));
 		*(.sramfunc*);
         . = ALIGN(4);
         _eprerelocate = .;

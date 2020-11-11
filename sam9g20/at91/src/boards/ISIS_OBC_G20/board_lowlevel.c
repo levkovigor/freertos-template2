@@ -135,11 +135,11 @@ void assignBusMatrixPriorities() {
 /// This function also reset the AIC and disable RTT and PIT interrupts
 //------------------------------------------------------------------------------
 #ifdef norflash
-void LowLevelInit(void) __attribute__ ((section(".sramfunc"), weak));
+void LowLevelInit(void) __attribute__ ((section(".sramfunc")));
 #endif
 void LowLevelInit(void)
 {
-    unsigned char i;
+    unsigned char i = 0;
 
 #ifndef sdram
     /* Initialize main oscillator
@@ -217,13 +217,13 @@ void LowLevelInit(void)
 #endif
 }
 
-//void initiateIsisWatchdog() __attribute__ ((section(".sramfunc")));
+void initiateIsisWatchdog() __attribute__ ((section(".sramfunc")));
 void initiateIsisWatchdog() {
-    //WDT_start();
-    //WDT_forceKick();
+    WDT_start();
+    WDT_forceKick();
 }
 
-//void clearBssSection(void) __attribute__ ((section(".sramfunc")));
+void clearBssSection(void) __attribute__ ((section(".sramfunc")));
 void clearBssSection(void) {
     extern char _sbss, _ebss;
     void * currentAddress = (void *) &_sbss;
@@ -239,10 +239,19 @@ void clearBssSection(void) {
     //WDT_forceKick();
 }
 
-void initBlinkLed(void) __attribute__ ((section(".sramfunc")));
-void initBlinkLed(void) {
+void initLed(void) __attribute__ ((section(".sramfunc")));
+void initLed(void) {
 	LED_start();
+}
+
+void toggleLed2(void) __attribute__ ((section(".sramfunc")));
+void toggleLed2(void) {
 	LED_toggle(led_2);
+}
+
+void toggleLed3(void) __attribute__ ((section(".sramfunc")));
+void toggleLed3(void) {
+	LED_toggle(led_3);
 }
 
 

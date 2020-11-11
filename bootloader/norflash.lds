@@ -109,9 +109,10 @@ SECTIONS
 		KEEP(*(SORT(.fini_array.)))
 		KEEP(*(.fini_array))
 		PROVIDE_HIDDEN (__fini_array_end = .);
-		. = ALIGN(4);
-    	_efixed = .;
     } >ebi_cs0
+    
+    . = ALIGN(4);
+    _efixed = .;
     
     .postrelocate : AT (_efixed + SIZEOF(.prerelocate))
     {
@@ -125,7 +126,8 @@ SECTIONS
         _epostrelocate = .;
     } >sram0
 
-    .bss (NOLOAD) : {
+    .bss : AT (_efixed + SIZEOF(.prerelocate) + SIZEOF(.postrelocate))
+    {
         /* This is used by the startup in order to initialize the .bss secion */
 	    _sbss = .;         /* define a global symbol at bss start */
 	    __bss_start__ = _sbss;

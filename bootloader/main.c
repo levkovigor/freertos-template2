@@ -40,7 +40,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define WATCHDOG_KICK_INTERVAL_MS 10
+#define WATCHDOG_KICK_INTERVAL_MS 15
 
 
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
@@ -92,12 +92,6 @@ int main()
     initiate_external_watchdog();
 #endif
 
-#if DEBUG_IO_LIB == 1
-    TRACE_INFO_WP("\n\r-- SOURCE Bootloader --\n\r");
-    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME);
-    TRACE_INFO_WP("-- Software version v%d.%d --\n\r", SW_VERSION, SW_SUBVERSION);
-    TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
-#endif
     //-------------------------------------------------------------------------
     // Enable I-Cache
     //-------------------------------------------------------------------------
@@ -121,10 +115,10 @@ int main()
 #ifdef ISIS_OBC_G20
     // otherwise, try to copy SDCard binary to SDRAM
     // Core Task. Custom interrupts should be configured inside a task.
-    xTaskCreate(handler_task, "HANDLER_TASK", 512, NULL, 7,
+    xTaskCreate(handler_task, "HANDLER_TASK", 512, NULL, 2,
             &handler_task_handle_glob);
     xTaskCreate(init_task, "INIT_TASK", 512, handler_task_handle_glob,
-            8, NULL);
+            3, NULL);
 #if DEBUG_IO_LIB == 1
     TRACE_INFO("Starting FreeRTOS task scheduler.\n\r");
 #endif
@@ -210,7 +204,14 @@ void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
 
 #ifdef ISIS_OBC_G20
 void init_task(void * args) {
+#if DEBUG_IO_LIB == 1
+    TRACE_INFO_WP("\n\r-- SOURCE Bootloader --\n\r");
+    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME);
+    TRACE_INFO_WP("-- Software version v%d.%d --\n\r", SW_VERSION, SW_SUBVERSION);
+    TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
     TRACE_INFO("Running initialization task..\n\r");
+#endif
+
     initialize_iobc_peripherals();
     // perform initialization which needs to be inside a task.
 
