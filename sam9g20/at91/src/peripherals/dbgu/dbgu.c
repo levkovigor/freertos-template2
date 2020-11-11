@@ -154,12 +154,13 @@ unsigned char DBGU_GetChar(void)
  */
 int write(int __fd, const void *__buf, size_t __nbyte)
 {
-	const char * ptr = (const char *) __buf;
-	for (size_t i = 0; i < __nbyte; i++)
-	{
-		DBGU_PutChar(*ptr++);
-	}
-	return __nbyte;
+	return _write(__fd, __buf, __nbyte);
+//	const char * ptr = (const char *) __buf;
+//	for (size_t i = 0; i < __nbyte; i++)
+//	{
+//		DBGU_PutChar(*ptr++);
+//	}
+//	return __nbyte;
 }
 
 //int _write(int __fd, const void *__buf, size_t __nbyte)

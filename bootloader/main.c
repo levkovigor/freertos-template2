@@ -12,6 +12,7 @@
 
 #include <core/timer.h>
 #include <hal/Timing/RTT.h>
+#include <hal/Drivers/LED.h>
 
 
 // The AT91SAM9G20-EK does not have a pre-installed NOR-Flash. Therefore,
@@ -174,12 +175,15 @@ int perform_iobc_copy_operation_to_sdram() {
 
 void idle_loop() {
     uint32_t last_time = RTT_GetTime();
+    LED_dark(led_2);
     for(;;) {
         uint32_t curr_time = RTT_GetTime();
-        if(curr_time - last_time > 2) {
+        if(curr_time - last_time >= 1) {
 #if DEBUG_IO_LIB == 1
             TRACE_INFO("Bootloader idle..\n\r");
 #endif
+            LED_toggle(led_2);
+            DBGU_PutChar('t');
             last_time = curr_time;
         }
     }
@@ -243,10 +247,15 @@ void handler_task(void * args) {
     // Wait for initialization to finish
     vTaskSuspend(NULL);
 
-    perform_bootloader_core_operation();
+    //perform_bootloader_core_operation();
 
     // will not be reached when bootloader is finished.
     idle_loop();
+//    while(1) {
+//    	LED_toggle(led_3);
+//    	LED_toggle(led_4);
+//    	vTaskDelay(1000);
+//    }
 }
 #endif
 
