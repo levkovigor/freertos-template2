@@ -32,7 +32,6 @@ extern struct netif *netif;
 }
 
 #include <fsfw/tasks/TaskFactory.h>
-#include <fsfwconfig/OBSWVersion.h>
 
 // quick fix to bypass link error
 extern "C" void __sync_synchronize() {}
@@ -66,12 +65,6 @@ int main(void)
 	}
 #endif
 
-    printf("\n\r-- SOURCE On-Board Software --\n\r");
-    printf("-- %s --\n\r", BOARD_NAME);
-    printf("-- Software version v%d.%d.%d --\n\r", SW_VERSION, SW_SUBVERSION,
-            SW_SUBSUBVERSION);
-    printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
-
     // Enable Co-Processor instruction cache.
     CP15_Enable_I_Cache();
 
@@ -83,7 +76,6 @@ int main(void)
 
     // Core Task. Custom interrupts should be configured inside a task.
     xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, 4, nullptr);
-    printf("-- Starting FreeRTOS task scheduler --\n\r");
     vTaskStartScheduler();
     // This should never be reached.
     for(;;) {}

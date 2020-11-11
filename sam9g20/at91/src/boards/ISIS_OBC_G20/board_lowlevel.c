@@ -215,13 +215,13 @@ void LowLevelInit(void)
 #endif
 }
 
-void initiateIsisWatchdog() __attribute__ ((section(".sramfunc")));
+//void initiateIsisWatchdog() __attribute__ ((section(".sramfunc")));
 void initiateIsisWatchdog() {
     WDT_start();
     WDT_forceKick();
 }
 
-void clearBssSection(void) __attribute__ ((section(".sramfunc")));
+//void clearBssSection(void) __attribute__ ((section(".sramfunc")));
 void clearBssSection(void) {
     extern char _sbss, _ebss;
     void * currentAddress = (void *) &_sbss;
