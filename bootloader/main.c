@@ -183,7 +183,7 @@ void idle_loop() {
             TRACE_INFO("Bootloader idle..\n\r");
 #endif
             LED_toggle(led_2);
-            DBGU_PutChar('t');
+            //DBGU_PutChar('t');
             last_time = curr_time;
         }
     }

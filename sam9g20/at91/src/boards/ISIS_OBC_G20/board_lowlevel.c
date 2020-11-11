@@ -148,19 +148,21 @@ void LowLevelInit(void)
     while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MOSCS));
 
     /* Initialize PLLA at 200MHz (198.656) */
-    AT91C_BASE_PMC->PMC_PLLAR = BOARD_CKGR_PLLA
-                                | BOARD_PLLACOUNT
-                                | BOARD_MULA
-                                | BOARD_DIVA;
+//    AT91C_BASE_PMC->PMC_PLLAR = BOARD_CKGR_PLLA
+//                                | BOARD_PLLACOUNT
+//                                | BOARD_MULA
+//                                | BOARD_DIVA;
+    	AT91C_BASE_PMC->PMC_PLLAR = 0x202A3F01;
     while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCKA));
 
     // Initialize PLLB for USB usage (if not already locked)
     if (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCKB)) {
-        AT91C_BASE_PMC->PMC_PLLBR = BOARD_USBDIV
-                                    | BOARD_CKGR_PLLB
-                                    | BOARD_PLLBCOUNT
-                                    | BOARD_MULB
-                                    | BOARD_DIVB;
+//        AT91C_BASE_PMC->PMC_PLLBR = BOARD_USBDIV
+//                                    | BOARD_CKGR_PLLB
+//                                    | BOARD_PLLBCOUNT
+//                                    | BOARD_MULB
+//                                    | BOARD_DIVB;
+    	AT91C_BASE_PMC->PMC_PLLBR = 0x10193F05;
         while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCKB));
     }
 
