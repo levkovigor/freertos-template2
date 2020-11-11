@@ -244,10 +244,10 @@ resetHandler:
 #endif
 
 /* Perform low-level initialization of the chip using LowLevelInit() */
-        ldr     sp, =_sstack
-        stmfd   sp!, {r0}
-	    ldr     r0, =LowLevelInit
-        blx     r0
+		ldr     sp, =_sstack
+		stmfd   sp!, {r0}
+		ldr     r0, =LowLevelInit
+		blx     r0
 
 #ifdef ISIS_OBC_G20
 /* Initiate external watchdog to prevent restart */
@@ -258,15 +258,15 @@ resetHandler:
 #endif
 
 #ifdef ISIS_OBC_G20
-        ldr     sp, =_sstack
-        stmfd   sp!, {r0}
-	    ldr     r0, =initLed
-        blx     r0
+		ldr     sp, =_sstack
+		stmfd   sp!, {r0}
+		ldr     r0, =initLed
+		blx     r0
 
-        ldr     sp, =_sstack
-        stmfd   sp!, {r0}
-	    ldr     r0, =toggleLed2
-        blx     r0
+		//ldr     sp, =_sstack
+ 		//stmfd   sp!, {r0}
+ 		//ldr     r0, =toggleLed2
+		//blx     r0
 #endif
 
 /* Initialize the postrelocate segment */
@@ -333,13 +333,6 @@ resetHandler:
 		ldr r0,=__libc_init_array
 		mov lr,pc /* set the return address */
 		bx r0 /* the target code can be ARM or THUMB */
-#endif
-
-#ifdef ISIS_OBC_G20
-        ldr     sp, =_sstack
-        stmfd   sp!, {r0}
-	    ldr     r0, =toggleLed4
-        blx     r0
 #endif
 
 /* Branch to main()
