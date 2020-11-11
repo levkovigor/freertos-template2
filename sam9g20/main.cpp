@@ -73,10 +73,15 @@ int main(void)
     configureEk();
     LED_Toggle(0);
 #endif
-    // Kick might be necessary
+    // Kick might be necessary if initTask suppresses watchdog task for too long
+#ifdef ISIS_OBC_G20
     // WDT_forceKick();
+
     // Core Task. Custom interrupts should be configured inside a task.
     xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, 6, nullptr);
+#else
+    xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, 9, nullptr);
+#endif
     vTaskStartScheduler();
     // This should never be reached.
     for(;;) {}
