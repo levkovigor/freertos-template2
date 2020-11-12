@@ -45,6 +45,19 @@ MEMORY
 
 SECTIONS
 {          
+    .prerelocate : AT (_efixed)
+    {
+        . = ALIGN(4);
+        _sprerelocate = .;
+        KEEP(*(.vectors));
+        *board_lowlevel.o(.text*)
+        *board_memories.o(.text*)
+        *(.sramfunc*)
+        *(.sramdata*)
+        . = ALIGN(4);
+        _eprerelocate = .;
+    } >sram0
+    
     .fixed :
     {
         . = ALIGN(4);
@@ -57,8 +70,8 @@ SECTIONS
         *(.CP15_*)	
         KEEP (*(.init))
     	KEEP (*(.fini))
-        . = ALIGN(4);
-		/* preinit data */
+     	. = ALIGN(4);
+        /* preinit data */
 		PROVIDE_HIDDEN (__preinit_array_start = .);
 		KEEP(*(.preinit_array))
 		PROVIDE_HIDDEN (__preinit_array_end = .);
@@ -79,7 +92,7 @@ SECTIONS
     } >ebi_cs0
 
 	/* used for unwinding, can be useful for debugging  */  
-	.ARM.extab (NOLOAD): 
+	.ARM.extab (NOLOAD) :
     {  
 		*(.ARM.extab* .gnu.linkonce.armextab.*) 
 	} >ebi_cs0
@@ -90,23 +103,10 @@ SECTIONS
     {
 		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
 	} >ebi_cs0
-    __exidx_end = .;
-
-    . = ALIGN(4);
+	
+	. = ALIGN(4);
+    __exidx_end = .;    
     _efixed = .;
-    
-    .prerelocate : AT (_efixed)
-    {
-        . = ALIGN(4);
-        _sprerelocate = .;
-        KEEP(*(.vectors));
-        *board_lowlevel.o(.text*)
-        *board_memories.o(.text*)
-         *(.sramfunc*)
-         *(.sramdata*)
-        . = ALIGN(4);
-        _eprerelocate = .;
-    } >sram0
     
     .postrelocate : AT (_efixed + SIZEOF(.prerelocate))
     {
@@ -119,23 +119,23 @@ SECTIONS
         _epostrelocate = .;
     } >sram0
     
-    .srambss (NOLOAD) :
+    .srambss (NOLOAD) : 
     {
-        . = ALIGN(4);
-        _ssrambss = .;
-        *(.srambss)
-        . = ALIGN(4);
-        _esrambss = .;
-    } >sram1
+    	. = ALIGN(4);
+    	_ssrambss = .;
+    	*(.srambss*)
+    	. = ALIGN(4);
+    	_esrambss = .;
+    }
 
-    .bss (NOLOAD) :
+    .bss (NOLOAD) : 
     {
         /* This is used by the startup in order to initialize the .bss secion */
 	    _sbss = .;         /* define a global symbol at bss start */
 	    __bss_start__ = _sbss;
         *(.bss)
         *(.bss*)
-
+        
         *(COMMON)
 		*(COMMON.*)
         . = ALIGN(4);
@@ -144,7 +144,6 @@ SECTIONS
     } >sram1
     
     /* Heap section */
-    . = ALIGN(4);
 	_sheap_ = .;
 	end = .;
 	_eheap_ = 0x302000;
