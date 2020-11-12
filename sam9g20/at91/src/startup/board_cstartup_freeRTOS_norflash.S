@@ -42,7 +42,6 @@
 #define FIQ_STACK_SIZE	0x00000000		/* Stack size for "FIQ" interrupts						*/
 #define IRQ_STACK_SIZE	0x00000400		/* Stack size for "IRQ" normal interrupts				*/
 #define SVC_STACK_SIZE	0x00000400		/* Stack size for "SVC" supervisor mode                 */
-#elif sdram
 
 #define ARM_MODE_USR	0x10	/* Normal User Mode											*/
 #define ARM_MODE_FIQ	0x11	/* FIQ Processing Fast Interrupts Mode						*/
