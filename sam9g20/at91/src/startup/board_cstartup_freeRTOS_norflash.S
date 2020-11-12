@@ -210,6 +210,17 @@ resetHandler:
         strcc   r3, [r1], #4
         bcc     1b
 
+/* Only execute this when the code is running from SDRAM */
+/* When the code runs from NORFLASH this is the same as normal bss which is handled above */
+/* Clear the SRAM zero segment */
+        ldr     r0, =_ssrambss
+        ldr     r1, =_esrambss
+        mov     r2, #0
+1:
+        cmp     r0, r1
+        strcc   r2, [r0], #4
+        bcc     1b
+
 #ifdef ISIS_OBC_G20
 		ldr     sp, =_sstack
 		stmfd   sp!, {r0}
@@ -228,6 +239,10 @@ resetHandler:
 		ldr     r0, =LowLevelInit
 		blx     r0
 
+		ldr     sp, =_sstack
+ 		stmfd   sp!, {r0}
+ 		ldr     r0, =toggleLed3
+		blx     r0
 #ifdef ISIS_OBC_G20
 /* Initiate external watchdog to prevent restart */
         //ldr     sp, =_sstack
