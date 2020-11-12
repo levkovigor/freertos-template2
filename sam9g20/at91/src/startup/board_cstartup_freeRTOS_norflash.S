@@ -222,15 +222,15 @@ resetHandler:
         bcc     1b
 
 #ifdef ISIS_OBC_G20
-		ldr     sp, =_sstack
-		stmfd   sp!, {r0}
-		ldr     r0, =initLed
-		blx     r0
+		//ldr     sp, =_sstack
+		//stmfd   sp!, {r0}
+		//ldr     r0, =initLed
+		//blx     r0
 
-		ldr     sp, =_sstack
- 		stmfd   sp!, {r0}
- 		ldr     r0, =toggleLed2
-		blx     r0
+		//ldr     sp, =_sstack
+ 		//stmfd   sp!, {r0}
+ 		//ldr     r0, =toggleLed2
+		//blx     r0
 #endif
 
 /* Perform low-level initialization of the chip using LowLevelInit() */
@@ -239,10 +239,6 @@ resetHandler:
 		ldr     r0, =LowLevelInit
 		blx     r0
 
-		ldr     sp, =_sstack
- 		stmfd   sp!, {r0}
- 		ldr     r0, =toggleLed3
-		blx     r0
 #ifdef ISIS_OBC_G20
 /* Initiate external watchdog to prevent restart */
         //ldr     sp, =_sstack
@@ -250,7 +246,6 @@ resetHandler:
 	    //ldr     r0, =initiateIsisWatchdog
         //blx     r0
 #endif
-
 
 /* Initialize the postrelocate segment */
 

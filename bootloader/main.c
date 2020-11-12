@@ -265,11 +265,6 @@ void handler_task(void * args) {
 
     // will not be reached when bootloader is finished.
     idle_loop();
-//    while(1) {
-//    	LED_toggle(led_3);
-//    	LED_toggle(led_4);
-//    	vTaskDelay(1000);
-//    }
 }
 #endif
 
