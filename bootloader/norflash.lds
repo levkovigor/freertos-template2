@@ -102,7 +102,6 @@ SECTIONS
         KEEP(*(.vectors));
         *board_lowlevel.o(.text*)
         *board_memories.o(.text*)
-        *(.sramfunc*)
         . = ALIGN(4);
         _eprerelocate = .;
     } >sram0
@@ -111,9 +110,10 @@ SECTIONS
     {
         . = ALIGN(4);
         _spostrelocate = .;
+        *(.sramfunc*)
+        *(.sramdata*)
         *(.data) 
         *(.data*)
-        *(.sramdata*)
         /* contains all initialized global and static variables */
         . = ALIGN(4);
         _epostrelocate = .;
@@ -126,7 +126,7 @@ SECTIONS
 	    __bss_start__ = _sbss;
         *(.bss)
         *(.bss*)
-        *(.srambss*)
+
         *(COMMON)
 		*(COMMON.*)
         . = ALIGN(4);
