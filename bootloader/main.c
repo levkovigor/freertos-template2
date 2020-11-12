@@ -99,6 +99,9 @@ int main()
     //-------------------------------------------------------------------------
     CP15_Enable_I_Cache();
 
+    LED_start();
+
+
     //-------------------------------------------------------------------------
     // Configure SDRAM
     //-------------------------------------------------------------------------
@@ -255,7 +258,7 @@ void handler_task(void * args) {
     // Wait for initialization to finish
     vTaskSuspend(NULL);
 
-    perform_bootloader_core_operation();
+    //perform_bootloader_core_operation();
 
     // will not be reached when bootloader is finished.
     idle_loop();

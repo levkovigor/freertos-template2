@@ -24,7 +24,7 @@ int copy_norflash_binary_to_sdram(size_t binary_size)
     // Transfert data from Nor to External RAM
     //-------------------------------------------------------------------------
 
-	//binary_size = 0x100000 - 5 * 8192;
+	binary_size = 0x100000 - 5 * 8192;
     // Need to test how long copying that much data takes, we might still
     // have to feed the watchdog..
     // For now, we copy in buckets instead of one go.
