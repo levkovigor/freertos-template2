@@ -1,8 +1,3 @@
-#include <dataPoolInit.h>
-#include <systemObjectList.h>
-#include <Factory.h>
-#include <PollingSequenceFactory.h>
-
 #include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Clock.h>
@@ -12,9 +7,18 @@
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 
 #include <freertos/FreeRTOS.h>
+#include <fsfwconfig/cdatapool/dataPoolInit.h>
+#include <fsfwconfig/objects/Factory.h>
+#include <fsfwconfig/objects/systemObjectList.h>
+#include <fsfwconfig/OBSWConfig.h>
+#include <fsfwconfig/pollingsequence/PollingSequenceFactory.h>
 #include <unittest/internal/InternalUnitTester.h>
-#include <config/OBSWConfig.h>
 #include <utility/compile_time.h>
+#include <fsfwconfig/OBSWVersion.h>
+
+extern "C" {
+#include <board.h>
+}
 
 #if DISPLAY_FACTORY_ALLOCATION_SIZE == 1
 #include <new>
@@ -87,6 +91,13 @@ void printAddError(object_id_t objectId);
  * @ingroup init
  */
 void initMission(void) {
+	printf("\n\r-- FreeRTOS task scheduler started --\n\r");
+    printf("-- SOURCE On-Board Software --\n\r");
+    printf("-- %s --\n\r", BOARD_NAME);
+    printf("-- Software version v%d.%d.%d --\n\r", SW_VERSION, SW_SUBVERSION,
+            SW_SUBSUBVERSION);
+    printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
+
     sif::info << "Initiating mission specific code." << std::endl;
 
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;

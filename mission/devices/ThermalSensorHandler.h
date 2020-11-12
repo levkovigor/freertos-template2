@@ -72,6 +72,8 @@ protected:
 	ReturnValue_t initializeLocalDataPool(LocalDataPool& localDataPoolMap,
 	        LocalDataPoolManager& poolManager) override;
 	ReturnValue_t initialize() override;
+
+	void modeChanged() override;
 	//ReturnValue_t getDataSetHandle(sid_t sid) override;
 private:
 	const uint8_t switchId;

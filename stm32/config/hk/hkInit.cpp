@@ -5,9 +5,9 @@
  * @author R. Mueller
  */
 
-#include <config/cdatapool/dataPoolInit.h>
 #include <config/hk/hkInit.h>
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
+#include <fsfwconfig/cdatapool/dataPoolInit.h>
 #include <mission/pus/servicepackets/Service3PsbPackets.h>
 
 //// TODO: Generate this file automatically from header file

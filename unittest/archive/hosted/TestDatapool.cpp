@@ -1,5 +1,3 @@
-#include <config/cdatapool/dataPoolInit.h>
-
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/datapoolglob/GlobalDataSet.h>
 #include <fsfw/datapoolglob/GlobalPoolVariable.h>
@@ -7,6 +5,7 @@
 
 #include <catch.hpp>
 #include <CatchDefinitions.h>
+#include <fsfwconfig/cdatapool/dataPoolInit.h>
 
 TEST_CASE( "Simple global datapool test", "[TestDataPool]") {
 	GlobDataSet testDataSet;

@@ -1,9 +1,9 @@
 #ifndef SAM9G20_COMIF_RS485DEVICECOMIF_H_
 #define SAM9G20_COMIF_RS485DEVICECOMIF_H_
 
-#include <config/OBSWConfig.h>
 #include <fsfw/devicehandlers/DeviceCommunicationIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
+#include <fsfwconfig/OBSWConfig.h>
 
 extern "C" {
 

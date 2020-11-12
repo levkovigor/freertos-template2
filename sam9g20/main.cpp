@@ -32,7 +32,6 @@ extern struct netif *netif;
 }
 
 #include <fsfw/tasks/TaskFactory.h>
-#include <config/OBSWVersion.h>
 
 // quick fix to bypass link error
 extern "C" void __sync_synchronize() {}
@@ -47,7 +46,7 @@ void initMission();
 void initTask(void * args);
 
 #ifdef ISIS_OBC_G20
-static const uint8_t WATCHDOG_KICK_INTERVAL_MS = 10;
+static const uint8_t WATCHDOG_KICK_INTERVAL_MS = 15;
 #endif
 
 int main(void)
@@ -60,17 +59,11 @@ int main(void)
 	// an iOBC restart. This should be done as soon as possible and before
     // anything is printed.
 	int retval = WDT_startWatchdogKickTask(
-			WATCHDOG_KICK_INTERVAL_MS / portTICK_RATE_MS, FALSE);
+			WATCHDOG_KICK_INTERVAL_MS / portTICK_RATE_MS, TRUE);
 	if(retval != 0) {
 		TRACE_ERROR("Starting iOBC Watchdog Feed Task failed!\r\n");
 	}
 #endif
-
-    printf("\n\r-- SOURCE On-Board Software --\n\r");
-    printf("-- %s --\n\r", BOARD_NAME);
-    printf("-- Software version v%d.%d.%d --\n\r", SW_VERSION, SW_SUBVERSION,
-            SW_SUBSUBVERSION);
-    printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 
     // Enable Co-Processor instruction cache.
     CP15_Enable_I_Cache();
@@ -78,12 +71,17 @@ int main(void)
 #if defined(AT91SAM9G20_EK)
     ConfigureLeds();
     configureEk();
-    LED_Toggle(0);
 #endif
 
+    // Kick might be necessary if initTask suppresses watchdog task for too long
+#ifdef ISIS_OBC_G20
+    // WDT_forceKick();
+
     // Core Task. Custom interrupts should be configured inside a task.
+    xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, 6, nullptr);
+#else
     xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, 9, nullptr);
-    printf("-- Starting FreeRTOS task scheduler --\n\r");
+#endif
     vTaskStartScheduler();
     // This should never be reached.
     for(;;) {}
@@ -91,12 +89,6 @@ int main(void)
 
 void initTask (void * args) {
 	configASSERT(args == nullptr);
-#ifdef ETHERNET
-	printf("-- Setting up lwIP Stack and EMAC for UDP/TCP Communication --\n\r");
-	emac_lwip_init();
-#else
-	printf("-- Using Serial Communication --\n\r");
-#endif
 
 	initMission();
 	// Delete self.

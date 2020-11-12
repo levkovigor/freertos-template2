@@ -1,11 +1,10 @@
-#include <systemObjectList.h>
-
 #include <test/testinterfaces/DummyEchoComIF.h>
 
 #include <fsfw/serialize/SerializeAdapter.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/tmtcservices/CommandingServiceBase.h>
 #include <fsfw/tmtcpacket/pus/TmPacketStored.h>
+#include <fsfwconfig/objects/systemObjectList.h>
 
 
 TestEchoComIF::TestEchoComIF(object_id_t object_id_, bool initFunnel):

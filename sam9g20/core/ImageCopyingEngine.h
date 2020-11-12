@@ -160,6 +160,11 @@ private:
     ReturnValue_t performNandCopyAlgorithm(F_FILE** binaryFile);
 #else
     const uint8_t RESERVED_NOR_FLASH_SECTORS = 5;
+    const uint8_t NORFLASH_SMALL_SECTORS_NUMBER = 8;
+    const size_t NORFLASH_TOTAL_SMALL_SECTOR_MEM =
+            NORFLASH_SMALL_SECTORS_NUMBER * NORFLASH_SMALL_SECTOR_SIZE;
+    const uint8_t NORFLASH_MEDIUM_SECTORS_NUMBER = 15;
+    const uint8_t NORFLASH_SECTORS_NUMBER = 23;
     const size_t COPYING_BUCKET_SIZE = 2048;
     ReturnValue_t copySdCardImageToNorFlash();
     /**
@@ -169,7 +174,8 @@ private:
      * @param bootloader
      * @return
      */
-    ReturnValue_t handleNorflashErasure(bool bootloader);
+    ReturnValue_t handleNorflashErasure();
+    ReturnValue_t handleObswErasure();
     uint32_t getBaseAddress(uint8_t stepCounter, size_t* offset);
     ReturnValue_t performNorCopyOperation(F_FILE** binaryFile);
     ReturnValue_t handleSdToNorCopyOperation();

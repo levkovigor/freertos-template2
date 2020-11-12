@@ -1,5 +1,5 @@
+#include <fsfwconfig/OBSWConfig.h>
 #include "ImageCopyingEngine.h"
-#include <config/OBSWConfig.h>
 
 ImageCopyingEngine::ImageCopyingEngine(SoftwareImageHandler *owner,
         Countdown *countdown, SoftwareImageHandler::ImageBuffer *imgBuffer):

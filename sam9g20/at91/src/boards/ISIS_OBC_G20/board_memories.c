@@ -187,7 +187,7 @@ void BOARD_ConfigureSdram(unsigned char busWidth)
 /// in SRAM. See LowLevelInit documentation.
 //------------------------------------------------------------------------------
 
-void BOARD_ConfigureNorFlash(unsigned char busWidth) __attribute__ ((section(".sramfunc"), weak));
+void BOARD_ConfigureNorFlash(unsigned char busWidth) __attribute__ ((section(".sramfunc")));
 void BOARD_ConfigureNorFlash(unsigned char busWidth)
 {
     // Configure SMC

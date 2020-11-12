@@ -12,6 +12,7 @@
 
 #include <core/timer.h>
 #include <hal/Timing/RTT.h>
+#include <hal/Drivers/LED.h>
 
 
 // The AT91SAM9G20-EK does not have a pre-installed NOR-Flash. Therefore,
@@ -29,6 +30,7 @@
 #include <FreeRTOSConfig.h>
 #include <hal/Timing/WatchDogTimer.h>
 #include <hal/Storage/FRAM.h>
+#include <hal/Storage/NORFlash.h>
 #else
 #include <core/watchdog.h>
 #endif
@@ -40,7 +42,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define WATCHDOG_KICK_INTERVAL_MS 10
+#define WATCHDOG_KICK_INTERVAL_MS 15
 
 
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
@@ -63,6 +65,9 @@ static TaskHandle_t handler_task_handle_glob = NULL;
  */
 int main()
 {
+	LED_glow(led_2);
+	LED_glow(led_3);
+	LED_glow(led_4);
     //-------------------------------------------------------------------------
     // Configure traces
     //-------------------------------------------------------------------------
@@ -92,23 +97,17 @@ int main()
     initiate_external_watchdog();
 #endif
 
-#if DEBUG_IO_LIB == 1
-    TRACE_INFO_WP("\n\r-- SOURCE Bootloader --\n\r");
-    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME);
-    TRACE_INFO_WP("-- Software version v%d.%d --\n\r", SW_VERSION, SW_SUBVERSION);
-    TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
-#endif
     //-------------------------------------------------------------------------
     // Enable I-Cache
     //-------------------------------------------------------------------------
     CP15_Enable_I_Cache();
 
+    LED_start();
+
+
     //-------------------------------------------------------------------------
     // Configure SDRAM
     //-------------------------------------------------------------------------
-#if DEBUG_IO_LIB == 1
-    TRACE_INFO("Initiating SDRAM\n\r");
-#endif
     BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
 
 #ifndef ISIS_OBC_G20
@@ -121,13 +120,10 @@ int main()
 #ifdef ISIS_OBC_G20
     // otherwise, try to copy SDCard binary to SDRAM
     // Core Task. Custom interrupts should be configured inside a task.
-    xTaskCreate(handler_task, "HANDLER_TASK", 512, NULL, 7,
+    xTaskCreate(handler_task, "HANDLER_TASK", 512, NULL, 2,
             &handler_task_handle_glob);
     xTaskCreate(init_task, "INIT_TASK", 512, handler_task_handle_glob,
-            8, NULL);
-#if DEBUG_IO_LIB == 1
-    TRACE_INFO("Starting FreeRTOS task scheduler.\n\r");
-#endif
+            3, NULL);
     vTaskStartScheduler();
 #if DEBUG_IO_LIB == 1
     TRACE_ERROR("FreeRTOS scheduler error!\n\r");
@@ -156,6 +152,11 @@ void perform_bootloader_core_operation() {
 #ifdef ISIS_OBC_G20
 	int result = perform_iobc_copy_operation_to_sdram();
 #elif defined(AT91SAM9G20_EK)
+    TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
+    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME);
+    TRACE_INFO_WP("-- Software version v%d.%d --\n\r", SW_VERSION, SW_SUBVERSION);
+    TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
+    TRACE_INFO("Running initialization task..\n\r");
     int result = copy_nandflash_binary_to_sdram(false);
 #endif
     if(result != 0) {
@@ -171,13 +172,15 @@ int perform_iobc_copy_operation_to_sdram() {
 	BootSelect boot_select = BOOT_NOR_FLASH;
 	int result = 0;
 	if(boot_select == BOOT_NOR_FLASH) {
-		result = copy_norflash_binary_to_sdram(256);
+		size_t sizeToCopy = 0;
+		memcpy(&sizeToCopy, (const void *) (NORFLASH_SA5_ADDRESS + 0x14), 4);
+		result = copy_norflash_binary_to_sdram(sizeToCopy);
 	}
 	else {
 		result = copy_sdcard_binary_to_sdram(boot_select);
 		if(result != 0) {
 			// fatal failure. boot from NOR-Flash
-			result = copy_norflash_binary_to_sdram(256);
+			//result = copy_norflash_binary_to_sdram(256);
 		}
 	}
 	return result;
@@ -186,12 +189,15 @@ int perform_iobc_copy_operation_to_sdram() {
 
 void idle_loop() {
     uint32_t last_time = RTT_GetTime();
+    LED_dark(led_2);
     for(;;) {
         uint32_t curr_time = RTT_GetTime();
-        if(curr_time - last_time > 2) {
+        if(curr_time - last_time >= 1) {
 #if DEBUG_IO_LIB == 1
             TRACE_INFO("Bootloader idle..\n\r");
 #endif
+            LED_toggle(led_2);
+            //DBGU_PutChar('t');
             last_time = curr_time;
         }
     }
@@ -210,7 +216,15 @@ void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
 
 #ifdef ISIS_OBC_G20
 void init_task(void * args) {
+#if DEBUG_IO_LIB == 1
+	TRACE_INFO("\n\rStarting FreeRTOS task scheduler.\n\r");
+    TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
+    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME);
+    TRACE_INFO_WP("-- Software version v%d.%d --\n\r", SW_VERSION, SW_SUBVERSION);
+    TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
     TRACE_INFO("Running initialization task..\n\r");
+#endif
+
     initialize_iobc_peripherals();
     // perform initialization which needs to be inside a task.
 
@@ -247,7 +261,7 @@ void handler_task(void * args) {
     // Wait for initialization to finish
     vTaskSuspend(NULL);
 
-    perform_bootloader_core_operation();
+    //perform_bootloader_core_operation();
 
     // will not be reached when bootloader is finished.
     idle_loop();

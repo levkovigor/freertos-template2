@@ -1,11 +1,11 @@
 #include "CatchDefinitions.h"
 
-#include <config/objects/Factory.h>
 #include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/storagemanager/LocalPool.h>
 
 #include <catch.hpp>
 #include <CatchDefinitions.h>
+#include <fsfwconfig/objects/Factory.h>
 
 #include <cstring>
 

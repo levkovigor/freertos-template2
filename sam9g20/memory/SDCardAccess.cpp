@@ -9,7 +9,7 @@ extern "C" {
 #include <sam9g20/common/FRAMApi.h>
 }
 
-#include <OBSWConfig.h>
+#include <fsfwconfig/OBSWConfig.h>
 
 SDCardAccessManager* SDCardAccessManager::factoryInstance = nullptr;
 

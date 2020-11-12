@@ -4,7 +4,7 @@
  * @brief	Auto-Generated datapool initialization
  * @date	02.05.2020
  */
-#include <config/cdatapool/dataPoolInit.h>
+#include <fsfwconfig/cdatapool/dataPoolInit.h>
 
 void datapool::dataPoolInit(poolMap * poolMap) {
 

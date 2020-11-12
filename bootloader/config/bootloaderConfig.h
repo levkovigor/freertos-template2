@@ -11,7 +11,7 @@
 
 // Can be used to disable printouts to reduce code size (does not make much of
 // a difference, most of the AT91 lib uses IO so it iss difficult to remove it)
-#define DEBUG_IO_LIB            1
+#define DEBUG_IO_LIB            0
 
 #define ENHANCED_DEBUG_OUTPUT   1
 
