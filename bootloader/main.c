@@ -65,6 +65,9 @@ static TaskHandle_t handler_task_handle_glob = NULL;
  */
 int main()
 {
+	LED_glow(led_2);
+	LED_glow(led_3);
+	LED_glow(led_4);
     //-------------------------------------------------------------------------
     // Configure traces
     //-------------------------------------------------------------------------

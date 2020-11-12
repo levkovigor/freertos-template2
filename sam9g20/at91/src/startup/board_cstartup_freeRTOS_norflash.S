@@ -210,6 +210,18 @@ resetHandler:
         strcc   r3, [r1], #4
         bcc     1b
 
+#ifdef ISIS_OBC_G20
+		ldr     sp, =_sstack
+		stmfd   sp!, {r0}
+		ldr     r0, =initLed
+		blx     r0
+
+		ldr     sp, =_sstack
+ 		stmfd   sp!, {r0}
+ 		ldr     r0, =toggleLed2
+		blx     r0
+#endif
+
 /* Perform low-level initialization of the chip using LowLevelInit() */
 		ldr     sp, =_sstack
 		stmfd   sp!, {r0}
@@ -224,17 +236,6 @@ resetHandler:
         //blx     r0
 #endif
 
-#ifdef ISIS_OBC_G20
-		ldr     sp, =_sstack
-		stmfd   sp!, {r0}
-		ldr     r0, =initLed
-		blx     r0
-
-		//ldr     sp, =_sstack
- 		//stmfd   sp!, {r0}
- 		//ldr     r0, =toggleLed2
-		//blx     r0
-#endif
 
 /* Initialize the postrelocate segment */
 
