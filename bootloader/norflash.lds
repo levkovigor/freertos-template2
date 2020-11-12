@@ -45,18 +45,6 @@ MEMORY
 
 SECTIONS
 {          
-    .prerelocate : AT (_efixed)
-    {
-        . = ALIGN(4);
-        _sprerelocate = .;
-        KEEP(*(.vectors));
-        *board_lowlevel.o(.text*)
-        *board_memories.o(.text*)
-        *(.sramfunc*)
-        . = ALIGN(4);
-        _eprerelocate = .;
-    } >sram0
-    
     .fixed :
     {
         . = ALIGN(4);
@@ -69,12 +57,29 @@ SECTIONS
         *(.CP15_*)	
         KEEP (*(.init))
     	KEEP (*(.fini))
-     	. = ALIGN(4);
-        _efixedsec = .;
+        . = ALIGN(4);
+		/* preinit data */
+		PROVIDE_HIDDEN (__preinit_array_start = .);
+		KEEP(*(.preinit_array))
+		PROVIDE_HIDDEN (__preinit_array_end = .);
+		
+		. = ALIGN(4);
+		/* init data, the constructor addresses are placed in this sections */
+		PROVIDE_HIDDEN (__init_array_start = .);
+		KEEP(*(SORT(.init_array.)))
+		KEEP(*(.init_array))
+		PROVIDE_HIDDEN (__init_array_end = .);
+		
+		. = ALIGN(4);
+		/* finit data, destructor addresses are placed in this section */
+		PROVIDE_HIDDEN (__fini_array_start = .);
+		KEEP(*(SORT(.fini_array.)))
+		KEEP(*(.fini_array))
+		PROVIDE_HIDDEN (__fini_array_end = .);
     } >ebi_cs0
 
 	/* used for unwinding, can be useful for debugging  */  
-	.ARM.extab   : AT(_efixedsec) 
+	.ARM.extab (NOLOAD): 
     {  
 		*(.ARM.extab* .gnu.linkonce.armextab.*) 
 	} >ebi_cs0
@@ -86,35 +91,21 @@ SECTIONS
 		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
 	} >ebi_cs0
     __exidx_end = .;
-    
-    .preinit_array ALIGN(4): 
-	{
-        PROVIDE_HIDDEN (__preinit_array_start = .);
-        KEEP(*(.preinit_array))
-        PROVIDE_HIDDEN (__preinit_array_end = .);
-    } >ebi_cs0
 
-	/* init data, the constructor addresses are placed in this sections */
-    .init_array ALIGN(4): 
-    {
-        PROVIDE_HIDDEN (__init_array_start = .);
-        KEEP(*(SORT(.init_array.)))
-		KEEP(*(.init_array))
-        PROVIDE_HIDDEN (__init_array_end = .);
-    } >ebi_cs0
-
-	/* finit data, destructor addresses are placed in this section */
-    .fini_array ALIGN(4): 
-    {
-     	
-		PROVIDE_HIDDEN (__fini_array_start = .);
-		KEEP(*(SORT(.fini_array.)))
-		KEEP(*(.fini_array))
-		PROVIDE_HIDDEN (__fini_array_end = .);
-    } >ebi_cs0
-    
     . = ALIGN(4);
     _efixed = .;
+    
+    .prerelocate : AT (_efixed)
+    {
+        . = ALIGN(4);
+        _sprerelocate = .;
+        KEEP(*(.vectors));
+        *board_lowlevel.o(.text*)
+        *board_memories.o(.text*)
+        *(.sramfunc*)
+        . = ALIGN(4);
+        _eprerelocate = .;
+    } >sram0
     
     .postrelocate : AT (_efixed + SIZEOF(.prerelocate))
     {
@@ -128,7 +119,7 @@ SECTIONS
         _epostrelocate = .;
     } >sram0
 
-    .bss : AT (_efixed + SIZEOF(.prerelocate) + SIZEOF(.postrelocate))
+    .bss (NOLOAD) :
     {
         /* This is used by the startup in order to initialize the .bss secion */
 	    _sbss = .;         /* define a global symbol at bss start */
@@ -144,10 +135,12 @@ SECTIONS
     } >sram1
     
     /* Heap section */
+    . = ALIGN(4);
 	_sheap_ = .;
+	end = .;
 	_eheap_ = 0x302000;
     
     /* top of stack */
     _sstack = 0x304000;
 }
-end = .;
+
