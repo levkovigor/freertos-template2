@@ -109,7 +109,8 @@ void LowLevelInit(void)
 {
     unsigned char i;
 
-#ifndef sdram
+    // Still do this for SDRAM because SAM-BA low level init is crap.
+//#ifndef sdram
     /* Initialize main oscillator
      ****************************/
     AT91C_BASE_PMC->PMC_MOR = BOARD_OSCOUNT | AT91C_CKGR_MOSCEN;
@@ -144,7 +145,7 @@ void LowLevelInit(void)
     /* Switch to PLL + prescaler */
     AT91C_BASE_PMC->PMC_MCKR |= AT91C_PMC_CSS_PLLA_CLK;
     while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY));
-#endif
+//#endif
 
     /* Initialize AIC
      ****************/

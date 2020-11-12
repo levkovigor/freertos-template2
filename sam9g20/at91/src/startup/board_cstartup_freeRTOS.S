@@ -31,7 +31,7 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <board.h>
+#include "board.h"
 
 //------------------------------------------------------------------------------
 //         Definitions
@@ -52,15 +52,11 @@
 #define SVC_STACK_SIZE	0x00018000		/* Stack size for "SVC" supervisor mode                 */
 #endif
 
-#define ARM_MODE_USR	0x10	/* Normal User Mode											*/
-#define ARM_MODE_FIQ	0x11	/* FIQ Processing Fast Interrupts Mode						*/
-#define ARM_MODE_IRQ	0x12	/* IRQ Processing Standard Interrupts Mode					*/
-#define ARM_MODE_SVC	0x13	/* Supervisor Processing Software Interrupts Mode			*/
-#define ARM_MODE_ABT	0x17	/* Abort Processing memory Faults Mode						*/
-#define ARM_MODE_UND	0x1B	/* Undefined Processing Undefined Instructions Mode			*/
-#define ARM_MODE_SYS	0x1F	/* System Running Priviledged Operating System Tasks Mode	*/
-
-#define MODE_MSK         0x1F
+#define ARM_MODE_ABT     0x17
+#define ARM_MODE_FIQ     0x11
+#define ARM_MODE_IRQ     0x12
+#define ARM_MODE_SVC     0x13
+#define ARM_MODE_SYS     0x1F
 
 #define I_BIT            0x80
 #define F_BIT            0x40
@@ -84,11 +80,9 @@ swiVector:
 		ldr     pc, =vPortYieldProcessor /* Software interrupt */
 
 prefetchAbortVector:
-		ldr     pc, =prefetch_abort_irq_handler
-//      b       prefetchAbortVector     /* Prefetch abort */
+        b       prefetchAbortVector     /* Prefetch abort */
 dataAbortVector:
-		ldr     pc, =data_abort_irq_handler
-//      b       dataAbortVector			/* Data abort */
+        b       dataAbortVector         /* Data abort */
 reservedVector:
         b       reservedVector          /* Reserved for future use */
 irqVector:
@@ -219,55 +213,11 @@ resetHandler:
         strcc   r3, [r1], #4
         bcc     1b
 
-#ifdef sdram
-/* Initialize the sram data segment */
-/* Only execute this when the code is running from SDRAM */
-/* When the code runs from NORFLASH this part of the postrelocate section which is handled above */
-        ldr     r1, =_ssramdata
-        ldr     r2, =_esramdata
-1:
-        cmp     r1, r2
-        ldrcc   r3, [r0], #4
-        strcc   r3, [r1], #4
-        bcc     1b
-
-/* Only execute this when the code is running from SDRAM */
-/* When the code runs from NORFLASH this is the same as normal bss which is handled above */
-/* Clear the SRAM zero segment */
-        ldr     r0, =_ssrambss
-        ldr     r1, =_esrambss
-        mov     r2, #0
-1:
-        cmp     r0, r1
-        strcc   r2, [r0], #4
-        bcc     1b
-#endif
-
 /* Perform low-level initialization of the chip using LowLevelInit() */
-		ldr     sp, =_sstack
-		stmfd   sp!, {r0}
-		ldr     r0, =LowLevelInit
-		blx     r0
-
-#ifdef ISIS_OBC_G20
-/* Initiate external watchdog to prevent restart */
-        //ldr     sp, =_sstack
-        //stmfd   sp!, {r0}
-	    //ldr     r0, =initiateIsisWatchdog
-        //blx     r0
-#endif
-
-#ifdef ISIS_OBC_G20
-		ldr     sp, =_sstack
-		stmfd   sp!, {r0}
-		ldr     r0, =initLed
-		blx     r0
-
-		//ldr     sp, =_sstack
- 		//stmfd   sp!, {r0}
- 		//ldr     r0, =toggleLed2
-		//blx     r0
-#endif
+        ldr     sp, =_sstack
+        stmfd   sp!, {r0}
+	    ldr     r0, =LowLevelInit
+        blx     r0
 
 /* Initialize the postrelocate segment */
 
@@ -280,11 +230,43 @@ resetHandler:
         strcc   r3, [r1], #4
         bcc     1b
 
+#ifdef sdram
+/* Initialize the sram data segment */
+/* Only execute this when the code is running from SDRAM */
+/* When the code runs from NORFLASH this part of the postrelocate section which is handled above */
+        ldr     r1, =_ssramdata
+        ldr     r2, =_esramdata
+1:
+        cmp     r1, r2
+        ldrcc   r3, [r0], #4
+        strcc   r3, [r1], #4
+        bcc     1b
+#endif
+
 /* Clear the zero segment */
-        ldr     sp, =_sstack
-        stmfd   sp!, {r0}
-	    ldr     r0, =clearBssSection
-        blx     r0
+	    ldr     r0, =__bss_start__
+        ldr     r1, =__bss_end__
+        mov     r2, #0
+1:
+        cmp     r0, r1
+        strcc   r2, [r0], #4
+        bcc     1b
+
+#ifdef sdram
+/* Only execute this when the code is running from SDRAM */
+/* When the code runs from NORFLASH this is the same as normal bss which is handled above */
+/* Clear the SRAM zero segment */
+        ldr     r0, =_ssrambss
+        ldr     r1, =_esrambss
+        mov     r2, #0
+1:
+        cmp     r0, r1
+        strcc   r2, [r0], #4
+        bcc     1b
+#endif
+
+
+
 
 /* Setup stacks
  **************/
@@ -329,11 +311,9 @@ resetHandler:
  * libc_init_array runs through the list of static constructor addresses
  * placed in the .init_array and calls all static constructors (in case of the FSFW for example the DataPool::DataPool)
  */
-#ifndef norflash
 		ldr r0,=__libc_init_array
 		mov lr,pc /* set the return address */
 		bx r0 /* the target code can be ARM or THUMB */
-#endif
 
 /* Branch to main()
  ******************/
