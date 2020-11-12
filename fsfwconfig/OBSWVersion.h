@@ -3,6 +3,6 @@
 
 #define SW_VERSION          1
 #define SW_SUBVERSION       8
-#define SW_SUBSUBVERSION    0
+#define SW_SUBSUBVERSION    1
 
 #endif /* FSFWCONFIG_OBSWVERSION_H_ */
