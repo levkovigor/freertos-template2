@@ -146,6 +146,11 @@ void perform_bootloader_core_operation() {
 #ifdef ISIS_OBC_G20
 	int result = perform_iobc_copy_operation_to_sdram();
 #elif defined(AT91SAM9G20_EK)
+    TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
+    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME);
+    TRACE_INFO_WP("-- Software version v%d.%d --\n\r", SW_VERSION, SW_SUBVERSION);
+    TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
+    TRACE_INFO("Running initialization task..\n\r");
     int result = copy_nandflash_binary_to_sdram(false);
 #endif
     if(result != 0) {
