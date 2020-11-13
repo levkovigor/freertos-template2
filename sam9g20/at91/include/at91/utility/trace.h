@@ -71,6 +71,7 @@
 
 #include <board.h>
 #include <at91/peripherals/dbgu/dbgu.h>
+#include <at91/peripherals/pio/pio.h>
 #include <stdio.h>
 
 //------------------------------------------------------------------------------

@@ -1,3 +1,6 @@
+#include <iobc/bootIOBC.h>
+
+#include <config/bootloaderConfig.h>
 #include <core/watchdog.h>
 
 #include <hal/Drivers/LED.h>
@@ -58,9 +61,9 @@ int iobc_sram() {
     //-------------------------------------------------------------------------
     // AT91 Bootloader
     //-------------------------------------------------------------------------
-    //perform_bootloader_core_operation();
+    perform_bootloader_core_operation();
 
-    idle_loop();
+    //idle_loop();
     return 0;
 }
 

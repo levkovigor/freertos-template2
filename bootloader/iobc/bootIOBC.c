@@ -30,6 +30,11 @@ int perform_iobc_copy_operation_to_sdram() {
         size_t sizeToCopy = 0;
         memcpy(&sizeToCopy, (const void *) (NOR_FLASH_BASE_ADDRESS_READ +
                 NORFLASH_SA5_ADDRESS + 0x14), 4);
+#if DEBUG_IO_LIB == 1
+        TRACE_INFO("Detected binary size from sixth ARM vector at address 0x%8x: %d",
+        		(unsigned int) NOR_FLASH_BASE_ADDRESS_READ + NORFLASH_SA5_ADDRESS + 0x14,
+				(int) sizeToCopy);
+#endif
         result = copy_norflash_binary_to_sdram(sizeToCopy);
     }
     else {

@@ -114,7 +114,7 @@ void LowLevelInit(void)
     // Sometimes we have do this for SDRAM because SAM-BA low level init
     // does not configure the SDRAM correctly! For J-Link flashes, this should
     // not be required.
-#ifndef sdram
+//#ifndef sdram
     /* Initialize main oscillator
      ****************************/
     AT91C_BASE_PMC->PMC_MOR = BOARD_OSCOUNT | AT91C_CKGR_MOSCEN;
@@ -149,7 +149,7 @@ void LowLevelInit(void)
     /* Switch to PLL + prescaler */
     AT91C_BASE_PMC->PMC_MCKR |= AT91C_PMC_CSS_PLLA_CLK;
     while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY));
-#endif
+//#endif
 
     /* Initialize AIC
      ****************/

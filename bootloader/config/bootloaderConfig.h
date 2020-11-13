@@ -14,7 +14,7 @@
 #ifdef AT91SAM9G20_EK
 #define DEBUG_IO_LIB            1
 #else
-#define DEBUG_IO_LIB            0
+#define DEBUG_IO_LIB            1
 #endif
 
 #define ENHANCED_DEBUG_OUTPUT   1
