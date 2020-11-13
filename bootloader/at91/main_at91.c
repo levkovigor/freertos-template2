@@ -24,13 +24,15 @@
 
 #include <stdbool.h>
 #include <string.h>
+
 int perform_bootloader_core_operation();
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
 void idle_loop();
 
 /**
  * @brief   Bootloader which will copy the primary software to SDRAM and
- *          execute it
+ *          execute it. This is the implementation for the AT91SAM9G20-EK
+ *          and its NAND-Flash.
  * @author  R. Mueller
  */
 int at91_main()
