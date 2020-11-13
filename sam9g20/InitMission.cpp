@@ -62,6 +62,8 @@ void boardTestTaskInit();
 #endif
 void genericMissedDeadlineFunc();
 void printAddError(object_id_t objectId);
+void initTasks(void);
+void runMinimalTask(void);
 
 /**
  * @brief   Initializes mission specific implementation of FSFW,
@@ -100,16 +102,25 @@ void initMission(void) {
 
     sif::info << "Initiating mission specific code." << std::endl;
 
-    ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     // Allocate object manager here, as global constructors
     // might not be executed, depending on buildchain
-    sif::info << "Creating objects." << std::endl;
-    objectManager = new ObjectManager(Factory::produce);
+    bool performSimpleTest = true;
 
-    objectManager -> initialize();
+    if(performSimpleTest) {
+        sif::info << "Creating objects." << std::endl;
+        objectManager = new ObjectManager(Factory::produce);
+        objectManager -> initialize();
+        sif::info << "Creating tasks.." << std::endl;
+        initTasks();
+    }
+    else {
+    	runMinimalTask();
+    }
 
-    sif::info << "Creating tasks.." << std::endl;
+}
 
+void initTasks(void) {
+	ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     /* TMTC Communication Tasks */
     PeriodicTaskIF * TmTcPollingTask = nullptr;
     PeriodicTaskIF* TmTcBridge = nullptr;
@@ -476,5 +487,12 @@ void genericMissedDeadlineFunc() {
     sif::debug << "PeriodicTask: " << pcTaskGetName(NULL) <<
             " missed deadline!" << std::endl;
 #endif
+}
+
+void runMinimalTask(void) {
+    while(1) {
+    	sif::info << "Alive" << std::endl;
+    	vTaskDelay(1000);
+    }
 }
 

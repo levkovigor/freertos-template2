@@ -31,9 +31,9 @@ int perform_iobc_copy_operation_to_sdram() {
         memcpy(&sizeToCopy, (const void *) (NOR_FLASH_BASE_ADDRESS_READ +
                 NORFLASH_SA5_ADDRESS + 0x14), 4);
 #if DEBUG_IO_LIB == 1
-        TRACE_INFO("Detected binary size from sixth ARM vector at address 0x%8x: %d",
+        TRACE_INFO("Detected binary size from sixth ARM vector at address 0x%8x: %u\n\r",
         		(unsigned int) NOR_FLASH_BASE_ADDRESS_READ + NORFLASH_SA5_ADDRESS + 0x14,
-				(int) sizeToCopy);
+				(unsigned int) sizeToCopy);
 #endif
         result = copy_norflash_binary_to_sdram(sizeToCopy);
     }
@@ -60,7 +60,7 @@ int copy_norflash_binary_to_sdram(size_t binary_size)
     // Transfert data from Nor to External RAM
     //-------------------------------------------------------------------------
 
-	binary_size = 0x100000 - 5 * 8192;
+	//binary_size = 0x100000 - 5 * 8192;
     // Need to test how long copying that much data takes, we might still
     // have to feed the watchdog..
     // For now, we copy in buckets instead of one go.
