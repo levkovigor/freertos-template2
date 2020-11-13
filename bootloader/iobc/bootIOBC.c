@@ -12,6 +12,7 @@
 
 //static uint8_t read_buffer[256 * 11];
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
+void jump_to_main_application(void);
 
 void perform_bootloader_core_operation() {
     int result = perform_iobc_copy_operation_to_sdram();
@@ -19,6 +20,7 @@ void perform_bootloader_core_operation() {
         // error
     }
 
+    //jump_to_main_application();
     go_to_jump_address(SDRAM_DESTINATION, 0);
 }
 
@@ -148,3 +150,7 @@ void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
     while(1);//never reach
 }
 
+void jump_to_main_application() __attribute__((naked));
+void jump_to_main_application() {
+
+}

@@ -291,7 +291,7 @@ resetHandler:
         # sub     r0, r0, #FIQ_STACK_SIZE
 
 /* Supervisor mode (interrupts enabled) */
-        msr     CPSR_c, #ARM_MODE_SVC |I_BIT | F_BIT
+        msr     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
         mov     sp, r0
         sub     r0, r0, #SVC_STACK_SIZE
 
