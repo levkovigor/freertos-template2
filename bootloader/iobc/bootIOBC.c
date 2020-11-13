@@ -1,5 +1,5 @@
 #include "bootIOBC.h"
-#include "../watchdog.h"
+#include <core/watchdog.h>
 
 #include <utility/trace.h>
 #include <utility/CRC.h>
