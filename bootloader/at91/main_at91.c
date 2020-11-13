@@ -3,6 +3,7 @@
 
 #include <board.h>
 #include <AT91SAM9G20.h>
+#include <led_ek.h>
 #include <board_memories.h>
 #include <peripherals/dbgu/dbgu.h>
 #include <peripherals/pio/pio.h>
@@ -72,6 +73,8 @@ int at91_main()
     //-------------------------------------------------------------------------
     BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
 
+    LED_Set(1);
+
     //-------------------------------------------------------------------------
     // AT91SAM9G20-EK Bootloader
     //-------------------------------------------------------------------------
@@ -114,10 +117,14 @@ void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
 }
 
 int perform_bootloader_core_operation() {
+    LED_Set(1);
+    // Clear SDRAM completely.
+    memset((void*) SDRAM_DESTINATION, 0 , 0x100000);
     int result = copy_nandflash_binary_to_sdram(false);
     if(result != 0) {
         return result;
     }
+    LED_Clear(1);
     go_to_jump_address(SDRAM_DESTINATION, 0);
     return 0;
 }

@@ -114,7 +114,7 @@ SECTIONS
         _sprerelocate = .;
         . = ALIGN(4);
         _eprerelocate = .;
-    }
+    } >sram0
     
     /* Will also be copied to SRAM */
     .postrelocate : AT (_sprerelocate + SIZEOF(.prerelocate))
@@ -143,7 +143,7 @@ SECTIONS
         *(.srambss)
         . = ALIGN(4);
         _esrambss = .;
-    }
+    } >sram1
 
     /* this section holds uninitialized global and static data  */
 	.bss (NOLOAD) : 
