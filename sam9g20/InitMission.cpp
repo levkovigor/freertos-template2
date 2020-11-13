@@ -104,9 +104,9 @@ void initMission(void) {
 
     // Allocate object manager here, as global constructors
     // might not be executed, depending on buildchain
-    bool performSimpleTest = true;
+    bool performSimpleTask = true;
 
-    if(performSimpleTest) {
+    if(not performSimpleTask) {
         sif::info << "Creating objects." << std::endl;
         objectManager = new ObjectManager(Factory::produce);
         objectManager -> initialize();
