@@ -37,7 +37,12 @@ ifdef IOBC
 BOARD = ISIS_OBC_G20
 BOARD_NAME = iOBC
 # iOBC-Configuration: Code will be executed in place in the norflash.
+ifdef SRAM
+MEMORY_TYPE = sram
+else
 MEMORY_TYPE = norflash
+endif
+
 else 
 BOARD = AT91SAM9G20_EK
 BOARD_NAME = at91ek
@@ -86,9 +91,14 @@ CORE_PATH = $(BOOTLOADER_PATH)/core
 AT91_PATH = $(BOARD_FILE_ROOT)/at91
 
 LINKER_SCRIPT_PATH = $(BOOTLOADER_PATH)
+ifdef IOBC
 ifeq ($(MEMORY_TYPE), norflash)
 # Link for iOBC
 LINKER_SCRIPT_NAME = norflash.lds
+else
+LINKER_SCRIPT_NAME = sram.lds
+endif
+
 else
 # Link for AT91-EK
 LINKER_SCRIPT_NAME = sram.lds
@@ -198,8 +208,10 @@ INCLUDES :=
 # Source files and includes can be added in those submakefiles.
 SUBDIRS := $(BOOTLOADER_PATH) $(PRIVLIB_PATH) $(AT91_PATH) $(CORE_PATH)
 
-ifeq ($(OS_APP), freeRTOS) 
+ifdef IOBC
+# ifeq ($(MEMORY_TYPE), norflash) 
 SUBDIRS += $(FREERTOS_PATH)
+# endif
 endif
 
 # This is a hack from http://make.mad-scientist.net/the-eval-function/
@@ -452,7 +464,7 @@ ALL_OBJECTS =  $(ASM_OBJECTS) $(C_OBJECTS) $(CXX_OBJECTS) $(FREERTOS_OBJECTS) $(
 # Generates binary and displays all build properties
 # -p with mkdir ignores error and creates directory when needed.
 
-# SHOW_DETAILS = 1
+SHOW_DETAILS = 1
 
 $(BINDIR)/$(BINARY_NAME).bin: $(BINDIR)/$(BINARY_NAME).elf
 	@echo

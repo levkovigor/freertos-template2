@@ -2,6 +2,8 @@
 #include "config/bootloaderConfig.h"
 
 #include <iobc/bootIOBC.h>
+#include <sam9g20/memory/SDCardApi.h>
+#include <sam9g20/common/FRAMApi.h>
 
 #include <board.h>
 #include <AT91SAM9G20.h>
@@ -15,8 +17,8 @@
 #include <utility/trace.h>
 #endif
 
-#include <hal/Timing/RTT.h>
 #include <hal/Drivers/LED.h>
+#include <hal/Timing/RTT.h>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -29,14 +31,10 @@
 #include <stdbool.h>
 #include <string.h>
 
-
-void initialize_iobc_peripherals();
-void perform_bootloader_core_operation();
-int perform_iobc_copy_operation_to_sdram();
 void init_task(void* args);
 void handler_task(void * args);
+void initialize_all_iobc_peripherals();
 
-void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
 void idle_loop();
 
 static TaskHandle_t handler_task_handle_glob = NULL;
@@ -44,9 +42,6 @@ static TaskHandle_t handler_task_handle_glob = NULL;
 static const uint32_t WATCHDOG_KICK_INTERVAL_MS = 15;
 
 int iobc_norflash() {
-    LED_glow(led_2);
-    LED_glow(led_3);
-    LED_glow(led_4);
     //-------------------------------------------------------------------------
     // Configure traces
     //-------------------------------------------------------------------------
@@ -71,6 +66,9 @@ int iobc_norflash() {
     CP15_Enable_I_Cache();
 
     LED_start();
+    LED_glow(led_2);
+    LED_glow(led_3);
+    LED_glow(led_4);
 
     //-------------------------------------------------------------------------
     // Configure SDRAM
@@ -98,25 +96,7 @@ int iobc_norflash() {
     return 0;
 }
 
-int perform_iobc_copy_operation_to_sdram() {
-    // determine which binary should be copied to SDRAM first.
-    BootSelect boot_select = BOOT_NOR_FLASH;
-    int result = 0;
-    if(boot_select == BOOT_NOR_FLASH) {
-        size_t sizeToCopy = 0;
-        memcpy(&sizeToCopy, (const void *) (NOR_FLASH_BASE_ADDRESS_READ +
-                NORFLASH_SA5_ADDRESS + 0x14), 4);
-        result = copy_norflash_binary_to_sdram(sizeToCopy);
-    }
-    else {
-        result = copy_sdcard_binary_to_sdram(boot_select);
-        if(result != 0) {
-            // fatal failure. boot from NOR-Flash
-            //result = copy_norflash_binary_to_sdram(256);
-        }
-    }
-    return result;
-}
+
 
 void init_task(void * args) {
 #if DEBUG_IO_LIB == 1
@@ -127,7 +107,7 @@ void init_task(void * args) {
     TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
     TRACE_INFO("Running initialization task..\n\r");
 #endif
-    initialize_iobc_peripherals();
+    initialize_all_iobc_peripherals();
     // perform initialization which needs to be inside a task.
 
     // start handler task
@@ -144,16 +124,6 @@ void init_task(void * args) {
 }
 
 
-void initialize_iobc_peripherals() {
-    RTT_start();
-    int result = FRAM_start();
-    if(result != 0) {
-        // This should not happen!
-        TRACE_ERROR("initialize_iobc_peripherals: Could not start FRAM!\n\r");
-    }
-}
-
-
 void handler_task(void * args) {
 #if DEBUG_IO_LIB == 1
     TRACE_INFO("Running handler task..\n\r");
@@ -167,39 +137,111 @@ void handler_task(void * args) {
     idle_loop();
 }
 
-void perform_bootloader_core_operation() {
-    int result = perform_iobc_copy_operation_to_sdram();
+void initialize_all_iobc_peripherals() {
+    RTT_start();
+    int result = FRAM_start();
     if(result != 0) {
-        // error
-    }
-
-    go_to_jump_address(SDRAM_DESTINATION, 0);
-}
-
-void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
-{
-    typedef void (*fctType) (volatile unsigned int, volatile unsigned int);
-    void (*pFct) (volatile unsigned int r0_val, volatile unsigned int r1_val);
-
-    pFct = (fctType) jumpAddr;
-    pFct(0/*dummy value in r0*/, matchType/*matchType in r1*/);
-
-    while(1);//never reach
-}
-
-void idle_loop() {
-    uint32_t last_time = RTT_GetTime();
-    LED_dark(led_2);
-    for(;;) {
-        uint32_t curr_time = RTT_GetTime();
-        if(curr_time - last_time >= 1) {
-#if DEBUG_IO_LIB == 1
-            TRACE_INFO("Bootloader idle..\n\r");
-#endif
-            LED_toggle(led_2);
-            //DBGU_PutChar('t');
-            last_time = curr_time;
-        }
+        // This should not happen!
+        TRACE_ERROR("initialize_iobc_peripherals: Could not start FRAM!\n\r");
     }
 }
 
+
+int copy_sdcard_binary_to_sdram(BootSelect boot_select) {
+	int result = open_filesystem(SD_CARD_0);
+	VolumeId current_filesystem = SD_CARD_0;
+	if(result != 0) {
+		// should not happen..
+		result = open_filesystem(SD_CARD_1);
+		if(result != 0) {
+			// not good at all. boot from NOR-Flash instead
+			return -1;
+		}
+		current_filesystem = SD_CARD_1;
+		if ((boot_select == BOOT_SD_CARD_0) ||
+				(boot_select == BOOT_SD_CARD_0_SLOT2)) {
+			// just take the first binary for now
+			boot_select = BOOT_SD_CARD_1;
+		}
+	}
+
+	switch(boot_select) {
+	case(BOOT_SD_CARD_0): {
+		// get repostiory
+		char bin_folder_name[16];
+		// hardcoded
+		//int result = read_sdc_bin_folder_name(bin_folder_name);
+		if(result != 0) {
+			// not good
+		}
+		result = change_directory(bin_folder_name, true);
+		if(result != F_NO_ERROR) {
+			// not good
+		}
+		char binary_name[16];
+		char hamming_name[16];
+		// hardcoded
+		//result = read_sdc1sl1_bin_names(binary_name, hamming_name);
+		if(result != 0) {
+
+		}
+		// read in buckets.. multiple of 256. maybe 10 * 256 bytes?
+		F_FILE* file = f_open(binary_name, "r");
+		if (f_getlasterror() != F_NO_ERROR) {
+			// opening file failed!
+			return -1;
+		}
+		// get total file size.
+		long filesize = f_filelength(binary_name);
+		size_t current_idx = 0;
+		size_t read_bucket_size = 10 * 256;
+		while(true) {
+			// we are close to the end of the file and don't have to read
+			// the full bucket size
+			if(filesize - current_idx < read_bucket_size) {
+				read_bucket_size = filesize - current_idx;
+			}
+			// copy to SDRAM directly
+			size_t bytes_read = f_read(
+					(void *) (SDRAM_DESTINATION + current_idx),
+					sizeof(uint8_t),
+					read_bucket_size,
+					file);
+			if(bytes_read == -1) {
+				// this should definitely not happen
+				// we need to ensure we will not be locked in a permanent loop.
+			}
+			else if(bytes_read < 10 * 256) {
+				// should not happen!
+			}
+
+			// now we could perform the hamming check on the RAM code directly
+			// If the last bucket is smaller than 256, we pad with 0
+			// and assume the hamming code calculation was performed with
+			// padding too.
+			current_idx += bytes_read;
+			if(current_idx >= filesize) {
+				break;
+			}
+
+		}
+
+
+		break;
+	}
+	case(BOOT_SD_CARD_0_SLOT2): {
+		break;
+	}
+	case(BOOT_SD_CARD_1): {
+		break;
+	}
+	case(BOOT_SD_CARD_1_SLOT2): {
+		break;
+	}
+	case(BOOT_NOR_FLASH): {
+		return -1;
+	}
+	}
+	close_filesystem(current_filesystem);
+	return 0;
+}
