@@ -31,8 +31,12 @@ void idle_loop();
 
 /**
  * @brief   Bootloader which will copy the primary software to SDRAM and
- *          execute it. This is the implementation for the AT91SAM9G20-EK
- *          and its NAND-Flash.
+ *          execute it.
+ * @details
+ * This is the implementation for the AT91SAM9G20-EK  and its NAND-Flash.
+ * Please note that the compiled binary needs to be smaller than 16kB to fit
+ * into SRAM. When written with SAM-BA, use ther special option "Send Boot File"
+ * to ensure the sixth ARM vector is set to the binary size.
  * @author  R. Mueller
  */
 int at91_main()
@@ -43,6 +47,18 @@ int at91_main()
 #if DEBUG_IO_LIB == 1
     TRACE_CONFIGURE(DBGU_STANDARD, 115200, BOARD_MCK);
 #endif
+    //-------------------------------------------------------------------------
+    // Enable I-Cache
+    //-------------------------------------------------------------------------
+    CP15_Enable_I_Cache();
+
+#if DEBUG_IO_LIB == 1
+    TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
+    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME);
+    TRACE_INFO_WP("-- Software version v%d.%d --\n\r", SW_VERSION, SW_SUBVERSION);
+    TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
+    TRACE_INFO("Running initialization task..\n\r");
+#endif
 
     //-------------------------------------------------------------------------
     // Initiate periodic MS interrupt
@@ -50,11 +66,6 @@ int at91_main()
 #ifndef ISIS_OBC_G20
     setup_timer_interrupt();
 #endif
-
-    //-------------------------------------------------------------------------
-    // Enable I-Cache
-    //-------------------------------------------------------------------------
-    CP15_Enable_I_Cache();
 
     //-------------------------------------------------------------------------
     // Configure SDRAM

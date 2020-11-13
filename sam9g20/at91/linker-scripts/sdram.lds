@@ -86,6 +86,7 @@ SECTIONS
 		KEEP(*(SORT(.fini_array.)))
 		KEEP(*(.fini_array))
 		PROVIDE_HIDDEN (__fini_array_end = .);
+		. = ALIGN(4);
 	} >sdram
 
 	/* used for unwinding, can be useful for debugging  */  
@@ -142,7 +143,7 @@ SECTIONS
         *(.srambss)
         . = ALIGN(4);
         _esrambss = .;
-    } >sram1
+    }
 
     /* this section holds uninitialized global and static data  */
 	.bss (NOLOAD) : 
