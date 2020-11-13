@@ -117,7 +117,7 @@ SECTIONS
     } >sram0
     
     /* Will also be copied to SRAM */
-    .postrelocate : AT (_sprerelocate + SIZEOF(.prerelocate))
+    .postrelocate : AT (_efixed + SIZEOF(.prerelocate))
     {
         . = ALIGN(4);
         _spostrelocate = .;
@@ -127,7 +127,7 @@ SECTIONS
         _epostrelocate = .;
     } >sram0 
          
-    .sramdata : AT (_sprerelocate + SIZEOF(.prerelocate) + SIZEOF(.postrelocate))
+    .sramdata : AT (_efixed + SIZEOF(.prerelocate) + SIZEOF(.postrelocate))
     {
         . = ALIGN(4);
         _ssramdata = .;
