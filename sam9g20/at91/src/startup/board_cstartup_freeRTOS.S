@@ -321,3 +321,11 @@ resetHandler:
 1:
         b       1b
 
+		.globl jumpToSdramApplication
+		.align 4
+		.type jumpToSdramApplication, %function
+jumpToSdramApplication:
+		msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
+		ldr r0,=0x20000000
+		mov pc,r0
+
