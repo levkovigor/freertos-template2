@@ -126,7 +126,7 @@ SECTIONS
     	*(.srambss*)
     	. = ALIGN(4);
     	_esrambss = .;
-    }
+    } >sram0
 
     .bss (NOLOAD) : 
     {
