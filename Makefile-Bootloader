@@ -144,10 +144,10 @@ OPTIMIZATION = -O0
 BUILDPATH = _bin
 DEPENDPATH = _dep
 OBJECTPATH = _obj
-ifeq ($(MAKECMDGOALS),mission)
-BUILD_FOLDER = mission
+ifeq ($(MEMORY_TYPE),norflash)
+BUILD_FOLDER = norflash
 else 
-BUILD_FOLDER = devel
+BUILD_FOLDER = sram
 endif
 
 DEPENDDIR = $(DEPENDPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)
