@@ -173,7 +173,8 @@ int perform_iobc_copy_operation_to_sdram() {
 	int result = 0;
 	if(boot_select == BOOT_NOR_FLASH) {
 		size_t sizeToCopy = 0;
-		memcpy(&sizeToCopy, (const void *) (NORFLASH_SA5_ADDRESS + 0x14), 4);
+		memcpy(&sizeToCopy, (const void *) (NOR_FLASH_BASE_ADDRESS_READ +
+		        NORFLASH_SA5_ADDRESS + 0x14), 4);
 		result = copy_norflash_binary_to_sdram(sizeToCopy);
 	}
 	else {
@@ -205,10 +206,10 @@ void idle_loop() {
 
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
 {
-    typedef void(*fctType)(volatile unsigned int, volatile unsigned int);
-    void(*pFct)(volatile unsigned int r0_val, volatile unsigned int r1_val);
+    typedef void (*fctType) (volatile unsigned int, volatile unsigned int);
+    void (*pFct) (volatile unsigned int r0_val, volatile unsigned int r1_val);
 
-    pFct = (fctType)jumpAddr;
+    pFct = (fctType) jumpAddr;
     pFct(0/*dummy value in r0*/, matchType/*matchType in r1*/);
 
     while(1);//never reach
