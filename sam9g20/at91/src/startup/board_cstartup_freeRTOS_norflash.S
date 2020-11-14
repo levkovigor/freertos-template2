@@ -303,17 +303,17 @@ resetHandler:
  */
         msr     CPSR_c, #ARM_MODE_SVC | F_BIT
 
-/* Call static constructors
+/* Call static constructors.
  * this call deactivates the interrupts agein
  * interrutps are enabled agein when the freertos scheduler starts
  * libc_init_array runs through the list of static constructor addresses
- * placed in the .init_array and calls all static constructors (in case of the FSFW for example the DataPool::DataPool)
+ * placed in the .init_array and calls all static constructors
+ * (in case of the FSFW for example the DataPool::DataPool).
+ * This is only required for C++ code.
  */
-#ifndef norflash
-		ldr r0,=__libc_init_array
-		mov lr,pc /* set the return address */
-		bx r0 /* the target code can be ARM or THUMB */
-#endif
+		# ldr r0,=__libc_init_array
+		# mov lr,pc /* set the return address */
+		# bx r0 /* the target code can be ARM or THUMB */
 
 /* Branch to main()
  ******************/
