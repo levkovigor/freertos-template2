@@ -298,8 +298,10 @@ resetHandler:
         msr     CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
         mov     sp, r0
 
-/* Start in supervisor mode, Operation will switch to system mode when the first task starts */
-        msr     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
+/* Start in supervisor mode,with enabled interrupts.
+ * Operation will switch to system mode when the first task starts
+ */
+        msr     CPSR_c, #ARM_MODE_SVC | F_BIT
 
 /* Call static constructors
  * this call deactivates the interrupts agein
