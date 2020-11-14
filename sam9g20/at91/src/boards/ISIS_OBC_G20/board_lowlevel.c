@@ -137,9 +137,9 @@ void assignBusMatrixPriorities() {
 /// This function also reset the AIC and disable RTT and PIT interrupts
 //------------------------------------------------------------------------------
 #ifdef norflash
-void LowLevelInit(void) __attribute__ ((section(".sramfunc")/*,optimize("O0")*/));
+void LowLevelInit(void) __attribute__ ((section(".sramfunc"), optimize("O0")));
 #else
-void LowLevelInit(void) /*__attribute__ ((optimize("O0"))) */;
+void LowLevelInit(void) __attribute__ ((optimize("O0"))) ;
 #endif
 void LowLevelInit(void)
 {
