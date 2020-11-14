@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <main.h>
 
+void perform_bootloader_core_operation();
 int perform_iobc_copy_operation_to_sdram();
 void idle_loop();
 
