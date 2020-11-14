@@ -45,9 +45,7 @@ int iobc_norflash() {
     //-------------------------------------------------------------------------
     // Configure traces
     //-------------------------------------------------------------------------
-#if DEBUG_IO_LIB == 1
     TRACE_CONFIGURE(DBGU_STANDARD, 115200, BOARD_MCK);
-#endif
 
     //-------------------------------------------------------------------------
     // Initiate watchdog for iOBC
@@ -106,6 +104,8 @@ void init_task(void * args) {
     TRACE_INFO_WP("-- Software version v%d.%d --\n\r", SW_VERSION, SW_SUBVERSION);
     TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
     TRACE_INFO("Running initialization task..\n\r");
+#else
+    TRACE_INFO("\n\rSOURCE Bootloader\n\r");
 #endif
     initialize_all_iobc_peripherals();
     // perform initialization which needs to be inside a task.
