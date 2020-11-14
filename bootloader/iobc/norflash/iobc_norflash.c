@@ -68,11 +68,6 @@ int iobc_norflash() {
     LED_glow(led_3);
     LED_glow(led_4);
 
-    //-------------------------------------------------------------------------
-    // Configure SDRAM
-    //-------------------------------------------------------------------------
-    BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
-
 #ifndef ISIS_OBC_G20
     feed_watchdog_if_necessary();
 #endif

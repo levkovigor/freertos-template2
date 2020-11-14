@@ -253,27 +253,6 @@ void initiateIsisWatchdog() {
     WDT_forceKick();
 }
 
-
-void initLed(void) __attribute__ ((section(".sramfunc")));
-void initLed(void) {
-	LED_start();
-}
-
-void toggleLed2(void) __attribute__ ((section(".sramfunc")));
-void toggleLed2(void) {
-	LED_toggle(led_2);
-}
-
-void toggleLed3(void) __attribute__ ((section(".sramfunc")));
-void toggleLed3(void) {
-	LED_toggle(led_3);
-}
-
-void toggleLed4(void) __attribute__ ((section(".sramfunc")));
-void toggleLed4(void) {
-	LED_toggle(led_4);
-}
-
 #endif
 
 
