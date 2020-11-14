@@ -1,8 +1,8 @@
 #ifndef BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_
 #define BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_
 
-#define SW_VERSION      0
-#define SW_SUBVERSION   1
+#define SW_VERSION      1
+#define SW_SUBVERSION   0
 
 #ifdef AT91SAM9G20_EK
 // This should translate to the second block of the NAND flash.
@@ -10,7 +10,7 @@
 #endif
 
 // Can be used to disable printouts to reduce code size (does not make much of
-// a difference, most of the AT91 lib uses IO so it iss difficult to remove it)
+// a difference, most of the AT91 lib uses IO so it is difficult to remove it)
 #ifdef AT91SAM9G20_EK
 #define DEBUG_IO_LIB            1
 #else
@@ -25,6 +25,7 @@
  * Enable this when using SAM-BA!
  */
 #define USE_FIXED_BINARY_SIZE   0
+
 /**
  *  Binary size in bytes.
  *  Adapt theses sizes as the binary grows.
