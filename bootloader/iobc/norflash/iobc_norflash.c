@@ -68,20 +68,15 @@ int iobc_norflash() {
     LED_glow(led_3);
     LED_glow(led_4);
 
-#ifndef ISIS_OBC_G20
-    feed_watchdog_if_necessary();
-#endif
-
     //-------------------------------------------------------------------------
     // iOBC Bootloader
     //-------------------------------------------------------------------------
-    // otherwise, try to copy SDCard binary to SDRAM
-    // Core Task. Custom interrupts should be configured inside a task.
     xTaskCreate(handler_task, "HANDLER_TASK", 512, NULL, 2,
             &handler_task_handle_glob);
     xTaskCreate(init_task, "INIT_TASK", 512, handler_task_handle_glob,
             3, NULL);
     vTaskStartScheduler();
+    // This should never be reached.
 #if DEBUG_IO_LIB == 1
     TRACE_ERROR("FreeRTOS scheduler error!\n\r");
 #endif
