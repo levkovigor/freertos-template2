@@ -19,6 +19,10 @@ void perform_bootloader_core_operation() {
         // error
     }
 
+#if DEBUG_IO_LIB == 1
+    TRACE_INFO("Jumping to SDRAM application..\n\r");
+#endif
+
     jumpToSdramApplication();
     //go_to_jump_address(SDRAM_DESTINATION, 0);
 }
