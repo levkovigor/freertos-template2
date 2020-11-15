@@ -282,7 +282,7 @@ resetHandler:
 	sub     r0, r0, #IRQ_STACK_SIZE
 
 /* Abort mode */
-	msr     CPSR_c, #ARM_MODE_ABT| I_BIT | F_BIT
+	msr     CPSR_c, #ARM_MODE_ABT | I_BIT | F_BIT
 	mov     sp, r0
 	sub     r0, r0, #ABT_STACK_SIZE
 
