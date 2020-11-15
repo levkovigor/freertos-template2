@@ -173,7 +173,9 @@ to the 1MB NOR-Flash chip. This is either possible with SAM-BA
 when interfacing the iOBC with a Windows PC and the ISIS SAM-BA application
 installed or by uploading the binary via RS232 (same communication line
 used for TMTC commanding). For remote deployment, only the second
-way is currently possible. Following general steps need to be taken:
+way is currently possible. A recent software version needs to
+be running to perform this step as well.
+Following general steps need to be taken:
 
 1. Transfer the file with to the \_bin folder of
 the remote OBSW folder with SFTP. It is recommended to use Filezilla for this.
