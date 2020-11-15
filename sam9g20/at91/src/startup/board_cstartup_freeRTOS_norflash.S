@@ -36,7 +36,6 @@
 //------------------------------------------------------------------------------
 //         Definitions
 //------------------------------------------------------------------------------
-// Let's assume 8192 bytes available stack space now for non-system modes.
 #define UND_STACK_SIZE	0x00000100		/* Stack size for "undefined instruction" interrupts	*/
 #define ABT_STACK_SIZE	0x00000100		/* Stack size for "abort" interrupts					*/
 #define FIQ_STACK_SIZE	0x00000000		/* Stack size for "FIQ" interrupts						*/
@@ -273,9 +272,9 @@ resetHandler:
         sub     r0, r0, #IRQ_STACK_SIZE
 
 /* Abort mode */
-        msr     CPSR_c, #ARM_MODE_ABT | I_BIT | F_BIT
-        mov     sp, r0
-        sub     r0, r0, #ABT_STACK_SIZE
+		msr     CPSR_c, #ARM_MODE_ABT | I_BIT | F_BIT
+		mov     sp, r0
+		sub     r0, r0, #ABT_STACK_SIZE
 
 /* Undefined mode */
         msr     CPSR_c, #ARM_MODE_UND | I_BIT | F_BIT
@@ -288,7 +287,7 @@ resetHandler:
         # sub     r0, r0, #FIQ_STACK_SIZE
 
 /* Supervisor mode */
-        msr     CPSR_c, #ARM_MODE_SVC |I_BIT | F_BIT
+        msr     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
         mov     sp, r0
         sub     r0, r0, #SVC_STACK_SIZE
 
