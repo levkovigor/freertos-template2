@@ -4,6 +4,7 @@
 #include <hal/Storage/NORflash.h>
 
 #include <stdint.h>
+#include <stddef.h>
 
 /* Address definitions */
 
@@ -32,6 +33,6 @@ static const uint32_t BINARY_BASE_ADDRESS_WRITE = BOOTLOADER_RESERVED_SIZE;
 static const uint32_t BINARY_BASE_ADDRESS_READ = NOR_FLASH_BASE_ADDRESS +
 		BOOTLOADER_RESERVED_SIZE;
 
-
+static const size_t NORFLASH_SIZE = 0x100000;
 
 #endif /* BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_ */

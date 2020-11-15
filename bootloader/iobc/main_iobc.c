@@ -1,3 +1,9 @@
+#ifdef sram
+int iobc_sram();
+#elif defined(norflash)
+int iobc_norflash();
+#endif
+
 /**
  * @brief   Bootloader for the iOBC. Can be compiled for NOR-Flash and SRAM.
  * @author  R. Mueller

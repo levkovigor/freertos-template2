@@ -1,7 +1,9 @@
 #include "main.h"
+#include "iobc_norflash.h"
 #include "config/bootloaderConfig.h"
 
 #include <iobc/bootIOBC.h>
+#include <utility/CRC.h>
 #include <sam9g20/memory/SDCardApi.h>
 #include <sam9g20/common/FRAMApi.h>
 
@@ -32,15 +34,17 @@
 #include <string.h>
 
 void init_task(void* args);
+void perform_bootloader_check();
 void handler_task(void * args);
 void initialize_all_iobc_peripherals();
-void bootloader_check();
+
 
 void idle_loop();
 
 static TaskHandle_t handler_task_handle_glob = NULL;
 
 static const uint32_t WATCHDOG_KICK_INTERVAL_MS = 15;
+static const uint32_t SDRAM0_END = 0x204000;
 
 int iobc_norflash() {
     //-------------------------------------------------------------------------
@@ -87,10 +91,10 @@ int iobc_norflash() {
 }
 
 
-
 void init_task(void * args) {
+	// If we do this check inside a task, the watchdog task can take care of
+	// feeding the watchdog.
 	perform_bootloader_check();
-
 #if DEBUG_IO_LIB == 1
     TRACE_INFO_WP("\n\rStarting FreeRTOS task scheduler.\n\r");
     TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
@@ -117,37 +121,53 @@ void init_task(void * args) {
     vTaskDelete(NULL);
 }
 
-void perform_bootloader_check() __attribute__((section(".sramfunc")));
 void perform_bootloader_check() {
-	// Check CRC of bootloader which will should be located at
-	// 0xA000 -2 and 0xA000 -1.
-	// If it is blank (0x00, 0xff), continue.
-	// If not, check it. If it is invalid copy binary and jump there
-	// immediately to reduce number of  instructions. We could write a special
-	// variable to the end of SRAM0 to notify the primary software that the
-	// bootloader is faulty.
+	/* Check CRC of bootloader which will should be located at
+	0x1000A000 -2 and 0x1000A000 -1.
+	If it is blank (0x00, 0xff), continue and emit warning (it is recommended
+	to write the CRC field when writing the bootloader. If SAM-BA is used
+	this can also be perform in software)
+
+	If not, check it. If it is invalid, copy binary and jump there
+	immediately to reduce number of  instructions. We could write a special
+	variable to the end of SRAM0 to notify the primary software that the
+	bootloader is faulty. */
+
 	uint16_t written_crc16 = 0;
 	size_t bootloader_size = 0;
 	// Bootloader size is written into the sixth ARM vector.
-	memcpy(&bootloader_size, BOOTLOADER_BASE_ADDRESS_READ + 0x14, 4);
+	memcpy(&bootloader_size,
+			(const void *) (BOOTLOADER_BASE_ADDRESS_READ + 0x14), 4);
 	memcpy(&written_crc16, (const void*) (BOOTLOADER_END_ADDRESS_READ - 2),
 			sizeof(written_crc16));
 	if(written_crc16 != 0x00 || written_crc16 != 0xff) {
 		uint16_t calculated_crc = crc16ccitt_default_start_crc(
-				BOOTLOADER_BASE_ADDRESS_READ,
+				(const void *) BOOTLOADER_BASE_ADDRESS_READ,
 				bootloader_size);
 		if(written_crc16 != calculated_crc) {
 			size_t binary_size = 0;
 			memcpy(&binary_size,
 					(const void *) (BINARY_BASE_ADDRESS_READ + 0x14), 4);
-			if(binary_size > 0x100000 - BOOTLOADER_RESERVED_SIZE) {
-				binary_size = 0x100000 - BOOTLOADER_RESERVED_SIZE;
+			if(binary_size > NORFLASH_SIZE - BOOTLOADER_RESERVED_SIZE) {
+				binary_size = NORFLASH_SIZE - BOOTLOADER_RESERVED_SIZE;
 			}
-			memcpy(SDRAM_DESTINATION, BINARY_BASE_ADDRESS_READ, binary_size);
+			memcpy((void*)SDRAM_DESTINATION,
+					(const void*) BINARY_BASE_ADDRESS_READ, binary_size);
+			uint32_t bootloader_faulty_flag = 1;
+			memcpy((void*) (SDRAM0_END - sizeof(bootloader_faulty_flag)),
+					(const void *) &bootloader_faulty_flag,
+					sizeof(bootloader_faulty_flag));
 			jumpToSdramApplication();
 		}
 	}
+	else {
+#if DEBUG_IO_LIB == 1
+		TRACE_WARNING("CRC field at 0x1000A000 - 2 and "
+				"0x1000A000 -1 is blank!\n\r");
+#endif
+	}
 }
+
 
 void handler_task(void * args) {
 #if DEBUG_IO_LIB == 1
