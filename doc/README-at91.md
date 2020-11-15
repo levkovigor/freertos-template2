@@ -51,7 +51,7 @@ the flashed software.  Ensure that Jumper J34 is placed so RomBOOT checks the NA
 
 1. Right click on project sourceobsw-at91sam9g20-ek &rarr; Properties &rarr; 
    C/C++ Build &rarr; . Here, common build commands can be stored as build configurations.
-<img src="./readme_img/build_command.png" width="50%">
+<img src="./readme_img/at91/buildcfg.png" width="50%">
 
 2. Now software can be built by clicking the hammer symbol
 3. Please note that Eclipse CDT has own environmental variables (which are 
