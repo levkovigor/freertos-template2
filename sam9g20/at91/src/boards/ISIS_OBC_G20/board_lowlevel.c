@@ -137,7 +137,7 @@ void assignBusMatrixPriorities() {
 /// This function also reset the AIC and disable RTT and PIT interrupts
 //------------------------------------------------------------------------------
 #ifdef norflash
-void LowLevelInit(void) __attribute__ ((section(".sramfunc"), optimize("O0"),noinline));
+void LowLevelInit(void) __attribute__ ((optimize("O0"),noinline));
 #else
 void LowLevelInit(void) __attribute__ ((optimize("O0"),noinline)) ;
 #endif
@@ -225,7 +225,6 @@ void LowLevelInit(void)
 }
 
 
-void clearBssSection(void) __attribute__ ((section(".sramfunc")));
 void clearBssSection(void) {
     extern char _sbss, _ebss;
     memset(&_sbss, 0, &_ebss - &_sbss);
@@ -247,7 +246,6 @@ void clearBssSection(void) {
 
 #ifdef ISIS_OBC_G20
 
-void initiateIsisWatchdog() __attribute__ ((section(".sramfunc")));
 void initiateIsisWatchdog() {
     WDT_start();
     WDT_forceKick();

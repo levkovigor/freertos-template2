@@ -205,15 +205,6 @@ resetHandler:
 	strcc   r3, [r1], #4
 	bcc     1b
 
-/* SRAM functions are moved to RAM in prerelocate, so we set srambss to 0 */
-	ldr     r0, =_ssrambss
-	ldr     r1, =_esrambss
-	mov     r2, #0
-1:
-	cmp     r0, r1
-	strcc   r2, [r0], #4
-	bcc     1b
-
 /* Perform low-level initialization of the chip using LowLevelInit() */
 	ldr     sp, =_sstack
 	stmfd   sp!, {r0}
@@ -237,6 +228,15 @@ resetHandler:
 	cmp     r1, r2
 	ldrcc   r3, [r0], #4
 	strcc   r3, [r1], #4
+	bcc     1b
+
+/* SRAM functions are moved to RAM in prerelocate, so we set srambss to 0 */
+	ldr     r0, =_ssrambss
+	ldr     r1, =_esrambss
+	mov     r2, #0
+1:
+	cmp     r0, r1
+	strcc   r2, [r0], #4
 	bcc     1b
 
 /* Clear the zero segment */

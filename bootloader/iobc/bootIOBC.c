@@ -10,6 +10,9 @@
 #include <bootloaderConfig.h>
 #include <iobc/norflash/iobc_norflash.h>
 
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+
 //static uint8_t read_buffer[256 * 11];
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
 
@@ -36,9 +39,12 @@ int perform_iobc_copy_operation_to_sdram() {
         memcpy(&sizeToCopy, (const void *) (NOR_FLASH_BASE_ADDRESS_READ +
                 NORFLASH_SA5_ADDRESS + 0x14), 4);
 #if DEBUG_IO_LIB == 1
-        TRACE_INFO("Detected binary size from sixth ARM vector at address 0x%8x: %u\n\r",
-        		(unsigned int) NOR_FLASH_BASE_ADDRESS_READ + NORFLASH_SA5_ADDRESS + 0x14,
+        TRACE_INFO("Detected binary size from sixth ARM vector at address "
+        		"0x%8x: %u\n\r",
+        		(unsigned int) NOR_FLASH_BASE_ADDRESS_READ +
+				NORFLASH_SA5_ADDRESS + 0x14,
 				(unsigned int) sizeToCopy);
+        vTaskDelay(1);
 #endif
         result = copy_norflash_binary_to_sdram(sizeToCopy);
     }

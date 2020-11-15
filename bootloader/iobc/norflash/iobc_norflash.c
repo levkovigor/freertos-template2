@@ -47,8 +47,7 @@ static const uint32_t WATCHDOG_KICK_INTERVAL_MS = 15;
 static const uint32_t SDRAM0_END = 0x204000;
 
 #if DEBUG_IO_LIB == 1
-const char* DEBUG_INTRO_OUTPUT = "\n\rStarting FreeRTOS task scheduler.\n\r" \
-		"-- SOURCE Bootloader --\n\r";
+void print_bl_info();
 #endif
 
 int iobc_norflash() {
@@ -95,26 +94,15 @@ int iobc_norflash() {
     return 0;
 }
 
-
+//void init_task(void * args) __attribute__((section(".sramfunc")));
 void init_task(void * args) {
 	// If we do this check inside a task, the watchdog task can take care of
 	// feeding the watchdog.
 	//perform_bootloader_check();
 #if DEBUG_IO_LIB == 1
-    //TRACE_INFO_WP(DEBUG_INTRO_OUTPUT);
-	{
-	    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME);
-	    TRACE_INFO_WP("-- Software version v%d.%d --\n\r", BL_VERSION,
-	    		BL_SUBVERSION);
-	}
 
-	{
-	    TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
-	    TRACE_INFO("Running initialization task..\n\r");
-	}
-
-#else
-    TRACE_INFO("\n\rSOURCE Bootloader\n\r");
+	vTaskDelay(1);
+	print_bl_info();
 #endif
     initialize_all_iobc_peripherals();
     // perform initialization which needs to be inside a task.
@@ -131,6 +119,24 @@ void init_task(void * args) {
     // Initialization task not needed anymore, deletes itself.
     vTaskDelete(NULL);
 }
+
+//void print_bl_info() __attribute__((section(".sramfunc")));
+void print_bl_info() {
+		TRACE_INFO_WP("\n\rStarting FreeRTOS task scheduler.\n\r");
+		vTaskDelay(1);
+		TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
+		vTaskDelay(1);
+	    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME);
+	    vTaskDelay(1);
+	    TRACE_INFO_WP("-- Software version v%d.%d --\n\r", BL_VERSION,
+	    		BL_SUBVERSION);
+	    vTaskDelay(1);
+	    TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
+	    vTaskDelay(1);
+	    TRACE_INFO("Running initialization task..\n\r");
+	    vTaskDelay(1);
+}
+
 
 void perform_bootloader_check() {
 	/* Check CRC of bootloader which will should be located at
@@ -182,24 +188,29 @@ void perform_bootloader_check() {
 
 
 void handler_task(void * args) {
-#if DEBUG_IO_LIB == 1
-    TRACE_INFO("Running handler task..\n\r");
-#endif
     // Wait for initialization to finish
     vTaskSuspend(NULL);
 
+#if DEBUG_IO_LIB == 1
+    TRACE_INFO("Running handler task..\n\r");
+    vTaskDelay(1);
+#endif
+
     perform_bootloader_core_operation();
 
-    // will not be reached when bootloader is finished.
-    //idle_loop();
+    // will not be reached when bootloader is finished. Test functin which
+    // blinks LED2.
+    // idle_loop();
 }
 
+//void initialize_all_iobc_peripherals() __attribute__((section(".sramfunc")));
 void initialize_all_iobc_peripherals() {
     RTT_start();
     int result = FRAM_start();
     if(result != 0) {
         // This should not happen!
-        TRACE_ERROR("initialize_iobc_peripherals: Could not start FRAM!\n\r");
+        TRACE_ERROR("initialize_iobc_peripherals: Could not start "
+        		"FRAM, code %d!\n\r", result);
     }
 }
 
