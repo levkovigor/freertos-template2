@@ -292,9 +292,9 @@ resetHandler:
  * (in case of the FSFW for example the DataPool::DataPool).
  * This is only required for C++ code.
  */
-		# ldr r0,=__libc_init_array
-		# mov lr,pc /* set the return address */
-		# bx r0 /* the target code can be ARM or THUMB */
+	# ldr r0,=__libc_init_array
+	# mov lr,pc /* set the return address */
+	# bx r0 /* the target code can be ARM or THUMB */
 
 /* Branch to main()
  ******************/
