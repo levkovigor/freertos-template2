@@ -184,6 +184,7 @@ private:
     uint32_t getBaseAddress(uint8_t stepCounter, size_t* offset);
     ReturnValue_t performNorCopyOperation(F_FILE** binaryFile);
     ReturnValue_t handleSdToNorCopyOperation();
+    void writeBootloaderCrc();
 #endif
     ReturnValue_t prepareGenericFileInformation(VolumeId currentVolume,
             F_FILE** filePtr);

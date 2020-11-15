@@ -244,7 +244,6 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
     // SD card.
     helperFlag1 = false;
 
-
     if(currentByteIdx >= currentFileSize) {
         // operation finished.
 #if OBSW_REDUCED_PRINTOUT == 0
@@ -279,27 +278,7 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
         }
 #endif
         if(bootloader) {
-        	// calculate and write CRC to designated NOR-Flash address
-        	// This will be used by the bootloader to determine SEUs in the
-        	// bootloader.
-        	uint16_t crc16 = CRC::crc16ccitt(reinterpret_cast<const uint8_t*>(
-        			NORFLASH_BASE_ADDRESS_READ),
-        			currentFileSize);
-        	retval = NORFLASH_WriteData(&NORFlash, NORFLASH_BL_CRC16_START,
-        			reinterpret_cast<unsigned char *>(&crc16),
-					sizeof(crc16));
-        	if(retval != 0) {
-        		sif::error << "Writing bootloader CRC16 failed!" << std::endl;
-        	}
-#if OBSW_REDUCED_PRINTOUT == 0
-        	else {
-            	sif::info << std::setfill('0') << std::setw(2) << "Bootloader "
-            			<< "CRC " << (crc16 >> 8 & 0xff) << ", "
-						<< (crc16 & 0xff) << " written to address "
-						<< NORFLASH_BL_CRC16_START << std::setfill(' ')
-						<< std::endl;
-        	}
-#endif
+        	writeBootloaderCrc();
         }
 
         // cache last finished state.
@@ -313,6 +292,29 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
     return result;
 }
 
+void ImageCopyingEngine::writeBootloaderCrc() {
+	// calculate and write CRC to designated NOR-Flash address
+	// This will be used by the bootloader to determine SEUs in the
+	// bootloader.
+	uint16_t crc16 = CRC::crc16ccitt(reinterpret_cast<const uint8_t*>(
+			NORFLASH_BASE_ADDRESS_READ),
+			currentFileSize);
+	int retval = NORFLASH_WriteData(&NORFlash, NORFLASH_BL_CRC16_START,
+			reinterpret_cast<unsigned char *>(&crc16),
+			sizeof(crc16));
+	if(retval != 0) {
+		sif::error << "Writing bootloader CRC16 failed!" << std::endl;
+	}
+#if OBSW_REDUCED_PRINTOUT == 0
+	else {
+    	sif::info << std::setfill('0') << std::setw(2) << "Bootloader "
+    			<< "CRC " << (crc16 >> 8 & 0xff) << ", "
+				<< (crc16 & 0xff) << " written to address "
+				<< NORFLASH_BL_CRC16_START << std::setfill(' ')
+				<< std::endl;
+	}
+#endif
+}
 
 uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
         size_t* offset) {
