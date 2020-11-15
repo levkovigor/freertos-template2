@@ -26,7 +26,8 @@ This is the recommended way to develop and flash software.
 ## Flashing the non-volatile NAND-Flash
 
 This requires a bootloader and the image located on the SAM9G20 NAND-Flash. The first NAND-Flash block (start address 0x0) shall be reserved for the bootloader. The bootloader can be built by supplying `-f Makefile-Bootloader` to
-the build command. This will link the binary for the SRAM (so it needs to be smaller than 16 kB!). 
+the build command. This will link the binary for the SRAM (so it needs to be smaller than 16 kB!). The second block (address 0x20000) is the start address 
+for the primary software.
 
 ### SAM-BA
 When using SAM-BA, take care to use the `Send Boot File` option and enabling the NAND-Flash before performing anything else. The RomBoot program will expect the binary size written to the sixth ARM vector of the bootloader (address 0x14), copy this size to the SRAM and then execute the bootloader there. The bootloader will copy the primary image from the NAND-Flash address 0x20000 to the SDRAM and the jump there. Please note that the SOURCE bootloader expects the binary size to be written at the sixth ARM vector (address 0x20014) as well. When using 
