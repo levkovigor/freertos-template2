@@ -46,6 +46,11 @@ static TaskHandle_t handler_task_handle_glob = NULL;
 static const uint32_t WATCHDOG_KICK_INTERVAL_MS = 15;
 static const uint32_t SDRAM0_END = 0x204000;
 
+#if DEBUG_IO_LIB == 1
+const char* DEBUG_INTRO_OUTPUT = "\n\rStarting FreeRTOS task scheduler.\n\r" \
+		"-- SOURCE Bootloader --\n\r";
+#endif
+
 int iobc_norflash() {
     //-------------------------------------------------------------------------
     // Configure traces
@@ -94,14 +99,13 @@ int iobc_norflash() {
 void init_task(void * args) {
 	// If we do this check inside a task, the watchdog task can take care of
 	// feeding the watchdog.
-	perform_bootloader_check();
+	//perform_bootloader_check();
 #if DEBUG_IO_LIB == 1
-    TRACE_INFO_WP("\n\rStarting FreeRTOS task scheduler.\n\r");
-    TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
+    //TRACE_INFO_WP(DEBUG_INTRO_OUTPUT);
     TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME);
-    TRACE_INFO_WP("-- Software version v%d.%d --\n\r", SW_VERSION, SW_SUBVERSION);
+    TRACE_INFO_WP("-- Software version v%d.%d --\n\r", BL_VERSION, BL_SUBVERSION);
     TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
-    TRACE_INFO_WP("Running initialization task..\n\r");
+    TRACE_INFO("Running initialization task..\n\r");
 #else
     TRACE_INFO("\n\rSOURCE Bootloader\n\r");
 #endif
@@ -140,7 +144,8 @@ void perform_bootloader_check() {
 			(const void *) (BOOTLOADER_BASE_ADDRESS_READ + 0x14), 4);
 	memcpy(&written_crc16, (const void*) (BOOTLOADER_END_ADDRESS_READ - 2),
 			sizeof(written_crc16));
-	if(written_crc16 != 0x00 || written_crc16 != 0xff) {
+	TRACE_INFO("Written CRC16: %d\n\r", written_crc16);
+	if(written_crc16 != 0x00 && written_crc16 != 0xff) {
 		uint16_t calculated_crc = crc16ccitt_default_start_crc(
 				(const void *) BOOTLOADER_BASE_ADDRESS_READ,
 				bootloader_size);

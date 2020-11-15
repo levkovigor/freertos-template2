@@ -1,8 +1,8 @@
 #ifndef BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_
 #define BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_
 
-#define SW_VERSION      1
-#define SW_SUBVERSION   0
+#define BL_VERSION      1
+#define BL_SUBVERSION   0
 
 #ifdef AT91SAM9G20_EK
 // This should translate to the second block of the NAND flash.

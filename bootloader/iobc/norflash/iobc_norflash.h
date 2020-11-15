@@ -2,6 +2,7 @@
 #define BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_
 
 #include <hal/Storage/NORflash.h>
+#include <config/bootloaderConfig.h>
 
 #include <stdint.h>
 #include <stddef.h>
@@ -35,4 +36,7 @@ static const uint32_t BINARY_BASE_ADDRESS_READ = NOR_FLASH_BASE_ADDRESS +
 
 static const size_t NORFLASH_SIZE = 0x100000;
 
+#if DEBUG_IO_LIB == 1
+extern const char* DEBUG_INTRO_OUTPUT;
+#endif
 #endif /* BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_ */
