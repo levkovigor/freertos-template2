@@ -85,7 +85,7 @@ the flashed software.  Ensure that Jumper J34 is placed so RomBOOT checks the NA
 8. Execute `make sdramCfg` to configure the sdram. Can be done by creating a 
    new target: Right click project &rarr; Build Targets &rarr; Create..
 
-<img src="./readme_img/at91/sdramcfg.png" width="50%">
+<img src="./readme_img/at91/sdramcfg.png" width="30%">
 
 
 ### Start J-Link debugging session from Eclipse
