@@ -201,7 +201,7 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
         }
     }
 
-    if(stepCounter == 0) {
+    if(stepCounter == 0 and not bootloader) {
         // We will write the size of the binary to the
         // sixth ARM vector (see p.72 SAM9G20 datasheet)
         // This will help for our custom bootloader to find out
