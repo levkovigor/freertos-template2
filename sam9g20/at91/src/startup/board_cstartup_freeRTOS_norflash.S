@@ -90,6 +90,7 @@ fiqHandler:
 //------------------------------------------------------------------------------
 /// Handles incoming interrupt requests by branching to the corresponding
 /// handler, as defined in the AIC. Supports interrupt nesting.
+/// This is the irqHandler for FreeRTOS.
 //------------------------------------------------------------------------------
 irqHandler:
 
