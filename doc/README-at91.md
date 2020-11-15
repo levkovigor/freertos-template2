@@ -16,7 +16,7 @@ There are two options to flash the AT91 board with the built software:
 ## Flashing the SDRAM directly
 
 ### SAM-BA
-When using SAM-BA and there is executable code located on the NOR-Flash, it might be necessary to disconnect Jumper J34 so the internal ROM-Boot program jumps to SAM-BA boot.
+When using SAM-BA and there is executable code located on the NOR-Flash, it might be necessary to disconnect Jumper J34 so the internal ROM-Boot program jumps to SAM-BA boot. After sending the image to the SDRAM, use `go 0x20000000` in SAM-BA to jump to the application.
 
 ### SEGGER J-Link
 
