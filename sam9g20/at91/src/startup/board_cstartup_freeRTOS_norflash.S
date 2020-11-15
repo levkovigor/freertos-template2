@@ -273,17 +273,17 @@ resetHandler:
         sub     r0, r0, #IRQ_STACK_SIZE
 
 /* Abort mode */
-        msr     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
+        msr     CPSR_c, #ARM_MODE_ABT | I_BIT | F_BIT
         mov     sp, r0
         sub     r0, r0, #ABT_STACK_SIZE
 
 /* Undefined mode */
-        msr     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
+        msr     CPSR_c, #ARM_MODE_UND | I_BIT | F_BIT
         mov     sp, r0
         sub     r0, r0, #UND_STACK_SIZE
 
 /* FIQ mode (not used for now) */
-        # msr     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
+        # msr     CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT
         # mov     sp, r0
         # sub     r0, r0, #FIQ_STACK_SIZE
 
@@ -328,7 +328,7 @@ resetHandler:
 		.type jumpToSdramApplication, %function
 
 jumpToSdramApplication:
-		msr CPSR_c, #ARM_MODE_SVC | F_BIT
+		msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
 		ldr r0,=0x20000000
 		mov pc,r0
 
