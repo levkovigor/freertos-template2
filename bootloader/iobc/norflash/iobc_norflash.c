@@ -34,6 +34,7 @@
 void init_task(void* args);
 void handler_task(void * args);
 void initialize_all_iobc_peripherals();
+void bootloader_check();
 
 void idle_loop();
 
@@ -51,7 +52,7 @@ int iobc_norflash() {
     // Initiate watchdog for iOBC
     //-------------------------------------------------------------------------
     int retval = WDT_startWatchdogKickTask(
-            WATCHDOG_KICK_INTERVAL_MS / portTICK_RATE_MS, 0);
+            WATCHDOG_KICK_INTERVAL_MS / portTICK_RATE_MS, FALSE);
     if(retval != 0) {
 #if DEBUG_IO_LIB == 1
         TRACE_ERROR("Starting iOBC Watchdog Feed Task failed!\r\n");
@@ -63,6 +64,7 @@ int iobc_norflash() {
     //-------------------------------------------------------------------------
     CP15_Enable_I_Cache();
 
+    // Glow all LEDs
     LED_start();
     LED_glow(led_2);
     LED_glow(led_3);
@@ -71,10 +73,10 @@ int iobc_norflash() {
     //-------------------------------------------------------------------------
     // iOBC Bootloader
     //-------------------------------------------------------------------------
-    xTaskCreate(handler_task, "HANDLER_TASK", 512, NULL, 2,
+    xTaskCreate(handler_task, "HANDLER_TASK", 512, NULL, 4,
             &handler_task_handle_glob);
     xTaskCreate(init_task, "INIT_TASK", 512, handler_task_handle_glob,
-            3, NULL);
+            5, NULL);
     vTaskStartScheduler();
     // This should never be reached.
 #if DEBUG_IO_LIB == 1
@@ -87,6 +89,8 @@ int iobc_norflash() {
 
 
 void init_task(void * args) {
+	perform_bootloader_check();
+
 #if DEBUG_IO_LIB == 1
     TRACE_INFO_WP("\n\rStarting FreeRTOS task scheduler.\n\r");
     TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
@@ -113,6 +117,37 @@ void init_task(void * args) {
     vTaskDelete(NULL);
 }
 
+void perform_bootloader_check() __attribute__((section(".sramfunc")));
+void perform_bootloader_check() {
+	// Check CRC of bootloader which will should be located at
+	// 0xA000 -2 and 0xA000 -1.
+	// If it is blank (0x00, 0xff), continue.
+	// If not, check it. If it is invalid copy binary and jump there
+	// immediately to reduce number of  instructions. We could write a special
+	// variable to the end of SRAM0 to notify the primary software that the
+	// bootloader is faulty.
+	uint16_t written_crc16 = 0;
+	size_t bootloader_size = 0;
+	// Bootloader size is written into the sixth ARM vector.
+	memcpy(&bootloader_size, BOOTLOADER_BASE_ADDRESS_READ + 0x14, 4);
+	memcpy(&written_crc16, (const void*) (BOOTLOADER_END_ADDRESS_READ - 2),
+			sizeof(written_crc16));
+	if(written_crc16 != 0x00 || written_crc16 != 0xff) {
+		uint16_t calculated_crc = crc16ccitt_default_start_crc(
+				BOOTLOADER_BASE_ADDRESS_READ,
+				bootloader_size);
+		if(written_crc16 != calculated_crc) {
+			size_t binary_size = 0;
+			memcpy(&binary_size,
+					(const void *) (BINARY_BASE_ADDRESS_READ + 0x14), 4);
+			if(binary_size > 0x100000 - BOOTLOADER_RESERVED_SIZE) {
+				binary_size = 0x100000 - BOOTLOADER_RESERVED_SIZE;
+			}
+			memcpy(SDRAM_DESTINATION, BINARY_BASE_ADDRESS_READ, binary_size);
+			jumpToSdramApplication();
+		}
+	}
+}
 
 void handler_task(void * args) {
 #if DEBUG_IO_LIB == 1
