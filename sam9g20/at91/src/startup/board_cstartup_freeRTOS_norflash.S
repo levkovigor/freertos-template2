@@ -70,7 +70,6 @@ undefVector:
 	b       undefVector              /* Undefined instruction */
 swiVector:
 	ldr     pc, =vPortYieldProcessor /* Software interrupt */
-
 prefetchAbortVector:
 	b       prefetchAbortVector  	/* Prefetch abort */
 dataAbortVector:
@@ -99,85 +98,85 @@ irqHandler:
 
 	// Push R0 as we are going to use the register.
 	// STMDB SP! is a synonym for PUSH and simply pushs the content in R0 to the stack
-	STMDB	SP!, {R0}
+	stmdb	sp!, {r0}
 
 	// Set R0 to point to the task stack pointer.
-	STMDB	SP, {SP}^
-	NOP
-	SUB		SP, SP, #4
-	LDMIA	SP!, {R0}
+	stmdb	sp, {sp}^
+	nop
+	sub		sp, sp, #4
+	ldmia	sp!, {r0}
 
 	// Push the return address onto the stack.
-	STMDB	R0!, {LR}
+	stmdb	r0!, {lr}
 
 	// Now we have saved LR we can use it instead of R0.
-	MOV		LR, R0
+	mov		lr, r0
 
 	// Pop R0 so we can save it onto the system mode stack.
-	LDMIA	SP!, {R0}
+	ldmia	sp!, {r0}
 
 	// Push all the system mode registers onto the task stack.
-	STMDB	LR, {R0-LR}^
-	NOP
-	SUB		LR, LR, #60
+	stmdb	lr, {r0-lr}^
+	nop
+	sub		lr, lr, #60
 
 	// Push the SPSR onto the task stack.
-	MRS		R0, SPSR
-	STMDB	LR!, {R0}
+	mrs		r0, spsr
+	stmdb	lr!, {r0}
 
-	LDR		R0, =ulCriticalNesting
-	LDR		R0, [R0]
-	STMDB	LR!, {R0}
+	ldr		r0, =ulCriticalNesting
+	ldr		r0, [r0]
+	stmdb	lr!, {r0}
 
 	// Store the new top of stack for the task.
-	LDR		R1, =pxCurrentTCB
-	LDR		R0, [R1]
-	STR		LR, [R0]
+	ldr		r1, =pxCurrentTCB
+	ldr		r0, [r1]
+	str		lr, [r0]
 
 /* load ISR
  **********/
 
     /* Write in the IVR to support Protect Mode */
-    LDR     lr, =AT91C_BASE_AIC
-    LDR     r0, [r14, #AIC_IVR]
-    STR     lr, [r14, #AIC_IVR]
+    ldr     lr, =AT91C_BASE_AIC
+    ldr     r0, [r14, #AIC_IVR]
+    str     lr, [r14, #AIC_IVR]
 
     /* Branch to C portion of the interrupt handler */
-    MOV     lr, pc
-    BX      r0
+    mov     lr, pc
+    bx      r0
 
     /* Acknowledge interrupt */
-    LDR     lr, =AT91C_BASE_AIC
-    STR     lr, [r14, #AIC_EOICR]
+    ldr     lr, =AT91C_BASE_AIC
+    str     lr, [r14, #AIC_EOICR]
 
 /* port restore context
  **********************/
 
 	// Set the LR to the task stack.
-	LDR		R1, =pxCurrentTCB
-	LDR		R0, [R1]
-	LDR		LR, [R0]
+	ldr 	r1, =pxCurrentTCB
+	ldr		r0, [r1]
+	ldr		lr, [r0]
 
 	// The critical nesting depth is the first item on the stack.
 	// Load it into the ulCriticalNesting variable.
-	LDR		R0, =ulCriticalNesting
-	LDMFD	LR!, {R1}
-	STR		R1, [R0]
+	ldr		r0, =ulCriticalNesting
+	ldmfd	lr!, {r1}
+	str		r1, [r0]
 
 	// Get the SPSR from the stack.
-	LDMFD	LR!, {R0}
-	MSR		SPSR_cxsf, R0
+	ldmfd	lr!, {r0}
+	msr 	SPSR_cxsf, r0
 
 	// Restore all system mode registers for the task.
-	LDMFD	LR, {R0-R14}^
-	NOP
+	ldmfd	lr, {r0-r14}^
+	nop
 
 	// Restore the return address.
-	LDR		LR, [LR, #+60]
+	ldr		lr, [lr, #+60]
 
 	// And return - correcting the offset in the LR to obtain the
 	// correct address.
-	SUBS	PC, LR, #4
+	subs	pc, lr, #4
 
 //------------------------------------------------------------------------------
 /// Initializes the chip and branches to the main() function.
