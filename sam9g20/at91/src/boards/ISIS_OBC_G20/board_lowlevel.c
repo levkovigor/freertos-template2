@@ -49,7 +49,14 @@
 #include <at91/boards/ISIS_OBC_G20/board_memories.h>
 #include <at91/peripherals/pmc/pmc.h>
 #include <at91/utility/trace.h>
-#include "faultHandler.h"
+
+#ifdef ISIS_OBC_G20
+#include <hal/Timing/WatchDogTimerNoOS.h>
+#include <hal/Drivers/LED.h>
+#endif
+
+#include <faultHandler.h>
+#include <string.h>
 
 //------------------------------------------------------------------------------
 //         Internal definitions
@@ -130,12 +137,15 @@ void assignBusMatrixPriorities() {
 /// This function also reset the AIC and disable RTT and PIT interrupts
 //------------------------------------------------------------------------------
 #ifdef norflash
-void LowLevelInit(void) __attribute__ ((section(".sramfunc"), weak));
+void LowLevelInit(void) __attribute__ ((section(".sramfunc"), optimize("O0"),noinline));
+#else
+void LowLevelInit(void) __attribute__ ((optimize("O0"),noinline)) ;
 #endif
 void LowLevelInit(void)
 {
-    unsigned char i;
+    unsigned char i = 0;
 
+    // Always run this so SAM-BA boot also works.
 #ifndef sdram
     /* Initialize main oscillator
      ****************************/
@@ -147,6 +157,7 @@ void LowLevelInit(void)
                                 | BOARD_PLLACOUNT
                                 | BOARD_MULA
                                 | BOARD_DIVA;
+    //AT91C_BASE_PMC->PMC_PLLAR = 0x202A3F01;
     while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCKA));
 
     // Initialize PLLB for USB usage (if not already locked)
@@ -156,6 +167,7 @@ void LowLevelInit(void)
                                     | BOARD_PLLBCOUNT
                                     | BOARD_MULB
                                     | BOARD_DIVB;
+    	//AT91C_BASE_PMC->PMC_PLLBR = 0x10193F05;
         while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCKB));
     }
 
@@ -211,4 +223,36 @@ void LowLevelInit(void)
     BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
 #endif
 }
+
+
+void clearBssSection(void) __attribute__ ((section(".sramfunc")));
+void clearBssSection(void) {
+    extern char _sbss, _ebss;
+    memset(&_sbss, 0, &_ebss - &_sbss);
+//    void * currentAddress = (void *) &_sbss;
+//    int sizeToClear = 200000;
+//    while(currentAddress < (void *) &_ebss) {
+//    	if((void*) &_ebss - currentAddress < 200000) {
+//    		sizeToClear = (void*) &_ebss - currentAddress;
+//    	}
+//        memset(currentAddress, 0, sizeToClear);
+//        WDT_forceKick();
+//        currentAddress += sizeToClear;
+//    }
+//   WDT_forceKick();
+}
+
+
+/* iOBC specific functions */
+
+#ifdef ISIS_OBC_G20
+
+void initiateIsisWatchdog() __attribute__ ((section(".sramfunc")));
+void initiateIsisWatchdog() {
+    WDT_start();
+    WDT_forceKick();
+}
+
+#endif
+
 

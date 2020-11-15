@@ -30,6 +30,9 @@
 /*------------------------------------------------------------------------------
  *      Linker script for running in external SDRAM on the AT91SAM9G20
  *----------------------------------------------------------------------------*/
+ 
+_Min_Heap_Size = 0x400;      /* required amount of heap  */
+_Min_Stack_Size = 0x800; 	 /* required amount of stack */
 
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
@@ -43,7 +46,7 @@ MEMORY
 }
 
 SECTIONS
-{     
+{
     .fixed :
 	{
         . = ALIGN(4);			/* tells the linker that these section ought to be word aligned */
@@ -64,9 +67,9 @@ SECTIONS
         *(.igot.plt)
         *(.rel.dyn)
         *(.rel.iplt)
-		*(.CP15_*)
-		KEEP (*(.init))
-		KEEP (*(.fini))
+        *(.CP15_*)
+        KEEP (*(.init))
+    	KEEP (*(.fini))
         . = ALIGN(4);
 		/* preinit data */
 		PROVIDE_HIDDEN (__preinit_array_start = .);
@@ -86,27 +89,18 @@ SECTIONS
 		KEEP(*(SORT(.fini_array.)))
 		KEEP(*(.fini_array))
 		PROVIDE_HIDDEN (__fini_array_end = .);
-		. = ALIGN(4);
 	} >sdram
 
-	/* used for unwinding, can be useful for debugging  */  
-	.ARM.extab (NOLOAD) :
-    {  
-		*(.ARM.extab* .gnu.linkonce.armextab.*) 
-	} >sdram
-   
-    /* used for unwinding, can be useful for debugging  */  
+	.ARM.extab (NOLOAD) : {
+		*(.ARM.extab* .gnu.linkonce.armextab.*)
+	} >sdram 
+    
 	__exidx_start = .;
-    .ARM.exidx (NOLOAD) : 
-    {
+		.ARM.exidx (NOLOAD) : {
 		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
-	} >sdram
+	} > sdram
     __exidx_end = .;
-    
-    . = ALIGN(4);
     _efixed = .;
-    
-    /* Will be copied to SRAM at startup, but loaded in SDRAM */
 
     .prerelocate : AT (_efixed)
     {
@@ -114,20 +108,20 @@ SECTIONS
         _sprerelocate = .;
         . = ALIGN(4);
         _eprerelocate = .;
-    } >sram0
-    
-    /* Will also be copied to SRAM */
-    .postrelocate : AT (_efixed + SIZEOF(.prerelocate))
+    }
+
+    .postrelocate : AT (_sprerelocate + SIZEOF(.prerelocate))
     {
         . = ALIGN(4);
         _spostrelocate = .;
-		KEEP(*(.vectors));
-		*(.sramfunc*);
+        KEEP(*(.vectors));
+		*(.sramfunc)
+        *(.ramfunc)
         . = ALIGN(4);
         _epostrelocate = .;
-    } >sram0 
-         
-    .sramdata : AT (_efixed + SIZEOF(.prerelocate) + SIZEOF(.postrelocate))
+    } >sram0
+    
+    .sramdata : AT (_sprerelocate + SIZEOF(.prerelocate) + SIZEOF(.postrelocate))
     {
         . = ALIGN(4);
         _ssramdata = .;
@@ -136,19 +130,19 @@ SECTIONS
         _esramdata = .;
     } >sram1
     
-    .srambss (NOLOAD) :
-    {
+    .srambss (NOLOAD) : {
         . = ALIGN(4);
         _ssrambss = .;
         *(.srambss)
         . = ALIGN(4);
         _esrambss = .;
     } >sram1
+    
 
     /* this section holds uninitialized global and static data  */
-	.bss (NOLOAD) : 
-	{
-	 	. = ALIGN(4);
+ 	. = ALIGN(4);
+	.bss :
+  	{
 	    /* This is used by the startup in order to initialize the .bss secion */
 	    _sbss = .;         /* define a global symbol at bss start */
 	    __bss_start__ = _sbss;
@@ -161,21 +155,18 @@ SECTIONS
 	    __bss_end__ = _ebss;
   	} >sdram
 
-    /* Heap section */
-    . = ALIGN(4);
-	_sheap_ = .;
-	PROVIDE ( end = . );
-	PROVIDE ( _end = . );
-    _eheap_ = 0x21800000;
+    /* User_heap_stack section, used to check that there is enough RAM left */
+    ._user_heap_stack :
+    {
+      . = ALIGN(4);
+      PROVIDE ( end = . );
+      PROVIDE ( _end = . );
+      . = . + _Min_Heap_Size;
+      . = . + _Min_Stack_Size;
+      . = ALIGN(4);
+    } >sdram
 
 	/* top of stack */
     _sstack = 0x22000000 - 1024;
-    
-    /DISCARD/ :
-    {
-        libc.a ( * )
-        libm.a ( * )
-        libgcc.a ( * )
-        libc_nano.a ( * )
-    }
 }
+

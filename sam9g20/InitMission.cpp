@@ -14,6 +14,11 @@
 #include <fsfwconfig/pollingsequence/PollingSequenceFactory.h>
 #include <unittest/internal/InternalUnitTester.h>
 #include <utility/compile_time.h>
+#include <fsfwconfig/OBSWVersion.h>
+
+extern "C" {
+#include <board.h>
+}
 
 #if DISPLAY_FACTORY_ALLOCATION_SIZE == 1
 #include <new>
@@ -57,6 +62,8 @@ void boardTestTaskInit();
 #endif
 void genericMissedDeadlineFunc();
 void printAddError(object_id_t objectId);
+void initTasks(void);
+void runMinimalTask(void);
 
 /**
  * @brief   Initializes mission specific implementation of FSFW,
@@ -86,18 +93,34 @@ void printAddError(object_id_t objectId);
  * @ingroup init
  */
 void initMission(void) {
+	printf("\n\r-- FreeRTOS task scheduler started --\n\r");
+    printf("-- SOURCE On-Board Software --\n\r");
+    printf("-- %s --\n\r", BOARD_NAME);
+    printf("-- Software version v%d.%d.%d --\n\r", SW_VERSION, SW_SUBVERSION,
+            SW_SUBSUBVERSION);
+    printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
+
     sif::info << "Initiating mission specific code." << std::endl;
 
-    ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     // Allocate object manager here, as global constructors
     // might not be executed, depending on buildchain
-    sif::info << "Creating objects." << std::endl;
-    objectManager = new ObjectManager(Factory::produce);
+    bool performSimpleTask = false;
 
-    objectManager -> initialize();
+    if(not performSimpleTask) {
+        sif::info << "Creating objects." << std::endl;
+        objectManager = new ObjectManager(Factory::produce);
+        objectManager -> initialize();
+        sif::info << "Creating tasks.." << std::endl;
+        initTasks();
+    }
+    else {
+    	runMinimalTask();
+    }
 
-    sif::info << "Creating tasks.." << std::endl;
+}
 
+void initTasks(void) {
+	ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     /* TMTC Communication Tasks */
     PeriodicTaskIF * TmTcPollingTask = nullptr;
     PeriodicTaskIF* TmTcBridge = nullptr;
@@ -464,5 +487,12 @@ void genericMissedDeadlineFunc() {
     sif::debug << "PeriodicTask: " << pcTaskGetName(NULL) <<
             " missed deadline!" << std::endl;
 #endif
+}
+
+void runMinimalTask(void) {
+    while(1) {
+    	sif::info << "Alive" << std::endl;
+    	vTaskDelay(1000);
+    }
 }
 

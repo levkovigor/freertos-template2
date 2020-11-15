@@ -139,11 +139,19 @@ AT91_SRC += rstc.c
 AT91_SRC += usart_at91.c
 AT91_SRC += SDCardTest.c
 ifeq ($(OS_APP),freeRTOS)
+
 AT91_SRC += demo_sd.c
 AT91_SRC += syscalls.c
-ASRC += board_cstartup_freeRTOS.S
+ifeq ($(MEMORY_TYPE), norflash)
+ASRC += board_cstartup_freeRTOS_norflash.S
 else
+ASRC += board_cstartup_freeRTOS.S
+endif
+
+else
+
 ASRC += board_cstartup.S
+
 endif
 
 # USB drivers

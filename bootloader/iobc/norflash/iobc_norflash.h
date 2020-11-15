@@ -1,12 +1,9 @@
-#ifndef BOOTLOADER_CORE_BOOTIOBC_H_
-#define BOOTLOADER_CORE_BOOTIOBC_H_
-
-#include <stddef.h>
-#include <stdint.h>
-#include <main.h>
+#ifndef BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_
+#define BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_
 
 #include <hal/Storage/NORflash.h>
 
+#include <stdint.h>
 
 /* Address definitions */
 
@@ -34,7 +31,6 @@ static const uint32_t BINARY_BASE_ADDRESS_WRITE = BOOTLOADER_RESERVED_SIZE;
 static const uint32_t BINARY_BASE_ADDRESS_READ = NOR_FLASH_BASE_ADDRESS +
 		BOOTLOADER_RESERVED_SIZE;
 
-int copy_norflash_binary_to_sdram(size_t binary_size);
-int copy_sdcard_binary_to_sdram(BootSelect boot_select);
 
-#endif /* BOOTLOADER_CORE_BOOTIOBC_H_ */
+
+#endif /* BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_ */
