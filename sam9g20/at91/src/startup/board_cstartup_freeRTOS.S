@@ -273,7 +273,7 @@ resetHandler:
 
 /* Setup stacks
  **************/
-	ldr     r0, =_sstack /* Save the start of the stack in r0 */
+	ldr     r0, =_sstack 	/* Save the start of the stack in r0 */
 	ldr     sp, =_sstack
 
 /* IRQ mode */
@@ -296,7 +296,7 @@ resetHandler:
 	# mov     sp, r0
 	# sub     r0, r0, #FIQ_STACK_SIZE
 
-/* Supervisor mode (interrupts enabled) */
+/* Supervisor mode */
 	msr     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
 	mov     sp, r0
 	sub     r0, r0, #SVC_STACK_SIZE
@@ -305,18 +305,18 @@ resetHandler:
 	msr     CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
 	mov     sp, r0
 
-/* Start in supervisor mode, Operation will switch to system mode when the first task starts */
+/* Start in supervisor mode, Operation will switch to system mode when the
+first task starts */
 	msr     CPSR_c, #ARM_MODE_SVC | F_BIT
 
 /* Call static constructors
- * this call deactivates the interrupts agein
- * interrutps are enabled agein when the freertos scheduler starts
- * libc_init_array runs through the list of static constructor addresses
- * placed in the .init_array and calls all static constructors
- */
+this call deactivates the interrupts agein
+interrutps are enabled agein when the freertos scheduler starts
+libc_init_array runs through the list of static constructor addresses
+placed in the .init_array and calls all static constructors */
 	ldr r0,=__libc_init_array
-	mov lr,pc /* set the return address */
-	bx r0 /* the target code can be ARM or THUMB */
+	mov lr,pc 	/* set the return address */
+	bx r0 		/* the target code can be ARM or THUMB */
 
 /* Branch to main()
  ******************/
