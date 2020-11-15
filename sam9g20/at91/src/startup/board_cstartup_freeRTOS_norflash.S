@@ -328,7 +328,7 @@ resetHandler:
 		.type jumpToSdramApplication, %function
 
 jumpToSdramApplication:
-		msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
+		msr CPSR_c, #ARM_MODE_SVC | F_BIT
 		ldr r0,=0x20000000
 		mov pc,r0
 
