@@ -60,27 +60,25 @@
 //------------------------------------------------------------------------------
 /* Exception vectors
  *******************/
-            .align      4
-            .arm
-            .section    .vectors, "a", %progbits
+	.align      4
+	.arm
+	.section    .vectors, "a", %progbits
 
 resetVector:
-        ldr     pc, =resetHandler       /* Reset */
+	ldr     pc, =resetHandler        /* Reset */
 undefVector:
-        b       undefVector             /* Undefined instruction */
+	b       undefVector              /* Undefined instruction */
 swiVector:
-		ldr     pc, =vPortYieldProcessor /* Software interrupt */
+	ldr     pc, =vPortYieldProcessor /* Software interrupt */
 
 prefetchAbortVector:
-		ldr     pc, =prefetch_abort_irq_handler
-//      b       prefetchAbortVector     /* Prefetch abort */
+	b       prefetchAbortVector  	/* Prefetch abort */
 dataAbortVector:
-		ldr     pc, =data_abort_irq_handler
-//      b       dataAbortVector			/* Data abort */
+	b       dataAbortVector			/* Data abort */
 reservedVector:
-        b       reservedVector          /* Reserved for future use */
+	b       reservedVector          /* Reserved for future use */
 irqVector:
-        b       irqHandler              /* Interrupt */
+	b       irqHandler              /* Interrupt */
 fiqVector:
                                         /* Fast interrupt */
 //------------------------------------------------------------------------------
@@ -88,7 +86,7 @@ fiqVector:
 /// AIC.
 //------------------------------------------------------------------------------
 fiqHandler:
-        b       fiqHandler
+	b       fiqHandler
 	
 //------------------------------------------------------------------------------
 /// Handles incoming interrupt requests by branching to the corresponding
@@ -184,121 +182,107 @@ irqHandler:
 //------------------------------------------------------------------------------
 /// Initializes the chip and branches to the main() function.
 //------------------------------------------------------------------------------
-            .section    .startup
-            .global     entry
+	.section    .startup
+	.global     entry
 
 entry:
 resetHandler:
 
 /* Useless instruction for referencing the .vectors section */
-        ldr     r0, =resetVector
+	ldr     r0, =resetVector
 
 /* Set pc to actual code location (i.e. not in remap zone) */
-	    ldr     pc, =1f
+	ldr     pc, =1f
 
 /* Initialize the prerelocate segment */
 1:
-        ldr     r0, =_efixed
-        ldr     r1, =_sprerelocate
-        ldr     r2, =_eprerelocate
+	ldr     r0, =_efixed
+	ldr     r1, =_sprerelocate
+	ldr     r2, =_eprerelocate
 1:
-        cmp     r1, r2
-        ldrcc   r3, [r0], #4
-        strcc   r3, [r1], #4
-        bcc     1b
+	cmp     r1, r2
+	ldrcc   r3, [r0], #4
+	strcc   r3, [r1], #4
+	bcc     1b
 
-/* Only execute this when the code is running from SDRAM */
-/* When the code runs from NORFLASH this is the same as normal bss which is handled above */
-/* Clear the SRAM zero segment */
-        ldr     r0, =_ssrambss
-        ldr     r1, =_esrambss
-        mov     r2, #0
+/* SRAM functions are moved to RAM in prerelocate, so we set srambss to 0 */
+	ldr     r0, =_ssrambss
+	ldr     r1, =_esrambss
+	mov     r2, #0
 1:
-        cmp     r0, r1
-        strcc   r2, [r0], #4
-        bcc     1b
-
-#ifdef ISIS_OBC_G20
-		//ldr     sp, =_sstack
-		//stmfd   sp!, {r0}
-		//ldr     r0, =initLed
-		//blx     r0
-
-		//ldr     sp, =_sstack
- 		//stmfd   sp!, {r0}
- 		//ldr     r0, =toggleLed2
-		//blx     r0
-#endif
+	cmp     r0, r1
+	strcc   r2, [r0], #4
+	bcc     1b
 
 /* Perform low-level initialization of the chip using LowLevelInit() */
-		ldr     sp, =_sstack
-		stmfd   sp!, {r0}
-		ldr     r0, =LowLevelInit
-		blx     r0
+	ldr     sp, =_sstack
+	stmfd   sp!, {r0}
+	ldr     r0, =LowLevelInit
+	blx     r0
 
 #ifdef ISIS_OBC_G20
 /* Initiate external watchdog to prevent restart */
-        //ldr     sp, =_sstack
-        //stmfd   sp!, {r0}
-	    //ldr     r0, =initiateIsisWatchdog
-        //blx     r0
+	//ldr     sp, =_sstack
+	//stmfd   sp!, {r0}
+	//ldr     r0, =initiateIsisWatchdog
+	//blx     r0
 #endif
 
 /* Initialize the postrelocate segment */
 
-        ldmfd   sp!, {r0}
-        ldr     r1, =_spostrelocate
-        ldr     r2, =_epostrelocate
+	ldmfd   sp!, {r0}
+	ldr     r1, =_spostrelocate
+	ldr     r2, =_epostrelocate
 1:
-        cmp     r1, r2
-        ldrcc   r3, [r0], #4
-        strcc   r3, [r1], #4
-        bcc     1b
+	cmp     r1, r2
+	ldrcc   r3, [r0], #4
+	strcc   r3, [r1], #4
+	bcc     1b
 
 /* Clear the zero segment */
-        ldr     sp, =_sstack
-        stmfd   sp!, {r0}
-	    ldr     r0, =clearBssSection
-        blx     r0
+	ldr     sp, =_sstack
+	stmfd   sp!, {r0}
+	ldr     r0, =clearBssSection
+	blx     r0
 
 /* Setup stacks
  **************/
-        ldr     r0, =_sstack /* Save the start of the stack in r0 */
-        ldr     sp, =_sstack
+	ldr     r0, =_sstack /* Save the start of the stack in r0 */
+	ldr     sp, =_sstack
 
 /* IRQ mode */
-        msr     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
-        mov     sp, r0
-        sub     r0, r0, #IRQ_STACK_SIZE
+	msr     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
+	mov     sp, r0
+	sub     r0, r0, #IRQ_STACK_SIZE
 
 /* Abort mode */
-		msr     CPSR_c, #ARM_MODE_ABT | I_BIT | F_BIT
-		mov     sp, r0
-		sub     r0, r0, #ABT_STACK_SIZE
+	msr     CPSR_c, #ARM_MODE_ABT | I_BIT | F_BIT
+	mov     sp, r0
+	sub     r0, r0, #ABT_STACK_SIZE
 
 /* Undefined mode */
-        msr     CPSR_c, #ARM_MODE_UND | I_BIT | F_BIT
-        mov     sp, r0
-        sub     r0, r0, #UND_STACK_SIZE
+	msr     CPSR_c, #ARM_MODE_UND | I_BIT | F_BIT
+	mov     sp, r0
+	sub     r0, r0, #UND_STACK_SIZE
 
 /* FIQ mode (not used for now) */
-        # msr     CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT
-        # mov     sp, r0
-        # sub     r0, r0, #FIQ_STACK_SIZE
+	# msr     CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT
+	# mov     sp, r0
+	# sub     r0, r0, #FIQ_STACK_SIZE
 
 /* Supervisor mode */
-        msr     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
-        mov     sp, r0
-        sub     r0, r0, #SVC_STACK_SIZE
+	msr     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
+	mov     sp, r0
+	sub     r0, r0, #SVC_STACK_SIZE
 
 /* System mode, the normal mode of operation */
-        msr     CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
-        mov     sp, r0
+	msr     CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
+ 	mov     sp, r0
 
 /* Start in supervisor mode,with enabled interrupts.
  * Operation will switch to system mode when the first task starts
  */
-        msr     CPSR_c, #ARM_MODE_SVC | F_BIT
+	msr     CPSR_c, #ARM_MODE_SVC | F_BIT
 
 /* Call static constructors.
  * this call deactivates the interrupts agein
@@ -314,20 +298,20 @@ resetHandler:
 
 /* Branch to main()
  ******************/
-        ldr     r0, =main
-        blx     r0
+	ldr     r0, =main
+	blx     r0
 
 /* Loop indefinitely when program is finished */
 1:
-        b       1b
+	b       1b
 
 /* Jump to application and put the core into default power-on state */
-        .globl jumpToSdramApplication
-		.align 4
-		.type jumpToSdramApplication, %function
+	.globl jumpToSdramApplication
+	.align 4
+	.type jumpToSdramApplication, %function
 
 jumpToSdramApplication:
-		msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
-		ldr r0,=0x20000000
-		mov pc,r0
+	msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
+	ldr r0,=0x20000000
+	mov pc,r0
 
