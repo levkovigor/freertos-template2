@@ -23,7 +23,7 @@ it is not open source. Those libraries to be added manually and the includes
 and source files have to be setup and included accordingly!
 
 The device specific documentation contains information on how to flash the built
-software on the boards as well. The Linux build can be run locally on the host computer.
+software to the boards as well. The Linux build can be run locally on the host computer.
 The QEMU image can be run on the host computer as well, but required QEMU installed as specified
 in the QEMU documentation.
 
