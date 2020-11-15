@@ -33,8 +33,8 @@ for the primary software.
 When using SAM-BA, take care to use the `Send Boot File` option and enabling the NAND-Flash before performing anything else. The RomBoot program will expect the binary size written to the sixth ARM vector of the bootloader (address 0x14), copy this size to the SRAM and then execute the bootloader there. The bootloader will copy the primary image from the NAND-Flash address 0x20000 to the SDRAM and the jump there. Please note that the SOURCE bootloader expects the binary size to be written at the sixth ARM vector (address 0x20014) as well. When using 
 SAM-BA to write the binary to NAND-Flash, it is recommended to use the `binary_writer.py` utility in the tmtc folder to write the binary size to the sixth ARM vector. 
 
-### USB
-The SOURCE OBSW is able to receive software or bootloader updates via the UART interface. This required an SD-Card in slot 1. The binary upload mode of the `tmtc` Python software is used to send the binary and offers various PyCharm run configurations to do write binaries to the NAND-Flash. The PUS standard is used as a packet format to closely resemble the update procedure used during satellite operations. Simply load the `tmtc` folder as a PyCharm project. Steps:
+### USB / RS232 Interface
+The SOURCE OBSW is able to receive software or bootloader updates via the UART interface. This requires an SD-Card in slot 1 of the development board. The binary upload mode of the `tmtc` Python software is used to send the binary and offers various PyCharm run configurations to do write binaries to the NAND-Flash. The PUS standard is used as a packet format to closely resemble the update procedure used during satellite operations. Simply load the `tmtc` folder as a PyCharm project. Steps:
 
 1. Create a generic folder structure on the SD-Card. There is a special run configuration to do this.
 
