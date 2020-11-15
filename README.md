@@ -22,6 +22,11 @@ Additional Note: The ISIS library is not public because
 it is not open source. Those libraries to be added manually and the includes
 and source files have to be setup and included accordingly!
 
+The device specific documentation contains information on how to get the built
+software on the boards as well. The Linux build can be run locally on the host computer.
+The QEMU image can be run on the host computer as well, but required QEMU installed as specified
+in the QEMU documentation.
+
 ## Reference
 [Prerequisites](#prerequisites)<br>
 [Building the software](#building-the-software)<br>
@@ -121,8 +126,8 @@ For developers unfamiliar with Eclipse, it is recommended to read the
 
 Following make targets are available:
 - sdramCfg: Configure AT91 SDRAM on start-up. Required after each restart.
-- clean: Clean the dependencies, binaries and includes of current system (STM32 or AT91)
-  and Communication Interface (Serial RS232 or UDP Ethernet)
+- clean: Clean the dependencies, binaries and includes of current active build
+  configurationand Communication Interface (Serial RS232 or UDP Ethernet)
 - hardclean: Clean the three mentioned folders for all systems and interfaces
 - cleanbin: Clean all binaries
 - debug: Additional FSFW debug messages
