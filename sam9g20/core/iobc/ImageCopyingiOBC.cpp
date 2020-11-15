@@ -307,11 +307,11 @@ void ImageCopyingEngine::writeBootloaderCrc() {
 	}
 #if OBSW_REDUCED_PRINTOUT == 0
 	else {
-    	sif::info << std::setfill('0') << std::setw(2) << "Bootloader "
-    			<< "CRC " << (crc16 >> 8 & 0xff) << ", "
-				<< (crc16 & 0xff) << " written to address "
-				<< NORFLASH_BL_CRC16_START << std::setfill(' ')
-				<< std::endl;
+    	sif::info << std::setfill('0') << std::setw(2) << std::hex
+    			<< "Bootloader CRC16: " << "0x" << (crc16 >> 8 & 0xff) << ", "
+				<< "0x" << (crc16 & 0xff) << " written to address "
+				<< "0x" << NORFLASH_BL_CRC16_START << std::setfill(' ')
+				<< std::dec << std::endl;
 	}
 #endif
 }
