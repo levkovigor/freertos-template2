@@ -29,6 +29,7 @@
 #include <hal/Timing/WatchDogTimer.h>
 #include <hal/Storage/FRAM.h>
 #include <hal/Storage/NORflash.h>
+#include <hal/Drivers/SPI.h>
 
 #include <stdbool.h>
 #include <string.h>
@@ -123,9 +124,7 @@ void init_task(void * args) {
 //void print_bl_info() __attribute__((section(".sramfunc")));
 void print_bl_info() {
 		TRACE_INFO_WP("\n\rStarting FreeRTOS task scheduler.\n\r");
-		vTaskDelay(1);
 		TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
-		vTaskDelay(1);
 	    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME);
 	    vTaskDelay(1);
 	    TRACE_INFO_WP("-- Software version v%d.%d --\n\r", BL_VERSION,
@@ -206,7 +205,15 @@ void handler_task(void * args) {
 //void initialize_all_iobc_peripherals() __attribute__((section(".sramfunc")));
 void initialize_all_iobc_peripherals() {
     RTT_start();
-    int result = FRAM_start();
+
+    // Those two fail. I don't know why yet.
+    int result = SPI_start(bus0_spi, 0);
+    if(result != 0) {
+        // This should not happen!
+        TRACE_ERROR("initialize_iobc_peripherals: Could not start "
+        		"SPI, code %d!\n\r", result);
+    }
+    result = FRAM_start();
     if(result != 0) {
         // This should not happen!
         TRACE_ERROR("initialize_iobc_peripherals: Could not start "
