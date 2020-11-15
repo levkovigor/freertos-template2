@@ -25,10 +25,10 @@ make mission -f Makefile-Bootloader IOBC=1 -j
 1. Set up VPN, [IRS  mail account](https://cube18.irs.uni-stuttgart.de/) required: 
 Write mail to zert@irs.uni-stuttgart.de to get OpenVPN configuration.
 2. Download OpenVPN and configure it with the configuratioon files.
- - Windows: Put configuration files into a certain folder (I don't know it anymore)
-   or add the configuration.
- - Ubuntu: Install the ubuntu gnome version of OpenVPN. 
-Then go to Network->VPN and press + to add the .ovpn file configuration
+ - Windows: Put configuration files into the OpenVPN config folder
+   or add the configuration in the OpenVPN GUI
+ - Ubuntu: Install the ubuntu gnome version of OpenVPN. Then go to 
+   Network &rarr VPN and press + to add the .ovpn file configuration
 3. Connect to the VPN
 4. Connect to Flatsat (password needed, ask Jonas Burgdorf on Mattermost):
 ```sh
@@ -164,6 +164,29 @@ listUsb
 
 These scripts are located inside the scripts folder.
 
+### Loading binaries built locally to the non-volatile memory
 
+It is recommended to flash the software to the SDRAM directly for
+development purposes. To test the binary and the bootloader on 
+the non-volatile memories, the images need to be written
+to the 1MB NOR-Flash chip. This is either possible with SAM-BA
+when interfacing the iOBC with a Windows PC and the ISIS SAM-BA application
+installed or by uploading the binary via RS232 (same communication line
+used for TMTC commanding). For remote deployment, only the second
+way is currently possible. Following general steps need to be taken:
 
+1. Transfer the file with to the \_bin folder of
+the remote OBSW folder with SFTP. It is recommended to use Filezilla for this.
+It is possible to set common operations as favorites in Filezilla.
+
+2. Transfer the binary to the SD-Card first. The `tmtcclient` Python application
+inside the `tmtc` folder can be used to either transfer an OBSW Update or a bootloader.
+This mode is provided as a PyCharm run configuration when loading
+the `tmtc` folder as a PyCharm project.
+
+3. After that, a specific command provided by the `tmtmcclient` can be used 
+to write the  bootloader or OBSW image from SD-card to the NOR-Flash.
+
+4. Another command can be used to power cycle or reset the core to test the flashed
+software
 
