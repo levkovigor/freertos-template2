@@ -137,9 +137,9 @@ void assignBusMatrixPriorities() {
 /// This function also reset the AIC and disable RTT and PIT interrupts
 //------------------------------------------------------------------------------
 #ifdef norflash
-void LowLevelInit(void) __attribute__ ((noinline)) ;;
+void LowLevelInit(void) __attribute__ ((noinline, optimize("O0"))) ;;
 #else
-void LowLevelInit(void) __attribute__ ((noinline)) ;
+void LowLevelInit(void) __attribute__ ((noinline, optimize("O0"))) ;
 #endif
 void LowLevelInit(void)
 {
