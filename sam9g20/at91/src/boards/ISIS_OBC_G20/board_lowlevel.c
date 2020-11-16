@@ -152,12 +152,11 @@ void LowLevelInit(void)
     AT91C_BASE_PMC->PMC_MOR = BOARD_OSCOUNT | AT91C_CKGR_MOSCEN;
     while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MOSCS));
 
-    /* Initialize PLLA at 200MHz (198.656) */
+    /* Initialize PLLA at 200MHz (198.656). Register is set to  0x202A3F01 */
     AT91C_BASE_PMC->PMC_PLLAR = BOARD_CKGR_PLLA
                                 | BOARD_PLLACOUNT
                                 | BOARD_MULA
                                 | BOARD_DIVA;
-    //AT91C_BASE_PMC->PMC_PLLAR = 0x202A3F01;
     while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCKA));
 
     // Initialize PLLB for USB usage (if not already locked)
@@ -219,9 +218,9 @@ void LowLevelInit(void)
     BOARD_ConfigureNorFlash(BOARD_NORFLASH_BUSWIDTH);
 #endif
 
-#ifndef sdram
-    BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
-#endif
+//#ifndef sdram
+//    BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
+//#endif
 }
 
 
