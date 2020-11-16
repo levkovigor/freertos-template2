@@ -230,15 +230,6 @@ resetHandler:
 	strcc   r3, [r1], #4
 	bcc     1b
 
-/* Set srambss to 0 first */
-	ldr     r0, =_ssrambss
-	ldr     r1, =_esrambss
-	mov     r2, #0
-1:
-	cmp     r0, r1
-	strcc   r2, [r0], #4
-	bcc     1b
-
 /* Clear the zero segment */
 	ldr     r0, =__bss_start__
 	ldr     r1, =__bss_end__

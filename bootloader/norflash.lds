@@ -50,19 +50,21 @@ SECTIONS
         . = ALIGN(4);
         _sprerelocate = .;
         KEEP(*(.vectors));
+        /* These functions need to be executed in the SRAM0 for the NORFlash */
         *board_lowlevel.o(.text .text*)
         *board_memories.o(.text .text*)
         . = ALIGN(4);
         _eprerelocate = .;
     } >sram0
     
+    /* Other functions which are executed in the SRAM0 */
     .postrelocate : AT (_efixed + SIZEOF(.prerelocate))
     {
         . = ALIGN(4);
         _spostrelocate = .;
         *(.sramfunc*)
-        *SPI.o(.text .text*);
-        *spi_at91.o(.text .text*);
+        /* *SPI.o(.text .text*); */
+        /* *spi_at91.o(.text .text*); */
         /* *HAL.a:*(.text .text.*); */
         /* contains all initialized global and static variables */
         *(.sramdata*)
@@ -73,10 +75,10 @@ SECTIONS
     
     .fixed :
     {
-        . = ALIGN(4);
-        _sfixed = .;
-        KEEP(*(.startup));
-        *(.text .text.*)
+		. = ALIGN(4);
+		_sfixed = .;
+		KEEP(*(.startup));
+		*(.text .text.*)
         *(.rodata*)
         *(.glue_7)
         *(.glue_7t)	 		
@@ -121,28 +123,19 @@ SECTIONS
     __exidx_end = .;    
     _efixed = .;
     
-    .srambss (NOLOAD) : 
-    {
-    	. = ALIGN(4);
-    	_ssrambss = .;
-    	*(.srambss*)
-    	. = ALIGN(4);
-    	_esrambss = .;
-    } >sram1
-
     .bss (NOLOAD) : 
     {
         /* This is used by the startup in order to initialize the .bss secion */
-	    _sbss = .;         /* define a global symbol at bss start */
-	    __bss_start__ = _sbss;
-        *(.bss)
-        *(.bss*)
-        
-        *(COMMON)
+		_sbss = .;         /* define a global symbol at bss start */
+		__bss_start__ = _sbss;
+		*(.bss)
+		*(.bss*)
+		*(COMMON)
 		*(COMMON.*)
-        . = ALIGN(4);
-        _ebss = .;         /* define a global symbol at bss end */
-	    __bss_end__ = _ebss;
+		*(.srambss*)
+		. = ALIGN(4);
+		_ebss = .;         /* define a global symbol at bss end */
+		 __bss_end__ = _ebss;
     } >sram1
     
     /* Heap section */
