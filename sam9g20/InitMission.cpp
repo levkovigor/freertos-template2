@@ -21,10 +21,16 @@ extern "C" {
 #include <board.h>
 }
 
-#if DISPLAY_FACTORY_ALLOCATION_SIZE == 1
+#if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1 || OBSW_MONITOR_ALLOCATION == 1
 #include <new>
+#if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1
 static size_t allocatedSize = 0;
 #endif
+#if OBSW_MONITOR_ALLOCATION == 1
+static bool softwareInitializationComplete = false;
+#endif
+#endif
+
 
 /* Initialize Data Pool */
 namespace glob {
@@ -386,9 +392,12 @@ void initTasks(void) {
         sif::warning << "Factory Task: Remaining stack size: "
                 << remainingFactoryStack << " bytes" << std::endl;
     }
-#if OBSW_DISPLAY_FACTORY_ALLOCATION_SIZE == 1
+#if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1
     sif::info << "Allocated size by new function: " << allocatedSize
             << std::endl;
+#endif
+#if OBSW_MONITOR_ALLOCATION == 1
+    softwareInitializationComplete = true;
 #endif
     sif::info << "Tasks started." << std::endl;
 }
@@ -469,9 +478,17 @@ void boardTestTaskInit() {
 #endif
 
 
-#if OBSW_DISPLAY_FACTORY_ALLOCATION_SIZE == 1
+#if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1 || OBSW_MONITOR_ALLOCATION == 1
 void* operator new(size_t size) {
+#if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1
     allocatedSize += size;
+#endif
+#if OBSW_MONITOR_ALLOCATION == 1
+    if(softwareInitializationComplete) {
+    	sif::error << "Software Initialization complete but memory "
+    			<< "is allocated!" << std::endl;
+    }
+#endif
     return std::malloc(size);
 }
 #endif

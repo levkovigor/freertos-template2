@@ -201,7 +201,7 @@ ReturnValue_t SDCardHandler::generateFinishAppendReply(RepositoryPath *repoPath,
         return result;
     }
 
-#if OBSW_REDUCED_PRINTOUT == 0
+#if OBSW_ENHANCED_PRINTOUT == 1
     sif::info << "Append operation on file " << fileName->c_str()
             << " in repository " << repoPath->c_str()
             << " finished." << std::endl;
@@ -225,7 +225,7 @@ ReturnValue_t SDCardHandler::handleSequenceNumberWrite(uint16_t sequenceNumber,
         lastPacketWriteNumber = 0;
     }
     else if((sequenceNumber == 1) and (lastPacketWriteNumber != 0)) {
-#if OBSW_REDUCED_PRINTOUT == 0
+#if OBSW_ENHANCED_PRINTOUT == 1
         sif::debug << "SDCardHandler::appendToFile: First sequence "
                 << "packet missed!" << std::endl;
 #endif
@@ -234,7 +234,7 @@ ReturnValue_t SDCardHandler::handleSequenceNumberWrite(uint16_t sequenceNumber,
         return SEQUENCE_PACKET_MISSING_WRITE;
     }
     else if((sequenceNumber - lastPacketWriteNumber) > 1) {
-#if OBSW_REDUCED_PRINTOUT == 0
+#if OBSW_ENHANCED_PRINTOUT == 1
         sif::debug << "SDCardHandler::appendToFile: Packet missing between "
                 << sequenceNumber << " and " << lastPacketWriteNumber
                 << std::endl;

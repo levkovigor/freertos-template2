@@ -13,13 +13,13 @@
 
 #define OBSW_RS485_WITH_TERMINATION             1
 
-//! Should be disabled for mission code.
-#define OBSW_DISPLAY_FACTORY_ALLOCATION_SIZE    0
+//! All of these should be disabled for mission code but are very helpful
+//! for development
+#define OBSW_TRACK_FACTORY_ALLOCATION_SIZE   	1
 #define OBSW_MONITOR_ALLOCATION    				1
 #define OBSW_ADD_TEST_CODE                      1
 #define OBSW_PRINT_MISSED_DEADLINES             1
-//! Should be enabled for mission code.
-#define OBSW_REDUCED_PRINTOUT				    0
+#define OBSW_ENHANCED_PRINTOUT				    1
 
 #define MAX_REPOSITORY_PATH_LENGTH 			    64
 #define MAX_FILENAME_LENGTH 				    12
