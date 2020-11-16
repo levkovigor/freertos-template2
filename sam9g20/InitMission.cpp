@@ -27,7 +27,7 @@ extern "C" {
 static size_t allocatedSize = 0;
 #endif
 #if OBSW_MONITOR_ALLOCATION == 1
-static bool softwareInitializationComplete = false;
+bool config::softwareInitializationComplete = false;
 #endif
 #endif
 
@@ -396,9 +396,6 @@ void initTasks(void) {
     sif::info << "Allocated size by new function: " << allocatedSize
             << std::endl;
 #endif
-#if OBSW_MONITOR_ALLOCATION == 1
-    softwareInitializationComplete = true;
-#endif
     sif::info << "Tasks started." << std::endl;
 }
 
@@ -484,7 +481,7 @@ void* operator new(size_t size) {
     allocatedSize += size;
 #endif
 #if OBSW_MONITOR_ALLOCATION == 1
-    if(softwareInitializationComplete) {
+    if(config::softwareInitializationComplete) {
     	sif::error << "Software Initialization complete but memory "
     			<< "is allocated!" << std::endl;
     }

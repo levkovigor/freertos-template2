@@ -28,6 +28,10 @@
 namespace config {
 #endif
 
+#if OBSW_MONITOR_ALLOCATION == 1
+extern bool softwareInitializationComplete;
+#endif
+
 /* Hardcoded file names */
 #ifdef AT91SAM9G20_EK
 extern const char* BOOTLOADER_REPOSITORY;
