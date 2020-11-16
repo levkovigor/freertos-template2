@@ -117,7 +117,6 @@ void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
 int perform_bootloader_core_operation() {
     LED_Set(1);
     // Clear SDRAM completely.
-    memset((void*) SDRAM_DESTINATION, 0 , 0x100000);
     int result = copy_nandflash_binary_to_sdram(false);
     if(result != 0) {
         return result;
