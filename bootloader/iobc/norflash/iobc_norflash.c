@@ -101,8 +101,6 @@ void init_task(void * args) {
 	// feeding the watchdog.
 	//perform_bootloader_check();
 #if DEBUG_IO_LIB == 1
-
-	vTaskDelay(1);
 	print_bl_info();
 #endif
     initialize_all_iobc_peripherals();
@@ -126,14 +124,10 @@ void print_bl_info() {
 		TRACE_INFO_WP("\n\rStarting FreeRTOS task scheduler.\n\r");
 		TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
 	    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME);
-	    vTaskDelay(1);
 	    TRACE_INFO_WP("-- Software version v%d.%d --\n\r", BL_VERSION,
 	    		BL_SUBVERSION);
-	    vTaskDelay(1);
 	    TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
-	    vTaskDelay(1);
 	    TRACE_INFO("Running initialization task..\n\r");
-	    vTaskDelay(1);
 }
 
 
@@ -192,7 +186,6 @@ void handler_task(void * args) {
 
 #if DEBUG_IO_LIB == 1
     TRACE_INFO("Running handler task..\n\r");
-    vTaskDelay(1);
 #endif
 
     perform_bootloader_core_operation();
@@ -207,18 +200,18 @@ void initialize_all_iobc_peripherals() {
     RTT_start();
 
     // Those two fail. I don't know why yet.
-    int result = SPI_start(bus0_spi, 0);
-    if(result != 0) {
-        // This should not happen!
-        TRACE_ERROR("initialize_iobc_peripherals: Could not start "
-        		"SPI, code %d!\n\r", result);
-    }
-    result = FRAM_start();
-    if(result != 0) {
-        // This should not happen!
-        TRACE_ERROR("initialize_iobc_peripherals: Could not start "
-        		"FRAM, code %d!\n\r", result);
-    }
+//    int result = SPI_start(bus0_spi, 0);
+//    if(result != 0) {
+//        // This should not happen!
+//        TRACE_ERROR("initialize_iobc_peripherals: Could not start "
+//        		"SPI, code %d!\n\r", result);
+//    }
+//    result = FRAM_start();
+//    if(result != 0) {
+//        // This should not happen!
+//        TRACE_ERROR("initialize_iobc_peripherals: Could not start "
+//        		"FRAM, code %d!\n\r", result);
+//    }
 }
 
 

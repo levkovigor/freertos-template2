@@ -61,7 +61,9 @@ SECTIONS
         . = ALIGN(4);
         _spostrelocate = .;
         *(.sramfunc*)
-        /* *HAL.a:*(.text .text.*) */
+        *SPI.o(.text .text*);
+        *spi_at91.o(.text .text*);
+        /* *HAL.a:*(.text .text.*); */
         /* contains all initialized global and static variables */
         *(.sramdata*)
         *(.data*)
