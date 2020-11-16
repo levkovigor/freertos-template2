@@ -15,7 +15,7 @@
 
 //! All of these should be disabled for mission code but are very helpful
 //! for development
-#define OBSW_TRACK_FACTORY_ALLOCATION_SIZE   	1
+#define OBSW_TRACK_FACTORY_ALLOCATION_SIZE   	0
 #define OBSW_MONITOR_ALLOCATION    				0
 #define OBSW_ADD_TEST_CODE                      1
 #define OBSW_PRINT_MISSED_DEADLINES             1
