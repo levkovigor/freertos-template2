@@ -57,11 +57,12 @@ void CoreController::performControlOperation() {
     // are out of order.
 #endif
 
-    /* Check for overflows of 32bit counter regularly (currently every day).
-    the second counter will take 4-5 years to overflow which exceeds
+
+    /* the second counter will take 4-5 years to overflow which exceeds
     mission time. */
     uint32_t currentUptimeSeconds = RTT_GetTime();
 
+    /* Dynamic memory allocation is only allowed at software startup */
 #if OBSW_MONITOR_ALLOCATION == 1
     if(currentUptimeSeconds > 2 and not
     		config::softwareInitializationComplete) {
@@ -69,6 +70,8 @@ void CoreController::performControlOperation() {
     }
 #endif
 
+    /* Check for overflows of 10kHz 32bit counter regularly
+    (currently every day). */
     if(currentUptimeSeconds - lastCounterUpdateSeconds >= DAY_IN_SECONDS) {
         update64bitCounter();
         lastCounterUpdateSeconds = currentUptimeSeconds;
