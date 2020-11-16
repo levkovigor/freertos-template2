@@ -2,8 +2,10 @@
 #define BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_
 
 #include <hal/Storage/NORflash.h>
+#include <config/bootloaderConfig.h>
 
 #include <stdint.h>
+#include <stddef.h>
 
 /* Address definitions */
 
@@ -23,6 +25,7 @@ static const uint32_t BOOTLOADER_BASE_ADDRESS_WRITE = NOR_FLASH_BASE_ADDRESS_WRI
 static const uint32_t BOOTLOADER_END_ADDRESS_WRITE = BOOTLOADER_RESERVED_SIZE;
 static const uint32_t BOOTLOADER_CRC16_ADDRESS_WRITE = BOOTLOADER_RESERVED_SIZE - 2;
 
+static const uint32_t BOOTLOADER_BASE_ADDRESS_READ = NOR_FLASH_BASE_ADDRESS;
 static const uint32_t BOOTLOADER_END_ADDRESS_READ = NOR_FLASH_BASE_ADDRESS +
         BOOTLOADER_END_ADDRESS_WRITE;
 
@@ -31,6 +34,9 @@ static const uint32_t BINARY_BASE_ADDRESS_WRITE = BOOTLOADER_RESERVED_SIZE;
 static const uint32_t BINARY_BASE_ADDRESS_READ = NOR_FLASH_BASE_ADDRESS +
 		BOOTLOADER_RESERVED_SIZE;
 
+static const size_t NORFLASH_SIZE = 0x100000;
 
-
+#if DEBUG_IO_LIB == 1
+extern const char* DEBUG_INTRO_OUTPUT;
+#endif
 #endif /* BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_ */

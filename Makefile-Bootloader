@@ -331,6 +331,9 @@ endif
 
 # CPU specification
 CPU_FLAG = -mcpu=arm926ej-s
+# INSTRUCTION_SET_CXX = -mthumb -mthumb-interwork
+# INSTRUCTION_SET_AS = -mthumb-interwork
+
 # Newlib Nano
 NEWLIB_NANO = -specs=nosys.specs -specs=nano.specs
 
@@ -362,10 +365,11 @@ CXXDEFINES := -D$(CHIP) -D$(BOARD) -DTRACE_LEVEL=$(TRACE_LEVEL) \
 		   -DDYN_TRACES=$(DYN_TRACES) $(CUSTOM_DEFINES)
 CFLAGS +=  
 CXXFLAGS += -I. -Wall $(DEBUG_LEVEL) $(DEPFLAGS) -fmessage-length=0 \
-		$(OPTIMIZATION) $(I_INCLUDES) $(CXXDEFINES) $(NEWLIB_NANO) $(CPU_FLAG) 
-CPPFLAGS += -std=c++17 -fno-exceptions
-ASFLAGS =  -Wall -g $(OPTIMIZATION) $(I_INCLUDES) -D$(MEMORY_TYPE) -D$(CHIP) -D__ASSEMBLY__ \
-           $(NEWLIB_NANO) $(CPU_FLAG) 
+		$(OPTIMIZATION) $(I_INCLUDES) $(CXXDEFINES) $(NEWLIB_NANO) $(CPU_FLAG) \
+		$(INSTRUCTION_SET_CXX)
+CPPFLAGS += -std=c++17 -fno-exceptions 
+ASFLAGS =  -Wall -g $(OPTIMIZATION) $(I_INCLUDES) -D$(MEMORY_TYPE) -D$(CHIP) \
+		-D__ASSEMBLY__ $(NEWLIB_NANO) $(CPU_FLAG) $(INSTRUCTION_SET_AS)
            
 # Debug Info
 # $(info $${CXXDEFINES} is [${CXXDEFINES}])
@@ -408,7 +412,7 @@ all: executable
 
 # Build target configuration, which also includes information output.
 # See: https://www.gnu.org/software/make/manual/html_node/Target_002dspecific.html
-#mission: LINK_TIME_OPTIMIZATION = -flto
+# mission: LINK_TIME_OPTIMIZATION = -flto
 mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION) $(LINK_TIME_OPTIMIZATION)
 mission: TARGET = Mission binary
 mission: OPTIMIZATION_MESSAGE = On with Link Time Optimization

@@ -11,6 +11,7 @@ extern "C" {
 #include <at91/memories/nandflash/NandCommon.h>
 }
 #else
+#include <hal/Storage/NORflash.h>
 #endif
 
 /**
@@ -159,13 +160,17 @@ private:
     ReturnValue_t nandFlashInit();
     ReturnValue_t performNandCopyAlgorithm(F_FILE** binaryFile);
 #else
-    const uint8_t RESERVED_NOR_FLASH_SECTORS = 5;
-    const uint8_t NORFLASH_SMALL_SECTORS_NUMBER = 8;
-    const size_t NORFLASH_TOTAL_SMALL_SECTOR_MEM =
-            NORFLASH_SMALL_SECTORS_NUMBER * NORFLASH_SMALL_SECTOR_SIZE;
-    const uint8_t NORFLASH_MEDIUM_SECTORS_NUMBER = 15;
-    const uint8_t NORFLASH_SECTORS_NUMBER = 23;
-    const size_t COPYING_BUCKET_SIZE = 2048;
+    static constexpr uint8_t NORFLASH_SMALL_SECTORS_NUMBER = 8;
+    static constexpr uint8_t RESERVED_BL_SMALL_SECTORS = 5;
+    static constexpr uint8_t RESERVED_OBSW_SMALL_SECTORS =
+    		NORFLASH_SMALL_SECTORS_NUMBER - RESERVED_BL_SMALL_SECTORS;
+    static constexpr size_t NORFLASH_TOTAL_SMALL_SECTOR_MEM_OBSW =
+    		RESERVED_OBSW_SMALL_SECTORS * NORFLASH_SMALL_SECTOR_SIZE;
+    static constexpr uint8_t NORFLASH_MEDIUM_SECTORS_NUMBER = 15;
+    static constexpr uint8_t NORFLASH_SECTORS_NUMBER = 23;
+    static constexpr uint32_t NORFLASH_BASE_ADDRESS_READ = 0x10000000;
+    static constexpr uint32_t NORFLASH_BL_CRC16_START = NORFLASH_SA5_ADDRESS - 2;
+    static constexpr size_t COPYING_BUCKET_SIZE = 2048;
     ReturnValue_t copySdCardImageToNorFlash();
     /**
      * For the bootloader, 5 small sectors (8192 * 5 = 40960 bytes) will
@@ -179,6 +184,7 @@ private:
     uint32_t getBaseAddress(uint8_t stepCounter, size_t* offset);
     ReturnValue_t performNorCopyOperation(F_FILE** binaryFile);
     ReturnValue_t handleSdToNorCopyOperation();
+    void writeBootloaderCrc();
 #endif
     ReturnValue_t prepareGenericFileInformation(VolumeId currentVolume,
             F_FILE** filePtr);
