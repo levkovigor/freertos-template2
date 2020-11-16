@@ -26,6 +26,7 @@ void perform_bootloader_core_operation() {
     TRACE_INFO("Jumping to SDRAM application..\n\r");
 #endif
 
+    vTaskEndScheduler();
     jumpToSdramApplication();
     //go_to_jump_address(SDRAM_DESTINATION, 0);
 }

@@ -168,6 +168,7 @@ void perform_bootloader_check() {
 			memcpy((void*) (SDRAM0_END - sizeof(bootloader_faulty_flag)),
 					(const void *) &bootloader_faulty_flag,
 					sizeof(bootloader_faulty_flag));
+			vTaskEndScheduler();
 			jumpToSdramApplication();
 		}
 	}
