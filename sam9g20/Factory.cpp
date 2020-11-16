@@ -1,3 +1,5 @@
+#include "Factory.h"
+
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/internalError/InternalErrorReporter.h>
 #include <fsfw/storagemanager/PoolManager.h>
@@ -20,7 +22,7 @@
 #include <fsfw/timemanager/TimeStamper.h>
 #include <fsfwconfig/devices/logicalAddresses.h>
 #include <fsfwconfig/devices/powerSwitcherList.h>
-#include <fsfwconfig/objects/Factory.h>
+
 #include <fsfwconfig/objects/systemObjectList.h>
 #include <fsfwconfig/OBSWConfig.h>
 #include <fsfwconfig/tmtc/apid.h>

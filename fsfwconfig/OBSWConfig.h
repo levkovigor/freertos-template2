@@ -15,6 +15,7 @@
 
 //! Should be disabled for mission code.
 #define OBSW_DISPLAY_FACTORY_ALLOCATION_SIZE    0
+#define OBSW_MONITOR_ALLOCATION    				1
 #define OBSW_ADD_TEST_CODE                      1
 #define OBSW_PRINT_MISSED_DEADLINES             1
 //! Should be enabled for mission code.

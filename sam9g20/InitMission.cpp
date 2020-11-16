@@ -1,3 +1,5 @@
+#include "Factory.h"
+
 #include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Clock.h>
@@ -8,7 +10,6 @@
 
 #include <freertos/FreeRTOS.h>
 #include <fsfwconfig/cdatapool/dataPoolInit.h>
-#include <fsfwconfig/objects/Factory.h>
 #include <fsfwconfig/objects/systemObjectList.h>
 #include <fsfwconfig/OBSWConfig.h>
 #include <fsfwconfig/pollingsequence/PollingSequenceFactory.h>
