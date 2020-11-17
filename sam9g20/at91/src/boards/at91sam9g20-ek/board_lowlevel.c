@@ -162,7 +162,6 @@ void LowLevelInit(void)
         AT91C_BASE_AIC->AIC_EOICR = 0;
     }
 
-
     /* Watchdog initialization
      *************************/
     AT91C_BASE_WDTC->WDTC_WDMR = AT91C_WDTC_WDDIS;
@@ -186,7 +185,6 @@ void LowLevelInit(void)
 #endif
 }
 
-void clearBssSection(void) __attribute__ ((section(".sramfunc"), weak));
 void clearBssSection(void) {
     extern char _sbss, _ebss;
     memset(&_sbss, 0, &_ebss - &_sbss);
