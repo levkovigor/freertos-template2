@@ -21,6 +21,10 @@
 #define OBSW_PRINT_MISSED_DEADLINES             1
 #define OBSW_ENHANCED_PRINTOUT				    1
 
+//! If this flag is set, the SD card handler will write the current image located
+//! in SDRAM to a file at startup.
+#define OBSW_WRITE_CURRENT_IMG_TO_FILE 			1
+
 #define MAX_REPOSITORY_PATH_LENGTH 			    64
 #define MAX_FILENAME_LENGTH 				    12
 
