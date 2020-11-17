@@ -17,7 +17,7 @@
 
 // The AT91SAM9G20-EK does not have a pre-installed NOR-Flash. Therefore,
 // we only include the NorFlash boot header for iOBC projects.
-#include <at91/bootAt91.h>
+#include <at91/boot_at91.h>
 
 #if DEBUG_IO_LIB == 1
 #include <utility/trace.h>
@@ -116,12 +116,14 @@ void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
 
 int perform_bootloader_core_operation() {
     LED_Set(1);
-    // Clear SDRAM completely.
     int result = copy_nandflash_binary_to_sdram(false);
     if(result != 0) {
         return result;
     }
     LED_Clear(1);
+#if DEBUG_IO_LIB == 1
+    TRACE_INFO("Jumping to SDRAM application!\n\r");
+#endif
     jumpToSdramApplication();
     return 0;
 }

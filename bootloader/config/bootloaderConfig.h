@@ -8,8 +8,13 @@
 //! a difference, most of the AT91 lib uses IO so it is difficult to remove it)
 #define DEBUG_IO_LIB            1
 
+#define DEBUG_VERBOSE           0
 //! 1 MB minus reserved size of bootloader.
+#ifdef AT91SAM9G20_EK
+#define OBSW_BINARY_MAX_SIZE 1100000 // 1.007.616 bytes
+#else
 #define OBSW_BINARY_MAX_SIZE 0x100000 - 0xA000 // 1.007.616 bytes
+#endif
 
 #ifdef AT91SAM9G20_EK
 //! This should translate to the second block of the NAND flash.

@@ -1,6 +1,8 @@
 #ifndef BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_
 #define BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_
 
+#include "main.h"
+
 #include <hal/Storage/NORflash.h>
 #include <config/bootloaderConfig.h>
 
@@ -40,4 +42,7 @@ static const size_t OBSW_MAX_SIZE = NORFLASH_SIZE - BOOTLOADER_RESERVED_SIZE;
 #if DEBUG_IO_LIB == 1
 extern const char* DEBUG_INTRO_OUTPUT;
 #endif
+
+int copy_sdcard_binary_to_sdram(BootSelect boot_select);
+
 #endif /* BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_ */

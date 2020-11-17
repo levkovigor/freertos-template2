@@ -1,8 +1,9 @@
-#include "main.h"
 #include "iobc_norflash.h"
-#include "config/bootloaderConfig.h"
 
-#include <utility/CRC.h>
+#include "config/bootloaderConfig.h"
+#include "iobc/common/boot_iobc.h"
+#include "utility/CRC.h"
+
 #include <sam9g20/memory/SDCardApi.h>
 #include <sam9g20/common/FRAMApi.h>
 
@@ -14,7 +15,7 @@
 #include <peripherals/aic/aic.h>
 #include <peripherals/pio/pio.h>
 #include <cp15/cp15.h>
-#include "../boot_iobc.h"
+
 #if DEBUG_IO_LIB == 1
 #include <utility/trace.h>
 #endif
@@ -40,7 +41,7 @@ void handler_task(void * args);
 void initialize_all_iobc_peripherals();
 
 
-void idle_loop();
+//void idle_loop();
 
 static TaskHandle_t handler_task_handle_glob = NULL;
 

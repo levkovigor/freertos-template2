@@ -1,4 +1,4 @@
-#include "bootAt91.h"
+#include "boot_at91.h"
 #include <bootloaderConfig.h>
 #include <main.h>
 
@@ -48,7 +48,7 @@ int copy_nandflash_binary_to_sdram(bool enable_full_printout) {
 
 
     NandInit();
-    BOOT_NAND_CopyBin(NAND_FLASH_OFFSET, BINARY_SIZE);
+    BOOT_NAND_CopyBin(NAND_FLASH_OFFSET, OBSW_BINARY_MAX_SIZE);
 
     if(!enable_full_printout) {
         setTrace(TRACE_LEVEL_DEBUG);
@@ -161,14 +161,12 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
     }
 #endif
 
-    TRACE_WARNING("Access translation: Start copying from block %d and "
-            "page %d.\n\r", block, page);
+    printf("-I- Access translation: Start copying %d bytes from block %d "
+            "and page %d.\n\r", binary_size, block, page);
 
     // Initialize to SDRAM start address
     ptr = (unsigned char*)SDRAM_DESTINATION;
     bytes_read = binary_size;
-    unsigned short first_block = block;
-
     while(block < numBlocks)
     {
         for(page = 0; page < numPagesPerBlock; page++) {
@@ -176,45 +174,31 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
         	do {
         		error = SkipBlockNandFlash_ReadPage(&skipBlockNf, block,
         				page, ptr, 0);
-//        		if((block == 1) && (page == 0)) {
-//        			unsigned int armVector = 0;
-//        			memcpy(&armVector, ptr, 4);
-//        			TRACE_WARNING("1: %08x\n\r", armVector);
-//        			memcpy(&armVector, ptr + 4, 4);
-//        			TRACE_WARNING("2: %08x\n\r", armVector);
-//        			memcpy(&armVector, ptr + 8, 4);
-//        			TRACE_WARNING("3: %08x\n\r", armVector);
-//        			memcpy(&armVector, ptr + 12, 4);
-//        			TRACE_WARNING("4: %08x\n\r", armVector);
-//        			memcpy(&armVector, ptr + 16, 4);
-//        			TRACE_WARNING("5: %08x\n\r", armVector);
-//        			memcpy(&armVector, ptr + 20, 4);
-//        			TRACE_WARNING("6: %08x\n\r", armVector);
-//        			memcpy(&armVector, ptr + 24, 4);
-//        			TRACE_WARNING("7: %08x\n\r", armVector);
-//        		}
+#if DEBUG_VERBOSE == 1 && DEBUG_IO_LIB == 1
+        		if((block == 1) && (page == 0)) {
+        			unsigned int armVector = 0;
+        			memcpy(&armVector, ptr, 4);
+        			TRACE_WARNING("1: %08x\n\r", armVector);
+        			memcpy(&armVector, ptr + 4, 4);
+        			TRACE_WARNING("2: %08x\n\r", armVector);
+        			memcpy(&armVector, ptr + 8, 4);
+        			TRACE_WARNING("3: %08x\n\r", armVector);
+        			memcpy(&armVector, ptr + 12, 4);
+        			TRACE_WARNING("4: %08x\n\r", armVector);
+        			memcpy(&armVector, ptr + 16, 4);
+        			TRACE_WARNING("5: %08x\n\r", armVector);
+        			memcpy(&armVector, ptr + 20, 4);
+        			TRACE_WARNING("6: %08x\n\r", armVector);
+        			memcpy(&armVector, ptr + 24, 4);
+        			TRACE_WARNING("7: %08x\n\r", armVector);
+        		}
+#endif
 //        		TRACE_WARNING("SkipBlockNandFlash_ReadBlock: Reading block %d "
 //       				"page %d.\n\r", block, page);
         		if (error == NandCommon_ERROR_BADBLOCK) {
         		    block++;
         		}
         		else {
-        		    if((block == first_block) && (page == 0)) {
-#if USE_FIXED_BINARY_SIZE == 0
-        		        // Set binary size from the sixth ARM vector.
-        		        // bytes_read has not been decremented yet, so we can
-        		        // use it to do this.
-        		        memcpy(&bytes_read, ptr + 0x14, sizeof(uint32_t));
-#endif
-#if ENHANCED_DEBUG_OUTPUT == 1
-        		        TRACE_WARNING("Detected binary size from sixth ARM "
-        		                "vector: %u\n\r", bytes_read);
-        		        TRACE_WARNING("Copying NAND-Flash binary with %u bytes "
-        		                "from NAND 0x%08x to 0x20000000\n\r",
-        		                (unsigned int)bytes_read,
-        		                (unsigned int)binary_offset);
-#endif
-        		    }
         		    break;
         		}
         	}
