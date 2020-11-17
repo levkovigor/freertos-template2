@@ -104,8 +104,8 @@ void initMission(void) {
 	printf("\n\r-- FreeRTOS task scheduler started --\n\r");
     printf("-- SOURCE On-Board Software --\n\r");
     printf("-- %s --\n\r", BOARD_NAME);
-    printf("-- Software version v%d.%d.%d --\n\r", SW_VERSION, SW_SUBVERSION,
-            SW_SUBSUBVERSION);
+    printf("-- Software version %s v%d.%d.%d --\n\r", SW_NAME,
+            SW_VERSION, SW_SUBVERSION, SW_SUBSUBVERSION);
     printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 
     sif::info << "Initiating mission specific code." << std::endl;
@@ -117,7 +117,7 @@ void initMission(void) {
     if(not performSimpleTask) {
         sif::info << "Creating objects." << std::endl;
         objectManager = new ObjectManager(Factory::produce);
-        objectManager -> initialize();
+        objectManager->initialize();
         sif::info << "Creating tasks.." << std::endl;
         initTasks();
     }
