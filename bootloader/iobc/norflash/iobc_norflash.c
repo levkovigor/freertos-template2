@@ -95,11 +95,15 @@ int iobc_norflash() {
     return 0;
 }
 
-//void init_task(void * args) __attribute__((section(".sramfunc")));
 void init_task(void * args) {
+	// This check is only possible if CRC and bootloader size were written
+	// at special memory locations. SAM-BA can't do this.
+#if SAM_BA_BOOT == 0
 	// If we do this check inside a task, the watchdog task can take care of
 	// feeding the watchdog.
 	perform_bootloader_check();
+#endif
+
 #if DEBUG_IO_LIB == 1
 	print_bl_info();
 #else
@@ -121,7 +125,6 @@ void init_task(void * args) {
     vTaskDelete(NULL);
 }
 
-//void print_bl_info() __attribute__((section(".sramfunc")));
 void print_bl_info() {
 		TRACE_INFO_WP("\n\rStarting FreeRTOS task scheduler.\n\r");
 		TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
@@ -135,12 +138,17 @@ void print_bl_info() {
 
 void perform_bootloader_check() {
 	/* Check CRC of bootloader which will should be located at
-	0x1000A000 -2 and 0x1000A000 -1.
-	If it is blank (0x00, 0xff), continue and emit warning (it is recommended
+	0x1000A000 -2 and 0x1000A000 -1. The bootloader size will be located
+	at 0x1000A000 - 6.
+
+	If CRC16 is blank (0x00, 0xff), continue and emit warning (it is recommended
 	to write the CRC field when writing the bootloader. If SAM-BA is used
 	this can also be perform in software)
 
-	If not, check it. If it is invalid, copy binary and jump there
+	If not, check it by calculating CRC16 with the given bootloader
+	size.
+
+	If it is invalid, copy binary and jump there
 	immediately to reduce number of  instructions. We could write a special
 	variable to the end of SRAM0 to notify the primary software that the
 	bootloader is faulty. */
@@ -198,7 +206,6 @@ void handler_task(void * args) {
     // idle_loop();
 }
 
-//void initialize_all_iobc_peripherals() __attribute__((section(".sramfunc")));
 void initialize_all_iobc_peripherals() {
     RTT_start();
 
