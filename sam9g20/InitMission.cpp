@@ -1,3 +1,5 @@
+#include "Factory.h"
+
 #include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Clock.h>
@@ -8,7 +10,6 @@
 
 #include <freertos/FreeRTOS.h>
 #include <fsfwconfig/cdatapool/dataPoolInit.h>
-#include <fsfwconfig/objects/Factory.h>
 #include <fsfwconfig/objects/systemObjectList.h>
 #include <fsfwconfig/OBSWConfig.h>
 #include <fsfwconfig/pollingsequence/PollingSequenceFactory.h>
@@ -18,12 +19,19 @@
 
 extern "C" {
 #include <board.h>
+#include <AT91SAM9G20.h>
 }
 
-#if DISPLAY_FACTORY_ALLOCATION_SIZE == 1
+#if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1 || OBSW_MONITOR_ALLOCATION == 1
 #include <new>
+#if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1
 static size_t allocatedSize = 0;
 #endif
+#if OBSW_MONITOR_ALLOCATION == 1
+bool config::softwareInitializationComplete = false;
+#endif
+#endif
+
 
 /* Initialize Data Pool */
 namespace glob {
@@ -96,8 +104,8 @@ void initMission(void) {
 	printf("\n\r-- FreeRTOS task scheduler started --\n\r");
     printf("-- SOURCE On-Board Software --\n\r");
     printf("-- %s --\n\r", BOARD_NAME);
-    printf("-- Software version v%d.%d.%d --\n\r", SW_VERSION, SW_SUBVERSION,
-            SW_SUBSUBVERSION);
+    printf("-- Software version %s v%d.%d.%d --\n\r", SW_NAME,
+            SW_VERSION, SW_SUBVERSION, SW_SUBSUBVERSION);
     printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 
     sif::info << "Initiating mission specific code." << std::endl;
@@ -109,7 +117,7 @@ void initMission(void) {
     if(not performSimpleTask) {
         sif::info << "Creating objects." << std::endl;
         objectManager = new ObjectManager(Factory::produce);
-        objectManager -> initialize();
+        objectManager->initialize();
         sif::info << "Creating tasks.." << std::endl;
         initTasks();
     }
@@ -385,7 +393,7 @@ void initTasks(void) {
         sif::warning << "Factory Task: Remaining stack size: "
                 << remainingFactoryStack << " bytes" << std::endl;
     }
-#if OBSW_DISPLAY_FACTORY_ALLOCATION_SIZE == 1
+#if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1
     sif::info << "Allocated size by new function: " << allocatedSize
             << std::endl;
 #endif
@@ -468,9 +476,17 @@ void boardTestTaskInit() {
 #endif
 
 
-#if OBSW_DISPLAY_FACTORY_ALLOCATION_SIZE == 1
+#if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1 || OBSW_MONITOR_ALLOCATION == 1
 void* operator new(size_t size) {
+#if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1
     allocatedSize += size;
+#endif
+#if OBSW_MONITOR_ALLOCATION == 1
+    if(config::softwareInitializationComplete) {
+    	sif::error << "Software Initialization complete but memory "
+    			<< "is allocated!" << std::endl;
+    }
+#endif
     return std::malloc(size);
 }
 #endif

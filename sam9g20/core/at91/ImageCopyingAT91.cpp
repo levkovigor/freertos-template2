@@ -375,7 +375,7 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
 
     if(currentByteIdx >= currentFileSize) {
         // operation finished.
-#if OBSW_REDUCED_PRINTOUT == 0
+#if OBSW_ENHANCED_PRINTOUT == 1
         if(bootloader) {
             sif::info << "Copying bootloader to NAND-Flash finished with "
                     << stepCounter << " cycles!" << std::endl;

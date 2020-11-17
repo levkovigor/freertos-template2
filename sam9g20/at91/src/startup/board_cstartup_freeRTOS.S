@@ -66,12 +66,10 @@
 //------------------------------------------------------------------------------
 //         Startup routine
 //------------------------------------------------------------------------------
-
-	.align      4
-	.arm
-        
 /* Exception vectors
  *******************/
+	.align      4
+	.arm
 	.section    .vectors, "a", %progbits
 
 resetVector:
@@ -309,7 +307,7 @@ resetHandler:
 first task starts */
 	msr     CPSR_c, #ARM_MODE_SVC | F_BIT
 
-/* Call static constructors
+/* Call static constructors, required for C++ code.
 this call deactivates the interrupts agein
 interrutps are enabled agein when the freertos scheduler starts
 libc_init_array runs through the list of static constructor addresses

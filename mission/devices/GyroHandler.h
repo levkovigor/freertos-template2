@@ -88,7 +88,7 @@ private:
     GyroDefinitions::GyroAuxilliaryDataset gyroConfigSet;
 
     PeriodicOperationDivider selfTestDivider;
-#if OBSW_REDUCED_PRINTOUT == 0
+#if OBSW_ENHANCED_PRINTOUT == 1
 	PeriodicOperationDivider* debugDivider;
 #endif
 };

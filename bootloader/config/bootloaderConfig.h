@@ -1,48 +1,31 @@
 #ifndef BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_
 #define BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_
 
-#define SW_VERSION      1
-#define SW_SUBVERSION   0
+#define BL_VERSION      1
+#define BL_SUBVERSION   1
+
+//! Can be used to disable printouts to reduce code size (does not make much of
+//! a difference, most of the AT91 lib uses IO so it is difficult to remove it)
+#define DEBUG_IO_LIB            1
+
+#define DEBUG_VERBOSE           0
+//! 1 MB minus reserved size of bootloader.
+#ifdef AT91SAM9G20_EK
+// Can be set to actual binary size or a conservative upper bound.
+#define OBSW_BINARY_MAX_SIZE 1100000 // 1.007.616 bytes
+#else
+// Limited by NOR-Flash size, but can also be set to actual binary size.
+#define OBSW_BINARY_MAX_SIZE 0x100000 - 0xA000 // 1.007.616 bytes
+#endif
 
 #ifdef AT91SAM9G20_EK
-// This should translate to the second block of the NAND flash.
+//! This should translate to the second block of the NAND flash.
 #define NAND_FLASH_OFFSET 0x20000
 #endif
 
-// Can be used to disable printouts to reduce code size (does not make much of
-// a difference, most of the AT91 lib uses IO so it is difficult to remove it)
-#ifdef AT91SAM9G20_EK
-#define DEBUG_IO_LIB            1
-#else
-#define DEBUG_IO_LIB            1
-#endif
-
-#define ENHANCED_DEBUG_OUTPUT   1
-
-/**
- * Specify whether the binary size will be fixed. If this is not set,
- * the binary size is expected to be at the sixth ARM vector location!
- * Enable this when using SAM-BA!
- */
-#define USE_FIXED_BINARY_SIZE   0
-
-/**
- *  Binary size in bytes.
- *  Adapt theses sizes as the binary grows.
- */
-#define DEBUG_BINARY_SIZE 0x100000 // 1.048.576 bytes
-
-#define MISSION_BINARY_SIZE 0x90000 //589.824 bytes
-//#define MISSION_BINARY_SIZE 0xA0000 // 655.360 bytes
-
-/**
- * Specify whether the current binary is the debug binary or the mission
- */
-#define COPY_MISSION_BINARY     1
-#if COPY_MISSION_BINARY == 1
-#define BINARY_SIZE MISSION_BINARY_SIZE
-#else
-#define BINARY_SIZE DEBUG_BINARY_SIZE
-#endif
+//! If the bootloader is flashed with SAM-BA, certain operations like writing
+//! CRC of binary sizes and checks performed with them are not possible anymore
+//! This flag should be enabled if the software is flashed with SAM-BA.
+#define SAM_BA_BOOT 1
 
 #endif /* BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_ */

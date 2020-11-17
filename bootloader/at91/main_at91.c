@@ -1,5 +1,7 @@
 #include "main.h"
 #include "config/bootloaderConfig.h"
+#include "at91/boot_at91.h"
+#include "core/timer.h"
 
 #include <board.h>
 #include <AT91SAM9G20.h>
@@ -13,12 +15,6 @@
 
 #include <hal/Timing/RTT.h>
 
-#include <core/timer.h>
-
-// The AT91SAM9G20-EK does not have a pre-installed NOR-Flash. Therefore,
-// we only include the NorFlash boot header for iOBC projects.
-#include <at91/bootAt91.h>
-
 #if DEBUG_IO_LIB == 1
 #include <utility/trace.h>
 #endif
@@ -27,8 +23,8 @@
 #include <string.h>
 
 int perform_bootloader_core_operation();
-void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
-void idle_loop();
+
+//void idle_loop();
 
 /**
  * @brief   Bootloader which will copy the primary software to SDRAM and
@@ -56,7 +52,7 @@ int at91_main()
 #if DEBUG_IO_LIB == 1
     TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
     TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME);
-    TRACE_INFO_WP("-- Software version v%d.%d --\n\r", SW_VERSION, SW_SUBVERSION);
+    TRACE_INFO_WP("-- Software version v%d.%d --\n\r", BL_VERSION, BL_SUBVERSION);
     TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
     TRACE_INFO("Running initialization task..\n\r");
 #endif
@@ -71,6 +67,12 @@ int at91_main()
     //-------------------------------------------------------------------------
     BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
 
+    //-------------------------------------------------------------------------
+    // Configure LEDs and set both of them.
+    //-------------------------------------------------------------------------
+    LED_Configure(1);
+    LED_Configure(0);
+    LED_Set(0);
     LED_Set(1);
 
     //-------------------------------------------------------------------------
@@ -85,7 +87,7 @@ int at91_main()
     perform_bootloader_core_operation();
 
     // to see its alive, will not be reached later.
-    idle_loop();
+    //idle_loop();
     return 0;
 }
 
@@ -115,15 +117,14 @@ void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
 }
 
 int perform_bootloader_core_operation() {
-    LED_Set(1);
-    // Clear SDRAM completely.
-    memset((void*) SDRAM_DESTINATION, 0 , 0x100000);
-    int result = copy_nandflash_binary_to_sdram(false);
-    if(result != 0) {
-        return result;
-    }
+    LED_Clear(0);
     LED_Clear(1);
-    go_to_jump_address(SDRAM_DESTINATION, 0);
+    copy_nandflash_binary_to_sdram(false);
+    LED_Set(0);
+#if DEBUG_IO_LIB == 1
+    TRACE_INFO("Jumping to SDRAM application!\n\r");
+#endif
+    jump_to_sdram_application();
     return 0;
 }
 

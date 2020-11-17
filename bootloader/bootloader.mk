@@ -6,6 +6,7 @@ CSRC += $(wildcard $(CURRENTPATH)/at91/*.c)
 else
 # iOBC sources
 CSRC += $(wildcard $(CURRENTPATH)/iobc/*.c)
+CSRC += $(wildcard $(CURRENTPATH)/iobc/common/*.c)
 
 ifeq ($(MEMORY_TYPE), norflash)
 CSRC += $(wildcard $(CURRENTPATH)/iobc/norflash/*.c)

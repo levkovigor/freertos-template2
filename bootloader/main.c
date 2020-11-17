@@ -1,5 +1,5 @@
 #ifdef AT91SAM9G20_EK
-    void at91_main();
+void at91_main();
 #elif defined(ISIS_OBC_G20)
 void iobc_main();
 #endif
