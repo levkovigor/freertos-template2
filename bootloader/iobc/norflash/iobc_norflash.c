@@ -194,7 +194,7 @@ void perform_bootloader_check() {
 					(const void *) &bootloader_faulty_flag,
 					sizeof(bootloader_faulty_flag));
 			vTaskEndScheduler();
-			jumpToSdramApplication();
+			jump_to_sdram_application();
 		}
 	}
 	else {
