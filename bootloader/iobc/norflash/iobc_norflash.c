@@ -102,6 +102,8 @@ void init_task(void * args) {
 	perform_bootloader_check();
 #if DEBUG_IO_LIB == 1
 	print_bl_info();
+#else
+	printf("SOURCEBoot\n\r");
 #endif
     initialize_all_iobc_peripherals();
     // perform initialization which needs to be inside a task.
@@ -148,10 +150,14 @@ void perform_bootloader_check() {
 	// Bootloader size is written into the sixth ARM vector.
 	memcpy(&bootloader_size,
 			(const void *) (BOOTLOADER_END_ADDRESS_READ - 6), 4);
-	TRACE_INFO("Written bootloader size: %d bytes.\n\r", bootloader_size)
+#if DEBUG_IO_LIB == 1
+	TRACE_INFO("Written bootloader size: %d bytes.\n\r", bootloader_size);
+#endif
 	memcpy(&written_crc16, (const void*) (BOOTLOADER_END_ADDRESS_READ - 2),
 			sizeof(written_crc16));
-	TRACE_INFO("Written CRC16: %4x\n\r", written_crc16);
+#if DEBUG_IO_LIB == 1
+	TRACE_INFO("Written CRC16: 0x%4x.\n\r", written_crc16);
+#endif
 	if(written_crc16 != 0x00 || written_crc16 != 0xff) {
 		uint16_t calculated_crc = crc16ccitt_default_start_crc(
 				(const void *) BOOTLOADER_BASE_ADDRESS_READ,
