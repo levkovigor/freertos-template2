@@ -191,7 +191,7 @@ void handler_task(void * args) {
 
     perform_bootloader_core_operation();
 
-    // will not be reached when bootloader is finished. Test functin which
+    // will not be reached when bootloader is finished. Test function which
     // blinks LED2.
     // idle_loop();
 }

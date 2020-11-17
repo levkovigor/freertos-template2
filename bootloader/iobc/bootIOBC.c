@@ -26,9 +26,8 @@ void perform_bootloader_core_operation() {
     TRACE_INFO("Jumping to SDRAM application..\n\r");
 #endif
 
-    //vTaskEndScheduler();
+    vTaskEndScheduler();
     jumpToSdramApplication();
-    //go_to_jump_address(SDRAM_DESTINATION, 0);
 }
 
 int perform_iobc_copy_operation_to_sdram() {
@@ -39,16 +38,24 @@ int perform_iobc_copy_operation_to_sdram() {
         size_t sizeToCopy = 0;
         memcpy(&sizeToCopy, (const void *) (NOR_FLASH_BASE_ADDRESS_READ +
                 NORFLASH_SA5_ADDRESS + 0x14), 4);
-        if(sizeToCopy > 0x100000 - 5 * 8192) {
-        	sizeToCopy = 0x100000 - 5 * 8192;
+        size_t maxObswSize = NORFLASH_SIZE - BOOTLOADER_RESERVED_SIZE;
+        if(sizeToCopy > maxObswSize) {
+        	sizeToCopy = maxObswSize;
+#if DEBUG_IO_LIB == 1
+        	TRACE_INFO("Detected binary size from sixth ARM vector at address "
+        			"0x%8x invalid, setting to %d!\n\r",
+					(unsigned int) NOR_FLASH_BASE_ADDRESS_READ +
+					NORFLASH_SA5_ADDRESS + 0x14, sizeToCopy);
+#endif
         }
 #if DEBUG_IO_LIB == 1
+        else {
         TRACE_INFO("Detected binary size from sixth ARM vector at address "
         		"0x%8x: %u\n\r",
         		(unsigned int) NOR_FLASH_BASE_ADDRESS_READ +
 				NORFLASH_SA5_ADDRESS + 0x14,
 				(unsigned int) sizeToCopy);
-        vTaskDelay(1);
+        }
 #endif
         result = copy_norflash_binary_to_sdram(sizeToCopy);
     }
@@ -75,21 +82,19 @@ int copy_norflash_binary_to_sdram(size_t binary_size)
     // Transfert data from Nor to External RAM
     //-------------------------------------------------------------------------
 
-	//binary_size = 0x100000 - 5 * 8192;
     // Need to test how long copying that much data takes, we might still
     // have to feed the watchdog..
     // For now, we copy in buckets instead of one go.
 	memcpy((void*) SDRAM_DESTINATION, (const void*) BINARY_BASE_ADDRESS_READ,
 			binary_size);
-	int idx = 0;
-	while(idx < binary_size) {
-		if(*(uint8_t*)(SDRAM_DESTINATION + idx) != *(uint8_t*)(BINARY_BASE_ADDRESS_READ + idx)) {
-			if(idx < 200) {
-				TRACE_INFO("Byte SDRAM %d : %2x\n\r", idx, *(uint8_t*)(SDRAM_DESTINATION + idx));
-				TRACE_INFO("Byte NORFLASH %d : %2x\n\r", idx, *(uint8_t*)(BINARY_BASE_ADDRESS_READ + idx));
-			}
+	for(int idx = 0; idx < binary_size; idx++) {
+		if(*(uint8_t*)(SDRAM_DESTINATION + idx) !=
+				*(uint8_t*)(BINARY_BASE_ADDRESS_READ + idx)) {
+			TRACE_ERROR("Byte SDRAM %d : %2x\n\r", idx,
+					*(uint8_t*)(SDRAM_DESTINATION + idx));
+			TRACE_ERROR("Byte NORFLASH %d : %2x\n\r", idx,
+					*(uint8_t*)(BINARY_BASE_ADDRESS_READ + idx));
 		}
-		idx ++;
 	}
 	TRACE_INFO("Copied successfully!\n\r");
 //    uint8_t binary_divisor = 5;
@@ -156,7 +161,6 @@ void idle_loop() {
             TRACE_INFO("Bootloader idle..\n\r");
 #endif
             LED_toggle(led_2);
-            //DBGU_PutChar('t');
             last_time = curr_time;
         }
     }
