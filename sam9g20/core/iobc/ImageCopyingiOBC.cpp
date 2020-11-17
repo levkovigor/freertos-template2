@@ -201,7 +201,9 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
         }
     }
 
-    if(stepCounter == 0) {
+    // We may not write image size at the sixth ARM vector for the
+    // bootloader. I don't know why..
+    if(stepCounter == 0 and not bootloader) {
         // We will write the size of the binary to the
         // sixth ARM vector (see p.72 SAM9G20 datasheet)
         // This will help for our custom bootloader to find out
@@ -278,7 +280,7 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
         }
 #endif
         if(bootloader) {
-        	writeBootloaderCrc();
+        	writeBootloaderSizeAndCrc();
         }
 
         // cache last finished state.
@@ -292,14 +294,19 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
     return result;
 }
 
-void ImageCopyingEngine::writeBootloaderCrc() {
+void ImageCopyingEngine::writeBootloaderSizeAndCrc() {
+	int retval = NORFLASH_WriteData(&NORFlash, NORFLASH_BL_SIZE_START,
+			reinterpret_cast<unsigned char *>(&currentFileSize), 4);
+	if(retval != 0) {
+		sif::error << "Writing bootloader size failed!" << std::endl;
+	}
 	// calculate and write CRC to designated NOR-Flash address
 	// This will be used by the bootloader to determine SEUs in the
 	// bootloader.
 	uint16_t crc16 = CRC::crc16ccitt(reinterpret_cast<const uint8_t*>(
 			NORFLASH_BASE_ADDRESS_READ),
 			currentFileSize);
-	int retval = NORFLASH_WriteData(&NORFlash, NORFLASH_BL_CRC16_START,
+	retval = NORFLASH_WriteData(&NORFlash, NORFLASH_BL_CRC16_START,
 			reinterpret_cast<unsigned char *>(&crc16),
 			sizeof(crc16));
 	if(retval != 0) {

@@ -2,7 +2,6 @@
 #include "iobc_norflash.h"
 #include "config/bootloaderConfig.h"
 
-#include <iobc/bootIOBC.h>
 #include <utility/CRC.h>
 #include <sam9g20/memory/SDCardApi.h>
 #include <sam9g20/common/FRAMApi.h>
@@ -15,6 +14,7 @@
 #include <peripherals/aic/aic.h>
 #include <peripherals/pio/pio.h>
 #include <cp15/cp15.h>
+#include "../boot_iobc.h"
 #if DEBUG_IO_LIB == 1
 #include <utility/trace.h>
 #endif
@@ -99,7 +99,7 @@ int iobc_norflash() {
 void init_task(void * args) {
 	// If we do this check inside a task, the watchdog task can take care of
 	// feeding the watchdog.
-	//perform_bootloader_check();
+	perform_bootloader_check();
 #if DEBUG_IO_LIB == 1
 	print_bl_info();
 #endif
@@ -147,23 +147,19 @@ void perform_bootloader_check() {
 	size_t bootloader_size = 0;
 	// Bootloader size is written into the sixth ARM vector.
 	memcpy(&bootloader_size,
-			(const void *) (BOOTLOADER_BASE_ADDRESS_READ + 0x14), 4);
+			(const void *) (BOOTLOADER_END_ADDRESS_READ - 6), 4);
+	TRACE_INFO("Written bootloader size: %d bytes.\n\r", bootloader_size)
 	memcpy(&written_crc16, (const void*) (BOOTLOADER_END_ADDRESS_READ - 2),
 			sizeof(written_crc16));
-	TRACE_INFO("Written CRC16: %d\n\r", written_crc16);
-	if(written_crc16 != 0x00 && written_crc16 != 0xff) {
+	TRACE_INFO("Written CRC16: %4x\n\r", written_crc16);
+	if(written_crc16 != 0x00 || written_crc16 != 0xff) {
 		uint16_t calculated_crc = crc16ccitt_default_start_crc(
 				(const void *) BOOTLOADER_BASE_ADDRESS_READ,
 				bootloader_size);
 		if(written_crc16 != calculated_crc) {
-			size_t binary_size = 0;
-			memcpy(&binary_size,
-					(const void *) (BINARY_BASE_ADDRESS_READ + 0x14), 4);
-			if(binary_size > NORFLASH_SIZE - BOOTLOADER_RESERVED_SIZE) {
-				binary_size = NORFLASH_SIZE - BOOTLOADER_RESERVED_SIZE;
-			}
 			memcpy((void*)SDRAM_DESTINATION,
-					(const void*) BINARY_BASE_ADDRESS_READ, binary_size);
+					(const void*) BINARY_BASE_ADDRESS_READ,
+					NORFLASH_SIZE - BOOTLOADER_RESERVED_SIZE);
 			uint32_t bootloader_faulty_flag = 1;
 			memcpy((void*) (SDRAM0_END - sizeof(bootloader_faulty_flag)),
 					(const void *) &bootloader_faulty_flag,

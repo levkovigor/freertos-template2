@@ -1,5 +1,3 @@
-#include <iobc/bootIOBC.h>
-
 #include <config/bootloaderConfig.h>
 #include <core/watchdog.h>
 
@@ -10,6 +8,7 @@
 #include <AT91SAM9G20.h>
 #include <board_memories.h>
 #include <cp15/cp15.h>
+#include "../boot_iobc.h"
 
 #if DEBUG_IO_LIB == 1
 #include <utility/trace.h>

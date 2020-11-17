@@ -169,6 +169,7 @@ private:
     static constexpr uint8_t NORFLASH_MEDIUM_SECTORS_NUMBER = 15;
     static constexpr uint8_t NORFLASH_SECTORS_NUMBER = 23;
     static constexpr uint32_t NORFLASH_BASE_ADDRESS_READ = 0x10000000;
+    static constexpr uint32_t NORFLASH_BL_SIZE_START = NORFLASH_SA5_ADDRESS - 6;
     static constexpr uint32_t NORFLASH_BL_CRC16_START = NORFLASH_SA5_ADDRESS - 2;
     static constexpr size_t COPYING_BUCKET_SIZE = 2048;
     ReturnValue_t copySdCardImageToNorFlash();
@@ -184,7 +185,7 @@ private:
     uint32_t getBaseAddress(uint8_t stepCounter, size_t* offset);
     ReturnValue_t performNorCopyOperation(F_FILE** binaryFile);
     ReturnValue_t handleSdToNorCopyOperation();
-    void writeBootloaderCrc();
+    void writeBootloaderSizeAndCrc();
 #endif
     ReturnValue_t prepareGenericFileInformation(VolumeId currentVolume,
             F_FILE** filePtr);
