@@ -26,7 +26,7 @@ void perform_bootloader_core_operation() {
     TRACE_INFO("Jumping to SDRAM application..\n\r");
 #endif
 
-    vTaskEndScheduler();
+    //vTaskEndScheduler();
     jumpToSdramApplication();
     //go_to_jump_address(SDRAM_DESTINATION, 0);
 }
@@ -39,6 +39,9 @@ int perform_iobc_copy_operation_to_sdram() {
         size_t sizeToCopy = 0;
         memcpy(&sizeToCopy, (const void *) (NOR_FLASH_BASE_ADDRESS_READ +
                 NORFLASH_SA5_ADDRESS + 0x14), 4);
+        if(sizeToCopy > 0x100000 - 5 * 8192) {
+        	sizeToCopy = 0x100000 - 5 * 8192;
+        }
 #if DEBUG_IO_LIB == 1
         TRACE_INFO("Detected binary size from sixth ARM vector at address "
         		"0x%8x: %u\n\r",
@@ -78,6 +81,17 @@ int copy_norflash_binary_to_sdram(size_t binary_size)
     // For now, we copy in buckets instead of one go.
 	memcpy((void*) SDRAM_DESTINATION, (const void*) BINARY_BASE_ADDRESS_READ,
 			binary_size);
+	int idx = 0;
+	while(idx < binary_size) {
+		if(*(uint8_t*)(SDRAM_DESTINATION + idx) != *(uint8_t*)(BINARY_BASE_ADDRESS_READ + idx)) {
+			if(idx < 200) {
+				TRACE_INFO("Byte SDRAM %d : %2x\n\r", idx, *(uint8_t*)(SDRAM_DESTINATION + idx));
+				TRACE_INFO("Byte NORFLASH %d : %2x\n\r", idx, *(uint8_t*)(BINARY_BASE_ADDRESS_READ + idx));
+			}
+		}
+		idx ++;
+	}
+	TRACE_INFO("Copied successfully!\n\r");
 //    uint8_t binary_divisor = 5;
 //    TRACE_INFO("Copying NOR-Flash binary (%d bytes) from NOR 0x%lx "
 //            "to SDRAM 0x%09x\n\r", binary_size, BINARY_BASE_ADDRESS_READ,
