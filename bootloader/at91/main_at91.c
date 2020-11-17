@@ -68,10 +68,11 @@ int at91_main()
     BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
 
     //-------------------------------------------------------------------------
-    // Configure LEDs
+    // Configure LEDs and set both of them.
     //-------------------------------------------------------------------------
     LED_Configure(1);
     LED_Configure(0);
+    LED_Set(0);
     LED_Set(1);
 
     //-------------------------------------------------------------------------
@@ -116,9 +117,10 @@ void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
 }
 
 int perform_bootloader_core_operation() {
-    LED_Set(1);
-    copy_nandflash_binary_to_sdram(false);
+    LED_Clear(0);
     LED_Clear(1);
+    copy_nandflash_binary_to_sdram(false);
+    LED_Set(0);
 #if DEBUG_IO_LIB == 1
     TRACE_INFO("Jumping to SDRAM application!\n\r");
 #endif
