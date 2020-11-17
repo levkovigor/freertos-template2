@@ -2,9 +2,9 @@
 #define BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_
 
 #include "main.h"
+#include "config/bootloaderConfig.h"
 
 #include <hal/Storage/NORflash.h>
-#include <config/bootloaderConfig.h>
 
 #include <stdint.h>
 #include <stddef.h>
