@@ -146,7 +146,7 @@ void LowLevelInit(void)
     unsigned char i = 0;
 
     // Always run this so SAM-BA boot also works.
-#ifndef sdram
+//#ifndef sdram
     /* Initialize main oscillator
      ****************************/
     AT91C_BASE_PMC->PMC_MOR = BOARD_OSCOUNT | AT91C_CKGR_MOSCEN;
@@ -182,7 +182,7 @@ void LowLevelInit(void)
     /* Switch to PLL + prescaler */
     AT91C_BASE_PMC->PMC_MCKR |= AT91C_PMC_CSS_PLLA_CLK;
     while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY));
-#endif
+//#endif
 
     /* Initialize AIC
      ****************/
@@ -218,9 +218,9 @@ void LowLevelInit(void)
     BOARD_ConfigureNorFlash(BOARD_NORFLASH_BUSWIDTH);
 #endif
 
-//#ifndef sdram
-//    BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
-//#endif
+#ifndef sdram
+    BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
+#endif
 }
 
 

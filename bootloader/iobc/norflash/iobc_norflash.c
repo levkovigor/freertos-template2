@@ -2,7 +2,6 @@
 #include "iobc_norflash.h"
 #include "config/bootloaderConfig.h"
 
-#include <iobc/bootIOBC.h>
 #include <utility/CRC.h>
 #include <sam9g20/memory/SDCardApi.h>
 #include <sam9g20/common/FRAMApi.h>
@@ -15,6 +14,7 @@
 #include <peripherals/aic/aic.h>
 #include <peripherals/pio/pio.h>
 #include <cp15/cp15.h>
+#include "../boot_iobc.h"
 #if DEBUG_IO_LIB == 1
 #include <utility/trace.h>
 #endif
@@ -95,13 +95,19 @@ int iobc_norflash() {
     return 0;
 }
 
-//void init_task(void * args) __attribute__((section(".sramfunc")));
 void init_task(void * args) {
+	// This check is only possible if CRC and bootloader size were written
+	// at special memory locations. SAM-BA can't do this.
+#if SAM_BA_BOOT == 0
 	// If we do this check inside a task, the watchdog task can take care of
 	// feeding the watchdog.
-	//perform_bootloader_check();
+	perform_bootloader_check();
+#endif
+
 #if DEBUG_IO_LIB == 1
 	print_bl_info();
+#else
+	printf("SOURCEBoot\n\r");
 #endif
     initialize_all_iobc_peripherals();
     // perform initialization which needs to be inside a task.
@@ -119,7 +125,6 @@ void init_task(void * args) {
     vTaskDelete(NULL);
 }
 
-//void print_bl_info() __attribute__((section(".sramfunc")));
 void print_bl_info() {
 		TRACE_INFO_WP("\n\rStarting FreeRTOS task scheduler.\n\r");
 		TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
@@ -133,12 +138,17 @@ void print_bl_info() {
 
 void perform_bootloader_check() {
 	/* Check CRC of bootloader which will should be located at
-	0x1000A000 -2 and 0x1000A000 -1.
-	If it is blank (0x00, 0xff), continue and emit warning (it is recommended
+	0x1000A000 -2 and 0x1000A000 -1. The bootloader size will be located
+	at 0x1000A000 - 6.
+
+	If CRC16 is blank (0x00, 0xff), continue and emit warning (it is recommended
 	to write the CRC field when writing the bootloader. If SAM-BA is used
 	this can also be perform in software)
 
-	If not, check it. If it is invalid, copy binary and jump there
+	If not, check it by calculating CRC16 with the given bootloader
+	size.
+
+	If it is invalid, copy binary and jump there
 	immediately to reduce number of  instructions. We could write a special
 	variable to the end of SRAM0 to notify the primary software that the
 	bootloader is faulty. */
@@ -147,23 +157,23 @@ void perform_bootloader_check() {
 	size_t bootloader_size = 0;
 	// Bootloader size is written into the sixth ARM vector.
 	memcpy(&bootloader_size,
-			(const void *) (BOOTLOADER_BASE_ADDRESS_READ + 0x14), 4);
+			(const void *) (BOOTLOADER_END_ADDRESS_READ - 6), 4);
+#if DEBUG_IO_LIB == 1
+	TRACE_INFO("Written bootloader size: %d bytes.\n\r", bootloader_size);
+#endif
 	memcpy(&written_crc16, (const void*) (BOOTLOADER_END_ADDRESS_READ - 2),
 			sizeof(written_crc16));
-	TRACE_INFO("Written CRC16: %d\n\r", written_crc16);
-	if(written_crc16 != 0x00 && written_crc16 != 0xff) {
+#if DEBUG_IO_LIB == 1
+	TRACE_INFO("Written CRC16: 0x%4x.\n\r", written_crc16);
+#endif
+	if(written_crc16 != 0x00 || written_crc16 != 0xff) {
 		uint16_t calculated_crc = crc16ccitt_default_start_crc(
 				(const void *) BOOTLOADER_BASE_ADDRESS_READ,
 				bootloader_size);
 		if(written_crc16 != calculated_crc) {
-			size_t binary_size = 0;
-			memcpy(&binary_size,
-					(const void *) (BINARY_BASE_ADDRESS_READ + 0x14), 4);
-			if(binary_size > NORFLASH_SIZE - BOOTLOADER_RESERVED_SIZE) {
-				binary_size = NORFLASH_SIZE - BOOTLOADER_RESERVED_SIZE;
-			}
 			memcpy((void*)SDRAM_DESTINATION,
-					(const void*) BINARY_BASE_ADDRESS_READ, binary_size);
+					(const void*) BINARY_BASE_ADDRESS_READ,
+					NORFLASH_SIZE - BOOTLOADER_RESERVED_SIZE);
 			uint32_t bootloader_faulty_flag = 1;
 			memcpy((void*) (SDRAM0_END - sizeof(bootloader_faulty_flag)),
 					(const void *) &bootloader_faulty_flag,
@@ -191,12 +201,11 @@ void handler_task(void * args) {
 
     perform_bootloader_core_operation();
 
-    // will not be reached when bootloader is finished. Test functin which
+    // will not be reached when bootloader is finished. Test function which
     // blinks LED2.
     // idle_loop();
 }
 
-//void initialize_all_iobc_peripherals() __attribute__((section(".sramfunc")));
 void initialize_all_iobc_peripherals() {
     RTT_start();
 
