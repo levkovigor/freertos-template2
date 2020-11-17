@@ -19,6 +19,7 @@
 
 extern "C" {
 #include <board.h>
+#include <AT91SAM9G20.h>
 }
 
 #if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1 || OBSW_MONITOR_ALLOCATION == 1

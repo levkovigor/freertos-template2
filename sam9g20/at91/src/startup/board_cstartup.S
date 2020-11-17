@@ -205,9 +205,17 @@ resetHandler:
         mov     sp, r0
         sub     r0, r0, #UND_STACK_SIZE
 
+/* Supervisor mode */
+	msr     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
+	mov     sp, r0
+	sub     r0, r0, #SVC_STACK_SIZE
+
+/* System mode, the normal mode of operation */
+	msr     CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
+ 	mov     sp, r0
+
 /* Supervisor mode (interrupts enabled) */
         msr     CPSR_c, #ARM_MODE_SVC | F_BIT
-        mov     sp, r0
 
 /* Branch to main()
  ******************/
@@ -218,3 +226,13 @@ resetHandler:
 1:
         b       1b
 
+/* Jump to application and put the core into default power-on state */
+	.globl jumpToSdramApplication
+	.align 4
+	.type jumpToSdramApplication, %function
+
+jumpToSdramApplication:
+	msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
+	ldr sp,=_sstack
+	ldr r0,=0x20000000
+	mov pc,r0

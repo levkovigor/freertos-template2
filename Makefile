@@ -160,7 +160,7 @@ endif
 #-------------------------------------------------------------------------------
 
 # Tool suffix when cross-compiling
-CROSS_COMPILE = arm-none-eabi-
+CROSS_COMPILE = arm-eabi-
 
 ifdef WINDOWS
 CC = $(CROSS_COMPILE)gcc.exe
