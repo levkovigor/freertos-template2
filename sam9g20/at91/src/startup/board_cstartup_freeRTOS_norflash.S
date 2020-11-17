@@ -50,6 +50,7 @@
 #define ARM_MODE_UND	0x1B	/* Undefined Processing Undefined Instructions Mode			*/
 #define ARM_MODE_SYS	0x1F	/* System Running Priviledged Operating System Tasks Mode	*/
 
+#define JUMP_ADDRESS 	 0x20000000
 #define MODE_MSK         0x1F
 
 #define I_BIT            0x80
@@ -212,7 +213,7 @@ resetHandler:
 	blx     r0
 
 #ifdef ISIS_OBC_G20
-/* Initiate external watchdog to prevent restart */
+/* Initiate external watchdog to prevent restart (if needed) */
 	//ldr     sp, =_sstack
 	//stmfd   sp!, {r0}
 	//ldr     r0, =initiateIsisWatchdog
@@ -278,13 +279,11 @@ resetHandler:
  */
 	msr     CPSR_c, #ARM_MODE_SVC | F_BIT
 
-/* Call static constructors.
- * this call deactivates the interrupts agein
- * interrutps are enabled agein when the freertos scheduler starts
- * libc_init_array runs through the list of static constructor addresses
- * placed in the .init_array and calls all static constructors.
- * This is only required for C++ code.
- */
+/* Call static constructors, required for C++ code.
+this call deactivates the interrupts agein
+interrutps are enabled agein when the freertos scheduler starts
+libc_init_array runs through the list of static constructor addresses
+placed in the .init_array and calls all static constructors */
 	ldr r0,=__libc_init_array
 	mov lr,pc 	/* set the return address */
 	bx r0 		/* the target code can be ARM or THUMB */
@@ -299,12 +298,12 @@ resetHandler:
 	b       1b
 
 /* Jump to application and put the core into default power-on state */
-	.globl jumpToSdramApplication
+	.globl jump_to_sdram_application
 	.align 4
-	.type jumpToSdramApplication, %function
+	.type jump_to_sdram_application, %function
 
-jumpToSdramApplication:
+jump_to_sdram_application:
 	msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
-	ldr r0,=0x20000000
-	mov pc,r0
+	ldr r0, =JUMP_ADDRESS
+	mov pc, r0
 

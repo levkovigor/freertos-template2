@@ -111,7 +111,6 @@ void init_task(void * args) {
 	printf("SOURCEBoot\n\r");
 #endif
     initialize_all_iobc_peripherals();
-    // perform initialization which needs to be inside a task.
 
     // start handler task
     TaskHandle_t handler_task_handle = (TaskHandle_t) args;
@@ -126,6 +125,22 @@ void init_task(void * args) {
     vTaskDelete(NULL);
 }
 
+
+void handler_task(void * args) {
+    // Wait for initialization to finish
+    vTaskSuspend(NULL);
+
+#if DEBUG_IO_LIB == 1
+    TRACE_INFO("Running handler task..\n\r");
+#endif
+
+    perform_bootloader_core_operation();
+
+    // will not be reached when bootloader is finished. Test function which
+    // blinks LED2.
+    // idle_loop();
+}
+
 void print_bl_info() {
 		TRACE_INFO_WP("\n\rStarting FreeRTOS task scheduler.\n\r");
 		TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
@@ -135,7 +150,6 @@ void print_bl_info() {
 	    TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 	    TRACE_INFO("Running initialization task..\n\r");
 }
-
 
 void perform_bootloader_check() {
 	/* Check CRC of bootloader which will should be located at
@@ -189,22 +203,6 @@ void perform_bootloader_check() {
 				"0x1000A000 -1 is blank!\n\r");
 #endif
 	}
-}
-
-
-void handler_task(void * args) {
-    // Wait for initialization to finish
-    vTaskSuspend(NULL);
-
-#if DEBUG_IO_LIB == 1
-    TRACE_INFO("Running handler task..\n\r");
-#endif
-
-    perform_bootloader_core_operation();
-
-    // will not be reached when bootloader is finished. Test function which
-    // blinks LED2.
-    // idle_loop();
 }
 
 void initialize_all_iobc_peripherals() {
@@ -304,8 +302,6 @@ int copy_sdcard_binary_to_sdram(BootSelect boot_select) {
 			}
 
 		}
-
-
 		break;
 	}
 	case(BOOT_SD_CARD_0_SLOT2): {

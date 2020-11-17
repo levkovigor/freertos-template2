@@ -28,7 +28,7 @@ void perform_bootloader_core_operation() {
 #endif
 
     vTaskEndScheduler();
-    jumpToSdramApplication();
+    jump_to_sdram_application();
 }
 
 int perform_iobc_copy_operation_to_sdram() {
