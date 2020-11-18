@@ -123,13 +123,14 @@ void initMission(void) {
 
 
     /* Polling Sequence Table Default */
-    FixedTimeslotTaskIF * PollingSequenceTableTaskDefault =
-    TaskFactory::instance()->
-    createFixedTimeslotTask("POLLING_SEQUENCE_TABLE_DEFAULT",4,1024,0.4,NULL);
-    result = pst::pollingSequenceInitDefault(PollingSequenceTableTaskDefault);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "creating PST failed" << std::endl;
-    }
+//    FixedTimeslotTaskIF * PollingSequenceTableTaskDefault =
+//    TaskFactory::instance()->
+//    createFixedTimeslotTask("POLLING_SEQUENCE_TABLE_DEFAULT",4,1024,0.4,
+//            nullptr);
+//    result = pst::pollingSequenceInitDefault(PollingSequenceTableTaskDefault);
+//    if (result != HasReturnvaluesIF::RETURN_OK) {
+//        sif::error << "creating PST failed" << std::endl;
+//    }
 
 
     /* Event Manager */
@@ -150,21 +151,14 @@ void initMission(void) {
 
     PeriodicTaskIF* PusService02 = TaskFactory::instance()->
             createPeriodicTask("PUS_DEVICE_ACCESS_SERVICE_2",5,2048,0.2,NULL);
-    result = PusService02->addComponent(objects::PUS_SERVICE_2);
+    result = PusService02->addComponent(objects::PUS_SERVICE_2_DEVICE_ACCESS);
     if(result != HasReturnvaluesIF::RETURN_OK){
         sif::error << "Add component PUS Device Access Service 2 failed" << std::endl;
     }
 
-//    PeriodicTaskIF* PusService03 = TaskFactory::instance()->
-//            createPeriodicTask("PUS_HOUSEKEEPING_SERVICE_3",4,2048,0.2,NULL);
-//    result = PusService03->addComponent(objects::PUS_SERVICE_3);
-//    if(result != HasReturnvaluesIF::RETURN_OK){
-//        sif::error << "Add component PUS Housekeeping Service 3 failed" << std::endl;
-//    }
-
     PeriodicTaskIF* PusService05 = TaskFactory::instance()->
             createPeriodicTask("PUS_EVENT_REPORTER_SERVICE_5",4,3072,0.2,NULL);
-    result = PusService05->addComponent(objects::PUS_SERVICE_5);
+    result = PusService05->addComponent(objects::PUS_SERVICE_5_EVENT_REPORTING);
     if(result != HasReturnvaluesIF::RETURN_OK){
         sif::error << "Add component PUS Event Reporting "
                  "Service 5 failed" << std::endl;
@@ -180,38 +174,38 @@ void initMission(void) {
 
     PeriodicTaskIF* PusService08 = TaskFactory::instance()->
             createPeriodicTask("PUS_FUNCTION_MGMT_SERVICE_8",3,2048,0.8,NULL);
-    result = PusService08 -> addComponent(objects::PUS_SERVICE_8);
+    result = PusService08 -> addComponent(objects::PUS_SERVICE_8_FUNCTION_MGMT);
     if(result != HasReturnvaluesIF::RETURN_OK){
         sif::error << "Add component PUS Function Management "
                  "Service 8 failed" << std::endl;
     }
 
     PeriodicTaskIF* PusService09 = TaskFactory::instance()->
-            createPeriodicTask("PUS_TIME_SERVICE_9",5,2048,0.4,NULL);
-    result = PusService09->addComponent(objects::PUS_SERVICE_9);
+            createPeriodicTask("PUS_TIME_SERVICE_9", 5, 2048, 0.4, nullptr);
+    result = PusService09->addComponent(objects::PUS_SERVICE_9_TIME_MGMT);
     if(result != HasReturnvaluesIF::RETURN_OK){
         sif::error << "Add component PUS Time "
                  "Management Service 9 failed" << std::endl;
     }
 
     PeriodicTaskIF* PusService17 = TaskFactory::instance()->
-            createPeriodicTask("PUS_TEST_SERVICE_17",2,1024,2,NULL);
-    result = PusService17->addComponent(objects::PUS_SERVICE_17);
+            createPeriodicTask("PUS_TEST_SERVICE_17",2,1024,2, nullptr);
+    result = PusService17->addComponent(objects::PUS_SERVICE_17_TEST);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "Add component PUS Test Service 17 failed" << std::endl;
     }
 
-    PeriodicTaskIF* PusService23 = TaskFactory::instance()->
-            createPeriodicTask("PUS_FILEMANAGEMENT_SERVICE_23",3,2048,2,NULL);
-    result = PusService23->addComponent(objects::PUS_SERVICE_23);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component PUS Test Service 23 failed" << std::endl;
-    }
+//    PeriodicTaskIF* PusService23 = TaskFactory::instance()->
+//            createPeriodicTask("PUS_FILEMANAGEMENT_SERVICE_23",3,2048,2,nullptr);
+//    result = PusService23->addComponent(objects::PUS_SERVICE_23_FILE_MGMT);
+//    if (result != HasReturnvaluesIF::RETURN_OK) {
+//        sif::error << "Add component PUS Test Service 23 failed" << std::endl;
+//    }
 
     PeriodicTaskIF* PusService200 =
             TaskFactory::instance()->createPeriodicTask(
             "PUS_MODE_COMMANDING_SERVICE_200",2,2048,1.2,NULL);
-    result = PusService200->addComponent(objects::PUS_SERVICE_200);
+    result = PusService200->addComponent(objects::PUS_SERVICE_200_MODE_MGMT);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "Add component PUS Mode "
                  "Commanding Service 200 failed" << std::endl;
@@ -244,7 +238,7 @@ void initMission(void) {
     TmTcPollingTask -> startTask();
     TmTcBridge -> startTask();
     PacketDistributorTask -> startTask();
-    PollingSequenceTableTaskDefault -> startTask();
+    //PollingSequenceTableTaskDefault -> startTask();
     EventManager -> startTask();
 
     PusService01 -> startTask();
@@ -255,7 +249,7 @@ void initMission(void) {
     PusService08 -> startTask();
     PusService09 -> startTask();
     PusService17 -> startTask();
-    PusService23 -> startTask();
+    //PusService23 -> startTask();
     PusService200 -> startTask();
     PusService201 -> startTask();
 

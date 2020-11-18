@@ -198,7 +198,7 @@ void Factory::setStaticFrameworkObjectIds() {
 	PusServiceBase::packetDestination = objects::TM_FUNNEL;
 	VerificationReporter::messageReceiver = objects::PUS_SERVICE_1_VERIFICATION;
 	DeviceHandlerBase::powerSwitcherId = objects::PCDU_HANDLER;
-	DeviceHandlerBase::rawDataReceiverId = objects::PUS_SERVICE_2;
+	DeviceHandlerBase::rawDataReceiverId = objects::PUS_SERVICE_2_DEVICE_ACCESS;
 	DeviceHandlerFailureIsolation::powerConfirmationId = objects::PCDU_HANDLER;
 	TmPacketStored::timeStamperId = objects::PUS_TIME;
 	TmFunnel::downlinkDestination = objects::UDP_TMTC_BRIDGE;
