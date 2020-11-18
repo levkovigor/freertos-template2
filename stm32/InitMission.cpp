@@ -116,7 +116,7 @@ void initMission(void) {
     if(result != HasReturnvaluesIF::RETURN_OK){
         sif::error << "Add component PUS Packet Distributor failed" << std::endl;
     }
-    result = PacketDistributorTask->addComponent(objects::PUS_FUNNEL);
+    result = PacketDistributorTask->addComponent(objects::TM_FUNNEL);
     if(result != HasReturnvaluesIF::RETURN_OK){
         sif::error << "Add component PUS Funnel failed" << std::endl;
     }

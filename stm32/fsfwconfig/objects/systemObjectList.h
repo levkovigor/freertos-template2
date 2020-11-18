@@ -34,7 +34,7 @@ namespace objects{
 		PUS_SERVICE_201 = 0x51020100,
 
 		PUS_TIME = 0x52000001,
-		PUS_FUNNEL = 0x52000002,
+		TM_FUNNEL = 0x52000002,
 
 		/* 0x44 ('D') for Device Handlers **/
 		/* Second Byte: ComIF -> 0x00: UART,0x10 SPI,0x20: I2C,30: GPIO,40: PWM */

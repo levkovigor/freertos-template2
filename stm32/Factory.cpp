@@ -120,11 +120,11 @@ void Factory::produce(void) {
 	new EmacPollingTask(objects::EMAC_POLLING_TASK); // used on both boards
 
 	/* TM Destination */
-	new TmFunnel(objects::PUS_FUNNEL);
+	new TmFunnel(objects::TM_FUNNEL);
 
     /* PUS Standalone Services using PusServiceBase */
     new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,
-            apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::PUS_FUNNEL,
+            apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::TM_FUNNEL,
             20);
     // TODO: move 20 to OBSWConfig
     new Service5EventReporting(objects::PUS_SERVICE_5_EVENT_REPORTING,
@@ -203,7 +203,7 @@ void Factory::produce(void) {
 
 void Factory::setStaticFrameworkObjectIds() {
 	PusServiceBase::packetSource=objects::PUS_PACKET_DISTRIBUTOR;
-	PusServiceBase::packetDestination = objects::PUS_FUNNEL;
+	PusServiceBase::packetDestination = objects::TM_FUNNEL;
 	VerificationReporter::messageReceiver = objects::PUS_SERVICE_1_VERIFICATION;
 	DeviceHandlerBase::powerSwitcherId = objects::PCDU_HANDLER;
 	DeviceHandlerBase::rawDataReceiverId = objects::PUS_SERVICE_2;

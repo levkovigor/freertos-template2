@@ -4,7 +4,7 @@
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/tmtcservices/CommandingServiceBase.h>
 #include <fsfw/tmtcpacket/pus/TmPacketStored.h>
-#include <fsfwconfig/objects/systemObjectList.h>
+#include <objects/systemObjectList.h>
 
 
 TestEchoComIF::TestEchoComIF(object_id_t object_id_, bool initFunnel):

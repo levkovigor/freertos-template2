@@ -178,7 +178,6 @@ $(foreach S,$(SUBDIRS),$(eval $(INCLUDE_FILE)))
 
 ETL_PATH = etl/include
 
-INCLUDES += .
 INCLUDES += ./stm32
 INCLUDES += $(ETL_PATH)
 I_INCLUDES = $(addprefix -I, $(INCLUDES))
@@ -235,8 +234,8 @@ CFLAGS = $(CDEFINES)
 # Flags for c++ only
 CPPFLAGS = -std=c++17 -fno-exceptions 
 # Flags for both
-CXXFLAGS = $(MCU_FLAGS) $(DEBUG_LEVEL) $(I_INCLUDES) -fmessage-length=0 $(CXXDEFINES) \
-		$(WARNING_FLAGS) $(C_INCLUDES) $(DEPFLAGS)
+CXXFLAGS = $(MCU_FLAGS) $(DEBUG_LEVEL) $(OPTIMIZATION) -I. $(I_INCLUDES) -fmessage-length=0 \
+		$(CXXDEFINES) $(WARNING_FLAGS) $(C_INCLUDES) $(DEPFLAGS)
 
 # Object File Definitions
 OBJ = $(CSRC:.c=.o) $(CXXSRC:.cpp=.o) $(ASRC:.s=.o)
@@ -271,7 +270,7 @@ MSG_DEBUG = Debug level: $(DEBUG_LEVEL), FSFW Debugging: $(DEBUG_MESSAGE)
 LDFLAGS = -Wl,-L, $(DEBUG_LEVEL) $(MCU_FLAGS) $(UNUSED_CODE_REMOVAL) $(OPTIMIZATION) \
 		$(LINK_TIME_OPTIMIZATION) $(NEWLIB_NANO) 
 LINK_INCLUDES = -T"$(BSP_PATH)/linker.ld" \
-		-Wl,-Map=$(BINDIR)/$(BINARY_NAME)-$(MEMORIES).map
+		-Wl,-Map=$(BINDIR)/$(BINARY_NAME).map
 LINK_LIBRARIES = -lc -lm
 
 .PHONY: clean all
@@ -312,7 +311,7 @@ debug: DEBUG_LEVEL = -g3
 
 executable: $(BINDIR)/$(BINARY_NAME).bin
 
-# SHOW_DETAILS = 1
+SHOW_DETAILS = 1
 
 $(BINDIR)/$(BINARY_NAME).bin: $(BINDIR)/$(BINARY_NAME).elf
 	@echo
