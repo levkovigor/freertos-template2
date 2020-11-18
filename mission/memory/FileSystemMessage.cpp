@@ -1,4 +1,5 @@
-#include <sam9g20/memory/FileSystemMessage.h>
+#include "FileSystemMessage.h"
+
 #include <fsfw/objectmanager/ObjectManagerIF.h>
 
 void FileSystemMessage::setCreateFileCommand(CommandMessage* message,

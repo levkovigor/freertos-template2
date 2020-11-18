@@ -7,13 +7,13 @@
  * @author 	J. Meier, R. Mueller
  * @ingroup init
  */
+#include "Factory.h"
 #include <stm32/fsfwconfig/cdatapool/dataPoolInit.h>
-#include <stm32/fsfwconfig/objects/Factory.h>
 #include <stm32/fsfwconfig/objects/systemObjectList.h>
 #include <stm32/fsfwconfig/pollingsequence/PollingSequenceFactory.h>
 
 extern "C" {
-#include "FreeRTOS.h"
+#include <freertos/FreeRTOS.h>
 }
 
 #include <fsfw/tasks/TaskFactory.h>
@@ -143,7 +143,7 @@ void initMission(void) {
     /* PUS Services */
     PeriodicTaskIF* PusService01 = TaskFactory::instance()->
             createPeriodicTask("PUS_VERFICIATION_SERVICE_1",5,2048,0.4,NULL);
-    result = PusService01->addComponent(objects::PUS_SERVICE_1);
+    result = PusService01->addComponent(objects::PUS_SERVICE_1_VERIFICATION);
     if(result != HasReturnvaluesIF::RETURN_OK){
         sif::error << "Add component PUS Verification Service 1 failed" << std::endl;
     }

@@ -1,7 +1,7 @@
 #include "SDCardHandler.h"
 #include "SDCardAccess.h"
-#include "FileSystemMessage.h"
 #include "SDCardHandlerPackets.h"
+#include <mission/memory/FileSystemMessage.h>
 
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/ipc/QueueFactory.h>

@@ -1,7 +1,7 @@
-#include <stm32/bsp/portwrapper.h>
+#include "portwrapper.h"
 #include "FreeRTOS.h"
 #include "projdefs.h"
 
-void requestContextSwitchFromISR() {
+void vRequestContextSwitchFromISR() {
      portYIELD_FROM_ISR(pdTRUE);
  }

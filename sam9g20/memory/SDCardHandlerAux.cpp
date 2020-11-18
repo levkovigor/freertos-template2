@@ -1,6 +1,6 @@
 #include "SDCardHandler.h"
 #include "SDCardHandlerPackets.h"
-#include "FileSystemMessage.h"
+#include <mission/memory/FileSystemMessage.h>
 
 ReturnValue_t SDCardHandler::handleCreateFileCommand(CommandMessage *message) {
     store_address_t storeId = FileSystemMessage::getStoreId(message);
