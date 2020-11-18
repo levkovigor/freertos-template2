@@ -1,11 +1,3 @@
-/**
- * \file Factory.cpp
- * \brief Produces system objects.
- *
- * Services like the Event Manager, PUS Services are system objects
- * and need to be initialized in this factory
- * \ingroup init
- */
 #include "Factory.h"
 #include <stm32/fsfwconfig/cdatapool/dataPoolInit.h>
 #include <stm32/fsfwconfig/devices/logicalAddresses.h>

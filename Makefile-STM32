@@ -311,7 +311,7 @@ debug: DEBUG_LEVEL = -g3
 
 executable: $(BINDIR)/$(BINARY_NAME).bin
 
-SHOW_DETAILS = 1
+# SHOW_DETAILS = 1
 
 $(BINDIR)/$(BINARY_NAME).bin: $(BINDIR)/$(BINARY_NAME).elf
 	@echo
