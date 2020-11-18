@@ -30,7 +30,7 @@ BINARY_NAME = $(BASENAME)-stm32h743zit6
 BUILDPATH = _bin
 DEPENDPATH = _dep
 OBJECTPATH = _obj
-ifeq ($(MAKECMDGOALS),mission)
+ifeq ($(MAKECMDGOALS), mission)
 BUILD_FOLDER = mission
 TARGET = Mission build
 else 
