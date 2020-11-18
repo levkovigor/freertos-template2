@@ -126,31 +126,28 @@ void Factory::produce(void) {
     new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,
             apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::PUS_FUNNEL,
             20);
-//    new Service3Housekeeping(objects::PUS_SERVICE_3_HOUSEKEEPING,
-//            apid::SOURCE_OBSW, pus::PUS_SERVICE_3);
-//    // TODO: move 20 to OBSWConfig
-//    new Service5EventReporting(objects::PUS_SERVICE_5_EVENT_REPORTING,
-//            apid::SOURCE_OBSW, pus::PUS_SERVICE_5, 20);
-//    new Service9CustomTimeManagement(objects::PUS_SERVICE_9_TIME_MGMT,
-//            apid::SOURCE_OBSW, pus::PUS_SERVICE_9);
-//    new Service17CustomTest(objects::PUS_SERVICE_17_TEST, apid::SOURCE_OBSW,
-//            pus::PUS_SERVICE_17);
-//
-//
-//    /* PUS Gateway Services using CommandingServiceBase */
-//    new Service2DeviceAccess(objects::PUS_SERVICE_2_DEVICE_ACCESS,
-//            apid::SOURCE_OBSW, pus::PUS_SERVICE_2);
-//    new Service6MemoryManagement(objects::PUS_SERVICE_6_MEM_MGMT,
-//            apid::SOURCE_OBSW, pus::PUS_SERVICE_6);
-//    new Service8FunctionManagement(objects::PUS_SERVICE_8_FUNCTION_MGMT,
-//            apid::SOURCE_OBSW, pus::PUS_SERVICE_8);
-//    new Service20ParameterManagement(objects::PUS_SERVICE_20_PARAM_MGMT);
+    // TODO: move 20 to OBSWConfig
+    new Service5EventReporting(objects::PUS_SERVICE_5_EVENT_REPORTING,
+            apid::SOURCE_OBSW, pus::PUS_SERVICE_5, 20);
+    new Service9TimeManagement(objects::PUS_SERVICE_9_TIME_MGMT,
+            apid::SOURCE_OBSW, pus::PUS_SERVICE_9);
+    new Service17Test(objects::PUS_SERVICE_17_TEST, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_17);
+
+    /* PUS Gateway Services using CommandingServiceBase */
+    new Service2DeviceAccess(objects::PUS_SERVICE_2_DEVICE_ACCESS,
+            apid::SOURCE_OBSW, pus::PUS_SERVICE_2);
+    new Service6MemoryManagement(objects::PUS_SERVICE_6,
+            apid::SOURCE_OBSW, pus::PUS_SERVICE_6);
+    new Service8FunctionManagement(objects::PUS_SERVICE_8_FUNCTION_MGMT,
+            apid::SOURCE_OBSW, pus::PUS_SERVICE_8);
+    //new Service20ParameterManagement(objects::PUS_SERVICE_20);
 //    new Service23FileManagement(objects::PUS_SERVICE_23_FILE_MGMT, apid::SOURCE_OBSW,
 //            pus::PUS_SERVICE_23);
-//    new CService200ModeCommanding(objects::PUS_SERVICE_200_MODE_MGMT,
-//            apid::SOURCE_OBSW, pus::PUS_SERVICE_200);
-//    new CService201HealthCommanding(objects::PUS_SERVICE_201_HEALTH, apid::SOURCE_OBSW,
-//            pus::PUS_SERVICE_201);
+    new CService200ModeCommanding(objects::PUS_SERVICE_200_MODE_MGMT,
+            apid::SOURCE_OBSW, pus::PUS_SERVICE_200);
+    new CService201HealthCommanding(objects::PUS_SERVICE_201, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_201);
 
 	/*
 	 * Device Handlers using DeviceHandlerBase.
@@ -195,7 +192,7 @@ void Factory::produce(void) {
 //#endif
 
 	/* Dummy Communication Interfaces */
-	//new DummyEchoComIF(objects::DUMMY_ECHO_COM_IF);
+	new TestEchoComIF(objects::DUMMY_ECHO_COM_IF);
 	new DummyGPSComIF(objects::DUMMY_GPS_COM_IF);
 
 	/* Test Tasks */
