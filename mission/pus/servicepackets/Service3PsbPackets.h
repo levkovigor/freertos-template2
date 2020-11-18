@@ -1,14 +1,13 @@
 #ifndef MISSION_PUS_SERVICEPACKETS_SERVICE3PSBPACKETS_H_
 #define MISSION_PUS_SERVICEPACKETS_SERVICE3PSBPACKETS_H_
 
-#include <config/hk/sid.h>
-
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/serialize/SerialLinkedListAdapter.h>
 #include <fsfw/serialize/SerialBufferAdapter.h>
 #include <fsfw/serialize/SerializeElement.h>
 #include <fsfw/serialize/SerialFixedArrayListAdapter.h>
 #include <mission/pus/Service3HousekeepingPSB.h>
+#include <stm32/fsfwconfig/hk/sid.h>
 
 /**
  * @brief 	Subservice 25, 26

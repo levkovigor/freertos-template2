@@ -1,5 +1,5 @@
 /* Auto-generated event translation file. Contains 77 translations. */
-#include "translateObjects.h"
+#include <stm32/fsfwconfig/objects/translateObjects.h>
 
 const char *AT91_UART2_TEST_TASK_STRING = "AT91_UART2_TEST_TASK";
 const char *ARDUINO_0_STRING = "ARDUINO_0";

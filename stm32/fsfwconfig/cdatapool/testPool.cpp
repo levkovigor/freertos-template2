@@ -5,9 +5,9 @@
  * @author R. Mueller
  */
 
-#include <config/cdatapool/testPool.h>
-#include <config/hk/sid.h>
 #include <fsfwconfig/cdatapool/dataPoolInit.h>
+#include <stm32/fsfwconfig/cdatapool/testPool.h>
+#include <stm32/fsfwconfig/hk/sid.h>
 
 void TestInit::TestStructInit(TestIdStruct * test) {
 	test->p.testBoolId = datapool::TEST_BOOLEAN;

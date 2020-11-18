@@ -7,10 +7,10 @@
  * @author 	J. Meier, R. Mueller
  * @ingroup init
  */
-#include <stm32/config/objects/Factory.h>
-#include <stm32/config/objects/systemObjectList.h>
-#include <stm32/config/pollingsequence/PollingSequenceFactory.h>
-#include <stm32/config/cdatapool/dataPoolInit.h>
+#include <stm32/fsfwconfig/cdatapool/dataPoolInit.h>
+#include <stm32/fsfwconfig/objects/Factory.h>
+#include <stm32/fsfwconfig/objects/systemObjectList.h>
+#include <stm32/fsfwconfig/pollingsequence/PollingSequenceFactory.h>
 
 extern "C" {
 #include "FreeRTOS.h"

@@ -1,5 +1,5 @@
 /* Auto-generated event translation file. Contains 81 translations. */
-#include "translateEvents.h"
+#include <stm32/fsfwconfig/events/translateEvents.h>
 
 const char *GPS_STARTUP_FAILED_STRING = "GPS_STARTUP_FAILED";
 const char *GPS_FIX_STRING = "GPS_FIX";

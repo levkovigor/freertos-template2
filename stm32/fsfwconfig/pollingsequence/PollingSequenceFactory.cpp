@@ -1,9 +1,9 @@
-#include <stm32/config/pollingsequence/PollingSequenceFactory.h>
-#include <stm32/config/objects/systemObjectList.h>
 #include <fsfw/objectmanager/ObjectManagerIF.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/devicehandlers/DeviceHandlerIF.h>
 #include <fsfw/tasks/FixedTimeslotTaskIF.h>
+#include <stm32/fsfwconfig/objects/systemObjectList.h>
+#include <stm32/fsfwconfig/pollingsequence/PollingSequenceFactory.h>
 
 ReturnValue_t pst::pollingSequenceInitDefault(FixedTimeslotTaskIF *thisSequence)
 {

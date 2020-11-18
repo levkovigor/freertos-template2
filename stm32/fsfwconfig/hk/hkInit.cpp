@@ -5,10 +5,10 @@
  * @author R. Mueller
  */
 
-#include <config/hk/hkInit.h>
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
 #include <fsfwconfig/cdatapool/dataPoolInit.h>
 #include <mission/pus/servicepackets/Service3PsbPackets.h>
+#include <stm32/fsfwconfig/hk/hkInit.h>
 
 //// TODO: Generate this file automatically from header file
 void hk::initHkStruct(struct hkIdStruct * hkIdStruct,

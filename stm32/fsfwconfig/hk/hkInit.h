@@ -8,9 +8,9 @@
 #ifndef CONFIG_HK_HKINIT_H_
 #define CONFIG_HK_HKINIT_H_
 
-#include <config/cdatapool/gpsPool.h>
-#include <config/cdatapool/testPool.h>
 #include <fsfw/pus/Service3Housekeeping.h>
+#include <stm32/fsfwconfig/cdatapool/gpsPool.h>
+#include <stm32/fsfwconfig/cdatapool/testPool.h>
 
 namespace hk {
 

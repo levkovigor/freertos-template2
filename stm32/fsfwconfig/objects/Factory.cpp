@@ -8,17 +8,6 @@
  */
 
 /* Config + STD Includes */
-#include <stm32/config/cdatapool/dataPoolInit.h>
-#include <stm32/config/cdatapool/gpsPool.h>
-#include <stm32/config/objects/Factory.h>
-#include <stm32/config/tmtc/apid.h>
-#include <stm32/config/objects/systemObjectList.h>
-#include <stm32/config/devices/logicalAddresses.h>
-#include <stm32/config/devices/powerSwitcherList.h>
-#include <stm32/config/hk/sid.h>
-#include <stm32/config/hk/hkInit.h>
-
-/* Flight Software Framework */
 #include <fsfw/internalError/InternalErrorReporter.h>
 #include <fsfw/storagemanager/PoolManager.h>
 #include <fsfw/tcdistribution/CCSDSDistributor.h>
@@ -31,24 +20,33 @@
 
 /* PUS Includes */
 #include <fsfw/tmtcservices/PusServiceBase.h>
-#include <mission/pus/Service1TelecommandVerification.h>
-#include <mission/pus/Service2DeviceAccess.h>
-#include <mission/pus/Service5EventReporting.h>
+#include <fsfw/pus/Service1TelecommandVerification.h>
+#include <fsfw/pus/Service2DeviceAccess.h>
+#include <fsfw/pus/Service5EventReporting.h>
 #include <mission/pus/Service6MemoryManagement.h>
-#include <mission/pus/Service8FunctionManagement.h>
-#include <mission/pus/Service9TimeManagement.h>
-#include <mission/pus/Service17Test.h>
+#include <fsfw/pus/Service8FunctionManagement.h>
+#include <fsfw/pus/Service9TimeManagement.h>
+#include <fsfw/pus/Service17Test.h>
 #include <mission/pus/Service23FileManagement.h>
-#include <mission/pus/CService200ModeCommanding.h>
-#include <mission/pus/CService201HealthCommanding.h>
+#include <fsfw/pus/CService200ModeCommanding.h>
+#include <fsfw/pus/CService201HealthCommanding.h>
 #include <mission/fdir/PCDUFailureIsolation.h>
-#include <mission/utility/TimeStamper.h>
+#include <fsfw/timemanager/TimeStamper.h>
 #include <mission/utility/TmFunnel.h>
 
 
 /* Devices */
 #include <mission/devices/PCDUHandler.h>
 #include <mission/devices/GPSHandler.h>
+#include <stm32/fsfwconfig/cdatapool/dataPoolInit.h>
+#include <stm32/fsfwconfig/cdatapool/gpsPool.h>
+#include <stm32/fsfwconfig/devices/logicalAddresses.h>
+#include <stm32/fsfwconfig/devices/powerSwitcherList.h>
+#include <stm32/fsfwconfig/hk/hkInit.h>
+#include <stm32/fsfwconfig/hk/sid.h>
+#include <stm32/fsfwconfig/objects/Factory.h>
+#include <stm32/fsfwconfig/objects/systemObjectList.h>
+#include <stm32/fsfwconfig/tmtc/apid.h>
 
 /* Test files */
 #include <test/testinterfaces/DummyEchoComIF.h>
@@ -74,10 +72,7 @@ void Factory::produce(void) {
 	setStaticFrameworkObjectIds();
 	new EventManager(objects::EVENT_MANAGER);
 	new HealthTable(objects::HEALTH_TABLE);
-	new InternalErrorReporter(objects::INTERNAL_ERROR_REPORTER,
-			datapool::INTERNAL_ERROR_FULL_MSG_QUEUES,
-			datapool::INTERNAL_ERROR_MISSED_LIVE_TM,
-			datapool::INTERNAL_ERROR_STORE_FULL);
+	new InternalErrorReporter(objects::INTERNAL_ERROR_REPORTER);
 
 	/* Pool manager handles storage und mutexes */
 	/* Data Stores. Currently reserving 9600 bytes of memory */

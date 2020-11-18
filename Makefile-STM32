@@ -8,9 +8,9 @@ BOARD = stm32
 ROOT_PATH = $(BOARD)
 
 # General folder paths
-FRAMEWORK_PATH = framework
+FRAMEWORK_PATH = fsfw
 MISSION_PATH = mission
-CONFIG_PATH = $(ROOT_PATH)/config
+CONFIG_PATH = $(ROOT_PATH)/fsfwconfig
 TEST_PATH = test
 UNITTEST_PATH = unittest
 
@@ -84,7 +84,7 @@ INCLUDES :=
 
 SUBDIRS := $(ROOT_PATH)/Middlewares/LwIP $(FRAMEWORK_PATH) $(ROOT_PATH)/Drivers $(BSP_PATH) \
            $(CONFIG_PATH) $(TEST_PATH) $(BOARD_TEST_PATH) $(COMIF_PATH) $(TMTCBRIDGE_PATH) \
-           $(UNITTEST_PATH) $(MISSION_PATH) $(ROOT_PATH)
+           $(MISSION_PATH) $(ROOT_PATH)
 
 SRC_PATH = $(ROOT_PATH)/Src
 DRIVER_PATH = $(ROOT_PATH)/Drivers

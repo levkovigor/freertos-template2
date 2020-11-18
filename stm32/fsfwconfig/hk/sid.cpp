@@ -5,7 +5,7 @@
  * @date 30.11.2019
  */
 
-#include "sid.h"
+#include <stm32/fsfwconfig/hk/sid.h>
 #include <cmath>
 
 uint32_t sid::INTERVAL_SECONDS_TO_INTERVAL(bool isDiagnostics,

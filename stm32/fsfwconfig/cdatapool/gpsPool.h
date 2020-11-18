@@ -5,7 +5,7 @@
  */
 
 #include <stdint.h>
-#include <config/hk/sid.h>
+#include <stm32/fsfwconfig/hk/sid.h>
 
 #ifndef CONFIG_DATAPOOL_GPSPOOL_H_
 #define CONFIG_DATAPOOL_GPSPOOL_H_

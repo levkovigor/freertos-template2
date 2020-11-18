@@ -3,11 +3,10 @@
  *
  * @date 09.11.2019
  */
-#include <config/cdatapool/gpsPool.h>
-#include <config/hk/sid.h>
-
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfwconfig/cdatapool/dataPoolInit.h>
+#include <stm32/fsfwconfig/cdatapool/gpsPool.h>
+#include <stm32/fsfwconfig/hk/sid.h>
 
 void GpsInit::gpsIdStructInit(navDataIdStruct* gps0,navDataIdStruct* gps1) {
 	gps0->p.fixModeId = datapool::GPS0_FIX_MODE;

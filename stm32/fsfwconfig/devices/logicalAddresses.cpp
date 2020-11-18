@@ -4,7 +4,7 @@
  * \date 06.11.2019
  */
 
-#include "logicalAddresses.h"
+#include <stm32/fsfwconfig/devices/logicalAddresses.h>
 
 
 

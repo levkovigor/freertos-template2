@@ -4,7 +4,7 @@
  * @date 28.11.2019
  */
 
-#include "powerSwitcherList.h"
+#include <stm32/fsfwconfig/devices/powerSwitcherList.h>
 
 
 

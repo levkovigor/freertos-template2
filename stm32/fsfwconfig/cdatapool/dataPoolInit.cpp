@@ -1,4 +1,4 @@
-#include <dataPoolInit.h>
+#include <stm32/fsfwconfig/cdatapool/dataPoolInit.h>
 
 void datapool::dataPoolInit(GlobPoolMap * poolMap) {
 

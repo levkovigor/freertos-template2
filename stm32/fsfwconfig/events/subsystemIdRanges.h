@@ -17,14 +17,11 @@ enum: uint8_t {
 	/**
 	 * 80-105: PUS Services
 	 */
-	PUS_SERVICE_1 = 80,
 	PUS_SERVICE_2 = 82,
 	PUS_SERVICE_3 = 83,
 	PUS_SERVICE_5 = 85,
 	PUS_SERVICE_6 = 86,
 	PUS_SERVICE_8 = 88,
-	PUS_SERVICE_9 = 89,
-	PUS_SERVICE_17 = 82,
 	PUS_SERVICE_23 = 91,
 	DUMMY_DEVICE = 90,
 	/**
