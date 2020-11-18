@@ -36,21 +36,15 @@ TARGET = Mission build
 else 
 BUILD_FOLDER = devel
 TARGET = Debug build
+debug: OPTIMIZATION_MESSAGE = Off
 endif
 
 DEPENDDIR = $(DEPENDPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)
 OBJDIR = $(OBJECTPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)
 BINDIR = $(BUILDPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)
 
-
-# OBSW with debug output for events / returnvalues
-ifdef DEBUG
-DEBUG_DEFINE = -DDEBUG
-endif
-
 # Toolchain Settings
 CROSS_COMPILE = arm-none-eabi-
-
 
 ifdef WINDOWS
 CC = $(CROSS_COMPILE)gcc.exe
@@ -220,7 +214,7 @@ CFLAGS = $(CDEFINES)
 CPPFLAGS = -std=c++17 -fno-exceptions 
 # Flags for both
 CXXFLAGS = $(MCU) -g3 -I. -Istm32/ $(I_INCLUDES) -fmessage-length=0 $(CXXDEFINES) \
-$(CXXWARNINGS) $(C_INCLUDES) $(DEPFLAGS)
+		$(CXXWARNINGS) $(C_INCLUDES) $(DEPFLAGS)
 
 # Object File Definitions
 OBJ = $(CSRC:.c=.o) $(CXXSRC:.cpp=.o) $(ASRC:.s=.o)
@@ -235,7 +229,6 @@ MSG_BINARY = Generate binary:
 MSG_OPTIMIZATION = Optimization: $(OPTIMIZATION), $(OPTIMIZATION_MESSAGE)
 MSG_TARGET = Target Build: $(TARGET)
 MSG_DEBUG = Debug level: $(DEBUG_LEVEL), FSFW Debugging: $(DEBUG_MESSAGE)
-MSG_COMIF = TMTC Communication Interface: $(COMIF_MESSAGE)
 
 # including the dependency files
 # make will rebuild included makefiles if it can.
@@ -249,7 +242,7 @@ MSG_COMIF = TMTC Communication Interface: $(COMIF_MESSAGE)
 default: all
 
 # building the binary
-all: $(BINDIR)/$(BINARY_NAME).bin
+all: debug
 
 clean:
 	-rm -rf $(BUILDPATH)/$(BOARD)
@@ -260,6 +253,8 @@ hardclean:
 	-rm -rf $(BUILDPATH)
 	-rm -rf $(DEPENDPATH)
 	-rm -rf $(OBJECTPATH)
+
+debug virtual mission: executable
 
 # Build target configuration, which also includes information output.
 # See: https://www.gnu.org/software/make/manual/html_node/Target_002dspecific.html
@@ -275,7 +270,8 @@ mission: DEBUG_LEVEL = -g0
 debug: CXXDEFINES += -DDEBUG
 debug: DEBUG_MESSAGE = On
 debug: DEBUG_LEVEL = -g3
-debug: OPTIMIZATION_MESSAGE = Off
+
+executable: $(BINDIR)/$(BINARY_NAME).bin
 
 $(BINDIR)/$(BINARY_NAME).bin: $(BINDIR)/$(BINARY_NAME).elf
 	@echo
@@ -283,7 +279,6 @@ $(BINDIR)/$(BINARY_NAME).bin: $(BINDIR)/$(BINARY_NAME).elf
 	@echo $(MSG_TARGET)
 	@echo $(MSG_OPTIMIZATION)
 	@echo $(MSG_DEBUG)
-	@echo $(MSG_COMIF)
 	@echo $(MSG_BINARY) $@
 	@mkdir -p $(@D)
 	$(BINCOPY) $< $@	
