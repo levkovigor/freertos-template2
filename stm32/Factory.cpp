@@ -7,6 +7,12 @@
  * \ingroup init
  */
 #include "Factory.h"
+#include <stm32/fsfwconfig/cdatapool/dataPoolInit.h>
+#include <stm32/fsfwconfig/devices/logicalAddresses.h>
+#include <stm32/fsfwconfig/devices/powerSwitcherList.h>
+#include <stm32/fsfwconfig/objects/systemObjectList.h>
+#include <stm32/fsfwconfig/tmtc/apid.h>
+#include <stm32/fsfwconfig/tmtc/pusIds.h>
 
 /* Config + STD Includes */
 #include <fsfw/internalError/InternalErrorReporter.h>
@@ -39,11 +45,7 @@
 /* Devices */
 #include <mission/devices/PCDUHandler.h>
 #include <mission/devices/GPSHandler.h>
-#include <stm32/fsfwconfig/cdatapool/dataPoolInit.h>
-#include <stm32/fsfwconfig/devices/logicalAddresses.h>
-#include <stm32/fsfwconfig/devices/powerSwitcherList.h>
-#include <stm32/fsfwconfig/objects/systemObjectList.h>
-#include <stm32/fsfwconfig/tmtc/apid.h>
+
 
 /* Test files */
 #include <test/testinterfaces/DummyEchoComIF.h>
@@ -121,9 +123,9 @@ void Factory::produce(void) {
 	new TmFunnel(objects::PUS_FUNNEL);
 
     /* PUS Standalone Services using PusServiceBase */
-//    new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,
-//            apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::TM_FUNNEL,
-//            20);
+    new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,
+            apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::PUS_FUNNEL,
+            20);
 //    new Service3Housekeeping(objects::PUS_SERVICE_3_HOUSEKEEPING,
 //            apid::SOURCE_OBSW, pus::PUS_SERVICE_3);
 //    // TODO: move 20 to OBSWConfig

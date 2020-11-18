@@ -6,6 +6,7 @@
 
 BOARD = stm32
 ROOT_PATH = $(BOARD)
+OUTPUT_FOLDER = $(BOARD)
 
 # General folder paths
 FRAMEWORK_PATH = fsfw
@@ -29,9 +30,18 @@ BINARY_NAME = $(BASENAME)-stm32h743zit6
 BUILDPATH = _bin
 DEPENDPATH = _dep
 OBJECTPATH = _obj
-BUILDDIR = $(BUILDPATH)/$(BOARD)
-DEPENDDIR = $(DEPENDPATH)/$(BOARD)
-OBJECTDIR = $(OBJECTPATH)/$(BOARD)
+ifeq ($(MAKECMDGOALS),mission)
+BUILD_FOLDER = mission
+TARGET = Mission build
+else 
+BUILD_FOLDER = devel
+TARGET = Debug build
+endif
+
+DEPENDDIR = $(DEPENDPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)
+OBJDIR = $(OBJECTPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)
+BINDIR = $(BUILDPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)
+
 
 # OBSW with debug output for events / returnvalues
 ifdef DEBUG
@@ -67,6 +77,12 @@ endif
 
 HEXCOPY = $(CP) -O ihex
 BINCOPY = $(CP) -O binary -S
+
+# Default debug output
+DEBUG_LEVEL = -g3
+
+# Optimization level. -O0 for debugging, -Os for size. -O0 is default.
+OPTIMIZATION = -O0
 
 # files to be compiled, will be filled in by include makefiles
 # := assignment is neccessary so we get all paths right
@@ -210,11 +226,16 @@ $(CXXWARNINGS) $(C_INCLUDES) $(DEPFLAGS)
 OBJ = $(CSRC:.c=.o) $(CXXSRC:.cpp=.o) $(ASRC:.s=.o)
 
 # Define Messages
+MSG_INFO = Software: Primary mission software for the STM32
 MSG_LINKING = Linking:
 MSG_COMPILING = Compiling:
 MSG_ASSEMBLING = Assembling:
 MSG_DEPENDENCY = Collecting dependencies for:
-MSG_BINARY = Generate binary:
+MSG_BINARY = Generate binary: 
+MSG_OPTIMIZATION = Optimization: $(OPTIMIZATION), $(OPTIMIZATION_MESSAGE)
+MSG_TARGET = Target Build: $(TARGET)
+MSG_DEBUG = Debug level: $(DEBUG_LEVEL), FSFW Debugging: $(DEBUG_MESSAGE)
+MSG_COMIF = TMTC Communication Interface: $(COMIF_MESSAGE)
 
 # including the dependency files
 # make will rebuild included makefiles if it can.
@@ -225,29 +246,54 @@ MSG_BINARY = Generate binary:
 #-------------------------------------------------------------------------------
 #		Rules
 #-------------------------------------------------------------------------------
+default: all
 
 # building the binary
-all: $(BUILDDIR)/$(BINARY_NAME).bin
+all: $(BINDIR)/$(BINARY_NAME).bin
 
-#$(BUILDDIR) $(DEPENDDIR):
-#	mkdir $@
 clean:
 	-rm -rf $(BUILDPATH)/$(BOARD)
 	-rm -rf $(DEPENDPATH)/$(BOARD)
 	-rm -rf $(OBJECTPATH)/$(BOARD)
 
-$(BUILDDIR)/$(BINARY_NAME).bin: $(BUILDDIR)/$(BINARY_NAME).elf
+hardclean:
+	-rm -rf $(BUILDPATH)
+	-rm -rf $(DEPENDPATH)
+	-rm -rf $(OBJECTPATH)
+
+# Build target configuration, which also includes information output.
+# See: https://www.gnu.org/software/make/manual/html_node/Target_002dspecific.html
+# Link time optimization is added in the rules to disable it for certain source files
+mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION)
+# Link time optimization can lead to issues, so  if there is an issue with the
+# mission binary, try to disable it to see if that fixes the problem.
+mission: LINK_TIME_OPTIMIZATION = -flto
+mission: TARGET = Mission binary
+mission: OPTIMIZATION_MESSAGE = On with Link Time Optimization.
+mission: DEBUG_LEVEL = -g0
+
+debug: CXXDEFINES += -DDEBUG
+debug: DEBUG_MESSAGE = On
+debug: DEBUG_LEVEL = -g3
+debug: OPTIMIZATION_MESSAGE = Off
+
+$(BINDIR)/$(BINARY_NAME).bin: $(BINDIR)/$(BINARY_NAME).elf
 	@echo
-	@echo $(MSG_BINARY)
+	@echo $(MSG_INFO)
+	@echo $(MSG_TARGET)
+	@echo $(MSG_OPTIMIZATION)
+	@echo $(MSG_DEBUG)
+	@echo $(MSG_COMIF)
+	@echo $(MSG_BINARY) $@
 	@mkdir -p $(@D)
 	$(BINCOPY) $< $@	
 
-$(BUILDDIR)/$(BINARY_NAME).hex: $(BUILDDIR)/$(BINARY_NAME).elf
+$(BINDIR)/$(BINARY_NAME).hex: $(BINDIR)/$(BINARY_NAME).elf
 	$(HEXCOPY) $< $@
 
-$(BUILDDIR)/$(BINARY_NAME).elf: $(addprefix $(OBJECTDIR)/, $(OBJ))
+$(BINDIR)/$(BINARY_NAME).elf: $(addprefix $(OBJECTDIR)/, $(OBJ))
 	@echo
-	@echo $(MSG_LINKING)
+	@echo $(MSG_LINKING) Target $@
 	@mkdir -p $(@D)
 	@$(CXX) -Wl,-L, -specs=nosys.specs $(MCU) -T "$(BSP_PATH)/linker.ld" $(LIBS) -o $@ $^
 	@echo $@ was generated.
