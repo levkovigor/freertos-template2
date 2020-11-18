@@ -83,9 +83,9 @@ int iobc_norflash() {
     //-------------------------------------------------------------------------
     // iOBC Bootloader
     //-------------------------------------------------------------------------
-    xTaskCreate(handler_task, "HANDLER_TASK", 512, NULL, 4,
+    xTaskCreate(handler_task, "HANDLER_TASK", 524, NULL, 4,
             &handler_task_handle_glob);
-    xTaskCreate(init_task, "INIT_TASK", 512, handler_task_handle_glob,
+    xTaskCreate(init_task, "INIT_TASK", 524, handler_task_handle_glob,
             5, NULL);
     vTaskStartScheduler();
     // This should never be reached.
@@ -110,6 +110,9 @@ void init_task(void * args) {
 #else
 	printf("SOURCEBoot\n\r");
 #endif
+    TRACE_INFO("Remaining FreeRTOS heap size: %d bytes.\n\r",
+            xPortGetFreeHeapSize());
+
     initialize_all_iobc_peripherals();
 
     // start handler task
