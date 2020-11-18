@@ -207,7 +207,7 @@ resetHandler:
 	bcc     1b
 
 /* Perform low-level initialization of the chip using LowLevelInit() */
-	ldr     sp, =_sstack
+	ldr     sp, =_sstacksram1
 	stmfd   sp!, {r0}
 	ldr     r0, =LowLevelInit
 	blx     r0
@@ -242,8 +242,8 @@ resetHandler:
 
 /* Setup stacks
  **************/
-	ldr     r0, =_sstack /* Save the start of the stack in r0 */
-	ldr     sp, =_sstack
+	ldr     r0, =_sstacksdram /* Save the start of the stack in r0 */
+	ldr     sp, =_sstacksdram
 
 /* IRQ mode */
 	msr     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT

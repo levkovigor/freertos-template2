@@ -138,12 +138,15 @@ SECTIONS
 		 __bss_end__ = _ebss;
     } >sram1
     
-    /* Heap section */
-	_sheap_ = .;
-	end = .;
-	_eheap_ = 0x302000;
+    /* top of stack for SRAM1. Used as stack before SDRAM is configured. */
+    _sstacksram1 = 0x304000;
     
-    /* top of stack */
-    _sstack = 0x304000;
+    /* Heap start in SDRAM */
+	_sheap_ = 0x20200000;
+	end = .;
+    
+    /* top of stack for SDRAM */
+    _sstacksdram = 0x22000000;
 }
+
 
