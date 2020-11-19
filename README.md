@@ -209,7 +209,7 @@ This project uses the FSFW flight-proven small satellite framework. The framewor
 
 #### FreeRTOS
 
-It is possible to use a newer version of FreeRTOS. The ISIS libraries still use the API of FreeRTOS 7.5.3. A newer FreeRTOS can be used as long as the old API calls are still provided and forwarded to the new API. The function implementation is contained within the `isisAdditions.c` source file while the ISIS change log in the document folder contains more specific information.
+It is possible to use a newer version of FreeRTOS. The ISIS libraries still use the API of FreeRTOS 7.5.3. A newer FreeRTOS can be used as long as the old API calls are still provided and forwarded to the new API. The function implementation is contained within the `isisAdditions.c` source file while the ISIS change log in the doc folder contains more specific information.
 
 Please note that the configuration option `configUSE_NEWLIB_REENTRANT` was set to one as well to ensure that newlib nano can be used in a thread-safe manner. Functon implementations for `__malloc_lock` and `__malloc_unlock` were provided as well to ensure thread-safety when using newlib nano with FreeRTOS. This project also uses the `heap4.c` FreeRTOS memory management scheme.
 
