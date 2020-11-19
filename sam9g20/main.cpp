@@ -74,10 +74,12 @@ int main(void)
     configureEk();
 #endif
 
-    // Kick might be necessary if initTask suppresses watchdog task for too long
 #ifdef ISIS_OBC_G20
-    // Core Task. Custom interrupts should be configured inside a task.
-    xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, 6, nullptr);
+    /* Core Task. Custom interrupts should be configured inside a task.
+    Less priority than the watchdog task, but still very high to it can
+    initiate the software as fast as possible */
+    xTaskCreate(initTask, "INIT_TASK", 3072, nullptr,
+    		configMAX_PRIORITIES - 2, nullptr);
 #else
     xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, 9, nullptr);
 #endif
