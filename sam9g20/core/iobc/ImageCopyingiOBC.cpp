@@ -117,23 +117,26 @@ ReturnValue_t ImageCopyingEngine::handleObswErasure() {
         else {
             currentFileSize = f_filelength(config::SW_UPDATE_SLOT_NAME);
         }
-        helperFlag1 = true;
-        helperCounter1 = 0;
-        uint8_t requiredBlocks = 0;
-        if(currentFileSize <=  NORFLASH_TOTAL_SMALL_SECTOR_MEM_OBSW) {
-        	requiredBlocks = std::ceil(
-        			static_cast<float>(currentFileSize) /
-					(NORFLASH_SMALL_SECTOR_SIZE));
-        }
-        else {
-        	requiredBlocks = RESERVED_OBSW_SMALL_SECTORS;
-        	requiredBlocks += std::ceil(
-        			static_cast<float>(currentFileSize -
-        					NORFLASH_TOTAL_SMALL_SECTOR_MEM_OBSW) /
-							(NORFLASH_LARGE_SECTOR_SIZE));
-        }
 
-        helperCounter1 = requiredBlocks;
+//        helperCounter1 = 0;
+//        uint8_t requiredBlocks = 0;
+//        if(currentFileSize <=  NORFLASH_TOTAL_SMALL_SECTOR_MEM_OBSW) {
+//        	requiredBlocks = std::ceil(
+//        			static_cast<float>(currentFileSize) /
+//					(NORFLASH_SMALL_SECTOR_SIZE));
+//        }
+//        else {
+//        	requiredBlocks = RESERVED_OBSW_SMALL_SECTORS;
+//        	requiredBlocks += std::ceil(
+//        			static_cast<float>(currentFileSize -
+//        					NORFLASH_TOTAL_SMALL_SECTOR_MEM_OBSW) /
+//							(NORFLASH_LARGE_SECTOR_SIZE));
+//        }
+
+         helperFlag1 = true;
+         uint8_t requiredBlocks = NORFLASH_SECTORS_NUMBER -
+        		 RESERVED_BL_SMALL_SECTORS;
+         helperCounter1 = requiredBlocks;
     }
 
     while(stepCounter < helperCounter1) {

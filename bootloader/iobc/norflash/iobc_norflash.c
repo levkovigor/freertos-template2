@@ -6,6 +6,7 @@
 
 #include <sam9g20/memory/SDCardApi.h>
 #include <sam9g20/common/FRAMApi.h>
+#include <sam9g20/common/watchdog.h>
 
 #include <board.h>
 #include <AT91SAM9G20.h>
@@ -61,9 +62,9 @@ int iobc_norflash() {
     //-------------------------------------------------------------------------
     // Initiate watchdog for iOBC
     //-------------------------------------------------------------------------
-    int retval = WDT_startWatchdogKickTask(
-            WATCHDOG_KICK_INTERVAL_MS / portTICK_RATE_MS, FALSE);
-    if(retval != 0) {
+    BaseType_t retval = startCustomIsisWatchdogTask(WATCHDOG_KICK_INTERVAL_MS,
+    		true);
+    if(retval != pdTRUE) {
 #if DEBUG_IO_LIB == 1
         TRACE_ERROR("Starting iOBC Watchdog Feed Task failed!\r\n");
 #endif
