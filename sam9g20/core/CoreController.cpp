@@ -97,8 +97,8 @@ void CoreController::performPeriodicTimeHandling() {
     }
 #ifdef ISIS_OBC_G20
     // Store current uptime in seconds in FRAM, using the FRAM handler.
-    result = update_seconds_since_epoch(currentUptimeSeconds);
-    if( result != 0) {
+    int result = update_seconds_since_epoch(currentUptimeSeconds);
+    if(result != 0) {
         // should not happen!
     }
 
