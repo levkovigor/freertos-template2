@@ -211,19 +211,12 @@ void perform_bootloader_check() {
 void initialize_all_iobc_peripherals() {
     RTT_start();
 
-    // Those two fail. I don't know why yet.
-//    int result = SPI_start(bus0_spi, 0);
-//    if(result != 0) {
-//        // This should not happen!
-//        TRACE_ERROR("initialize_iobc_peripherals: Could not start "
-//        		"SPI, code %d!\n\r", result);
-//    }
-//    result = FRAM_start();
-//    if(result != 0) {
-//        // This should not happen!
-//        TRACE_ERROR("initialize_iobc_peripherals: Could not start "
-//        		"FRAM, code %d!\n\r", result);
-//    }
+    int result = FRAM_start();
+    if(result != 0) {
+        // This should not happen!
+        TRACE_ERROR("initialize_iobc_peripherals: Could not start "
+        		"FRAM, code %d!\n\r", result);
+    }
 }
 
 

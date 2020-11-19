@@ -1,4 +1,5 @@
 #include <sam9g20/utility/portwrapper.h>
+#include <fsfwconfig/OBSWConfig.h>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -34,4 +35,18 @@ uint32_t vGetCurrentTimerCounterValue() {
 
 void timerOverflowISR(isr_args_t args) {
 	timerOverflowCounter++;
+}
+
+extern "C" void __malloc_lock (struct _reent *reent) {
+#if OBSW_MONITOR_ALLOCATION == 1
+	if(config::softwareInitializationComplete) {
+		TRACE_WARNING("Software initialization complete but "
+				"memory is allocated!\n\r");
+	}
+#endif
+	vTaskSuspendAll();
+}
+
+extern "C" void __malloc_unlock (struct _reent *reent) {
+	xTaskResumeAll();
 }

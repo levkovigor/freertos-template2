@@ -60,7 +60,7 @@ void CoreController::performControlOperation() {
 
     /* the second counter will take 4-5 years to overflow which exceeds
     mission time. */
-    uint32_t currentUptimeSeconds = RTT_GetTime();
+    uint32_t currentUptimeSeconds = Time_getUptimeSeconds();
 
     /* Dynamic memory allocation is only allowed at software startup */
 #if OBSW_MONITOR_ALLOCATION == 1

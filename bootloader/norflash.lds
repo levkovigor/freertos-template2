@@ -123,30 +123,27 @@ SECTIONS
     __exidx_end = .;    
     _efixed = .;
     
+    /* Place .bss in sdram because it will grow quite large when using FreeRTOS */
     .bss (NOLOAD) : 
     {
+    	. = . + 0x200000;
         /* This is used by the startup in order to initialize the .bss secion */
 		_sbss = .;         /* define a global symbol at bss start */
 		__bss_start__ = _sbss;
-		*(.bss)
-		*(.bss*)
-		*(COMMON)
-		*(COMMON.*)
+		*(.bss .bss.*)
+		*(COMMON .COMMON.*)
 		*(.srambss*)
 		. = ALIGN(4);
 		_ebss = .;         /* define a global symbol at bss end */
 		 __bss_end__ = _ebss;
-    } >sram1
+    } >sdram
     
     /* top of stack for SRAM1. Used as stack before SDRAM is configured. */
-    _sstacksram1 = 0x304000;
+    _sstack = 0x304000;
     
     /* Heap start in SDRAM */
-	_sheap_ = 0x20200000;
+	_sheap_ = _ebss;
 	end = .;
-    
-    /* top of stack for SDRAM */
-    _sstacksdram = 0x22000000;
 }
 
 

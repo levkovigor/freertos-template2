@@ -156,10 +156,13 @@ to exclude the API function. */
 #define INCLUDE_uxTaskGetStackHighWaterMark 1
 #define INCLUDE_xTaskGetIdleTaskHandle		1
 
+/* Added for thread-safety of newlib */
+#define configUSE_NEWLIB_REENTRANT		1
+
 /* Run time stats. Can be turned off for mission code. */
-#define configGENERATE_RUN_TIME_STATS   		0
-#define configUSE_STATS_FORMATTING_FUNCTIONS 	0
-#define configUSE_TRACE_FACILITY				0
+#define configGENERATE_RUN_TIME_STATS   		1
+#define configUSE_STATS_FORMATTING_FUNCTIONS 	1
+#define configUSE_TRACE_FACILITY				1
 // Defined in portwrapper.cpp inside the utility folder.
 extern void vConfigureTimerForRunTimeStats();
 extern uint32_t vGetCurrentTimerCounterValue();
