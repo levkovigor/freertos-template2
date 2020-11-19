@@ -86,6 +86,7 @@ SECTIONS
 		KEEP(*(SORT(.fini_array.)))
 		KEEP(*(.fini_array))
 		PROVIDE_HIDDEN (__fini_array_end = .);
+		. = ALIGN(4);
 	} >sdram
 
 	/* used for unwinding, can be useful for debugging  */  
@@ -102,32 +103,6 @@ SECTIONS
 	} >sdram
     __exidx_end = .;
     
-	.preinit_array ALIGN(4): 
-	{
-        PROVIDE_HIDDEN (__preinit_array_start = .);
-        KEEP(*(.preinit_array))
-        PROVIDE_HIDDEN (__preinit_array_end = .);
-    } >sdram
-
-	/* init data, the constructor addresses are placed in this sections */
-    .init_array ALIGN(4): 
-    {
-        PROVIDE_HIDDEN (__init_array_start = .);
-        KEEP(*(SORT(.init_array.)))
-		KEEP(*(.init_array))
-        PROVIDE_HIDDEN (__init_array_end = .);
-    } >sdram
-
-	/* finit data, destructor addresses are placed in this section */
-    .fini_array ALIGN(4): 
-    {
-     	
-		PROVIDE_HIDDEN (__fini_array_start = .);
-		KEEP(*(SORT(.fini_array.)))
-		KEEP(*(.fini_array))
-		PROVIDE_HIDDEN (__fini_array_end = .);
-    } >sdram
-    
     . = ALIGN(4);
     _efixed = .;
     
@@ -139,22 +114,20 @@ SECTIONS
         _sprerelocate = .;
         . = ALIGN(4);
         _eprerelocate = .;
-    } 
+    } >sram0
     
-    /* Will also be copied to SRAM, but is mapped to the SRAM0. Loaded in SDRAM */
-    /* The vectors section has to be placed here because placing it in prerelocate would map */
-    /* a SDRAM address to the vectors */
-    .postrelocate : AT (_sprerelocate + SIZEOF(.prerelocate))
+    /* Will also be copied to SRAM */
+    .postrelocate : AT (_efixed + SIZEOF(.prerelocate))
     {
         . = ALIGN(4);
         _spostrelocate = .;
-        KEEP(*(.vectors));
+		KEEP(*(.vectors));
 		*(.sramfunc*);
         . = ALIGN(4);
         _epostrelocate = .;
     } >sram0 
          
-    .sramdata : AT (_sprerelocate + SIZEOF(.prerelocate) + SIZEOF(.postrelocate))
+    .sramdata : AT (_efixed + SIZEOF(.prerelocate) + SIZEOF(.postrelocate))
     {
         . = ALIGN(4);
         _ssramdata = .;
@@ -173,9 +146,9 @@ SECTIONS
     } >sram1
 
     /* this section holds uninitialized global and static data  */
- 	. = ALIGN(4);
 	.bss (NOLOAD) : 
 	{
+	 	. = ALIGN(4);
 	    /* This is used by the startup in order to initialize the .bss secion */
 	    _sbss = .;         /* define a global symbol at bss start */
 	    __bss_start__ = _sbss;

@@ -1,6 +1,7 @@
 #include "CoreController.h"
 
 #include <FreeRTOSConfig.h>
+#include <fsfwconfig/OBSWConfig.h>
 
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/tasks/TaskFactory.h>
@@ -18,7 +19,7 @@ extern "C" {
 }
 
 #include <utility/exithandler.h>
-#include <utility/portwrapper.h>
+#include "../boardconfig/portwrapper.h"
 #include <utility/compile_time.h>
 #include <cinttypes>
 
@@ -56,10 +57,20 @@ void CoreController::performControlOperation() {
     // are out of order.
 #endif
 
-    /* Check for overflows of 32bit counter regularly (currently every day).
-    the second counter will take 4-5 years to overflow which exceeds
-    mission time. */
-    uint32_t currentUptimeSeconds = RTT_GetTime();
+    uint32_t currentUptimeSeconds = 0;
+    Clock::getUptime(&currentUptimeSeconds);
+    currentUptimeSeconds /= configTICK_RATE_HZ;
+
+    /* Dynamic memory allocation is only allowed at software startup */
+#if OBSW_MONITOR_ALLOCATION == 1
+    if(currentUptimeSeconds > 2 and not
+    		config::softwareInitializationComplete) {
+    	config::softwareInitializationComplete = true;
+    }
+#endif
+
+    /* Check for overflows of 10kHz 32bit counter regularly
+    (currently every day). */
     if(currentUptimeSeconds - lastCounterUpdateSeconds >= DAY_IN_SECONDS) {
         update64bitCounter();
         lastCounterUpdateSeconds = currentUptimeSeconds;

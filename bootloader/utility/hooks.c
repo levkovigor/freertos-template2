@@ -5,7 +5,7 @@
  *      Author: pbot
  */
 
-#ifdef freeRTOS
+#ifdef ISIS_OBC_G20
 
 #include <freertos/include/freertos/FreeRTOS.h>
 #include <freertos/include/freertos/task.h>

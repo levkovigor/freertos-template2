@@ -102,14 +102,13 @@
 ///             PLL and SMC. 
 /// This function also reset the AIC and disable RTT and PIT interrupts
 //------------------------------------------------------------------------------
-#ifdef norflash
-void LowLevelInit(void) __attribute__ ((section(".sramfunc"), weak));
-#endif
 void LowLevelInit(void)
 {
     unsigned char i;
 
-    // Still do this for SDRAM because SAM-BA low level init is crap.
+    // Sometimes we have do this for SDRAM because SAM-BA low level init
+    // does not configure the SDRAM correctly! For J-Link flashes, this should
+    // not be required.
 //#ifndef sdram
     /* Initialize main oscillator
      ****************************/
@@ -163,7 +162,6 @@ void LowLevelInit(void)
         AT91C_BASE_AIC->AIC_EOICR = 0;
     }
 
-
     /* Watchdog initialization
      *************************/
     AT91C_BASE_WDTC->WDTC_WDMR = AT91C_WDTC_WDDIS;
@@ -181,9 +179,12 @@ void LowLevelInit(void)
 #if defined(norflash)
     BOARD_ConfigureNorFlash(BOARD_NORFLASH_DFT_BUS_SIZE);
 #endif    
+
+#if !defined(sdram)
+    BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
+#endif
 }
 
-void clearBssSection(void) __attribute__ ((section(".sramfunc"), weak));
 void clearBssSection(void) {
     extern char _sbss, _ebss;
     memset(&_sbss, 0, &_ebss - &_sbss);

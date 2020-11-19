@@ -126,14 +126,14 @@ static const uint32_t FRAM_END_ADDR = 0x100000;
 // 512 bytes of the upper FRAM will be reserved for the bootloader hamming
 // code.
 static const size_t BOOTLOADER_HAMMING_RESERVED_SIZE = 512;
-static const uint32_t BOOTLOADER_HAMMING_ADDR = FRAM_END_ADDR - \
-        BOOTLOADER_HAMMING_RESERVED_SIZE;
+#define BOOTLOADER_HAMMING_ADDR FRAM_END_ADDR - \
+        BOOTLOADER_HAMMING_RESERVED_SIZE
 
 // 12 kB of the upper FRAM will be reserved for the NOR-Flash binary hamming
 // code.
 static const uint32_t NOR_FLASH_HAMMING_RESERVED_SIZE = 12288;
-static const uint32_t NOR_FLASH_HAMMING_ADDR = BOOTLOADER_HAMMING_ADDR - \
-        NOR_FLASH_HAMMING_RESERVED_SIZE;
+#define  NOR_FLASH_HAMMING_ADDR BOOTLOADER_HAMMING_ADDR - \
+        NOR_FLASH_HAMMING_RESERVED_SIZE
 
 
 #ifdef __cplusplus

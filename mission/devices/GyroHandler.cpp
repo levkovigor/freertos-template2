@@ -14,7 +14,7 @@ GyroHandler::GyroHandler(object_id_t objectId, object_id_t comIF,
         DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId),
 		gyroData(this), gyroConfigSet(this),
 		selfTestDivider(5) {
-#if OBSW_REDUCED_PRINTOUT == 0
+#if OBSW_ENHANCED_PRINTOUT == 1
     debugDivider = new PeriodicOperationDivider(20);
 #endif
     }
@@ -497,7 +497,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 			float angularVelocityY = angularVelocityBinaryY * scaleFactor;
 			float angularVelocityZ = angularVelocityBinaryZ * scaleFactor;
 
-#if OBSW_REDUCED_PRINTOUT == 0
+#if OBSW_ENHANCED_PRINTOUT == 1
 			if(debugDivider->checkAndIncrement()) {
 				sif::info << "GyroHandler: Angular velocities in degrees per "
 						"second:" << std::endl;

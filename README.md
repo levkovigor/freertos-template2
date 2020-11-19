@@ -22,10 +22,16 @@ Additional Note: The ISIS library is not public because
 it is not open source. Those libraries to be added manually and the includes
 and source files have to be setup and included accordingly!
 
+The device specific documentation contains information on how to flash the built
+software to the boards as well. The Linux build can be run locally on the host computer.
+The QEMU image can be run on the host computer as well, but required QEMU installed as specified
+in the QEMU documentation.
+
 ## Reference
 [Prerequisites](#prerequisites)<br>
 [Building the software](#building-the-software)<br>
 [Setting up prerequisites](#setting-up-prerequisites)<br>
+[Project specific information](#project-specific-information)<br>
 
 **Specific documentation**<br>
 [Installing and setting up Eclipse](doc/README-eclipse.md#top)<br>
@@ -121,8 +127,8 @@ For developers unfamiliar with Eclipse, it is recommended to read the
 
 Following make targets are available:
 - sdramCfg: Configure AT91 SDRAM on start-up. Required after each restart.
-- clean: Clean the dependencies, binaries and includes of current system (STM32 or AT91)
-  and Communication Interface (Serial RS232 or UDP Ethernet)
+- clean: Clean the dependencies, binaries and includes of current active build
+  configurationand Communication Interface (Serial RS232 or UDP Ethernet)
 - hardclean: Clean the three mentioned folders for all systems and interfaces
 - cleanbin: Clean all binaries
 - debug: Additional FSFW debug messages
@@ -188,4 +194,30 @@ To install general buildtools for the linux binary, run:
 ```sh
 sudo apt-get install build-essential
 ```
+
+## Project Specific Information
+
+There are some important differences of this project compared to the project files and configuration provided by ISIS. Some important differences will be documented and listed here. It should be noted that memory allocation is only performed during start-up and was carefully avoided during run-time to avoid associated problems like non-deterministic behaviour
+and memory fragmentation in the heap.
+
+#### C++
+C++ is used in this project. To allow this, some important changes in the linkerscript files and the start up files were necessary. The most important change includes specifying `.fini`, `.init`,`.preinit_array`, `.init_array` and `.fini_array` sections. In the startup file `__libc_init_array` is called before branching to main to ensure all global constructors are called.
+
+### FSFW
+
+This project uses the FSFW flight-proven small satellite framework. The framework provides many components and modules to easy development. Examples include an object manager, an abstraction layer for FreeRTOS, a PUS stack for TMTC commanding using the ECSS PUS standard and a lot more. More information can be found at the [FSFW](https://egit.irs.uni-stuttgart.de/fsfw/fsfw) website.
+
+#### FreeRTOS
+
+It is possible to use a newer version of FreeRTOS. The ISIS libraries still use the API of FreeRTOS 7.5.3. A newer FreeRTOS can be used as long as the old API calls are still provided and forwarded to the new API. The function implementation is contained within the `isisAdditions.c` source file while the ISIS change log in the doc folder contains more specific information.
+
+Please note that the configuration option `configUSE_NEWLIB_REENTRANT` was set to one as well to ensure that newlib nano can be used in a thread-safe manner. Functon implementations for `__malloc_lock` and `__malloc_unlock` were provided as well to ensure thread-safety when using newlib nano with FreeRTOS. This project also uses the `heap4.c` FreeRTOS memory management scheme.
+
+#### Pre-emptive scheduling
+
+ISIS default FreeRTOS configuration uses a cooperative scheduler and their documents specify that this is due "higher requirements to data contention management". It is not exactly known what this means, but there have been no issues with using a pre-emptive scheduler so far.
+
+#### Newlib Nano
+
+Newlib Nano is used as the a library for embedded systems. This reduces the binary size as well
 

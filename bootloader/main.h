@@ -4,6 +4,8 @@
 
 #define SDRAM_DESTINATION 0x20000000
 
+extern void jump_to_sdram_application(void);
+
 typedef enum {
 	BOOT_SD_CARD_0,
 	BOOT_SD_CARD_0_SLOT2,

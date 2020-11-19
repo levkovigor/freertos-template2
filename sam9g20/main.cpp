@@ -1,4 +1,3 @@
-
 extern "C"{
 #include <board.h>
 #include <AT91SAM9G20.h>
@@ -7,6 +6,8 @@ extern "C"{
 #if defined(AT91SAM9G20_EK)
 #include <led_ek.h>
 #else
+#include <hal/Drivers/LED.h>
+#include <sam9g20/common/watchdog.h>
 #endif
 
 #include <at91/peripherals/pio/pio.h>
@@ -46,21 +47,22 @@ void initMission();
 void initTask(void * args);
 
 #ifdef ISIS_OBC_G20
-static const uint8_t WATCHDOG_KICK_INTERVAL_MS = 15;
+static constexpr uint32_t WATCHDOG_KICK_INTERVAL_MS = 15;
 #endif
+
 
 int main(void)
 {
     // DBGU output configuration
     TRACE_CONFIGURE(DBGU_STANDARD, 115200, BOARD_MCK);
+    BaseType_t retval = pdFALSE;
 
 #ifdef ISIS_OBC_G20
 	// Task with the sole purpose of kicking the watchdog to prevent
 	// an iOBC restart. This should be done as soon as possible and before
     // anything is printed.
-	int retval = WDT_startWatchdogKickTask(
-			WATCHDOG_KICK_INTERVAL_MS / portTICK_RATE_MS, TRUE);
-	if(retval != 0) {
+    retval = startCustomIsisWatchdogTask(WATCHDOG_KICK_INTERVAL_MS, true);
+	if(retval != pdTRUE) {
 		TRACE_ERROR("Starting iOBC Watchdog Feed Task failed!\r\n");
 	}
 #endif
@@ -73,15 +75,18 @@ int main(void)
     configureEk();
 #endif
 
-    // Kick might be necessary if initTask suppresses watchdog task for too long
 #ifdef ISIS_OBC_G20
-    // WDT_forceKick();
-
-    // Core Task. Custom interrupts should be configured inside a task.
-    xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, 6, nullptr);
+    /* Core Task. Custom interrupts should be configured inside a task.
+    Less priority than the watchdog task, but still very high to it can
+    initiate the software as fast as possible */
+    retval = xTaskCreate(initTask, "INIT_TASK", 3072, nullptr,
+    		configMAX_PRIORITIES - 2, nullptr);
 #else
-    xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, 9, nullptr);
+    retval = xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, 9, nullptr);
 #endif
+    if(retval != pdTRUE) {
+    	TRACE_ERROR("Creating Initialization Task failed!\n\r");
+    }
     vTaskStartScheduler();
     // This should never be reached.
     for(;;) {}
@@ -108,3 +113,4 @@ void configureEk(void) {
 
 }
 #endif
+

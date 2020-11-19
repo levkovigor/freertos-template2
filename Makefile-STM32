@@ -6,11 +6,12 @@
 
 BOARD = stm32
 ROOT_PATH = $(BOARD)
+OUTPUT_FOLDER = $(BOARD)
 
 # General folder paths
-FRAMEWORK_PATH = framework
+FRAMEWORK_PATH = fsfw
 MISSION_PATH = mission
-CONFIG_PATH = $(ROOT_PATH)/config
+CONFIG_PATH = $(ROOT_PATH)/fsfwconfig
 TEST_PATH = test
 UNITTEST_PATH = unittest
 
@@ -29,18 +30,21 @@ BINARY_NAME = $(BASENAME)-stm32h743zit6
 BUILDPATH = _bin
 DEPENDPATH = _dep
 OBJECTPATH = _obj
-BUILDDIR = $(BUILDPATH)/$(BOARD)
-DEPENDDIR = $(DEPENDPATH)/$(BOARD)
-OBJECTDIR = $(OBJECTPATH)/$(BOARD)
-
-# OBSW with debug output for events / returnvalues
-ifdef DEBUG
-DEBUG_DEFINE = -DDEBUG
+ifeq ($(MAKECMDGOALS), mission)
+BUILD_FOLDER = mission
+TARGET = Mission build
+else 
+BUILD_FOLDER = devel
+TARGET = Debug build
+debug: OPTIMIZATION_MESSAGE = Off
 endif
+
+DEPENDDIR = $(DEPENDPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)
+OBJDIR = $(OBJECTPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)
+BINDIR = $(BUILDPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)
 
 # Toolchain Settings
 CROSS_COMPILE = arm-none-eabi-
-
 
 ifdef WINDOWS
 CC = $(CROSS_COMPILE)gcc.exe
@@ -68,6 +72,12 @@ endif
 HEXCOPY = $(CP) -O ihex
 BINCOPY = $(CP) -O binary -S
 
+# Default debug output
+DEBUG_LEVEL = -g3
+
+# Optimization level. -O0 for debugging, -Os for size. -O0 is default.
+OPTIMIZATION = -O0
+
 # files to be compiled, will be filled in by include makefiles
 # := assignment is neccessary so we get all paths right
 # https://www.gnu.org/software/make/manual/html_node/Flavors.html
@@ -84,7 +94,7 @@ INCLUDES :=
 
 SUBDIRS := $(ROOT_PATH)/Middlewares/LwIP $(FRAMEWORK_PATH) $(ROOT_PATH)/Drivers $(BSP_PATH) \
            $(CONFIG_PATH) $(TEST_PATH) $(BOARD_TEST_PATH) $(COMIF_PATH) $(TMTCBRIDGE_PATH) \
-           $(UNITTEST_PATH) $(MISSION_PATH) $(ROOT_PATH)
+           $(MISSION_PATH) $(ROOT_PATH)
 
 SRC_PATH = $(ROOT_PATH)/Src
 DRIVER_PATH = $(ROOT_PATH)/Drivers
@@ -166,10 +176,29 @@ include $(S)/$(notdir $S).mk
 endef
 $(foreach S,$(SUBDIRS),$(eval $(INCLUDE_FILE)))
 
+ETL_PATH = etl/include
+
+INCLUDES += ./stm32
+INCLUDES += $(ETL_PATH)
 I_INCLUDES = $(addprefix -I, $(INCLUDES))
 
-ETL_PATH = etl/include
-I_INCLUDES += -I$(ETL_PATH)
+# See: https://stackoverflow.com/questions/6687630/how-to-remove-unused-c-c-symbols-with-gcc-and-ld
+# Used to throw away unused code. Reduces code size significantly !
+# -Wl,--gc-sections: needs to be passed to the linker to discard unused sections
+ifdef KEEP_UNUSED_CODE
+PROTOTYPE_OPTIMIZATION = 
+UNUSED_CODE_REMOVAL = 
+else
+PROTOTYPE_OPTIMIZATION = -ffunction-sections -fdata-sections
+UNUSED_CODE_REMOVAL = -Wl,--gc-sections
+# Link time optimization
+# See https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html for reference
+# Link time is larger and size of object files can not be retrieved
+# but resulting binary is smaller. Could be used in mission/deployment build
+# Requires -ffunction-section in linker call
+LINK_TIME_OPTIMIZATION =
+OPTIMIZATION += $(PROTOTYPE_OPTIMIZATION) 
+endif 
 
 # cpu
 CPU = -mcpu=cortex-m7
@@ -181,10 +210,9 @@ FPU = -mfpu=fpv5-d16
 FLOAT-ABI = -mfloat-abi=hard
 
 # mcu
-MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
-
-LIBS = -lc -lm -lnosys 
-
+MCU_FLAGS = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
+# Newlib Nano
+NEWLIB_NANO = -specs=nosys.specs -specs=nano.specs
 
 # Flags
 
@@ -195,61 +223,124 @@ LIBS = -lc -lm -lnosys
 # http://make.mad-scientist.net/papers/advanced-auto-dependency-generation/
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPENDDIR)/$*.d
 
+WARNING_FLAGS = -Wall -Wshadow=local -Wextra -Wimplicit-fallthrough=1 \
+		-Wno-unused-parameter 
+		
 CXXDEFINES = $(DEBUG_DEFINE) -D$(BOARD) -DAPI=FREE_RTOS_API
 CDEFINES = -DUSE_HAL_DRIVER -DSTM32H743xx 
-CXXWARNINGS = -Wimplicit-fallthrough=2 -Wall -Wextra -Wno-unused-parameter
+
 # Flags for c only
 CFLAGS = $(CDEFINES)
 # Flags for c++ only
 CPPFLAGS = -std=c++17 -fno-exceptions 
 # Flags for both
-CXXFLAGS = $(MCU) -g3 -I. -Istm32/ $(I_INCLUDES) -fmessage-length=0 $(CXXDEFINES) \
-$(CXXWARNINGS) $(C_INCLUDES) $(DEPFLAGS)
+CXXFLAGS = $(MCU_FLAGS) $(DEBUG_LEVEL) $(OPTIMIZATION) -I. $(I_INCLUDES) -fmessage-length=0 \
+		$(CXXDEFINES) $(WARNING_FLAGS) $(C_INCLUDES) $(DEPFLAGS)
 
 # Object File Definitions
 OBJ = $(CSRC:.c=.o) $(CXXSRC:.cpp=.o) $(ASRC:.s=.o)
 
 # Define Messages
+MSG_INFO = Software: Primary mission software for the STM32
 MSG_LINKING = Linking:
 MSG_COMPILING = Compiling:
 MSG_ASSEMBLING = Assembling:
 MSG_DEPENDENCY = Collecting dependencies for:
-MSG_BINARY = Generate binary:
+MSG_BINARY = Generate binary: 
+MSG_OPTIMIZATION = Optimization: $(OPTIMIZATION), $(OPTIMIZATION_MESSAGE)
+MSG_TARGET = Target Build: $(TARGET)
+MSG_DEBUG = Debug level: $(DEBUG_LEVEL), FSFW Debugging: $(DEBUG_MESSAGE)
 
 # including the dependency files
 # make will rebuild included makefiles if it can.
 # As we supplied a rule for the dependency files
 # it will rebuild them before including them
 
+
+# Flags for the linker call
+# - specs=nosys.specs: this library contains system calls such as _sbrk(); 
+#   without this library system calls are not enabled an functions like malloc
+#   will not work	 
+# - specs=nano.specs: links the reduced-size variant of the libc, called newlib-nano
+# - LINK_INCLUDES: Specify the path to used libraries and the linker script
+# - LINK_LIBRARIES: Link HCC and HAL library and enable float support
+
+# LDFLAGS = -Wl,-L, $(DEBUG_LEVEL) $(MCU_FLAG) $(UNUSED_CODE_REMOVAL) $(OPTIMIZATION) \
+		$(LINK_TIME_OPTIMIZATION) $(NEWLIB_NANO) 
+LDFLAGS = -Wl,-L, $(DEBUG_LEVEL) $(MCU_FLAGS) $(UNUSED_CODE_REMOVAL) $(OPTIMIZATION) \
+		$(LINK_TIME_OPTIMIZATION) $(NEWLIB_NANO) 
+LINK_INCLUDES = -T"$(BSP_PATH)/linker.ld" \
+		-Wl,-Map=$(BINDIR)/$(BINARY_NAME).map
+LINK_LIBRARIES = -lc -lm
+
 .PHONY: clean all
 #-------------------------------------------------------------------------------
 #		Rules
 #-------------------------------------------------------------------------------
+default: all
 
 # building the binary
-all: $(BUILDDIR)/$(BINARY_NAME).bin
+all: debug
 
-#$(BUILDDIR) $(DEPENDDIR):
-#	mkdir $@
 clean:
 	-rm -rf $(BUILDPATH)/$(BOARD)
 	-rm -rf $(DEPENDPATH)/$(BOARD)
 	-rm -rf $(OBJECTPATH)/$(BOARD)
 
-$(BUILDDIR)/$(BINARY_NAME).bin: $(BUILDDIR)/$(BINARY_NAME).elf
-	@echo
-	@echo $(MSG_BINARY)
-	@mkdir -p $(@D)
-	$(BINCOPY) $< $@	
+hardclean:
+	-rm -rf $(BUILDPATH)
+	-rm -rf $(DEPENDPATH)
+	-rm -rf $(OBJECTPATH)
 
-$(BUILDDIR)/$(BINARY_NAME).hex: $(BUILDDIR)/$(BINARY_NAME).elf
+debug virtual mission: executable
+
+# Build target configuration, which also includes information output.
+# See: https://www.gnu.org/software/make/manual/html_node/Target_002dspecific.html
+# Link time optimization is added in the rules to disable it for certain source files
+mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION)
+# Link time optimization can lead to issues, so  if there is an issue with the
+# mission binary, try to disable it to see if that fixes the problem.
+mission: LINK_TIME_OPTIMIZATION = -flto
+mission: TARGET = Mission binary
+mission: OPTIMIZATION_MESSAGE = On with Link Time Optimization.
+mission: DEBUG_LEVEL = -g0
+
+debug: CXXDEFINES += -DDEBUG
+debug: DEBUG_MESSAGE = On
+debug: DEBUG_LEVEL = -g3
+
+executable: $(BINDIR)/$(BINARY_NAME).bin
+
+# SHOW_DETAILS = 1
+
+$(BINDIR)/$(BINARY_NAME).bin: $(BINDIR)/$(BINARY_NAME).elf
+	@echo
+	@echo $(MSG_INFO)
+	@echo $(MSG_TARGET)
+	@echo $(MSG_OPTIMIZATION)
+	@echo $(MSG_DEBUG)
+	@echo $(MSG_BINARY) $@
+	@mkdir -p $(@D)
+	$(BINCOPY) $< $@
+ifeq ($(OS),Windows_NT)
+	@echo Binary Size: `busybox stat -c %s $@` bytes
+else
+	@stat --printf='Binary Size: %s bytes' $@
+endif
+	@echo	
+
+$(BINDIR)/$(BINARY_NAME).hex: $(BINDIR)/$(BINARY_NAME).elf
 	$(HEXCOPY) $< $@
 
-$(BUILDDIR)/$(BINARY_NAME).elf: $(addprefix $(OBJECTDIR)/, $(OBJ))
+$(BINDIR)/$(BINARY_NAME).elf: $(addprefix $(OBJECTDIR)/, $(OBJ))
 	@echo
-	@echo $(MSG_LINKING)
+	@echo $(MSG_LINKING) Target $@
 	@mkdir -p $(@D)
-	@$(CXX) -Wl,-L, -specs=nosys.specs $(MCU) -T "$(BSP_PATH)/linker.ld" $(LIBS) -o $@ $^
+ifdef SHOW_DETAILS
+	$(CXX) $(LDFLAGS) $(LINK_INCLUDES) -o $@ $^ $(LINK_LIBRARIES)
+else
+	@$(CXX) $(LDFLAGS) $(LINK_INCLUDES) -o $@ $^ $(LINK_LIBRARIES)
+endif
 	@echo $@ was generated.
 
 $(OBJECTDIR)/%.o : %.cpp
@@ -257,20 +348,32 @@ $(OBJECTDIR)/%.o : %.cpp $(DEPENDDIR)/%.d | $(DEPENDDIR)
 	@echo
 	@echo $(MSG_COMPILING) $<
 	@mkdir -p $(@D)
+ifdef SHOW_DETAILS
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $(<:.d=.cpp)
+else
 	@$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $(<:.d=.cpp)
+endif
 
 $(OBJECTDIR)/%.o : %.c
 $(OBJECTDIR)/%.o : %.c $(DEPENDDIR)/%.d | $(DEPENDDIR)
 	@echo
 	@echo $(MSG_COMPILING) $<
 	@mkdir -p $(@D)
+ifdef SHOW_DETAILS
+	$(CC) $(CXXFLAGS) $(CFLAGS) -c -o $@ $(<:.d=.c)
+else
 	@$(CC) $(CXXFLAGS) $(CFLAGS) -c -o $@ $(<:.d=.c)
+endif
 
 $(OBJECTDIR)/%.o : %.s 
 	@echo
 	@echo $(MSG_ASSEMBLING) $<
 	@mkdir -p $(@D)
-	@$(AS) $(CPUFLAG) -c -o $@ $<
+ifdef SHOW_DETAILS
+	$(AS) $(MCU_FLAGS) -c -o $@ $<
+else
+	@$(AS) $(MCU_FLAGS) -c -o $@ $<
+endif
 
 #-------------------------------------------------------------------------------
 #		Dependency Handling
