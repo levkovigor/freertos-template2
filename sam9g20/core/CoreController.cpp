@@ -58,8 +58,23 @@ void CoreController::performControlOperation() {
 #endif
 
     uint32_t currentUptimeSeconds = 0;
-    Clock::getUptime(&currentUptimeSeconds);
+#ifdef AT91SAM9G20_EK
+    currentUptimeSeconds = RTT_GetTime();
+    sif::info << "Current uptime: " << std::endl;
+#else
+    uint32_t uptimeMs = 0;
+    Clock::getUptime(&uptimeMs);
+    // only check for overflow after software init complete (around 2 seconds)
+    if(config::softwareInitializationComplete and uptimeMs <= lastUptimeMs) {
+    	secondOverflowCounter++;
+    }
+    /* Millisecond count can overflow regularly */
     currentUptimeSeconds /= configTICK_RATE_HZ;
+
+    lastUptimeMs = uptimeMs;
+    currentUptimeSeconds = (secondOverflowCounter-1) * 4294967.296 +
+    		currentUptimeSeconds;
+#endif
 
     /* Dynamic memory allocation is only allowed at software startup */
 #if OBSW_MONITOR_ALLOCATION == 1
@@ -71,9 +86,9 @@ void CoreController::performControlOperation() {
 
     /* Check for overflows of 10kHz 32bit counter regularly
     (currently every day). */
-    if(currentUptimeSeconds - lastCounterUpdateSeconds >= DAY_IN_SECONDS) {
+    if(currentUptimeSeconds - lastFastCounterUpdateSeconds >= DAY_IN_SECONDS) {
         update64bitCounter();
-        lastCounterUpdateSeconds = currentUptimeSeconds;
+        lastFastCounterUpdateSeconds = currentUptimeSeconds;
     }
 #ifdef ISIS_OBC_G20
     // Store current uptime in seconds in FRAM, using the FRAM handler.

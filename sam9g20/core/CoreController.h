@@ -71,7 +71,12 @@ private:
 
 	uint32_t lastDumpSecond = 0;
 
-	uint32_t lastCounterUpdateSeconds = 0;
+#ifdef ISIS_OBC_G20
+	uint16_t secondOverflowCounter = 0;
+	uint32_t lastUptimeMs = 0;
+#endif
+
+	uint32_t lastFastCounterUpdateSeconds = 0;
 	static uint32_t counterOverflows;
 	static uint32_t idleCounterOverflows;
 	uint32_t last32bitCounterValue = 0;
