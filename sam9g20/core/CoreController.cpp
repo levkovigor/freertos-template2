@@ -26,24 +26,38 @@ extern "C" {
 
 uint32_t CoreController::counterOverflows = 0;
 uint32_t CoreController::idleCounterOverflows = 0;
+uint32_t CoreController::uptimeSeconds = 0;
+MutexIF* CoreController::timeMutex = nullptr;
 
 CoreController::CoreController(object_id_t objectId,
         object_id_t systemStateTaskId):
         ExtendedControllerBase(objectId, objects::NO_OBJECT),
         systemStateTaskId(systemStateTaskId) {
+	timeMutex = MutexFactory::instance()->createMutex();
 #ifdef ISIS_OBC_G20
     sif::info << "CoreController: Starting Supervisor component." << std::endl;
     Supervisor_start(nullptr, 0);
 #endif
 }
 
+uint32_t CoreController::getUptimeSeconds() {
+	MutexHelper(timeMutex, MutexIF::TimeoutType::WAITING, 20);
+	return uptimeSeconds;
+}
+
+void CoreController::performControlOperation() {
+    // First task: Supervisor handling.
+	performSupervisorHandling();
+	// Second task: All time related handling.
+    performPeriodicTimeHandling();
+}
+
 ReturnValue_t CoreController::handleCommandMessage(CommandMessage *message) {
     return CommandMessageIF::UNKNOWN_COMMAND;
 }
 
-void CoreController::performControlOperation() {
 
-    // First task: get supervisor state
+void CoreController::performSupervisorHandling() {
 #ifdef ISIS_OBC_G20
     int result = Supervisor_getHousekeeping(&supervisorHk, SUPERVISOR_INDEX);
     if(result != 0) {
@@ -56,30 +70,12 @@ void CoreController::performControlOperation() {
     // now store everything into a local pool. Also take action if any values
     // are out of order.
 #endif
-
-    performPeriodicTimeHandling();
 }
 
 void CoreController::performPeriodicTimeHandling() {
-    uint32_t currentUptimeSeconds = 0;
-#ifdef AT91SAM9G20_EK
-    // We can only use RTT on the AT91, on the iOBC it will be reset
-    // constantly.
-    currentUptimeSeconds = RTT_GetTime();
-#else
-    uint32_t uptimeMs = 0;
-    Clock::getUptime(&uptimeMs);
-    // only check for overflow after software init complete (around 2 seconds)
-    if(uptimeMs <= lastUptimeMs) {
-    	msOverflowCounter++;
-    }
-    /* Millisecond count can overflow regularly */
-    currentUptimeSeconds /= configTICK_RATE_HZ;
-
-    lastUptimeMs = uptimeMs;
-    currentUptimeSeconds = msOverflowCounter * 4294967.296 +
-    		currentUptimeSeconds;
-#endif
+    timeMutex->lockMutex(MutexIF::TimeoutType::WAITING, 20);
+    uint32_t currentUptimeSeconds = updateSecondsCounter();
+    timeMutex->unlockMutex();
 
     /* Dynamic memory allocation is only allowed at software startup */
 #if OBSW_MONITOR_ALLOCATION == 1
@@ -107,6 +103,31 @@ void CoreController::performPeriodicTimeHandling() {
     // todo: compare FSFW clock with RTT clock and sync FSFW clock to RTT
     // clock if drift is too high.
 #endif
+}
+
+uint32_t CoreController::updateSecondsCounter() {
+	uint32_t currentUptimeSeconds = 0;
+#ifdef AT91SAM9G20_EK
+    // We can only use RTT on the AT91, on the iOBC it will be reset
+    // constantly.
+    uptimeSeconds = RTT_GetTime();
+#else
+    /* Millisecond count can overflow regularly */
+    uint32_t uptimeMs = 0;
+    Clock::getUptime(&uptimeMs);
+
+    // I am just going to assume that the first uptime encountered is going
+    // to be larger than 0 milliseconds.
+    if(uptimeMs <= lastUptimeMs) {
+    	msOverflowCounter++;
+    }
+    currentUptimeSeconds /= configTICK_RATE_HZ;
+
+    lastUptimeMs = uptimeMs;
+    uptimeSeconds = msOverflowCounter * 4294967.296 +
+    		currentUptimeSeconds;
+#endif
+    return uptimeSeconds;
 }
 
 ReturnValue_t CoreController::checkModeCommand(Mode_t mode, Submode_t submode,

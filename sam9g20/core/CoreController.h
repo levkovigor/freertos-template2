@@ -48,6 +48,8 @@ public:
 	ReturnValue_t initialize() override;
 	ReturnValue_t initializeAfterTaskCreation() override;
 
+	static uint32_t getUptimeSeconds();
+
 	/**
 	 * This returns the 64bit value of a 10kHz counter.
 	 * @return
@@ -61,6 +63,14 @@ public:
 
 private:
 
+	//! Uptime second counter which will also be checked for overflows.
+	static uint32_t uptimeSeconds;
+	static uint32_t counterOverflows;
+	static uint32_t idleCounterOverflows;
+
+	SystemStateTask* systemStateTask = nullptr;
+	static MutexIF* timeMutex;
+
 #ifdef ISIS_OBC_G20
 	FRAMHandler* framHandler = nullptr;
 	supervisor_housekeeping_t supervisorHk;
@@ -72,15 +82,13 @@ private:
 
 	object_id_t systemStateTaskId = objects::NO_OBJECT;
 
+	void performSupervisorHandling();
 	void performPeriodicTimeHandling();
+	uint32_t updateSecondsCounter();
 
 	uint32_t lastFastCounterUpdateSeconds = 0;
-	static uint32_t counterOverflows;
-	static uint32_t idleCounterOverflows;
 	uint32_t last32bitCounterValue = 0;
 	uint32_t last32bitIdleCounterValue = 0;
-
-	SystemStateTask* systemStateTask = nullptr;
 
 	void update64bit10kHzCounter();
 	ReturnValue_t setUpSystemStateTask();
