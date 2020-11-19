@@ -57,22 +57,27 @@ void CoreController::performControlOperation() {
     // are out of order.
 #endif
 
+    performPeriodicTimeHandling();
+}
+
+void CoreController::performPeriodicTimeHandling() {
     uint32_t currentUptimeSeconds = 0;
 #ifdef AT91SAM9G20_EK
+    // We can only use RTT on the AT91, on the iOBC it will be reset
+    // constantly.
     currentUptimeSeconds = RTT_GetTime();
-    sif::info << "Current uptime: " << std::endl;
 #else
     uint32_t uptimeMs = 0;
     Clock::getUptime(&uptimeMs);
     // only check for overflow after software init complete (around 2 seconds)
-    if(config::softwareInitializationComplete and uptimeMs <= lastUptimeMs) {
-    	secondOverflowCounter++;
+    if(uptimeMs <= lastUptimeMs) {
+    	msOverflowCounter++;
     }
     /* Millisecond count can overflow regularly */
     currentUptimeSeconds /= configTICK_RATE_HZ;
 
     lastUptimeMs = uptimeMs;
-    currentUptimeSeconds = (secondOverflowCounter-1) * 4294967.296 +
+    currentUptimeSeconds = msOverflowCounter * 4294967.296 +
     		currentUptimeSeconds;
 #endif
 
@@ -87,7 +92,7 @@ void CoreController::performControlOperation() {
     /* Check for overflows of 10kHz 32bit counter regularly
     (currently every day). */
     if(currentUptimeSeconds - lastFastCounterUpdateSeconds >= DAY_IN_SECONDS) {
-        update64bitCounter();
+        update64bit10kHzCounter();
         lastFastCounterUpdateSeconds = currentUptimeSeconds;
     }
 #ifdef ISIS_OBC_G20
@@ -172,7 +177,7 @@ uint64_t CoreController::getTotalIdleRunTimeCounter() {
 #endif
 }
 
-void CoreController::update64bitCounter() {
+void CoreController::update64bit10kHzCounter() {
 #if configGENERATE_RUN_TIME_STATS == 1
     uint32_t currentCounter = vGetCurrentTimerCounterValue();
     uint32_t currentIdleCounter = ulTaskGetIdleRunTimeCounter();
@@ -278,7 +283,7 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
         retval = update_seconds_since_epoch(secSinceEpoch);
     }
 
-    sif::info << "CoreController: Setting initial clock." << std::endl;
+    //sif::info << "CoreController: Setting initial clock." << std::endl;
 
     timeval currentTime;
 

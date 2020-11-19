@@ -65,16 +65,14 @@ private:
 	FRAMHandler* framHandler = nullptr;
 	supervisor_housekeeping_t supervisorHk;
 	int16_t adcValues[SUPERVISOR_NUMBER_OF_ADC_CHANNELS] = {0};
-#endif
 
-	object_id_t systemStateTaskId;
-
-	uint32_t lastDumpSecond = 0;
-
-#ifdef ISIS_OBC_G20
-	uint16_t secondOverflowCounter = 0;
+	uint16_t msOverflowCounter = 0;
 	uint32_t lastUptimeMs = 0;
 #endif
+
+	object_id_t systemStateTaskId = objects::NO_OBJECT;
+
+	void performPeriodicTimeHandling();
 
 	uint32_t lastFastCounterUpdateSeconds = 0;
 	static uint32_t counterOverflows;
@@ -84,7 +82,7 @@ private:
 
 	SystemStateTask* systemStateTask = nullptr;
 
-	void update64bitCounter();
+	void update64bit10kHzCounter();
 	ReturnValue_t setUpSystemStateTask();
 	ReturnValue_t initializeIsisTimerDrivers();
 	void generateStatsCsvAndCheckStack();
