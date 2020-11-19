@@ -19,7 +19,7 @@ extern "C" {
 }
 
 #include <utility/exithandler.h>
-#include "../boardconfig/portwrapper.h"
+#include <portwrapper.h>
 #include <utility/compile_time.h>
 #include <cinttypes>
 
