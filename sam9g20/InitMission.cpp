@@ -395,7 +395,7 @@ void initTasks(void) {
     }
 #if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1
     sif::info << "Allocated size by new function: " << allocatedSize
-            << std::endl;
+            << " bytes." << std::endl;
 #endif
     sif::info << "Tasks started." << std::endl;
 }

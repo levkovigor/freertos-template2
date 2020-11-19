@@ -8,7 +8,7 @@
 
 
 TestEchoComIF::TestEchoComIF(object_id_t object_id_, bool initFunnel):
-	SystemObject(object_id_) {
+	SystemObject(object_id_), replyBuffer(100) {
 	if(initFunnel) {
 		funnel = objectManager->get<AcceptsTelemetryIF>(objects::TM_FUNNEL);
 		if (funnel != nullptr) {
@@ -23,16 +23,12 @@ TestEchoComIF::TestEchoComIF(object_id_t object_id_, bool initFunnel):
 TestEchoComIF::~TestEchoComIF() {}
 
 ReturnValue_t TestEchoComIF::initializeInterface(CookieIF * cookie) {
+	// We could set the correct vector size here.
 	return RETURN_OK;
 }
 
 ReturnValue_t TestEchoComIF::sendMessage(CookieIF *cookie, const uint8_t * sendData,
 		size_t sendLen) {
-	// DummyCookie * dummyCookie = dynamic_cast<DummyCookie*>(cookie);
-    replyBuffer.reserve(sendLen);
-    if(sendLen != replyBuffer.size()) {
-        replyBuffer.shrink_to_fit();
-    }
 	memcpy(replyBuffer.data(),sendData, sendLen);
 	dummyBufferSize = sendLen;
 	return RETURN_OK;

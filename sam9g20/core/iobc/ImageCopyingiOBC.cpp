@@ -117,23 +117,26 @@ ReturnValue_t ImageCopyingEngine::handleObswErasure() {
         else {
             currentFileSize = f_filelength(config::SW_UPDATE_SLOT_NAME);
         }
-        helperFlag1 = true;
-        helperCounter1 = 0;
-        uint8_t requiredBlocks = 0;
-        if(currentFileSize <=  NORFLASH_TOTAL_SMALL_SECTOR_MEM_OBSW) {
-        	requiredBlocks = std::ceil(
-        			static_cast<float>(currentFileSize) /
-					(NORFLASH_SMALL_SECTOR_SIZE));
-        }
-        else {
-        	requiredBlocks = RESERVED_OBSW_SMALL_SECTORS;
-        	requiredBlocks += std::ceil(
-        			static_cast<float>(currentFileSize -
-        					NORFLASH_TOTAL_SMALL_SECTOR_MEM_OBSW) /
-							(NORFLASH_LARGE_SECTOR_SIZE));
-        }
 
-        helperCounter1 = requiredBlocks;
+//        helperCounter1 = 0;
+//        uint8_t requiredBlocks = 0;
+//        if(currentFileSize <=  NORFLASH_TOTAL_SMALL_SECTOR_MEM_OBSW) {
+//        	requiredBlocks = std::ceil(
+//        			static_cast<float>(currentFileSize) /
+//					(NORFLASH_SMALL_SECTOR_SIZE));
+//        }
+//        else {
+//        	requiredBlocks = RESERVED_OBSW_SMALL_SECTORS;
+//        	requiredBlocks += std::ceil(
+//        			static_cast<float>(currentFileSize -
+//        					NORFLASH_TOTAL_SMALL_SECTOR_MEM_OBSW) /
+//							(NORFLASH_LARGE_SECTOR_SIZE));
+//        }
+
+         helperFlag1 = true;
+         uint8_t requiredBlocks = NORFLASH_SECTORS_NUMBER -
+        		 RESERVED_BL_SMALL_SECTORS;
+         helperCounter1 = requiredBlocks;
     }
 
     while(stepCounter < helperCounter1) {
@@ -199,17 +202,6 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
                     << " Bytes read smaller than size to read!" << std::endl;
             return HasReturnvaluesIF::RETURN_FAILED;
         }
-    }
-
-    // We may not write image size at the sixth ARM vector for the
-    // bootloader. I don't know why..
-    if(stepCounter == 0 and not bootloader) {
-        // We will write the size of the binary to the
-        // sixth ARM vector (see p.72 SAM9G20 datasheet)
-        // This will help for our custom bootloader to find out
-        // how big the binary is.
-        std::memcpy(imgBuffer->data() + 0x14, &currentFileSize,
-                sizeof(uint32_t));
     }
 
     helperFlag1 = true;

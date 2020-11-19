@@ -6,6 +6,7 @@
 
 #include <sam9g20/memory/SDCardApi.h>
 #include <sam9g20/common/FRAMApi.h>
+#include <sam9g20/common/watchdog.h>
 
 #include <board.h>
 #include <AT91SAM9G20.h>
@@ -61,9 +62,9 @@ int iobc_norflash() {
     //-------------------------------------------------------------------------
     // Initiate watchdog for iOBC
     //-------------------------------------------------------------------------
-    int retval = WDT_startWatchdogKickTask(
-            WATCHDOG_KICK_INTERVAL_MS / portTICK_RATE_MS, FALSE);
-    if(retval != 0) {
+    BaseType_t retval = startCustomIsisWatchdogTask(WATCHDOG_KICK_INTERVAL_MS,
+    		true);
+    if(retval != pdTRUE) {
 #if DEBUG_IO_LIB == 1
         TRACE_ERROR("Starting iOBC Watchdog Feed Task failed!\r\n");
 #endif
@@ -211,19 +212,12 @@ void perform_bootloader_check() {
 void initialize_all_iobc_peripherals() {
     RTT_start();
 
-    // Those two fail. I don't know why yet.
-//    int result = SPI_start(bus0_spi, 0);
-//    if(result != 0) {
-//        // This should not happen!
-//        TRACE_ERROR("initialize_iobc_peripherals: Could not start "
-//        		"SPI, code %d!\n\r", result);
-//    }
-//    result = FRAM_start();
-//    if(result != 0) {
-//        // This should not happen!
-//        TRACE_ERROR("initialize_iobc_peripherals: Could not start "
-//        		"FRAM, code %d!\n\r", result);
-//    }
+    int result = FRAM_start();
+    if(result != 0) {
+        // This should not happen!
+        TRACE_ERROR("initialize_iobc_peripherals: Could not start "
+        		"FRAM, code %d!\n\r", result);
+    }
 }
 
 

@@ -19,31 +19,45 @@ extern "C" {
 }
 
 #include <utility/exithandler.h>
-#include <utility/portwrapper.h>
+#include <portwrapper.h>
 #include <utility/compile_time.h>
 #include <cinttypes>
 
 
 uint32_t CoreController::counterOverflows = 0;
 uint32_t CoreController::idleCounterOverflows = 0;
+uint32_t CoreController::uptimeSeconds = 0;
+MutexIF* CoreController::timeMutex = nullptr;
 
 CoreController::CoreController(object_id_t objectId,
         object_id_t systemStateTaskId):
         ExtendedControllerBase(objectId, objects::NO_OBJECT),
         systemStateTaskId(systemStateTaskId) {
+	timeMutex = MutexFactory::instance()->createMutex();
 #ifdef ISIS_OBC_G20
     sif::info << "CoreController: Starting Supervisor component." << std::endl;
     Supervisor_start(nullptr, 0);
 #endif
 }
 
+uint32_t CoreController::getUptimeSeconds() {
+	MutexHelper(timeMutex, MutexIF::TimeoutType::WAITING, 20);
+	return uptimeSeconds;
+}
+
+void CoreController::performControlOperation() {
+    // First task: Supervisor handling.
+	performSupervisorHandling();
+	// Second task: All time related handling.
+    performPeriodicTimeHandling();
+}
+
 ReturnValue_t CoreController::handleCommandMessage(CommandMessage *message) {
     return CommandMessageIF::UNKNOWN_COMMAND;
 }
 
-void CoreController::performControlOperation() {
 
-    // First task: get supervisor state
+void CoreController::performSupervisorHandling() {
 #ifdef ISIS_OBC_G20
     int result = Supervisor_getHousekeeping(&supervisorHk, SUPERVISOR_INDEX);
     if(result != 0) {
@@ -56,11 +70,12 @@ void CoreController::performControlOperation() {
     // now store everything into a local pool. Also take action if any values
     // are out of order.
 #endif
+}
 
-
-    /* the second counter will take 4-5 years to overflow which exceeds
-    mission time. */
-    uint32_t currentUptimeSeconds = RTT_GetTime();
+void CoreController::performPeriodicTimeHandling() {
+    timeMutex->lockMutex(MutexIF::TimeoutType::WAITING, 20);
+    uint32_t currentUptimeSeconds = updateSecondsCounter();
+    timeMutex->unlockMutex();
 
     /* Dynamic memory allocation is only allowed at software startup */
 #if OBSW_MONITOR_ALLOCATION == 1
@@ -72,14 +87,14 @@ void CoreController::performControlOperation() {
 
     /* Check for overflows of 10kHz 32bit counter regularly
     (currently every day). */
-    if(currentUptimeSeconds - lastCounterUpdateSeconds >= DAY_IN_SECONDS) {
-        update64bitCounter();
-        lastCounterUpdateSeconds = currentUptimeSeconds;
+    if(currentUptimeSeconds - lastFastCounterUpdateSeconds >= DAY_IN_SECONDS) {
+        update64bit10kHzCounter();
+        lastFastCounterUpdateSeconds = currentUptimeSeconds;
     }
 #ifdef ISIS_OBC_G20
     // Store current uptime in seconds in FRAM, using the FRAM handler.
-    result = update_seconds_since_epoch(currentUptimeSeconds);
-    if( result != 0) {
+    int result = update_seconds_since_epoch(currentUptimeSeconds);
+    if(result != 0) {
         // should not happen!
     }
 
@@ -88,6 +103,31 @@ void CoreController::performControlOperation() {
     // todo: compare FSFW clock with RTT clock and sync FSFW clock to RTT
     // clock if drift is too high.
 #endif
+}
+
+uint32_t CoreController::updateSecondsCounter() {
+	uint32_t currentUptimeSeconds = 0;
+#ifdef AT91SAM9G20_EK
+    // We can only use RTT on the AT91, on the iOBC it will be reset
+    // constantly.
+    uptimeSeconds = RTT_GetTime();
+#else
+    /* Millisecond count can overflow regularly */
+    uint32_t uptimeMs = 0;
+    Clock::getUptime(&uptimeMs);
+
+    // I am just going to assume that the first uptime encountered is going
+    // to be larger than 0 milliseconds.
+    if(uptimeMs <= lastUptimeMs) {
+    	msOverflowCounter++;
+    }
+    currentUptimeSeconds /= configTICK_RATE_HZ;
+
+    lastUptimeMs = uptimeMs;
+    uptimeSeconds = msOverflowCounter * 4294967.296 +
+    		currentUptimeSeconds;
+#endif
+    return uptimeSeconds;
 }
 
 ReturnValue_t CoreController::checkModeCommand(Mode_t mode, Submode_t submode,
@@ -158,7 +198,7 @@ uint64_t CoreController::getTotalIdleRunTimeCounter() {
 #endif
 }
 
-void CoreController::update64bitCounter() {
+void CoreController::update64bit10kHzCounter() {
 #if configGENERATE_RUN_TIME_STATS == 1
     uint32_t currentCounter = vGetCurrentTimerCounterValue();
     uint32_t currentIdleCounter = ulTaskGetIdleRunTimeCounter();
@@ -264,7 +304,7 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
         retval = update_seconds_since_epoch(secSinceEpoch);
     }
 
-    sif::info << "CoreController: Setting initial clock." << std::endl;
+    //sif::info << "CoreController: Setting initial clock." << std::endl;
 
     timeval currentTime;
 
