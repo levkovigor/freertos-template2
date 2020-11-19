@@ -90,6 +90,7 @@ public:
         MessageQueueId_t commandedBy, const uint8_t* data,
         size_t size) override;
 
+#ifdef ISIS_OBC_G20
     /**
      * Other software components can use the SD card as well without using
      * the SD card handler as the HCC library can process the requests of
@@ -103,6 +104,7 @@ public:
      * @param queueId
      */
     void subscribeForSdCardNotifications(MessageQueueId_t queueId);
+#endif
 
     // Useful functions for development
     static ReturnValue_t printRepository(const char* repository);
@@ -123,7 +125,10 @@ private:
     MessageQueueIF* commandQueue;
     ActionHelper actionHelper;
     Countdown* countdown;
+
+#ifdef ISIS_OBC_G20
     std::vector<MessageQueueId_t> sdCardNotificationRecipients;
+#endif
 
     PeriodicTaskIF* executingTask = nullptr;
     dur_millis_t periodMs = 0;
