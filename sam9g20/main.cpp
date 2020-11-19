@@ -7,6 +7,7 @@ extern "C"{
 #if defined(AT91SAM9G20_EK)
 #include <led_ek.h>
 #else
+#include <hal/Drivers/LED.h>
 #endif
 
 #include <at91/peripherals/pio/pio.h>
@@ -43,6 +44,7 @@ void configureEk(void);
 
 // This will be the entry to the mission specific code
 void initMission();
+BaseType_t startCustomIsisWatchdogTask(bool toggleLed1);
 void initTask(void * args);
 
 #ifdef ISIS_OBC_G20
@@ -58,8 +60,7 @@ int main(void)
 	// Task with the sole purpose of kicking the watchdog to prevent
 	// an iOBC restart. This should be done as soon as possible and before
     // anything is printed.
-	int retval = WDT_startWatchdogKickTask(
-			WATCHDOG_KICK_INTERVAL_MS / portTICK_RATE_MS, TRUE);
+    int retval = startCustomIsisWatchdogTask(true);
 	if(retval != 0) {
 		TRACE_ERROR("Starting iOBC Watchdog Feed Task failed!\r\n");
 	}
@@ -75,8 +76,6 @@ int main(void)
 
     // Kick might be necessary if initTask suppresses watchdog task for too long
 #ifdef ISIS_OBC_G20
-    // WDT_forceKick();
-
     // Core Task. Custom interrupts should be configured inside a task.
     xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, 6, nullptr);
 #else
@@ -106,5 +105,30 @@ void ConfigureLeds(void)
 /* Configure PIO for evaluation board. */
 void configureEk(void) {
 
+}
+#endif
+
+#ifdef ISIS_OBC_G20
+void customWatchdogKickTask(void* args);
+
+/* Custom watchdog task which has maximum priority
+to make use of task preemption */
+BaseType_t startCustomIsisWatchdogTask(bool toggleLed1) {
+	return xTaskCreate(customWatchdogKickTask, "WDT_TASK",
+			256, (void*) toggleLed1,configMAX_PRIORITIES - 1, nullptr);
+}
+
+void customWatchdogKickTask(void* args) {
+	bool toggleLed1 = (bool) args;
+	if(toggleLed1) {
+	    LED_start();
+	}
+	while(1) {
+		WDT_forceKick();
+		if(toggleLed1) {
+			LED_toggle(led_1);
+		}
+		vTaskDelay(WATCHDOG_KICK_INTERVAL_MS);
+	}
 }
 #endif
