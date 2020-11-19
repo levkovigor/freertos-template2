@@ -31,6 +31,7 @@ in the QEMU documentation.
 [Prerequisites](#prerequisites)<br>
 [Building the software](#building-the-software)<br>
 [Setting up prerequisites](#setting-up-prerequisites)<br>
+[Project specific information](#project-specific-information)<br>
 
 **Specific documentation**<br>
 [Installing and setting up Eclipse](doc/README-eclipse.md#top)<br>
@@ -193,4 +194,29 @@ To install general buildtools for the linux binary, run:
 ```sh
 sudo apt-get install build-essential
 ```
+
+## Project Specific Information
+
+There are some important differences of this project compared to the project files and configuration provided by ISIS. Some important differences will be documented and listed here.
+
+#### C++
+C++ is used in this project. To allow this, some important changes in the linkerscript files and the start up files were necessary. The most important change includes specifying `fini`, `init`,`.preinit_array`, `.init_array` and `.fini_array` sections. In the startup file `__libc_init_array` is called before branching to main to ensure all global constructors are called.
+
+### FSFW
+
+This project uses the FSFW flight-proven small satellite framework. The framewokr provides many components and modules to easy development. Examples include an object manager, an abstraction layer for FreeRTOS, a PUS stack for TMTC commanding using the ECSS PUS standard and a lot more. More information can be found at the [FSFW](https://egit.irs.uni-stuttgart.de/fsfw/fsfw) website.
+
+#### FreeRTOS
+
+It is possible to use a newer version of FreeRTOS. The ISIS libraries still use the API of FreeRTOS 7.5.3. A newer FreeRTOS can be used as long as the old API calls are still provided and forwarded to the new API. The function implementation is contained within the `isisAdditions.c` source file while the ISIS change log in the document folder contains more specific information.
+
+Please note that the configuration option `configUSE_NEWLIB_REENTRANT` was set tone as well to ensure that newlib nano can be used in a thread-safe manner. Functon implementations for `__malloc_lock` and `__malloc\_unlock` were provided as well to ensure thread-safety when using newlib nano with FreeRTOS. This project also uses the `heap4.c` FreeRTOS memory management scheme.
+
+#### Pre-emptive scheduling
+
+ISIS default FreeRTOS configuration uses a cooperative scheduler and their documents specify that this is due "higher requirements to data contention management". It is not exactly known what this means, but there have been no issues with using a pre-emptive scheduler so far.
+
+#### Newlib Nano
+
+Newlib Nano is used as the a library for embedded systems. This reduces the binary size as well
 
