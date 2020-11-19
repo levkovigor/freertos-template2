@@ -1,4 +1,5 @@
-#include <sam9g20/utility/portwrapper.h>
+#include "portwrapper.h"
+
 #include <fsfwconfig/OBSWConfig.h>
 
 #include <freertos/FreeRTOS.h>
@@ -37,6 +38,10 @@ void timerOverflowISR(isr_args_t args) {
 	timerOverflowCounter++;
 }
 
+/*
+ * These are implementation of newlib hook functions to make
+ * malloc safe in a FreeRTOS environment.
+ */
 extern "C" void __malloc_lock (struct _reent *reent) {
 #if OBSW_MONITOR_ALLOCATION == 1
 	if(config::softwareInitializationComplete) {

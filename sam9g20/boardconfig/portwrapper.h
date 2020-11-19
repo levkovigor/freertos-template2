@@ -1,5 +1,5 @@
-#ifndef SAM9G20_UTILITY_PORTWRAPPER_H_
-#define SAM9G20_UTILITY_PORTWRAPPER_H_
+#ifndef SAM9G20_BOARDCONFIG_PORTWRAPPER_H_
+#define SAM9G20_BOARDCONFIG_PORTWRAPPER_H_
 
 #include <sam9g20/utility/TCTimerHandler.h>
 #include <cstdint>
@@ -27,4 +27,4 @@ extern "C" uint32_t vGetCurrentTimerCounterValue();
  */
 void timerOverflowISR(isr_args_t isrArgs);
 
-#endif /* SAM9G20_UTILITY_PORTWRAPPER_H_ */
+#endif /* SAM9G20_BOARDCONFIG_PORTWRAPPER_H_ */
