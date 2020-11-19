@@ -197,20 +197,21 @@ sudo apt-get install build-essential
 
 ## Project Specific Information
 
-There are some important differences of this project compared to the project files and configuration provided by ISIS. Some important differences will be documented and listed here.
+There are some important differences of this project compared to the project files and configuration provided by ISIS. Some important differences will be documented and listed here. It should be noted that memory allocation is only performed during start-up and was carefully avoided during run-time to avoid associated problems like non-deterministic behaviour
+and memory fragmentation in the heap.
 
 #### C++
-C++ is used in this project. To allow this, some important changes in the linkerscript files and the start up files were necessary. The most important change includes specifying `fini`, `init`,`.preinit_array`, `.init_array` and `.fini_array` sections. In the startup file `__libc_init_array` is called before branching to main to ensure all global constructors are called.
+C++ is used in this project. To allow this, some important changes in the linkerscript files and the start up files were necessary. The most important change includes specifying `.fini`, `.init`,`.preinit_array`, `.init_array` and `.fini_array` sections. In the startup file `__libc_init_array` is called before branching to main to ensure all global constructors are called.
 
 ### FSFW
 
-This project uses the FSFW flight-proven small satellite framework. The framewokr provides many components and modules to easy development. Examples include an object manager, an abstraction layer for FreeRTOS, a PUS stack for TMTC commanding using the ECSS PUS standard and a lot more. More information can be found at the [FSFW](https://egit.irs.uni-stuttgart.de/fsfw/fsfw) website.
+This project uses the FSFW flight-proven small satellite framework. The framework provides many components and modules to easy development. Examples include an object manager, an abstraction layer for FreeRTOS, a PUS stack for TMTC commanding using the ECSS PUS standard and a lot more. More information can be found at the [FSFW](https://egit.irs.uni-stuttgart.de/fsfw/fsfw) website.
 
 #### FreeRTOS
 
 It is possible to use a newer version of FreeRTOS. The ISIS libraries still use the API of FreeRTOS 7.5.3. A newer FreeRTOS can be used as long as the old API calls are still provided and forwarded to the new API. The function implementation is contained within the `isisAdditions.c` source file while the ISIS change log in the document folder contains more specific information.
 
-Please note that the configuration option `configUSE_NEWLIB_REENTRANT` was set tone as well to ensure that newlib nano can be used in a thread-safe manner. Functon implementations for `__malloc_lock` and `__malloc\_unlock` were provided as well to ensure thread-safety when using newlib nano with FreeRTOS. This project also uses the `heap4.c` FreeRTOS memory management scheme.
+Please note that the configuration option `configUSE_NEWLIB_REENTRANT` was set to one as well to ensure that newlib nano can be used in a thread-safe manner. Functon implementations for `__malloc_lock` and `__malloc_unlock` were provided as well to ensure thread-safety when using newlib nano with FreeRTOS. This project also uses the `heap4.c` FreeRTOS memory management scheme.
 
 #### Pre-emptive scheduling
 
