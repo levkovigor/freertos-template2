@@ -57,10 +57,9 @@ void CoreController::performControlOperation() {
     // are out of order.
 #endif
 
-
-    /* the second counter will take 4-5 years to overflow which exceeds
-    mission time. */
-    uint32_t currentUptimeSeconds = Time_getUptimeSeconds();
+    uint32_t currentUptimeSeconds = 0;
+    Clock::getUptime(&currentUptimeSeconds);
+    currentUptimeSeconds /= configTICK_RATE_HZ;
 
     /* Dynamic memory allocation is only allowed at software startup */
 #if OBSW_MONITOR_ALLOCATION == 1
