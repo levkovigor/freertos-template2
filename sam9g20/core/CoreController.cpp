@@ -1,7 +1,11 @@
 #include "CoreController.h"
+#include "SystemStateTask.h"
+
+#include <fsfwconfig/OBSWConfig.h>
 
 #include <FreeRTOSConfig.h>
-#include <fsfwconfig/OBSWConfig.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/tasks/TaskFactory.h>
@@ -12,10 +16,12 @@
 
 extern "C" {
 #ifdef ISIS_OBC_G20
-#include <hal/Timing/Time.h>
+#include <sam9g20/memory/FRAMHandler.h>
 #include <sam9g20/common/FRAMApi.h>
-#endif
+#include <hal/Timing/Time.h>
+#else
 #include <hal/Timing/RTT.h>
+#endif
 }
 
 #include <utility/exithandler.h>
@@ -106,13 +112,13 @@ void CoreController::performPeriodicTimeHandling() {
 }
 
 uint32_t CoreController::updateSecondsCounter() {
-	uint32_t currentUptimeSeconds = 0;
 #ifdef AT91SAM9G20_EK
     // We can only use RTT on the AT91, on the iOBC it will be reset
     // constantly.
     uptimeSeconds = RTT_GetTime();
 #else
-    /* Millisecond count can overflow regularly */
+    uint32_t currentUptimeSeconds = 0;
+    /* Millisecond count can overflow regularly (around every 50 days) */
     uint32_t uptimeMs = 0;
     Clock::getUptime(&uptimeMs);
 
@@ -124,7 +130,7 @@ uint32_t CoreController::updateSecondsCounter() {
     currentUptimeSeconds /= configTICK_RATE_HZ;
 
     lastUptimeMs = uptimeMs;
-    uptimeSeconds = msOverflowCounter * 4294967.296 +
+    uptimeSeconds = msOverflowCounter * SECONDS_ON_MS_OVERFLOW +
     		currentUptimeSeconds;
 #endif
     return uptimeSeconds;
@@ -185,6 +191,7 @@ uint64_t CoreController::getTotalRunTimeCounter() {
     return static_cast<uint64_t>(counterOverflows) << 32 |
             vGetCurrentTimerCounterValue();
 #else
+    // return 1 for safety (avoid division by zero)
     return 1;
 #endif
 }
@@ -194,6 +201,7 @@ uint64_t CoreController::getTotalIdleRunTimeCounter() {
     return static_cast<uint64_t>(idleCounterOverflows) << 32 |
             ulTaskGetIdleRunTimeCounter();
 #else
+    // return 1 for safety (avoid division by zero)
     return 1;
 #endif
 }

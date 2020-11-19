@@ -1,19 +1,16 @@
 #ifndef SAM9G20_CORE_CORECONTROLLER_H_
 #define SAM9G20_CORE_CORECONTROLLER_H_
 
-#include "SystemStateTask.h"
 #include <fsfw/controller/ExtendedControllerBase.h>
 
 #ifdef ISIS_OBC_G20
-#include <sam9g20/memory/FRAMHandler.h>
 extern "C" {
 #include <hal/supervisor.h>
 }
-#endif
 
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-#include <vector>
+class FRAMHandler;
+#endif
+class SystemStateTask;
 
 /**
  * @brief   Core Controller responsible for monitoring the OBC itself
@@ -26,6 +23,7 @@ public:
     static constexpr uint8_t SUPERVISOR_INDEX = -1;
     static constexpr float RTC_RTT_SYNC_INTERVAL = 0.5;
 	static constexpr uint32_t DAY_IN_SECONDS = 60 * 60 * 24;
+	static constexpr float SECONDS_ON_MS_OVERFLOW = 4294967.296;
 
 	CoreController(object_id_t objectId, object_id_t systemStateTaskId);
 
@@ -48,6 +46,11 @@ public:
 	ReturnValue_t initialize() override;
 	ReturnValue_t initializeAfterTaskCreation() override;
 
+	/**
+	 * This function can be used by other software components as well
+	 * to get a second uptime counter which will not overflow.
+	 * @return
+	 */
 	static uint32_t getUptimeSeconds();
 
 	/**
