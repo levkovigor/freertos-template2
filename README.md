@@ -187,7 +187,7 @@ Install the [GNU ARM toolchain](https://xpack.github.io/arm-none-eabi-gcc/instal
 like explained above, but for Linux, windows build tools not required.
 
 On Linux, the a path can be added to the system variables by adding
-`export PATH=$PATH:<..../@gnu-mcu-eclipse/arm-none-eabi-gcc/<version>/.content/bin>
+`export PATH=$PATH:<..../@gnu-mcu-eclipse/arm-none-eabi-gcc/<version>/.content/bin>`
 to the `.profile` or `.bashrc` file.
    
 To install general buildtools for the linux binary, run:
