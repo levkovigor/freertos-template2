@@ -229,7 +229,7 @@ ReturnValue_t CoreController::initializeAfterTaskCreation() {
      uint32_t new_reboot_counter = 0;
     int retval = increment_reboot_counter(&new_reboot_counter);
     if(retval != 0) {
-        sif::error << "CoreController::initialize: Error verifying the boot"
+        sif::error << "CoreController::initialize: Error incrementing the boot"
                 << " counter!" << std::endl;
     }
     triggerEvent(BOOT_EVENT, new_reboot_counter, 0);
