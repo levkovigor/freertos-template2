@@ -153,7 +153,7 @@ RS232 cable can be used (or UART jumper wires..).
 ## Setting up prerequisites
 
 ### Windows: Installing and setting up the ARM Toolchain
-The installation on windows is very similar, also using the
+The code needs to be compiled for the ARM target system and we will use the
 [GNU ARM Toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/).
 
 1. Install NodeJS LTS. Add nodejs folder (e.g. "C:\Program Files\nodejs\")
@@ -175,13 +175,14 @@ The installation on windows is very similar, also using the
    ```
    
 4. Add arm-none-eabi-gcc binary location in the xPack folder to system variables. 
-   These are usually located in C:\Users\<...>\AppData\Roaming\xPacks\@gnu-mcu-eclipse\arm-none-eabi-gcc\<version>\.content\bin
+   These are usually located in C:\Users\<...>\AppData\Roaming\xPacks\@gnu-mcu-eclipse\arm-none-eabi-gcc\<version>\.content\bin .
+   Alternatively, if you want to keep the environment and the path clean, add it temporarily 
+   with `SET PATH=%PATH%;c:\pathtotoolchain` .  
    
 If you don't want to install nodejs you may go with the 
 [four-command manual installation](https://xpack.github.io/arm-none-eabi-gcc/install/#manual-install). 
 
 ### Linux: Install C++ buildchain on Linux if using Linux
-Will follow. This will install all required tools for C++ compilation and make.
 
 Install the [GNU ARM toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/)
 like explained above, but for Linux, windows build tools not required.

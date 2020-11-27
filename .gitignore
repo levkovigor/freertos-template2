@@ -12,6 +12,8 @@ _dependencies
 
 .project
 .cproject 
+!**/eclipse/.project
+!**/eclipse/.cproject
 .swp 
 
 __pycache__

@@ -156,11 +156,6 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
 #ifdef AT91SAM9G20_EK
         restart();
 #else
-        int retval = increment_reboot_counter(true, true);
-        if(retval != 0) {
-            sif::error << "CoreController::executeAction: "
-                    << "Incrementing reboot counter failed!" << std::endl;
-        }
         supervisor_generic_reply_t reply;
         Supervisor_reset(&reply, SUPERVISOR_INDEX);
 #endif
@@ -170,12 +165,6 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
 #ifdef AT91SAM9G20_EK
         restart();
 #else
-
-        int retval = increment_reboot_counter(true, true);
-        if(retval != 0) {
-            sif::error << "CoreController::executeAction: "
-                    << "Incrementing reboot counter failed!" << std::endl;
-        }
         supervisor_generic_reply_t reply;
         Supervisor_powerCycleIobc(&reply, SUPERVISOR_INDEX);
 #endif
@@ -237,13 +226,17 @@ ReturnValue_t CoreController::initializeAfterTaskCreation() {
     }
 
 #ifdef ISIS_OBC_G20
-    bool bootloaderIncremented = false;
-    int retval = verify_reboot_flag(&bootloaderIncremented);
+     uint32_t new_reboot_counter = 0;
+    int retval = increment_reboot_counter(&new_reboot_counter);
     if(retval != 0) {
-        sif::error << "CoreController::initialize: Error verifying the boot"
+        sif::error << "CoreController::initialize: Error incrementing the boot"
                 << " counter!" << std::endl;
     }
+    triggerEvent(BOOT_EVENT, new_reboot_counter, 0);
+#else
+    triggerEvent(BOOT_EVENT, 0, 0);
 #endif
+
     return initializeIsisTimerDrivers();
 }
 
