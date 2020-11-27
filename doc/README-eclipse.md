@@ -1,6 +1,6 @@
 #  Setting up Eclipse environment for build targets
 
-### General information
+## General information
 Eclipse is a major IDE used for various programming languages. While it might
 be better known as an IDE for Java development, it is possible to develop
 C and C++ code (for Desktop or for microcontrollers) with the right plugins and 
@@ -13,7 +13,7 @@ However, it is also somewhat cumbersome and difficult to set up for beginners.
 Therefore, some recommended starting points will be given to set up Eclipse
 properly for convenient development.
 
-### Installation Eclipse for C/C++ Developers on Windows
+## Installation Eclipse for C/C++ Developers on Windows
 
 1. Install JDK if not installed yet. Eclipse requires 
 [Java SE Platform (JDK)](https://www.oracle.com/technetwork/java/javase/downloads/index.html)
@@ -21,11 +21,29 @@ properly for convenient development.
 3. Go to Menu -> Help -> Eclipse Marketplace and search and install GNU MCU Eclipse
 
 
-### Recommended steps
+## Recommended steps
 
 Makefile projects are generally imported by using File &rarr; New &rarr; Other
 &rarr; Makefile project with existing code and then importing the folder cloned
 from git.
+
+### Pre-Configured project
+
+Perform following steps to use a pre-configured project.
+
+1. Copy the  files `.project` and `.cproject` inside the misc/eclipse folder 
+   into the root of the cloned folder.
+2. Import the project by going to File &rarr; Import &rarr; Existing Projects into Workspace and selecting
+   the cloned folder.
+  
+### Loading Lauch Configurations
+
+It is recommended to load the pre-configured launch configurations
+
+1. Import the launch configurations by going to File &rarr; Import &rarr; Run/Debug &rarr; Launch Configurations
+   and selecting the misc/eclipse folder. Import the launch configurations.
+ 
+### Alternative to pre-configured porject: Manual Configuration
 After that, it is recommended to perform following project configuration steps:
 1. Right click on the project folder in the Project Explorer panel left 
    and go to Properties
