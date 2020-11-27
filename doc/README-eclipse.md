@@ -42,9 +42,11 @@ It is recommended to load the pre-configured launch configurations
 
 1. Import the launch configurations by going to File &rarr; Import &rarr; Run/Debug &rarr; Launch Configurations
    and selecting the misc/eclipse folder. Import the launch configurations.
- 
-### Alternative to pre-configured porject: Manual Configuration
-After that, it is recommended to perform following project configuration steps:
+
+## Alternative to pre-configured porject: Manual Configuration
+
+These steps should not be necessary when the pre-configured project files are used.
+
 1. Right click on the project folder in the Project Explorer panel left 
    and go to Properties
 2. Go to C/C++ General and enable Doxygen as the documentation tool
@@ -67,7 +69,7 @@ a special toolchain:
    
 <img src="./readme_img/eclipse/eclipse_projectexplorer.png" width="50%">
 
-### Example Build Configuration.
+## Example Build Configuration.
 
 <a name="buildtargets"></a>
 The Eclipse environment uses the previously mentioned build targets. 
