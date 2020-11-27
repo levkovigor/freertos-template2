@@ -292,7 +292,7 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
     errorCount = 0;
     helperFlag1 = true;
 
-    if(stepCounter == 0) {
+    if(stepCounter == 0 and bootloader) {
             // We will write the size of the binary to the
             // sixth ARM vector (see p.72 SAM9G20 datasheet)
             // This is only necessary for the bootloader which is copied

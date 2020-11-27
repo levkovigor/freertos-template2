@@ -114,7 +114,7 @@ ReturnValue_t SoftwareImageHandler::initialize() {
 
 ReturnValue_t SoftwareImageHandler::initializeAfterTaskCreation() {
 	countdown = new Countdown(static_cast<float>(
-	        this->executingTask->getPeriodMs()) * 0.85);
+	        this->executingTask->getPeriodMs()) * 0.75);
 	imgCpHelper = new ImageCopyingEngine(this, countdown, &imgBuffer);
 	if(imgCpHelper == nullptr) {
 	    return HasReturnvaluesIF::RETURN_FAILED;
