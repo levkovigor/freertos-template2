@@ -60,7 +60,7 @@ void CoreController::performControlOperation() {
     uint32_t currentUptimeSeconds = 0;
 #ifdef AT91SAM9G20_EK
     currentUptimeSeconds = RTT_GetTime();
-    sif::info << "Current uptime: " << std::endl;
+    sif::info << "Current uptime: " << currentUptimeSeconds << std::endl;
 #else
     uint32_t uptimeMs = 0;
     Clock::getUptime(&uptimeMs);
