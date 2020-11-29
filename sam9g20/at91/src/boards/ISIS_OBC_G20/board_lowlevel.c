@@ -145,7 +145,6 @@ void LowLevelInit(void)
     // because the SAM-BA low level init
     // does not configure the SDRAM correctly!
 
-    // Always run this so SAM-BA boot also works.
 #ifndef sdram
     /* Initialize main oscillator
      ****************************/
