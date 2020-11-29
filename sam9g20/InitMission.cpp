@@ -485,6 +485,8 @@ void* operator new(size_t size) {
 #endif
 #if OBSW_MONITOR_ALLOCATION == 1
     if(config::softwareInitializationComplete) {
+        // To prevent infinite recursion in some cases.
+        config::softwareInitializationComplete = false;
     	sif::error << "Software Initialization complete but memory "
     			<< "is allocated!" << std::endl;
     }

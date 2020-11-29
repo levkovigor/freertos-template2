@@ -292,23 +292,24 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
     errorCount = 0;
     helperFlag1 = true;
 
-    if(stepCounter == 0 and bootloader) {
+    if(stepCounter == 0) {
+        if(bootloader) {
             // We will write the size of the binary to the
             // sixth ARM vector (see p.72 SAM9G20 datasheet)
             // Don't do this for anything else! Messing with the ARM
             // vectors can make optimized applications unstable.
             std::memcpy(imgBuffer->data() + 0x14, &currentFileSize,
                     sizeof(uint32_t));
-        helperCounter1 = 0;
+            helperCounter1 = 0;
+        }
+        else {
+            // This counter will be used to specify written block, and first
+            // block is reserved for bootloader.
+            helperCounter1 = 1;
+        }
+
         helperCounter2 = 0;
         currentByteIdx = 0;
-    }
-
-    if(stepCounter == 0 and not bootloader) {
-        // This counter will be used to specify the block to write.
-        // The first block (0) is reserved for the bootloader, so
-        // we have to start at one.
-        helperCounter1 = 1;
     }
 
     if(stepCounter == 0 and extendedDebugOutput){

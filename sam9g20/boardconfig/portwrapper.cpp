@@ -45,7 +45,10 @@ void timerOverflowISR(isr_args_t args) {
 extern "C" void __malloc_lock (struct _reent *reent) {
 #if OBSW_MONITOR_ALLOCATION == 1
 	if(config::softwareInitializationComplete) {
-		TRACE_WARNING("Software initialization complete but "
+        // This prevents an infinite recursion because printf can allocate
+	    // memory when using newlib.
+        config::softwareInitializationComplete = false;
+		TRACE_WARNING("\n\rSoftware initialization complete but "
 				"memory is allocated!\n\r");
 	}
 #endif

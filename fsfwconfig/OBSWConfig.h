@@ -7,6 +7,7 @@
 #else
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 #endif
 
 #include <portmacro.h>
