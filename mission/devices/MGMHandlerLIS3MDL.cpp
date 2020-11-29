@@ -1,5 +1,5 @@
-#include <fsfw/datapool/PoolEntry.h>
 #include "MGMHandlerLIS3MDL.h"
+
 
 MGMHandlerLIS3MDL::MGMHandlerLIS3MDL(object_id_t objectId,
         object_id_t deviceCommunication, CookieIF* comCookie):

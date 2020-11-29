@@ -2,8 +2,11 @@
 #define MISSION_DEVICES_GYROHANDLER_H_
 
 #include "devicedefinitions/GyroPackets.h"
+#include <fsfwconfig/OBSWConfig.h>
+
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
 #include <fsfw/globalfunctions/PeriodicOperationDivider.h>
+
 
 /**
  * @brief       Device Handler for the BMG250 Gyroscope device
@@ -91,6 +94,11 @@ private:
 #if OBSW_ENHANCED_PRINTOUT == 1
 	PeriodicOperationDivider* debugDivider;
 #endif
+
+#if defined(at91sam9g20)
+	ReturnValue_t checkSelfTest(DeviceCommandId_t* id);
+#endif
+
 };
 
 #endif /* MISSION_DEVICES_GYROHANDLER_H_ */
