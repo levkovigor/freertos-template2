@@ -124,11 +124,6 @@ void data_abort_irq_handler(void)
 	TRACE_ERROR("\r\nDATA ABORT EXCEPTION OCCURED! HALTING! \n\r");
 #endif
 
-    // Increment reboot counter in FRAM
-#ifdef ISIS_OBC_G20
-    increment_reboot_counter(false, false);
-#endif
-
 	// Call ISIS handler which also restarts the CPU
 	restartDataAbort();
 
@@ -161,11 +156,6 @@ void prefetch_abort_irq_handler(void)
 	TRACE_ERROR("####################\n\r");
 #else
 	TRACE_ERROR("\r\nPREFETCH ABORT EXCEPTION OCCURED! HALTING! \n\r");
-#endif
-
-    // Increment reboot counter in FRAM
-#ifdef ISIS_OBC_G20
-	increment_reboot_counter(false, false);
 #endif
 
 	// Call ISIS handler which also restarts the CPU
