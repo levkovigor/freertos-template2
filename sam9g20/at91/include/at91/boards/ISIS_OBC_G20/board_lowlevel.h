@@ -50,6 +50,8 @@ extern void defaultSpuriousHandler( void );
 extern void defaultFiqHandler( void );
 extern void defaultIrqHandler(void);
 
+extern void clearBssSection(void);
+
 extern void LowLevelInit(void);
 
 #endif // BOARD_LOWLEVEL_H

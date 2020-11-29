@@ -1,7 +1,7 @@
 #include "GpioDeviceComIF.h"
 
-#include <config/devices/logicalAddresses.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfwconfig/devices/logicalAddresses.h>
 
 extern "C" {
 #include <board.h>

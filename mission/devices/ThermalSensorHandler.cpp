@@ -322,3 +322,7 @@ ReturnValue_t ThermalSensorHandler::initializeLocalDataPool(
 ReturnValue_t ThermalSensorHandler::initialize() {
     return DeviceHandlerBase::initialize();
 }
+
+void ThermalSensorHandler::modeChanged() {
+    internalState = InternalState::NONE;
+}

@@ -113,7 +113,7 @@
 // added for heap_4 memory management
 #define configSUPPORT_DYNAMIC_ALLOCATION    1
 // maximum of heap freertos can use to allocate memory for tasks
-#define configTOTAL_HEAP_SIZE			( ( size_t ) ( 10000 ) )
+#define configTOTAL_HEAP_SIZE			( ( size_t ) ( 24000 ) )
 
 /* Hook function related definitions. */
 #define configUSE_IDLE_HOOK				1

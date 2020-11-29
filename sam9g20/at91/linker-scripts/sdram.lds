@@ -43,7 +43,7 @@ MEMORY
 }
 
 SECTIONS
-{ 
+{     
     .fixed :
 	{
         . = ALIGN(4);			/* tells the linker that these section ought to be word aligned */
@@ -64,15 +64,33 @@ SECTIONS
         *(.igot.plt)
         *(.rel.dyn)
         *(.rel.iplt)
-        *(.CP15_*)
-        KEEP (*(.init))
-    	KEEP (*(.fini))
+		*(.CP15_*)
+		KEEP (*(.init))
+		KEEP (*(.fini))
+        . = ALIGN(4);
+		/* preinit data */
+		PROVIDE_HIDDEN (__preinit_array_start = .);
+		KEEP(*(.preinit_array))
+		PROVIDE_HIDDEN (__preinit_array_end = .);
+		
 		. = ALIGN(4);
-		_efixedsec = .;        /* define a global symbols at end of code */	
+		/* init data, the constructor addresses are placed in this sections */
+		PROVIDE_HIDDEN (__init_array_start = .);
+		KEEP(*(SORT(.init_array.)))
+		KEEP(*(.init_array))
+		PROVIDE_HIDDEN (__init_array_end = .);
+		
+		. = ALIGN(4);
+		/* finit data, destructor addresses are placed in this section */
+		PROVIDE_HIDDEN (__fini_array_start = .);
+		KEEP(*(SORT(.fini_array.)))
+		KEEP(*(.fini_array))
+		PROVIDE_HIDDEN (__fini_array_end = .);
+		. = ALIGN(4);
 	} >sdram
 
 	/* used for unwinding, can be useful for debugging  */  
-	.ARM.extab   : AT(_efixedsec) 
+	.ARM.extab (NOLOAD) :
     {  
 		*(.ARM.extab* .gnu.linkonce.armextab.*) 
 	} >sdram
@@ -85,34 +103,10 @@ SECTIONS
 	} >sdram
     __exidx_end = .;
     
-	.preinit_array ALIGN(4): 
-	{
-        PROVIDE_HIDDEN (__preinit_array_start = .);
-        KEEP(*(.preinit_array))
-        PROVIDE_HIDDEN (__preinit_array_end = .);
-    } >sdram
-
-	/* init data, the constructor addresses are placed in this sections */
-    .init_array ALIGN(4): 
-    {
-        PROVIDE_HIDDEN (__init_array_start = .);
-        KEEP(*(SORT(.init_array.)))
-		KEEP(*(.init_array))
-        PROVIDE_HIDDEN (__init_array_end = .);
-    } >sdram
-
-	/* finit data, destructor addresses are placed in this section */
-    .fini_array ALIGN(4): 
-    {
-     	
-		PROVIDE_HIDDEN (__fini_array_start = .);
-		KEEP(*(SORT(.fini_array.)))
-		KEEP(*(.fini_array))
-		PROVIDE_HIDDEN (__fini_array_end = .);
-    } >sdram
-    
     . = ALIGN(4);
     _efixed = .;
+    
+    /* Will be copied to SRAM at startup, but loaded in SDRAM */
 
     .prerelocate : AT (_efixed)
     {
@@ -120,20 +114,20 @@ SECTIONS
         _sprerelocate = .;
         . = ALIGN(4);
         _eprerelocate = .;
-    } 
-
+    } >sram0
+    
+    /* Will also be copied to SRAM */
     .postrelocate : AT (_efixed + SIZEOF(.prerelocate))
     {
         . = ALIGN(4);
         _spostrelocate = .;
-        KEEP(*(.vectors));
-		KEEP(*(.sramfunc));
-        KEEP(*(.ramfunc));
+		KEEP(*(.vectors));
+		*(.sramfunc*);
         . = ALIGN(4);
         _epostrelocate = .;
     } >sram0 
-    
-    .sramdata : AT (_sprerelocate + SIZEOF(.prerelocate) + SIZEOF(.postrelocate))
+         
+    .sramdata : AT (_efixed + SIZEOF(.prerelocate) + SIZEOF(.postrelocate))
     {
         . = ALIGN(4);
         _ssramdata = .;
@@ -142,19 +136,19 @@ SECTIONS
         _esramdata = .;
     } >sram1
     
-    .srambss (NOLOAD) : {
+    .srambss (NOLOAD) :
+    {
         . = ALIGN(4);
         _ssrambss = .;
         *(.srambss)
         . = ALIGN(4);
         _esrambss = .;
     } >sram1
-    
 
     /* this section holds uninitialized global and static data  */
- 	. = ALIGN(4);
-	.bss :
-  	{
+	.bss (NOLOAD) : 
+	{
+	 	. = ALIGN(4);
 	    /* This is used by the startup in order to initialize the .bss secion */
 	    _sbss = .;         /* define a global symbol at bss start */
 	    __bss_start__ = _sbss;
@@ -168,7 +162,10 @@ SECTIONS
   	} >sdram
 
     /* Heap section */
+    . = ALIGN(4);
 	_sheap_ = .;
+	PROVIDE ( end = . );
+	PROVIDE ( _end = . );
     _eheap_ = 0x21800000;
 
 	/* top of stack */
@@ -182,4 +179,3 @@ SECTIONS
         libc_nano.a ( * )
     }
 }
-end = .;

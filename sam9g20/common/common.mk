@@ -1,3 +1,3 @@
-CSRC += $(wildcard $(CURRENTPATH)/common/*.c)
+CSRC += $(wildcard $(CURRENTPATH)/*.c)
 
 INCLUDES += $(CURRENTPATH)

@@ -2,8 +2,11 @@
 #define MISSION_DEVICES_GYROHANDLER_H_
 
 #include "devicedefinitions/GyroPackets.h"
+#include <fsfwconfig/OBSWConfig.h>
+
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
 #include <fsfw/globalfunctions/PeriodicOperationDivider.h>
+
 
 /**
  * @brief       Device Handler for the BMG250 Gyroscope device
@@ -53,14 +56,13 @@ protected:
             uint8_t *numberOfSwitches) override;
 	ReturnValue_t initializeLocalDataPool(LocalDataPool& localDataPoolMap,
 	        LocalDataPoolManager& poolManager) override;
+	void modeChanged(void) override;
 
-    ReturnValue_t initialize() override;
-    ReturnValue_t initializeAfterTaskCreation() override;
 
 private:
     const uint8_t switchId;
 
-    enum class InternalState {
+    enum class InternalStates {
     	NONE,
 		MODE_SELECT,
 		WRITE_POWER,
@@ -73,7 +75,7 @@ private:
 		RUNNING,
 		FAULTY
     };
-    InternalState internalState = InternalState::NONE;
+    InternalStates internalState = InternalStates::NONE;
 
     bool commandExecuted = false;
     bool checkSelfTestRegister = true;
@@ -89,9 +91,14 @@ private:
     GyroDefinitions::GyroAuxilliaryDataset gyroConfigSet;
 
     PeriodicOperationDivider selfTestDivider;
-#if OBSW_REDUCED_PRINTOUT == 0
+#if OBSW_ENHANCED_PRINTOUT == 1
 	PeriodicOperationDivider* debugDivider;
 #endif
+
+#if defined(at91sam9g20)
+	ReturnValue_t checkSelfTest(DeviceCommandId_t* id);
+#endif
+
 };
 
 #endif /* MISSION_DEVICES_GYROHANDLER_H_ */

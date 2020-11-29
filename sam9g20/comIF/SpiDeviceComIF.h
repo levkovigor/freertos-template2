@@ -1,13 +1,13 @@
 #ifndef SAM9G20_COMIF_SPIDEVICECOMIF_H_
 #define SAM9G20_COMIF_SPIDEVICECOMIF_H_
 
-#include <config/OBSWConfig.h>
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/devicehandlers/DeviceCommunicationIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/ipc/MessageQueueIF.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/osal/FreeRTOS/Mutex.h>
+#include <fsfwconfig/OBSWConfig.h>
 #include <sam9g20/comIF/cookies/SpiCookie.h>
 
 extern "C" {

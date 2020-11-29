@@ -1,6 +1,3 @@
-#include "logicalAddresses.h"
-#include "apid.h"
-
 #include <test/testtasks/TestTask.h>
 #include <test/testtasks/PusTcInjector.h>
 #include <unittest/internal/InternalUnitTester.h>
@@ -9,6 +6,8 @@
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
 #include <etl/vector.h>
+#include <fsfwconfig/devices/logicalAddresses.h>
+#include <fsfwconfig/tmtc/apid.h>
 
 #include <array>
 #include <cstring>

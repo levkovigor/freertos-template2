@@ -1,5 +1,5 @@
+#include <fsfwconfig/OBSWConfig.h>
 #include "ImageCopyingEngine.h"
-#include <config/OBSWConfig.h>
 
 ImageCopyingEngine::ImageCopyingEngine(SoftwareImageHandler *owner,
         Countdown *countdown, SoftwareImageHandler::ImageBuffer *imgBuffer):
@@ -100,7 +100,7 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         // Info output should only be printed once.
         if(stepCounter == 0) {
             currentFileSize = f_filelength(config::BOOTLOADER_NAME);
-#if OBSW_REDUCED_PRINTOUT == 0
+#if OBSW_ENHANCED_PRINTOUT == 1
 #ifdef AT91SAM9G20_EK
             sif::info << "Copying AT91 bootloader on SD card "
                     << currentVolume << " to AT91 NAND-Flash.." << std::endl;

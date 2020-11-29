@@ -1,13 +1,18 @@
 #include "MGMHandlerLIS3MDL.h"
 
+
 MGMHandlerLIS3MDL::MGMHandlerLIS3MDL(object_id_t objectId,
         object_id_t deviceCommunication, CookieIF* comCookie):
 		DeviceHandlerBase(objectId, deviceCommunication, comCookie) {
-	registers[0] = 0x00;
-	registers[1] = 0x00;
-	registers[2] = 0x00;
-	registers[3] = 0x00;
-	registers[4] = 0x00;
+#if OBSW_ENHANCED_PRINTOUT == 1
+    debugDivider = new PeriodicOperationDivider(20);
+#endif
+    // Set to default values right away.
+    registers[0] = MGMLIS3MDL::CTRL_REG1_DEFAULT;
+    registers[1] = MGMLIS3MDL::CTRL_REG2_DEFAULT;
+    registers[2] = MGMLIS3MDL::CTRL_REG3_DEFAULT;
+    registers[3] = MGMLIS3MDL::CTRL_REG4_DEFAULT;
+    registers[4] = MGMLIS3MDL::CTRL_REG5_DEFAULT;
 
 }
 
@@ -29,17 +34,14 @@ void MGMHandlerLIS3MDL::doStartUp() {
         internalState = STATE_CHECK_REGISTERS;
         break;
 
-    case STATE_CHECK_REGISTERS:
-        if (setupMGM() == RETURN_OK) {
-            for (size_t i = 1; i <= MGMLIS3MDL::NR_OF_CTRL_REGISTERS; i++) {
-                if (registers[i - 1] != commandBuffer[i]) {
-                    break;
-                }
-            }
-            setMode(_MODE_TO_ON);
+    case STATE_CHECK_REGISTERS: {
+        // Set up cached registers which will be used to configure the MGM.
+        if(commandExecuted) {
+            commandExecuted = false;
+            setMode(MODE_NORMAL);
         }
         break;
-
+    }
     default:
         break;
     }
@@ -62,7 +64,7 @@ ReturnValue_t MGMHandlerLIS3MDL::buildTransitionDeviceCommand(
         break;
 
     case STATE_CHECK_REGISTERS:
-        *id = MGMLIS3MDL::READALL_MGM;
+        *id = MGMLIS3MDL::READ_CONFIG_AND_DATA;
         break;
 
     default:
@@ -87,7 +89,7 @@ uint8_t MGMHandlerLIS3MDL::writeCommand(uint8_t command, bool continuousCom) {
 	return command;
 }
 
-ReturnValue_t MGMHandlerLIS3MDL::setupMGM() {
+void MGMHandlerLIS3MDL::setupMgm() {
 
 	registers[0] = MGMLIS3MDL::CTRL_REG1_DEFAULT;
 	registers[1] = MGMLIS3MDL::CTRL_REG2_DEFAULT;
@@ -95,20 +97,25 @@ ReturnValue_t MGMHandlerLIS3MDL::setupMGM() {
 	registers[3] = MGMLIS3MDL::CTRL_REG4_DEFAULT;
 	registers[4] = MGMLIS3MDL::CTRL_REG5_DEFAULT;
 
-	return prepareCtrlRegisterWrite();
-
+	prepareCtrlRegisterWrite();
 }
 
 ReturnValue_t MGMHandlerLIS3MDL::buildNormalDeviceCommand(
 		DeviceCommandId_t *id) {
-    // todo: actually the continous read will loop around when reading MGM
-    // values so we can't read everything at once. Adapt to perform
-    // read operations in 2 steps. also, we can propably ommit the
-    // WHO AM I register and read that manually so we don't have to read
-    // 20 reserved registers.
-    //defines CommandID of MGM in normal operation and build command from command
-	*id = MGMLIS3MDL::READALL_MGM;
-	return buildCommandFromCommand(*id, NULL, 0);
+    // Data/config register will be read in an alternating manner.
+    if(communicationStep == CommunicationStep::DATA) {
+        lastSentCommand = MGMLIS3MDL::READ_CONFIG_AND_DATA;
+        *id = MGMLIS3MDL::READ_CONFIG_AND_DATA;
+        communicationStep = CommunicationStep::TEMPERATURE;
+        return buildCommandFromCommand(*id, NULL, 0);
+    }
+    else {
+        lastSentCommand = MGMLIS3MDL::READ_TEMPERATURE;
+        *id = MGMLIS3MDL::READ_TEMPERATURE;
+        communicationStep = CommunicationStep::DATA;
+        return buildCommandFromCommand(*id, NULL, 0);
+    }
+
 }
 
 ReturnValue_t MGMHandlerLIS3MDL::buildCommandFromCommand(
@@ -116,13 +123,22 @@ ReturnValue_t MGMHandlerLIS3MDL::buildCommandFromCommand(
 		size_t commandDataLen) {
     lastSentCommand = deviceCommand;
     switch(deviceCommand) {
-    case(MGMLIS3MDL::READALL_MGM): {
+    case(MGMLIS3MDL::READ_CONFIG_AND_DATA): {
         std::memset(commandBuffer, 0, sizeof(commandBuffer));
-        commandBuffer[0] = readCommand(0, true);
+        commandBuffer[0] = readCommand(MGMLIS3MDL::CTRL_REG1, true);
 
         rawPacket = commandBuffer;
-        rawPacketLen = sizeof(commandBuffer);
+        rawPacketLen = MGMLIS3MDL::NR_OF_DATA_AND_CFG_REGISTERS + 1;
         return RETURN_OK;
+    }
+    case(MGMLIS3MDL::READ_TEMPERATURE): {
+        std::memset(commandBuffer, 0, 3);
+        commandBuffer[0] = readCommand(MGMLIS3MDL::TEMP_LOWBYTE, true);
+
+        rawPacket = commandBuffer;
+        rawPacketLen = 3;
+        return RETURN_OK;
+    }
 	case(MGMLIS3MDL::IDENTIFY_DEVICE): {
 	    return identifyDevice();
 	}
@@ -130,7 +146,8 @@ ReturnValue_t MGMHandlerLIS3MDL::buildCommandFromCommand(
 	    return enableTemperatureSensor(commandData, commandDataLen);
 	}
 	case(MGMLIS3MDL::SETUP_MGM): {
-	    return setupMGM();
+	    setupMgm();
+	    return HasReturnvaluesIF::RETURN_OK;
 	}
 	case(MGMLIS3MDL::ACCURACY_OP_MODE_SET): {
 	    return setOperatingMode(commandData, commandDataLen);
@@ -138,7 +155,6 @@ ReturnValue_t MGMHandlerLIS3MDL::buildCommandFromCommand(
 	default:
 	    lastSentCommand = DeviceHandlerIF::NO_COMMAND;
 	    return DeviceHandlerIF::COMMAND_NOT_IMPLEMENTED;
-	}
 	}
 	return HasReturnvaluesIF::RETURN_FAILED;
 }
@@ -157,22 +173,33 @@ ReturnValue_t MGMHandlerLIS3MDL::identifyDevice() {
 ReturnValue_t MGMHandlerLIS3MDL::scanForReply(const uint8_t *start,
 		size_t len, DeviceCommandId_t *foundId, size_t *foundLen) {
 	*foundLen = len;
-	if (len == MGMLIS3MDL::TOTAL_NR_OF_ADRESSES + 1) {
+	if (len == MGMLIS3MDL::NR_OF_DATA_AND_CFG_REGISTERS + 1) {
 		*foundLen = len;
-		*foundId = MGMLIS3MDL::READALL_MGM;
-		//WHO AM I test
-		if (*(start + 16) != MGMLIS3MDL::DEVICE_ID) {
+		*foundId = MGMLIS3MDL::READ_CONFIG_AND_DATA;
+		// Check validity by checking config registers
+		if (start[1] != registers[0] or start[2] != registers[1] or
+		        start[3] != registers[2] or start[4] != registers[3] or
+		        start[5] != registers[4]) {
 			return DeviceHandlerIF::INVALID_DATA;
 		}
+        if(mode == _MODE_START_UP) {
+            commandExecuted = true;
+        }
 
-	} else if (len == MGMLIS3MDL::SETUP_REPLY) {
+	}
+	else if(len == MGMLIS3MDL::TEMPERATURE_REPLY_LEN) {
+	    *foundLen = len;
+	    *foundId = MGMLIS3MDL::READ_TEMPERATURE;
+	}
+	else if (len == MGMLIS3MDL::SETUP_REPLY_LEN) {
 		*foundLen = len;
 		*foundId = MGMLIS3MDL::SETUP_MGM;
-	} else if (len == SINGLE_COMMAND_ANSWER_LEN) {
+	}
+	else if (len == SINGLE_COMMAND_ANSWER_LEN) {
 		*foundLen = len;
 		*foundId = lastSentCommand;
-	} else {
-
+	}
+	else {
 		return DeviceHandlerIF::INVALID_DATA;
 	}
 
@@ -195,36 +222,51 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 	case MGMLIS3MDL::SETUP_MGM: {
 		break;
 	}
-	case MGMLIS3MDL::READALL_MGM: {
+	case MGMLIS3MDL::READ_CONFIG_AND_DATA: {
 	    // TODO: Store configuration and sensor values in new local datasets.
-		registers[0] = *(packet + 33);
-		registers[1] = *(packet + 34);
-		registers[2] = *(packet + 35);
-		registers[3] = *(packet + 36);
-		registers[4] = *(packet + 37);
 
 		uint8_t scale = getFullScale(registers[2]);
 		float sensitivityFactor = getSensitivityFactor(scale);
 
-		uint8_t *accessBuffer;
-		accessBuffer = const_cast<uint8_t*>(packet + 41);
+		int16_t mgmMeasurementRawX = packet[MGMLIS3MDL::X_LOWBYTE_IDX] << 8
+		        | packet[MGMLIS3MDL::X_HIGHBYTE_IDX] ;
+        int16_t mgmMeasurementRawY = packet[MGMLIS3MDL::Y_HIGHBYTE_IDX] << 8
+                | packet[MGMLIS3MDL::Y_LOWBYTE_IDX] ;
+        int16_t mgmMeasurementRawZ = packet[MGMLIS3MDL::Z_HIGHBYTE_IDX] << 8
+                | packet[MGMLIS3MDL::Z_LOWBYTE_IDX] ;
 
-		int16_t mgmMeasurementRawX = *(accessBuffer + 1) << 8 | *(accessBuffer);
-		accessBuffer += 2;
-		int16_t mgmMeasurementRawY = *(accessBuffer + 1) << 8 | *(accessBuffer);
-		accessBuffer += 2;
-		int16_t mgmMeasurementRawZ = *(accessBuffer + 1) << 8 | *(accessBuffer);
-		accessBuffer += 2;
+		// Target value in microtesla
+		float mgmX = static_cast<float>(mgmMeasurementRawX) * sensitivityFactor
+		        *  MGMLIS3MDL::GAUSS_TO_MICROTESLA_FACTOR;
+		float mgmY = static_cast<float>(mgmMeasurementRawY) * sensitivityFactor
+		        *  MGMLIS3MDL::GAUSS_TO_MICROTESLA_FACTOR;
+		float mgmZ = static_cast<float>(mgmMeasurementRawZ) * sensitivityFactor
+		        *  MGMLIS3MDL::GAUSS_TO_MICROTESLA_FACTOR;
 
-		int16_t tempValueRaw = *(accessBuffer + 1) << 8 | *(accessBuffer);
-
-		// Target value in Gauss
-		float mgmX = static_cast<float>(mgmMeasurementRawX) * sensitivityFactor;
-		float mgmY = static_cast<float>(mgmMeasurementRawY) * sensitivityFactor;
-		float mgmZ = static_cast<float>(mgmMeasurementRawZ) * sensitivityFactor;
-		float tempValue = 25.0 + ((static_cast<float>(tempValueRaw)) / 8.0);
-
+#if OBSW_ENHANCED_PRINTOUT == 1
+		if(debugDivider->checkAndIncrement()) {
+            sif::info << "MGMHandlerLIS3: Magnetic field strength in"
+                    " microtesla:" << std::endl;
+            // Set terminal to utf-8 if there is an issue with micro printout.
+            sif::info << "X: " << mgmX << " \xC2\xB5T" << std::endl;
+            sif::info << "Y: " << mgmY << " \xC2\xB5T" << std::endl;
+            sif::info << "Z: " << mgmZ << " \xC2\xB5T" << std::endl;
+		}
+#endif
 		break;
+	}
+
+	case MGMLIS3MDL::READ_TEMPERATURE: {
+	    int16_t tempValueRaw = packet[2] << 8 | packet[1];
+        float tempValue = 25.0 + ((static_cast<float>(tempValueRaw)) / 8.0);
+#if OBSW_ENHANCED_PRINTOUT == 1
+        if(debugDivider->check()) {
+            // Set terminal to utf-8 if there is an issue with micro printout.
+            sif::info << "MGMHandlerLIS3: Temperature: " << tempValue<< " °C"
+                    << std::endl;
+        }
+#endif
+        break;
 	}
 
 	default: {
@@ -330,7 +372,8 @@ void MGMHandlerLIS3MDL::fillCommandAndReplyMap() {
 	 * We dont read single registers, we just expect special
 	 * reply from he Readall_MGM
 	 */
-	insertInCommandAndReplyMap(MGMLIS3MDL::READALL_MGM, 1);
+	insertInCommandAndReplyMap(MGMLIS3MDL::READ_CONFIG_AND_DATA, 1);
+	insertInCommandAndReplyMap(MGMLIS3MDL::READ_TEMPERATURE, 1);
 	insertInCommandAndReplyMap(MGMLIS3MDL::SETUP_MGM, 1);
 	insertInCommandAndReplyMap(MGMLIS3MDL::IDENTIFY_DEVICE, 1);
 	insertInCommandAndReplyMap(MGMLIS3MDL::TEMP_SENSOR_ENABLE, 1);
@@ -345,7 +388,7 @@ ReturnValue_t MGMHandlerLIS3MDL::prepareCtrlRegisterWrite() {
 		commandBuffer[i + 1] = registers[i];
 	}
 	rawPacket = commandBuffer;
-	rawPacketLen = MGMLIS3MDL::NR_OF_CTRL_REGISTERS;
+	rawPacketLen = MGMLIS3MDL::NR_OF_CTRL_REGISTERS + 1;
 
 	// We dont have to check if this is working because we just did it
 	return RETURN_OK;
@@ -365,4 +408,17 @@ uint32_t MGMHandlerLIS3MDL::getTransitionDelayMs(Mode_t from, Mode_t to) {
 
 void MGMHandlerLIS3MDL::modeChanged(void) {
 	internalState = STATE_NONE;
+}
+
+ReturnValue_t MGMHandlerLIS3MDL::initializeLocalDataPool(
+        LocalDataPool &localDataPoolMap, LocalDataPoolManager &poolManager) {
+    localDataPoolMap.emplace(MGMLIS3MDL::FIELD_STRENGTH_X,
+            new PoolEntry<float>({0.0}));
+    localDataPoolMap.emplace(MGMLIS3MDL::FIELD_STRENGTH_Y,
+            new PoolEntry<float>({0.0}));
+    localDataPoolMap.emplace(MGMLIS3MDL::FIELD_STRENGTH_Z,
+            new PoolEntry<float>({0.0}));
+    localDataPoolMap.emplace(MGMLIS3MDL::TEMPERATURE_CELCIUS,
+            new PoolEntry<float>({0.0}));
+    return HasReturnvaluesIF::RETURN_OK;
 }

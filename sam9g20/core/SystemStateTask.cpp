@@ -1,8 +1,8 @@
 #include "SystemStateTask.h"
 
-#include <config/OBSWConfig.h>
 #include <fsfw/objectmanager/ObjectManagerIF.h>
 #include <fsfw/tasks/TaskFactory.h>
+#include <fsfwconfig/OBSWConfig.h>
 #include <sam9g20/core/CoreController.h>
 
 #include <FreeRTOSConfig.h>
@@ -174,7 +174,7 @@ void SystemStateTask::generateStatsCsvAndCheckStack() {
         }
     }
     statsVector[statsIdx] = '\0';
-#if OBSW_REDUCED_PRINTOUT == 0
+#if OBSW_ENHANCED_PRINTOUT == 1
 #ifdef DEBUG
     printf("%s\r\n",statsVector.data());
     printf("Number of bytes written: %d\r\n", statsIdx);

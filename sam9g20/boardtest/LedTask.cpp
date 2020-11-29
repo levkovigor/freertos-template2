@@ -23,7 +23,9 @@ LedTask::LedTask(object_id_t objectId, std::string name, LedModes ledMode):
     /* Add built-in LEDs to LED map.
     Additional LEDs (for example external ones) can be added to the map
     if needed. */
-    ledMap.emplace(LED_1, toggleBuiltInLed1);
+
+    // LED1 reserved for watchdog blicking.
+    // ledMap.emplace(LED_1, toggleBuiltInLed1);
     ledMap.emplace(LED_2, toggleBuiltInLed2);
     ledMap.emplace(LED_3, toggleBuiltInLed3);
     ledMap.emplace(LED_4, toggleBuiltInLed4);
