@@ -147,18 +147,14 @@ public:
     MgmPrimaryDataset(object_id_t mgmId):
         StaticLocalDataSet(sid_t(mgmId, MGM_DATA_SET_ID)) {}
 
-    lp_var_t<float> angVelocityX = lp_var_t<float>(
-            FIELD_STRENGTH_X,
-            sid.objectId, this);
-    lp_var_t<float> angVelocityY = lp_var_t<float>(
-            FIELD_STRENGTH_Y,
-            sid.objectId, this);
-    lp_var_t<float> angVelocityZ = lp_var_t<float>(
-            FIELD_STRENGTH_Z,
-            sid.objectId, this);
-    lp_var_t<float> temperature = lp_var_t<float>(
-            TEMPERATURE_CELCIUS,
-            sid.objectId, this);
+    lp_var_t<float> angVelocityX = lp_var_t<float>(sid.objectId,
+            FIELD_STRENGTH_X, this);
+    lp_var_t<float> angVelocityY = lp_var_t<float>(sid.objectId,
+            FIELD_STRENGTH_Y, this);
+    lp_var_t<float> angVelocityZ = lp_var_t<float>(sid.objectId,
+            FIELD_STRENGTH_Z, this);
+    lp_var_t<float> temperature = lp_var_t<float>(sid.objectId,
+            TEMPERATURE_CELCIUS, this);
 };
 
 }
