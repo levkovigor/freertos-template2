@@ -5,7 +5,6 @@
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 
-#include <fsfw/datapoolglob/GlobalDataPool.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 
 #include <freertos/FreeRTOS.h>
@@ -34,9 +33,9 @@ bool config::softwareInitializationComplete = false;
 
 
 /* Initialize Data Pool */
-namespace glob {
-GlobalDataPool dataPool(datapool::dataPoolInit);
-}
+//namespace glob {
+//GlobalDataPool dataPool(datapool::dataPoolInit);
+//}
 
 namespace sif {
 /* Set up output streams
