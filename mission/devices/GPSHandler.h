@@ -3,9 +3,6 @@
 
 #include "devicedefinitions/GPSPackets.h"
 
-//#include <fsfw/datapoolglob/GlobalDataSet.h>
-//#include <fsfw/datapoolglob/GlobalPoolVariable.h>
-//#include <fsfw/datapoolglob/GlobalPoolVector.h>
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
 
 /**
