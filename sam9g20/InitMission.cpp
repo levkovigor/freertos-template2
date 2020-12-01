@@ -31,12 +31,6 @@ bool config::softwareInitializationComplete = false;
 #endif
 #endif
 
-
-/* Initialize Data Pool */
-//namespace glob {
-//GlobalDataPool dataPool(datapool::dataPoolInit);
-//}
-
 namespace sif {
 /* Set up output streams
  * Don't call these streams in HAL callback functions ! */
