@@ -61,12 +61,13 @@ ServiceInterfaceStream error("ERROR", true);
 }
 
 /* will be created in main */
-ObjectManagerIF* objectManager;
+ObjectManagerIF* objectManager = nullptr;
 
 /* Board Tests, not used in mission */
 #if OBSW_ADD_TEST_CODE == 1
 void boardTestTaskInit();
 #endif
+
 void genericMissedDeadlineFunc();
 void printAddError(object_id_t objectId);
 void initTasks(void);
