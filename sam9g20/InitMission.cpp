@@ -8,7 +8,6 @@
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 
 #include <freertos/FreeRTOS.h>
-#include <fsfwconfig/cdatapool/dataPoolInit.h>
 #include <fsfwconfig/objects/systemObjectList.h>
 #include <fsfwconfig/OBSWConfig.h>
 #include <fsfwconfig/pollingsequence/PollingSequenceFactory.h>
