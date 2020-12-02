@@ -1,9 +1,11 @@
+#include "PollingSequenceFactory.h"
+
 #include <sam9g20/comIF/RS485Controller.h>
+
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/devicehandlers/DeviceHandlerIF.h>
 #include <fsfw/tasks/FixedTimeslotTaskIF.h>
 #include <fsfwconfig/objects/systemObjectList.h>
-#include <fsfwconfig/pollingsequence/PollingSequenceFactory.h>
 
 ReturnValue_t pst::pollingSequenceInitDefault(
         FixedTimeslotTaskIF *thisSequence) {
