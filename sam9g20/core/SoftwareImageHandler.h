@@ -99,7 +99,7 @@ public:
     ReturnValue_t initializeAfterTaskCreation() override;
     void setTaskIF(PeriodicTaskIF* executingTask) override;
 
-    /** SystemObject overridfes */
+    /** SystemObject overrides */
     ReturnValue_t initialize() override;
 
     /** HasActionsIF overrides */

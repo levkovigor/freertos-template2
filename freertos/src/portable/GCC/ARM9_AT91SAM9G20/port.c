@@ -203,7 +203,6 @@ portSTACK_TYPE *pxOriginalTOS;
 	return pxTopOfStack;
 }
 /*-----------------------------------------------------------*/
-portBASE_TYPE xPortStartScheduler( void ) __attribute__((optimize("O1")));
 portBASE_TYPE xPortStartScheduler( void )
 {
 	/* Start the timer that generates the tick ISR.  Interrupts are disabled

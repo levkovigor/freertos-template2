@@ -28,8 +28,7 @@ typedef struct __attribute__((__packed__))  _FRAMCriticalData {
     uint8_t filler_sw_version;
 
     /* Reboot information [4, 4-7] */
-	uint16_t reboot_counter;
-	uint16_t reboot_flag;
+	uint32_t reboot_counter;
 
 	bool bootloader_faulty;
 	size_t bootloader_hamming_code_size;
@@ -82,8 +81,6 @@ static const uint8_t SOFTWARE_SUBSUBVERSION_ADDR =
 /* Reboot info offset */
 static const uint32_t REBOOT_COUNTER_ADDR =
 		offsetof(FRAMCriticalData, reboot_counter);
-static const uint32_t REBOOT_FLAG_ADDR =
-        offsetof(FRAMCriticalData, reboot_flag);
 
 static const uint32_t BOOTLOADER_HAMMING_SIZE_ADDR =
         offsetof(FRAMCriticalData, bootloader_hamming_code_size);
@@ -126,14 +123,14 @@ static const uint32_t FRAM_END_ADDR = 0x100000;
 // 512 bytes of the upper FRAM will be reserved for the bootloader hamming
 // code.
 static const size_t BOOTLOADER_HAMMING_RESERVED_SIZE = 512;
-static const uint32_t BOOTLOADER_HAMMING_ADDR = FRAM_END_ADDR - \
-        BOOTLOADER_HAMMING_RESERVED_SIZE;
+#define BOOTLOADER_HAMMING_ADDR FRAM_END_ADDR - \
+        BOOTLOADER_HAMMING_RESERVED_SIZE
 
 // 12 kB of the upper FRAM will be reserved for the NOR-Flash binary hamming
 // code.
 static const uint32_t NOR_FLASH_HAMMING_RESERVED_SIZE = 12288;
-static const uint32_t NOR_FLASH_HAMMING_ADDR = BOOTLOADER_HAMMING_ADDR - \
-        NOR_FLASH_HAMMING_RESERVED_SIZE;
+#define  NOR_FLASH_HAMMING_ADDR BOOTLOADER_HAMMING_ADDR - \
+        NOR_FLASH_HAMMING_RESERVED_SIZE
 
 
 #ifdef __cplusplus
@@ -154,17 +151,9 @@ int read_software_version(uint8_t* sw_version, uint8_t* sw_subversion,
  * The flag is used to be able to track restarts from exceptions.
  * @return
  */
-int increment_reboot_counter(bool verify_write, bool set_reboot_flag);
+int increment_reboot_counter(uint32_t* new_reboot_counter);
+int read_reboot_counter(uint32_t* reboot_counter);
 
-/**
- * This helper function will be called on reboot to verify whether the
- * last restart was commanded (which should ideally always be the case)
- * or whether an exception or something else occured where the restart was
- * not intentional
- * @return
- */
-int verify_reboot_flag(bool* bootcounter_incremented);
-int read_reboot_counter(uint16_t* reboot_counter);
 /**
  * Should only be used during development!
  * @return

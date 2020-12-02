@@ -1,4 +1,4 @@
-#include <sam9g20/utility/portwrapper.h>
+#include "../../../../sam9g20/boardconfig/portwrapper.h"
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>

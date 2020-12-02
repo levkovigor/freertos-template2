@@ -3,7 +3,6 @@
 
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
-#include <fsfw/datapoolglob/GlobalDataSet.h>
 #include <fsfw/parameters/HasParametersIF.h>
 #include <fsfw/serialize/SerialBufferAdapter.h>
 #include <fsfw/serialize/SerializeElement.h>

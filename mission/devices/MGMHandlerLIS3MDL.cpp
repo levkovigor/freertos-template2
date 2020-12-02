@@ -1,10 +1,10 @@
-#include <fsfw/datapool/PoolEntry.h>
 #include "MGMHandlerLIS3MDL.h"
+
 
 MGMHandlerLIS3MDL::MGMHandlerLIS3MDL(object_id_t objectId,
         object_id_t deviceCommunication, CookieIF* comCookie):
 		DeviceHandlerBase(objectId, deviceCommunication, comCookie) {
-#if OBSW_REDUCED_PRINTOUT == 0
+#if OBSW_ENHANCED_PRINTOUT == 1
     debugDivider = new PeriodicOperationDivider(20);
 #endif
     // Set to default values right away.
@@ -243,7 +243,7 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 		float mgmZ = static_cast<float>(mgmMeasurementRawZ) * sensitivityFactor
 		        *  MGMLIS3MDL::GAUSS_TO_MICROTESLA_FACTOR;
 
-#if OBSW_REDUCED_PRINTOUT == 0
+#if OBSW_ENHANCED_PRINTOUT == 1
 		if(debugDivider->checkAndIncrement()) {
             sif::info << "MGMHandlerLIS3: Magnetic field strength in"
                     " microtesla:" << std::endl;
@@ -259,7 +259,7 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 	case MGMLIS3MDL::READ_TEMPERATURE: {
 	    int16_t tempValueRaw = packet[2] << 8 | packet[1];
         float tempValue = 25.0 + ((static_cast<float>(tempValueRaw)) / 8.0);
-#if OBSW_REDUCED_PRINTOUT == 0
+#if OBSW_ENHANCED_PRINTOUT == 1
         if(debugDivider->check()) {
             // Set terminal to utf-8 if there is an issue with micro printout.
             sif::info << "MGMHandlerLIS3: Temperature: " << tempValue<< " °C"

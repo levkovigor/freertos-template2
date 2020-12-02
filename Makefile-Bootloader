@@ -37,7 +37,12 @@ ifdef IOBC
 BOARD = ISIS_OBC_G20
 BOARD_NAME = iOBC
 # iOBC-Configuration: Code will be executed in place in the norflash.
+ifdef SRAM
+MEMORY_TYPE = sram
+else
 MEMORY_TYPE = norflash
+endif
+
 else 
 BOARD = AT91SAM9G20_EK
 BOARD_NAME = at91ek
@@ -82,13 +87,19 @@ CUSTOM_DEFINES += -D$(OS_APP)
 PRIVLIB_PATH = privlib
 BOOTLOADER_PATH = bootloader
 FREERTOS_PATH = freertos
+COMMON_PATH = $(BOARD_FILE_ROOT)/common
 CORE_PATH = $(BOOTLOADER_PATH)/core
 AT91_PATH = $(BOARD_FILE_ROOT)/at91
 
 LINKER_SCRIPT_PATH = $(BOOTLOADER_PATH)
+ifdef IOBC
 ifeq ($(MEMORY_TYPE), norflash)
 # Link for iOBC
 LINKER_SCRIPT_NAME = norflash.lds
+else
+LINKER_SCRIPT_NAME = sram.lds
+endif
+
 else
 # Link for AT91-EK
 LINKER_SCRIPT_NAME = sram.lds
@@ -134,10 +145,10 @@ OPTIMIZATION = -O0
 BUILDPATH = _bin
 DEPENDPATH = _dep
 OBJECTPATH = _obj
-ifeq ($(MAKECMDGOALS),mission)
-BUILD_FOLDER = mission
+ifeq ($(MEMORY_TYPE),norflash)
+BUILD_FOLDER = norflash
 else 
-BUILD_FOLDER = devel
+BUILD_FOLDER = sram
 endif
 
 DEPENDDIR = $(DEPENDPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)
@@ -196,10 +207,12 @@ INCLUDES :=
 
 # Directories where $(directoryname).mk files should be included from.
 # Source files and includes can be added in those submakefiles.
-SUBDIRS := $(BOOTLOADER_PATH) $(PRIVLIB_PATH) $(AT91_PATH) $(CORE_PATH)
+SUBDIRS := $(BOOTLOADER_PATH) $(PRIVLIB_PATH) $(AT91_PATH) $(CORE_PATH) 
 
-ifeq ($(OS_APP), freeRTOS) 
-SUBDIRS += $(FREERTOS_PATH)
+ifdef IOBC
+# ifeq ($(MEMORY_TYPE), norflash) 
+SUBDIRS += $(FREERTOS_PATH) $(COMMON_PATH)
+# endif
 endif
 
 # This is a hack from http://make.mad-scientist.net/the-eval-function/
@@ -319,6 +332,9 @@ endif
 
 # CPU specification
 CPU_FLAG = -mcpu=arm926ej-s
+# INSTRUCTION_SET_CXX = -mthumb -mthumb-interwork
+# INSTRUCTION_SET_AS = -mthumb-interwork
+
 # Newlib Nano
 NEWLIB_NANO = -specs=nosys.specs -specs=nano.specs
 
@@ -350,10 +366,11 @@ CXXDEFINES := -D$(CHIP) -D$(BOARD) -DTRACE_LEVEL=$(TRACE_LEVEL) \
 		   -DDYN_TRACES=$(DYN_TRACES) $(CUSTOM_DEFINES)
 CFLAGS +=  
 CXXFLAGS += -I. -Wall $(DEBUG_LEVEL) $(DEPFLAGS) -fmessage-length=0 \
-		$(OPTIMIZATION) $(I_INCLUDES) $(CXXDEFINES) $(NEWLIB_NANO) $(CPU_FLAG) 
-CPPFLAGS += -std=c++17 -fno-exceptions
-ASFLAGS =  -Wall -g $(OPTIMIZATION) $(I_INCLUDES) -D$(MEMORY_TYPE) -D$(CHIP) -D__ASSEMBLY__ \
-           $(NEWLIB_NANO) $(CPU_FLAG) 
+		$(OPTIMIZATION) $(I_INCLUDES) $(CXXDEFINES) $(NEWLIB_NANO) $(CPU_FLAG) \
+		$(INSTRUCTION_SET_CXX)
+CPPFLAGS += -std=c++17 -fno-exceptions 
+ASFLAGS =  -Wall -g $(OPTIMIZATION) $(I_INCLUDES) -D$(MEMORY_TYPE) -D$(CHIP) \
+		-D__ASSEMBLY__ $(NEWLIB_NANO) $(CPU_FLAG) $(INSTRUCTION_SET_AS)
            
 # Debug Info
 # $(info $${CXXDEFINES} is [${CXXDEFINES}])
@@ -396,7 +413,7 @@ all: executable
 
 # Build target configuration, which also includes information output.
 # See: https://www.gnu.org/software/make/manual/html_node/Target_002dspecific.html
-#mission: LINK_TIME_OPTIMIZATION = -flto
+# mission: LINK_TIME_OPTIMIZATION = -flto
 mission: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION) $(LINK_TIME_OPTIMIZATION)
 mission: TARGET = Mission binary
 mission: OPTIMIZATION_MESSAGE = On with Link Time Optimization
@@ -452,7 +469,7 @@ ALL_OBJECTS =  $(ASM_OBJECTS) $(C_OBJECTS) $(CXX_OBJECTS) $(FREERTOS_OBJECTS) $(
 # Generates binary and displays all build properties
 # -p with mkdir ignores error and creates directory when needed.
 
-# SHOW_DETAILS = 1
+SHOW_DETAILS = 1
 
 $(BINDIR)/$(BINARY_NAME).bin: $(BINDIR)/$(BINARY_NAME).elf
 	@echo

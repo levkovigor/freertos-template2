@@ -39,6 +39,8 @@ struct netif gnetif; /* network interface structure */
 
 // This will be the entry to the mission specific code
 void initMission(void);
+// quick fix to bypass link error
+extern "C" void __sync_synchronize() {}
 
 void initTask(void *parameters){
 	/* Initialize the LwIP stack */

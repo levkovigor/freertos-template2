@@ -100,17 +100,23 @@
 ///             settings can't be changed while executing in external flash.
 ///             LowLevelInit shall be executed in internal sram. It initializes
 ///             PLL and SMC. 
-/// This function also reset the AIC and disable RTT and PIT interrupts
+/// This function also reset the AIC and disable RTT and PIT interrupts.
+///
+/// NOTE: Optimization has proven to be problematic. We just turn it off
+/// completely for this function.
 //------------------------------------------------------------------------------
-#ifdef norflash
-void LowLevelInit(void) __attribute__ ((section(".sramfunc"), weak));
-#endif
+void LowLevelInit(void) __attribute__((optimize("O0")));
 void LowLevelInit(void)
 {
     unsigned char i;
 
-    // Still do this for SDRAM because SAM-BA low level init is crap.
-//#ifndef sdram
+    // Sometimes we have do this when flashing the SDRAM with SAM-BA
+    // because the SAM-BA low level init
+    // does not configure the SDRAM correctly!
+
+    // For J-Link flashes or for the NAND-Flash boot (default),
+    // this is not be required and should not be done!
+#ifndef sdram
     /* Initialize main oscillator
      ****************************/
     AT91C_BASE_PMC->PMC_MOR = BOARD_OSCOUNT | AT91C_CKGR_MOSCEN;
@@ -145,7 +151,7 @@ void LowLevelInit(void)
     /* Switch to PLL + prescaler */
     AT91C_BASE_PMC->PMC_MCKR |= AT91C_PMC_CSS_PLLA_CLK;
     while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY));
-//#endif
+#endif
 
     /* Initialize AIC
      ****************/
@@ -162,7 +168,6 @@ void LowLevelInit(void)
 
         AT91C_BASE_AIC->AIC_EOICR = 0;
     }
-
 
     /* Watchdog initialization
      *************************/
@@ -181,9 +186,12 @@ void LowLevelInit(void)
 #if defined(norflash)
     BOARD_ConfigureNorFlash(BOARD_NORFLASH_DFT_BUS_SIZE);
 #endif    
+
+#if !defined(sdram)
+    BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
+#endif
 }
 
-void clearBssSection(void) __attribute__ ((section(".sramfunc"), weak));
 void clearBssSection(void) {
     extern char _sbss, _ebss;
     memset(&_sbss, 0, &_ebss - &_sbss);

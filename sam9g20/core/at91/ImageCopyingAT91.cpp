@@ -293,20 +293,21 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
     helperFlag1 = true;
 
     if(stepCounter == 0) {
+        if(bootloader) {
             // We will write the size of the binary to the
             // sixth ARM vector (see p.72 SAM9G20 datasheet)
-            // This is only necessary for the bootloader which is copied
-            // to SRAM by the ROM-Boot program, but we will still do it for
-            // the main binary so the bootloader can copy the appropriate
-            // amount of memory to the SDRAM.
+            // Don't do this for anything else! Messing with the ARM
+            // vectors can make optimized applications unstable.
             std::memcpy(imgBuffer->data() + 0x14, &currentFileSize,
                     sizeof(uint32_t));
-        if(not bootloader) {
-            // This counter will be used to specify the block to write.
-            // The first block (0) is reserved for the bootloader, so
-            // we have to start at one.
+            helperCounter1 = 0;
+        }
+        else {
+            // This counter will be used to specify written block, and first
+            // block is reserved for bootloader.
             helperCounter1 = 1;
         }
+
         helperCounter2 = 0;
         currentByteIdx = 0;
     }
@@ -375,7 +376,7 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
 
     if(currentByteIdx >= currentFileSize) {
         // operation finished.
-#if OBSW_REDUCED_PRINTOUT == 0
+#if OBSW_ENHANCED_PRINTOUT == 1
         if(bootloader) {
             sif::info << "Copying bootloader to NAND-Flash finished with "
                     << stepCounter << " cycles!" << std::endl;

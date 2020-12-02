@@ -6,6 +6,8 @@ extern "C" {
 #include <hal/Storage/NORflash.h>
 }
 
+#include <fsfw/globalfunctions/CRC.h>
+
 ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
     switch(imageHandlerState) {
     case(ImageHandlerStates::IDLE): {
@@ -71,7 +73,7 @@ ReturnValue_t ImageCopyingEngine::handleNorflashErasure() {
     if(bootloader) {
         sif::info << "ImageCopyingEngine::handleNorflashErasure: Deleting old"
                 << " bootloader!" << std::endl;
-        while(stepCounter < RESERVED_NOR_FLASH_SECTORS) {
+        while(stepCounter < RESERVED_BL_SMALL_SECTORS) {
             result = NORFLASH_EraseSector(&NORFlash,
                     getBaseAddress(stepCounter, nullptr));
             if(result != 0) {
@@ -82,7 +84,7 @@ ReturnValue_t ImageCopyingEngine::handleNorflashErasure() {
                 return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
             }
         }
-        if(stepCounter == RESERVED_NOR_FLASH_SECTORS) {
+        if(stepCounter == RESERVED_BL_SMALL_SECTORS) {
             stepCounter = 0;
         }
     }
@@ -115,24 +117,28 @@ ReturnValue_t ImageCopyingEngine::handleObswErasure() {
         else {
             currentFileSize = f_filelength(config::SW_UPDATE_SLOT_NAME);
         }
-        helperFlag1 = true;
-        helperCounter1 = 0;
-        uint8_t requiredBlocks = 0;
-        if(currentFileSize <=  NORFLASH_TOTAL_SMALL_SECTOR_MEM) {
-            requiredBlocks = std::ceil(
-                    static_cast<float>(currentFileSize) /
-                    (NORFLASH_SMALL_SECTOR_SIZE));
-        }
-        else {
-            requiredBlocks = NORFLASH_SMALL_SECTORS_NUMBER;
-            requiredBlocks += std::ceil(
-                    static_cast<float>(currentFileSize -
-                            NORFLASH_TOTAL_SMALL_SECTOR_MEM) /
-                    (NORFLASH_LARGE_SECTOR_SIZE));
-        }
-        helperCounter1 = requiredBlocks;
 
+//        helperCounter1 = 0;
+//        uint8_t requiredBlocks = 0;
+//        if(currentFileSize <=  NORFLASH_TOTAL_SMALL_SECTOR_MEM_OBSW) {
+//        	requiredBlocks = std::ceil(
+//        			static_cast<float>(currentFileSize) /
+//					(NORFLASH_SMALL_SECTOR_SIZE));
+//        }
+//        else {
+//        	requiredBlocks = RESERVED_OBSW_SMALL_SECTORS;
+//        	requiredBlocks += std::ceil(
+//        			static_cast<float>(currentFileSize -
+//        					NORFLASH_TOTAL_SMALL_SECTOR_MEM_OBSW) /
+//							(NORFLASH_LARGE_SECTOR_SIZE));
+//        }
+
+         helperFlag1 = true;
+         uint8_t requiredBlocks = NORFLASH_SECTORS_NUMBER -
+        		 RESERVED_BL_SMALL_SECTORS;
+         helperCounter1 = requiredBlocks;
     }
+
     while(stepCounter < helperCounter1) {
         int result = NORFLASH_EraseSector(&NORFlash,
                 getBaseAddress(stepCounter, nullptr));
@@ -198,15 +204,6 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
         }
     }
 
-    if(stepCounter == 0 and not bootloader) {
-        // We will write the size of the binary to the
-        // sixth ARM vector (see p.72 SAM9G20 datasheet)
-        // This will help for our custom bootloader to find out
-        // how big the binary is.
-        std::memcpy(imgBuffer->data() + 0x14, &currentFileSize,
-                sizeof(uint32_t));
-    }
-
     helperFlag1 = true;
     // we should consider a critical section here and extracting this
     // function to a special task with the highest priority so it can not
@@ -241,10 +238,9 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
     // SD card.
     helperFlag1 = false;
 
-
     if(currentByteIdx >= currentFileSize) {
         // operation finished.
-#if OBSW_REDUCED_PRINTOUT == 0
+#if OBSW_ENHANCED_PRINTOUT == 1
         if(bootloader) {
             sif::info << "Copying bootloader to NOR-Flash finished with "
                     << stepCounter << " steps!" << std::endl;
@@ -275,6 +271,9 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
                     << stepCounter << " steps!" << std::endl;
         }
 #endif
+        if(bootloader) {
+        	writeBootloaderSizeAndCrc();
+        }
 
         // cache last finished state.
         lastFinishedState = imageHandlerState;
@@ -287,6 +286,34 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
     return result;
 }
 
+void ImageCopyingEngine::writeBootloaderSizeAndCrc() {
+	int retval = NORFLASH_WriteData(&NORFlash, NORFLASH_BL_SIZE_START,
+			reinterpret_cast<unsigned char *>(&currentFileSize), 4);
+	if(retval != 0) {
+		sif::error << "Writing bootloader size failed!" << std::endl;
+	}
+	// calculate and write CRC to designated NOR-Flash address
+	// This will be used by the bootloader to determine SEUs in the
+	// bootloader.
+	uint16_t crc16 = CRC::crc16ccitt(reinterpret_cast<const uint8_t*>(
+			NORFLASH_BASE_ADDRESS_READ),
+			currentFileSize);
+	retval = NORFLASH_WriteData(&NORFlash, NORFLASH_BL_CRC16_START,
+			reinterpret_cast<unsigned char *>(&crc16),
+			sizeof(crc16));
+	if(retval != 0) {
+		sif::error << "Writing bootloader CRC16 failed!" << std::endl;
+	}
+#if OBSW_ENHANCED_PRINTOUT == 1
+	else {
+    	sif::info << std::setfill('0') << std::setw(2) << std::hex
+    			<< "Bootloader CRC16: " << "0x" << (crc16 >> 8 & 0xff) << ", "
+				<< "0x" << (crc16 & 0xff) << " written to address "
+				<< "0x" << NORFLASH_BL_CRC16_START << std::setfill(' ')
+				<< std::dec << std::endl;
+	}
+#endif
+}
 
 uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
         size_t* offset) {

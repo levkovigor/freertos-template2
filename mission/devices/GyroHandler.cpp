@@ -1,20 +1,23 @@
-#include <fsfwconfig/OBSWConfig.h>
 #include "GyroHandler.h"
 #include "devicedefinitions/GyroPackets.h"
 
 #if defined(at91sam9g20)
-extern "C" {
-#include <hal/Timing/RTT.h>
-}
+#include <systemObjectList.h>
+#include <sam9g20/core/CoreController.h>
+#endif
+
+#if OBSW_ENHANCED_PRINTOUT == 1
+#include <fsfw/globalfunctions/PeriodicOperationDivider.h>
 #endif
 
 #include <cmath>
+
 GyroHandler::GyroHandler(object_id_t objectId, object_id_t comIF,
         CookieIF *comCookie, uint8_t switchId):
         DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId),
 		gyroData(this), gyroConfigSet(this),
 		selfTestDivider(5) {
-#if OBSW_REDUCED_PRINTOUT == 0
+#if OBSW_ENHANCED_PRINTOUT == 1
     debugDivider = new PeriodicOperationDivider(20);
 #endif
     }
@@ -91,28 +94,14 @@ void GyroHandler::doShutDown() {
 ReturnValue_t GyroHandler::buildNormalDeviceCommand(DeviceCommandId_t *id) {
     switch(internalState) {
     case(InternalStates::RUNNING): {
-#if defined(at91sam9g20)
-        uint32_t currentSecondUptime = RTT_GetTime();
-        // todo: make self-test optional via parameter.
-        // perform self-test every week
-        if((currentSecondUptime - lastSelfTestSeconds) >=
-                SELF_TEST_PERIOD_SECOND) {
-            *id = GyroDefinitions::PERFORM_SELFTEST;
-            internalState = InternalStates::PERFORM_SELFTEST;
-            checkSelfTestRegister = true;
-            lastSelfTestSeconds = currentSecondUptime;
-            return buildCommandFromCommand(*id, nullptr, 0);
-        }
 
-        // if a self-test check is pending, check every few cycles.
-        if(checkSelfTestRegister) {
-            if(selfTestDivider.checkAndIncrement()) {
-                *id = GyroDefinitions::READ_STATUS;
-                internalState = InternalStates::READ_STATUS;
-                return buildCommandFromCommand(*id, nullptr, 0);
-            }
+#if defined(at91sam9g20)
+        ReturnValue_t result = checkSelfTest(id);
+        if(result != HasReturnvaluesIF::RETURN_FAILED) {
+            return result;
         }
 #endif
+
         // Poll Gyro Device. Perform block read of 7 bytes to read register
         // 0x12-0x17
         commandBuffer[0] = GyroDefinitions::GYRO_DATA_CMD;
@@ -497,7 +486,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 			float angularVelocityY = angularVelocityBinaryY * scaleFactor;
 			float angularVelocityZ = angularVelocityBinaryZ * scaleFactor;
 
-#if OBSW_REDUCED_PRINTOUT == 0
+#if OBSW_ENHANCED_PRINTOUT == 1
 			if(debugDivider->checkAndIncrement()) {
 				sif::info << "GyroHandler: Angular velocities in degrees per "
 						"second:" << std::endl;
@@ -571,4 +560,35 @@ ReturnValue_t GyroHandler::initializeLocalDataPool(
 
 	poolManager.subscribeForPeriodicPacket(gyroData.getSid(), false, 4.0, false);
 	return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t GyroHandler::checkSelfTest(DeviceCommandId_t* id) {
+    CoreController* coreController = objectManager->
+            get<CoreController>(objects::CORE_CONTROLLER);
+    if(coreController == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    // TODO: This will not work.. Use core controller second counter
+    // instead.
+    uint32_t currentSecondUptime = coreController->getUptimeSeconds();
+    // todo: make self-test optional via parameter.
+    // perform self-test every week
+    if((currentSecondUptime - lastSelfTestSeconds) >=
+            SELF_TEST_PERIOD_SECOND) {
+        *id = GyroDefinitions::PERFORM_SELFTEST;
+        internalState = InternalStates::PERFORM_SELFTEST;
+        checkSelfTestRegister = true;
+        lastSelfTestSeconds = currentSecondUptime;
+        return buildCommandFromCommand(*id, nullptr, 0);
+    }
+
+    // if a self-test check is pending, check every few cycles.
+    if(checkSelfTestRegister) {
+        if(selfTestDivider.checkAndIncrement()) {
+            *id = GyroDefinitions::READ_STATUS;
+            internalState = InternalStates::READ_STATUS;
+            return buildCommandFromCommand(*id, nullptr, 0);
+        }
+    }
+    return HasReturnvaluesIF::RETURN_FAILED;
 }

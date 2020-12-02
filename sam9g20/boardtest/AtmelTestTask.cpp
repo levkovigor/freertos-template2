@@ -15,7 +15,7 @@ extern "C" {
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include <sam9g20/utility/portwrapper.h>
+#include "../boardconfig/portwrapper.h"
 #include <at91/utility/hamming.h>
 #include <hcc/demo/demo_sd.h>
 #include <sam9g20/memory/SDCardApi.h>

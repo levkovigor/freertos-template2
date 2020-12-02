@@ -36,7 +36,6 @@
 //------------------------------------------------------------------------------
 //         Definitions
 //------------------------------------------------------------------------------
-// Let's assume 8192 bytes available stack space now for non-system modes.
 #define UND_STACK_SIZE	0x00000100		/* Stack size for "undefined instruction" interrupts	*/
 #define ABT_STACK_SIZE	0x00000100		/* Stack size for "abort" interrupts					*/
 #define FIQ_STACK_SIZE	0x00000000		/* Stack size for "FIQ" interrupts						*/
@@ -51,6 +50,7 @@
 #define ARM_MODE_UND	0x1B	/* Undefined Processing Undefined Instructions Mode			*/
 #define ARM_MODE_SYS	0x1F	/* System Running Priviledged Operating System Tasks Mode	*/
 
+#define JUMP_ADDRESS 	 0x20000000
 #define MODE_MSK         0x1F
 
 #define I_BIT            0x80
@@ -59,31 +59,26 @@
 //------------------------------------------------------------------------------
 //         Startup routine
 //------------------------------------------------------------------------------
-
-            .align      4
-            .arm
-        
 /* Exception vectors
  *******************/
-            .section    .vectors, "a", %progbits
+	.align      4
+	.arm
+	.section    .vectors, "a", %progbits
 
 resetVector:
-        ldr     pc, =resetHandler       /* Reset */
+	ldr     pc, =resetHandler        /* Reset */
 undefVector:
-        b       undefVector             /* Undefined instruction */
+	b       undefVector              /* Undefined instruction */
 swiVector:
-		ldr     pc, =vPortYieldProcessor /* Software interrupt */
-
+	ldr     pc, =vPortYieldProcessor /* Software interrupt */
 prefetchAbortVector:
-		ldr     pc, =prefetch_abort_irq_handler
-//      b       prefetchAbortVector     /* Prefetch abort */
+	b       prefetchAbortVector  	/* Prefetch abort */
 dataAbortVector:
-		ldr     pc, =data_abort_irq_handler
-//      b       dataAbortVector			/* Data abort */
+	b       dataAbortVector			/* Data abort */
 reservedVector:
-        b       reservedVector          /* Reserved for future use */
+	b       reservedVector          /* Reserved for future use */
 irqVector:
-        b       irqHandler              /* Interrupt */
+	b       irqHandler              /* Interrupt */
 fiqVector:
                                         /* Fast interrupt */
 //------------------------------------------------------------------------------
@@ -91,11 +86,12 @@ fiqVector:
 /// AIC.
 //------------------------------------------------------------------------------
 fiqHandler:
-        b       fiqHandler
+	b       fiqHandler
 	
 //------------------------------------------------------------------------------
 /// Handles incoming interrupt requests by branching to the corresponding
 /// handler, as defined in the AIC. Supports interrupt nesting.
+/// This is the irqHandler for FreeRTOS.
 //------------------------------------------------------------------------------
 irqHandler:
 
@@ -104,221 +100,210 @@ irqHandler:
 
 	// Push R0 as we are going to use the register.
 	// STMDB SP! is a synonym for PUSH and simply pushs the content in R0 to the stack
-	STMDB	SP!, {R0}
+	stmdb	sp!, {r0}
 
 	// Set R0 to point to the task stack pointer.
-	STMDB	SP, {SP}^
-	NOP
-	SUB		SP, SP, #4
-	LDMIA	SP!, {R0}
+	stmdb	sp, {sp}^
+	nop
+	sub		sp, sp, #4
+	ldmia	sp!, {r0}
 
 	// Push the return address onto the stack.
-	STMDB	R0!, {LR}
+	stmdb	r0!, {lr}
 
 	// Now we have saved LR we can use it instead of R0.
-	MOV		LR, R0
+	mov		lr, r0
 
 	// Pop R0 so we can save it onto the system mode stack.
-	LDMIA	SP!, {R0}
+	ldmia	sp!, {r0}
 
 	// Push all the system mode registers onto the task stack.
-	STMDB	LR, {R0-LR}^
-	NOP
-	SUB		LR, LR, #60
+	stmdb	lr, {r0-lr}^
+	nop
+	sub		lr, lr, #60
 
 	// Push the SPSR onto the task stack.
-	MRS		R0, SPSR
-	STMDB	LR!, {R0}
+	mrs		r0, spsr
+	stmdb	lr!, {r0}
 
-	LDR		R0, =ulCriticalNesting
-	LDR		R0, [R0]
-	STMDB	LR!, {R0}
+	ldr		r0, =ulCriticalNesting
+	ldr		r0, [r0]
+	stmdb	lr!, {r0}
 
 	// Store the new top of stack for the task.
-	LDR		R1, =pxCurrentTCB
-	LDR		R0, [R1]
-	STR		LR, [R0]
+	ldr		r1, =pxCurrentTCB
+	ldr		r0, [r1]
+	str		lr, [r0]
 
 /* load ISR
  **********/
 
     /* Write in the IVR to support Protect Mode */
-    LDR     lr, =AT91C_BASE_AIC
-    LDR     r0, [r14, #AIC_IVR]
-    STR     lr, [r14, #AIC_IVR]
+    ldr     lr, =AT91C_BASE_AIC
+    ldr     r0, [r14, #AIC_IVR]
+    str     lr, [r14, #AIC_IVR]
 
     /* Branch to C portion of the interrupt handler */
-    MOV     lr, pc
-    BX      r0
+    mov     lr, pc
+    bx      r0
 
     /* Acknowledge interrupt */
-    LDR     lr, =AT91C_BASE_AIC
-    STR     lr, [r14, #AIC_EOICR]
+    ldr     lr, =AT91C_BASE_AIC
+    str     lr, [r14, #AIC_EOICR]
 
 /* port restore context
  **********************/
 
 	// Set the LR to the task stack.
-	LDR		R1, =pxCurrentTCB
-	LDR		R0, [R1]
-	LDR		LR, [R0]
+	ldr 	r1, =pxCurrentTCB
+	ldr		r0, [r1]
+	ldr		lr, [r0]
 
 	// The critical nesting depth is the first item on the stack.
 	// Load it into the ulCriticalNesting variable.
-	LDR		R0, =ulCriticalNesting
-	LDMFD	LR!, {R1}
-	STR		R1, [R0]
+	ldr		r0, =ulCriticalNesting
+	ldmfd	lr!, {r1}
+	str		r1, [r0]
 
 	// Get the SPSR from the stack.
-	LDMFD	LR!, {R0}
-	MSR		SPSR_cxsf, R0
+	ldmfd	lr!, {r0}
+	msr 	SPSR_cxsf, r0
 
 	// Restore all system mode registers for the task.
-	LDMFD	LR, {R0-R14}^
-	NOP
+	ldmfd	lr, {r0-r14}^
+	nop
 
 	// Restore the return address.
-	LDR		LR, [LR, #+60]
+	ldr		lr, [lr, #+60]
 
 	// And return - correcting the offset in the LR to obtain the
 	// correct address.
-	SUBS	PC, LR, #4
+	subs	pc, lr, #4
 
 //------------------------------------------------------------------------------
 /// Initializes the chip and branches to the main() function.
 //------------------------------------------------------------------------------
-            .section    .startup
-            .global     entry
+	.section    .startup
+	.global     entry
 
 entry:
 resetHandler:
 
 /* Useless instruction for referencing the .vectors section */
-        ldr     r0, =resetVector
+	ldr     r0, =resetVector
 
 /* Set pc to actual code location (i.e. not in remap zone) */
-	    ldr     pc, =1f
+	ldr     pc, =1f
 
 /* Initialize the prerelocate segment */
 1:
-        ldr     r0, =_efixed
-        ldr     r1, =_sprerelocate
-        ldr     r2, =_eprerelocate
+	ldr     r0, =_efixed
+	ldr     r1, =_sprerelocate
+	ldr     r2, =_eprerelocate
 1:
-        cmp     r1, r2
-        ldrcc   r3, [r0], #4
-        strcc   r3, [r1], #4
-        bcc     1b
-
-/* Only execute this when the code is running from SDRAM */
-/* When the code runs from NORFLASH this is the same as normal bss which is handled above */
-/* Clear the SRAM zero segment */
-        ldr     r0, =_ssrambss
-        ldr     r1, =_esrambss
-        mov     r2, #0
-1:
-        cmp     r0, r1
-        strcc   r2, [r0], #4
-        bcc     1b
-
-#ifdef ISIS_OBC_G20
-		//ldr     sp, =_sstack
-		//stmfd   sp!, {r0}
-		//ldr     r0, =initLed
-		//blx     r0
-
-		//ldr     sp, =_sstack
- 		//stmfd   sp!, {r0}
- 		//ldr     r0, =toggleLed2
-		//blx     r0
-#endif
+	cmp     r1, r2
+	ldrcc   r3, [r0], #4
+	strcc   r3, [r1], #4
+	bcc     1b
 
 /* Perform low-level initialization of the chip using LowLevelInit() */
-		ldr     sp, =_sstack
-		stmfd   sp!, {r0}
-		ldr     r0, =LowLevelInit
-		blx     r0
+	ldr     sp, =_sstack
+	stmfd   sp!, {r0}
+	ldr     r0, =LowLevelInit
+	blx     r0
 
 #ifdef ISIS_OBC_G20
-/* Initiate external watchdog to prevent restart */
-        //ldr     sp, =_sstack
-        //stmfd   sp!, {r0}
-	    //ldr     r0, =initiateIsisWatchdog
-        //blx     r0
+/* Initiate external watchdog to prevent restart (if needed) */
+	//ldr     sp, =_sstack
+	//stmfd   sp!, {r0}
+	//ldr     r0, =initiateIsisWatchdog
+	//blx     r0
 #endif
 
 /* Initialize the postrelocate segment */
 
-        ldmfd   sp!, {r0}
-        ldr     r1, =_spostrelocate
-        ldr     r2, =_epostrelocate
+	ldmfd   sp!, {r0}
+	ldr     r1, =_spostrelocate
+	ldr     r2, =_epostrelocate
 1:
-        cmp     r1, r2
-        ldrcc   r3, [r0], #4
-        strcc   r3, [r1], #4
-        bcc     1b
+	cmp     r1, r2
+	ldrcc   r3, [r0], #4
+	strcc   r3, [r1], #4
+	bcc     1b
 
 /* Clear the zero segment */
-        ldr     sp, =_sstack
-        stmfd   sp!, {r0}
-	    ldr     r0, =clearBssSection
-        blx     r0
+	ldr     r0, =__bss_start__
+	ldr     r1, =__bss_end__
+	mov     r2, #0
+1:
+	cmp     r0, r1
+	strcc   r2, [r0], #4
+	bcc     1b
 
 /* Setup stacks
  **************/
-        ldr     r0, =_sstack /* Save the start of the stack in r0 */
-        ldr     sp, =_sstack
+	ldr     r0, =_sstack /* Save the start of the stack in r0 */
+	ldr     sp, =_sstack
 
 /* IRQ mode */
-        msr     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
-        mov     sp, r0
-        sub     r0, r0, #IRQ_STACK_SIZE
+	msr     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
+	mov     sp, r0
+	sub     r0, r0, #IRQ_STACK_SIZE
 
 /* Abort mode */
-        msr     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
-        mov     sp, r0
-        sub     r0, r0, #ABT_STACK_SIZE
+	msr     CPSR_c, #ARM_MODE_ABT | I_BIT | F_BIT
+	mov     sp, r0
+	sub     r0, r0, #ABT_STACK_SIZE
 
 /* Undefined mode */
-        msr     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
-        mov     sp, r0
-        sub     r0, r0, #UND_STACK_SIZE
+	msr     CPSR_c, #ARM_MODE_UND | I_BIT | F_BIT
+	mov     sp, r0
+	sub     r0, r0, #UND_STACK_SIZE
 
 /* FIQ mode (not used for now) */
-        # msr     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
-        # mov     sp, r0
-        # sub     r0, r0, #FIQ_STACK_SIZE
+	# msr     CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT
+	# mov     sp, r0
+	# sub     r0, r0, #FIQ_STACK_SIZE
 
-/* Supervisor mode (interrupts enabled) */
-        msr     CPSR_c, #ARM_MODE_SVC |I_BIT | F_BIT
-        mov     sp, r0
-        sub     r0, r0, #SVC_STACK_SIZE
+/* Supervisor mode */
+	msr     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
+	mov     sp, r0
+	sub     r0, r0, #SVC_STACK_SIZE
 
 /* System mode, the normal mode of operation */
-        msr     CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
-        mov     sp, r0
+	msr     CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
+ 	mov     sp, r0
 
-/* Start in supervisor mode, Operation will switch to system mode when the first task starts */
-        msr     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
-
-/* Call static constructors
- * this call deactivates the interrupts agein
- * interrutps are enabled agein when the freertos scheduler starts
- * libc_init_array runs through the list of static constructor addresses
- * placed in the .init_array and calls all static constructors (in case of the FSFW for example the DataPool::DataPool)
+/* Start in supervisor mode,with enabled interrupts.
+ * Operation will switch to system mode when the first task starts
  */
-#ifndef norflash
-		ldr r0,=__libc_init_array
-		mov lr,pc /* set the return address */
-		bx r0 /* the target code can be ARM or THUMB */
-#endif
+	msr     CPSR_c, #ARM_MODE_SVC | F_BIT
+
+/* Call static constructors, required for C++ code.
+this call deactivates the interrupts agein
+interrutps are enabled agein when the freertos scheduler starts
+libc_init_array runs through the list of static constructor addresses
+placed in the .init_array and calls all static constructors */
+	ldr r0,=__libc_init_array
+	mov lr,pc 	/* set the return address */
+	bx r0 		/* the target code can be ARM or THUMB */
 
 /* Branch to main()
  ******************/
-        ldr     r0, =main
-        blx     r0
+	ldr     r0, =main
+	blx     r0
 
 /* Loop indefinitely when program is finished */
 1:
-        b       1b
+	b       1b
+
+/* Jump to application and put the core into default power-on state */
+	.globl jump_to_sdram_application
+	.align 4
+	.type jump_to_sdram_application, %function
+
+jump_to_sdram_application:
+	msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
+	ldr r0, =JUMP_ADDRESS
+	mov pc, r0
 

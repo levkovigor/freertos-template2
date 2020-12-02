@@ -122,6 +122,7 @@ SECTIONS
 
     .bss (NOLOAD) : {
         _szero = .;
+        _sbss = .;
         __bss_start__ = _szero;
         *(.bss)
         *(.bss*)
@@ -129,6 +130,7 @@ SECTIONS
 		*(COMMON.*)
         . = ALIGN(4);
         _ezero = .;
+        _ebss = .;
         __bss_end__ = _ezero;
     } >sram1
     

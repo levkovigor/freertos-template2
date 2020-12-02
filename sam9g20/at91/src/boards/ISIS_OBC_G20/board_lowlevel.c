@@ -136,12 +136,14 @@ void assignBusMatrixPriorities() {
 ///             PLL and SMC.
 /// This function also reset the AIC and disable RTT and PIT interrupts
 //------------------------------------------------------------------------------
-#ifdef norflash
-void LowLevelInit(void) __attribute__ ((section(".sramfunc")));
-#endif
+void LowLevelInit(void) __attribute__ ((optimize("O0")));
 void LowLevelInit(void)
 {
     unsigned char i = 0;
+
+    // Sometimes we still have do this when flashing the SDRAM with SAM-BA
+    // because the SAM-BA low level init
+    // does not configure the SDRAM correctly!
 
 #ifndef sdram
     /* Initialize main oscillator
@@ -149,12 +151,11 @@ void LowLevelInit(void)
     AT91C_BASE_PMC->PMC_MOR = BOARD_OSCOUNT | AT91C_CKGR_MOSCEN;
     while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MOSCS));
 
-    /* Initialize PLLA at 200MHz (198.656) */
+    /* Initialize PLLA at 200MHz (198.656). Register is set to  0x202A3F01 */
     AT91C_BASE_PMC->PMC_PLLAR = BOARD_CKGR_PLLA
                                 | BOARD_PLLACOUNT
                                 | BOARD_MULA
                                 | BOARD_DIVA;
-    //AT91C_BASE_PMC->PMC_PLLAR = 0x202A3F01;
     while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCKA));
 
     // Initialize PLLB for USB usage (if not already locked)
@@ -222,7 +223,6 @@ void LowLevelInit(void)
 }
 
 
-void clearBssSection(void) __attribute__ ((section(".sramfunc")));
 void clearBssSection(void) {
     extern char _sbss, _ebss;
     memset(&_sbss, 0, &_ebss - &_sbss);
@@ -244,31 +244,9 @@ void clearBssSection(void) {
 
 #ifdef ISIS_OBC_G20
 
-void initiateIsisWatchdog() __attribute__ ((section(".sramfunc")));
 void initiateIsisWatchdog() {
     WDT_start();
     WDT_forceKick();
-}
-
-
-void initLed(void) __attribute__ ((section(".sramfunc")));
-void initLed(void) {
-	LED_start();
-}
-
-void toggleLed2(void) __attribute__ ((section(".sramfunc")));
-void toggleLed2(void) {
-	LED_toggle(led_2);
-}
-
-void toggleLed3(void) __attribute__ ((section(".sramfunc")));
-void toggleLed3(void) {
-	LED_toggle(led_3);
-}
-
-void toggleLed4(void) __attribute__ ((section(".sramfunc")));
-void toggleLed4(void) {
-	LED_toggle(led_4);
 }
 
 #endif

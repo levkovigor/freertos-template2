@@ -3,10 +3,12 @@
 
 #include "devicedefinitions/MGMHandlerLIS3Definitions.h"
 
+#include <fsfwconfig/OBSWConfig.h>
+
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
 #include <fsfw/globalfunctions/PeriodicOperationDivider.h>
 
-#include <fsfwconfig/events/subsystemIdRanges.h>
+#include <events/subsystemIdRanges.h>
 
 /**
  * @brief   Device handler object for the LIS3MDL 3-axis magnetometer
@@ -161,7 +163,7 @@ private:
 	CommunicationStep communicationStep = CommunicationStep::DATA;
 	bool commandExecuted = false;
 
-#if OBSW_REDUCED_PRINTOUT == 0
+#if OBSW_ENHANCED_PRINTOUT == 1
     PeriodicOperationDivider* debugDivider;
 #endif
 
