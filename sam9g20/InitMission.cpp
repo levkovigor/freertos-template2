@@ -5,7 +5,6 @@
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 
-#include <fsfw/datapoolglob/GlobalDataPool.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 
 #include <freertos/FreeRTOS.h>
@@ -32,12 +31,6 @@ bool config::softwareInitializationComplete = false;
 #endif
 #endif
 
-
-/* Initialize Data Pool */
-namespace glob {
-GlobalDataPool dataPool(datapool::dataPoolInit);
-}
-
 namespace sif {
 /* Set up output streams
  * Don't call these streams in HAL callback functions ! */
@@ -62,12 +55,13 @@ ServiceInterfaceStream error("ERROR", true);
 }
 
 /* will be created in main */
-ObjectManagerIF* objectManager;
+ObjectManagerIF* objectManager = nullptr;
 
 /* Board Tests, not used in mission */
 #if OBSW_ADD_TEST_CODE == 1
 void boardTestTaskInit();
 #endif
+
 void genericMissedDeadlineFunc();
 void printAddError(object_id_t objectId);
 void initTasks(void);

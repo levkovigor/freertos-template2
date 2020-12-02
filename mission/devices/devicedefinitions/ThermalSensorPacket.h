@@ -48,12 +48,10 @@ public:
         StaticLocalDataSet(sid_t(objectId, THERMAL_SENSOR_SET_ID)) {
     }
 
-    lp_var_t<float> temperatureCelcius = lp_var_t<float>(
-            PoolIds::TEMPERATURE_C,
-            hkManager->getOwner(), this);
-    lp_var_t<uint8_t> errorByte = lp_var_t<uint8_t>(
-            PoolIds::FAULT_BYTE,
-            hkManager->getOwner(), this);
+    lp_var_t<float> temperatureCelcius = lp_var_t<float>(hkManager->getOwner(),
+            PoolIds::TEMPERATURE_C, this);
+    lp_var_t<uint8_t> errorByte = lp_var_t<uint8_t>(hkManager->getOwner(),
+            PoolIds::FAULT_BYTE, this);
 };
 
 }
