@@ -250,20 +250,20 @@ void Factory::produce(void) {
 	uint8_t delayBeforeSpck = 2;
 
     CookieIF* spiCookie = nullptr;
-    spiCookie = new SpiCookie(addresses::SPI_Test_PT1000 ,
-            5, SlaveType::DEMULTIPLEXER_1, DemultiplexerOutput::OUTPUT_3,
-            SPImode::mode1_spi, 5 , 3'900'000, 1);
-    ThermalSensorHandler* thermalSensorHandler =  new ThermalSensorHandler(
-    		objects::SPI_Test_PT1000, objects::SPI_DEVICE_COM_IF, spiCookie,
-			switches::PT1000);
-    thermalSensorHandler->setStartUpImmediately();
-
-    spiCookie = new SpiCookie(addresses::SPI_Test_Gyro, 10,
-            SlaveType::DEMULTIPLEXER_1, DemultiplexerOutput::OUTPUT_4,
-            SPImode::mode0_spi, 2, 3'900'000, 1);
-    GyroHandler* gyroHandler = new GyroHandler(objects::SPI_Test_Gyro,
-            objects::SPI_DEVICE_COM_IF, spiCookie, switches::GYRO1);
-    gyroHandler->setStartUpImmediately();
+//    spiCookie = new SpiCookie(addresses::SPI_Test_PT1000 ,
+//            5, SlaveType::DEMULTIPLEXER_1, DemultiplexerOutput::OUTPUT_3,
+//            SPImode::mode1_spi, 5 , 3'900'000, 1);
+//    ThermalSensorHandler* thermalSensorHandler =  new ThermalSensorHandler(
+//    		objects::SPI_Test_PT1000, objects::SPI_DEVICE_COM_IF, spiCookie,
+//			switches::PT1000);
+//    thermalSensorHandler->setStartUpImmediately();
+//
+//    spiCookie = new SpiCookie(addresses::SPI_Test_Gyro, 10,
+//            SlaveType::DEMULTIPLEXER_1, DemultiplexerOutput::OUTPUT_4,
+//            SPImode::mode0_spi, 2, 3'900'000, 1);
+//    GyroHandler* gyroHandler = new GyroHandler(objects::SPI_Test_Gyro,
+//            objects::SPI_DEVICE_COM_IF, spiCookie, switches::GYRO1);
+//    gyroHandler->setStartUpImmediately();
 
     // I have no idea why we have to pick SPI mode 0 here (CPOL == 0 and
     // NCPHA == 1) instead of mode 3 (CPOL == 1 and NCPHA == 0) but we have to..
