@@ -378,7 +378,7 @@ void initTasks(void) {
 
     CoreController->startTask();
     SystemStateTask -> startTask();
-    ThermalController -> startTask();
+    //ThermalController -> startTask();
     SpiComTask->startTask();
 
     sif::info << "Remaining FreeRTOS heap size: " << std::dec

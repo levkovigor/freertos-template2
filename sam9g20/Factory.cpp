@@ -267,10 +267,10 @@ void Factory::produce(void) {
 
     // I have no idea why we have to pick SPI mode 0 here (CPOL == 0 and
     // NCPHA == 1) instead of mode 3 (CPOL == 1 and NCPHA == 0) but we have to..
-    spiCookie = new SpiCookie(addresses::SPI_Test_MGM, 60,
+    spiCookie = new SpiCookie(addresses::SPI_Test_MGM, 16,
             SlaveType::SLAVE_SELECT_1,
             DemultiplexerOutput::OWN_SLAVE_SELECT,
-            SPImode::mode0_spi, 2, 3'900'000, 1);
+            SPImode::mode0_spi, 0, 3'900'000, 0);
     MGMHandlerLIS3MDL* mgmHandler = new MGMHandlerLIS3MDL(objects::SPI_Test_MGM,
             objects::SPI_DEVICE_COM_IF, spiCookie);
     mgmHandler->setStartUpImmediately();
