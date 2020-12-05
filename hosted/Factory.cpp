@@ -1,3 +1,5 @@
+#include "Factory.h"
+
 #include <systemObjectList.h>
 #include <apid.h>
 #include <pusIds.h>
@@ -25,7 +27,7 @@
 #include <hosted/boardtest/TestTaskHost.h>
 #include <fsfw/pus/CService200ModeCommanding.h>
 #include <fsfw/pus/Service3Housekeeping.h>
-#include <hosted/Factory.h>
+
 #include <test/testdevices/TestDeviceHandler.h>
 
 #ifdef LINUX
