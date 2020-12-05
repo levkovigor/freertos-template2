@@ -1,13 +1,11 @@
-#include <Factory.h>
 #include <systemObjectList.h>
-#include <dataPoolInit.h>
 #include <apid.h>
 #include <pusIds.h>
 
 #include <test/testinterfaces/DummyEchoComIF.h>
 
 #include <mission/pus/Service17CustomTest.h>
-#include <mission/utility/TimeStamper.h>
+#include <fsfw/timemanager/TimeStamper.h>
 #include <mission/utility/TmFunnel.h>
 
 #include <fsfw/events/EventManager.h>
@@ -27,6 +25,7 @@
 #include <hosted/boardtest/TestTaskHost.h>
 #include <fsfw/pus/CService200ModeCommanding.h>
 #include <fsfw/pus/Service3Housekeeping.h>
+#include <hosted/Factory.h>
 #include <test/testdevices/TestDeviceHandler.h>
 
 #ifdef LINUX
@@ -59,12 +58,42 @@ void Factory::produce(void) {
 	new InternalErrorReporter(objects::INTERNAL_ERROR_REPORTER);
 
 	/* Pool manager handles storage und mutexes */
-	/* Data Stores. Currently reserving 9600 bytes of memory */
-	uint16_t numberOfElements[4] = {100, 30, 20, 10};
-	uint16_t sizeOfElements[4] = {32, 64, 128, 256};
-	new PoolManager<4>(objects::IPC_STORE, sizeOfElements, numberOfElements);
-	new PoolManager<4>(objects::TM_STORE, sizeOfElements, numberOfElements);
-	new PoolManager<4>(objects::TC_STORE, sizeOfElements, numberOfElements);
+	{
+	    // TODO: make this configurable via OBSWConfig.h
+	    LocalPool::LocalPoolConfig poolConfig = {
+	            {250, 32}, {120, 64}, {100, 128}, {50, 256},
+	            {25, 512}, {10, 1024}, {10, 2048}
+	    };
+	    PoolManager* ipcStore = new PoolManager(objects::IPC_STORE, poolConfig);
+	    size_t additionalSize = 0;
+	    size_t storeSize = ipcStore->getTotalSize(&additionalSize);
+        sif::info << "Allocating " << storeSize + additionalSize << " bytes "
+                <<"for the IPC Store.." << std::endl;
+	}
+
+	{
+        LocalPool::LocalPoolConfig poolConfig = {
+                {500, 32}, {250, 64}, {120, 128}, {60, 256},
+                {30, 512}, {15, 1024}, {10, 2048}
+        };
+        PoolManager* tmStore = new PoolManager(objects::TM_STORE, poolConfig);
+        size_t additionalSize = 0;
+        size_t storeSize = tmStore->getTotalSize(&additionalSize);
+        sif::info << "Allocating " << storeSize + additionalSize << " bytes "
+                <<"for the TM Store.." << std::endl;
+	}
+
+	{
+        LocalPool::LocalPoolConfig poolConfig = {
+                {500, 32}, {250, 64}, {120, 128},
+                {60, 256}, {30, 512}, {15, 1024}, {10, 2048}
+        };
+        PoolManager* tcStore =new PoolManager(objects::TC_STORE, poolConfig);
+        size_t additionalSize = 0;
+        size_t storeSize = tcStore->getTotalSize(&additionalSize);
+        sif::info << "Allocating " << storeSize + additionalSize << " bytes "
+                <<"for the TC Store.." << std::endl;
+	}
 
 	new TimeStamper(objects::PUS_TIME);
 
@@ -114,7 +143,7 @@ void Factory::produce(void) {
 	new TestEchoComIF(objects::DUMMY_INTERFACE);
 	new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_INTERFACE,
 	        dummyCookie, true);
-	new TestTaskHost(objects::TEST_TASK);
+	new TestTaskHost(objects::TEST_TASK, false);
 }
 
 void Factory::setStaticFrameworkObjectIds() {

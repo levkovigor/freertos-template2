@@ -2,7 +2,7 @@
 #define MISSION_DEVICES_GYROHANDLER_H_
 
 #include "devicedefinitions/GyroPackets.h"
-#include <fsfwconfig/OBSWConfig.h>
+#include <OBSWConfig.h>
 
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
 #include <fsfw/globalfunctions/PeriodicOperationDivider.h>
