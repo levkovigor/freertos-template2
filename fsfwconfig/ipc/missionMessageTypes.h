@@ -1,8 +1,9 @@
 #ifndef FSFWCONFIG_IPC_MISSIONMESSAGETYPES_H_
 #define FSFWCONFIG_IPC_MISSIONMESSAGETYPES_H_
 
-#include <fsfw/ipc/CommandMessage.h>
 #include <fsfw/ipc/FwMessageTypes.h>
+
+class CommandMessage;
 
 /**
  * Custom command messages are specified here.

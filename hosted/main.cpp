@@ -5,7 +5,7 @@
 #endif
 
 #include <iostream>
-#include <version.h>
+#include <OBSWVersion.h>
 
 // This will be the entry to the mission specific code
 void initMission();

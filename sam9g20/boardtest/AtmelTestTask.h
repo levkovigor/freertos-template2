@@ -3,7 +3,6 @@
 
 #include <test/testtasks/TestTask.h>
 #include <fsfw/timemanager/Countdown.h>
-#include <fsfwconfig/cdatapool/dataPoolInit.h>
 
 extern "C" {
 #include <board.h>

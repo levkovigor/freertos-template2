@@ -10,7 +10,7 @@
  */
 class TestTaskHost : public TestTask {
 public:
-	TestTaskHost(object_id_t object_id);
+	TestTaskHost(object_id_t object_id, bool periodicPrint = false);
 	virtual ~TestTaskHost();
 	ReturnValue_t performOperation(uint8_t operationCode = 0) override;
 	ReturnValue_t performOneShotAction() override;
@@ -19,6 +19,8 @@ public:
 private:
 	void testBaseAsFriend();
 	void sharedPtrPoolTest();
+
+	bool periodicPrint = false;
 };
 
 class Base {

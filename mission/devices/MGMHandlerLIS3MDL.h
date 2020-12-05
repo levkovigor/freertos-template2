@@ -3,7 +3,7 @@
 
 #include "devicedefinitions/MGMHandlerLIS3Definitions.h"
 
-#include <fsfwconfig/OBSWConfig.h>
+#include <OBSWConfig.h>
 
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
 #include <fsfw/globalfunctions/PeriodicOperationDivider.h>
