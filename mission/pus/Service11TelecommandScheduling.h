@@ -5,6 +5,11 @@
 #include <etl/multimap.h>
 #include <fsfwconfig/OBSWConfig.h>
 
+// from meeting 07.12.20:
+// this class can be considered final (can also be marked),
+// overridden methods do not need to be virtual anymore
+
+
 class Service11TelecommandScheduling: public PusServiceBase {
 public:
     Service11TelecommandScheduling(object_id_t objectId, uint16_t apid,
