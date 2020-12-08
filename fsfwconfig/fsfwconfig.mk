@@ -1,4 +1,3 @@
-CXXSRC += $(wildcard $(CURRENTPATH)/cdatapool/*.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/ipc/*.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/hk/*.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/objects/*.cpp)
@@ -16,7 +15,6 @@ INCLUDES += $(CURRENTPATH)/returnvalues
 INCLUDES += $(CURRENTPATH)/tmtc
 INCLUDES += $(CURRENTPATH)/events
 INCLUDES += $(CURRENTPATH)/devices
-INCLUDES += $(CURRENTPATH)/cdatapool
 INCLUDES += $(CURRENTPATH)/pollingsequence
 INCLUDES += $(CURRENTPATH)/ipc
 INCLUDES += $(CURRENTPATH)/hk

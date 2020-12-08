@@ -1,27 +1,17 @@
 #include <PollingSequenceFactory.h>
-#include <dataPoolInit.h>
-#include <Factory.h>
 #include <systemObjectList.h>
 
-#include <unittest/internal/InternalUnitTester.h>
-#include <unittest/internal/IntTestMutex.h>
-#include <fsfw/datapoolglob/GlobalDataPool.h>
 #include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/tasks/PeriodicTaskIF.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/timemanager/Stopwatch.h>
+#include <hosted/Factory.h>
 
 #include <ostream>
 
 /* Declare global object manager */
 ObjectManagerIF* objectManager;
-
-/* Initialize Data Pool */
-namespace glob {
-GlobalDataPool dataPool(datapool::dataPoolInit);
-}
-
 
 /* Set up output streams */
 namespace sif {
@@ -44,6 +34,7 @@ void initMission() {
 	objectManager = new ObjectManager(Factory::produce);
 	objectManager -> initialize();
 
+	sif::info << "Creating tasks.." << std::endl;
 	initTask();
 }
 
@@ -158,6 +149,7 @@ void initTask() {
 		sif::error << "creating PST failed" << std::endl;
 	}
 
+	sif::info << "Starting tasks.." << std::endl;
 	TestTask->startTask();
 	PacketDistributorTask->startTask();
 	PollingSequenceTableTaskDefault->startTask();

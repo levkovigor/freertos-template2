@@ -182,14 +182,14 @@ The code needs to be compiled for the ARM target system and we will use the
 If you don't want to install nodejs you may go with the 
 [four-command manual installation](https://xpack.github.io/arm-none-eabi-gcc/install/#manual-install). 
 
-### Linux: Install C++ buildchain on Linux if using Linux
+### Linux: Install C++ buildchain on Linux
 
 Install the [GNU ARM toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/)
 like explained above, but for Linux, windows build tools not required.
 
 On Linux, the a path can be added to the system variables by adding
 `export PATH=$PATH:<..../@gnu-mcu-eclipse/arm-none-eabi-gcc/<version>/.content/bin>`
-to the `.profile` or `.bashrc` file.
+to the `.profile` or `.bashrc` file. Alternatively, if you want to keep the environment and the path clean, add it temporarily with `export PATH=%PATH%;c:\pathtotoolchain`.  
    
 To install general buildtools for the linux binary, run:
 ```sh

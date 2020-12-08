@@ -16,14 +16,21 @@ enum class LocalPoolIds {
 
 class TestDataset: public StaticLocalDataSet<3> {
 public:
-	TestDataset(sid_t sid, bool setAllValid =  true);
+	TestDataset(sid_t sid, bool setAllValid = true): StaticLocalDataSet(sid) {
+		if(setAllValid) {
+			this->setValidity(true, true);
+		}
+	}
 
 	// Can be used if data is changed regularly.
 	bool mode = false;
 
-	lp_var_t<uint8_t> testVar1;
-	lp_vec_t<float, 3> testVar2;
-	lp_vec_t<uint32_t, 3> testVar3;
+	lp_var_t<uint8_t> testVar1 = lp_var_t<uint8_t>(sid.objectId,
+			static_cast<lp_id_t>(LocalPoolIds::TEST_VAR_1), this);
+	lp_vec_t<float, 3> testVar2 = lp_vec_t<float,3>(sid.objectId,
+			static_cast<lp_id_t>(LocalPoolIds::TEST_VEC_1), this);
+	lp_vec_t<uint32_t, 3> testVar3 = lp_vec_t<uint32_t, 3>(sid.objectId,
+			static_cast<lp_id_t>(LocalPoolIds::TEST_VEC_2), this);
 private:
 
 };

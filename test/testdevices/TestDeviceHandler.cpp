@@ -405,15 +405,3 @@ ReturnValue_t TestDevice::initializeLocalDataPool(LocalDataPool& localDataPoolMa
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
-TestDataset::TestDataset(sid_t sid, bool setAllValid): StaticLocalDataSet(sid),
-		testVar1(static_cast<lp_id_t>(LocalPoolIds::TEST_VAR_1), sid.objectId,
-				this),
-		testVar2(static_cast<lp_id_t>(LocalPoolIds::TEST_VEC_1), sid.objectId,
-				this),
-		testVar3(static_cast<lp_id_t>(LocalPoolIds::TEST_VEC_2), sid.objectId,
-				this) {
-	if(setAllValid) {
-		this->setValidity(true, true);
-	}
-}
-
