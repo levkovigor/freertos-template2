@@ -28,7 +28,7 @@ public:
 	static const uint8_t INTERFACE_ID = CLASS_ID::MGM_LIS3MDL;
 	static const uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::MGM_LIS3MDL;
 	//Notifies a command to change the setup parameters
-	static const Event CHANGE_OF_SETUP_PARAMETER = MAKE_EVENT(0, SEVERITY::LOW);
+	static const Event CHANGE_OF_SETUP_PARAMETER = MAKE_EVENT(0, severity::LOW);
 
 	MGMHandlerLIS3MDL(uint32_t objectId, object_id_t deviceCommunication,
 	        CookieIF* comCookie);

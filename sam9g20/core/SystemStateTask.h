@@ -24,7 +24,7 @@ public:
 	static constexpr size_t STACK_THRESHOLD = 1000;
 
 	static constexpr uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::SYSTEM_STATE_TASK;
-	static constexpr Event LOW_REM_STACK = MAKE_EVENT(0, SEVERITY::LOW); //!< P1: First four letter of task name, P2: Second four letters of task name.
+	static constexpr Event LOW_REM_STACK = MAKE_EVENT(0, severity::LOW); //!< P1: First four letter of task name, P2: Second four letters of task name.
 
     SystemStateTask(object_id_t objectId, object_id_t coreControllerId);
 

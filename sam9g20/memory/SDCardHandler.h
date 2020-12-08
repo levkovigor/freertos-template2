@@ -51,10 +51,10 @@ public:
     static const uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::SD_CARD_HANDLER;
 
 
-    static constexpr Event SD_CARD_SWITCHED = MAKE_EVENT(0x00, SEVERITY::MEDIUM); //!< It was not possible to open the preferred SD card so the other was used. P1: Active volume
-    static constexpr Event SD_CARD_ACCESS_FAILED = MAKE_EVENT(0x01, SEVERITY::HIGH); //!< Opening failed for both SD cards.
-    static constexpr Event SEQUENCE_PACKET_MISSING_WRITE_EVENT = MAKE_EVENT(0x02, SEVERITY::LOW); //!< P1: Sequence packet missing.
-    static constexpr Event SEQUENCE_PACKET_MISSING_READ_EVENT = MAKE_EVENT(0x03, SEVERITY::LOW); //!< P1: Sequence packet missing.
+    static constexpr Event SD_CARD_SWITCHED = MAKE_EVENT(0x00, severity::MEDIUM); //!< It was not possible to open the preferred SD card so the other was used. P1: Active volume
+    static constexpr Event SD_CARD_ACCESS_FAILED = MAKE_EVENT(0x01, severity::HIGH); //!< Opening failed for both SD cards.
+    static constexpr Event SEQUENCE_PACKET_MISSING_WRITE_EVENT = MAKE_EVENT(0x02, severity::LOW); //!< P1: Sequence packet missing.
+    static constexpr Event SEQUENCE_PACKET_MISSING_READ_EVENT = MAKE_EVENT(0x03, severity::LOW); //!< P1: Sequence packet missing.
 
     /** Service 8 Commands */
 
