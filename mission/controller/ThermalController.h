@@ -10,6 +10,9 @@ public:
 	ThermalController(object_id_t objectId);
 private:
 
+	// TODO: Add stubs for thermal components. Each device / assembly with one
+	// or multiple redundant sensors will have a thermal component.
+
 	/** ExtendedControllerBase overrides */
     virtual ReturnValue_t handleCommandMessage(
             CommandMessage *message) override;

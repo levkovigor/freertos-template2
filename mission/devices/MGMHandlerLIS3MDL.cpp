@@ -1,11 +1,11 @@
-#include <fsfw/datapool/PoolEntry.h>
 #include "MGMHandlerLIS3MDL.h"
+
 
 MGMHandlerLIS3MDL::MGMHandlerLIS3MDL(object_id_t objectId,
         object_id_t deviceCommunication, CookieIF* comCookie):
 		DeviceHandlerBase(objectId, deviceCommunication, comCookie) {
 #if OBSW_ENHANCED_PRINTOUT == 1
-    debugDivider = new PeriodicOperationDivider(20);
+    debugDivider = new PeriodicOperationDivider(10);
 #endif
     // Set to default values right away.
     registers[0] = MGMLIS3MDL::CTRL_REG1_DEFAULT;
@@ -228,8 +228,8 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 		uint8_t scale = getFullScale(registers[2]);
 		float sensitivityFactor = getSensitivityFactor(scale);
 
-		int16_t mgmMeasurementRawX = packet[MGMLIS3MDL::X_LOWBYTE_IDX] << 8
-		        | packet[MGMLIS3MDL::X_HIGHBYTE_IDX] ;
+		int16_t mgmMeasurementRawX = packet[MGMLIS3MDL::X_HIGHBYTE_IDX] << 8
+		        | packet[MGMLIS3MDL::X_LOWBYTE_IDX] ;
         int16_t mgmMeasurementRawY = packet[MGMLIS3MDL::Y_HIGHBYTE_IDX] << 8
                 | packet[MGMLIS3MDL::Y_LOWBYTE_IDX] ;
         int16_t mgmMeasurementRawZ = packet[MGMLIS3MDL::Z_HIGHBYTE_IDX] << 8

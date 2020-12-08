@@ -39,6 +39,7 @@ SDCardAccessManager::~SDCardAccessManager() {
 }
 
 
+#ifdef ISIS_OBC_G20
 bool SDCardAccessManager::getSdCardChangeOngoing() const {
     MutexHelper(mutex, MutexIF::TimeoutType::WAITING,
             config::SD_CARD_ACCESS_MUTEX_TIMEOUT);
@@ -66,18 +67,22 @@ bool SDCardAccessManager::tryActiveSdCardChange() {
     }
     return false;
 }
+#endif
+
 
 SDCardAccess::SDCardAccess() {
     int result = 0;
     MutexHelper(SDCardAccessManager::instance()->mutex,
             MutexIF::TimeoutType::WAITING,
             config::SD_CARD_ACCESS_MUTEX_TIMEOUT);
+#ifdef ISIS_OBC_G20
     // we locked the mutex so we can access the internal states directly.
     if(SDCardAccessManager::instance()->changingSdCard == true) {
         // deny the access, a SD card change is going on!
         accessResult = HasReturnvaluesIF::RETURN_FAILED;
         return;
     }
+#endif
     currentVolumeId = SDCardAccessManager::instance()->activeSdCard;
     if(SDCardAccessManager::instance()->activeAccesses == 0) {
         result = open_filesystem(currentVolumeId);

@@ -42,7 +42,7 @@ public:
 	static constexpr uint8_t INTERFACE_ID = CLASS_ID::SPI_COM_IF;
 	static constexpr uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::SPI_COM_IF;
 
-	static constexpr Event SPI_START_FAILURE = MAKE_EVENT(0x00, SEVERITY::HIGH);
+	static constexpr Event SPI_START_FAILURE = MAKE_EVENT(0x00, severity::HIGH);
 	static constexpr ReturnValue_t SPI_INIT_FAILURE = MAKE_RETURN_CODE(0x01);
 	static constexpr ReturnValue_t SPI_COMMUNICATION_TIMEOUT =
 	        MAKE_RETURN_CODE(0x02);

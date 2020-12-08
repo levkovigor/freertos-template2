@@ -87,6 +87,7 @@ CUSTOM_DEFINES += -D$(OS_APP)
 PRIVLIB_PATH = privlib
 BOOTLOADER_PATH = bootloader
 FREERTOS_PATH = freertos
+COMMON_PATH = $(BOARD_FILE_ROOT)/common
 CORE_PATH = $(BOOTLOADER_PATH)/core
 AT91_PATH = $(BOARD_FILE_ROOT)/at91
 
@@ -206,11 +207,11 @@ INCLUDES :=
 
 # Directories where $(directoryname).mk files should be included from.
 # Source files and includes can be added in those submakefiles.
-SUBDIRS := $(BOOTLOADER_PATH) $(PRIVLIB_PATH) $(AT91_PATH) $(CORE_PATH)
+SUBDIRS := $(BOOTLOADER_PATH) $(PRIVLIB_PATH) $(AT91_PATH) $(CORE_PATH) 
 
 ifdef IOBC
 # ifeq ($(MEMORY_TYPE), norflash) 
-SUBDIRS += $(FREERTOS_PATH)
+SUBDIRS += $(FREERTOS_PATH) $(COMMON_PATH)
 # endif
 endif
 

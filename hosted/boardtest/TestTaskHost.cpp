@@ -1,8 +1,8 @@
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <hosted/boardtest/TestTaskHost.h>
 
-TestTaskHost::TestTaskHost(object_id_t object_id):
-	TestTask(object_id) {
+TestTaskHost::TestTaskHost(object_id_t object_id, bool periodicPrint):
+	TestTask(object_id), periodicPrint(periodicPrint) {
 }
 
 TestTaskHost::~TestTaskHost() {
@@ -10,8 +10,11 @@ TestTaskHost::~TestTaskHost() {
 
 ReturnValue_t TestTaskHost::performOperation(uint8_t operationCode) {
     ReturnValue_t result = TestTask::performOperation(operationCode);
-//    sif::info << "TestTaskLinux::performOperation: Hello, I am alive."
-//    		<< std::endl;
+    if(periodicPrint) {
+        sif::info << "TestTaskHost::performOperation: Hello, I am alive."
+        		<< std::endl;
+    }
+
 	return result;
 }
 

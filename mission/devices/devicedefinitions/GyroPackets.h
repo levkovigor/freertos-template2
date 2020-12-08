@@ -71,15 +71,12 @@ public:
     GyroPrimaryDataset(object_id_t gyroId):
         StaticLocalDataSet(sid_t(gyroId, GYRO_DATA_SET_ID)) {}
 
-    lp_var_t<float> angVelocityX = lp_var_t<float>(
-            ANGULAR_VELOCITY_X,
-            sid.objectId, this);
-    lp_var_t<float> angVelocityY = lp_var_t<float>(
-            ANGULAR_VELOCITY_Y,
-            sid.objectId, this);
-    lp_var_t<float> angVelocityZ = lp_var_t<float>(
-            ANGULAR_VELOCITY_Z,
-            sid.objectId, this);
+    lp_var_t<float> angVelocityX = lp_var_t<float>(sid.objectId,
+            ANGULAR_VELOCITY_X, this);
+    lp_var_t<float> angVelocityY = lp_var_t<float>(sid.objectId,
+            ANGULAR_VELOCITY_Y, this);
+    lp_var_t<float> angVelocityZ = lp_var_t<float>(sid.objectId,
+            ANGULAR_VELOCITY_Z, this);
 };
 
 class GyroAuxilliaryDataset: public StaticLocalDataSet<2 * sizeof(uint8_t)> {
@@ -90,11 +87,10 @@ public:
     GyroAuxilliaryDataset(object_id_t gyroId):
         StaticLocalDataSet(sid_t(gyroId, GYRO_AUX_SET_ID)) {}
 
-    lp_var_t<uint8_t> gyroGeneralConfigReg42 = lp_var_t<uint8_t>(
-            GENERAL_CONFIG_REG42, sid.objectId, this);
-    lp_var_t<uint8_t> gyroRangeConfigReg43 =  lp_var_t<uint8_t>(
-            RANGE_CONFIG_REG43,
-            sid.objectId, this);
+    lp_var_t<uint8_t> gyroGeneralConfigReg42 = lp_var_t<uint8_t>(sid.objectId,
+            GENERAL_CONFIG_REG42, this);
+    lp_var_t<uint8_t> gyroRangeConfigReg43 =  lp_var_t<uint8_t>(sid.objectId,
+            RANGE_CONFIG_REG43, this);
 };
 
 

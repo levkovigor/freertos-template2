@@ -12,6 +12,8 @@
 #include <at91/utility/exithandler.h>
 #include <at91/utility/trace.h>
 
+#include <OBSWConfig.h>
+
 #define RSTC_KEY_PASSWORD       (0xA5 << 24)
 
 void gracefulReset() __attribute__ ((long_call, section (".sramfunc")));
@@ -26,7 +28,10 @@ static void disableCaches() {
 }
 
 void restart() {
+    // Disable this for mission, this also allocated when using newlib
+#if OBSW_ENHANCED_PRINTOUT == 1
 	TRACE_ERROR_WP("\n\r____RESTARTING____\n\r");
+#endif
 	disableCaches();
 	gracefulReset();
 }

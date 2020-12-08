@@ -5,11 +5,9 @@
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 
-#include <fsfw/datapoolglob/GlobalDataPool.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 
 #include <freertos/FreeRTOS.h>
-#include <fsfwconfig/cdatapool/dataPoolInit.h>
 #include <fsfwconfig/objects/systemObjectList.h>
 #include <fsfwconfig/OBSWConfig.h>
 #include <fsfwconfig/pollingsequence/PollingSequenceFactory.h>
@@ -31,12 +29,6 @@ static size_t allocatedSize = 0;
 bool config::softwareInitializationComplete = false;
 #endif
 #endif
-
-
-/* Initialize Data Pool */
-namespace glob {
-GlobalDataPool dataPool(datapool::dataPoolInit);
-}
 
 namespace sif {
 /* Set up output streams
@@ -62,12 +54,13 @@ ServiceInterfaceStream error("ERROR", true);
 }
 
 /* will be created in main */
-ObjectManagerIF* objectManager;
+ObjectManagerIF* objectManager = nullptr;
 
 /* Board Tests, not used in mission */
 #if OBSW_ADD_TEST_CODE == 1
 void boardTestTaskInit();
 #endif
+
 void genericMissedDeadlineFunc();
 void printAddError(object_id_t objectId);
 void initTasks(void);
@@ -293,9 +286,11 @@ void initTasks(void) {
     	printAddError(objects::PUS_SERVICE_23_FILE_MGMT);
     }
     /* SD Card handler task */
-#ifdef DEBUG
+#ifdef AT91SAM9G20_EK
     float sdCardTaskPeriod = 0.6;
 #else
+    /* iOBC SD-Cards SLC are usually slower than modern SD-Card,
+    therefore a spearate task period can be set here */
     float sdCardTaskPeriod = 0.6;
 #endif
     PeriodicTaskIF* SDCardTask = TaskFactory::instance()->
@@ -383,7 +378,7 @@ void initTasks(void) {
 
     CoreController->startTask();
     SystemStateTask -> startTask();
-    ThermalController -> startTask();
+    //ThermalController -> startTask();
     SpiComTask->startTask();
 
     sif::info << "Remaining FreeRTOS heap size: " << std::dec
@@ -395,7 +390,7 @@ void initTasks(void) {
     }
 #if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1
     sif::info << "Allocated size by new function: " << allocatedSize
-            << std::endl;
+            << " bytes." << std::endl;
 #endif
     sif::info << "Tasks started." << std::endl;
 }
@@ -407,7 +402,7 @@ void boardTestTaskInit() {
     /* Polling Sequence Table Test */
     FixedTimeslotTaskIF * PollingSequenceTableTaskTest =
             TaskFactory::instance()->createFixedTimeslotTask(
-                    "PST_TASK_ARDUINO", 4, 2048 * 4, 0.4, genericMissedDeadlineFunc);
+            "PST_TEST_TASK", 4, 2048 * 4, 0.4, genericMissedDeadlineFunc);
     result = pst::pollingSequenceInitTest(PollingSequenceTableTaskTest);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "creating PST failed" << std::endl;
@@ -454,16 +449,16 @@ void boardTestTaskInit() {
     //  }
 
     /* SPI Test Task */
-//    PeriodicTaskIF* SPITask = TaskFactory::instance()->
-//            createPeriodicTask("SPI_TASK",4, 2048, 1, nullptr);
-//    result = SPITask->addComponent(objects::AT91_SPI_TEST_TASK);
-//    if (result != HasReturnvaluesIF::RETURN_OK) {
-//        sif::error << "Add component SPI Task failed" << std::endl;
-//    }
+    //    PeriodicTaskIF* SPITask = TaskFactory::instance()->
+    //            createPeriodicTask("SPI_TASK",4, 2048, 1, nullptr);
+    //    result = SPITask->addComponent(objects::AT91_SPI_TEST_TASK);
+    //    if (result != HasReturnvaluesIF::RETURN_OK) {
+    //        sif::error << "Add component SPI Task failed" << std::endl;
+    //    }
 
     sif::info << "Starting test tasks.." << std::endl;
 
-    //PollingSequenceTableTaskTest -> startTask ();
+    PollingSequenceTableTaskTest -> startTask ();
     TestTask -> startTask();
     //SPITask -> startTask();
     //I2CTask -> startTask();
@@ -483,6 +478,8 @@ void* operator new(size_t size) {
 #endif
 #if OBSW_MONITOR_ALLOCATION == 1
     if(config::softwareInitializationComplete) {
+        // To prevent infinite recursion in some cases.
+        config::softwareInitializationComplete = false;
     	sif::error << "Software Initialization complete but memory "
     			<< "is allocated!" << std::endl;
     }
