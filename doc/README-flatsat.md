@@ -15,15 +15,19 @@ Write mail to zert@irs.uni-stuttgart.de to get OpenVPN configuration.
    Network &rarr VPN and press + to add the .ovpn file configuration
 3. Connect to the VPN
 4. Connect to Flatsat (password needed, ask Jonas Burgdorf on Mattermost):
-```sh
-ssh (-X) source@flatsat.source.absatvirt.lw
-```
--X is optional for graphical applications
-There is also another command for port forwarding
-```sh
-ssh -L <localPort>:localhost:<remotePort> source@flatsat.source.absatvirt.lw
-```
-to tunnel from <localPort> to the <remotePort> on the flatsat.
+   ```sh
+   ssh (-X) source@flatsat.source.absatvirt.lw
+   ```
+   
+   It is recommended to set up SSH configuration either in Eclipse (cross-platform
+   and convenient solution) via the terminal feature (terminal button at the top) or
+   via Putty or Unix Alias.
+   -X is optional for graphical applications
+   There is also another command for port forwarding
+   ```sh
+   ssh -L <localPort>:localhost:<remotePort> source@flatsat.source.absatvirt.lw
+   ```
+   to tunnel from <localPort> to the <remotePort> on the flatsat.
 
 ### Common commands
 When building on the flatsat computer directly, it is recommended to add
