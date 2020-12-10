@@ -1,27 +1,11 @@
 <a id="top"></a> <a name="flatsat"></a> 
 
-## Common commands
-When building on the flatsat computer directly, it is recommended to add
-ADD\_CR=1 so that debug output is readable.
- 
-Build software for debugging
-```sh
-make debug IOBC=1 -j
-```
-
-Build release software
-```sh
-make mission IOBC=1 -j
-```
-
-Build bootloader
-```sh
-make mission -f Makefile-Bootloader IOBC=1 -j
-```
+The OBC engineering model was set up in the clean room at a flatsat computer which allows remot development and software deployment.
 
 ## Basic instructions for Flatsat
 
 ### Connecting to the flatsat computer
+
 1. Set up VPN, [IRS  mail account](https://cube18.irs.uni-stuttgart.de/) required: 
 Write mail to zert@irs.uni-stuttgart.de to get OpenVPN configuration.
 2. Download OpenVPN and configure it with the configuratioon files.
@@ -40,6 +24,25 @@ There is also another command for port forwarding
 ssh -L <localPort>:localhost:<remotePort> source@flatsat.source.absatvirt.lw
 ```
 to tunnel from <localPort> to the <remotePort> on the flatsat.
+
+### Common commands
+When building on the flatsat computer directly, it is recommended to add
+ADD\_CR=1 so that debug output is readable.
+ 
+Build software for debugging
+```sh
+make debug IOBC=1 -j
+```
+
+Build release software
+```sh
+make mission IOBC=1 -j
+```
+
+Build bootloader
+```sh
+make mission -f Makefile-Bootloader IOBC=1 -j
+```
 
 ### Building software on flatsat computer
 1. Navigate to obsw folder
