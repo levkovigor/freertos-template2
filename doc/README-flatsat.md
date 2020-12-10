@@ -56,12 +56,12 @@ use `kill-session` instead. In some cases, it can becomes necessary to restart
 the J-Link GDB Server. The GDB Server should be run with the following command
 
 ```sh
-JLinkGDBServerCLExe -USB -device AT91SAM9G20 -endian little -if JTAG -speed auto -noLocalhostOnly 
+JLinkGDBServerCLExe -select USB=261002202 -device AT91SAM9G20 -endian little -if JTAG -speed auto -noLocalhostOnly -nogui
 ```
 Add a & at the end optionally to run it in the background. Background processes can be listed
 with `ps -aux` and killed with `kill <processId>`
 
-3. Binary can be built with
+3. Binary can be built locally with
 ```sh
 make IOBC=1 virtual -j2
 ```
@@ -74,14 +74,15 @@ make sdramCfg
 
 5. Open second shell session, connect to flatsat and run 
 ```sh
-listenUsb0
+listen_iobc.sh
 ```
 This will only work if the dev path of the debug output
-is /dev/ttyUSB0, which will usually be the case.
+is /dev/ttyUSB0, which will usually be the case and if the baudrate is
+115200.
 If it is not the case, the connected USB devices can be checked
 with `listUsb`and a generic version can be used.
 ```sh
-listenUsb <devPath> <baudRate>
+listen_usb.sh <devPath> <baudRate>
 ```
 
 6. Start GDB (the following steps can propably be automated, but I don't know how yet.)
@@ -144,25 +145,39 @@ and the reason is unknown.
 interface computer directly. It is possible in Eclipse to open a ssh
 session like shown in the following picture.
 <img src="./readme_img/flatsat/eclipse-setup3.jpg" width="50%">
+It is recommended to listen to the debug output by connecting
+to the tmux session with
 
-After that, the output can be display by running these commands
+```sh
+tmux a -t 2*
+```
+
+Alternatively ways if the tmux session is closed:
+
+The output can be display by running these commands
 in the ssh session:
 ```sh
-listenUsb0 
+listen_iobc.sh
 ```
 
 There is also a generic version to listen to USB ports:
 ```sh
-listenUsb <DevPath> <baudRate>
+listen_usb.sh <DevPath> <baudRate>
 ```
 
 All dev paths can be listed with the command
 
 ```sh
-listUsb
+list_usb.sh
 ```
 
-These scripts are located inside the scripts folder.
+or 
+
+```sh
+list_usb2.sh
+```
+
+These scripts are located inside the scripts folder in the home folder.
 
 ### Loading binaries built locally to the non-volatile memory
 
