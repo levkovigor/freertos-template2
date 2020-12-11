@@ -12,6 +12,10 @@ public:
     virtual ~Service11TelecommandScheduling();
 
     /** PusServiceBase overrides */
+
+    //from last meeting: these do not have to be virtual. (=>change + make class final)
+    // also: I can use C++17 features if I want to
+
     virtual ReturnValue_t handleRequest(uint8_t subservice) override;
     virtual ReturnValue_t performService() override;
 private:
