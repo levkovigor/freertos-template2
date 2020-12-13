@@ -29,6 +29,8 @@ private:
      * The telecommand map uses the exectution time as a Unix time stamp as
      * the key. This is mapped to a generic telecommand struct.
      */
+
+    //NOTE: Is "UNIX timestamp = seconds since 1970, returned by std::time() for example?"
     using TelecommandMap = etl::multimap<uint32_t, struct TelecommandStruct,
             config::MAX_STORED_TELECOMMANDS>;
     TelecommandMap telecommandMap;
