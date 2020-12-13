@@ -318,6 +318,15 @@ void initMission(void) {
         printAddError(objects::SPI_DEVICE_COM_IF);
     }
 
+    /* RS485 Polling Task */
+    PeriodicTaskIF* RS485PollingTask = TaskFactory::instance()->
+               createPeriodicTask("RS485_POLLING_TASK", 8, 1024 * 4, 0.4,
+                       genericMissedDeadlineFunc);
+       result = RS485PollingTask->addComponent(objects::RS485_POLLING_TASK);
+       if(result != HasReturnvaluesIF::RETURN_OK) {
+           printAddError(objects::RS485_POLLING_TASK);
+    }
+
 
 #if OBSW_ADD_TEST_CODE == 1
     InternalUnitTester unitTestClass;
@@ -355,6 +364,7 @@ void initMission(void) {
     SystemStateTask -> startTask();
     ThermalController -> startTask();
     SpiComTask->startTask();
+    RS485PollingTask->startTask();
 
     sif::info << "Remaining FreeRTOS heap size: " << std::dec
             << xPortGetFreeHeapSize() << " bytes." << std::endl;
