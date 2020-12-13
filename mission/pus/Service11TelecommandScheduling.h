@@ -15,11 +15,9 @@ public:
             uint8_t serviceId);
     ~Service11TelecommandScheduling();
 
-    /** PusServiceBase overrides */    
-
+    /** PusServiceBase overrides */ 
     ReturnValue_t handleRequest(uint8_t subservice) override;
     ReturnValue_t performService() override;
-
 
 private:
     struct TelecommandStruct {
