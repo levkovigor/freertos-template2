@@ -5,19 +5,22 @@
 #include <etl/multimap.h>
 #include <OBSWConfig.h>
 
-class Service11TelecommandScheduling: public PusServiceBase {
+// from last meeting:
+// I can use max. C++17
+
+
+class Service11TelecommandScheduling final: public PusServiceBase {
 public:
     Service11TelecommandScheduling(object_id_t objectId, uint16_t apid,
             uint8_t serviceId);
-    virtual ~Service11TelecommandScheduling();
+    ~Service11TelecommandScheduling();
 
-    /** PusServiceBase overrides */
+    /** PusServiceBase overrides */    
 
-    //from last meeting: these do not have to be virtual. (=>change + make class final)
-    // also: I can use C++17 features if I want to
+    ReturnValue_t handleRequest(uint8_t subservice) override;
+    ReturnValue_t performService() override;
 
-    virtual ReturnValue_t handleRequest(uint8_t subservice) override;
-    virtual ReturnValue_t performService() override;
+
 private:
     struct TelecommandStruct {
         dur_millis_t milliseconds;
