@@ -18,7 +18,6 @@
  */
 class MGMHandlerLIS3MDL: public DeviceHandlerBase {
 public:
-
 	enum class CommunicationStep {
 		DATA,
 		TEMPERATURE
@@ -59,6 +58,7 @@ protected:
 
 
 private:
+	MGMLIS3MDL::MgmPrimaryDataset dataset;
 
 	/*------------------------------------------------------------------------*/
 	/* Device specific commands and variables */

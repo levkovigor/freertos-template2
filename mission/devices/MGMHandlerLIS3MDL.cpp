@@ -3,7 +3,8 @@
 
 MGMHandlerLIS3MDL::MGMHandlerLIS3MDL(object_id_t objectId,
 		object_id_t deviceCommunication, CookieIF* comCookie):
-		DeviceHandlerBase(objectId, deviceCommunication, comCookie) {
+		DeviceHandlerBase(objectId, deviceCommunication, comCookie),
+		dataset(this) {
 #if OBSW_ENHANCED_PRINTOUT == 1
 	debugDivider = new PeriodicOperationDivider(10);
 #endif
@@ -253,6 +254,12 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 			sif::info << "Z: " << mgmZ << " \xC2\xB5T" << std::endl;
 		}
 #endif
+		ReturnValue_t result = dataset.read(20);
+		if(result == HasReturnvaluesIF::RETURN_OK) {
+		    dataset.fieldStrengthX = mgmX;
+		    dataset.fieldStrengthY = mgmY;
+		    dataset.fieldStrengthZ = mgmZ;
+		}
 		break;
 	}
 
@@ -266,6 +273,10 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 					<< std::endl;
 		}
 #endif
+        ReturnValue_t result = dataset.read(20);
+        if(result == HasReturnvaluesIF::RETURN_OK) {
+            dataset.temperature = tempValue;
+        }
 		break;
 	}
 
@@ -371,7 +382,7 @@ void MGMHandlerLIS3MDL::fillCommandAndReplyMap() {
 	 * We dont read single registers, we just expect special
 	 * reply from he Readall_MGM
 	 */
-	insertInCommandAndReplyMap(MGMLIS3MDL::READ_CONFIG_AND_DATA, 1);
+	insertInCommandAndReplyMap(MGMLIS3MDL::READ_CONFIG_AND_DATA, 1, &dataset);
 	insertInCommandAndReplyMap(MGMLIS3MDL::READ_TEMPERATURE, 1);
 	insertInCommandAndReplyMap(MGMLIS3MDL::SETUP_MGM, 1);
 	insertInCommandAndReplyMap(MGMLIS3MDL::IDENTIFY_DEVICE, 1);
