@@ -7,7 +7,7 @@
 extern volatile uint16_t timerOverflowCounter;
 extern AT91S_TC* tcStatsPeripheral;
 
-void vRequestContextSwitchFromISR();
+extern "C" void vRequestContextSwitchFromISR();
 
 /**
  * Called by FreeRTOS.
