@@ -883,6 +883,10 @@ BaseType_t xQueueReceive( QueueHandle_t xQueue,
                           void * const pvBuffer,
                           TickType_t xTicksToWait ) PRIVILEGED_FUNCTION;
 
+// Added for iOBC backwards compatibility.
+BaseType_t xQueueGenericReceive(QueueHandle_t xQueue, void * const pvBuffer,
+        TickType_t xTicksToWait, portBASE_TYPE xJustPeek);
+
 /**
  * queue. h
  * <pre>
