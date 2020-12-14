@@ -12,7 +12,8 @@
 
 #include <stdio.h>
 
-extern void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName) __attribute__ ((weak));
+//extern void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName) __attribute__ ((weak));
+extern void vApplicationStackOverflowHook( TaskHandle_t xTask, char * pcTaskName )  __attribute__ ((weak));
 extern void vApplicationIdleHook( void ) __attribute__ ((weak));
 
 /*
@@ -20,7 +21,7 @@ extern void vApplicationIdleHook( void ) __attribute__ ((weak));
  * handle a stack overflow without introducing an dependency in the FreeRTOS
  * code.
  */
-void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName)
+void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName)
 {
 	printf("\n\r STACK OVERFLOW DETECTED!! \n\r");
 	printf(" Culprit task %p name: %s \n\r", pxTask, pcTaskName);
