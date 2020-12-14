@@ -259,6 +259,7 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 		    dataset.fieldStrengthX = mgmX;
 		    dataset.fieldStrengthY = mgmY;
 		    dataset.fieldStrengthZ = mgmZ;
+		    dataset.commit(20);
 		}
 		break;
 	}
@@ -276,6 +277,7 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
         ReturnValue_t result = dataset.read(20);
         if(result == HasReturnvaluesIF::RETURN_OK) {
             dataset.temperature = tempValue;
+            dataset.commit(20);
         }
 		break;
 	}
