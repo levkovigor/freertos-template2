@@ -18,12 +18,16 @@ public:
     /** PusServiceBase overrides */ 
     ReturnValue_t handleRequest(uint8_t subservice) override;
     ReturnValue_t performService() override;
+    ReturnValue_t initialize() override;
+
 
 private:
     struct TelecommandStruct {
         dur_millis_t milliseconds;
         store_address_t storeId;
     };
+
+    StorageManagerIF* tcStore = nullptr;
 
     /**
      * The telecommand map uses the exectution time as a Unix time stamp as

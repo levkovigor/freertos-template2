@@ -33,3 +33,20 @@ ReturnValue_t Service11TelecommandScheduling::performService() {
 
     return HasReturnvaluesIF::RETURN_OK;
 }
+
+
+ReturnValue_t Service11TelecommandScheduling::initialize() {
+
+	ReturnValue_t res = PusServiceBase::initialize();
+	if (res != HasReturnvaluesIF::RETURN_OK) {
+		return res;
+	}
+
+	tcStore = objectManager->get<StorageManagerIF>(objects::TC_STORE);
+	if (not tcStore) {
+		return ObjectManagerIF::CHILD_INIT_FAILED;
+	}
+
+	return res;
+
+}
