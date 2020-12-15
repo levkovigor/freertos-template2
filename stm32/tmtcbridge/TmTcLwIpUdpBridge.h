@@ -11,7 +11,7 @@
 #include <fsfw/tmtcservices/TmTcBridge.h>
 
 extern "C" {
-#include <stm32/lwip/udp.h>
+#include <lwip/udp.h>
 }
 
 class TmTcLwIpUdpBridge : public TmTcBridge{

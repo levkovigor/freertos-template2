@@ -44,15 +44,15 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "../stm32/Inc/ethernetif.h"
+#include "Inc/ethernetif.h"
 
 #include <string.h>
-#include "../stm32/Drivers/Components/Include/lan8742.h"
-#include "../stm32/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
-#include "../stm32/lwip/netif.h"
-#include "../stm32/lwip/opt.h"
-#include "../stm32/lwip/timeouts.h"
-#include "../stm32/Middlewares/Includes/netif/etharp.h"
+#include "lan8742.h"
+#include "stm32h7xx_hal.h"
+#include "lwip/netif.h"
+#include "lwip/opt.h"
+#include "lwip/timeouts.h"
+#include "netif/etharp.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/

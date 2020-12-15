@@ -52,7 +52,7 @@
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include <stm32/lwip/netif.h>
+#include <lwip/netif.h>
 #include <stdbool.h>
 /* Exported types ------------------------------------------------------------*/
 

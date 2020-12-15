@@ -1,6 +1,6 @@
 #include <stm32/boardtest/UdpReceiveTask.h>
 
-#include "stm32/lwip/timeouts.h"
+#include "lwip/timeouts.h"
 #include "stm32h7xx_hal.h"
 
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
