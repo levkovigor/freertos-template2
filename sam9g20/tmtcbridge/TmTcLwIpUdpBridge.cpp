@@ -1,5 +1,5 @@
 #include <fsfw/ipc/QueueFactory.h>
-#include <fsfw/serialize/EndianSwapper.h>
+#include <fsfw/serialize/EndianConverter.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/tmtcservices/AcceptsTelecommandsIF.h>
 #include <sam9g20/tmtcbridge/TmTcLwIpUdpBridge.h>

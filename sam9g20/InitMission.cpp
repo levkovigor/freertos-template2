@@ -8,7 +8,6 @@
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 
 #include <freertos/FreeRTOS.h>
-#include <fsfwconfig/cdatapool/dataPoolInit.h>
 #include <fsfwconfig/objects/systemObjectList.h>
 #include <fsfwconfig/OBSWConfig.h>
 #include <fsfwconfig/pollingsequence/PollingSequenceFactory.h>
@@ -379,7 +378,7 @@ void initTasks(void) {
 
     CoreController->startTask();
     SystemStateTask -> startTask();
-    ThermalController -> startTask();
+    //ThermalController -> startTask();
     SpiComTask->startTask();
 
     sif::info << "Remaining FreeRTOS heap size: " << std::dec
@@ -403,7 +402,7 @@ void boardTestTaskInit() {
     /* Polling Sequence Table Test */
     FixedTimeslotTaskIF * PollingSequenceTableTaskTest =
             TaskFactory::instance()->createFixedTimeslotTask(
-                    "PST_TASK_ARDUINO", 4, 2048 * 4, 0.4, genericMissedDeadlineFunc);
+            "PST_TEST_TASK", 4, 2048 * 4, 0.4, genericMissedDeadlineFunc);
     result = pst::pollingSequenceInitTest(PollingSequenceTableTaskTest);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "creating PST failed" << std::endl;
@@ -459,7 +458,7 @@ void boardTestTaskInit() {
 
     sif::info << "Starting test tasks.." << std::endl;
 
-    //PollingSequenceTableTaskTest -> startTask ();
+    PollingSequenceTableTaskTest -> startTask ();
     TestTask -> startTask();
     //SPITask -> startTask();
     //I2CTask -> startTask();

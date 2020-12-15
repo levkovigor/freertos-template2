@@ -23,7 +23,7 @@ public:
     static constexpr uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::CORE_CONTROLLER;
 
     //! Triggered on startup. P1 Boot counter.
-    static constexpr Event BOOT_EVENT = MAKE_EVENT(0, SEVERITY::INFO);
+    static constexpr Event BOOT_EVENT = MAKE_EVENT(0, severity::INFO);
 
     static constexpr uint8_t SUPERVISOR_INDEX = -1;
     static constexpr float RTC_RTT_SYNC_INTERVAL = 0.5;

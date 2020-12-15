@@ -176,11 +176,14 @@ include $(S)/$(notdir $S).mk
 endef
 $(foreach S,$(SUBDIRS),$(eval $(INCLUDE_FILE)))
 
-ETL_PATH = etl/include
-
 INCLUDES += ./stm32
+
+# ETL library include.
+ETL_PATH = etl/include
 INCLUDES += $(ETL_PATH)
+
 I_INCLUDES = $(addprefix -I, $(INCLUDES))
+#$(info $${I_INCLUDES} is [${I_INCLUDES}])
 
 # See: https://stackoverflow.com/questions/6687630/how-to-remove-unused-c-c-symbols-with-gcc-and-ld
 # Used to throw away unused code. Reduces code size significantly !

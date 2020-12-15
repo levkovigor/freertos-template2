@@ -201,9 +201,9 @@ private:
 	static const uint8_t defaultGNSSupdateRate = 2; //!< update rate in Hz. Possible Values: 1,2,4,5,8,10,20,25,40,50
 
 	static const uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::GPS_DEVICE;
-	static const Event GPS_STARTUP_FAILED = MAKE_EVENT(0, SEVERITY::LOW); //!< Startup failed. P1=0 -> doStartup() function bool problem P2=0
-	static const Event GPS_FIX = MAKE_EVENT(1,SEVERITY::INFO);
-	static const Event GPS_LOST_FIX = MAKE_EVENT(2,SEVERITY::INFO);
+	static const Event GPS_STARTUP_FAILED = MAKE_EVENT(0, severity::LOW); //!< Startup failed. P1=0 -> doStartup() function bool problem P2=0
+	static const Event GPS_FIX = MAKE_EVENT(1,severity::INFO);
+	static const Event GPS_LOST_FIX = MAKE_EVENT(2,severity::INFO);
 
 
 	bool commandExecuted; //!< Used to confirm start-up command acknowledgement

@@ -18,21 +18,22 @@
 //! If FSFW_OBJ_EVENT_TRANSLATION is set to one,
 //! additional output which requires the translation files translateObjects
 //! and translateEvents (and their compiled source files)
-#define FSFW_OBJ_EVENT_TRANSLATION	0
+#define FSFW_OBJ_EVENT_TRANSLATION	1
 
 #if FSFW_OBJ_EVENT_TRANSLATION == 1
-#define FSFW_DEBUG_OUTPUT 			1
 //! Specify whether info events are printed too.
 #define FSFW_DEBUG_INFO				1
 #include <translateObjects.h>
 #include <translateEvents.h>
 #else
-#define FSFW_DEBUG_OUTPUT			0
 #endif
 
 //! When using the newlib nano library, C99 support for stdio facilities
 //! will not be provided. This define should be set to 1 if this is the case.
 #define FSFW_NO_C99_IO 	1
+
+//! Specify whether a special mode store is used for Subsystem components.
+#define FSFW_USE_MODESTORE          0
 
 namespace fsfwconfig {
 //! Default timestamp size. The default timestamp will be an eight byte CDC

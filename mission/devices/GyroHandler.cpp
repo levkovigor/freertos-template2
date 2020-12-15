@@ -562,6 +562,7 @@ ReturnValue_t GyroHandler::initializeLocalDataPool(
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
+#if defined(at91sam9g20)
 ReturnValue_t GyroHandler::checkSelfTest(DeviceCommandId_t* id) {
     CoreController* coreController = objectManager->
             get<CoreController>(objects::CORE_CONTROLLER);
@@ -592,3 +593,4 @@ ReturnValue_t GyroHandler::checkSelfTest(DeviceCommandId_t* id) {
     }
     return HasReturnvaluesIF::RETURN_FAILED;
 }
+#endif
