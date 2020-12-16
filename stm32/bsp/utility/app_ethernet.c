@@ -44,13 +44,13 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "../stm32/Inc/main.h"
-#include "../stm32/lwip/opt.h"
+#include "Inc/main.h"
+#include "lwip/opt.h"
 #if LWIP_DHCP 
-#include "../stm32/lwip/dhcp.h"
+#include "lwip/dhcp.h"
 #endif
-#include "../stm32/Inc/app_ethernet.h"
-#include "../stm32/Inc/ethernetif.h"
+#include "Inc/app_ethernet.h"
+#include "Inc/ethernetif.h"
 #include "print.h"
 
 /* Private typedef -----------------------------------------------------------*/
