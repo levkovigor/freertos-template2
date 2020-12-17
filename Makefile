@@ -503,7 +503,13 @@ $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).bin: $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).e
 	@mkdir -p $(@D)
 	@$(BINCOPY) $< $@ 
 ifeq ($(OS),Windows_NT)
+
+ifeq (, $(shell which stat))
 	@echo Binary Size: `busybox stat -c %s $@` bytes
+else
+	@stat --printf='Binary Size: %s bytes' $@
+endif
+
 else
 	@stat --printf='Binary Size: %s bytes' $@
 endif
