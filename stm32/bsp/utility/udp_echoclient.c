@@ -44,15 +44,15 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "../stm32/Inc/udp_echoclient.h"
+#include "udp_echoclient.h"
 
 #include <string.h>
 #include <stdio.h>
 
-#include "../stm32/Inc/main.h"
-#include "../stm32/lwip/pbuf.h"
-#include "../stm32/lwip/tcp.h"
-#include "../stm32/lwip/udp.h"
+#include "Inc/main.h"
+#include "lwip/pbuf.h"
+#include "lwip/tcp.h"
+#include "lwip/udp.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/

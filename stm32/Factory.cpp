@@ -1,5 +1,4 @@
 #include "Factory.h"
-#include <stm32/fsfwconfig/cdatapool/dataPoolInit.h>
 #include <stm32/fsfwconfig/devices/logicalAddresses.h>
 #include <stm32/fsfwconfig/devices/powerSwitcherList.h>
 #include <stm32/fsfwconfig/objects/systemObjectList.h>
@@ -108,7 +107,7 @@ void Factory::produce(void) {
 			objects::CCSDS_PACKET_DISTRIBUTOR);
 
 	/* UDP Server */
-	//new TmTcLwIpUdpBridge(objects::UDP_TMTC_BRIDGE, objects::CCSDS_PACKET_DISTRIBUTOR);
+	new TmTcLwIpUdpBridge(objects::UDP_TMTC_BRIDGE, objects::CCSDS_PACKET_DISTRIBUTOR);
 	new EmacPollingTask(objects::EMAC_POLLING_TASK); // used on both boards
 
 	/* TM Destination */

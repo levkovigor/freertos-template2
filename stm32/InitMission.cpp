@@ -8,7 +8,6 @@
  * @ingroup init
  */
 #include "Factory.h"
-#include <stm32/fsfwconfig/cdatapool/dataPoolInit.h>
 #include <stm32/fsfwconfig/objects/systemObjectList.h>
 #include <stm32/fsfwconfig/pollingsequence/PollingSequenceFactory.h>
 
@@ -19,14 +18,7 @@ extern "C" {
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
-#include <fsfw/datapoolglob/GlobalDataPool.h>
 #include <fsfw/objectmanager/ObjectManager.h>
-
-
-/* Initialize Data Pool */
-namespace glob {
-GlobalDataPool dataPool(datapool::dataPoolInit);
-}
 
 namespace sif {
 /* Set up output streams */
