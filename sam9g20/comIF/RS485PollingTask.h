@@ -36,6 +36,18 @@ public:
 
 private:
 
+    UARTconfig configBusRS485 = { .mode = AT91C_US_USMODE_NORMAL |
+            AT91C_US_CLKS_CLOCK | AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE |
+            AT91C_US_OVER_16 | AT91C_US_NBSTOP_1_BIT, .baudrate = 115200,
+            .timeGuard = 0, .busType = rs422_noTermination_uart,
+            .rxtimeout = 0xFFFF };
+
+    static bool uart2Started;
+
+    char uartMessage[6] = { 'H', 'e', 'l', 'l', 'o', '\0' };
+
+
+
 };
 
 

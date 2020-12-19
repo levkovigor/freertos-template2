@@ -23,10 +23,19 @@ protected:
 		uint8_t vcidAndMapidAndtruncatedflag;	//!< Byte with rest of VCID, MAP ID and End of Frame Primary Header flag
 	};
 	/**
+	 * The struct that defines the Frame's Data Field Header.
+	 */
+	struct USLPTransferFrameDataFieldHeader {
+		uint8_t rulesAndprotocolid;	//!< Highest byte with TFDZ Construction Rules and USLP Protocol Identifier
+		uint8_t firstHeader_h;	//!< Byte with start of First Header Pointer
+		uint8_t firstHeader_l;	//!< Byte with rest of First Header Pointer
+	};
+	/**
 	 * The struct defining the whole Transfer Frame.
 	 */
 	struct uslp_transfer_frame {
-		USLPTransferFramePrimaryHeader header;	//!< The header struct.
+		USLPTransferFramePrimaryHeader primaryHeader;	//!< The primary header struct.
+		USLPTransferFrameDataFieldHeader dataFieldHeader; //!< The data field header struct.
 		uint8_t dataField;				//!< The data field of the Transfer Frame.
 	};
 	uslp_transfer_frame* frame;			//!< Pointer to a buffer where a Frame is placed.
@@ -63,7 +72,7 @@ public:
 	uint8_t getVirtualChannelId();
 	/**
 	 * Getter.
-	 * @return The Multiplexer Access Point Identifier from the Segment Header byte.
+	 * @return The Multiplexer Access Point Identifier.
 	 */
 	uint8_t getMAPId();
 	/**
