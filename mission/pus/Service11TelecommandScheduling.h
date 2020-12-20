@@ -35,8 +35,9 @@ private:
      */
 
     //NOTE: Is "UNIX timestamp = seconds since 1970, returned by std::time() for example?"
-    using TelecommandMap = etl::multimap<uint32_t, struct TelecommandStruct,
-            config::MAX_STORED_TELECOMMANDS>;
+
+    using TelecommandMap = etl::multimap<uint32_t, TelecommandStruct,
+            config::MAX_STORED_TELECOMMANDS, std::less>;
     TelecommandMap telecommandMap;
 
 };
