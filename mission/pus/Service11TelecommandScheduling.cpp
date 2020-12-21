@@ -16,7 +16,7 @@ Service11TelecommandScheduling::Service11TelecommandScheduling(
 
         telecommandMap.insert(etl::pair<uint32_t, TelecommandStruct>(millisecKey, dummyCommand));
 
-        }
+}
 
 
 Service11TelecommandScheduling::~Service11TelecommandScheduling() { }
