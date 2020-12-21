@@ -536,9 +536,10 @@ ReturnValue_t GyroHandler::getSwitches(const uint8_t **switches,
 }
 
 void GyroHandler::modeChanged() {
-    if(mode != MODE_NORMAL) {
-        internalState = InternalStates::NONE;
-    }
+	// TODO: test whether this works without the if-clause. It should.
+	if(mode != MODE_NORMAL) {
+		internalState = InternalStates::NONE;
+	}
 }
 
 ReturnValue_t GyroHandler::initializeLocalDataPool(
