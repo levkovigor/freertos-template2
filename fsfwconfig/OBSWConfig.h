@@ -12,6 +12,9 @@
 
 #include <portmacro.h>
 
+#include "returnvalues/classIds.h"
+#include "events/subsystemIdRanges.h"
+
 #define OBSW_RS485_WITH_TERMINATION             1
 
 //! All of these should be disabled for mission code but are very helpful
