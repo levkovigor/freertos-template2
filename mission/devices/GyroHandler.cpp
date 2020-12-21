@@ -2,7 +2,6 @@
 #include "devicedefinitions/GyroPackets.h"
 
 #if defined(at91sam9g20)
-#include <systemObjectList.h>
 #include <sam9g20/core/CoreController.h>
 #endif
 

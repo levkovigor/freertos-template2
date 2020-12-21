@@ -4,6 +4,11 @@
 #ifdef __cplusplus
 #include <cstdint>
 #include <cstddef>
+
+#include "returnvalues/classIds.h"
+#include "events/subsystemIdRanges.h"
+#include "objects/systemObjectList.h"
+
 #else
 #include <stdint.h>
 #include <stddef.h>
@@ -12,8 +17,6 @@
 
 #include <portmacro.h>
 
-#include "returnvalues/classIds.h"
-#include "events/subsystemIdRanges.h"
 
 #define OBSW_RS485_WITH_TERMINATION             1
 
