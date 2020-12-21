@@ -522,15 +522,12 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-void GyroHandler::setNormalDatapoolEntriesInvalid() {
-}
-
 void GyroHandler::debugInterface(uint8_t positionTracker, object_id_t objectId,
         uint32_t parameter) {
 }
 
 uint32_t GyroHandler::getTransitionDelayMs(Mode_t modeFrom, Mode_t modeTo) {
-    return 8000;
+    return 5000;
 }
 
 ReturnValue_t GyroHandler::getSwitches(const uint8_t **switches,

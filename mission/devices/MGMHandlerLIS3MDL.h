@@ -35,27 +35,25 @@ public:
 protected:
 
 	/** DeviceHandlerBase overrides */
-	virtual void doShutDown() override;
-	virtual void doStartUp() override;
-	virtual void doTransition(Mode_t modeFrom, Submode_t subModeFrom) override;
-	virtual uint32_t getTransitionDelayMs(Mode_t from, Mode_t to) override;
-	virtual ReturnValue_t buildCommandFromCommand(
+	void doShutDown() override;
+	void doStartUp() override;
+	void doTransition(Mode_t modeFrom, Submode_t subModeFrom) override;
+	uint32_t getTransitionDelayMs(Mode_t from, Mode_t to) override;
+	ReturnValue_t buildCommandFromCommand(
 			DeviceCommandId_t deviceCommand, const uint8_t *commandData,
 			size_t commandDataLen) override;
-	virtual ReturnValue_t buildTransitionDeviceCommand(
+	ReturnValue_t buildTransitionDeviceCommand(
 			DeviceCommandId_t *id) override;
-	virtual ReturnValue_t buildNormalDeviceCommand(
+	ReturnValue_t buildNormalDeviceCommand(
 			DeviceCommandId_t *id) override;
-	virtual ReturnValue_t scanForReply(const uint8_t *start, size_t len,
+	ReturnValue_t scanForReply(const uint8_t *start, size_t len,
 			DeviceCommandId_t *foundId, size_t *foundLen) override;
-	virtual ReturnValue_t interpretDeviceReply(DeviceCommandId_t id,
+	ReturnValue_t interpretDeviceReply(DeviceCommandId_t id,
 			const uint8_t *packet) override;
-	virtual void fillCommandAndReplyMap() override;
-	virtual void modeChanged(void) override;
-	void setNormalDatapoolEntriesInvalid() override;
+	void fillCommandAndReplyMap() override;
+	void modeChanged(void) override;
 	ReturnValue_t initializeLocalDataPool(LocalDataPool &localDataPoolMap,
 			LocalDataPoolManager &poolManager) override;
-
 
 private:
 	MGMLIS3MDL::MgmPrimaryDataset dataset;
@@ -138,13 +136,6 @@ private:
 	uint8_t registers[MGMLIS3MDL::NR_OF_CTRL_REGISTERS];
 
 	uint8_t statusRegister = 0;
-
-
-	/**
-	 * As this is a SPI Device, we get the Answer of the last sent command in
-	 * the next read cycle, so we could check the command for identification.
-	 */
-	DeviceCommandId_t lastSentCommand = DeviceHandlerIF::NO_COMMAND;
 
 	/**
 	 * We always update all registers together, so this method updates
