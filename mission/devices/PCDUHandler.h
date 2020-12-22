@@ -33,6 +33,7 @@ protected:
 	ReturnValue_t interpretDeviceReply(DeviceCommandId_t id,
 			const uint8_t *packet) override;
 	void setNormalDatapoolEntriesInvalid() override;
+	uint32_t getTransitionDelayMs(Mode_t modeFrom, Mode_t modeTo) override;
 
 
 	/**
