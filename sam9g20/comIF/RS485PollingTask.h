@@ -1,16 +1,17 @@
 #ifndef SAM9G20_TMTCBRIDGE_RS485POLLINGTASK_H_
 #define SAM9G20_TMTCBRIDGE_RS485POLLINGTASK_H_
 
+#include <fsfw/devicehandlers/DeviceCommunicationIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
-#include <fsfw/returnvalues/HasReturnvaluesIF.h>
-#include <fsfw/tasks/ExecutableObjectIF.h>
+#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
+#include <sam9g20/comIF/UartPollingBase.h>
 
 extern "C" {
 #include <AT91SAM9G20.h>
 #include <hal/Drivers/UART.h>
 }
 
-#include <config/OBSWConfig.h>
+#include <fsfwconfig/OBSWConfig.h>
 
 /**
  * @brief   Separate task to poll RS485 with ISIS drivers. Reads all data,
@@ -21,22 +22,27 @@ extern "C" {
  * another task.
  * @author  R. Mueller
  */
-class RS485PollingTask: public SystemObject,
-						public ExecutableObjectIF,
-						public HasReturnvaluesIF{
+class RS485PollingTask: public UartPollingBase {
 public:
     static constexpr uint32_t RS485_REGULARD_BAUD = config::RS485_REGULAR_BAUD;
     static constexpr uint32_t RS485_FAST_BAUD = config::RS485_FAST_BAUD;
 
+    /** The frame size will be set to this value if no other value is
+     *  supplied in the constructor. */
+    static constexpr size_t RS485_MAX_SERIAL_FRAME_SIZE =
+            config::RS485_MAX_SERIAL_FRAME_SIZE;
+    static constexpr float RS485_SERIAL_TIMEOUT_BAUDTICKS =
+            config::RS485_SERIAL_TIMEOUT_BAUDTICKS;
 
-    RS485PollingTask(object_id_t objectId);
+    RS485PollingTask(object_id_t objectId,
+            object_id_t sharedRingBufferId);
 
     ReturnValue_t performOperation(uint8_t opCode) override;
     ReturnValue_t initialize() override;
 
 private:
 
-    UARTconfig configBusRS485 = { .mode = AT91C_US_USMODE_NORMAL |
+    UARTconfig configBus2 = { .mode = AT91C_US_USMODE_NORMAL |
             AT91C_US_CLKS_CLOCK | AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE |
             AT91C_US_OVER_16 | AT91C_US_NBSTOP_1_BIT, .baudrate = 115200,
             .timeGuard = 0, .busType = rs422_noTermination_uart,
@@ -44,10 +50,26 @@ private:
 
     static bool uart2Started;
 
-    char uartMessage[6] = { 'H', 'e', 'l', 'l', 'o', '\0' };
+    UARTgenericTransfer uartTransfer1;
+    static volatile size_t transfer1bytesReceived;
+    BinarySemaphore uartSemaphore1;
+    UARTtransferStatus transfer1Status = done_uart;
+    std::array<uint8_t, config::RS485_MAX_SERIAL_FRAME_SIZE> readBuffer1;
 
+    BinarySemaphore uartSemaphore2;
+    static volatile size_t transfer2bytesReceived;
+    UARTgenericTransfer uartTransfer2;
+    UARTtransferStatus transfer2Status = done_uart;
+    std::array<uint8_t, config::RS485_MAX_SERIAL_FRAME_SIZE> readBuffer2;
+    UARTgenericTransfer writeStruct;
+    BinarySemaphore writeSemaphore;
+    UARTtransferStatus writeResult = UARTtransferStatus::done_uart;
 
+    void initiateUartTransfers();
+    void pollUart();
 
+    static void uart1Callback(SystemContext context, xSemaphoreHandle sem);
+    static void uart2Callback(SystemContext context, xSemaphoreHandle sem);
 };
 
 
