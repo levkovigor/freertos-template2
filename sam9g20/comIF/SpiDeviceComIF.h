@@ -1,13 +1,13 @@
 #ifndef SAM9G20_COMIF_SPIDEVICECOMIF_H_
 #define SAM9G20_COMIF_SPIDEVICECOMIF_H_
 
-#include <config/OBSWConfig.h>
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/devicehandlers/DeviceCommunicationIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/ipc/MessageQueueIF.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/osal/FreeRTOS/Mutex.h>
+#include <fsfwconfig/OBSWConfig.h>
 #include <sam9g20/comIF/cookies/SpiCookie.h>
 
 extern "C" {
@@ -42,7 +42,7 @@ public:
 	static constexpr uint8_t INTERFACE_ID = CLASS_ID::SPI_COM_IF;
 	static constexpr uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::SPI_COM_IF;
 
-	static constexpr Event SPI_START_FAILURE = MAKE_EVENT(0x00, SEVERITY::HIGH);
+	static constexpr Event SPI_START_FAILURE = MAKE_EVENT(0x00, severity::HIGH);
 	static constexpr ReturnValue_t SPI_INIT_FAILURE = MAKE_RETURN_CODE(0x01);
 	static constexpr ReturnValue_t SPI_COMMUNICATION_TIMEOUT =
 	        MAKE_RETURN_CODE(0x02);

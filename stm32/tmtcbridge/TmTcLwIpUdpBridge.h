@@ -11,7 +11,7 @@
 #include <fsfw/tmtcservices/TmTcBridge.h>
 
 extern "C" {
-#include <stm32/lwip/udp.h>
+#include <lwip/udp.h>
 }
 
 class TmTcLwIpUdpBridge : public TmTcBridge{
@@ -50,7 +50,8 @@ public:
 	 * @param addr Source address which will be bound to TmTcUdpBridge::lastAdd
 	 * @param port
 	 */
-	static void udp_server_receive_callback(void *arg, struct udp_pcb *upcb_, struct pbuf *p, const ip_addr_t *addr, u16_t port);
+	static void udp_server_receive_callback(void *arg, struct udp_pcb *upcb_,
+			struct pbuf *p, const ip_addr_t *addr, u16_t port);
 
 private:
 	struct udp_pcb *upcb;

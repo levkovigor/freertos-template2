@@ -6,7 +6,7 @@
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 
-bool RS232PollingTask::uart0Started = false;
+volatile bool RS232PollingTask::uart0Started = false;
 
 volatile size_t RS232PollingTask::transfer1bytesReceived = 0;
 volatile size_t RS232PollingTask::transfer2bytesReceived = 0;

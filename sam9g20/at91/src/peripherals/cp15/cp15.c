@@ -114,7 +114,7 @@ void CP15_Enable_I_Cache(void)
 
         control |= (1 << CP15_I_BIT);
         _writeControlRegister(control);        
-        TRACE_INFO("I cache enabled.\n\r");
+        //TRACE_INFO("I cache enabled.\n\r");
     }
 }
 

@@ -1,5 +1,5 @@
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
-#include <fsfw/serialize/EndianSwapper.h>
+#include <fsfw/serialize/EndianConverter.h>
 #include <stm32/tmtcbridge/TmTcLwIpUdpBridge.h>
 
 extern "C" {
@@ -7,8 +7,10 @@ extern "C" {
 #include <stm32/Inc/main.h>
 }
 
-TmTcLwIpUdpBridge::TmTcLwIpUdpBridge(object_id_t objectId_, object_id_t ccsdsPacketDistributor_):
-			TmTcBridge(objectId_, ccsdsPacketDistributor_), upcb(NULL) {
+TmTcLwIpUdpBridge::TmTcLwIpUdpBridge(object_id_t objectId_,
+		object_id_t ccsdsPacketDistributor_):
+			TmTcBridge(objectId_, ccsdsPacketDistributor_, objects::TM_STORE,
+					objects::TC_STORE), upcb(NULL) {
 	TmTcLwIpUdpBridge::lastAdd.addr = IPADDR_TYPE_ANY;
 }
 
@@ -140,7 +142,7 @@ void TmTcLwIpUdpBridge::udp_server_receive_callback(void* arg,
 			return;
 		}
 		TmTcMessage message(storeId);
-		if (udpBridge->TmTcReceptionQueue->sendToDefault(&message) != RETURN_OK) {
+		if (udpBridge->tmTcReceptionQueue->sendToDefault(&message) != RETURN_OK) {
 			sif::debug << "UDP Server: Sending message to queue failed" << std::endl;
 			udpBridge->tcStore->deleteData(storeId);
 		}
@@ -157,6 +159,6 @@ void TmTcLwIpUdpBridge::registerClientConnect(uint32_t ipAddress, uint16_t port,
 	int ipAddress4 = ipAddress & 0xFF;
 	sif::info << "UDP Server: Client IP Address " << std::dec << ipAddress4 <<
 			"." << ipAddress3 << "." << ipAddress2 << "." << ipAddress1 << std::endl;
-	uint16_t portSwapped = EndianSwapper::swap(port);
+	uint16_t portSwapped = EndianConverter::convertBigEndian(port);
 	sif::info << "UDP Server: Client IP Port " << (int)portSwapped << std::endl;
 }

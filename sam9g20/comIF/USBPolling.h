@@ -5,7 +5,7 @@
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
-#include <config/OBSWConfig.h>
+#include <fsfwconfig/OBSWConfig.h>
 #include <array>
 
 class USBPolling: public SystemObject, public ExecutableObjectIF {

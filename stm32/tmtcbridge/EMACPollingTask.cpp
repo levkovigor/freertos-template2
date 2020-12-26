@@ -1,7 +1,7 @@
 #include <stm32/tmtcbridge/EMACPollingTask.h>
 
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
-#include <stm32/lwip/timeouts.h>
+#include <lwip/timeouts.h>
 
 extern "C" {
 #include <stm32/Inc/ethernetif.h>

@@ -2,10 +2,6 @@
 #define SAM9G20_BOARDTEST_ATMELTESTTASK_H_
 
 #include <test/testtasks/TestTask.h>
-#include <config/cdatapool/dataPoolInit.h>
-#include <fsfw/datapoolglob/GlobalDataSet.h>
-#include <fsfw/datapoolglob/GlobalPoolVariable.h>
-#include <fsfw/datapoolglob/GlobalPoolVector.h>
 #include <fsfw/timemanager/Countdown.h>
 
 extern "C" {

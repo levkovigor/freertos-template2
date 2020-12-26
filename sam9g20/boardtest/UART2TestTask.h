@@ -13,8 +13,8 @@
 #include <fsfw/objectmanager/SystemObjectIF.h>
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
-#include <config/objects/systemObjectList.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
+#include <fsfwconfig/objects/systemObjectList.h>
 
 extern "C" {
 #include "UART.h"

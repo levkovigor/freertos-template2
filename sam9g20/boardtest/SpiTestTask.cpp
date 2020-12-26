@@ -53,6 +53,9 @@ ReturnValue_t SpiTestTask::performOperation(uint8_t operationCode) {
 	else if(spiTestMode == SpiTestMode::GYRO) {
 		performBlockingGyroTest();
 	}
+	else if(spiTestMode == SpiTestMode::MGM_LIS3) {
+	    performBlockingMgmTest();
+	}
 	return RETURN_OK;
 }
 
@@ -401,6 +404,55 @@ void SpiTestTask::performBlockingPt1000Test() {
     sif::info << "Current temp: " << approxTemp << std::endl;
 }
 
+void SpiTestTask::performBlockingMgmTest() {
+    SPIslaveParameters slaveParams;
+    SPItransfer spiTransfer;
+    slaveParams.bus = SPIbus::bus1_spi;
+    slaveParams.mode = mode0_spi;
+    slaveParams.slave = slave1_spi;
+    slaveParams.dlybs = 0;
+    slaveParams.dlybct = 0;
+    slaveParams.busSpeed_Hz = 3'900'000;
+    slaveParams.postTransferDelay = 0;
+    decoderSSused = false;
+
+//    AT91S_SPI *spi = AT91C_BASE_SPI1;
+//    if(slaveParams.mode == mode0_spi or slaveParams.mode == mode1_spi) {
+//        spi->SPI_CSR[1] &= ~(1UL << 0);
+//    }
+//    else {
+//        spi->SPI_CSR[1] |= 1UL;
+//    }
+//
+//    if(slaveParams.mode == mode0_spi or slaveParams.mode == mode2_spi) {
+//        spi->SPI_CSR[1] |= (1UL << 1);
+//    }
+//    else {
+//        spi->SPI_CSR[1] &= ~(1UL << 1);
+//    }
+
+    spiTransfer.slaveParams = &slaveParams;
+    spiTransfer.callback  = SPIcallback;
+
+    const uint8_t LIS3_READ_MASK = 0b1000'0000;
+    // read WHO AM I register
+    writeData[0] = 0b0000'1111 | LIS3_READ_MASK;
+    writeData[1] = 0x00;
+    spiTransfer.readData  = readData;
+    spiTransfer.writeData = writeData;
+
+    spiTransfer.transferSize = 2;
+
+    configureSpiDummySSIfNeeded();
+    int result = SPI_writeRead(&spiTransfer);
+
+    if(result != 0) {
+
+    }
+
+    sif::info << "Reply first byte: " << (int) readData[0] << std::endl;
+    sif::info << "Reply second byte: " << (int) readData[1] << std::endl;
+}
 
 void SpiTestTask::performNonBlockingSpiTest(SPIslave slave, uint8_t bufferPosition) {
 	int retValInt = 0;

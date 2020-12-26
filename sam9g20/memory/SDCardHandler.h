@@ -10,9 +10,9 @@
 #include <fsfw/memory/AcceptsMemoryMessagesIF.h>
 #include <fsfw/ipc/MessageQueueIF.h>
 #include <fsfw/memory/HasFileSystemIF.h>
+#include <fsfwconfig/events/subsystemIdRanges.h>
+#include <fsfwconfig/OBSWConfig.h>
 
-#include <subsystemIdRanges.h>
-#include <OBSWConfig.h>
 #include <vector>
 
 
@@ -51,10 +51,10 @@ public:
     static const uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::SD_CARD_HANDLER;
 
 
-    static constexpr Event SD_CARD_SWITCHED = MAKE_EVENT(0x00, SEVERITY::MEDIUM); //!< It was not possible to open the preferred SD card so the other was used. P1: Active volume
-    static constexpr Event SD_CARD_ACCESS_FAILED = MAKE_EVENT(0x01, SEVERITY::HIGH); //!< Opening failed for both SD cards.
-    static constexpr Event SEQUENCE_PACKET_MISSING_WRITE_EVENT = MAKE_EVENT(0x02, SEVERITY::LOW); //!< P1: Sequence packet missing.
-    static constexpr Event SEQUENCE_PACKET_MISSING_READ_EVENT = MAKE_EVENT(0x03, SEVERITY::LOW); //!< P1: Sequence packet missing.
+    static constexpr Event SD_CARD_SWITCHED = MAKE_EVENT(0x00, severity::MEDIUM); //!< It was not possible to open the preferred SD card so the other was used. P1: Active volume
+    static constexpr Event SD_CARD_ACCESS_FAILED = MAKE_EVENT(0x01, severity::HIGH); //!< Opening failed for both SD cards.
+    static constexpr Event SEQUENCE_PACKET_MISSING_WRITE_EVENT = MAKE_EVENT(0x02, severity::LOW); //!< P1: Sequence packet missing.
+    static constexpr Event SEQUENCE_PACKET_MISSING_READ_EVENT = MAKE_EVENT(0x03, severity::LOW); //!< P1: Sequence packet missing.
 
     /** Service 8 Commands */
 
@@ -90,6 +90,7 @@ public:
         MessageQueueId_t commandedBy, const uint8_t* data,
         size_t size) override;
 
+#ifdef ISIS_OBC_G20
     /**
      * Other software components can use the SD card as well without using
      * the SD card handler as the HCC library can process the requests of
@@ -103,6 +104,7 @@ public:
      * @param queueId
      */
     void subscribeForSdCardNotifications(MessageQueueId_t queueId);
+#endif
 
     // Useful functions for development
     static ReturnValue_t printRepository(const char* repository);
@@ -123,7 +125,10 @@ private:
     MessageQueueIF* commandQueue;
     ActionHelper actionHelper;
     Countdown* countdown;
+
+#ifdef ISIS_OBC_G20
     std::vector<MessageQueueId_t> sdCardNotificationRecipients;
+#endif
 
     PeriodicTaskIF* executingTask = nullptr;
     dur_millis_t periodMs = 0;

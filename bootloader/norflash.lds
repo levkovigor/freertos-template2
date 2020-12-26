@@ -50,17 +50,35 @@ SECTIONS
         . = ALIGN(4);
         _sprerelocate = .;
         KEEP(*(.vectors));
-        *(.sramfunc*)
+        /* These functions need to be executed in the SRAM0 for the NORFlash */
+        *board_lowlevel.o(.text .text*)
+        *board_memories.o(.text .text*)
         . = ALIGN(4);
         _eprerelocate = .;
     } >sram0
     
-    .fixed :
+    /* Other functions which are executed in the SRAM0 */
+    .postrelocate : AT (_efixed + SIZEOF(.prerelocate))
     {
         . = ALIGN(4);
-        _sfixed = .;
-        KEEP(*(.startup));
-        *(.text*)
+        _spostrelocate = .;
+        *(.sramfunc*)
+        /* *SPI.o(.text .text*); */
+        /* *spi_at91.o(.text .text*); */
+        /* *HAL.a:*(.text .text.*); */
+        /* contains all initialized global and static variables */
+        *(.sramdata*)
+        *(.data*)
+        . = ALIGN(4);
+        _epostrelocate = .;
+    } >sram0
+    
+    .fixed :
+    {
+		. = ALIGN(4);
+		_sfixed = .;
+		KEEP(*(.startup));
+		*(.text .text.*)
         *(.rodata*)
         *(.glue_7)
         *(.glue_7t)	 		
@@ -68,11 +86,28 @@ SECTIONS
         KEEP (*(.init))
     	KEEP (*(.fini))
      	. = ALIGN(4);
-        _efixedsec = .;
+        /* preinit data */
+		PROVIDE_HIDDEN (__preinit_array_start = .);
+		KEEP(*(.preinit_array))
+		PROVIDE_HIDDEN (__preinit_array_end = .);
+		
+		. = ALIGN(4);
+		/* init data, the constructor addresses are placed in this sections */
+		PROVIDE_HIDDEN (__init_array_start = .);
+		KEEP(*(SORT(.init_array.)))
+		KEEP(*(.init_array))
+		PROVIDE_HIDDEN (__init_array_end = .);
+		
+		. = ALIGN(4);
+		/* finit data, destructor addresses are placed in this section */
+		PROVIDE_HIDDEN (__fini_array_start = .);
+		KEEP(*(SORT(.fini_array.)))
+		KEEP(*(.fini_array))
+		PROVIDE_HIDDEN (__fini_array_end = .);
     } >ebi_cs0
 
 	/* used for unwinding, can be useful for debugging  */  
-	.ARM.extab   : AT(_efixedsec) 
+	.ARM.extab (NOLOAD) :
     {  
 		*(.ARM.extab* .gnu.linkonce.armextab.*) 
 	} >ebi_cs0
@@ -83,67 +118,32 @@ SECTIONS
     {
 		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
 	} >ebi_cs0
-    __exidx_end = .;
+	
+	. = ALIGN(4);
+    __exidx_end = .;    
+    _efixed = .;
     
-    .preinit_array ALIGN(4): 
-	{
-        PROVIDE_HIDDEN (__preinit_array_start = .);
-        KEEP(*(.preinit_array))
-        PROVIDE_HIDDEN (__preinit_array_end = .);
-    } >ebi_cs0
-
-	/* init data, the constructor addresses are placed in this sections */
-    .init_array ALIGN(4): 
+    /* Place .bss in sdram because it will grow quite large when using FreeRTOS */
+    .bss (NOLOAD) : 
     {
-        PROVIDE_HIDDEN (__init_array_start = .);
-        KEEP(*(SORT(.init_array.)))
-		KEEP(*(.init_array))
-        PROVIDE_HIDDEN (__init_array_end = .);
-    } >ebi_cs0
-
-	/* finit data, destructor addresses are placed in this section */
-    .fini_array ALIGN(4): 
-    {
-     	
-		PROVIDE_HIDDEN (__fini_array_start = .);
-		KEEP(*(SORT(.fini_array.)))
-		KEEP(*(.fini_array))
-		PROVIDE_HIDDEN (__fini_array_end = .);
-		. = ALIGN(4);
-    	_efixed = .;
-    } >ebi_cs0
-    
-    .postrelocate : AT (_efixed + SIZEOF(.prerelocate))
-    {
-        . = ALIGN(4);
-        _spostrelocate = .;
-        *(.data) 
-        *(.data*)
-        *(.sramdata*)
-        /* contains all initialized global and static variables */
-        . = ALIGN(4);
-        _epostrelocate = .;
-    } >sram0
-
-    .bss (NOLOAD) : {
+    	. = . + 0x200000;
         /* This is used by the startup in order to initialize the .bss secion */
-	    _sbss = .;         /* define a global symbol at bss start */
-	    __bss_start__ = _sbss;
-        *(.bss)
-        *(.bss*)
-        *(.srambss*)
-        *(COMMON)
-		*(COMMON.*)
-        . = ALIGN(4);
-        _ebss = .;         /* define a global symbol at bss end */
-	    __bss_end__ = _ebss;
-    } >sram1
+		_sbss = .;         /* define a global symbol at bss start */
+		__bss_start__ = _sbss;
+		*(.bss .bss.*)
+		*(COMMON .COMMON.*)
+		*(.srambss*)
+		. = ALIGN(4);
+		_ebss = .;         /* define a global symbol at bss end */
+		 __bss_end__ = _ebss;
+    } >sdram
     
-    /* Heap section */
-	_sheap_ = .;
-	_eheap_ = 0x302000;
-    
-    /* top of stack */
+    /* top of stack for SRAM1. Used as stack before SDRAM is configured. */
     _sstack = 0x304000;
+    
+    /* Heap start in SDRAM */
+	_sheap_ = _ebss;
+	end = .;
 }
-end = .;
+
+

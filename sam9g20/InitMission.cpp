@@ -1,30 +1,34 @@
-#include <dataPoolInit.h>
-#include <systemObjectList.h>
-#include <Factory.h>
-#include <PollingSequenceFactory.h>
+#include "Factory.h"
 
 #include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 
-#include <fsfw/datapoolglob/GlobalDataPool.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 
 #include <freertos/FreeRTOS.h>
+#include <fsfwconfig/objects/systemObjectList.h>
+#include <fsfwconfig/OBSWConfig.h>
+#include <fsfwconfig/pollingsequence/PollingSequenceFactory.h>
 #include <unittest/internal/InternalUnitTester.h>
-#include <config/OBSWConfig.h>
 #include <utility/compile_time.h>
+#include <fsfwconfig/OBSWVersion.h>
 
-#if DISPLAY_FACTORY_ALLOCATION_SIZE == 1
+extern "C" {
+#include <board.h>
+#include <AT91SAM9G20.h>
+}
+
+#if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1 || OBSW_MONITOR_ALLOCATION == 1
 #include <new>
+#if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1
 static size_t allocatedSize = 0;
 #endif
-
-/* Initialize Data Pool */
-namespace glob {
-GlobalDataPool dataPool(datapool::dataPoolInit);
-}
+#if OBSW_MONITOR_ALLOCATION == 1
+bool config::softwareInitializationComplete = false;
+#endif
+#endif
 
 namespace sif {
 /* Set up output streams
@@ -50,14 +54,17 @@ ServiceInterfaceStream error("ERROR", true);
 }
 
 /* will be created in main */
-ObjectManagerIF* objectManager;
+ObjectManagerIF* objectManager = nullptr;
 
 /* Board Tests, not used in mission */
 #if OBSW_ADD_TEST_CODE == 1
 void boardTestTaskInit();
 #endif
+
 void genericMissedDeadlineFunc();
 void printAddError(object_id_t objectId);
+void initTasks(void);
+void runMinimalTask(void);
 
 /**
  * @brief   Initializes mission specific implementation of FSFW,
@@ -87,18 +94,34 @@ void printAddError(object_id_t objectId);
  * @ingroup init
  */
 void initMission(void) {
+	printf("\n\r-- FreeRTOS task scheduler started --\n\r");
+    printf("-- SOURCE On-Board Software --\n\r");
+    printf("-- %s --\n\r", BOARD_NAME);
+    printf("-- Software version %s v%d.%d.%d --\n\r", SW_NAME,
+            SW_VERSION, SW_SUBVERSION, SW_SUBSUBVERSION);
+    printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
+
     sif::info << "Initiating mission specific code." << std::endl;
 
-    ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     // Allocate object manager here, as global constructors
     // might not be executed, depending on buildchain
-    sif::info << "Creating objects." << std::endl;
-    objectManager = new ObjectManager(Factory::produce);
+    bool performSimpleTask = false;
 
-    objectManager -> initialize();
+    if(not performSimpleTask) {
+        sif::info << "Creating objects." << std::endl;
+        objectManager = new ObjectManager(Factory::produce);
+        objectManager->initialize();
+        sif::info << "Creating tasks.." << std::endl;
+        initTasks();
+    }
+    else {
+    	runMinimalTask();
+    }
 
-    sif::info << "Creating tasks.." << std::endl;
+}
 
+void initTasks(void) {
+	ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     /* TMTC Communication Tasks */
     PeriodicTaskIF * TmTcPollingTask = nullptr;
     PeriodicTaskIF* TmTcBridge = nullptr;
@@ -263,9 +286,11 @@ void initMission(void) {
     	printAddError(objects::PUS_SERVICE_23_FILE_MGMT);
     }
     /* SD Card handler task */
-#ifdef DEBUG
+#ifdef AT91SAM9G20_EK
     float sdCardTaskPeriod = 0.6;
 #else
+    /* iOBC SD-Cards SLC are usually slower than modern SD-Card,
+    therefore a spearate task period can be set here */
     float sdCardTaskPeriod = 0.6;
 #endif
     PeriodicTaskIF* SDCardTask = TaskFactory::instance()->
@@ -362,7 +387,7 @@ void initMission(void) {
 
     CoreController->startTask();
     SystemStateTask -> startTask();
-    ThermalController -> startTask();
+    //ThermalController -> startTask();
     SpiComTask->startTask();
     RS485PollingTask->startTask();
 
@@ -373,9 +398,9 @@ void initMission(void) {
         sif::warning << "Factory Task: Remaining stack size: "
                 << remainingFactoryStack << " bytes" << std::endl;
     }
-#if OBSW_DISPLAY_FACTORY_ALLOCATION_SIZE == 1
+#if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1
     sif::info << "Allocated size by new function: " << allocatedSize
-            << std::endl;
+            << " bytes." << std::endl;
 #endif
     sif::info << "Tasks started." << std::endl;
 }
@@ -387,7 +412,7 @@ void boardTestTaskInit() {
     /* Polling Sequence Table Test */
     FixedTimeslotTaskIF * PollingSequenceTableTaskTest =
             TaskFactory::instance()->createFixedTimeslotTask(
-                    "PST_TASK_ARDUINO", 4, 2048 * 4, 0.4, genericMissedDeadlineFunc);
+            "PST_TEST_TASK", 4, 2048 * 4, 0.4, genericMissedDeadlineFunc);
     result = pst::pollingSequenceInitTest(PollingSequenceTableTaskTest);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "creating PST failed" << std::endl;
@@ -456,9 +481,19 @@ void boardTestTaskInit() {
 #endif
 
 
-#if OBSW_DISPLAY_FACTORY_ALLOCATION_SIZE == 1
+#if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1 || OBSW_MONITOR_ALLOCATION == 1
 void* operator new(size_t size) {
+#if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1
     allocatedSize += size;
+#endif
+#if OBSW_MONITOR_ALLOCATION == 1
+    if(config::softwareInitializationComplete) {
+        // To prevent infinite recursion in some cases.
+        config::softwareInitializationComplete = false;
+    	sif::error << "Software Initialization complete but memory "
+    			<< "is allocated!" << std::endl;
+    }
+#endif
     return std::malloc(size);
 }
 #endif
@@ -475,5 +510,12 @@ void genericMissedDeadlineFunc() {
     sif::debug << "PeriodicTask: " << pcTaskGetName(NULL) <<
             " missed deadline!" << std::endl;
 #endif
+}
+
+void runMinimalTask(void) {
+    while(1) {
+    	sif::info << "Alive" << std::endl;
+    	vTaskDelay(1000);
+    }
 }
 

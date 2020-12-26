@@ -1,19 +1,16 @@
 #ifndef SAM9G20_CORE_CORECONTROLLER_H_
 #define SAM9G20_CORE_CORECONTROLLER_H_
 
-#include "SystemStateTask.h"
 #include <fsfw/controller/ExtendedControllerBase.h>
 
 #ifdef ISIS_OBC_G20
-#include <sam9g20/memory/FRAMHandler.h>
 extern "C" {
 #include <hal/supervisor.h>
 }
-#endif
 
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-#include <vector>
+class FRAMHandler;
+#endif
+class SystemStateTask;
 
 /**
  * @brief   Core Controller responsible for monitoring the OBC itself
@@ -23,9 +20,15 @@ extern "C" {
  */
 class CoreController: public ExtendedControllerBase {
 public:
+    static constexpr uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::CORE_CONTROLLER;
+
+    //! Triggered on startup. P1 Boot counter.
+    static constexpr Event BOOT_EVENT = MAKE_EVENT(0, severity::INFO);
+
     static constexpr uint8_t SUPERVISOR_INDEX = -1;
     static constexpr float RTC_RTT_SYNC_INTERVAL = 0.5;
 	static constexpr uint32_t DAY_IN_SECONDS = 60 * 60 * 24;
+	static constexpr float SECONDS_ON_MS_OVERFLOW = 4294967.296;
 
 	CoreController(object_id_t objectId, object_id_t systemStateTaskId);
 
@@ -49,6 +52,13 @@ public:
 	ReturnValue_t initializeAfterTaskCreation() override;
 
 	/**
+	 * This function can be used by other software components as well
+	 * to get a second uptime counter which will not overflow.
+	 * @return
+	 */
+	static uint32_t getUptimeSeconds();
+
+	/**
 	 * This returns the 64bit value of a 10kHz counter.
 	 * @return
 	 */
@@ -61,25 +71,34 @@ public:
 
 private:
 
+	//! Uptime second counter which will also be checked for overflows.
+	static uint32_t uptimeSeconds;
+	static uint32_t counterOverflows;
+	static uint32_t idleCounterOverflows;
+
+	SystemStateTask* systemStateTask = nullptr;
+	static MutexIF* timeMutex;
+
 #ifdef ISIS_OBC_G20
 	FRAMHandler* framHandler = nullptr;
 	supervisor_housekeeping_t supervisorHk;
 	int16_t adcValues[SUPERVISOR_NUMBER_OF_ADC_CHANNELS] = {0};
+
+	uint16_t msOverflowCounter = 0;
+	uint32_t lastUptimeMs = 0;
 #endif
 
-	object_id_t systemStateTaskId;
+	object_id_t systemStateTaskId = objects::NO_OBJECT;
 
-	uint32_t lastDumpSecond = 0;
+	void performSupervisorHandling();
+	void performPeriodicTimeHandling();
+	uint32_t updateSecondsCounter();
 
-	uint32_t lastCounterUpdateSeconds = 0;
-	static uint32_t counterOverflows;
-	static uint32_t idleCounterOverflows;
+	uint32_t lastFastCounterUpdateSeconds = 0;
 	uint32_t last32bitCounterValue = 0;
 	uint32_t last32bitIdleCounterValue = 0;
 
-	SystemStateTask* systemStateTask = nullptr;
-
-	void update64bitCounter();
+	void update64bit10kHzCounter();
 	ReturnValue_t setUpSystemStateTask();
 	ReturnValue_t initializeIsisTimerDrivers();
 	void generateStatsCsvAndCheckStack();

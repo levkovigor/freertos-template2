@@ -1,9 +1,13 @@
 #ifndef MISSION_DEVICES_MGMLIS3MDLHANDLER_H_
 #define MISSION_DEVICES_MGMLIS3MDLHANDLER_H_
 
-#include <fsfw/devicehandlers/DeviceHandlerBase.h>
 #include "devicedefinitions/MGMHandlerLIS3Definitions.h"
-#include <subsystemIdRanges.h>
+
+#include <OBSWConfig.h>
+#include <events/subsystemIdRanges.h>
+
+#include <fsfw/devicehandlers/DeviceHandlerBase.h>
+#include <fsfw/globalfunctions/PeriodicOperationDivider.h>
 
 /**
  * @brief   Device handler object for the LIS3MDL 3-axis magnetometer
@@ -14,13 +18,18 @@
  */
 class MGMHandlerLIS3MDL: public DeviceHandlerBase {
 public:
+	enum class CommunicationStep {
+		DATA,
+		TEMPERATURE
+	};
+
 	static const uint8_t INTERFACE_ID = CLASS_ID::MGM_LIS3MDL;
 	static const uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::MGM_LIS3MDL;
 	//Notifies a command to change the setup parameters
-	static const Event CHANGE_OF_SETUP_PARAMETER = MAKE_EVENT(0, SEVERITY::LOW);
+	static const Event CHANGE_OF_SETUP_PARAMETER = MAKE_EVENT(0, severity::LOW);
 
 	MGMHandlerLIS3MDL(uint32_t objectId, object_id_t deviceCommunication,
-	        CookieIF* comCookie);
+			CookieIF* comCookie);
 	virtual ~MGMHandlerLIS3MDL();
 
 protected:
@@ -34,18 +43,23 @@ protected:
 			DeviceCommandId_t deviceCommand, const uint8_t *commandData,
 			size_t commandDataLen) override;
 	virtual ReturnValue_t buildTransitionDeviceCommand(
-	        DeviceCommandId_t *id) override;
+			DeviceCommandId_t *id) override;
 	virtual ReturnValue_t buildNormalDeviceCommand(
-	        DeviceCommandId_t *id) override;
+			DeviceCommandId_t *id) override;
 	virtual ReturnValue_t scanForReply(const uint8_t *start, size_t len,
-	        DeviceCommandId_t *foundId, size_t *foundLen) override;
+			DeviceCommandId_t *foundId, size_t *foundLen) override;
 	virtual ReturnValue_t interpretDeviceReply(DeviceCommandId_t id,
 			const uint8_t *packet) override;
 	virtual void fillCommandAndReplyMap() override;
 	virtual void modeChanged(void) override;
 	void setNormalDatapoolEntriesInvalid() override;
+	ReturnValue_t initializeLocalDataPool(LocalDataPool &localDataPoolMap,
+			LocalDataPoolManager &poolManager) override;
+
 
 private:
+	MGMLIS3MDL::MgmPrimaryDataset dataset;
+
 	/*------------------------------------------------------------------------*/
 	/* Device specific commands and variables */
 	/*------------------------------------------------------------------------*/
@@ -86,7 +100,7 @@ private:
 	 */
 	ReturnValue_t identifyDevice();
 
-	virtual ReturnValue_t setupMGM();
+	virtual void setupMgm();
 
 	/*------------------------------------------------------------------------*/
 	/* Non normal commands */
@@ -114,7 +128,7 @@ private:
 	//Single SPIcommand has 2 bytes, first for adress, second for content
 	size_t singleComandSize = 2;
 	//has the size for all adresses of the lis3mdl + the continous write bit
-	uint8_t commandBuffer[MGMLIS3MDL::TOTAL_NR_OF_ADRESSES + 1];
+	uint8_t commandBuffer[MGMLIS3MDL::NR_OF_DATA_AND_CFG_REGISTERS + 1];
 
 	/**
 	 * We want to save the registers we set, so we dont have to read the
@@ -122,6 +136,9 @@ private:
 	 * --> everytime we change set a register we have to save it
 	 */
 	uint8_t registers[MGMLIS3MDL::NR_OF_CTRL_REGISTERS];
+
+	uint8_t statusRegister = 0;
+
 
 	/**
 	 * As this is a SPI Device, we get the Answer of the last sent command in
@@ -142,6 +159,12 @@ private:
 	};
 
 	InternalState internalState = STATE_NONE;
+	CommunicationStep communicationStep = CommunicationStep::DATA;
+	bool commandExecuted = false;
+
+#if OBSW_ENHANCED_PRINTOUT == 1
+	PeriodicOperationDivider* debugDivider;
+#endif
 
 };
 

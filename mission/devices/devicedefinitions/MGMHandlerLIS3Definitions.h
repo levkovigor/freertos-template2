@@ -1,6 +1,9 @@
 #ifndef MISSION_DEVICES_DEVICEDEFINITIONS_MGMHANDLERLIS3DEFINITIONS_H_
 #define MISSION_DEVICES_DEVICEDEFINITIONS_MGMHANDLERLIS3DEFINITIONS_H_
 
+#include <fsfw/datapoollocal/StaticLocalDataSet.h>
+#include <fsfw/datapoollocal/LocalPoolVariable.h>
+#include <fsfw/devicehandlers/DeviceHandlerIF.h>
 #include <cstdint>
 
 namespace MGMLIS3MDL {
@@ -12,11 +15,14 @@ enum opMode {
     LOW, MEDIUM, HIGH, ULTRA
 };
 
+static constexpr uint8_t GAUSS_TO_MICROTESLA_FACTOR = 100;
+
 static const DeviceCommandId_t SETUP_MGM = 0x00;
-static const DeviceCommandId_t READALL_MGM = 0x01;
-static const DeviceCommandId_t IDENTIFY_DEVICE = 0x02;
-static const DeviceCommandId_t TEMP_SENSOR_ENABLE = 0x03;
-static const DeviceCommandId_t ACCURACY_OP_MODE_SET = 0x04;
+static const DeviceCommandId_t READ_CONFIG_AND_DATA = 0x01;
+static const DeviceCommandId_t READ_TEMPERATURE = 0x02;
+static const DeviceCommandId_t IDENTIFY_DEVICE = 0x03;
+static const DeviceCommandId_t TEMP_SENSOR_ENABLE = 0x04;
+static const DeviceCommandId_t ACCURACY_OP_MODE_SET = 0x05;
 
 //Number of all control registers
 static const uint8_t NR_OF_CTRL_REGISTERS = 5;
@@ -24,7 +30,9 @@ static const uint8_t NR_OF_CTRL_REGISTERS = 5;
 static const uint8_t NR_OF_REGISTERS = 19;
 //Total number of adresses for all registers
 static const uint8_t TOTAL_NR_OF_ADRESSES = 52;
-static const uint8_t SETUP_REPLY = 6;
+static const uint8_t NR_OF_DATA_AND_CFG_REGISTERS = 14;
+static const uint8_t TEMPERATURE_REPLY_LEN = 3;
+static const uint8_t SETUP_REPLY_LEN = 6;
 
 /*------------------------------------------------------------------------*/
 /* Register adresses */
@@ -45,19 +53,26 @@ static const uint8_t CTRL_REG4 = 0b00100011;
 static const uint8_t CTRL_REG5 = 0b00100100;
 
 //Register adress to access status register
+static const uint8_t STATUS_REG_IDX = 8;
 static const uint8_t STATUS_REG = 0b00100111;
 
  //Register adress to access low byte of x-axis
+static const uint8_t X_LOWBYTE_IDX = 9;
 static const uint8_t X_LOWBYTE = 0b00101000;
 //Register adress to access high byte of x-axis
+static const uint8_t X_HIGHBYTE_IDX = 10;
 static const uint8_t X_HIGHBYTE = 0b00101001;
 //Register adress to access low byte of y-axis
+static const uint8_t Y_LOWBYTE_IDX = 11;
 static const uint8_t Y_LOWBYTE = 0b00101010;
 //Register adress to access high byte of y-axis
+static const uint8_t Y_HIGHBYTE_IDX = 12;
 static const uint8_t Y_HIGHBYTE = 0b00101011;
 //Register adress to access low byte of z-axis
+static const uint8_t Z_LOWBYTE_IDX = 13;
 static const uint8_t Z_LOWBYTE = 0b00101100;
 //Register adress to access high byte of z-axis
+static const uint8_t Z_HIGHBYTE_IDX = 14;
 static const uint8_t Z_HIGHBYTE = 0b00101101;
 
 //Register adress to access low byte of temperature sensor
@@ -114,8 +129,35 @@ static const uint8_t CTRL_REG4_DEFAULT = (1 << OMZ1);
 static const uint8_t BDU = 6;       //Block data update
 static const uint8_t FAST_READ = 7; //Fast read enabled = 1
 static const uint8_t CTRL_REG5_DEFAULT = 0;
-}
 
+static const uint32_t MGM_DATA_SET_ID = READ_CONFIG_AND_DATA;
+
+enum MgmPoolIds: lp_id_t {
+    FIELD_STRENGTH_X,
+    FIELD_STRENGTH_Y,
+    FIELD_STRENGTH_Z,
+    TEMPERATURE_CELCIUS
+};
+
+class MgmPrimaryDataset: public StaticLocalDataSet<3 * sizeof(float)> {
+public:
+    MgmPrimaryDataset(HasLocalDataPoolIF* hkOwner):
+        StaticLocalDataSet(hkOwner, MGM_DATA_SET_ID) {}
+
+    MgmPrimaryDataset(object_id_t mgmId):
+        StaticLocalDataSet(sid_t(mgmId, MGM_DATA_SET_ID)) {}
+
+    lp_var_t<float> fieldStrengthX = lp_var_t<float>(sid.objectId,
+            FIELD_STRENGTH_X, this);
+    lp_var_t<float> fieldStrengthY = lp_var_t<float>(sid.objectId,
+            FIELD_STRENGTH_Y, this);
+    lp_var_t<float> fieldStrengthZ = lp_var_t<float>(sid.objectId,
+            FIELD_STRENGTH_Z, this);
+    lp_var_t<float> temperature = lp_var_t<float>(sid.objectId,
+            TEMPERATURE_CELCIUS, this);
+};
+
+}
 
 
 #endif /* MISSION_DEVICES_DEVICEDEFINITIONS_MGMHANDLERLIS3DEFINITIONS_H_ */

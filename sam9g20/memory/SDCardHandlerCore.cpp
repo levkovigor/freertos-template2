@@ -1,7 +1,7 @@
 #include "SDCardHandler.h"
 #include "SDCardAccess.h"
-#include "FileSystemMessage.h"
 #include "SDCardHandlerPackets.h"
+#include <mission/memory/FileSystemMessage.h>
 
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/ipc/QueueFactory.h>
@@ -272,10 +272,11 @@ ReturnValue_t SDCardHandler::handleFileMessage(CommandMessage* message) {
     return result;
 }
 
-
+#ifdef ISIS_OBC_G20
 void SDCardHandler::subscribeForSdCardNotifications(MessageQueueId_t queueId) {
     sdCardNotificationRecipients.push_back(queueId);
 }
+#endif
 
 MessageQueueId_t SDCardHandler::getCommandQueue() const{
     return commandQueue->getId();

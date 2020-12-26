@@ -32,8 +32,8 @@
 //------------------------------------------------------------------------------
 
 #include <board.h>
-#include <peripherals/pio/pio.h>
-#include <peripherals/tc/tc.h>
+#include <at91/peripherals/pio/pio.h>
+#include <at91/peripherals/tc/tc.h>
 
 //------------------------------------------------------------------------------
 //         Global Functions

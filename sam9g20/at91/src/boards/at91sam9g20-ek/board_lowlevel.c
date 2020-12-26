@@ -51,6 +51,8 @@
 #include <at91/peripherals/pmc/pmc.h>
 #include <at91/utility/trace.h>
 
+#include <string.h>
+
 //------------------------------------------------------------------------------
 //         Internal definitions
 //------------------------------------------------------------------------------
@@ -98,15 +100,22 @@
 ///             settings can't be changed while executing in external flash.
 ///             LowLevelInit shall be executed in internal sram. It initializes
 ///             PLL and SMC. 
-/// This function also reset the AIC and disable RTT and PIT interrupts
+/// This function also reset the AIC and disable RTT and PIT interrupts.
+///
+/// NOTE: Optimization has proven to be problematic. We just turn it off
+/// completely for this function.
 //------------------------------------------------------------------------------
-#ifdef norflash
-void LowLevelInit(void) __attribute__ ((section(".sramfunc"), weak));
-#endif
+void LowLevelInit(void) __attribute__((optimize("O0")));
 void LowLevelInit(void)
 {
     unsigned char i;
 
+    // Sometimes we have do this when flashing the SDRAM with SAM-BA
+    // because the SAM-BA low level init
+    // does not configure the SDRAM correctly!
+
+    // For J-Link flashes or for the NAND-Flash boot (default),
+    // this is not be required and should not be done!
 #ifndef sdram
     /* Initialize main oscillator
      ****************************/
@@ -160,7 +169,6 @@ void LowLevelInit(void)
         AT91C_BASE_AIC->AIC_EOICR = 0;
     }
 
-
     /* Watchdog initialization
      *************************/
     AT91C_BASE_WDTC->WDTC_WDMR = AT91C_WDTC_WDDIS;
@@ -178,5 +186,13 @@ void LowLevelInit(void)
 #if defined(norflash)
     BOARD_ConfigureNorFlash(BOARD_NORFLASH_DFT_BUS_SIZE);
 #endif    
+
+#if !defined(sdram)
+    BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
+#endif
 }
 
+void clearBssSection(void) {
+    extern char _sbss, _ebss;
+    memset(&_sbss, 0, &_ebss - &_sbss);
+}

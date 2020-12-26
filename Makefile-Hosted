@@ -58,7 +58,7 @@ endif
 # General folder paths
 FRAMEWORK_PATH = fsfw
 MISSION_PATH = mission
-CONFIG_PATH = $(BOARD_FILE_ROOT)/config
+CONFIG_PATH = $(BOARD_FILE_ROOT)/fsfwconfig
 TEST_PATH = test
 UNITTEST_PATH = unittest
 
@@ -86,7 +86,7 @@ endif
 BUILDPATH = _bin
 DEPENDPATH = _dep
 OBJECTPATH = _obj
-ifeq ($(MAKECMDGOALS),release)
+ifeq ($(MAKECMDGOALS),mission)
 BUILD_FOLDER = mission
 else 
 BUILD_FOLDER = devel
@@ -130,8 +130,8 @@ ASRC :=
 INCLUDES := 
 
 # Directories where $(directoryname).mk files should be included from
-SUBDIRS := $(FRAMEWORK_PATH) $(TEST_PATH) $(BSP_PATH) $(UNITTEST_PATH) \
-		   $(CONFIG_PATH) $(MISSION_PATH)
+SUBDIRS := $(FRAMEWORK_PATH) $(TEST_PATH) $(BSP_PATH) \
+		$(CONFIG_PATH) $(MISSION_PATH)
 # $(MISSION_PATH) $(CONFIG_PATH)
 # INCLUDES += framework/test/catch2
 
@@ -309,22 +309,22 @@ cleanbin:
 all: executable 
 	
 # Build target configuration
-release: OPTIMIZATION = -Os $(PROTOTYPE_OPTIMIZATION) $(LINK_TIME_OPTIMIZATION)
-release: LINK_TIME_OPTIMIZATION = -flto
-release: TARGET = Release
-release: OPTIMIZATION_MESSAGE = On with Link Time Optimization
-release: DEBUG_LEVEL = -g0
+mission: OPTIMIZATION = -O2 $(PROTOTYPE_OPTIMIZATION) $(LINK_TIME_OPTIMIZATION)
+mission: LINK_TIME_OPTIMIZATION = -flto
+mission: TARGET = mission
+mission: OPTIMIZATION_MESSAGE = On with Link Time Optimization
+mission: DEBUG_LEVEL = -g0
 
 debug: CXXDEFINES += -DDEBUG
 debug: DEBUG_MESSAGE = On
 
 ifndef KEEP_UNUSED_CODE
-debug release: OPTIMIZATION_MESSAGE = Off with unused code removal
+debug mission: OPTIMIZATION_MESSAGE = Off with unused code removal
 else
-debug release: OPTIMIZATION_MESSAGE = Off
+debug mission: OPTIMIZATION_MESSAGE = Off
 endif
 
-debug release: executable
+debug mission: executable
 	
 # executable: $(BINDIR)/$(BINARY_NAME).bin	
 ifeq ($(OS),Windows_NT)
@@ -428,4 +428,4 @@ $(DEPFILES):
 include $(wildcard $(DEPFILES))
 	
 # .PHONY tells make that these targets aren't files
-.PHONY: clean sdramCfg release debug all hardclean 
+.PHONY: clean sdramCfg mission debug all hardclean 

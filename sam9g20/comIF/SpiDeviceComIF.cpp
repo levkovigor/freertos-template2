@@ -1,13 +1,12 @@
 #include "SpiDeviceComIF.h"
 #include "GpioDeviceComIF.h"
 
-#include <logicalAddresses.h>
-
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/ipc/MutexHelper.h>
 #include <fsfw/osal/FreeRTOS/Mutex.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
+#include <fsfwconfig/devices/logicalAddresses.h>
 
 extern "C" {
 #include <at91/utility/trace.h>
@@ -32,6 +31,7 @@ ReturnValue_t SpiDeviceComIF::checkAddress(address_t spiAddress) {
     // todo: add all designated spi addresses.
     case(addresses::SPI_Test_PT1000):
     case(addresses::SPI_Test_Gyro):
+    case(addresses::SPI_Test_MGM):
     case(addresses::SPI_ARDUINO_0):
     case(addresses::SPI_ARDUINO_1):
     case(addresses::SPI_ARDUINO_2):

@@ -40,54 +40,31 @@ int read_software_version(uint8_t *software_version,
             sizeof(((FRAMCriticalData*)0)->software_subsubversion));
 }
 
-int increment_reboot_counter(bool verify, bool set_reboot_flag) {
-	uint16_t current_counter = 0;
-	int result = read_reboot_counter(&current_counter);
-	if(result != 0) {
-		return result;
-	}
-
-	current_counter++;
-	uint32_t reboot_field_value = set_reboot_flag >> 16 | current_counter;
-	if(verify) {
-	    return FRAM_writeAndVerify((unsigned char*) &reboot_field_value,
-	            REBOOT_COUNTER_ADDR, sizeof(reboot_field_value));
-	}
-	else {
-	    return FRAM_write((unsigned char*) &reboot_field_value,
-	            REBOOT_COUNTER_ADDR, sizeof(reboot_field_value));
-	}
-
-}
-
-int verify_reboot_flag(bool* bootcounter_incremented) {
-    uint16_t reboot_flag = 0;
-    int result = FRAM_read((unsigned char*) &reboot_flag,
-            REBOOT_FLAG_ADDR,
-            sizeof(reboot_flag));
-    if(result != 0) {
-        return result;
+int increment_reboot_counter(uint32_t* new_reboot_counter) {
+    if(new_reboot_counter == NULL) {
+        return -1;
     }
 
-    if(reboot_flag == 0) {
-        result = increment_reboot_counter(true, false);
-        *bootcounter_incremented = true;
-    }
-    *bootcounter_incremented = false;
+    FRAM_read((unsigned char*) new_reboot_counter,
+            REBOOT_COUNTER_ADDR, sizeof(*new_reboot_counter));
+    (*new_reboot_counter)++;
 
-    return result;
+    return FRAM_writeAndVerify((unsigned char*) new_reboot_counter,
+            REBOOT_COUNTER_ADDR, sizeof(*new_reboot_counter));
 }
 
-int read_reboot_counter(uint16_t* reboot_counter) {
+int read_reboot_counter(uint32_t* reboot_counter) {
 	return FRAM_read((unsigned char*) reboot_counter,
 			REBOOT_COUNTER_ADDR, sizeof(reboot_counter));
 }
 
 int reset_reboot_counter() {
-    uint16_t new_counter = 0;
+    uint32_t new_counter = 0;
     return FRAM_writeAndVerify((unsigned char*) &new_counter,
             REBOOT_COUNTER_ADDR, sizeof(new_counter));
 }
+
+
 
 int write_nor_flash_binary_info(size_t binary_size, size_t hamming_code_offset) {
 	int result = FRAM_writeAndVerify((unsigned char*) &binary_size,
