@@ -30,7 +30,6 @@ ReturnValue_t RS485Controller::performOperation(uint8_t opCode) {
         // Activate transceiver and notify RS485 polling task by releasing
         // a semaphore so it can start sending packets.
     	sif::info << "Sending to PCDU" << std::endl;
-    	uartSemaphoreFPGA1.acquire();
     	uartSemaphorePCDU.acquire();
     	UART_queueTransfer(&uartTransferPCDU);
 
