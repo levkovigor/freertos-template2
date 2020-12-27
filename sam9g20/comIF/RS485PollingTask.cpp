@@ -1,7 +1,6 @@
 #include "RS485PollingTask.h"
 
 #include <fsfw/objectmanager/ObjectManagerIF.h>
-#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 
 bool RS485PollingTask::uart2Started = false;
@@ -23,7 +22,7 @@ RS485PollingTask::~RS485PollingTask() {}
 ReturnValue_t RS485PollingTask::performOperation(uint8_t opCode) {
     initiateUartTransfers();
     while(true) {
-        pollUart();
+       pollUart();
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -39,7 +38,7 @@ ReturnValue_t RS485PollingTask::initialize() {
 void RS485PollingTask::initiateUartTransfers() {
     uartTransfer1.bus = bus2_uart;
     uartTransfer1.callback = uart1Callback;
-    uartTransfer1.direction = write_uartDir;
+    uartTransfer1.direction = read_uartDir;
     uartTransfer1.writeData = reinterpret_cast< unsigned char *>(const_cast<char*>("1Test"));
     uartTransfer1.writeSize = 5;
     uartTransfer1.postTransferDelay = 0;
@@ -51,7 +50,7 @@ void RS485PollingTask::initiateUartTransfers() {
 
     uartTransfer2.bus = bus2_uart;
     uartTransfer2.callback = uart2Callback;
-    uartTransfer2.direction = write_uartDir;
+    uartTransfer2.direction = read_uartDir;
     uartTransfer2.writeData = reinterpret_cast< unsigned char *>(const_cast<char*>("2Test"));
     uartTransfer2.writeSize = 5;
     uartTransfer2.postTransferDelay = 0;

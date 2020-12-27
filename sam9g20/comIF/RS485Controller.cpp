@@ -11,19 +11,29 @@ RS485Controller::RS485Controller(object_id_t objectId):
 ReturnValue_t RS485Controller::performOperation(uint8_t opCode) {
     RS485Steps step = static_cast<RS485Steps>(opCode);
 
+
+
     // check state of UART driver first, should be idle!
     // Returnvalue is ignored for now
-    checkDriverState(&retryCount);
+//    checkDriverState(&retryCount);
 
     switch(step) {
     case(SYRLINKS_ACTIVE): {
         // Activate transceiver and notify RS485 polling task by releasing
         // a semaphore so it can start sending packets.
+    	sif::info << "Sending to FPGA 1" << std::endl;
+    	uartSemaphoreFPGA1.acquire();
+    	UART_queueTransfer(&uartTransferFPGA1);
         break;
     }
     case(PCDU_VORAGO_ACTIVE): {
         // Activate transceiver and notify RS485 polling task by releasing
         // a semaphore so it can start sending packets.
+    	sif::info << "Sending to PCDU" << std::endl;
+    	uartSemaphoreFPGA1.acquire();
+    	uartSemaphorePCDU.acquire();
+    	UART_queueTransfer(&uartTransferPCDU);
+
         break;
     }
     case(PL_VORAGO_ACTIVE): {
@@ -55,6 +65,24 @@ ReturnValue_t RS485Controller::performOperation(uint8_t opCode) {
 }
 
 ReturnValue_t RS485Controller::initialize() {
+    uartTransferFPGA1.bus = bus2_uart;
+	uartTransferFPGA1.callback = genericUartCallback;
+	uartTransferFPGA1.direction = write_uartDir;
+	uartTransferFPGA1.writeData = reinterpret_cast< unsigned char *>(const_cast<char*>("FPGA1I"));
+	uartTransferFPGA1.writeSize = 6;
+	uartTransferFPGA1.postTransferDelay = 0;
+//	uartTransferFPGA1.result = &transfer1Status;
+	uartTransferFPGA1.semaphore = uartSemaphoreFPGA1.getSemaphore();
+
+	uartTransferPCDU.bus = bus2_uart;
+	uartTransferPCDU.callback = genericUartCallback;
+	uartTransferPCDU.direction = write_uartDir;
+	uartTransferPCDU.writeData = reinterpret_cast< unsigned char *>(const_cast<char*>("PCDUI"));
+	uartTransferPCDU.writeSize = 6;
+	uartTransferPCDU.postTransferDelay = 0;
+//	uartTransferPCDU.result = &transfer2Status;
+	uartTransferPCDU.semaphore = uartSemaphorePCDU.getSemaphore();
+
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -86,3 +114,22 @@ ReturnValue_t RS485Controller::checkDriverState(uint8_t* retryCount) {
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
+
+void RS485Controller::genericUartCallback(SystemContext context,
+        xSemaphoreHandle sem) {
+    BaseType_t higherPriorityTaskAwoken = pdFALSE;
+    if(context == SystemContext::task_context) {
+        BinarySemaphore::release(sem);
+    }
+    else {
+        BinarySemaphore::releaseFromISR(sem,
+                &higherPriorityTaskAwoken);
+    }
+    if(context == SystemContext::isr_context and
+            higherPriorityTaskAwoken == pdPASS) {
+        // Request a context switch before exiting ISR, as recommended
+        // by FreeRTOS.
+        TaskManagement::requestContextSwitch(CallContext::ISR);
+    }
+}
+

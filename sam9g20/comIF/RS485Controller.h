@@ -4,6 +4,7 @@
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
+#include <fsfw/osal/FreeRTOS/TaskManagement.h>
 #include <cstdint>
 
 extern "C" {
@@ -31,10 +32,13 @@ private:
 
     ReturnValue_t checkDriverState(uint8_t* retryCount);
 
-    UARTgenericTransfer uartTransferSendSyrlinks;
-    BinarySemaphore uartSemaphoreSyrlinks;
-    UARTgenericTransfer uartTransferSendPCDU;
+    UARTgenericTransfer uartTransferFPGA1;
+    BinarySemaphore uartSemaphoreFPGA1;
+    UARTgenericTransfer uartTransferPCDU;
     BinarySemaphore uartSemaphorePCDU;
+
+    static void genericUartCallback(SystemContext context,
+            xSemaphoreHandle sem);
 
 };
 
