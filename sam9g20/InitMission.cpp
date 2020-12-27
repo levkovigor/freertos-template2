@@ -352,6 +352,15 @@ void initTasks(void) {
            printAddError(objects::RS485_POLLING_TASK);
     }
 
+   /* RS485 Polling Sequence */
+	 FixedTimeslotTaskIF * PollingSequenceTableTaskRS485 =
+			 TaskFactory::instance()-> createFixedTimeslotTask(
+					 "PST_TASK_RS485", 5, 2048 * 4, 0.4,
+					 genericMissedDeadlineFunc);
+	 result = pst::pollingSequenceInitRS485(PollingSequenceTableTaskRS485);
+	 if (result != HasReturnvaluesIF::RETURN_OK) {
+		 sif::error << "InitMission: Creating RS485 PST failed!" << std::endl;
+	 }
 
 #if OBSW_ADD_TEST_CODE == 1
     InternalUnitTester unitTestClass;
@@ -390,6 +399,7 @@ void initTasks(void) {
     //ThermalController -> startTask();
     SpiComTask->startTask();
     RS485PollingTask->startTask();
+    PollingSequenceTableTaskRS485->startTask();
 
     sif::info << "Remaining FreeRTOS heap size: " << std::dec
             << xPortGetFreeHeapSize() << " bytes." << std::endl;

@@ -3,7 +3,12 @@
 
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
+#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <cstdint>
+
+extern "C" {
+#include <hal/Drivers/UART.h>
+}
 
 enum RS485Steps: uint8_t {
     SYRLINKS_ACTIVE,
@@ -25,6 +30,11 @@ private:
     uint8_t retryCount = 0;
 
     ReturnValue_t checkDriverState(uint8_t* retryCount);
+
+    UARTgenericTransfer uartTransferSendSyrlinks;
+    BinarySemaphore uartSemaphoreSyrlinks;
+    UARTgenericTransfer uartTransferSendPCDU;
+    BinarySemaphore uartSemaphorePCDU;
 
 };
 

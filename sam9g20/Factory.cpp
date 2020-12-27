@@ -60,6 +60,7 @@
 #include <sam9g20/comIF/SpiDeviceComIF.h>
 #include <sam9g20/comIF/RS232PollingTask.h>
 #include <sam9g20/comIF/RS485PollingTask.h>
+#include <sam9g20/comIF/RS485Controller.h>
 #include <sam9g20/core/CoreController.h>
 #include <sam9g20/core/SoftwareImageHandler.h>
 #include <sam9g20/core/SystemStateTask.h>
@@ -243,6 +244,7 @@ void Factory::produce(void) {
 	new GpioDeviceComIF(objects::GPIO_DEVICE_COM_IF);
 	new SpiDeviceComIF(objects::SPI_DEVICE_COM_IF);
 	new RS485PollingTask(objects::RS485_POLLING_TASK);
+	new RS485Controller(objects::RS485_CONTROLLER);
 
 
 	/* Test Tasks AT91 */
