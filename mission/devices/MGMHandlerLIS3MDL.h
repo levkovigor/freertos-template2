@@ -145,11 +145,15 @@ private:
 	 */
 	ReturnValue_t prepareCtrlRegisterWrite();
 
-	enum InternalState {
-		STATE_NONE, STATE_FIRST_CONTACT, STATE_SETUP, STATE_CHECK_REGISTERS
+	enum class InternalState {
+		STATE_NONE,
+		STATE_FIRST_CONTACT,
+		STATE_SETUP,
+		STATE_CHECK_REGISTERS,
+		STATE_NORMAL
 	};
 
-	InternalState internalState = STATE_NONE;
+	InternalState internalState = InternalState::STATE_NONE;
 	CommunicationStep communicationStep = CommunicationStep::DATA;
 	bool commandExecuted = false;
 
