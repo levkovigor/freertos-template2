@@ -1,4 +1,4 @@
-#! /usr/bin/python3.8
+#! /usr/bin/python3
 """
 @file   mib_events.py
 @brief  Part of the Mission Information Base Exporter for the SOURCE project by KSat.
@@ -28,10 +28,10 @@ CSV_FILENAME = "mib_events.csv"
 CSV_MOVE_DESTINATION = "../"
 
 CPP_FILENAME = "translateEvents.cpp"
-CPP_COPY_DESTINATION = "../../config/events/"
+CPP_COPY_DESTINATION = "../../fsfwconfig/events/"
 
 FILE_SEPARATOR = ";"
-SUBSYSTEM_DEFINITION_DESTINATIONS = ["../../config/events/subsystemIdRanges.h",
+SUBSYSTEM_DEFINITION_DESTINATIONS = ["../../fsfwconfig/events/subsystemIdRanges.h",
                                      "../../fsfw/events/fwSubsystemIdRanges.h"]
 HEADER_DEFINITION_DESTINATIONS = ["../../mission/", "../../fsfw/"]
 
