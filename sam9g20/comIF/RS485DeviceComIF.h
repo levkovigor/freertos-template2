@@ -4,6 +4,7 @@
 #include <fsfw/devicehandlers/DeviceCommunicationIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
+#include <sam9g20/comIF/cookies/RS485Cookie.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 #include <fsfwconfig/OBSWConfig.h>
@@ -14,13 +15,6 @@ extern "C" {
 #include <hal/Drivers/UART.h>
 }
 
-enum RS485Steps: uint8_t {
-    FPGA_1_ACTIVE,
-	FPGA_2_ACTIVE,
-    PCDU_VORAGO_ACTIVE,
-    PL_VORAGO_ACTIVE,
-    PL_PIC24_ACTIVE
-};
 
 class RS485DeviceComIF: public DeviceCommunicationIF,
 public SystemObject,
@@ -51,6 +45,7 @@ public:
 
 
 private:
+
 
     uint8_t retryCount = 0;
     ReturnValue_t checkDriverState(uint8_t* retryCount);

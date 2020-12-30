@@ -1,5 +1,6 @@
 #include <sam9g20/comIF/RS485DeviceComIF.h>
 #include <fsfw/tasks/TaskFactory.h>
+#include <sam9g20/comIF/cookies/RS485Cookie.h>
 
 extern "C" {
 #include <hal/Drivers/UART.h>
@@ -21,6 +22,36 @@ ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {
 
 ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie,
         const uint8_t *sendData, size_t sendLen) {
+	RS485Cookie * rs485Cookie = dynamic_cast<RS485Cookie *> (cookie);
+		RS485Devices device = rs485Cookie->getDevice();
+
+	switch(device) {
+	    case(RS485Devices::FPGA_1): {
+	    	uartSemaphoreFPGA1.acquire();
+	    	uartTransferFPGA1.writeSize = sendLen;
+	    	uartTransferFPGA1.writeData = sendData;
+	    	uartSemaphoreFPGA1.release();
+	        break;
+	    }
+	    case(RS485Devices::FPGA_2): {
+	        break;
+	    }
+	    case(RS485Devices::PCDU_VORAGO): {
+	        break;
+	    }
+	    case(RS485Devices::PL_VORAGO): {
+	        break;
+	    }
+	    case(RS485Devices::PL_PIC24): {
+	        break;
+	    }
+	    default: {
+	        // should not happen
+	    	sif::error << "Unknown RS485 device" << std::endl;
+	        break;
+	    }
+	    }
+
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -43,7 +74,7 @@ ReturnValue_t RS485DeviceComIF::readReceivedMessage(CookieIF *cookie,
 
 
 ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
-    RS485Steps step = static_cast<RS485Steps>(opCode);
+    RS485Devices step = static_cast<RS485Devices>(opCode);
 
 
 
@@ -52,7 +83,7 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 //    checkDriverState(&retryCount);
 
     switch(step) {
-    case(FPGA_1_ACTIVE): {
+    case(RS485Devices::FPGA_1): {
         // Activate transceiver via GPIO
 //    	uartTransferFPGA1.writeData = ;
 //		uartTransferFPGA1.writeSize = ;
@@ -62,7 +93,7 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
     	// Aquire semaphore, write new message to send, release semaphore
         break;
     }
-    case(FPGA_2_ACTIVE): {
+    case(RS485Devices::FPGA_2): {
         // Activate transceiver via GPIO
 //    	uartTransferFPGA2.writeData = ;
 //		uartTransferFPGA2.writeSize = ;
@@ -72,7 +103,7 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
     	// Aquire semaphore, write new message to send, release semaphore
         break;
     }
-    case(PCDU_VORAGO_ACTIVE): {
+    case(RS485Devices::PCDU_VORAGO): {
         // Activate transceiver and notify RS485 polling task by releasing
         // a semaphore so it can start sending packets.
     	sif::info << "Sending to PCDU" << std::endl;
@@ -81,13 +112,13 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 
         break;
     }
-    case(PL_VORAGO_ACTIVE): {
+    case(RS485Devices::PL_VORAGO): {
         // Activate transceiver and notify RS485 polling task by releasing
         // a semaphore so it can start sending packets.
     	sif::info << "Sending to PL_VORAGO" << std::endl;
         break;
     }
-    case(PL_PIC24_ACTIVE): {
+    case(RS485Devices::PL_PIC24): {
         // Activate transceiver and notify RS485 polling task by releasing
         // a semaphore so it can start sending packets.
     	sif::info << "Sending to PL_PIC24" << std::endl;

@@ -247,6 +247,9 @@ void Factory::produce(void) {
 	new RS485DeviceComIF(objects::RS485_DEVICE_COM_IF);
 
 
+	CookieIF* rs485Cookie = nullptr;
+
+	rs485Cookie = new RS485Cookie();
 	/* Test Tasks AT91 */
 	//size_t I2C_MAX_REPLY_LEN = 256;
 	size_t SPI_MAX_REPLY_LEN = 128;
