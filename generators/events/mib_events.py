@@ -33,7 +33,7 @@ CPP_COPY_DESTINATION = "../../fsfwconfig/events/"
 FILE_SEPARATOR = ";"
 SUBSYSTEM_DEFINITION_DESTINATIONS = ["../../fsfwconfig/events/subsystemIdRanges.h",
                                      "../../fsfw/events/fwSubsystemIdRanges.h"]
-HEADER_DEFINITION_DESTINATIONS = ["../../mission/", "../../fsfw/"]
+HEADER_DEFINITION_DESTINATIONS = ["../../mission/", "../../fsfw/", "../../sam9g20"]
 
 
 def main():
@@ -123,7 +123,7 @@ class EventParser(FileParser):
             self.myId = self.return_number_from_string(self.currentId)
         match = re.search(
             '(//)?[\t ]*static const(?:expr)? Event[\s]*([A-Z_0-9]*)[\s]*=[\s]*'
-            'MAKE_EVENT\(([0-9]{1,2}),[\s]*SEVERITY::([A-Z]*)\);[\t ]*(//!<)?([^\n]*)', twolines)
+            'MAKE_EVENT\(([0-9]{1,2}),[\s]*severity::([A-Z]*)\);[\t ]*(//!<)?([^\n]*)', twolines)
         if match:
             if match.group(1):
                 self.last_lines[0] = line
