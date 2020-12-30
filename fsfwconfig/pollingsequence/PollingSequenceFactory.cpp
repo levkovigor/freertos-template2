@@ -1,6 +1,6 @@
 #include "PollingSequenceFactory.h"
 
-#include <sam9g20/comIF/RS485Controller.h>
+#include <sam9g20/comIF/RS485DeviceComIF.h>
 
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/devicehandlers/DeviceHandlerIF.h>
@@ -70,13 +70,13 @@ ReturnValue_t pst::pollingSequenceInitRS485(FixedTimeslotTaskIF *thisSequence) {
     /* Length of a communication cycle */
     uint32_t length = thisSequence->getPeriodMs();
 
-    thisSequence->addSlot(objects::RS485_CONTROLLER, length * 0,
-            RS485Steps::SYRLINKS_ACTIVE);
-    thisSequence->addSlot(objects::RS485_CONTROLLER, length * 0.4,
+    thisSequence->addSlot(objects::RS485_DEVICE_COM_IF, length * 0,
+            RS485Steps::FPGA_1_ACTIVE);
+    thisSequence->addSlot(objects::RS485_DEVICE_COM_IF, length * 0.4,
             RS485Steps::PCDU_VORAGO_ACTIVE);
-    thisSequence->addSlot(objects::RS485_CONTROLLER, length * 0.65,
+    thisSequence->addSlot(objects::RS485_DEVICE_COM_IF, length * 0.65,
             RS485Steps::PL_VORAGO_ACTIVE);
-    thisSequence->addSlot(objects::RS485_CONTROLLER, length * 0.85,
+    thisSequence->addSlot(objects::RS485_DEVICE_COM_IF, length * 0.85,
             RS485Steps::PL_PIC24_ACTIVE);
 
     if (thisSequence->checkSequence() == HasReturnvaluesIF::RETURN_OK) {

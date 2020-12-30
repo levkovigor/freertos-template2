@@ -19,11 +19,11 @@ ReturnValue_t RS485Controller::performOperation(uint8_t opCode) {
 
     switch(step) {
     case(SYRLINKS_ACTIVE): {
-        // Activate transceiver and notify RS485 polling task by releasing
-        // a semaphore so it can start sending packets.
+        // Activate transceiver via GPIO
     	sif::info << "Sending to FPGA 1" << std::endl;
     	uartSemaphoreFPGA1.acquire();
     	UART_queueTransfer(&uartTransferFPGA1);
+    	// Aquire semaphore, write new message to send, release semaphore
         break;
     }
     case(PCDU_VORAGO_ACTIVE): {
