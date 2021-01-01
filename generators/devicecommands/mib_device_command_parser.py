@@ -11,10 +11,10 @@
 import re
 from enum import Enum
 
-from parserbase.mib_file_list_parser import FileListParser
-from parserbase.mib_parser import FileParser
+from generatore_core.parserbase import FileListParser
+from generatore_core.parserbase import FileParser
 from utility.mib_csv_writer import CsvWriter
-from utility.mib_printer import Printer
+from generatore_core.utility.mib_printer import Printer
 
 
 DH_COMMAND_PACKET_DEFINITION_DESTINATION = "../../mission/devices/devicepackets/"
