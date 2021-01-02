@@ -29,7 +29,7 @@ ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie,
 	    case(RS485Devices::FPGA_1): {
 	    	uartSemaphoreFPGA1.acquire();
 	    	uartTransferFPGA1.writeSize = sendLen;
-	    	uartTransferFPGA1.writeData = sendData;
+	    	uartTransferFPGA1.writeData = const_cast<uint8_t*>(sendData);
 	    	uartSemaphoreFPGA1.release();
 	        break;
 	    }
@@ -107,8 +107,8 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
         // Activate transceiver and notify RS485 polling task by releasing
         // a semaphore so it can start sending packets.
     	sif::info << "Sending to PCDU" << std::endl;
-    	uartSemaphorePCDU.acquire();
-    	UART_queueTransfer(&uartTransferPCDU);
+//    	uartSemaphorePCDU.acquire();
+//    	UART_queueTransfer(&uartTransferPCDU);
 
         break;
     }
