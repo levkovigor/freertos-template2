@@ -4,7 +4,7 @@ import shutil
 import os
 
 
-def copy_file(filename: str, destination: str = ""):
+def copy_file(filename: str, destination: str = "", delete_existing_file: bool = False):
     if os.path.exists(filename):
         try:
             shutil.copy2(filename, destination)
@@ -12,7 +12,7 @@ def copy_file(filename: str, destination: str = ""):
             print("copy_file: File not found!")
             print(error)
         except shutil.SameFileError:
-            print("copy_file: File already exists!")
+            print("copy_file: Source and destination are the same!")
 
 
 def move_file(file_name: str, destination: str = ""):
