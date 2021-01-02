@@ -11,8 +11,8 @@ On Windows, Build Tools installation might be necessary
 """
 import re
 import datetime
-from generatore_core.parserbase import FileListParser
-from generatore_core.parserbase import FileParser
+from generatore_core.parserbase.mib_parser import FileParser
+from generatore_core.parserbase.mib_file_list_parser import FileListParser
 from generatore_core.utility.mib_printer import PrettyPrinter
 from utility.mib_file_management import copy_file, move_file
 

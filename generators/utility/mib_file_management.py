@@ -9,8 +9,10 @@ def copy_file(filename: str, destination: str = ""):
         try:
             shutil.copy2(filename, destination)
         except FileNotFoundError as error:
-            print("File not found!")
+            print("copy_file: File not found!")
             print(error)
+        except shutil.SameFileError:
+            print("copy_file: File already exists!")
 
 
 def move_file(file_name: str, destination: str = ""):

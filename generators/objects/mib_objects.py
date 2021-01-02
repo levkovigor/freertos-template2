@@ -13,7 +13,7 @@ import datetime
 from generatore_core.utility.mib_csv_writer import CsvWriter
 from generatore_core.utility.mib_printer import PrettyPrinter
 from utility.mib_file_management import copy_file
-from generatore_core.parserbase import FileParser
+from generatore_core.parserbase.mib_parser import FileParser
 from generatore_core.utility.mib_sql_writer import SqlWriter, SQL_DATABASE_NAME
 
 DATE_TODAY = datetime.datetime.now()
@@ -27,13 +27,13 @@ COPY_CPP = True
 
 EXPORT_TO_SQL = True
 
-CPP_COPY_DESTINATION = "../../config/objects/"
+CPP_COPY_DESTINATION = "../../fsfwconfig/objects/"
 CSV_MOVE_DESTINATION = "../"
 CPP_FILENAME = "translateObjects.cpp"
 CSV_OBJECT_FILENAME = "mib_objects.csv"
 FILE_SEPARATOR = ";"
 
-SUBSYSTEM_DEFINITION_DESTINATION = "../../config/objects/systemObjectList.h"
+SUBSYSTEM_DEFINITION_DESTINATION = "../../fsfwconfig/objects/systemObjectList.h"
 FRAMEWORK_SUBSYSTEM_DEFINITION_DESTINATION = "../../fsfw/objectmanager/frameworkObjects.h"
 OBJECTS_DEFINITIONS = [SUBSYSTEM_DEFINITION_DESTINATION, FRAMEWORK_SUBSYSTEM_DEFINITION_DESTINATION]
 
