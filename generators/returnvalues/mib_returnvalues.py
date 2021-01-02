@@ -18,7 +18,7 @@
 from generatore_core.parserbase.mib_file_list_parser import FileListParser
 from generatore_core.returnvalues.mib_returnvalues_parser import InterfaceParser, ReturnValueParser
 from generatore_core.utility.mib_sql_writer import SqlWriter
-from utility.mib_csv_writer import CsvWriter
+from generatore_core.utility.mib_csv_writer import CsvWriter
 from generatore_core.utility.mib_printer import Printer
 
 EXPORT_TO_FILE = True

@@ -6,6 +6,8 @@
 @brief
     Global settings for MIB exporter
 """
+
+# TODO: replace by proper globals manager
 import pprint
 
 

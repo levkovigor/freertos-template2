@@ -35,7 +35,7 @@ TODO:
 import os
 import pprint
 
-from utility.mib_csv_writer import CsvWriter
+from generatore_core.utility.mib_csv_writer import CsvWriter
 from generatore_core.utility.mib_printer import Printer
 from generatore_core.utility.mib_sql_writer import SqlWriter
 from utility import mib_globals as g

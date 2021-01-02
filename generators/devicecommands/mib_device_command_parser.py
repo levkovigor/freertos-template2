@@ -13,7 +13,7 @@ from enum import Enum
 
 from generatore_core.parserbase import FileListParser
 from generatore_core.parserbase import FileParser
-from utility.mib_csv_writer import CsvWriter
+from generatore_core.utility.mib_csv_writer import CsvWriter
 from generatore_core.utility.mib_printer import Printer
 
 

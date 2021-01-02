@@ -3,7 +3,8 @@
 import shutil
 import os
 
-def copy_file(filename:str, destination: str= ""):
+
+def copy_file(filename: str, destination: str = ""):
     if os.path.exists(filename):
         try:
             shutil.copy2(filename, destination)
@@ -12,7 +13,7 @@ def copy_file(filename:str, destination: str= ""):
             print(error)
 
 
-def move_file(file_name: str, destination: str= ""):
+def move_file(file_name: str, destination: str = ""):
     if os.path.exists(file_name):
         try:
             shutil.copy2(file_name, destination)
