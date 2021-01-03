@@ -345,7 +345,7 @@ void initTasks(void) {
 
     /* RS485 Polling Task */
     PeriodicTaskIF* RS485PollingTask = TaskFactory::instance()->
-               createPeriodicTask("RS485_POLLING_TASK", 8, 1024 * 4, 0.4,
+               createPeriodicTask("RS485_POLLING_TASK", 6, 1024 * 4, 0.4,
                        genericMissedDeadlineFunc);
        result = RS485PollingTask->addComponent(objects::RS485_POLLING_TASK);
        if(result != HasReturnvaluesIF::RETURN_OK) {

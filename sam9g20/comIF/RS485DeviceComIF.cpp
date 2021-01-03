@@ -2,6 +2,7 @@
 #include <fsfw/tasks/TaskFactory.h>
 #include <sam9g20/comIF/cookies/RS485Cookie.h>
 
+
 extern "C" {
 #include <hal/Drivers/UART.h>
 	}
@@ -17,6 +18,7 @@ RS485DeviceComIF::~RS485DeviceComIF() {
 
 
 ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {
+
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -27,10 +29,10 @@ ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie,
 
 	switch(device) {
 	    case(RS485Devices::FPGA_1): {
-	    	uartSemaphoreFPGA1.acquire();
+//	    	uartSemaphoreFPGA1.acquire();
 	    	uartTransferFPGA1.writeSize = sendLen;
 	    	uartTransferFPGA1.writeData = const_cast<uint8_t*>(sendData);
-	    	uartSemaphoreFPGA1.release();
+//	    	uartSemaphoreFPGA1.release();
 	        break;
 	    }
 	    case(RS485Devices::FPGA_2): {
@@ -54,6 +56,8 @@ ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie,
 
     return HasReturnvaluesIF::RETURN_OK;
 }
+
+
 
 ReturnValue_t RS485DeviceComIF::getSendSuccess(CookieIF *cookie) {
     return HasReturnvaluesIF::RETURN_OK;
@@ -142,6 +146,7 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
+
 ReturnValue_t RS485DeviceComIF::initialize() {
     uartTransferFPGA1.bus = bus2_uart;
 	uartTransferFPGA1.callback = genericUartCallback;
@@ -161,10 +166,55 @@ ReturnValue_t RS485DeviceComIF::initialize() {
 //	uartTransferPCDU.result = &transfer2Status;
 	uartTransferPCDU.semaphore = uartSemaphorePCDU.getSemaphore();
 
+//	SharedRingBuffer* ringBuffer =
+//			objectManager->get<SharedRingBuffer>(sharedRingBufferId);
+//	if(ringBuffer == nullptr) {
+//		return HasReturnvaluesIF::RETURN_FAILED;
+//	}
+//	analyzerTask = new RingBufferAnalyzer(ringBuffer,
+//			AnalyzerModes::DLE_ENCODING);
+
     return HasReturnvaluesIF::RETURN_OK;
 }
 
+ReturnValue_t RS485DeviceComIF::handleReceiveBuffer() {
+	for(uint8_t tcPacketIdx = 0; tcPacketIdx < MAX_TC_PACKETS_HANDLED;
+			tcPacketIdx++) {
+		size_t packetFoundLen = 0;
+		ReturnValue_t result = analyzerTask->checkForPackets(receiveArray.data(),
+				receiveArray.size(), &packetFoundLen);
+		if(result == HasReturnvaluesIF::RETURN_OK) {
+			result = handlePacketReception(packetFoundLen);
+			if(result != HasReturnvaluesIF::RETURN_OK) {
+			    sif::debug << "RS485DeviceComIF::handleReceiveBuffer: Handling Buffer"
+			            << " failed!" << std::endl;
+				return result;
+			}
+		}
+		else if(result == RingBufferAnalyzer::POSSIBLE_PACKET_LOSS) {
+			// trigger event?
+		    sif::debug << "RS485DeviceComIF::handleReceiveBuffer: Possible data loss"
+		            << std::endl;
+			continue;
+		}
+		else if(result == RingBufferAnalyzer::NO_PACKET_FOUND) {
+			return HasReturnvaluesIF::RETURN_OK;
+		}
+	}
 
+	return HasReturnvaluesIF::RETURN_OK;
+}
+
+// Just an echo function for testing
+ReturnValue_t RS485DeviceComIF::handlePacketReception(size_t foundLen) {
+	store_address_t storeId;
+	RS485Cookie* memoryLeakCookie = new RS485Cookie();
+	memoryLeakCookie->setDevice(FPGA_1);
+
+	ReturnValue_t result = sendMessage(memoryLeakCookie,
+			receiveArray.data(), foundLen);
+	return result;
+}
 
 void RS485DeviceComIF::genericUartCallback(SystemContext context,
         xSemaphoreHandle sem) {

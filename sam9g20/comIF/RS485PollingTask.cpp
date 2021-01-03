@@ -1,14 +1,13 @@
 #include "RS485PollingTask.h"
 
-#include <fsfw/objectmanager/ObjectManagerIF.h>
-#include <fsfw/osal/FreeRTOS/TaskManagement.h>
-
 bool RS485PollingTask::uart2Started = false;
 
 volatile size_t RS485PollingTask::transfer1bytesReceived = 0;
 volatile size_t RS485PollingTask::transfer2bytesReceived = 0;
 
-RS485PollingTask::RS485PollingTask(object_id_t objectId): SystemObject(objectId) {
+RS485PollingTask::RS485PollingTask(object_id_t objectId,
+        object_id_t sharedRingBufferId): UartPollingBase(objectId,
+                sharedRingBufferId, bus2_uart, &configBus2) {
 #if RS485_WITH_TERMINATION == 1
     configBus2.busType = rs422_withTermination_uart;
 #endif
@@ -16,19 +15,16 @@ RS485PollingTask::RS485PollingTask(object_id_t objectId): SystemObject(objectId)
     configBus2.baudrate = RS485_REGULARD_BAUD;
 }
 
-RS485PollingTask::~RS485PollingTask() {}
-
-
 ReturnValue_t RS485PollingTask::performOperation(uint8_t opCode) {
-    initiateUartTransfers();
-    while(true) {
-       pollUart();
-    }
+//    initiateUartTransfers();
+//    while(true) {
+//        pollUart();
+//    }
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t RS485PollingTask::initialize() {
-    ReturnValue_t result = UART_start(bus2_uart, configBus2);
+    ReturnValue_t result = UartPollingBase::initialize();
     if(result == HasReturnvaluesIF::RETURN_OK) {
         uart2Started = true;
     }
@@ -39,8 +35,6 @@ void RS485PollingTask::initiateUartTransfers() {
     uartTransfer1.bus = bus2_uart;
     uartTransfer1.callback = uart1Callback;
     uartTransfer1.direction = read_uartDir;
-    uartTransfer1.writeData = reinterpret_cast< unsigned char *>(const_cast<char*>("1Test"));
-    uartTransfer1.writeSize = 5;
     uartTransfer1.postTransferDelay = 0;
     uartTransfer1.readData = readBuffer1.data();
     uartTransfer1.readSize = RS485_MAX_SERIAL_FRAME_SIZE;
@@ -51,8 +45,6 @@ void RS485PollingTask::initiateUartTransfers() {
     uartTransfer2.bus = bus2_uart;
     uartTransfer2.callback = uart2Callback;
     uartTransfer2.direction = read_uartDir;
-    uartTransfer2.writeData = reinterpret_cast< unsigned char *>(const_cast<char*>("2Test"));
-    uartTransfer2.writeSize = 5;
     uartTransfer2.postTransferDelay = 0;
     uartTransfer2.readData = readBuffer2.data();
     uartTransfer2.readSize = RS485_MAX_SERIAL_FRAME_SIZE;
@@ -77,45 +69,28 @@ void RS485PollingTask::initiateUartTransfers() {
 void RS485PollingTask::pollUart() {
     ReturnValue_t result = uartSemaphore1.acquire();
     if(result == HasReturnvaluesIF::RETURN_OK) {
-//        handleTransferCompletion(readBuffer1.data(), transfer1bytesReceived,
-//                transfer1Status, config::RS485_MUTEX_TIMEOUT);
+        handleTransferCompletion(readBuffer1.data(), transfer1bytesReceived,
+                transfer1Status, config::RS485_MUTEX_TIMEOUT);
         int retval = UART_queueTransfer(&uartTransfer1);
         if(retval != 0) {
-//            otherErrorCount++;
+            otherErrorCount++;
         }
     }
 
     result = uartSemaphore2.acquire();
     if(result == HasReturnvaluesIF::RETURN_OK) {
-//        handleTransferCompletion(readBuffer2.data(), transfer2bytesReceived,
-//                transfer2Status, config::RS485_MUTEX_TIMEOUT);
+        handleTransferCompletion(readBuffer2.data(), transfer2bytesReceived,
+                transfer2Status, config::RS485_MUTEX_TIMEOUT);
         int retval = UART_queueTransfer(&uartTransfer2);
         if(retval != 0) {
-//            otherErrorCount++;
+            otherErrorCount++;
         }
     }
 
-//    if((parityErrorCount > 0) or (overrunErrorCount > 0) or
-//            (framingErrorCount > 0) or (otherErrorCount > 0)) {
-//        generateErrorEventResetCounters();
-//    }
-}
+    if((parityErrorCount > 0) or (overrunErrorCount > 0) or
+            (framingErrorCount > 0) or (otherErrorCount > 0)) {
+        generateErrorEventResetCounters();
 
-void RS485PollingTask::genericUartCallback(SystemContext context,
-        xSemaphoreHandle sem) {
-    BaseType_t higherPriorityTaskAwoken = pdFALSE;
-    if(context == SystemContext::task_context) {
-        BinarySemaphore::release(sem);
-    }
-    else {
-        BinarySemaphore::releaseFromISR(sem,
-                &higherPriorityTaskAwoken);
-    }
-    if(context == SystemContext::isr_context and
-            higherPriorityTaskAwoken == pdPASS) {
-        // Request a context switch before exiting ISR, as recommended
-        // by FreeRTOS.
-        TaskManagement::requestContextSwitch(CallContext::ISR);
     }
 }
 
@@ -130,5 +105,3 @@ void RS485PollingTask::uart2Callback(SystemContext context,
     transfer2bytesReceived = UART_getPrevBytesRead(bus0_uart);
     genericUartCallback(context, sem);
 }
-
-

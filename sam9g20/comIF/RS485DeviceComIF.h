@@ -8,6 +8,8 @@
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 #include <fsfwconfig/OBSWConfig.h>
+#include <fsfw/container/SharedRingBuffer.h>
+#include <sam9g20/core/RingBufferAnalyzer.h>
 
 
 extern "C" {
@@ -20,6 +22,10 @@ class RS485DeviceComIF: public DeviceCommunicationIF,
 public SystemObject,
 public ExecutableObjectIF{
 public:
+
+	static constexpr size_t TMTC_FRAME_MAX_LEN =
+	    		config::RS485_MAX_SERIAL_FRAME_SIZE;
+	    static constexpr uint8_t MAX_TC_PACKETS_HANDLED = 5;
 
 	RS485DeviceComIF(object_id_t objectId);
 	virtual ~RS485DeviceComIF();
@@ -54,6 +60,14 @@ private:
     UARTgenericTransfer uartTransferPCDU;
     BinarySemaphore uartSemaphorePCDU;
 
+    object_id_t sharedRingBufferId;
+    SharedRingBuffer* sharedRingBuffer = nullptr;
+    RingBufferAnalyzer* analyzerTask = nullptr;
+
+    std::array<uint8_t, TMTC_FRAME_MAX_LEN + 5> receiveArray;
+
+    ReturnValue_t handleReceiveBuffer();
+    ReturnValue_t handlePacketReception(size_t foundLen);
     static void genericUartCallback(SystemContext context,
             xSemaphoreHandle sem);
 

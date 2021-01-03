@@ -243,10 +243,10 @@ void Factory::produce(void) {
 	new I2cDeviceComIF(objects::I2C_DEVICE_COM_IF);
 	new GpioDeviceComIF(objects::GPIO_DEVICE_COM_IF);
 	new SpiDeviceComIF(objects::SPI_DEVICE_COM_IF);
-	new RS485PollingTask(objects::RS485_POLLING_TASK);
+	new RS485PollingTask(objects::RS485_POLLING_TASK, objects::RS485_RING_BUFFER);
 	new RS485DeviceComIF(objects::RS485_DEVICE_COM_IF);
 
-
+//	new SharedRingBuffer(objects::RS485_RING_BUFFER, 6144, true, 30);
 	CookieIF* rs485Cookie = nullptr;
 
 	rs485Cookie = new RS485Cookie();

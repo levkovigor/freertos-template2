@@ -22,13 +22,8 @@ extern "C" {
  * another task.
  * @author  R. Mueller
  */
-class RS485PollingTask: public SystemObject,
-        public ExecutableObjectIF{
+class RS485PollingTask: public UartPollingBase {
 public:
-
-	RS485PollingTask(object_id_t objectId);
-		virtual ~RS485PollingTask();
-
     static constexpr uint32_t RS485_REGULARD_BAUD = config::RS485_REGULAR_BAUD;
     static constexpr uint32_t RS485_FAST_BAUD = config::RS485_FAST_BAUD;
 
@@ -39,7 +34,8 @@ public:
     static constexpr float RS485_SERIAL_TIMEOUT_BAUDTICKS =
             config::RS485_SERIAL_TIMEOUT_BAUDTICKS;
 
-
+    RS485PollingTask(object_id_t objectId,
+            object_id_t sharedRingBufferId);
 
     ReturnValue_t performOperation(uint8_t opCode) override;
     ReturnValue_t initialize() override;
@@ -72,8 +68,6 @@ private:
     void initiateUartTransfers();
     void pollUart();
 
-    static void genericUartCallback(SystemContext context,
-            xSemaphoreHandle sem);
     static void uart1Callback(SystemContext context, xSemaphoreHandle sem);
     static void uart2Callback(SystemContext context, xSemaphoreHandle sem);
 };
