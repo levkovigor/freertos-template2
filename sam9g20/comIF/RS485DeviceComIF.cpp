@@ -102,8 +102,8 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 //    	uartTransferFPGA2.writeData = ;
 //		uartTransferFPGA2.writeSize = ;
     	sif::info << "Sending to FPGA 2" << std::endl;
-    	uartSemaphorePCDU.acquire();
-    	UART_queueTransfer(&uartTransferPCDU);
+//    	uartSemaphorePCDU.acquire();
+//    	UART_queueTransfer(&uartTransferPCDU);
     	// Aquire semaphore, write new message to send, release semaphore
         break;
     }

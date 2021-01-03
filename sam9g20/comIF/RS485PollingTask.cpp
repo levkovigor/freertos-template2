@@ -16,10 +16,10 @@ RS485PollingTask::RS485PollingTask(object_id_t objectId,
 }
 
 ReturnValue_t RS485PollingTask::performOperation(uint8_t opCode) {
-//    initiateUartTransfers();
-//    while(true) {
-//        pollUart();
-//    }
+    initiateUartTransfers();
+    while(true) {
+        pollUart();
+    }
     return HasReturnvaluesIF::RETURN_OK;
 }
 
