@@ -52,13 +52,14 @@ void RS485PollingTask::initiateUartTransfers() {
     uartSemaphore2.acquire();
     uartTransfer2.semaphore = uartSemaphore2.getSemaphore();
 
-    int result = UART_queueTransfer(&uartTransfer1);
+//    int result = UART_queueTransfer(&uartTransfer1);
+    int result = 0;
     if(result != 0) {
         // config error
         sif::error << "TcSerialPollingTask::initiateUartTransfers: Config error"
                 << std::endl;
     }
-    result = UART_queueTransfer(&uartTransfer2);
+//    result = UART_queueTransfer(&uartTransfer2);
     if(result != 0) {
         // config error
         sif::error << "TcSerialPollingTask::initiateUartTransfers: Config error"
