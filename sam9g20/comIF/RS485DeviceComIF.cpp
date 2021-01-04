@@ -92,8 +92,8 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 //    	uartTransferFPGA1.writeData = ;
 //		uartTransferFPGA1.writeSize = ;
     	sif::info << "Sending to FPGA 1" << std::endl;
-    	uartSemaphoreFPGA1.acquire();
-    	UART_queueTransfer(&uartTransferFPGA1);
+//    	uartSemaphoreFPGA1.acquire();
+    	UART_write(uartTransferFPGA1.bus, uartTransferFPGA1.writeData, uartTransferFPGA1.writeSize);
     	// Aquire semaphore, write new message to send, release semaphore
         break;
     }
@@ -111,8 +111,7 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
         // Activate transceiver and notify RS485 polling task by releasing
         // a semaphore so it can start sending packets.
     	sif::info << "Sending to PCDU" << std::endl;
-//    	uartSemaphorePCDU.acquire();
-//    	UART_queueTransfer(&uartTransferPCDU);
+    	UART_write(uartTransferPCDU.bus, uartTransferPCDU.writeData, uartTransferPCDU.writeSize);
 
         break;
     }
@@ -151,6 +150,8 @@ ReturnValue_t RS485DeviceComIF::initialize() {
     uartTransferFPGA1.bus = bus2_uart;
 	uartTransferFPGA1.callback = genericUartCallback;
 	uartTransferFPGA1.direction = write_uartDir;
+	uartTransferFPGA1.readData = &receiveArray[0];
+	uartTransferFPGA1.readSize = 6;
 	uartTransferFPGA1.writeData = reinterpret_cast< unsigned char *>(const_cast<char*>("FPGA1I"));
 	uartTransferFPGA1.writeSize = 6;
 	uartTransferFPGA1.postTransferDelay = 0;
@@ -159,8 +160,10 @@ ReturnValue_t RS485DeviceComIF::initialize() {
 
 	uartTransferPCDU.bus = bus2_uart;
 	uartTransferPCDU.callback = genericUartCallback;
-	uartTransferPCDU.direction = write_uartDir;
+	uartTransferPCDU.direction = read_uartDir;
 	uartTransferPCDU.writeData = reinterpret_cast< unsigned char *>(const_cast<char*>("PCDUI"));
+	uartTransferPCDU.readData = &receiveArray[0];
+	uartTransferPCDU.readSize = 6;
 	uartTransferPCDU.writeSize = 6;
 	uartTransferPCDU.postTransferDelay = 0;
 //	uartTransferPCDU.result = &transfer2Status;
