@@ -11,11 +11,13 @@
 
 #include <fsfw/devicehandlers/CookieIF.h>
 
+
 enum RS485Devices: uint8_t {
-    COM_FPGA,
+    COM_FPGA,	// Redundant FPGA not counted here, set in device handler
     PCDU_VORAGO,
     PL_VORAGO,
-    PL_PIC24
+    PL_PIC24,
+	DEVICE_COUNT_RS485
 };
 
 class RS485Cookie: public CookieIF {

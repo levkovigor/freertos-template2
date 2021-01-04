@@ -8,8 +8,9 @@ extern "C" {
 	}
 
 
-RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId):
-		SystemObject(objectId) {
+RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t sharedRingBufferId):
+		SystemObject(objectId),
+		sharedRingBufferId(sharedRingBufferId){
 
 }
 RS485DeviceComIF::~RS485DeviceComIF() {
@@ -27,29 +28,10 @@ ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie,
 	RS485Cookie * rs485Cookie = dynamic_cast<RS485Cookie *> (cookie);
 		RS485Devices device = rs485Cookie->getDevice();
 
-	switch(device) {
-	    case(RS485Devices::COM_FPGA): {
-//	    	uartSemaphoreFPGA1.acquire();
-	    	uartTransferFPGA1.writeSize = sendLen;
-	    	uartTransferFPGA1.writeData = const_cast<uint8_t*>(sendData);
-//	    	uartSemaphoreFPGA1.release();
-	        break;
-	    }
-	    case(RS485Devices::PCDU_VORAGO): {
-	        break;
-	    }
-	    case(RS485Devices::PL_VORAGO): {
-	        break;
-	    }
-	    case(RS485Devices::PL_PIC24): {
-	        break;
-	    }
-	    default: {
-	        // should not happen
-	    	sif::error << "Unknown RS485 device" << std::endl;
-	        break;
-	    }
-	    }
+			sendArray[device].writeData = const_cast<uint8_t*>(sendData);
+			sendArray[device].sendLen = sendLen;
+			sendArray[device].status = 1;
+
 
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -83,33 +65,22 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
     // Returnvalue is ignored for now
 //    checkDriverState(&retryCount);
 
+    // Activate transceiver via GPIO
     switch(step) {
     case(RS485Devices::COM_FPGA): {
     	// Check which FPGA is active (should probably be set via DeviceHandler)
-        // Activate transceiver via GPIO
     	sif::info << "Sending to FPGA 1" << std::endl;
-//    	uartSemaphoreFPGA1.acquire();
-    	UART_write(uartTransferFPGA1.bus, uartTransferFPGA1.writeData, uartTransferFPGA1.writeSize);
-    	// Aquire semaphore, write new message to send, release semaphore
         break;
     }
     case(RS485Devices::PCDU_VORAGO): {
-        // Activate transceiver and notify RS485 polling task by releasing
-        // a semaphore so it can start sending packets.
     	sif::info << "Sending to PCDU" << std::endl;
-    	UART_write(uartTransferPCDU.bus, uartTransferPCDU.writeData, uartTransferPCDU.writeSize);
-
         break;
     }
     case(RS485Devices::PL_VORAGO): {
-        // Activate transceiver and notify RS485 polling task by releasing
-        // a semaphore so it can start sending packets.
     	sif::info << "Sending to PL_VORAGO" << std::endl;
         break;
     }
     case(RS485Devices::PL_PIC24): {
-        // Activate transceiver and notify RS485 polling task by releasing
-        // a semaphore so it can start sending packets.
     	sif::info << "Sending to PL_PIC24" << std::endl;
         break;
     }
@@ -118,6 +89,14 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
         break;
     }
     }
+    if (sendArray[step].status != 0){
+    UART_write(bus2_uart, sendArray[step].writeData, sendArray[step].sendLen);
+    sendArray[step].status = 0;
+    }
+    // Reception
+//    sif::info << "Handling Receive Buffer" << std::endl;
+//    handleReceiveBuffer();
+
 
     // printout and event.
     if(retryCount > 0) {
@@ -133,35 +112,18 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 
 
 ReturnValue_t RS485DeviceComIF::initialize() {
-    uartTransferFPGA1.bus = bus2_uart;
-	uartTransferFPGA1.callback = genericUartCallback;
-	uartTransferFPGA1.direction = write_uartDir;
-	uartTransferFPGA1.readData = &receiveArray[0];
-	uartTransferFPGA1.readSize = 6;
-	uartTransferFPGA1.writeData = reinterpret_cast< unsigned char *>(const_cast<char*>("FPGA1I"));
-	uartTransferFPGA1.writeSize = 6;
-	uartTransferFPGA1.postTransferDelay = 0;
-//	uartTransferFPGA1.result = &transfer1Status;
-	uartTransferFPGA1.semaphore = uartSemaphoreFPGA1.getSemaphore();
 
-	uartTransferPCDU.bus = bus2_uart;
-	uartTransferPCDU.callback = genericUartCallback;
-	uartTransferPCDU.direction = read_uartDir;
-	uartTransferPCDU.writeData = reinterpret_cast< unsigned char *>(const_cast<char*>("PCDUI"));
-	uartTransferPCDU.readData = &receiveArray[0];
-	uartTransferPCDU.readSize = 6;
-	uartTransferPCDU.writeSize = 6;
-	uartTransferPCDU.postTransferDelay = 0;
-//	uartTransferPCDU.result = &transfer2Status;
-	uartTransferPCDU.semaphore = uartSemaphorePCDU.getSemaphore();
+//	uartTransferFPGA1.writeData = reinterpret_cast< unsigned char *>(const_cast<char*>("FPGA1I"));
 
-//	SharedRingBuffer* ringBuffer =
-//			objectManager->get<SharedRingBuffer>(sharedRingBufferId);
-//	if(ringBuffer == nullptr) {
-//		return HasReturnvaluesIF::RETURN_FAILED;
-//	}
-//	analyzerTask = new RingBufferAnalyzer(ringBuffer,
-//			AnalyzerModes::DLE_ENCODING);
+
+
+	SharedRingBuffer* ringBuffer =
+			objectManager->get<SharedRingBuffer>(sharedRingBufferId);
+	if(ringBuffer == nullptr) {
+		return HasReturnvaluesIF::RETURN_FAILED;
+	}
+	analyzerTask = new RingBufferAnalyzer(ringBuffer,
+			AnalyzerModes::DLE_ENCODING);
 
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -201,7 +163,7 @@ ReturnValue_t RS485DeviceComIF::handlePacketReception(size_t foundLen) {
 	memoryLeakCookie->setDevice(COM_FPGA);
 
 	ReturnValue_t result = sendMessage(memoryLeakCookie,
-			receiveArray.data(), foundLen);
+			reinterpret_cast< unsigned char *>(const_cast<char*>("SendMessage")), 6);
 	return result;
 }
 

@@ -17,6 +17,12 @@ extern "C" {
 #include <hal/Drivers/UART.h>
 }
 
+struct RS485WriteTransfer{
+	unsigned char * writeData;
+	size_t 	sendLen;
+	ReturnValue_t status;
+};
+
 
 class RS485DeviceComIF: public DeviceCommunicationIF,
 public SystemObject,
@@ -27,7 +33,7 @@ public:
 	    		config::RS485_MAX_SERIAL_FRAME_SIZE;
 	    static constexpr uint8_t MAX_TC_PACKETS_HANDLED = 5;
 
-	RS485DeviceComIF(object_id_t objectId);
+	RS485DeviceComIF(object_id_t objectId, object_id_t sharedRingBufferId);
 	virtual ~RS485DeviceComIF();
 
 
@@ -57,10 +63,7 @@ private:
     ReturnValue_t checkDriverState(uint8_t* retryCount);
 
 
-    UARTgenericTransfer uartTransferFPGA1;
-    BinarySemaphore uartSemaphoreFPGA1;
-    UARTgenericTransfer uartTransferPCDU;
-    BinarySemaphore uartSemaphorePCDU;
+    std::array<RS485WriteTransfer, RS485Devices::DEVICE_COUNT_RS485> sendArray;
 
     object_id_t sharedRingBufferId;
     SharedRingBuffer* sharedRingBuffer = nullptr;

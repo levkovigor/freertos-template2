@@ -246,7 +246,7 @@ void Factory::produce(void) {
 
 	new SharedRingBuffer(objects::RS485_RING_BUFFER, 6144, true, 30);
 	new RS485PollingTask(objects::RS485_POLLING_TASK, objects::RS485_RING_BUFFER);
-	new RS485DeviceComIF(objects::RS485_DEVICE_COM_IF);
+	new RS485DeviceComIF(objects::RS485_DEVICE_COM_IF, objects::RS485_RING_BUFFER);
 
 
 	CookieIF* rs485Cookie = nullptr;
