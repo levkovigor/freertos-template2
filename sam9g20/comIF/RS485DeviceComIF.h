@@ -20,7 +20,7 @@ extern "C" {
 struct RS485WriteTransfer{
 	unsigned char * writeData;
 	size_t 	sendLen;
-	ReturnValue_t status;
+	int status;
 };
 
 

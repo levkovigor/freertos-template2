@@ -30,7 +30,8 @@ ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie,
 
 			sendArray[device].writeData = const_cast<uint8_t*>(sendData);
 			sendArray[device].sendLen = sendLen;
-			sendArray[device].status = 1;
+			// UART drive error codes begin at -3, so -4 will be message available for us
+			sendArray[device].status = -4;
 
 
     return HasReturnvaluesIF::RETURN_OK;
@@ -89,9 +90,8 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
         break;
     }
     }
-    if (sendArray[step].status != 0){
-    UART_write(bus2_uart, sendArray[step].writeData, sendArray[step].sendLen);
-    sendArray[step].status = 0;
+    if (sendArray[step].status == -4){
+    	sendArray[step].status = UART_write(bus2_uart, sendArray[step].writeData, sendArray[step].sendLen);
     }
     // Reception
 //    sif::info << "Handling Receive Buffer" << std::endl;
