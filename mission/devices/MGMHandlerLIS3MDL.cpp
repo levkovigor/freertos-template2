@@ -23,23 +23,23 @@ MGMHandlerLIS3MDL::~MGMHandlerLIS3MDL() {
 
 void MGMHandlerLIS3MDL::doStartUp() {
 	switch (internalState) {
-	case STATE_NONE:
-		internalState = STATE_FIRST_CONTACT;
+	case(InternalState::STATE_NONE):
+		internalState = InternalState::STATE_FIRST_CONTACT;
 		break;
 
-	case STATE_FIRST_CONTACT:
-		internalState = STATE_SETUP;
+	case(InternalState::STATE_FIRST_CONTACT):
+		internalState = InternalState::STATE_SETUP;
 		break;
 
-	case STATE_SETUP:
-		internalState = STATE_CHECK_REGISTERS;
+	case(InternalState::STATE_SETUP):
+		internalState = InternalState::STATE_CHECK_REGISTERS;
 		break;
 
-	case STATE_CHECK_REGISTERS: {
+	case(InternalState::STATE_CHECK_REGISTERS): {
 		// Set up cached registers which will be used to configure the MGM.
 		if(commandExecuted) {
 			commandExecuted = false;
-			setMode(MODE_NORMAL);
+			setMode(_MODE_TO_ON);
 		}
 		break;
 	}
@@ -56,20 +56,27 @@ void MGMHandlerLIS3MDL::doShutDown() {
 ReturnValue_t MGMHandlerLIS3MDL::buildTransitionDeviceCommand(
 		DeviceCommandId_t *id) {
 	switch (internalState) {
-	case STATE_FIRST_CONTACT:
+	case(InternalState::STATE_NONE):
+	case(InternalState::STATE_NORMAL): {
+		return HasReturnvaluesIF::RETURN_OK;
+	}
+	case(InternalState::STATE_FIRST_CONTACT): {
 		*id = MGMLIS3MDL::IDENTIFY_DEVICE;
 		break;
-
-	case STATE_SETUP:
+	}
+	case(InternalState::STATE_SETUP): {
 		*id = MGMLIS3MDL::SETUP_MGM;
 		break;
-
-	case STATE_CHECK_REGISTERS:
+	}
+	case(InternalState::STATE_CHECK_REGISTERS): {
 		*id = MGMLIS3MDL::READ_CONFIG_AND_DATA;
 		break;
-
+	}
 	default:
-		break;
+		// might be a configuration error.
+		sif::debug << "GyroHandler::buildTransitionDeviceCommand: Unknown "
+				<< "internal state!" << std::endl;
+		return HasReturnvaluesIF::RETURN_OK;
 	}
 	return buildCommandFromCommand(*id, NULL, 0);
 }
@@ -105,13 +112,11 @@ ReturnValue_t MGMHandlerLIS3MDL::buildNormalDeviceCommand(
 		DeviceCommandId_t *id) {
 	// Data/config register will be read in an alternating manner.
 	if(communicationStep == CommunicationStep::DATA) {
-		lastSentCommand = MGMLIS3MDL::READ_CONFIG_AND_DATA;
 		*id = MGMLIS3MDL::READ_CONFIG_AND_DATA;
 		communicationStep = CommunicationStep::TEMPERATURE;
 		return buildCommandFromCommand(*id, NULL, 0);
 	}
 	else {
-		lastSentCommand = MGMLIS3MDL::READ_TEMPERATURE;
 		*id = MGMLIS3MDL::READ_TEMPERATURE;
 		communicationStep = CommunicationStep::DATA;
 		return buildCommandFromCommand(*id, NULL, 0);
@@ -122,7 +127,6 @@ ReturnValue_t MGMHandlerLIS3MDL::buildNormalDeviceCommand(
 ReturnValue_t MGMHandlerLIS3MDL::buildCommandFromCommand(
 		DeviceCommandId_t deviceCommand, const uint8_t *commandData,
 		size_t commandDataLen) {
-	lastSentCommand = deviceCommand;
 	switch(deviceCommand) {
 	case(MGMLIS3MDL::READ_CONFIG_AND_DATA): {
 		std::memset(commandBuffer, 0, sizeof(commandBuffer));
@@ -154,7 +158,6 @@ ReturnValue_t MGMHandlerLIS3MDL::buildCommandFromCommand(
 		return setOperatingMode(commandData, commandDataLen);
 	}
 	default:
-		lastSentCommand = DeviceHandlerIF::NO_COMMAND;
 		return DeviceHandlerIF::COMMAND_NOT_IMPLEMENTED;
 	}
 	return HasReturnvaluesIF::RETURN_FAILED;
@@ -198,7 +201,7 @@ ReturnValue_t MGMHandlerLIS3MDL::scanForReply(const uint8_t *start,
 	}
 	else if (len == SINGLE_COMMAND_ANSWER_LEN) {
 		*foundLen = len;
-		*foundId = lastSentCommand;
+		*foundId = getPendingCommand();
 	}
 	else {
 		return DeviceHandlerIF::INVALID_DATA;
@@ -259,6 +262,7 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 		    dataset.fieldStrengthX = mgmX;
 		    dataset.fieldStrengthY = mgmY;
 		    dataset.fieldStrengthZ = mgmZ;
+		    dataset.setValidity(true, true);
 		    dataset.commit(20);
 		}
 		break;
@@ -283,7 +287,7 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 	}
 
 	default: {
-		return DeviceHandlerIF::UNKNOW_DEVICE_REPLY;
+		return DeviceHandlerIF::UNKNOWN_DEVICE_REPLY;
 	}
 
 	}
@@ -406,10 +410,6 @@ ReturnValue_t MGMHandlerLIS3MDL::prepareCtrlRegisterWrite() {
 	return RETURN_OK;
 }
 
-void MGMHandlerLIS3MDL::setNormalDatapoolEntriesInvalid() {
-	// TODO: use new distributed datapools here.
-}
-
 void MGMHandlerLIS3MDL::doTransition(Mode_t modeFrom, Submode_t subModeFrom) {
 
 }
@@ -419,7 +419,7 @@ uint32_t MGMHandlerLIS3MDL::getTransitionDelayMs(Mode_t from, Mode_t to) {
 }
 
 void MGMHandlerLIS3MDL::modeChanged(void) {
-	internalState = STATE_NONE;
+	internalState = InternalState::STATE_NONE;
 }
 
 ReturnValue_t MGMHandlerLIS3MDL::initializeLocalDataPool(

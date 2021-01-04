@@ -22,7 +22,7 @@ CUSTOM_DEFINES += -DLINUX
 # General folder paths
 FRAMEWORK_PATH = fsfw
 MISSION_PATH = mission
-CONFIG_PATH = $(BOARD_FILE_ROOT)/config
+CONFIG_PATH = $(BOARD_FILE_ROOT)/fsfwconfig
 TEST_PATH = test
 UNITTEST_PATH = unittest
 
@@ -95,7 +95,7 @@ ASRC :=
 INCLUDES := 
 
 # Directories where $(directoryname).mk files should be included from
-SUBDIRS := $(FRAMEWORK_PATH) $(TEST_PATH) $(BSP_PATH) $(UNITTEST_PATH)\
+SUBDIRS := $(FRAMEWORK_PATH) $(TEST_PATH) $(BSP_PATH) \
 		   $(CONFIG_PATH) $(MISSION_PATH)
 # INCLUDES += framework/test/catch2
 

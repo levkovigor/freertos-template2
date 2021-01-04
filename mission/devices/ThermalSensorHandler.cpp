@@ -6,11 +6,11 @@
 ThermalSensorHandler::ThermalSensorHandler(object_id_t objectId,
 		object_id_t comIF, CookieIF *comCookie, uint8_t switchId):
 		DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId),
-		sensorDataset(this), sensorDatasetSid(sensorDataset.getSid())
-#ifdef DEBUG
-, debugDivider(20)
+		sensorDataset(this), sensorDatasetSid(sensorDataset.getSid()) {
+#if OBSW_ENHANCED_PRINTOUT == 1
+	debugDivider = new PeriodicOperationDivider(10);
 #endif
-{}
+}
 
 ThermalSensorHandler::~ThermalSensorHandler() {
 }
@@ -209,19 +209,20 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
         // RTD value consists of last seven bits of the LSB reply byte and
         // the MSB reply byte
         uint16_t adcCode = ((packet[1] << 8) | packet[2]) >> 1;
-        // do something with rtd value, will propbly be stored in
+        // do something with rtd value, will propably be stored in
         // dataset.
         float rtdValue = adcCode * RTD_RREF_PT1000 / INT16_MAX;
 
         // calculate approximation
         float approxTemp = adcCode / 32.0 - 256.0;
 
-#ifdef DEBUG
-        if(debugDivider.checkAndIncrement()) {
+#if OBSW_ENHANCED_PRINTOUT == 1
+        if(debugDivider->checkAndIncrement()) {
         	sif::info << "ThermalSensorHandler::interpretDeviceReply: Measure "
         			"resistance is " << rtdValue << " Ohms." << std::endl;
-        	sif::info << "ThermalSensorHandler::interpretDeviceReply: Approximated"
-        			" temperature is " << approxTemp << " C" << std::endl;
+        	sif::info << "ThermalSensorHandler::interpretDeviceReply: "
+        			<< "Approximated temperature is " << approxTemp << " C"
+					<< std::endl;
         	 sensorDataset.setChanged(true);
         }
 #endif
@@ -253,7 +254,7 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
     }
     case(TSensorDefinitions::REQUEST_FAULT_BYTE): {
         faultByte = packet[1];
-#ifdef DEBUG
+#if OBSW_ENHANCED_PRINTOUT == 1
         sif::info << "ThermalSensorHandler::interpretDeviceReply: Fault byte"
                 " is: 0b" << std::bitset<8>(faultByte) << std::endl;
 #endif
@@ -286,9 +287,6 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-void ThermalSensorHandler::setNormalDatapoolEntriesInvalid() {
-}
-
 void ThermalSensorHandler::debugInterface(uint8_t positionTracker,
 		object_id_t objectId, uint32_t parameter) {
 }
@@ -317,10 +315,6 @@ ReturnValue_t ThermalSensorHandler::initializeLocalDataPool(
     poolManager.subscribeForPeriodicPacket(sensorDatasetSid,
             false, 4.0, false);
     return HasReturnvaluesIF::RETURN_OK;
-}
-
-ReturnValue_t ThermalSensorHandler::initialize() {
-    return DeviceHandlerBase::initialize();
 }
 
 void ThermalSensorHandler::modeChanged() {
