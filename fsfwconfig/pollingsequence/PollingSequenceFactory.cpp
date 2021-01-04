@@ -72,7 +72,7 @@ ReturnValue_t pst::pollingSequenceInitRS485(FixedTimeslotTaskIF *thisSequence) {
     uint32_t length = thisSequence->getPeriodMs();
 
     thisSequence->addSlot(objects::RS485_DEVICE_COM_IF, length * 0,
-            RS485Devices::FPGA_1);
+            RS485Devices::COM_FPGA);
     thisSequence->addSlot(objects::RS485_DEVICE_COM_IF, length * 0.4,
     		RS485Devices::PCDU_VORAGO);
     thisSequence->addSlot(objects::RS485_DEVICE_COM_IF, length * 0.65,

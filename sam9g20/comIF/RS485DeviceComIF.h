@@ -55,6 +55,8 @@ private:
 
     uint8_t retryCount = 0;
     ReturnValue_t checkDriverState(uint8_t* retryCount);
+
+
     UARTgenericTransfer uartTransferFPGA1;
     BinarySemaphore uartSemaphoreFPGA1;
     UARTgenericTransfer uartTransferPCDU;

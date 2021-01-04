@@ -55,13 +55,13 @@ void RS485PollingTask::initiateUartTransfers() {
     int result = UART_queueTransfer(&uartTransfer1);
     if(result != 0) {
         // config error
-        sif::error << "TcSerialPollingTask::initiateUartTransfers: Config error"
+        sif::error << "RS485PollingTask::initiateUartTransfers: Config error"
                 << std::endl;
     }
     result = UART_queueTransfer(&uartTransfer2);
     if(result != 0) {
         // config error
-        sif::error << "TcSerialPollingTask::initiateUartTransfers: Config error"
+        sif::error << "RS485PollingTask::initiateUartTransfers: Config error"
                 << std::endl;
     }
 }

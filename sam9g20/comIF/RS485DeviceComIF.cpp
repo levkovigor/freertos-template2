@@ -28,14 +28,11 @@ ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie,
 		RS485Devices device = rs485Cookie->getDevice();
 
 	switch(device) {
-	    case(RS485Devices::FPGA_1): {
+	    case(RS485Devices::COM_FPGA): {
 //	    	uartSemaphoreFPGA1.acquire();
 	    	uartTransferFPGA1.writeSize = sendLen;
 	    	uartTransferFPGA1.writeData = const_cast<uint8_t*>(sendData);
 //	    	uartSemaphoreFPGA1.release();
-	        break;
-	    }
-	    case(RS485Devices::FPGA_2): {
 	        break;
 	    }
 	    case(RS485Devices::PCDU_VORAGO): {
@@ -87,23 +84,12 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 //    checkDriverState(&retryCount);
 
     switch(step) {
-    case(RS485Devices::FPGA_1): {
+    case(RS485Devices::COM_FPGA): {
+    	// Check which FPGA is active (should probably be set via DeviceHandler)
         // Activate transceiver via GPIO
-//    	uartTransferFPGA1.writeData = ;
-//		uartTransferFPGA1.writeSize = ;
     	sif::info << "Sending to FPGA 1" << std::endl;
 //    	uartSemaphoreFPGA1.acquire();
     	UART_write(uartTransferFPGA1.bus, uartTransferFPGA1.writeData, uartTransferFPGA1.writeSize);
-    	// Aquire semaphore, write new message to send, release semaphore
-        break;
-    }
-    case(RS485Devices::FPGA_2): {
-        // Activate transceiver via GPIO
-//    	uartTransferFPGA2.writeData = ;
-//		uartTransferFPGA2.writeSize = ;
-    	sif::info << "Sending to FPGA 2" << std::endl;
-//    	uartSemaphorePCDU.acquire();
-//    	UART_queueTransfer(&uartTransferPCDU);
     	// Aquire semaphore, write new message to send, release semaphore
         break;
     }
@@ -136,7 +122,7 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
     // printout and event.
     if(retryCount > 0) {
 #ifdef DEBUG
-        sif::error << "RS485Controller::performOperation: RS485Controller"
+        sif::error << "RS485DeviceComIF::performOperation: RS485DeviceComIF"
                 << " driver was busy for " << (uint16_t) retryCount
                 << " attempts!" << std::endl;
 #endif
@@ -212,7 +198,7 @@ ReturnValue_t RS485DeviceComIF::handleReceiveBuffer() {
 ReturnValue_t RS485DeviceComIF::handlePacketReception(size_t foundLen) {
 	store_address_t storeId;
 	RS485Cookie* memoryLeakCookie = new RS485Cookie();
-	memoryLeakCookie->setDevice(FPGA_1);
+	memoryLeakCookie->setDevice(COM_FPGA);
 
 	ReturnValue_t result = sendMessage(memoryLeakCookie,
 			receiveArray.data(), foundLen);

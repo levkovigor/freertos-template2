@@ -12,8 +12,7 @@
 #include <fsfw/devicehandlers/CookieIF.h>
 
 enum RS485Devices: uint8_t {
-    FPGA_1,
-	FPGA_2,
+    COM_FPGA,
     PCDU_VORAGO,
     PL_VORAGO,
     PL_PIC24
@@ -27,7 +26,7 @@ public:
 		void setDevice(RS485Devices device);
 		RS485Devices getDevice() const;
 private:
-		RS485Devices device = FPGA_1;
+		RS485Devices device = COM_FPGA;
 };
 
 
