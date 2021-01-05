@@ -1,6 +1,7 @@
 #include <sam9g20/comIF/RS485DeviceComIF.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <sam9g20/comIF/cookies/RS485Cookie.h>
+#include <mission/utility/USLPTransferFrame.h>
 
 
 extern "C" {
@@ -114,6 +115,7 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 ReturnValue_t RS485DeviceComIF::initialize() {
 
 //	uartTransferFPGA1.writeData = reinterpret_cast< unsigned char *>(const_cast<char*>("FPGA1I"));
+	transferFrameFPGA = new USLPTransferFrame(transmitBufferFPGA.data(), config::RS485_COM_FPGA_TFDZ_SIZE);
 
 
 

@@ -15,13 +15,14 @@ USLPTransferFrame::USLPTransferFrame() {
 	 frame = NULL;
 }
 
-USLPTransferFrame::USLPTransferFrame(uint8_t* setData) {
+USLPTransferFrame::USLPTransferFrame(uint8_t* setData, uint16_t dataFieldSize) {
 	 this->frame = (uslp_transfer_frame*)setData;
+	 this->dataZoneSize = dataFieldSize;
 }
 
 uint8_t USLPTransferFrame::getVersionNumber() {
 	//Not finished
-	 return (this->frame->primaryHeader.tfvnAndScid & 0b11000000) >> 6;
+	 return (this->frame->primaryHeader.tfvnAndScid & 0b11110000) >> 4;
 }
 
 uint16_t USLPTransferFrame::getSpacecraftId() {

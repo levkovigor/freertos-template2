@@ -39,8 +39,10 @@ protected:
 		uint8_t dataField;				//!< The data field of the Transfer Frame.
 	};
 	uslp_transfer_frame* frame;			//!< Pointer to a buffer where a Frame is placed.
+	uint16_t dataZoneSize;				//!< Transfer Frame Data Zone Size
 public:
 	static const uint8_t FRAME_CRC_SIZE = 2;	//!< Constant for the CRC size.
+	static const uint8_t FRAME_OVERHEAD = FRAME_CRC_SIZE + 7;	//!< Constant for total frame overhead
 	/**
 	 * Empty Constructor that sets the data pointer to NULL.
 	 */
@@ -48,8 +50,9 @@ public:
 	/**
 	 * The data pointer passed in this Constructor is casted to the #uslp_transfer_frame struct.
 	 * @param setData The data on which the class shall operate.
+	 * @param dataFieldSize Size of TFDZ, necessary because of Truncated Primary Header
 	 */
-	USLPTransferFrame(uint8_t* setData);
+	USLPTransferFrame(uint8_t* setData, uint16_t dataZoneSize);
 	/**
 	 * Getter.
 	 * @return The Version number.

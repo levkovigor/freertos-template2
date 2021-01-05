@@ -10,7 +10,7 @@
 #include <fsfwconfig/OBSWConfig.h>
 #include <fsfw/container/SharedRingBuffer.h>
 #include <sam9g20/core/RingBufferAnalyzer.h>
-
+#include <mission/utility/USLPTransferFrame.h>
 
 extern "C" {
 
@@ -31,7 +31,7 @@ public:
 
 	static constexpr size_t TMTC_FRAME_MAX_LEN =
 	    		config::RS485_MAX_SERIAL_FRAME_SIZE;
-	    static constexpr uint8_t MAX_TC_PACKETS_HANDLED = 5;
+	static constexpr uint8_t MAX_TC_PACKETS_HANDLED = 5;
 
 	RS485DeviceComIF(object_id_t objectId, object_id_t sharedRingBufferId);
 	virtual ~RS485DeviceComIF();
@@ -64,6 +64,10 @@ private:
 
 
     std::array<RS485WriteTransfer, RS485Devices::DEVICE_COUNT_RS485> sendArray;
+
+    USLPTransferFrame*  transferFrameFPGA = nullptr;
+    std::array<uint8_t, config::RS485_COM_FPGA_TFDZ_SIZE + USLPTransferFrame::FRAME_OVERHEAD> transmitBufferFPGA;
+
 
     object_id_t sharedRingBufferId;
     SharedRingBuffer* sharedRingBuffer = nullptr;
