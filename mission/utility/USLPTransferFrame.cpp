@@ -21,12 +21,13 @@ USLPTransferFrame::USLPTransferFrame(uint8_t* setData, uint16_t dataFieldSize) {
 }
 
 uint8_t USLPTransferFrame::getVersionNumber() {
-	//Not finished
 	 return (this->frame->primaryHeader.tfvnAndScid & 0b11110000) >> 4;
 }
 
 uint16_t USLPTransferFrame::getSpacecraftId() {
-	 return ( (this->frame->primaryHeader.tfvnAndScid & 0b00000011) << 8 ) + this->frame->primaryHeader.tfvnAndScid;
+	 return  ((this->frame->primaryHeader.tfvnAndScid & 0b00001111) << 12 ) +
+			 (this->frame->primaryHeader.scid_m << 4)  +
+			 ((this->frame->primaryHeader.scidAndsourceflagAndVcid & 0b11110000) >> 4);
 }
 
 bool USLPTransferFrame::sourceFlagSet() {
@@ -34,11 +35,12 @@ bool USLPTransferFrame::sourceFlagSet() {
 }
 
 uint8_t USLPTransferFrame::getVirtualChannelId() {
-	 return (this->frame->primaryHeader.tfvnAndScid & 0b11111100) >> 2;
+	 return  ((this->frame->primaryHeader.scidAndsourceflagAndVcid & 0b00000111) << 3) +
+			 ((this->frame->primaryHeader.vcidAndMapidAndtruncatedflag & 0b11100000) >> 5);
 }
 
 uint8_t USLPTransferFrame::getMAPId() {
-	 return this->frame->dataField & 0b00111111;
+	return (this->frame->primaryHeader.vcidAndMapidAndtruncatedflag & 0b00011110) >> 1;
 }
 
 bool USLPTransferFrame::truncatedFlagSet() {
