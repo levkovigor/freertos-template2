@@ -47,7 +47,17 @@ bool USLPTransferFrame::truncatedFlagSet() {
 	 return (this->frame->primaryHeader.vcidAndMapidAndtruncatedflag & 0b00000001) != 0;
 }
 
+uint8_t USLPTransferFrame::getTFDZConstructionRules(){
+	return (this->frame->dataFieldHeader.rulesAndprotocolid & 0b11100000) >> 5;
+}
 
+uint8_t USLPTransferFrame::getProtocolIdentifier(){
+	return (this->frame->dataFieldHeader.rulesAndprotocolid & 0b00011111);
+}
+uint16_t USLPTransferFrame::getFirstHeaderPointer(){
+	return (this->frame->dataFieldHeader.firstHeader_h << 8) +
+			this->frame->dataFieldHeader.firstHeader_l;
+}
 
 
 

@@ -83,6 +83,21 @@ public:
 	 * @return	If the End of Frame Primary Header flag is set or not.
 	 */
 	bool truncatedFlagSet();
+	/**
+	 * Getter.
+	 * @return	The Transfer Frame Data Zone Construction Rules.
+	 */
+	uint8_t USLPTransferFrame::getTFDZConstructionRules();
+	/**
+	 * Getter.
+	 * @return	The Transfer Frame Data Zone Protocol Identifier (e.g. PUS Packets).
+	 */
+	uint8_t USLPTransferFrame::getProtocolIdentifier();
+	/**
+	 * Getter.
+	 * @return	Octet offset to first header. (0 if header is first octet, if no header 0xFFFF)
+	 */
+	uint16_t USLPTransferFrame::getFirstHeaderPointer();
 
 
 	/* Possibly useful/*
