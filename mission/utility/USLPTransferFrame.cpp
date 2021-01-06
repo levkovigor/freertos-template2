@@ -62,8 +62,12 @@ void USLPTransferFrame::setVirtualChannelId(uint8_t virtualChannelId){
 			(this->frame->primaryHeader.vcidAndMapidAndtruncatedflag  & 0b00011111);
 }
 
-uint8_t USLPTransferFrame::getMAPId() {
+uint8_t USLPTransferFrame::getMapId() {
 	return (this->frame->primaryHeader.vcidAndMapidAndtruncatedflag & 0b00011110) >> 1;
+}
+void USLPTransferFrame::setMapId(uint8_t mapId){
+	this->frame->primaryHeader.vcidAndMapidAndtruncatedflag = ((mapId & 0b00001111) << 1) |
+			(this->frame->primaryHeader.vcidAndMapidAndtruncatedflag & 0b11100001);
 }
 
 bool USLPTransferFrame::truncatedFlagSet() {
@@ -77,26 +81,42 @@ void USLPTransferFrame::setTruncatedFlag(bool isSet){
 uint8_t USLPTransferFrame::getTFDZConstructionRules(){
 	return (this->frame->dataFieldHeader.rulesAndprotocolid & 0b11100000) >> 5;
 }
+void USLPTransferFrame::setTFDZConstructionRules(uint8_t constructionRules){
+	this->frame->dataFieldHeader.rulesAndprotocolid = ((constructionRules & 0b00000111) << 5) |
+			(this->frame->dataFieldHeader.rulesAndprotocolid & 0b00011111);
+}
 
 uint8_t USLPTransferFrame::getProtocolIdentifier(){
 	return (this->frame->dataFieldHeader.rulesAndprotocolid & 0b00011111);
 }
-uint16_t USLPTransferFrame::getFirstHeaderOffset(){
-	return (this->frame->dataFieldHeader.firstHeader_h << 8) +
-			this->frame->dataFieldHeader.firstHeader_l;
+void USLPTransferFrame::setProtocolIdentifier(uint8_t protocolId){
+	this->frame->dataFieldHeader.rulesAndprotocolid = (protocolId & 0b00011111) |
+			(this->frame->dataFieldHeader.rulesAndprotocolid & 0b11100000);
 }
+
+uint16_t USLPTransferFrame::getFirstHeaderOffset(){
+	return this->frame->dataFieldHeader.firstHeaderPointer;
+}
+void USLPTransferFrame::setFirstHeaderOffset(uint16_t offset){
+	this->frame->dataFieldHeader.firstHeaderPointer = offset;
+}
+
 uint8_t* USLPTransferFrame::getFirstHeader(){
 	return this->getDataZone() + this->getFirstHeaderOffset();
 }
+
 uint16_t USLPTransferFrame::getFullFrameSize(){
 	return this->dataZoneSize + FRAME_OVERHEAD;
 }
+
 uint16_t USLPTransferFrame::getDataZoneSize(){
 	return this->dataZoneSize;
 }
+
 uint8_t* USLPTransferFrame::getDataZone(){
 	return &frame->dataZone;
 }
+
 uint8_t* USLPTransferFrame::getFullFrame(){
 	return (uint8_t*)this->frame;
 }

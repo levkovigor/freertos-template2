@@ -28,8 +28,7 @@ protected:
 	 */
 	struct USLPTransferFrameDataFieldHeader {
 		uint8_t rulesAndprotocolid;	//!< Highest byte with TFDZ Construction Rules and USLP Protocol Identifier
-		uint8_t firstHeader_h;	//!< Byte with start of First Header Pointer
-		uint8_t firstHeader_l;	//!< Byte with rest of First Header Pointer
+		uint16_t firstHeaderPointer;	//!< Two Bytes with First Header Pointer
 	};
 	/**
 	 * The struct defining the whole Transfer Frame.
@@ -98,7 +97,12 @@ public:
 	 * Getter.
 	 * @return The Multiplexer Access Point Identifier.
 	 */
-	uint8_t getMAPId();
+	uint8_t getMapId();
+	/**
+	 * Setter.
+	 * @param mapId The Multiplexer Access Point Identifier (4 bits)
+	 */
+	void setMapId(uint8_t mapId);
 	/**
 	 * Getter.
 	 * @return	If the End of Frame Primary Header flag is set or not.
@@ -116,15 +120,30 @@ public:
 	 */
 	uint8_t getTFDZConstructionRules();
 	/**
+	 * Setter.
+	 * @param constructionRules Transfer Frame Data Zone Construction Rules (3 bits)
+	 */
+	void setTFDZConstructionRules(uint8_t constructionRules);
+	/**
 	 * Getter.
 	 * @return	The Transfer Frame Data Zone Protocol Identifier (e.g. PUS Packets).
 	 */
 	uint8_t getProtocolIdentifier();
 	/**
+	 * Setter.
+	 * @param protocolId Transfer Frame Data Zone Protocol Identifier (5 bits)
+	 */
+	void setProtocolIdentifier(uint8_t protocolId);
+	/**
 	 * Getter.
 	 * @return	Octet offset to first header. (0 if header is first octet, if no header 0xFFFF)
 	 */
 	uint16_t getFirstHeaderOffset();
+	/**
+	 * Setter.
+	 * @param offset Transfer Frame Data Zone First header octet offset (0 if header is first octet, if no header 0xFFFF)
+	 */
+	void setFirstHeaderOffset(uint16_t offset);
 	/**
 	 * Getter.
 	 * @return	Pointer to first header, nullpointer if no header present in frame
