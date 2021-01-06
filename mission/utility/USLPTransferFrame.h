@@ -45,7 +45,7 @@ public:
 	static const uint8_t FRAME_CRC_SIZE = 2;	//!< Constant for the CRC size.
 	static const uint8_t FRAME_OVERHEAD = FRAME_CRC_SIZE + 7;	//!< Constant for total frame overhead
 	/**
-	 * Empty Constructor that sets the data pointer to NULL.
+	 * Empty Constructor that sets the data pointer to NULL and data zone size to 0
 	 */
 	USLPTransferFrame();
 	/**
@@ -59,6 +59,11 @@ public:
 	 * @return The Version number.
 	 */
 	uint8_t getVersionNumber();
+	/**
+	 * Setter.
+	 * @param versionNumber Transfer Frame Version Number (4 bits)
+	 */
+	void setVersionNumber(uint8_t versionNumber);
 	/**
 	 * Getter.
 	 * @return The Spacecraft Identifier.

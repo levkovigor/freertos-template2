@@ -23,6 +23,10 @@ USLPTransferFrame::USLPTransferFrame(uint8_t* setData, uint16_t dataZoneSize) {
 uint8_t USLPTransferFrame::getVersionNumber() {
 	 return (this->frame->primaryHeader.tfvnAndScid & 0b11110000) >> 4;
 }
+void USLPTransferFrame::setVersionNumber(uint8_t versionNumber){
+	this->frame->primaryHeader.tfvnAndScid = ((versionNumber & 0b00001111) << 4) |
+			(this->frame->primaryHeader.tfvnAndScid & 0b00001111);
+}
 
 uint16_t USLPTransferFrame::getSpacecraftId() {
 	 return  ((this->frame->primaryHeader.tfvnAndScid & 0b00001111) << 12 ) +
