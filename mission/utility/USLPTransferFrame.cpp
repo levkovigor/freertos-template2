@@ -33,14 +33,33 @@ uint16_t USLPTransferFrame::getSpacecraftId() {
 			 (this->frame->primaryHeader.scid_m << 4)  +
 			 ((this->frame->primaryHeader.scidAndsourceflagAndVcid & 0b11110000) >> 4);
 }
+void USLPTransferFrame::setSpacecraftId(uint16_t spacecraftID){
+	this->frame->primaryHeader.tfvnAndScid = (spacecraftID >> 12) |
+			(this->frame->primaryHeader.tfvnAndScid & 0b11110000);
+	this->frame->primaryHeader.scid_m = ((spacecraftID & 0b0000111111110000) >> 4) |
+				(this->frame->primaryHeader.scid_m & 0b00000000);
+	this->frame->primaryHeader.scidAndsourceflagAndVcid = (spacecraftID & 0b1111111111110000) |
+					(this->frame->primaryHeader.scidAndsourceflagAndVcid & 0b00001111);
+}
 
 bool USLPTransferFrame::sourceFlagSet() {
 	 return (this->frame->primaryHeader.scidAndsourceflagAndVcid & 0b00001000) != 0;
+}
+void USLPTransferFrame::setSourceFlag(bool isSet){
+	// Could probably just cast the bool, but this seems like the more "correct" way
+	if(isSet){this->frame->primaryHeader.scidAndsourceflagAndVcid |= 0b00001000;}
+	else{this->frame->primaryHeader.scidAndsourceflagAndVcid &= (~0b00001000);}
 }
 
 uint8_t USLPTransferFrame::getVirtualChannelId() {
 	 return  ((this->frame->primaryHeader.scidAndsourceflagAndVcid & 0b00000111) << 3) +
 			 ((this->frame->primaryHeader.vcidAndMapidAndtruncatedflag & 0b11100000) >> 5);
+}
+void USLPTransferFrame::setVirtualChannelId(uint8_t virtualChannelId){
+	this->frame->primaryHeader.scidAndsourceflagAndVcid = ((virtualChannelId & 0b00111000) >> 3) |
+			(this->frame->primaryHeader.scidAndsourceflagAndVcid & 0b11111000);
+	this->frame->primaryHeader.vcidAndMapidAndtruncatedflag = ((virtualChannelId & 0b00000111) << 5) |
+			(this->frame->primaryHeader.vcidAndMapidAndtruncatedflag  & 0b00011111);
 }
 
 uint8_t USLPTransferFrame::getMAPId() {
@@ -49,6 +68,10 @@ uint8_t USLPTransferFrame::getMAPId() {
 
 bool USLPTransferFrame::truncatedFlagSet() {
 	 return (this->frame->primaryHeader.vcidAndMapidAndtruncatedflag & 0b00000001) != 0;
+}
+void USLPTransferFrame::setTruncatedFlag(bool isSet){
+	if(isSet){this->frame->primaryHeader.vcidAndMapidAndtruncatedflag |= 0b00000001;}
+	else{this->frame->primaryHeader.vcidAndMapidAndtruncatedflag &= (~0b00000001);}
 }
 
 uint8_t USLPTransferFrame::getTFDZConstructionRules(){

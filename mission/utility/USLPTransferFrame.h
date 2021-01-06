@@ -70,15 +70,30 @@ public:
 	 */
 	uint16_t getSpacecraftId();
 	/**
+	 * Setter.
+	 * @param spacecraftID Spacecraft ID, (16 bits)
+	 */
+	void setSpacecraftId(uint16_t spacecraftID);
+	/**
 	 * Getter.
-	 * @return	If the source or destination flag is set or not.
+	 * @return	If the source or destination flag is set or not. (0/False: Origin client, 1/True: Origin OBC)
 	 */
 	bool sourceFlagSet();
+	/**
+	 * Setter.
+	 * @param isSet	Sets source or destination flag (0/False: Origin client, 1/True: Origin OBC)
+	 */
+	void setSourceFlag(bool isSet);
 	/**
 	 * Getter.
 	 * @return The Virtual Channel Identifier.
 	 */
 	uint8_t getVirtualChannelId();
+	/**
+	 * Setter.
+	 * @param The Virtual Channel Identifier (6 bits)
+	 */
+	void setVirtualChannelId(uint8_t virtualChannelId);
 	/**
 	 * Getter.
 	 * @return The Multiplexer Access Point Identifier.
@@ -89,6 +104,12 @@ public:
 	 * @return	If the End of Frame Primary Header flag is set or not.
 	 */
 	bool truncatedFlagSet();
+	/**
+	 * Setter.
+	 * @param isSet	Sets truncated flag (0/False: Full Header, 1/True: Truncated)
+	 * @warning Behavior for non truncated headers not implemented, so only use this way
+	 */
+	void setTruncatedFlag(bool isSet);
 	/**
 	 * Getter.
 	 * @return	The Transfer Frame Data Zone Construction Rules.
