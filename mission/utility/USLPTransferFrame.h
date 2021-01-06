@@ -5,11 +5,12 @@
 #include <stddef.h>
 
 /**
- * The USLPTransferFrame class simplifies handling of such Frames.
- * It operates on any buffer passed on construction. The data length
- * is determined by the length field in the frame itself.
- * It has a lot of getters for convenient access to the content.
- * @ingroup ccsds_handling
+ * This class simplifies handling of USLP Transfer Frames.
+ * It works on a buffer supplied at construction, make sure it is large
+ * enough for the frame.
+ * It only includes the truncated primary frame header version,
+ * so data zone size has to be supplied at construction.
+ * @author L. Rajer
  */
 class USLPTransferFrame {
 protected:
@@ -23,7 +24,7 @@ protected:
 		uint8_t vcidAndMapidAndtruncatedflag;	//!< Byte with rest of VCID, MAP ID and End of Frame Primary Header flag
 	};
 	/**
-	 * The struct that defines the Frame's Data Field Header.
+	 * The struct that defines the Frame's Data Zone Header.
 	 */
 	struct USLPTransferFrameDataFieldHeader {
 		uint8_t rulesAndprotocolid;	//!< Highest byte with TFDZ Construction Rules and USLP Protocol Identifier
@@ -36,7 +37,7 @@ protected:
 	struct uslp_transfer_frame {
 		USLPTransferFramePrimaryHeader primaryHeader;	//!< The primary header struct.
 		USLPTransferFrameDataFieldHeader dataFieldHeader; //!< The data field header struct.
-		uint8_t dataField;				//!< The data field of the Transfer Frame.
+		uint8_t dataZone;				//!< The data field of the Transfer Frame.
 	};
 	uslp_transfer_frame* frame;			//!< Pointer to a buffer where a Frame is placed.
 	uint16_t dataZoneSize;				//!< Transfer Frame Data Zone Size
@@ -50,7 +51,7 @@ public:
 	/**
 	 * The data pointer passed in this Constructor is casted to the #uslp_transfer_frame struct.
 	 * @param setData The data on which the class shall operate.
-	 * @param dataFieldSize Size of TFDZ, necessary because of Truncated Primary Header
+	 * @param dataZoneSize Size of TFDZ, necessary because of Truncated Primary Header
 	 */
 	USLPTransferFrame(uint8_t* setData, uint16_t dataZoneSize);
 	/**
@@ -87,61 +88,44 @@ public:
 	 * Getter.
 	 * @return	The Transfer Frame Data Zone Construction Rules.
 	 */
-	uint8_t USLPTransferFrame::getTFDZConstructionRules();
+	uint8_t getTFDZConstructionRules();
 	/**
 	 * Getter.
 	 * @return	The Transfer Frame Data Zone Protocol Identifier (e.g. PUS Packets).
 	 */
-	uint8_t USLPTransferFrame::getProtocolIdentifier();
+	uint8_t getProtocolIdentifier();
 	/**
 	 * Getter.
 	 * @return	Octet offset to first header. (0 if header is first octet, if no header 0xFFFF)
 	 */
-	uint16_t USLPTransferFrame::getFirstHeaderPointer();
+	uint16_t getFirstHeaderOffset();
+	/**
+	 * Getter.
+	 * @return	Pointer to first header, nullpointer if no header present in frame
+	 */
+	uint8_t* getFirstHeader();
+	/**
+	 * Getter.
+	 * @return The total frame length with CRC.
+	 */
+	uint16_t getFullFrameSize();
+	/**
+	 * Getter.
+	 * @return The length of the data zone (without CRC).
+	 */
+	uint16_t getDataZoneSize();
+	/**
+	 * Getter.
+	 * @return A pointer to the first byte in the Data Zone.
+	 */
+	uint8_t* getDataZone();
+	/**
+	 * Getter.
+	 * @return A pointer to the beginning of the Frame.
+	 */
+	uint8_t* getFullFrame();
 
 
-	/* Possibly useful/*
-
-//	/**
-//	 * Getter.
-//	 * @return The Frame length as stored in the Header.
-//	 */
-//	uint16_t getFrameLength();
-//	/**
-//	 * Getter.
-//	 * @return The length of pure data (without CRC), assuming that a Segment Header is present.
-//	 */
-//	uint16_t getDataLength();
-//	/**
-//	 * Getter.
-//	 * @return The length of pure data (without CRC), assuming that no Segment Header is present (for BC Frames).
-//	 */
-//	uint16_t getFullDataLength();
-//	/**
-//	 * Getter.
-//	 * @return A pointer to the date field AFTER a Segment Header.
-//	 */
-//	uint8_t* getDataField();
-//	/**
-//	 * Getter.
-//	 * @return A pointer to the first byte in the Data Field (ignoring potential Segment Headers, for BC Frames).
-//	 */
-//	uint8_t* getFullDataField();
-//	/**
-//	 * Getter.
-//	 * @return A pointer to the beginning of the Frame.
-//	 */
-//	uint8_t* getFullFrame();
-//	/**
-//	 * Getter
-//	 * @return The total size of the Frame, which is the size stated in the Header + 1.
-//	 */
-//	uint16_t getFullSize();
-//	/**
-//	 * Getter.
-//	 * @return Size of the #TcTransferFramePrimaryHeader.
-//	 */
-//	uint16_t getHeaderSize();
 //	/**
 //	 * Debug method to print the whole Frame to screen.
 //	 */

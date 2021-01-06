@@ -7,17 +7,17 @@
 
 
 
-#include "../../mission/utility/USLPTransferFrame.h"
+#include "USLPTransferFrame.h"
 
-//#include "../serviceinterface/ServiceInterfaceStream.h"
 
 USLPTransferFrame::USLPTransferFrame() {
-	 frame = NULL;
+	this->frame = NULL;
+	this->dataZoneSize = 0;
 }
 
-USLPTransferFrame::USLPTransferFrame(uint8_t* setData, uint16_t dataFieldSize) {
+USLPTransferFrame::USLPTransferFrame(uint8_t* setData, uint16_t dataZoneSize) {
 	 this->frame = (uslp_transfer_frame*)setData;
-	 this->dataZoneSize = dataFieldSize;
+	 this->dataZoneSize = dataZoneSize;
 }
 
 uint8_t USLPTransferFrame::getVersionNumber() {
@@ -54,55 +54,26 @@ uint8_t USLPTransferFrame::getTFDZConstructionRules(){
 uint8_t USLPTransferFrame::getProtocolIdentifier(){
 	return (this->frame->dataFieldHeader.rulesAndprotocolid & 0b00011111);
 }
-uint16_t USLPTransferFrame::getFirstHeaderPointer(){
+uint16_t USLPTransferFrame::getFirstHeaderOffset(){
 	return (this->frame->dataFieldHeader.firstHeader_h << 8) +
 			this->frame->dataFieldHeader.firstHeader_l;
 }
+uint8_t* USLPTransferFrame::getFirstHeader(){
+	return this->getDataZone() + this->getFirstHeaderOffset();
+}
+uint16_t USLPTransferFrame::getFullFrameSize(){
+	return this->dataZoneSize + FRAME_OVERHEAD;
+}
+uint16_t USLPTransferFrame::getDataZoneSize(){
+	return this->dataZoneSize;
+}
+uint8_t* USLPTransferFrame::getDataZone(){
+	return &frame->dataZone;
+}
+uint8_t* USLPTransferFrame::getFullFrame(){
+	return (uint8_t*)this->frame;
+}
 
-
-
-
-//uint16_t USLPTransferFrame::getFrameLength() {
-//	 return  ( (this->frame->primaryHeader.tfvnAndScid & 0b00000011) << 8 ) + this->frame->primaryHeader.tfvnAndScid;
-//}
-//
-//uint16_t USLPTransferFrame::getDataLength() {
-//	 return  this->getFrameLength() - this->getHeaderSize() -1 - FRAME_CRC_SIZE + 1; // -1 for the segment primaryHeader.
-//}
-//
-//uint8_t USLPTransferFrame::getSequenceNumber() {
-//	 return this->frame->primaryHeader.sequenceNumber;
-//}
-//
-//uint8_t USLPTransferFrame::getSequenceFlags() {
-//	 return (this->frame->dataField & 0b11000000)>>6;
-//}
-//
-//
-//uint8_t* USLPTransferFrame::getDataField() {
-//	return &(this->frame->dataField) + 1;
-//}
-//
-//uint8_t* USLPTransferFrame::getFullFrame() {
-//	return (uint8_t*)this->frame;
-//}
-//
-//uint16_t USLPTransferFrame::getFullSize() {
-//	return this->getFrameLength() + 1;
-//}
-//
-//uint16_t USLPTransferFrame::getHeaderSize() {
-//	 return sizeof(frame->primaryHeader);
-//}
-//
-//uint16_t USLPTransferFrame::getFullDataLength() {
-//	return this->getFrameLength() - this->getHeaderSize() - FRAME_CRC_SIZE + 1;
-//}
-//
-//uint8_t* USLPTransferFrame::getFullDataField() {
-//	return &frame->dataField;
-//}
-//
 //void USLPTransferFrame::print() {
 //	sif::debug << "Raw Frame: " << std::hex << std::endl;
 //	for (uint16_t count = 0; count < this->getFullSize(); count++ ) {
