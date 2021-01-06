@@ -17,10 +17,33 @@ RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t sharedRingB
 RS485DeviceComIF::~RS485DeviceComIF() {
 }
 
+ReturnValue_t RS485DeviceComIF::initialize() {
 
+//	uartTransferFPGA1.writeData = reinterpret_cast< unsigned char *>(const_cast<char*>("FPGA1I"));
+	transferFrameFPGA = new USLPTransferFrame(transmitBufferFPGA.data(), config::RS485_COM_FPGA_TFDZ_SIZE);
+	transferFrameFPGA->setVersionNumber(12);
+	transferFrameFPGA->setSpacecraftId(0xAFFE);
+	transferFrameFPGA->setSourceFlag(true);
+	transferFrameFPGA->setVirtualChannelId(3);
+	transferFrameFPGA->setMapId(1);
+	transferFrameFPGA->setTruncatedFlag(true);
+	transferFrameFPGA->setTFDZConstructionRules(0);
+	transferFrameFPGA->setProtocolIdentifier(0);
+	transferFrameFPGA->setFirstHeaderOffset(0);
+
+
+	SharedRingBuffer* ringBuffer =
+			objectManager->get<SharedRingBuffer>(sharedRingBufferId);
+	if(ringBuffer == nullptr) {
+		return HasReturnvaluesIF::RETURN_FAILED;
+	}
+	analyzerTask = new RingBufferAnalyzer(ringBuffer,
+			AnalyzerModes::DLE_ENCODING);
+
+    return HasReturnvaluesIF::RETURN_OK;
+}
 
 ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {
-
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -38,26 +61,6 @@ ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie,
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-
-
-ReturnValue_t RS485DeviceComIF::getSendSuccess(CookieIF *cookie) {
-    return HasReturnvaluesIF::RETURN_OK;
-}
-
-ReturnValue_t RS485DeviceComIF::requestReceiveMessage(CookieIF *cookie,
-        size_t requestLen) {
-    return HasReturnvaluesIF::RETURN_OK;
-}
-
-ReturnValue_t RS485DeviceComIF::readReceivedMessage(CookieIF *cookie,
-        uint8_t **buffer, size_t *size) {
-    return HasReturnvaluesIF::RETURN_OK;
-}
-
-
-
-
-
 ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
     RS485Devices step = static_cast<RS485Devices>(opCode);
 
@@ -72,6 +75,7 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
     case(RS485Devices::COM_FPGA): {
     	// Check which FPGA is active (should probably be set via DeviceHandler)
     	sif::info << "Sending to FPGA 1" << std::endl;
+    	UART_write(bus2_uart, transmitBufferFPGA.data(), transmitBufferFPGA.size());
         break;
     }
     case(RS485Devices::PCDU_VORAGO): {
@@ -91,9 +95,9 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
         break;
     }
     }
-    if (sendArray[step].status == -4){
-    	sendArray[step].status = UART_write(bus2_uart, sendArray[step].writeData, sendArray[step].sendLen);
-    }
+//    if (sendArray[step].status == -4){
+//    	sendArray[step].status = UART_write(bus2_uart, sendArray[step].writeData, sendArray[step].sendLen);
+//    }
     // Reception
 //    sif::info << "Handling Receive Buffer" << std::endl;
 //    handleReceiveBuffer();
@@ -111,24 +115,28 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-
-ReturnValue_t RS485DeviceComIF::initialize() {
-
-//	uartTransferFPGA1.writeData = reinterpret_cast< unsigned char *>(const_cast<char*>("FPGA1I"));
-	transferFrameFPGA = new USLPTransferFrame(transmitBufferFPGA.data(), config::RS485_COM_FPGA_TFDZ_SIZE);
-
-
-
-	SharedRingBuffer* ringBuffer =
-			objectManager->get<SharedRingBuffer>(sharedRingBufferId);
-	if(ringBuffer == nullptr) {
-		return HasReturnvaluesIF::RETURN_FAILED;
-	}
-	analyzerTask = new RingBufferAnalyzer(ringBuffer,
-			AnalyzerModes::DLE_ENCODING);
-
+ReturnValue_t RS485DeviceComIF::getSendSuccess(CookieIF *cookie) {
     return HasReturnvaluesIF::RETURN_OK;
 }
+
+ReturnValue_t RS485DeviceComIF::requestReceiveMessage(CookieIF *cookie,
+        size_t requestLen) {
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t RS485DeviceComIF::readReceivedMessage(CookieIF *cookie,
+        uint8_t **buffer, size_t *size) {
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+
+
+
+
+
+
+
+
 
 ReturnValue_t RS485DeviceComIF::handleReceiveBuffer() {
 	for(uint8_t tcPacketIdx = 0; tcPacketIdx < MAX_TC_PACKETS_HANDLED;
