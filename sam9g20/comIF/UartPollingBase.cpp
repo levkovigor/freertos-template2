@@ -10,8 +10,8 @@ UartPollingBase::UartPollingBase(object_id_t objectId,
         UARTconfig* uartConfiguration):
         SystemObject(objectId),
         sharedRingBufferId(sharedRingBufferId),
-        uartConfiguration(uartConfiguration),
-        uartBus(uartBus) {
+        uartBus(uartBus),
+        uartConfiguration(uartConfiguration) {
 }
 
 ReturnValue_t UartPollingBase::initialize() {
