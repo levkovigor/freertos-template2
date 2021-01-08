@@ -31,6 +31,8 @@ ReturnValue_t RS485DeviceComIF::initialize() {
 	transferFrameFPGA->setProtocolIdentifier(0);
 	transferFrameFPGA->setFirstHeaderOffset(0);
 
+	sendArray[0] = nullptr;
+
 
 	SharedRingBuffer* ringBuffer =
 			objectManager->get<SharedRingBuffer>(sharedRingBufferId);
@@ -47,19 +49,7 @@ ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie,
-        const uint8_t *sendData, size_t sendLen) {
-	RS485Cookie * rs485Cookie = dynamic_cast<RS485Cookie *> (cookie);
-		RS485Devices device = rs485Cookie->getDevice();
 
-			sendArray[device].writeData = const_cast<uint8_t*>(sendData);
-			sendArray[device].sendLen = sendLen;
-			// UART drive error codes begin at -3, so -4 will be message available for us
-			sendArray[device].status = -4;
-
-
-    return HasReturnvaluesIF::RETURN_OK;
-}
 
 ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
     RS485Devices step = static_cast<RS485Devices>(opCode);
@@ -75,7 +65,22 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
     case(RS485Devices::COM_FPGA): {
     	// Check which FPGA is active (should probably be set via DeviceHandler)
     	sif::info << "Sending to FPGA 1" << std::endl;
-    	UART_write(bus2_uart, transmitBufferFPGA.data(), transmitBufferFPGA.size());
+        if (sendArray[step] != nullptr){
+        	RS485Cookie * rs485Cookie = dynamic_cast<RS485Cookie *> (sendArray[step]);
+        	(void) std::memcpy(transferFrameFPGA->getDataZone(), rs485Cookie->getWriteData(), rs485Cookie->getSendLen());
+
+        	int retval = UART_write(bus2_uart, transmitBufferFPGA.data(), transmitBufferFPGA.size());
+
+        	rs485Cookie->setReturnValue(retval);
+        	if(retval != 0){
+        		rs485Cookie->setComStatus(ComStatusRS485::FAULTY);
+        	}
+        	else{
+        		rs485Cookie->setComStatus(ComStatusRS485::TRANSFER_SUCCESS);
+        	}
+        	sendArray[step] = nullptr;
+        }
+
         break;
     }
     case(RS485Devices::PCDU_VORAGO): {
@@ -95,10 +100,8 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
         break;
     }
     }
-//    if (sendArray[step].status == -4){
-//    	sendArray[step].status = UART_write(bus2_uart, sendArray[step].writeData, sendArray[step].sendLen);
-//    }
-    // Reception
+
+      //Reception
 //    sif::info << "Handling Receive Buffer" << std::endl;
 //    handleReceiveBuffer();
 
@@ -115,8 +118,37 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t RS485DeviceComIF::getSendSuccess(CookieIF *cookie) {
+ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie,
+        const uint8_t *sendData, size_t sendLen) {
+
+
+	RS485Cookie * rs485Cookie = dynamic_cast<RS485Cookie *> (cookie);
+	RS485Devices device = rs485Cookie->getDevice();
+
+	rs485Cookie->setWriteData(const_cast<uint8_t*>(sendData));
+	rs485Cookie->setSendLen(sendLen);
+	rs485Cookie->setComStatus(ComStatusRS485::TRANSFER_INIT_SUCCESS);
+	rs485Cookie->setReturnValue(0);
+
+	sendArray[device] = cookie;
+
     return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t RS485DeviceComIF::getSendSuccess(CookieIF *cookie) {
+
+	RS485Cookie * rs485Cookie = dynamic_cast<RS485Cookie *> (cookie);
+
+	if(rs485Cookie->getComStatus() == ComStatusRS485::TRANSFER_SUCCESS){
+		rs485Cookie->setComStatus(ComStatusRS485::IDLE);
+		return HasReturnvaluesIF::RETURN_OK;
+	}
+	else{
+		// Generate event corresponding to error code stored in Cookie here
+		rs485Cookie->setComStatus(ComStatusRS485::IDLE);
+		return HasReturnvaluesIF::RETURN_FAILED;
+	}
+
 }
 
 ReturnValue_t RS485DeviceComIF::requestReceiveMessage(CookieIF *cookie,
@@ -169,8 +201,7 @@ ReturnValue_t RS485DeviceComIF::handleReceiveBuffer() {
 // Just an echo function for testing
 ReturnValue_t RS485DeviceComIF::handlePacketReception(size_t foundLen) {
 	store_address_t storeId;
-	RS485Cookie* memoryLeakCookie = new RS485Cookie();
-	memoryLeakCookie->setDevice(COM_FPGA);
+	RS485Cookie* memoryLeakCookie = new RS485Cookie(COM_FPGA);
 
 	ReturnValue_t result = sendMessage(memoryLeakCookie,
 			reinterpret_cast< unsigned char *>(const_cast<char*>("SendMessage")), 6);

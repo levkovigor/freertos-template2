@@ -251,7 +251,7 @@ void Factory::produce(void) {
 
 	CookieIF* rs485Cookie = nullptr;
 
-	rs485Cookie = new RS485Cookie();
+	rs485Cookie = new RS485Cookie(COM_FPGA);
 	/* Test Tasks AT91 */
 	//size_t I2C_MAX_REPLY_LEN = 256;
 	size_t SPI_MAX_REPLY_LEN = 128;

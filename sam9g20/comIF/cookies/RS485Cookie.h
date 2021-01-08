@@ -20,15 +20,44 @@ enum RS485Devices: uint8_t {
 	DEVICE_COUNT_RS485
 };
 
+enum class ComStatusRS485: uint8_t {
+	IDLE,
+	TRANSFER_INIT_SUCCESS,
+	TRANSFER_SUCCESS,
+	FAULTY //!< Errors in communication
+};
+
 class RS485Cookie: public CookieIF {
 public:
-	RS485Cookie();
+	RS485Cookie(RS485Devices device);
 	virtual ~RS485Cookie();
 
 		void setDevice(RS485Devices device);
 		RS485Devices getDevice() const;
+
+		// Dont know why size_t does not work for me here
+		unsigned int getSendLen();
+		void setSendLen(unsigned int sendLen);
+
+		unsigned char* getWriteData();
+		void setWriteData(unsigned char* writeData);
+
+		ComStatusRS485 getComStatus();
+		void setComStatus(ComStatusRS485 status);
+
+		int8_t getReturnValue();
+		void setReturnValue(int8_t retval);
 private:
+		// Device that is communicated with
 		RS485Devices device = COM_FPGA;
+		// Cookie is used to transfer write information between different functions of RS485DeviceComIF
+		unsigned char * writeData;
+		unsigned int 	sendLen;
+		// Stores returnvalues from UART driver, can also be negative
+		int8_t returnValue = 0;
+		// Stores communication status
+		ComStatusRS485 comStatus = ComStatusRS485::IDLE;
+
 };
 
 

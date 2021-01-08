@@ -17,11 +17,9 @@ extern "C" {
 #include <hal/Drivers/UART.h>
 }
 
-struct RS485WriteTransfer{
-	unsigned char * writeData;
-	size_t 	sendLen;
-	int status;
-};
+
+
+
 
 
 class RS485DeviceComIF: public DeviceCommunicationIF,
@@ -62,8 +60,8 @@ private:
     uint8_t retryCount = 0;
     ReturnValue_t checkDriverState(uint8_t* retryCount);
 
-
-    std::array<RS485WriteTransfer, RS485Devices::DEVICE_COUNT_RS485> sendArray;
+    // Stores one cookie for each device to communicate between performOperation, sendMessage and getSendSuccess
+    std::array<CookieIF*, RS485Devices::DEVICE_COUNT_RS485> sendArray;
 
     USLPTransferFrame*  transferFrameFPGA = nullptr;
     std::array<uint8_t, config::RS485_COM_FPGA_TFDZ_SIZE + USLPTransferFrame::FRAME_OVERHEAD> transmitBufferFPGA;
