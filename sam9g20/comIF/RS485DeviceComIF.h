@@ -40,6 +40,11 @@ public:
 	ReturnValue_t initialize() override;
 
  /** ExecutableObjectIF overrides */
+	/**
+	 * @brief   ExecutableObjectIF, does not do anything.
+	 * @details As performOperation is executed before this,
+	 * all initialization has to occur in initialize
+	 */
     virtual ReturnValue_t initializeInterface(CookieIF * cookie) override;
     virtual ReturnValue_t sendMessage(CookieIF *cookie,
             const uint8_t * sendData, size_t sendLen) override;
