@@ -39,13 +39,20 @@ public:
 	ReturnValue_t performOperation(uint8_t opCode) override;
 	ReturnValue_t initialize() override;
 
- /** ExecutableObjectIF overrides */
+
 	/**
-	 * @brief   ExecutableObjectIF, does not do anything.
+	 * @brief   ExecutableObjectIF override, does not do anything.
 	 * @details As performOperation is executed before this,
 	 * all initialization has to occur in initialize
 	 */
     virtual ReturnValue_t initializeInterface(CookieIF * cookie) override;
+	/**
+	 * @brief   ExecutableObjectIF override, queues messages to be sent by performOperation
+	 * @details Data Pointer and SendLen are written to the cookie, a pointer to the cookie
+	 * is stored in the 1 deep buffer for the corresponding device
+	 *
+	 * @returns ReturnValue_t OK if buffer is free, FAILED if not
+	 */
     virtual ReturnValue_t sendMessage(CookieIF *cookie,
             const uint8_t * sendData, size_t sendLen) override;
     virtual ReturnValue_t getSendSuccess(CookieIF *cookie) override;
