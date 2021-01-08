@@ -73,6 +73,8 @@ private:
 
     std::array<uint8_t, TMTC_FRAME_MAX_LEN + 5> receiveArray;
 
+    void handleSend(RS485Devices step);
+
     ReturnValue_t handleReceiveBuffer();
     ReturnValue_t handlePacketReception(size_t foundLen);
     static void genericUartCallback(SystemContext context,

@@ -60,43 +60,33 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
     // Returnvalue is ignored for now
 //    checkDriverState(&retryCount);
 
-    // Activate transceiver via GPIO
+
     switch(step) {
     case(RS485Devices::COM_FPGA): {
+    	// Activate transceiver via GPIO
     	// Check which FPGA is active (should probably be set via DeviceHandler)
     	sif::info << "Sending to FPGA 1" << std::endl;
-        if (sendArray[step] != nullptr){
-        	RS485Cookie * rs485Cookie = dynamic_cast<RS485Cookie *> (sendArray[step]);
-        	(void) std::memcpy(transferFrameFPGA->getDataZone(), rs485Cookie->getWriteData(), rs485Cookie->getSendLen());
-
-        	int retval = UART_write(bus2_uart, transmitBufferFPGA.data(), transmitBufferFPGA.size());
-
-        	rs485Cookie->setReturnValue(retval);
-        	if(retval != 0){
-        		rs485Cookie->setComStatus(ComStatusRS485::FAULTY);
-        	}
-        	else{
-        		rs485Cookie->setComStatus(ComStatusRS485::TRANSFER_SUCCESS);
-        	}
-        	sendArray[step] = nullptr;
-        }
-
+    	handleSend(step);
         break;
     }
     case(RS485Devices::PCDU_VORAGO): {
     	sif::info << "Sending to PCDU" << std::endl;
+    	handleSend(step);
         break;
     }
     case(RS485Devices::PL_VORAGO): {
     	sif::info << "Sending to PL_VORAGO" << std::endl;
+    	handleSend(step);
         break;
     }
     case(RS485Devices::PL_PIC24): {
     	sif::info << "Sending to PL_PIC24" << std::endl;
+    	handleSend(step);
         break;
     }
     default: {
         // should not happen
+    	sif::error << "RS485 Device Number out of bounds" << std::endl;
         break;
     }
     }
@@ -167,7 +157,23 @@ ReturnValue_t RS485DeviceComIF::readReceivedMessage(CookieIF *cookie,
     return HasReturnvaluesIF::RETURN_OK;
 }
 
+void RS485DeviceComIF::handleSend(RS485Devices step){
+    if (sendArray[step] != nullptr){
+    	RS485Cookie * rs485Cookie = dynamic_cast<RS485Cookie *> (sendArray[step]);
+    	(void) std::memcpy(transferFrameFPGA->getDataZone(), rs485Cookie->getWriteData(), rs485Cookie->getSendLen());
 
+    	int retval = UART_write(bus2_uart, transmitBufferFPGA.data(), transmitBufferFPGA.size());
+
+    	rs485Cookie->setReturnValue(retval);
+    	if(retval != 0){
+    		rs485Cookie->setComStatus(ComStatusRS485::FAULTY);
+    	}
+    	else{
+    		rs485Cookie->setComStatus(ComStatusRS485::TRANSFER_SUCCESS);
+    	}
+    	sendArray[step] = nullptr;
+    }
+}
 
 
 

@@ -4,6 +4,8 @@
 
 RS485Cookie::RS485Cookie(RS485Devices device){
 	this->device = device;
+	sendLen = 0;
+	writeData = nullptr;
 }
 
 RS485Cookie::~RS485Cookie(){}
