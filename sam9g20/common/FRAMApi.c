@@ -1,6 +1,68 @@
 #include "FRAMApi.h"
 #include <hal/Storage/FRAM.h>
 
+#include <string.h>
+
+/* Software information offsets */
+static const uint8_t SOFTWARE_VERSION_ADDR =
+        offsetof(FRAMCriticalData, software_version);
+static const uint8_t SOFTWARE_SUBVERSION_ADDR =
+        offsetof(FRAMCriticalData, software_subversion);
+static const uint8_t SOFTWARE_SUBSUBVERSION_ADDR =
+        offsetof(FRAMCriticalData, software_subsubversion);
+
+/* Reboot info offset */
+static const uint32_t REBOOT_COUNTER_ADDR =
+		offsetof(FRAMCriticalData, reboot_counter);
+
+static const uint32_t BOOTLOADER_HAMMING_SIZE_ADDR =
+        offsetof(FRAMCriticalData, bootloader_hamming_code_size);
+static const uint32_t BOOTLOADER_FAULTY_ADDRESS =
+        offsetof(FRAMCriticalData, bootloader_faulty);
+
+static const uint32_t SEC_SINCE_EPOCH_ADDR =
+		offsetof(FRAMCriticalData, seconds_since_epoch);
+const uint32_t SOFTWARE_UPDATE_BOOL_ADDR =
+        offsetof(FRAMCriticalData, software_update_available);
+
+/* NOR-Flash binary offsets */
+static const uint32_t NOR_FLASH_BINARY_SIZE_ADDRESS =
+		offsetof(FRAMCriticalData, nor_flash_binary_size);
+static const uint32_t NOR_FLASH_HAMMING_CODE_OFFSET_ADDRESS =
+		offsetof(FRAMCriticalData, nor_flash_hamming_code_size);
+static const uint32_t NOR_FLASH_REBOOT_COUNTER_ADDRESS =
+        offsetof(FRAMCriticalData, nor_flash_reboot_counter);
+
+
+static const uint32_t PREFERED_SD_CARD_ADDR =
+		offsetof(FRAMCriticalData, preferedSdCard);
+static const uint32_t SDC1SL1_REBOOT_COUNTER_ADDR =
+        offsetof(FRAMCriticalData, sdc1sl1_reboot_counter);
+const uint32_t SDC1SL2_REBOOT_COUNTER_ADDR =
+        offsetof(FRAMCriticalData, sdc1sl2_reboot_counter);
+const uint32_t SDC2SL1_REBOOT_COUNTER_ADDR =
+        offsetof(FRAMCriticalData, sdc2sl1_reboot_counter);
+const uint32_t SDC2SL2_REBOOT_COUNTER_ADDR =
+        offsetof(FRAMCriticalData, sdc2sl2_reboot_counter);
+
+const uint32_t NUMBER_OF_ACTIVE_TASKS_ADDRESS =
+        offsetof(FRAMCriticalData, number_of_active_tasks);
+
+/** Big blocks at the end of FRAM */
+static const uint32_t FRAM_END_ADDR = 0x100000;
+
+// 512 bytes of the upper FRAM will be reserved for the bootloader hamming
+// code.
+static const size_t BOOTLOADER_HAMMING_RESERVED_SIZE = 512;
+#define BOOTLOADER_HAMMING_ADDR FRAM_END_ADDR - \
+        BOOTLOADER_HAMMING_RESERVED_SIZE
+
+// 12 kB of the upper FRAM will be reserved for the NOR-Flash binary hamming
+// code.
+const uint32_t NOR_FLASH_HAMMING_RESERVED_SIZE = 12288;
+#define  NOR_FLASH_HAMMING_ADDR BOOTLOADER_HAMMING_ADDR - \
+        NOR_FLASH_HAMMING_RESERVED_SIZE
+
 int write_software_version(uint8_t software_version,
         uint8_t software_subversion, uint8_t sw_subsubversion) {
     int result = FRAM_writeAndVerify((unsigned char*) &software_version,
@@ -194,4 +256,58 @@ int read_bootloader_hamming_code(uint8_t *code, size_t *size) {
         *size = size_to_read;
     }
     return FRAM_read(code, BOOTLOADER_HAMMING_ADDR, size_to_read);
+}
+
+int set_to_load_softwareupdate(bool slot0) {
+	bool raw_data[3];
+	raw_data[0] = true;
+	if (slot0 == true){
+		raw_data[1] = true;
+	}
+	else {
+		raw_data[2] = true;
+	}
+	return FRAM_writeAndVerify((unsigned char*) raw_data,
+			SOFTWARE_UPDATE_BOOL_ADDR, 3);
+}
+
+// "yes" tells you if a software update is required
+int get_software_to_be_updated(bool* yes, bool* slot0) {
+	if (yes == NULL) {
+		return -3;
+    }
+	bool raw_data[3];
+	int result = FRAM_read((unsigned char*) raw_data,
+			SOFTWARE_UPDATE_BOOL_ADDR, 3);
+	if (result != 0) {
+		return result;
+    }
+
+    if (raw_data[0] == false) {
+        *yes = false;
+        return 0;
+	}
+    if (slot0 == NULL) {
+    	return -3;
+	}
+
+    if (raw_data[1] == true && raw_data[2] == true) {
+    	memset(raw_data, 0, 3);
+    	*yes = false;
+    	return FRAM_writeAndVerify((unsigned char*) raw_data,
+    			SOFTWARE_UPDATE_BOOL_ADDR, 3);
+	}
+
+    if (raw_data[1] == true) {
+		*slot0 = true;
+		*yes = true;
+    }
+    else if (raw_data[2] == true) {
+    	*slot0 = false;
+    	*yes = true;
+    }
+
+	memset(raw_data, 0, 3);
+	return FRAM_writeAndVerify((unsigned char*) raw_data,
+			SOFTWARE_UPDATE_BOOL_ADDR, 3);
 }
