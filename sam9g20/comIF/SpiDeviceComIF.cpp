@@ -134,7 +134,8 @@ ReturnValue_t SpiDeviceComIF::getSendSuccess(CookieIF *cookie) {
 		return RETURN_FAILED;
 	}
 	// Com Status has mutex protection
-	MutexHelper mutexLock(spiCookie->getMutexHandle(), MutexIF::WAITING,
+	MutexHelper mutexLock(spiCookie->getMutexHandle(),
+			MutexIF::TimeoutType::WAITING,
 	        SPI_STANDARD_MUTEX_TIMEOUT);
 	if(spiCookie->getCurrentComStatus() == ComStatus::FAULTY) {
 		return spiCookie->getErrorReturnValue();
@@ -165,7 +166,8 @@ ReturnValue_t SpiDeviceComIF::readReceivedMessage(CookieIF *cookie,
 
 	checkTransferResult(spiCookie, spiSemaphore);
 	// Com Status has mutex protection
-	MutexHelper mutexLock(spiCookie->getMutexHandle(),MutexIF::WAITING,
+	MutexHelper mutexLock(spiCookie->getMutexHandle(),
+			MutexIF::TimeoutType::WAITING,
 	        SPI_STANDARD_MUTEX_TIMEOUT);
 	if(spiCookie->getCurrentComStatus() == ComStatus::TRANSFER_SUCCESS) {
 		*buffer = spiIter->second.spiReplyBuffer.data();
@@ -207,7 +209,8 @@ void SpiDeviceComIF::checkTransferResult(SpiCookie* spiCookie,
     }
 
     // Com Status has mutex protection
-    MutexHelper mutexLock(spiCookie->getMutexHandle(), MutexIF::WAITING,
+    MutexHelper mutexLock(spiCookie->getMutexHandle(),
+    		MutexIF::TimeoutType::WAITING,
             SPI_STANDARD_MUTEX_TIMEOUT);
     if(result != RETURN_OK) {
         spiCookie->setCurrentComStatus(ComStatus::FAULTY, result);

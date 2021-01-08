@@ -409,7 +409,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 	    if((packet[1] == gyroConfiguration[0]) and
 	            (packet[2] == gyroConfiguration[1])) {
 	        // store values to dataset.
-	    	ReturnValue_t result = gyroConfigSet.read(10);
+	    	ReturnValue_t result = gyroConfigSet.read();
 	    	if(result != HasReturnvaluesIF::RETURN_OK) {
 	    		return result;
 	    	}
@@ -421,7 +421,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 	    	gyroConfigSet.gyroGeneralConfigReg42 = gyroConfiguration[0];
 	    	gyroConfigSet.gyroRangeConfigReg43 = gyroConfiguration[1];
 
-	    	result = gyroConfigSet.commit(10);
+	    	result = gyroConfigSet.commit();
 	    	if(result != HasReturnvaluesIF::RETURN_OK) {
 	    		return result;
 	    	}
@@ -494,7 +494,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 				sif::info << "Z: " << angularVelocityZ << std::endl;
 			}
 #endif
-			ReturnValue_t result = gyroData.read(10);
+			ReturnValue_t result = gyroData.read();
 			if(result != HasReturnvaluesIF::RETURN_OK) {
 				// Configuration error.
 				return result;
@@ -508,7 +508,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 			gyroData.angVelocityY = angularVelocityY;
 			gyroData.angVelocityZ = angularVelocityZ;
 
-			gyroData.commit(10);
+			gyroData.commit();
 			if(result != HasReturnvaluesIF::RETURN_OK) {
 				// Configuration error.
 				return result;

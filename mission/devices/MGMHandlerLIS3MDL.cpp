@@ -257,13 +257,13 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 			sif::info << "Z: " << mgmZ << " \xC2\xB5T" << std::endl;
 		}
 #endif
-		ReturnValue_t result = dataset.read(20);
+		ReturnValue_t result = dataset.read();
 		if(result == HasReturnvaluesIF::RETURN_OK) {
 		    dataset.fieldStrengthX = mgmX;
 		    dataset.fieldStrengthY = mgmY;
 		    dataset.fieldStrengthZ = mgmZ;
 		    dataset.setValidity(true, true);
-		    dataset.commit(20);
+		    dataset.commit();
 		}
 		break;
 	}
@@ -278,10 +278,10 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 					<< std::endl;
 		}
 #endif
-        ReturnValue_t result = dataset.read(20);
+        ReturnValue_t result = dataset.read();
         if(result == HasReturnvaluesIF::RETURN_OK) {
             dataset.temperature = tempValue;
-            dataset.commit(20);
+            dataset.commit();
         }
 		break;
 	}
