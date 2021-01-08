@@ -132,7 +132,7 @@ typedef portSTACK_TYPE StackType_t;
 
 /* Architecture specifics. */
 #define portSTACK_GROWTH			( -1 )
-#define portTICK_RATE_MS			( ( portTickType ) 1000 / configTICK_RATE_HZ )		
+#define portTICK_PERIOD_MS			( ( portTickType ) 1000 / configTICK_RATE_HZ )
 #define portBYTE_ALIGNMENT			8
 #define portNOP()					asm volatile ( "NOP" );
 /*-----------------------------------------------------------*/	

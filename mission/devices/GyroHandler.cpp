@@ -2,7 +2,6 @@
 #include "devicedefinitions/GyroPackets.h"
 
 #if defined(at91sam9g20)
-#include <systemObjectList.h>
 #include <sam9g20/core/CoreController.h>
 #endif
 
@@ -523,15 +522,12 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-void GyroHandler::setNormalDatapoolEntriesInvalid() {
-}
-
 void GyroHandler::debugInterface(uint8_t positionTracker, object_id_t objectId,
         uint32_t parameter) {
 }
 
 uint32_t GyroHandler::getTransitionDelayMs(Mode_t modeFrom, Mode_t modeTo) {
-    return 8000;
+    return 5000;
 }
 
 ReturnValue_t GyroHandler::getSwitches(const uint8_t **switches,
@@ -540,9 +536,10 @@ ReturnValue_t GyroHandler::getSwitches(const uint8_t **switches,
 }
 
 void GyroHandler::modeChanged() {
-    if(mode != MODE_NORMAL) {
-        internalState = InternalStates::NONE;
-    }
+	// TODO: test whether this works without the if-clause. It should.
+	if(mode != MODE_NORMAL) {
+		internalState = InternalStates::NONE;
+	}
 }
 
 ReturnValue_t GyroHandler::initializeLocalDataPool(

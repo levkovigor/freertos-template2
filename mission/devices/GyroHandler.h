@@ -46,7 +46,6 @@ protected:
             DeviceCommandId_t *foundId, size_t *foundLen) override;
     ReturnValue_t interpretDeviceReply(DeviceCommandId_t id,
             const uint8_t *packet) override;
-    void setNormalDatapoolEntriesInvalid() override;
 
     /* DeviceHandlerBase overrides */
     void debugInterface(uint8_t positionTracker = 0,

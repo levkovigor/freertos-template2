@@ -502,8 +502,16 @@ $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).bin: $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).e
 	@echo $(MSG_BINARY) $@
 	@mkdir -p $(@D)
 	@$(BINCOPY) $< $@ 
+	
 ifeq ($(OS),Windows_NT)
+# Check whether stat is available.
+# Otherwise, try to display size with busybox
+ifeq (, $(shell where stat))
 	@echo Binary Size: `busybox stat -c %s $@` bytes
+else
+	@stat --printf='Binary Size: %s bytes' $@
+endif
+
 else
 	@stat --printf='Binary Size: %s bytes' $@
 endif

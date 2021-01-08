@@ -176,8 +176,7 @@ The code needs to be compiled for the ARM target system and we will use the
    
 4. Add arm-none-eabi-gcc binary location in the xPack folder to system variables. 
    These are usually located in C:\Users\<...>\AppData\Roaming\xPacks\@gnu-mcu-eclipse\arm-none-eabi-gcc\<version>\.content\bin .
-   Alternatively, if you want to keep the environment and the path clean, add it temporarily 
-   with `SET PATH=%PATH%;c:\pathtotoolchain` .  
+   Alternatively, if you want to keep the environment and the path clean, add it temporarily with `SET PATH=%PATH%;c:\pathtotoolchain` before each debugging session(command can be put inside a bash script).  
    
 If you don't want to install nodejs you may go with the 
 [four-command manual installation](https://xpack.github.io/arm-none-eabi-gcc/install/#manual-install). 
@@ -189,7 +188,7 @@ like explained above, but for Linux, windows build tools not required.
 
 On Linux, the a path can be added to the system variables by adding
 `export PATH=$PATH:<..../@gnu-mcu-eclipse/arm-none-eabi-gcc/<version>/.content/bin>`
-to the `.profile` or `.bashrc` file. Alternatively, if you want to keep the environment and the path clean, add it temporarily with `export PATH=%PATH%;c:\pathtotoolchain`.  
+to the `.profile` or `.bashrc` file. Alternatively, if you want to keep the environment and the path clean, add it temporarily with `export PATH=$PATH:<pathToToolchainBinaries`.  
    
 To install general buildtools for the linux binary, run:
 ```sh

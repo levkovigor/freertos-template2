@@ -1,6 +1,6 @@
 #include <test/testtasks/TestTask.h>
 #include <test/testtasks/PusTcInjector.h>
-#include <unittest/internal/InternalUnitTester.h>
+#include <fsfw/unittest/internal/InternalUnitTester.h>
 
 #include <fsfw/objectmanager/ObjectManagerIF.h>
 #include <fsfw/timemanager/Stopwatch.h>

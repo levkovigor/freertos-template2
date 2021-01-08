@@ -11,7 +11,7 @@
 #include <fsfwconfig/objects/systemObjectList.h>
 #include <fsfwconfig/OBSWConfig.h>
 #include <fsfwconfig/pollingsequence/PollingSequenceFactory.h>
-#include <unittest/internal/InternalUnitTester.h>
+#include <fsfw/unittest/internal/InternalUnitTester.h>
 #include <utility/compile_time.h>
 #include <fsfwconfig/OBSWVersion.h>
 

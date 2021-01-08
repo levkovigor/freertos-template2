@@ -4,11 +4,10 @@
 #include "devicedefinitions/MGMHandlerLIS3Definitions.h"
 
 #include <OBSWConfig.h>
+#include <events/subsystemIdRanges.h>
 
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
 #include <fsfw/globalfunctions/PeriodicOperationDivider.h>
-
-#include <events/subsystemIdRanges.h>
 
 /**
  * @brief   Device handler object for the LIS3MDL 3-axis magnetometer
@@ -19,11 +18,10 @@
  */
 class MGMHandlerLIS3MDL: public DeviceHandlerBase {
 public:
-
-    enum class CommunicationStep {
-        DATA,
-        TEMPERATURE
-    };
+	enum class CommunicationStep {
+		DATA,
+		TEMPERATURE
+	};
 
 	static const uint8_t INTERFACE_ID = CLASS_ID::MGM_LIS3MDL;
 	static const uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::MGM_LIS3MDL;
@@ -31,35 +29,34 @@ public:
 	static const Event CHANGE_OF_SETUP_PARAMETER = MAKE_EVENT(0, severity::LOW);
 
 	MGMHandlerLIS3MDL(uint32_t objectId, object_id_t deviceCommunication,
-	        CookieIF* comCookie);
+			CookieIF* comCookie);
 	virtual ~MGMHandlerLIS3MDL();
 
 protected:
 
 	/** DeviceHandlerBase overrides */
-	virtual void doShutDown() override;
-	virtual void doStartUp() override;
-	virtual void doTransition(Mode_t modeFrom, Submode_t subModeFrom) override;
-	virtual uint32_t getTransitionDelayMs(Mode_t from, Mode_t to) override;
-	virtual ReturnValue_t buildCommandFromCommand(
+	void doShutDown() override;
+	void doStartUp() override;
+	void doTransition(Mode_t modeFrom, Submode_t subModeFrom) override;
+	uint32_t getTransitionDelayMs(Mode_t from, Mode_t to) override;
+	ReturnValue_t buildCommandFromCommand(
 			DeviceCommandId_t deviceCommand, const uint8_t *commandData,
 			size_t commandDataLen) override;
-	virtual ReturnValue_t buildTransitionDeviceCommand(
-	        DeviceCommandId_t *id) override;
-	virtual ReturnValue_t buildNormalDeviceCommand(
-	        DeviceCommandId_t *id) override;
-	virtual ReturnValue_t scanForReply(const uint8_t *start, size_t len,
-	        DeviceCommandId_t *foundId, size_t *foundLen) override;
-	virtual ReturnValue_t interpretDeviceReply(DeviceCommandId_t id,
+	ReturnValue_t buildTransitionDeviceCommand(
+			DeviceCommandId_t *id) override;
+	ReturnValue_t buildNormalDeviceCommand(
+			DeviceCommandId_t *id) override;
+	ReturnValue_t scanForReply(const uint8_t *start, size_t len,
+			DeviceCommandId_t *foundId, size_t *foundLen) override;
+	ReturnValue_t interpretDeviceReply(DeviceCommandId_t id,
 			const uint8_t *packet) override;
-	virtual void fillCommandAndReplyMap() override;
-	virtual void modeChanged(void) override;
-	void setNormalDatapoolEntriesInvalid() override;
+	void fillCommandAndReplyMap() override;
+	void modeChanged(void) override;
 	ReturnValue_t initializeLocalDataPool(LocalDataPool &localDataPoolMap,
-	        LocalDataPoolManager &poolManager) override;
-
+			LocalDataPoolManager &poolManager) override;
 
 private:
+	MGMLIS3MDL::MgmPrimaryDataset dataset;
 
 	/*------------------------------------------------------------------------*/
 	/* Device specific commands and variables */
@@ -140,13 +137,6 @@ private:
 
 	uint8_t statusRegister = 0;
 
-
-	/**
-	 * As this is a SPI Device, we get the Answer of the last sent command in
-	 * the next read cycle, so we could check the command for identification.
-	 */
-	DeviceCommandId_t lastSentCommand = DeviceHandlerIF::NO_COMMAND;
-
 	/**
 	 * We always update all registers together, so this method updates
 	 * the rawpacket and rawpacketLen, so we just manipulate the local
@@ -155,16 +145,20 @@ private:
 	 */
 	ReturnValue_t prepareCtrlRegisterWrite();
 
-	enum InternalState {
-		STATE_NONE, STATE_FIRST_CONTACT, STATE_SETUP, STATE_CHECK_REGISTERS
+	enum class InternalState {
+		STATE_NONE,
+		STATE_FIRST_CONTACT,
+		STATE_SETUP,
+		STATE_CHECK_REGISTERS,
+		STATE_NORMAL
 	};
 
-	InternalState internalState = STATE_NONE;
+	InternalState internalState = InternalState::STATE_NONE;
 	CommunicationStep communicationStep = CommunicationStep::DATA;
 	bool commandExecuted = false;
 
 #if OBSW_ENHANCED_PRINTOUT == 1
-    PeriodicOperationDivider* debugDivider;
+	PeriodicOperationDivider* debugDivider;
 #endif
 
 };

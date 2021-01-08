@@ -13,7 +13,7 @@ public:
      * card. For the iOBC, the bootloader can also be stored on the FRAM.
      * This will be the  default setting.
      */
-    bool hammingCodeOnSdCard = false;
+    uint8_t hammingCodeOnSdCard = false;
 private:
     SoftwareImageHandler* owner;
 
