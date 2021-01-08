@@ -121,18 +121,24 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie,
         const uint8_t *sendData, size_t sendLen) {
 
-
 	RS485Cookie * rs485Cookie = dynamic_cast<RS485Cookie *> (cookie);
 	RS485Devices device = rs485Cookie->getDevice();
 
+	// Check if there already is a message that has not been processed yet
+	// We could make this condition ComStatusRS485::IDLE, but like this,
+	// the user can choose to skip getSendSuccess and just queue the next message
+	if(sendArray[device] == nullptr){
 	rs485Cookie->setWriteData(const_cast<uint8_t*>(sendData));
 	rs485Cookie->setSendLen(sendLen);
 	rs485Cookie->setComStatus(ComStatusRS485::TRANSFER_INIT_SUCCESS);
 	rs485Cookie->setReturnValue(0);
 
 	sendArray[device] = cookie;
-
-    return HasReturnvaluesIF::RETURN_OK;
+    	return HasReturnvaluesIF::RETURN_OK;
+	}
+	else{
+		return HasReturnvaluesIF::RETURN_FAILED;
+	}
 }
 
 ReturnValue_t RS485DeviceComIF::getSendSuccess(CookieIF *cookie) {
