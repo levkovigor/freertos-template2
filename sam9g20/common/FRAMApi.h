@@ -1,10 +1,10 @@
 #ifndef MISSION_MEMORY_FRAMAPI_H_
 #define MISSION_MEMORY_FRAMAPI_H_
 
+#include <sam9g20/common/SDCardApi.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include <sam9g20/memory/SDCardApi.h>
 
 /**
  * @brief	This common API can be used by both C++ and C code

@@ -7,7 +7,7 @@
 #include <fsfw/serialize/SerialFixedArrayListAdapter.h>
 #include <fsfw/serialize/EndianConverter.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
-#include <sam9g20/memory/SDCardApi.h>
+#include <sam9g20/common/SDCardApi.h>
 
 
 /**

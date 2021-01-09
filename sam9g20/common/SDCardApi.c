@@ -1,9 +1,8 @@
-#include "SDCardApi.h"
-
 #include <at91/utility/trace.h>
 #include <hcc/api_fat.h>
 #include <hcc/api_mdriver_atmel_mcipdc.h>
 #include <hcc/api_hcc_mem.h>
+#include <sam9g20/common/SDCardApi.h>
 
 #include <string.h>
 
@@ -53,7 +52,7 @@ int select_sd_card(VolumeId volumeId){
 		 *  The file system has not been formatted to safeFat yet
 		 *  Therefore format filesystem now
 		 */
-		result = f_format( 0, F_FAT32_MEDIA );
+		result = f_format( 0, F_FAT32_MEDIA);
 		if(result != F_NO_ERROR) {
 			TRACE_ERROR("select_sd_card: fs_format failed with "
 					"code %d\n\r", result);
