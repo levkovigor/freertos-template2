@@ -227,7 +227,7 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
         }
 #endif
 
-        ReturnValue_t result = sensorDataset.read(10);
+        ReturnValue_t result = sensorDataset.read();
         if(result != HasReturnvaluesIF::RETURN_OK) {
         	// Configuration error
         	sif::debug << "ThermalSensorHandler::interpretDeviceReply:"
@@ -241,7 +241,7 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
 
         sensorDataset.temperatureCelcius = approxTemp;
 
-        result = sensorDataset.commit(10);
+        result = sensorDataset.commit();
 
         if(result != HasReturnvaluesIF::RETURN_OK) {
             // Configuration error
@@ -258,7 +258,7 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
         sif::info << "ThermalSensorHandler::interpretDeviceReply: Fault byte"
                 " is: 0b" << std::bitset<8>(faultByte) << std::endl;
 #endif
-        ReturnValue_t result = sensorDataset.read(10);
+        ReturnValue_t result = sensorDataset.read();
         if(result != HasReturnvaluesIF::RETURN_OK) {
             // Configuration error
             sif::debug << "ThermalSensorHandler::interpretDeviceReply:"
@@ -271,7 +271,7 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
         	sensorDataset.temperatureCelcius.setValid(false);
         }
 
-        result = sensorDataset.commit(10);
+        result = sensorDataset.commit();
         if(result != HasReturnvaluesIF::RETURN_OK) {
         	// Configuration error
         	sif::debug << "ThermalSensorHandler::interpretDeviceReply:"
