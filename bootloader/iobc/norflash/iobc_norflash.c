@@ -4,7 +4,6 @@
 #include "iobc/common/boot_iobc.h"
 #include "utility/CRC.h"
 
-#include <sam9g20/memory/SDCardApi.h>
 #include <sam9g20/common/FRAMApi.h>
 #include <sam9g20/common/watchdog.h>
 
@@ -16,6 +15,7 @@
 #include <peripherals/aic/aic.h>
 #include <peripherals/pio/pio.h>
 #include <cp15/cp15.h>
+#include <sam9g20/common/SDCardApi.h>
 
 #if DEBUG_IO_LIB == 1
 #include <utility/trace.h>
@@ -222,8 +222,11 @@ void initialize_all_iobc_peripherals() {
 
 
 int copy_sdcard_binary_to_sdram(BootSelect boot_select) {
-	int result = open_filesystem(SD_CARD_0);
 	VolumeId current_filesystem = SD_CARD_0;
+	if (boot_select == BOOT_SD_CARD_1_UPDATE) {
+		current_filesystem = SD_CARD_1;
+	}
+	int result = open_filesystem(current_filesystem);
 	if(result != 0) {
 		// should not happen..
 		result = open_filesystem(SD_CARD_1);
@@ -231,16 +234,10 @@ int copy_sdcard_binary_to_sdram(BootSelect boot_select) {
 			// not good at all. boot from NOR-Flash instead
 			return -1;
 		}
-		current_filesystem = SD_CARD_1;
-		if ((boot_select == BOOT_SD_CARD_0) ||
-				(boot_select == BOOT_SD_CARD_0_SLOT2)) {
-			// just take the first binary for now
-			boot_select = BOOT_SD_CARD_1;
-		}
 	}
 
 	switch(boot_select) {
-	case(BOOT_SD_CARD_0): {
+	case(BOOT_SD_CARD_0_UPDATE): {
 		// get repostiory
 		char bin_folder_name[16];
 		// hardcoded
@@ -301,13 +298,8 @@ int copy_sdcard_binary_to_sdram(BootSelect boot_select) {
 		}
 		break;
 	}
-	case(BOOT_SD_CARD_0_SLOT2): {
-		break;
-	}
-	case(BOOT_SD_CARD_1): {
-		break;
-	}
-	case(BOOT_SD_CARD_1_SLOT2): {
+
+	case(BOOT_SD_CARD_1_UPDATE): {
 		break;
 	}
 	case(BOOT_NOR_FLASH): {

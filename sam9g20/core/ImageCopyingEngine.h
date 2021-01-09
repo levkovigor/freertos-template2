@@ -1,10 +1,10 @@
 #ifndef SAM9G20_CORE_IMAGECOPYINGENGINE_H_
 #define SAM9G20_CORE_IMAGECOPYINGENGINE_H_
 
+#include <sam9g20/common/SDCardApi.h>
 #include <sam9g20/core/SoftwareImageHandler.h>
 #include <sam9g20/memory/SDCardDefinitions.h>
 #include <sam9g20/memory/SDCardAccess.h>
-#include <sam9g20/memory/SDCardApi.h>
 
 #ifdef AT91SAM9G20_EK
 extern "C" {

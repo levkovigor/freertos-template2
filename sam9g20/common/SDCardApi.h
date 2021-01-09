@@ -1,5 +1,5 @@
-#ifndef SAM9G20_MEMORY_SDCARDAPI_H_
-#define SAM9G20_MEMORY_SDCARDAPI_H_
+#ifndef SAM9G20_COMMON_SDCARDAPI_H_
+#define SAM9G20_COMMON_SDCARDAPI_H_
 
 #include <hcc/api_fat.h>
 #include <stddef.h>
@@ -152,4 +152,4 @@ int clear_sd_card();
 }
 #endif
 
-#endif /* SAM9G20_MEMORY_SDCARDAPI_H_ */
+#endif /* SAM9G20_COMMON_SDCARDAPI_H_ */

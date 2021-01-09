@@ -12,6 +12,8 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
+#include <sam9g20/common/FRAMApi.h>
+
 //static uint8_t read_buffer[256 * 11];
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
 
@@ -31,19 +33,36 @@ void perform_bootloader_core_operation() {
 
 int perform_iobc_copy_operation_to_sdram() {
     // determine which binary should be copied to SDRAM first.
-    BootSelect boot_select = BOOT_NOR_FLASH;
-    int result = 0;
+	BootSelect boot_select = BOOT_NOR_FLASH;
+	bool yes = false;
+	bool slot0 = false;
+	get_software_to_be_updated(&yes, &slot0);
+	int result = get_software_to_be_updated(&yes, &slot0);
+	if (result != 0) {
+		TRACE_ERROR("FRAM could not be read!\n\r");
+	}
+	else {
+		if (yes) {
+			if (slot0) {
+				boot_select = BOOT_SD_CARD_0_UPDATE;
+			}
+			else {
+				boot_select = BOOT_SD_CARD_1_UPDATE;
+			}
+		}
+	}
+
     if(boot_select == BOOT_NOR_FLASH) {
         result = copy_norflash_binary_to_sdram(OBSW_MAX_SIZE);
+
         if(result != 0) {
-        	// Attempt sd card boot.
+        	result = copy_sdcard_binary_to_sdram(BOOT_SD_CARD_0_UPDATE);
         }
     }
     else {
         result = copy_sdcard_binary_to_sdram(boot_select);
         if(result != 0) {
-            // try boot from other slot.
-            //result = copy_norflash_binary_to_sdram(256);
+        	result = copy_norflash_binary_to_sdram(OBSW_MAX_SIZE);
         }
     }
     return result;
