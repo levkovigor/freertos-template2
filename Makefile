@@ -51,6 +51,7 @@ endif
 
 CHIP_NAME = sam9g20
 BOARD_FILE_ROOT = $(CHIP_NAME)
+ADD_USB_DRIVER = 1
 
 ifdef IOBC
 CHIP_PATH = iobc
