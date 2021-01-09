@@ -7,6 +7,8 @@ else
 # iOBC sources
 CSRC += $(wildcard $(CURRENTPATH)/iobc/*.c)
 CSRC += $(wildcard $(CURRENTPATH)/iobc/common/*.c)
+CSRC += $(wildcard $(CURRENTPATH)/fat/fatfs/*.c)
+CSRC += $(wildcard $(CURRENTPATH)/fat/*.c)
 
 ifeq ($(MEMORY_TYPE), norflash)
 CSRC += $(wildcard $(CURRENTPATH)/iobc/norflash/*.c)
