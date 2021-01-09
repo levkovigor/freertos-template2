@@ -120,9 +120,6 @@ endif
 ifeq ($(USE_AT91LIB_STDIO_AND_STRING), 1)
 AT91_SRC += stdio.c
 endif
-ifeq ($(BOOTLOADER), 1)
-AT91_SRC += math.c
-endif
 AT91_SRC += dbgu.c
 AT91_SRC += pio.c
 AT91_SRC += pio_it.c

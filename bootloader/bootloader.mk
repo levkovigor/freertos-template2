@@ -8,7 +8,8 @@ else
 CSRC += $(wildcard $(CURRENTPATH)/iobc/*.c)
 CSRC += $(wildcard $(CURRENTPATH)/iobc/common/*.c)
 CSRC += $(wildcard $(CURRENTPATH)/fat/fatfs/*.c)
-CSRC += $(wildcard $(CURRENTPATH)/fat/*.c)
+CSRC += $(wildcard $(CURRENTPATH)/fat/memories/*.c)
+CSRC += $(wildcard $(CURRENTPATH)/fat/memories/sdmmc/*.c)
 
 ifeq ($(MEMORY_TYPE), norflash)
 CSRC += $(wildcard $(CURRENTPATH)/iobc/norflash/*.c)
@@ -17,8 +18,6 @@ CSRC += $(wildcard $(CURRENTPATH)/iobc/sram/*.c)
 endif
 
 endif
-
-
 
 CSRC += $(wildcard $(CURRENTPATH)/utility/*.c)
 

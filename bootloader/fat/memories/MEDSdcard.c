@@ -39,7 +39,7 @@
 #include <mci/mci.h>
 #include <utility/trace.h>
 #include <utility/assert.h>
-#include <utility/math.h>
+#include <utility/at91_math.h>
 #include <memories/sdmmc/sdmmc_mci.h>
 
 #include <string.h>
