@@ -55,8 +55,8 @@
 #if _FATFS_TINY == 1
 
 #include <string.h>
-#include "tff.h"		/* Tiny-FatFs declarations */
-#include "diskio.h"		/* Include file for user provided disk functions */
+#include <tinyfatfs/tff.h>		/* Tiny-FatFs declarations */
+#include <tinyfatfs/diskio.h>	/* Include file for user provided disk functions */
 
 
 static

@@ -22,5 +22,6 @@ endif
 CSRC += $(wildcard $(CURRENTPATH)/utility/*.c)
 
 INCLUDES += $(CURRENTPATH)
+INCLUDES += $(CURRENTPATH)/fat/tinyfatfs/include
 INCLUDES += $(CURRENTPATH)/utility
 INCLUDES += $(CURRENTPATH)/config

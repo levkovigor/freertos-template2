@@ -9,7 +9,7 @@
 #include <board_memories.h>
 #include <utility/trace.h>
 #include <utility/assert.h>
-#include <fatfs/src/diskio.h>
+#include <tinyfatfs/diskio.h>
 #include <memories/Media.h>
 
 #include <string.h>
