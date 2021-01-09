@@ -7,7 +7,7 @@ else
 # iOBC sources
 CSRC += $(wildcard $(CURRENTPATH)/iobc/*.c)
 CSRC += $(wildcard $(CURRENTPATH)/iobc/common/*.c)
-CSRC += $(wildcard $(CURRENTPATH)/fat/fatfs/*.c)
+CSRC += $(wildcard $(CURRENTPATH)/fat/tinyfatfs/src/*.c)
 CSRC += $(wildcard $(CURRENTPATH)/fat/memories/*.c)
 CSRC += $(wildcard $(CURRENTPATH)/fat/memories/sdmmc/*.c)
 
@@ -22,6 +22,7 @@ endif
 CSRC += $(wildcard $(CURRENTPATH)/utility/*.c)
 
 INCLUDES += $(CURRENTPATH)
+INCLUDES += $(CURRENTPATH)/fat
 INCLUDES += $(CURRENTPATH)/fat/tinyfatfs/include
 INCLUDES += $(CURRENTPATH)/utility
 INCLUDES += $(CURRENTPATH)/config

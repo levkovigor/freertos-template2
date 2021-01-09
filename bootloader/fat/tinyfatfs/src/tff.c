@@ -410,7 +410,7 @@ void get_fileinfo (	/* No return code */
 		c = dir[n];
 		if (c == ' ') break;
 		if (c == 0x05) c = 0xE5;
-		if (a & 0x08 && c >= 'A' && c <= 'Z') c += 0x20;
+		if ((a & 0x08) && (c >= 'A') && (c <= 'Z')) c += 0x20;
 		*p++ = c;
 	}
 	if (dir[8] != ' ') {		/* Convert file name (extension) */
@@ -558,6 +558,7 @@ FRESULT trace_path (	/* FR_OK(0): successful, !=0: error code */
 		dj->sect = clust2sect(clust);
 		dj->index = 2;
 	}
+	return FR_OK;
 }
 
 
