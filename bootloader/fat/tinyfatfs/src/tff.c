@@ -418,7 +418,7 @@ void get_fileinfo (	/* No return code */
 		for (n = 8; n < 11; n++) {
 			c = dir[n];
 			if (c == ' ') break;
-			if (a & 0x10 && c >= 'A' && c <= 'Z') c += 0x20;
+			if ((a & 0x10) && (c >= 'A') && (c <= 'Z')) c += 0x20;
 			*p++ = c;
 		}
 	}
