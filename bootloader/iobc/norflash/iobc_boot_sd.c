@@ -1,11 +1,19 @@
 #include "iobc_boot_sd.h"
 #include <bootloaderConfig.h>
+#include <fatfs_config.h>
+#include <memories/MEDSdcard.h>
+#include <string.h>
+#include <utility/trace.h>
+#include <iobc/norflash/iobc_norflash.h>
 
 #if USE_TINY_FS == 0
 #include <sam9g20/common/SDCardApi.h>
 #else
 #include <tinyfatfs/tff.h>
 #endif
+
+#define MAX_LUNS        1
+Media medias[MAX_LUNS];
 
 #if USE_TINY_FS == 0
 int copy_with_hcc_lib(BootSelect boot_select);
@@ -113,6 +121,36 @@ int copy_with_hcc_lib(BootSelect boot_select) {
 #else
 
 int copy_with_tinyfatfs_lib(BootSelect boot_select) {
+	FATFS fs;
+	FIL fileObject;
+
+	const int ID_DRV = DRV_MMC;
+	FRESULT res = 0;
+	MEDSdcard_Initialize(&medias[ID_DRV], 0);
+	memset(&fs, 0, sizeof(FATFS));  // Clear file system object
+	res = f_mount(0, &fs);
+	if( res != FR_OK ) {
+		printf("f_mount pb: 0x%X\n\r", res);
+		return 0;
+	}
+
+	char file_name [strlen(SW_REPOSITORY) + strlen(SW_UPDATE_FILE_NAME) + 1];
+	snprintf(file_name, sizeof (file_name), "%s%s", SW_REPOSITORY,
+		SW_UPDATE_FILE_NAME);
+
+	TRACE_INFO("Copy \"%s\" from SdCard %u to SDRAM\n\r", file_name,
+			(unsigned int) boot_select);
+	res = f_open(&fileObject, file_name, FA_OPEN_EXISTING|FA_READ);
+	if( res != FR_OK ) {
+		TRACE_ERROR("f_open read pb: 0x%X\n\r", res);
+		return 0;
+	}
+	size_t ByteRead;
+    res = f_read(&fileObject, (void*)(SDRAM_DESTINATION), OBSW_MAX_SIZE, &ByteRead);
+    if(res != FR_OK) {
+        TRACE_ERROR("f_read pb: 0x%X\n\r", res);
+        return 0;
+    }
 	return 0;
 }
 

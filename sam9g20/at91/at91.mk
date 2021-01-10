@@ -74,6 +74,9 @@ VPATH += $(PERIPH)/rstc
 VPATH += $(PERIPH)/spi
 VPATH += $(PERIPH)/twi
 
+ifeq ($(BOOTLOADER), 1)
+VPATH += $(PERIPH)/mci
+endif
 
 ifeq ($(BOARD), ISIS_OBC_G20)
 VPATH += $(BOARDS)/ISIS_OBC_G20
@@ -139,6 +142,10 @@ AT91_SRC += spi_at91.c
 AT91_SRC += rstc.c
 AT91_SRC += usart_at91.c
 AT91_SRC += SDCardTest.c
+ifeq ($(BOOTLOADER), 1)
+AT91_SRC += mci.c
+endif
+
 ifeq ($(OS_APP),freeRTOS)
 
 AT91_SRC += demo_sd.c

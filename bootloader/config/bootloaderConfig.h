@@ -32,4 +32,14 @@
 //! This flag should be enabled if the software is flashed with SAM-BA.
 #define SAM_BA_BOOT 1
 
+#ifdef AT91SAM9G20_EK
+static const char* const SW_REPOSITORY =                 "BIN/AT91/OBSW/";
+#else
+static const char* const SW_REPOSITORY =                 "BIN/IOBC/OBSW/";
+#endif
+
+static const char* const SW_UPDATE_FILE_NAME =           "obsw_up.bin";
+
+
 #endif /* BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_ */
+

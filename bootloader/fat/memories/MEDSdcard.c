@@ -262,7 +262,7 @@ static unsigned char MEDSdcard_Read(Media         *media,
                                    void          *argument)
 {
     unsigned int block;
-    unsigned int offset;    
+    unsigned int offset;
     unsigned char error;  
     unsigned int remainingLength;
     unsigned char* pDataTmp;

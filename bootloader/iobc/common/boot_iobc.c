@@ -14,6 +14,8 @@
 
 #include <sam9g20/common/FRAMApi.h>
 
+#include <iobc/norflash/iobc_boot_sd.h>
+
 //static uint8_t read_buffer[256 * 11];
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
 
