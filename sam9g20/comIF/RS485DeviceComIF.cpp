@@ -19,7 +19,7 @@ RS485DeviceComIF::~RS485DeviceComIF() {
 
 ReturnValue_t RS485DeviceComIF::initialize() {
 
-//	uartTransferFPGA1.writeData = reinterpret_cast< unsigned char *>(const_cast<char*>("FPGA1I"));
+
 	transferFrameFPGA = new USLPTransferFrame(transmitBufferFPGA.data(), config::RS485_COM_FPGA_TFDZ_SIZE);
 	transferFrameFPGA->setVersionNumber(12);
 	transferFrameFPGA->setSpacecraftId(0xAFFE);
@@ -63,44 +63,48 @@ ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {
 ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 
     RS485Devices device = static_cast<RS485Devices>(opCode);
-    RS485Cookie * rs485Cookie = dynamic_cast<RS485Cookie *> (deviceCookies[device]);
+    if (deviceCookies[device] != nullptr){
+		RS485Cookie * rs485Cookie = dynamic_cast<RS485Cookie *> (deviceCookies[device]);
 
 
-    // check state of UART driver first, should be idle!
-    // Returnvalue is ignored for now
-//    checkDriverState(&retryCount);
+		// check state of UART driver first, should be idle!
+		// Returnvalue is ignored for now
+	//    checkDriverState(&retryCount);
 
 
-    switch(device) {
-    case(RS485Devices::COM_FPGA): {
-    	// Activate transceiver via GPIO
-    	// Check which FPGA is active (should probably be set via DeviceHandler)
-    	sif::info << "Sending to FPGA 1" << std::endl;
-    	handleSend(device, rs485Cookie);
-        break;
+		switch(device) {
+		case(RS485Devices::COM_FPGA): {
+			// Activate transceiver via GPIO
+			// Check which FPGA is active (should probably be set via DeviceHandler)
+			sif::info << "Sending to FPGA 1" << std::endl;
+			handleSend(device, rs485Cookie);
+			break;
+		}
+		case(RS485Devices::PCDU_VORAGO): {
+			sif::info << "Sending to PCDU" << std::endl;
+			handleSend(device, rs485Cookie);
+			break;
+		}
+		case(RS485Devices::PL_VORAGO): {
+			sif::info << "Sending to PL_VORAGO" << std::endl;
+			handleSend(device, rs485Cookie);
+			break;
+		}
+		case(RS485Devices::PL_PIC24): {
+			sif::info << "Sending to PL_PIC24" << std::endl;
+			handleSend(device, rs485Cookie);
+			break;
+		}
+		default: {
+			// should not happen
+			sif::error << "RS485 Device Number out of bounds" << std::endl;
+			break;
+		}
+		}
     }
-    case(RS485Devices::PCDU_VORAGO): {
-    	sif::info << "Sending to PCDU" << std::endl;
-    	handleSend(device, rs485Cookie);
-        break;
+    else {
+    	sif::error << "RS485 Device Cookies not initialized yet" << std::endl;
     }
-    case(RS485Devices::PL_VORAGO): {
-    	sif::info << "Sending to PL_VORAGO" << std::endl;
-    	handleSend(device, rs485Cookie);
-        break;
-    }
-    case(RS485Devices::PL_PIC24): {
-    	sif::info << "Sending to PL_PIC24" << std::endl;
-    	handleSend(device, rs485Cookie);
-        break;
-    }
-    default: {
-        // should not happen
-    	sif::error << "RS485 Device Number out of bounds" << std::endl;
-        break;
-    }
-    }
-
       //Reception
 //    sif::info << "Handling Receive Buffer" << std::endl;
 //    handleReceiveBuffer();
