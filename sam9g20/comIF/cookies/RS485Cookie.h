@@ -35,12 +35,7 @@ public:
 		void setDevice(RS485Devices device);
 		RS485Devices getDevice() const;
 
-		// Dont know why size_t does not work for me here
-		unsigned int getSendLen();
-		void setSendLen(unsigned int sendLen);
 
-		unsigned char* getWriteData();
-		void setWriteData(unsigned char* writeData);
 
 		ComStatusRS485 getComStatus();
 		void setComStatus(ComStatusRS485 status);
@@ -50,9 +45,7 @@ public:
 private:
 		// Device that is communicated with
 		RS485Devices device = COM_FPGA;
-		// Cookie is used to transfer write information between different functions of RS485DeviceComIF
-		unsigned char * writeData;
-		unsigned int 	sendLen;
+
 		// Stores returnvalues from UART driver, can also be negative
 		int8_t returnValue = 0;
 		// Stores communication status

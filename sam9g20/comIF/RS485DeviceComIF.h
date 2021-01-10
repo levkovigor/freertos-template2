@@ -17,8 +17,15 @@ extern "C" {
 #include <hal/Drivers/UART.h>
 }
 
-
-
+/**
+ * @brief   Struct for communication between sendMessage and performOperation
+ * @details In the future, this should be a specialized class like TMTCMessage
+ * 			with a message queue for each device
+ */
+struct RS485WriteTransfer{
+	unsigned char * writeData;
+	size_t 	sendLen;
+};
 
 
 
@@ -34,20 +41,23 @@ public:
 	RS485DeviceComIF(object_id_t objectId, object_id_t sharedRingBufferId);
 	virtual ~RS485DeviceComIF();
 
-
- /** ExecutableObjectIF overrides */
+	/**
+	 * @brief   ExecutableObjectIF override, performs send Operation in correct timeslot
+	 * @details Is initialized as fixed timeslot task with timeslot for each device
+	 * 			Only one timeslot for FPGAs as only one is active at a time
+	 * @param opCode Determines to which device messages are sent
+	 */
 	ReturnValue_t performOperation(uint8_t opCode) override;
 	ReturnValue_t initialize() override;
 
 
 	/**
-	 * @brief   ExecutableObjectIF override, does not do anything.
-	 * @details As performOperation is executed before this,
-	 * all initialization has to occur in initialize
+	 * @brief   DeviceComIF override, stores pointer to each device cookie
+	 * @details Pointer to each device needs to be accessible by performOperation
 	 */
     virtual ReturnValue_t initializeInterface(CookieIF * cookie) override;
 	/**
-	 * @brief   ExecutableObjectIF override, queues messages to be sent by performOperation
+	 * @brief  DeviceComIF override, queues messages to be sent by performOperation
 	 * @details Data Pointer and SendLen are written to the cookie, a pointer to the cookie
 	 * is stored in the 1 deep buffer for the corresponding device
 	 *
@@ -72,12 +82,16 @@ private:
     uint8_t retryCount = 0;
     ReturnValue_t checkDriverState(uint8_t* retryCount);
 
-    // Stores one cookie for each device to communicate between performOperation, sendMessage and getSendSuccess
-    std::array<CookieIF*, RS485Devices::DEVICE_COUNT_RS485> sendArray;
+    // Stores one cookie for each device to communicate between ExecutableObjectIF overrides and DeviceComIF overrides
+    std::array<CookieIF*, RS485Devices::DEVICE_COUNT_RS485> deviceCookies;
 
+
+    // Frame buffers for each device
     USLPTransferFrame*  transferFrameFPGA = nullptr;
     std::array<uint8_t, config::RS485_COM_FPGA_TFDZ_SIZE + USLPTransferFrame::FRAME_OVERHEAD> transmitBufferFPGA;
 
+    // Easy replacment for future queue, is just one deep for each device
+    std::array<RS485WriteTransfer, RS485Devices::DEVICE_COUNT_RS485> sendQueue;
 
     object_id_t sharedRingBufferId;
     SharedRingBuffer* sharedRingBuffer = nullptr;
@@ -85,7 +99,7 @@ private:
 
     std::array<uint8_t, TMTC_FRAME_MAX_LEN + 5> receiveArray;
 
-    void handleSend(RS485Devices step);
+    void handleSend(RS485Devices device, RS485Cookie* rs485Cookie);
 
     ReturnValue_t handleReceiveBuffer();
     ReturnValue_t handlePacketReception(size_t foundLen);
