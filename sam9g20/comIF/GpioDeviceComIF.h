@@ -45,6 +45,15 @@ public:
 	static void enableDecoderOutput7();
 	static void enableDecoderOutput8();
 
+	/**
+	 * Used to select the RS485 Transceivers
+	 */
+	static void enableTransceiverFPGA1();
+	static void enableTransceiverFPGA2();
+	static void enableTransceiverPCDU();
+	static void enableTransceiverVorago();
+	static void enableTransceiverPIC24();
+
 	/** DeviceCommunicationIF abstract function implementation */
 	virtual ReturnValue_t initializeInterface(CookieIF * cookie) override;
 	virtual ReturnValue_t sendMessage(CookieIF *cookie,

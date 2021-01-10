@@ -130,6 +130,46 @@ void GpioDeviceComIF::enableDecoderOutput8() {
     setGPIO(addresses::DEC_OUTPUT_SELECT_2_GPIO05);
 }
 
+/* RS485 Transceiver Select */
+void GpioDeviceComIF::enableTransceiverFPGA1() {
+    clearGPIO(addresses::GPIO22);
+    setGPIO(addresses::GPIO23);
+    clearGPIO(addresses::GPIO24);
+    clearGPIO(addresses::GPIO25);
+    clearGPIO(addresses::GPIO26);
+}
+
+void GpioDeviceComIF::enableTransceiverFPGA2() {
+    clearGPIO(addresses::GPIO22);
+    clearGPIO(addresses::GPIO23);
+    clearGPIO(addresses::GPIO24);
+    clearGPIO(addresses::GPIO25);
+    setGPIO(addresses::GPIO26);
+}
+
+void GpioDeviceComIF::enableTransceiverPCDU() {
+    setGPIO(addresses::GPIO22);
+    clearGPIO(addresses::GPIO23);
+    clearGPIO(addresses::GPIO24);
+    clearGPIO(addresses::GPIO25);
+    clearGPIO(addresses::GPIO26);
+}
+
+void GpioDeviceComIF::enableTransceiverVorago() {
+    clearGPIO(addresses::GPIO22);
+    clearGPIO(addresses::GPIO23);
+    setGPIO(addresses::GPIO24);
+    clearGPIO(addresses::GPIO25);
+    clearGPIO(addresses::GPIO26);
+}
+
+void GpioDeviceComIF::enableTransceiverPIC24() {
+    clearGPIO(addresses::GPIO22);
+    clearGPIO(addresses::GPIO23);
+    clearGPIO(addresses::GPIO24);
+    setGPIO(addresses::GPIO25);
+    clearGPIO(addresses::GPIO26);
+}
 Pin GpioDeviceComIF::pinSelect(uint32_t address) {
 	Pin pin;
 	switch(address) {
