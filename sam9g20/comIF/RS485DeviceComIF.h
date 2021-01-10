@@ -81,7 +81,7 @@ private:
 
 
     uint8_t retryCount = 0;
-    ReturnValue_t checkDriverState(uint8_t* retryCount);
+
 
     // Stores one cookie for each device to communicate between ExecutableObjectIF overrides and DeviceComIF overrides
     std::array<CookieIF*, RS485Devices::DEVICE_COUNT_RS485> deviceCookies;

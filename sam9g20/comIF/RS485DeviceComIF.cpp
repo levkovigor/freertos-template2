@@ -3,6 +3,7 @@
 #include <sam9g20/comIF/cookies/RS485Cookie.h>
 #include <mission/utility/USLPTransferFrame.h>
 
+#include "GpioDeviceComIF.h"
 
 extern "C" {
 #include <hal/Drivers/UART.h>
@@ -70,35 +71,47 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 		case(RS485Devices::COM_FPGA): {
 			// Activate transceiver via GPIO
 			// Check which FPGA is active (should probably be set via DeviceHandler)
-			sif::info << "Sending to FPGA 1" << std::endl;
-			handleSend(device, rs485Cookie);
+#ifdef DEBUG
+			sif::info << "Sending to FPGA" << std::endl;
+#endif
+			GpioDeviceComIF::enableTransceiverFPGA1();
 			break;
 		}
 		case(RS485Devices::PCDU_VORAGO): {
+#ifdef DEBUG
 			sif::info << "Sending to PCDU" << std::endl;
-			handleSend(device, rs485Cookie);
+#endif
+			GpioDeviceComIF::enableTransceiverPCDU();
 			break;
 		}
 		case(RS485Devices::PL_VORAGO): {
+#ifdef DEBUG
 			sif::info << "Sending to PL_VORAGO" << std::endl;
-			handleSend(device, rs485Cookie);
+#endif
+			GpioDeviceComIF::enableTransceiverVorago();
 			break;
 		}
 		case(RS485Devices::PL_PIC24): {
+#ifdef DEBUG
 			sif::info << "Sending to PL_PIC24" << std::endl;
-			handleSend(device, rs485Cookie);
+#endif
+			GpioDeviceComIF::enableTransceiverPIC24();
 			break;
 		}
 		default: {
+#ifdef DEBUG
 			// should not happen
 			sif::error << "RS485 Device Number out of bounds" << std::endl;
+#endif
 			break;
 		}
 		}
+		handleSend(device, rs485Cookie);
     }
     else {
     	sif::error << "RS485 Device Cookies not initialized yet" << std::endl;
     }
+
       //Reception
 //    sif::info << "Handling Receive Buffer" << std::endl;
 //    handleReceiveBuffer();
