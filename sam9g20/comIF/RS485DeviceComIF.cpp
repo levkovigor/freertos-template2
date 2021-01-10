@@ -66,12 +66,6 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
     if (deviceCookies[device] != nullptr){
 		RS485Cookie * rs485Cookie = dynamic_cast<RS485Cookie *> (deviceCookies[device]);
 
-
-		// check state of UART driver first, should be idle!
-		// Returnvalue is ignored for now
-	//    checkDriverState(&retryCount);
-
-
 		switch(device) {
 		case(RS485Devices::COM_FPGA): {
 			// Activate transceiver via GPIO
@@ -247,6 +241,35 @@ void RS485DeviceComIF::genericUartCallback(SystemContext context,
         // by FreeRTOS.
         TaskManagement::requestContextSwitch(CallContext::ISR);
     }
+}
+
+ReturnValue_t RS485DeviceComIF::checkDriverState(uint8_t* retryCount) {
+    UARTdriverState readState = UART_getDriverState(bus2_uart,
+            read_uartDir);
+    UARTdriverState writeState = UART_getDriverState(bus2_uart,
+            write_uartDir);
+    if(readState != 0x00 or writeState != 0x00) {
+        if(readState == 0x33 or writeState == 0x33) {
+            // erroneous state!
+#ifdef DEBUG
+            sif::error << "RS485Controller::performOperation: RS485 driver"
+                    " in invalid state!" << std::endl;
+#endif
+        }
+        // config error, wait 1 ms and try again up to 10 times.
+        for(uint8_t idx = 0; idx < RETRY_COUNTER; idx++) {
+            TaskFactory::delayTask(1);
+            readState = UART_getDriverState(bus2_uart,
+                    read_uartDir);
+            writeState = UART_getDriverState(bus2_uart,
+                    write_uartDir);
+            if(readState == 0x00 and writeState == 0x00) {
+                return HasReturnvaluesIF::RETURN_OK;
+            }
+        }
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    return HasReturnvaluesIF::RETURN_OK;
 }
 
 
