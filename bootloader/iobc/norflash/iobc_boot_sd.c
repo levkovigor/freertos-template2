@@ -6,10 +6,12 @@
 #include <utility/trace.h>
 #include <iobc/norflash/iobc_norflash.h>
 
+
 #if USE_TINY_FS == 0
 #include <sam9g20/common/SDCardApi.h>
 #else
 #include <tinyfatfs/tff.h>
+#include <peripherals/pio/pio.h>
 #endif
 
 #define MAX_LUNS        1
@@ -126,6 +128,16 @@ int copy_with_tinyfatfs_lib(BootSelect boot_select) {
 
 	const int ID_DRV = DRV_MMC;
 	FRESULT res = 0;
+	Pin sd_select_pin[1] = {PIN_SDSEL};
+	PIO_Configure(sd_select_pin, PIO_LISTSIZE(sd_select_pin));
+
+	if (boot_select == BOOT_SD_CARD_1_UPDATE) {
+		PIO_Set(sd_select_pin);
+	}
+	else {
+		PIO_Clear(sd_select_pin);
+	}
+
 	MEDSdcard_Initialize(&medias[ID_DRV], 0);
 	memset(&fs, 0, sizeof(FATFS));  // Clear file system object
 	res = f_mount(0, &fs);
@@ -146,12 +158,19 @@ int copy_with_tinyfatfs_lib(BootSelect boot_select) {
 		return 0;
 	}
 	size_t ByteRead;
-    res = f_read(&fileObject, (void*)(SDRAM_DESTINATION), OBSW_MAX_SIZE, &ByteRead);
+    res = f_read(&fileObject, (void*)(SDRAM_DESTINATION), OBSW_MAX_SIZE,
+    		&ByteRead);
     if(res != FR_OK) {
         TRACE_ERROR("f_read pb: 0x%X\n\r", res);
         return 0;
     }
-	return 0;
+
+    res = f_close(&fileObject);
+    if( res != FR_OK ) {
+    	TRACE_ERROR("f_close pb: 0x%X\n\r", res);
+    	return 0;
+    }
+    return 0;
 }
 
 #endif
