@@ -1,6 +1,7 @@
-#include <mission/pus/Service20ParameterManagement.h>
-#include <mission/pus/servicepackets/Service20Packets.h>
+#include "Service20ParameterManagement.h"
+#include "servicepackets/Service20Packets.h"
 
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/parameters/HasParametersIF.h>
 #include <fsfw/parameters/ParameterMessage.h>
 #include <fsfw/parameters/ReceivesParameterMessagesIF.h>
@@ -24,7 +25,11 @@ ReturnValue_t Service20ParameterManagement::isValidSubservice(
 	case Subservice::PARAMETER_DUMP:
 		return HasReturnvaluesIF::RETURN_OK;
 	default:
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "Invalid Subservice for Service 20" << std::endl;
+#else
+		fsfw::printError("Invalid Subservice for Service 20\n");
+#endif
 		return AcceptsTelecommandsIF::INVALID_SUBSERVICE;
 	}
 }
@@ -45,8 +50,13 @@ ReturnValue_t Service20ParameterManagement::checkAndAcquireTargetID(
 		object_id_t* objectIdToSet, const uint8_t* tcData, size_t tcDataLen) {
 	if(SerializeAdapter::deSerialize(objectIdToSet, &tcData, &tcDataLen,
 	        SerializeIF::Endianness::BIG) != HasReturnvaluesIF::RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "Service20ParameterManagement::checkAndAcquireTargetID: "
 		        << "Invalid data." << std::endl;
+#else
+		fsfw::printError("Service20ParameterManagement::"
+		        "checkAndAcquireTargetID: Invalid data.\n");
+#endif
 		return CommandingServiceBase::INVALID_TC;
 	}
 	return HasReturnvaluesIF::RETURN_OK;
@@ -58,13 +68,21 @@ ReturnValue_t Service20ParameterManagement::checkInterfaceAndAcquireMessageQueue
 	// check ReceivesParameterMessagesIF property of target
 	ReceivesParameterMessagesIF* possibleTarget =
 	        objectManager->get<ReceivesParameterMessagesIF>(*objectId);
-	if(possibleTarget == nullptr){
+	if(possibleTarget == nullptr) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "Service20ParameterManagement::checkInterfaceAndAcquire"
 			    <<"MessageQueue: Can't access object" << std::endl;
 		sif::error << "Object ID: " << std::hex << objectId << std::dec
 		        << std::endl;
 		sif::error << "Make sure it implements ReceivesParameterMessagesIF!"
 		        << std::endl;
+#else
+		fsfw::printError("Service20ParameterManagement::checkInterfaceAndAcquire"
+                "MessageQueue: Can't access object\n");
+        fsfw::printError("Object ID: 0x%08x\n", objectId);
+        fsfw::printError("Make sure it implements "
+                "ReceivesParameterMessagesIF!\n");
+#endif
 
 		return CommandingServiceBase::INVALID_OBJECT;
 	}
