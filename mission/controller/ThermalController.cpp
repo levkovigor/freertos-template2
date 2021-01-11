@@ -39,7 +39,7 @@ ReturnValue_t ThermalController::initializeAfterTaskCreation() {
                 << " HKB Handler invalid!" << std::endl;
     }
     // Test normal notifications without data packet first.
-    testHkbHandler->getHkManagerHandle()->subscribeForSetUpdateMessages(
+    testHkbHandler->getSubscriptionInterface()->subscribeForSetUpdateMessages(
             TSensorDefinitions::THERMAL_SENSOR_SET_ID,
             this->getObjectId(), commandQueue->getId(), false);
 
