@@ -130,7 +130,7 @@ class EventParser(FileParser):
                 return
             description = " "
             if match.group(6):
-                description = self.clean_up_description(match.group(6))
+                description = self.clean_up_description(match.group(6  ))
             string_to_add = match.group(2)
             full_id = (self.myId * 100) + self.return_number_from_string(match.group(3))
             severity = match.group(4)
