@@ -32,6 +32,8 @@ ReturnValue_t ThermalController::initializeAfterTaskCreation() {
     }
     HasLocalDataPoolIF* testHkbHandler = objectManager->get<HasLocalDataPoolIF>(
             TSensorDefinitions::ObjIds::TEST_HKB_HANDLER);
+    LocalDataPoolManager* hkManager = testHkbHandler->getHkManagerHandle();
+
     if(testHkbHandler == nullptr) {
         sif::warning << "ThermalController::initializeAfterTaskCreation: Test"
                 << " HKB Handler invalid!" << std::endl;
@@ -40,6 +42,7 @@ ReturnValue_t ThermalController::initializeAfterTaskCreation() {
     testHkbHandler->getHkManagerHandle()->subscribeForSetUpdateMessages(
             TSensorDefinitions::THERMAL_SENSOR_SET_ID,
             this->getObjectId(), commandQueue->getId(), false);
+
     return result;
 }
 
