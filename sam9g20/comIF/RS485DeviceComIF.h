@@ -1,3 +1,12 @@
+/**
+ * @file	RS485DeviceComIF.h
+ * @brief	This file defines the RS485DeviceComIf class.
+ * @date	22.12.2020
+ * @author	L.Rajer
+ */
+
+
+
 #ifndef SAM9G20_COMIF_RS485DEVICECOMIF_H_
 #define SAM9G20_COMIF_RS485DEVICECOMIF_H_
 
@@ -28,7 +37,12 @@ struct RS485WriteTransfer{
 };
 
 
-
+/**
+ * @brief   This class is the sending and receiving interface for the RS485 Bus.
+ * @details All communication works via the sendMessage, getSendSuccess, requestReceiveMessage
+ * 			and readReceivedMessage functions. performOperation handles the actual sending as
+ * 			this needs to be timed right with GPIOS.
+ */
 class RS485DeviceComIF: public DeviceCommunicationIF,
 public SystemObject,
 public ExecutableObjectIF{
@@ -46,9 +60,19 @@ public:
 	 * @brief   ExecutableObjectIF override, performs send Operation in correct timeslot
 	 * @details Is initialized as fixed timeslot task with timeslot for each device
 	 * 			Only one timeslot for FPGAs as only one is active at a time
-	 * @param opCode Determines to which device messages are sent
+	 * @param opCode Determines to which device messages are sent, enum in RS485Cookie
+	 * @returns -@c RETURN_OK always as Com errors are stored in the device cookies
 	 */
 	ReturnValue_t performOperation(uint8_t opCode) override;
+	/**
+	 * @brief   ExecutableObjectIF override, performs init of various buffers and queues
+	 * @details Initializes:
+	 * 			One Buffers for each device
+	 * 			Shared Ring Buffer analyzer
+	 * @param opCode Determines to which device messages are sent, enum in RS485Cookie
+	 * @returns -@c RETURN_OK if ring buffer analyzer init goes well
+	 * 			-@c RETURN_FALIED if ring buffer analyzer init fails
+	 */
 	ReturnValue_t initialize() override;
 
 

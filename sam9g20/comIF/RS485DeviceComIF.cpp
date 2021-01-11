@@ -1,3 +1,9 @@
+/**
+ * @file	RS485DeviceComIF.h
+ * @brief	This file defines the RS485DeviceComIf class.
+ * @date	22.12.2020
+ * @author	L.Rajer
+ */
 #include <sam9g20/comIF/RS485DeviceComIF.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <sam9g20/comIF/cookies/RS485Cookie.h>
@@ -20,7 +26,8 @@ RS485DeviceComIF::~RS485DeviceComIF() {
 
 ReturnValue_t RS485DeviceComIF::initialize() {
 
-
+	// Init of the default transfer frame, most of this will never be changed later
+	// TODO: Array for all devices with loop
 	transferFrameFPGA = new USLPTransferFrame(transmitBufferFPGA.data(), config::RS485_COM_FPGA_TFDZ_SIZE);
 	transferFrameFPGA->setVersionNumber(12);
 	transferFrameFPGA->setSpacecraftId(0xAFFE);
@@ -33,7 +40,7 @@ ReturnValue_t RS485DeviceComIF::initialize() {
 	transferFrameFPGA->setFirstHeaderOffset(0);
 
 
-
+	// The ring buffer analyzer will run at the end of performOperation
 	SharedRingBuffer* ringBuffer =
 			objectManager->get<SharedRingBuffer>(sharedRingBufferId);
 	if(ringBuffer == nullptr) {
@@ -66,11 +73,10 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
     RS485Devices device = static_cast<RS485Devices>(opCode);
     if (deviceCookies[device] != nullptr){
 		RS485Cookie * rs485Cookie = dynamic_cast<RS485Cookie *> (deviceCookies[device]);
-
+		// This switch only handles the correct GPIO for Transceivers
 		switch(device) {
 		case(RS485Devices::COM_FPGA): {
-			// Activate transceiver via GPIO
-			// Check which FPGA is active (should probably be set via DeviceHandler)
+			// TODO: Check which FPGA is active (should probably be set via DeviceHandler in Cookie)
 #ifdef DEBUG
 			sif::info << "Sending to FPGA" << std::endl;
 #endif
@@ -101,6 +107,7 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 		default: {
 #ifdef DEBUG
 			// should not happen
+			// TODO: Is there anything special to do in this case
 			sif::error << "RS485 Device Number out of bounds" << std::endl;
 #endif
 			break;
@@ -154,13 +161,14 @@ ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie,
 ReturnValue_t RS485DeviceComIF::getSendSuccess(CookieIF *cookie) {
 
 	RS485Cookie * rs485Cookie = dynamic_cast<RS485Cookie *> (cookie);
-
+	// Com Status is only reset here, so this always has to be called
+	// after sendMessage()
 	if(rs485Cookie->getComStatus() == ComStatusRS485::TRANSFER_SUCCESS){
 		rs485Cookie->setComStatus(ComStatusRS485::IDLE);
 		return HasReturnvaluesIF::RETURN_OK;
 	}
 	else{
-		// Generate event corresponding to error code stored in Cookie here
+		// TODO: Generate event corresponding to error code stored in Cookie here
 		rs485Cookie->setComStatus(ComStatusRS485::IDLE);
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
@@ -179,6 +187,11 @@ ReturnValue_t RS485DeviceComIF::readReceivedMessage(CookieIF *cookie,
 
 void RS485DeviceComIF::handleSend(RS485Devices device, RS485Cookie* rs485Cookie){
 
+	/*
+	 * Memcpy is placed here so that we only have to use one buffer for each fixed frame length
+	 * It also gives the receiving device a little bit of time between frames
+	 * TODO: Find out performance of memcpy
+	 */
 	(void) std::memcpy(transferFrameFPGA->getDataZone(), sendQueue[device].writeData, sendQueue[device].sendLen);
 
 	int retval = UART_write(bus2_uart, transmitBufferFPGA.data(), transmitBufferFPGA.size());
