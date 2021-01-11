@@ -1,20 +1,19 @@
 #include "Factory.h"
+#include <fsfwconfig/OBSWVersion.h>
+#include <FSFWConfig.h>
+#include <fsfwconfig/pollingsequence/PollingSequenceFactory.h>
+#include <fsfwconfig/objects/systemObjectList.h>
+#include <fsfwconfig/OBSWConfig.h>
+#include <utility/compile_time.h>
 
 #include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
-
+#include <fsfw/unittest/internal/InternalUnitTester.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 
 #include <freertos/FreeRTOS.h>
-#include <fsfwconfig/objects/systemObjectList.h>
-#include <fsfwconfig/OBSWConfig.h>
-#include <fsfwconfig/pollingsequence/PollingSequenceFactory.h>
-#include <fsfw/unittest/internal/InternalUnitTester.h>
-#include <utility/compile_time.h>
-#include <fsfwconfig/OBSWVersion.h>
-#include <FSFWConfig.h>
 
 extern "C" {
 #include <board.h>
