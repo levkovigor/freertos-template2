@@ -358,7 +358,7 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPENDDIR)/$*.d
 CUSTOM_DEFINES += -DUSE_AT91LIB_STDIO_AND_STRING=$(USE_AT91LIB_STDIO_AND_STRING)
 CUSTOM_DEFINES += -DNEWLIB_NANO_NO_C99_IO
 WARNING_FLAGS = -Wall -Wshadow=local -Wextra -Wimplicit-fallthrough=1 \
-		-Wno-unused-parameter 
+		-Wno-unused-parameter -Wno-psabi
 		
 CXXDEFINES := -DTRACE_LEVEL=$(TRACE_LEVEL) -DDYN_TRACES=$(DYN_TRACES) \
 		$(CUSTOM_DEFINES) -D$(MEMORIES)
