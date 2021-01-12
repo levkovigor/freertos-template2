@@ -28,7 +28,7 @@ ReturnValue_t Service20ParameterManagement::isValidSubservice(
 #if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "Invalid Subservice for Service 20" << std::endl;
 #else
-		fsfw::printError("Invalid Subservice for Service 20\n");
+		sif::printError("Invalid Subservice for Service 20\n");
 #endif
 		return AcceptsTelecommandsIF::INVALID_SUBSERVICE;
 	}
@@ -54,7 +54,7 @@ ReturnValue_t Service20ParameterManagement::checkAndAcquireTargetID(
 		sif::error << "Service20ParameterManagement::checkAndAcquireTargetID: "
 		        << "Invalid data." << std::endl;
 #else
-		fsfw::printError("Service20ParameterManagement::"
+		sif::printError("Service20ParameterManagement::"
 		        "checkAndAcquireTargetID: Invalid data.\n");
 #endif
 		return CommandingServiceBase::INVALID_TC;
@@ -77,10 +77,10 @@ ReturnValue_t Service20ParameterManagement::checkInterfaceAndAcquireMessageQueue
 		sif::error << "Make sure it implements ReceivesParameterMessagesIF!"
 		        << std::endl;
 #else
-		fsfw::printError("Service20ParameterManagement::checkInterfaceAndAcquire"
+		sif::printError("Service20ParameterManagement::checkInterfaceAndAcquire"
                 "MessageQueue: Can't access object\n");
-        fsfw::printError("Object ID: 0x%08x\n", objectId);
-        fsfw::printError("Make sure it implements "
+        sif::printError("Object ID: 0x%08x\n", objectId);
+        sif::printError("Make sure it implements "
                 "ReceivesParameterMessagesIF!\n");
 #endif
 

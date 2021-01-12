@@ -201,7 +201,7 @@ void Service23FileManagement::handleUnrequestedReply(
         sif::debug << "Service23FileManagement::handleUnrequestedReply: "
                << "Unknown reply with reply ID " << replyId << std::endl;
 #else
-        fsfw::printDebug( "Service23FileManagement::handleUnrequestedReply: "
+        sif::printDebug( "Service23FileManagement::handleUnrequestedReply: "
                "Unknown reply with reply ID %hu\n",
                static_cast<unsigned short>(replyId));
 #endif
@@ -221,7 +221,7 @@ ReturnValue_t Service23FileManagement::addDataToStore(
         sif::error << "Service23FileManagement::addDataToStore: Failed to add "
                 << "data to IPC Store" << std::endl;
 #else
-        fsfw::printError("Service23FileManagement::addDataToStore: "
+        sif::printError("Service23FileManagement::addDataToStore: "
                 "Failed to add data to IPC Store\n");
 #endif
     }
@@ -240,7 +240,7 @@ ReturnValue_t Service23FileManagement::forwardFileSystemReply(
 				<<"not retrieve data for data reply for subservice"
 				<< subservice << "!";
 #else
-        fsfw::printError("Service23FileManagement::forwardFileSystemReply: "
+        sif::printError("Service23FileManagement::forwardFileSystemReply: "
                 "Could not retrieve data for data reply for subservice %d!",
                 static_cast<int>(subservice));
 #endif
@@ -254,7 +254,7 @@ ReturnValue_t Service23FileManagement::forwardFileSystemReply(
 				<< "send TM packet for subservice"
 				<< subservice << "!";
 #else
-		fsfw::printError("Service23FileManagement::handleReply: Could not "
+		sif::printError("Service23FileManagement::handleReply: Could not "
 		        "send TM packet for subservice %d",
 		        static_cast<int>(subservice));
 #endif

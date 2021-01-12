@@ -64,7 +64,7 @@ ReturnValue_t pst::pollingSequenceInitDefault(
 		sif::error << "pst::pollingSequenceInitDefault: Sequence invalid!"
 		        << std::endl;
 #else
-		fsfw::printError("pst::pollingSequenceInitDefault: "
+		sif::printError("pst::pollingSequenceInitDefault: "
 		        "Sequence invalid!\n");
 #endif
 		return HasReturnvaluesIF::RETURN_FAILED;
@@ -92,7 +92,7 @@ ReturnValue_t pst::pollingSequenceInitRS485(FixedTimeslotTaskIF *thisSequence) {
         sif::error << "pst::pollingSequenceInitRS485: Sequence invalid!"
                 << std::endl;
 #else
-        fsfw::printError("pst::pollingSequenceInitRS485: Sequence invalid!\n");
+        sif::printError("pst::pollingSequenceInitRS485: Sequence invalid!\n");
 #endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
@@ -188,7 +188,7 @@ ReturnValue_t pst::pollingSequenceInitTest(FixedTimeslotTaskIF *thisSequence) {
 	    sif::error << "pst::pollingSequenceInitTest: Sequence invalid!"
 	                    << std::endl;
 #else
-	    fsfw::printError("pst::pollingSequenceInitTest: Sequence invalid!\n");
+	    sif::printError("pst::pollingSequenceInitTest: Sequence invalid!\n");
 #endif
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
