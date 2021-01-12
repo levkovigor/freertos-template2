@@ -40,5 +40,7 @@ ReturnValue_t FRAMHandler::initialize() {
         sif::error << "FRAMHandler::initialize: Error writing software version "
                 "to FRAM" << std::endl;
     }
+
+    //sif::info << "FRAM max addr: " << FRAM_getMaxAddress() << std::endl;
     return HasReturnvaluesIF::RETURN_OK;
 }
