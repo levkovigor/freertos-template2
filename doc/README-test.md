@@ -6,4 +6,4 @@ the telemetry.
 
 ## Index
 
-1. [SD-Card Interface](doc/test/sd-test.md#top)
+1. [SD-Card Interface](doc/test/sd/sd-test.md#top)
