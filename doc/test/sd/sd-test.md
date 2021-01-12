@@ -1,20 +1,24 @@
-## SD-Card Test
+# SD-Card Test
 
 [Test legend.](https://git.ksat-stuttgart.de/source/sourceobsw/-/blob/mueller/master/doc/README-test.md#top)
 
-### Telecommand Interface
+## Telecommand Interface
 
-23, xxx: u
+### Service 3
 
-Blabla what should be tested
+#### Subservice xxx
 
-23, xxx: t
+Blabla what was tesed
+
+#### Subservice xxx
 
 Blablala this was tested.
 
 
-### Telemetry Interface
+## Telemetry Interface
 
-23, xxx: t
+### Service 3
+
+#### Subservice xxx
 
 Blabla, this telemetry was already tested
