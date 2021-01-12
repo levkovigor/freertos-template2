@@ -38,7 +38,8 @@ in the QEMU documentation.
 [Developers documentation](doc/README-dev.md#top)<br>
 [AT91SAM9G20 getting started](doc/README-at91.md#top)<br>
 [Flatsat getting started](doc/README-flatsat.md#top)<br>
-[Common TMTC commands](doc/TMTC.md#top)<br>
+[Common TMTC commands](doc/README-tmtc.md#top)<br>
+[Test summary and progress](doc/README-test.md#top)<br>
 [QEMU getting started](doc/README-qemu.md#top)<br>
 [Linux and Unittest getting started](doc/README-linux.md#top)<br>
 [STM32 getting started](stm32/README-stm32.md#top)<br>
