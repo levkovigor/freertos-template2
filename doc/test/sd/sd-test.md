@@ -1,6 +1,6 @@
 ## SD-Card Test
 
-[Test legend.](test/doc/README-test.md#top)
+[Test legend.](doc/README-test.md#top)
 
 ### Telecommand Interface
 
