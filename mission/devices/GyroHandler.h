@@ -53,7 +53,7 @@ protected:
     uint32_t getTransitionDelayMs(Mode_t modeFrom, Mode_t modeTo) override;
     ReturnValue_t getSwitches(const uint8_t **switches,
             uint8_t *numberOfSwitches) override;
-	ReturnValue_t initializeLocalDataPool(LocalDataPool& localDataPoolMap,
+	ReturnValue_t initializeLocalDataPool(localpool::DataPool& localDataPoolMap,
 	        LocalDataPoolManager& poolManager) override;
 	void modeChanged(void) override;
 

@@ -422,8 +422,8 @@ void MGMHandlerLIS3MDL::modeChanged(void) {
 	internalState = InternalState::STATE_NONE;
 }
 
-ReturnValue_t MGMHandlerLIS3MDL::initializeLocalDataPool(
-		LocalDataPool &localDataPoolMap, LocalDataPoolManager &poolManager) {
+ReturnValue_t MGMHandlerLIS3MDL::initializeLocalDataPool(localpool::DataPool &localDataPoolMap,
+		LocalDataPoolManager &poolManager) {
 	localDataPoolMap.emplace(MGMLIS3MDL::FIELD_STRENGTH_X,
 			new PoolEntry<float>({0.0}));
 	localDataPoolMap.emplace(MGMLIS3MDL::FIELD_STRENGTH_Y,

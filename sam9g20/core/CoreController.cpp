@@ -330,8 +330,8 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t CoreController::initializeLocalDataPool(
-        LocalDataPool &localDataPoolMap, LocalDataPoolManager &poolManager) {
+ReturnValue_t CoreController::initializeLocalDataPool(localpool::DataPool &localDataPoolMap,
+		LocalDataPoolManager &poolManager) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 

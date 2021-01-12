@@ -306,8 +306,8 @@ void ThermalSensorHandler::doTransition(Mode_t modeFrom,
     DeviceHandlerBase::doTransition(modeFrom, subModeFrom);
 }
 
-ReturnValue_t ThermalSensorHandler::initializeLocalDataPool(
-        LocalDataPool& localDataPoolMap, LocalDataPoolManager& poolManager) {
+ReturnValue_t ThermalSensorHandler::initializeLocalDataPool(localpool::DataPool& localDataPoolMap,
+		LocalDataPoolManager& poolManager) {
     localDataPoolMap.emplace(TSensorDefinitions::PoolIds::TEMPERATURE_C,
             new PoolEntry<float>({0}, 1, true));
     localDataPoolMap.emplace(TSensorDefinitions::PoolIds::FAULT_BYTE,

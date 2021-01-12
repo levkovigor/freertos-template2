@@ -52,7 +52,7 @@ protected:
 			const uint8_t *packet) override;
 	void fillCommandAndReplyMap() override;
 	void modeChanged(void) override;
-	ReturnValue_t initializeLocalDataPool(LocalDataPool &localDataPoolMap,
+	ReturnValue_t initializeLocalDataPool(localpool::DataPool &localDataPoolMap,
 			LocalDataPoolManager &poolManager) override;
 
 private:

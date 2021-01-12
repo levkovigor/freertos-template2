@@ -542,8 +542,8 @@ void GyroHandler::modeChanged() {
 	}
 }
 
-ReturnValue_t GyroHandler::initializeLocalDataPool(
-		LocalDataPool &localDataPoolMap, LocalDataPoolManager &poolManager) {
+ReturnValue_t GyroHandler::initializeLocalDataPool(localpool::DataPool &localDataPoolMap,
+		LocalDataPoolManager &poolManager) {
 	localDataPoolMap.emplace(GyroDefinitions::ANGULAR_VELOCITY_X,
 			new PoolEntry<float>({0.0}));
 	localDataPoolMap.emplace(GyroDefinitions::ANGULAR_VELOCITY_Y,

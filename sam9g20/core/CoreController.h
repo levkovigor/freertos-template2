@@ -44,7 +44,7 @@ public:
 
 	/** HasLocalDataPoolIF overrides */
     ReturnValue_t initializeLocalDataPool(
-            LocalDataPool& localDataPoolMap,
+            localpool::DataPool& localDataPoolMap,
             LocalDataPoolManager& poolManager) override;
     LocalPoolDataSetBase* getDataSetHandle(sid_t sid) override;
 
