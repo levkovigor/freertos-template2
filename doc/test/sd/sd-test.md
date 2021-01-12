@@ -17,4 +17,4 @@ Blablala this was tested.
 
 [23, xxx]: t
 
-Blabla
+Blabla, this telemetry was already tested
