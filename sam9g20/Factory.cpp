@@ -198,12 +198,14 @@ void Factory::produce(void) {
 	 * These includes work without connected hardware via virtualized
 	 * devices and interfaces
 	 */
+
+
 	CookieIF * dummyCookie0 = new TestCookie(addresses::PCDU);
 	new PCDUHandler(objects::PCDU_HANDLER,objects::DUMMY_ECHO_COM_IF,
 			dummyCookie0);
 	CookieIF * dummyCookie1 = new TestCookie(addresses::DUMMY_ECHO);
-	new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_ECHO_COM_IF,
-			dummyCookie1, true);
+//	new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_ECHO_COM_IF,
+//			dummyCookie1, true);
 
 	new CoreController(objects::CORE_CONTROLLER, objects::SYSTEM_STATE_TASK);
 	new SystemStateTask(objects::SYSTEM_STATE_TASK, objects::CORE_CONTROLLER);
@@ -248,10 +250,12 @@ void Factory::produce(void) {
 	new RS485PollingTask(objects::RS485_POLLING_TASK, objects::RS485_RING_BUFFER);
 	new RS485DeviceComIF(objects::RS485_DEVICE_COM_IF, objects::RS485_RING_BUFFER);
 
+	CookieIF* rs485CookieFPGA = nullptr;
+	rs485CookieFPGA = new RS485Cookie(RS485Devices::COM_FPGA);
 
-	CookieIF* rs485Cookie = nullptr;
+	new TestDevice(objects::DUMMY_HANDLER, objects::RS485_DEVICE_COM_IF,
+			rs485CookieFPGA, true);
 
-	rs485Cookie = new RS485Cookie(COM_FPGA);
 	/* Test Tasks AT91 */
 	//size_t I2C_MAX_REPLY_LEN = 256;
 	size_t SPI_MAX_REPLY_LEN = 128;

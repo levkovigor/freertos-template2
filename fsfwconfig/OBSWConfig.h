@@ -71,10 +71,10 @@ static const uint32_t RS485_FAST_BAUD =                 115200;
 static const size_t RS485_MAX_SERIAL_FRAME_SIZE =       1500;
 static const uint32_t RS485_SERIAL_TIMEOUT_BAUDTICKS =  5;
 static const uint16_t RS485_MUTEX_TIMEOUT =             20;
-static const size_t RS485_COM_FPGA_TFDZ_SIZE =       	5;
-static const size_t RS485_PCDU_VORAGO_TFDZ_SIZE =       5;
-static const size_t RS485_PAYLOAD_VORAGO_TFDZ_SIZE =    5;
-static const size_t RS485_PAYLOAD_PIC24_TFDZ_SIZE =     5;
+static const size_t RS485_COM_FPGA_TFDZ_SIZE =       	14;
+static const size_t RS485_PCDU_VORAGO_TFDZ_SIZE =       14;
+static const size_t RS485_PAYLOAD_VORAGO_TFDZ_SIZE =    14;
+static const size_t RS485_PAYLOAD_PIC24_TFDZ_SIZE =     14;
 
 /**
  * Set timeout for I2C transfers, specified as 1/10th of ticks.

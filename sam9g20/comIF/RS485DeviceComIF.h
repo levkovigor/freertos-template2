@@ -48,6 +48,8 @@ public:
 	static constexpr size_t TMTC_FRAME_MAX_LEN = config::RS485_MAX_SERIAL_FRAME_SIZE;
 	static constexpr uint8_t MAX_TC_PACKETS_HANDLED = 5;
 	static constexpr uint8_t RETRY_COUNTER = 10;
+	static constexpr char defaultMessage[] = { 'O', 'n', 'e', ' ', 'P', 'i', 'n', 'g', ' ', 'o',
+	  'n', 'l', 'y', ' '};
 
 	RS485DeviceComIF(object_id_t objectId, object_id_t sharedRingBufferId);
 	virtual ~RS485DeviceComIF();

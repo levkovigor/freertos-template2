@@ -18,6 +18,9 @@ extern "C" {
 RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t sharedRingBufferId) :
 		SystemObject(objectId), sharedRingBufferId(sharedRingBufferId) {
 
+	for (int i = 0; i < RS485Devices::DEVICE_COUNT_RS485; i++) {
+	deviceCookies[i] = nullptr;
+	}
 }
 RS485DeviceComIF::~RS485DeviceComIF() {
 }
@@ -54,7 +57,9 @@ ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {
 ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 
 	RS485Devices device = static_cast<RS485Devices>(opCode);
+
 	if (deviceCookies[device] != nullptr) {
+		// TODO: Make sure this does not turn into a bad cast as we have no exceptions
 		RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(deviceCookies[device]);
 		// This switch only handles the correct GPIO for Transceivers
 		switch (device) {
@@ -187,11 +192,20 @@ void RS485DeviceComIF::initTransferFrameSendBuffers() {
 		sendBuffer[i]->setTFDZConstructionRules(0);
 		sendBuffer[i]->setProtocolIdentifier(0);
 		sendBuffer[i]->setFirstHeaderOffset(0);
+
 	}
 	//TODO: Correct VCID and MAP ID for each buffer
 
 }
 void RS485DeviceComIF::handleSend(RS485Devices device, RS485Cookie *rs485Cookie) {
+
+	// This condition sets the buffer to default messages if there is no message
+	// or if last communication was faulty
+	if(rs485Cookie->getComStatus() != ComStatusRS485::TRANSFER_INIT_SUCCESS){
+		(void) std::memcpy(sendBuffer[device]->getDataZone(), defaultMessage,
+						sizeof(defaultMessage));
+	}
+
 
 	// Buffer is already filled, so just send it
 	int retval = UART_write(bus2_uart, sendBuffer[device]->getFullFrame(),
