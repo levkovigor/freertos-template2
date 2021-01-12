@@ -4,17 +4,17 @@
 
 ### Telecommand Interface
 
-[23, xxx]: u
+23, xxx: u
 
 Blabla what should be tested
 
-[23, xxx]: t
+23, xxx: t
 
 Blablala this was tested.
 
 
 ### Telemetry Interface
 
-[23, xxx]: t
+23, xxx: t
 
 Blabla, this telemetry was already tested
