@@ -23,8 +23,11 @@ public:
 
 private:
     struct TelecommandStruct {
-        dur_millis_t milliseconds;
+        uint32_t seconds;
         store_address_t storeId;
+
+        TelecommandStruct(uint32_t seconds, store_address_t storeId):
+        seconds(seconds), storeId(storeId) { }
     };
 
     StorageManagerIF* tcStore = nullptr;
@@ -40,6 +43,10 @@ private:
             config::MAX_STORED_TELECOMMANDS>;
 
     TelecommandMap telecommandMap;
+
+    // storage for the raw data to be received
+    const uint8_t* pRawData = nullptr;
+    size_t size = 0;
 
 };
 

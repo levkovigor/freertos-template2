@@ -1,20 +1,11 @@
 #include "Service11TelecommandScheduling.h"
 #include "etl/utility.h"
+//#include <fsfw/returnvalues/HasReturnvaluesIF.h>	// this is probably not needed
 
 
 Service11TelecommandScheduling::Service11TelecommandScheduling(
         object_id_t objectId, uint16_t apid, uint8_t serviceId):
-        PusServiceBase(objectId, apid, serviceId) { 
-
-
-        // just to test:
-        //--------------
-        TelecommandStruct dummyCommand;
-        dummyCommand.milliseconds = 100;
-        dummyCommand.storeId = 1;
-        uint32_t millisecKey = 100;
-
-        //telecommandMap.insert(etl::pair<uint32_t, TelecommandStruct>(millisecKey, dummyCommand));
+        PusServiceBase(objectId, apid, serviceId) {
 
 }
 
@@ -24,6 +15,27 @@ Service11TelecommandScheduling::~Service11TelecommandScheduling() { }
 
 ReturnValue_t Service11TelecommandScheduling::handleRequest(
         uint8_t subservice) {
+
+	// get serialized data packet
+	ReturnValue_t ret = this->currentPacket.getData(&pRawData, &size);
+	if (ret != RETURN_OK){
+		return ret;
+	}
+
+	//TODO: parse the duration (first 4 bytes here)
+	uint8_t parsedDuration = 1;
+	uint32_t parsedDurationLong = (uint32_t)parsedDuration;
+
+	// get store address
+	store_address_t addr = this->currentPacket.getStoreAddress();	// this can be done nicer
+	if (addr.raw == storeId::INVALID_STORE_ADDRESS){
+		return HasReturnvaluesIF::RETURN_FAILED;
+	}
+
+	// instanciate tcStruct & insert into multimap
+	TelecommandStruct tc(parsedDuration, addr);
+	telecommandMap.insert(std::pair<uint32_t, TelecommandStruct>(parsedDurationLong, tc));
+
 
     return HasReturnvaluesIF::RETURN_OK;
 }
