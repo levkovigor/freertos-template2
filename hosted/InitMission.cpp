@@ -112,6 +112,14 @@ void initTask() {
     	sif::error << "Add component Function MGMT failed" << std::endl;
     }
 
+    PeriodicTaskIF* PusService11 = TaskFactory::instance()->createPeriodicTask(
+        		"PUS_SRV_11", 50, PeriodicTaskIF::MINIMUM_STACK_SIZE,
+    			1.0, nullptr);
+        result = PusService11->addComponent(objects::PUS_SERVICE_11_TC_SCHED);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+        	sif::error << "Add component TC SCHED failed" << std::endl;
+        }
+
     PeriodicTaskIF* PusService17 = TaskFactory::instance()->createPeriodicTask(
     		"PUS_SRV_17", 50, PeriodicTaskIF::MINIMUM_STACK_SIZE,
 			0.4, nullptr);
@@ -165,6 +173,7 @@ void initTask() {
 	PusService2->startTask();
 	PusService5->startTask();
 	PusService8->startTask();
+	PusService11->startTask();
 	PusService17->startTask();
 	PusService200->startTask();
 }

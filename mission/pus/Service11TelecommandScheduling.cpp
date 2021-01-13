@@ -31,6 +31,8 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest(
 
 ReturnValue_t Service11TelecommandScheduling::performService() {
 
+	//sif::info << "Service11TelecommandScheduling performing." << std::endl;
+
     return HasReturnvaluesIF::RETURN_OK;
 }
 

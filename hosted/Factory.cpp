@@ -27,6 +27,7 @@
 #include <hosted/boardtest/TestTaskHost.h>
 #include <fsfw/pus/CService200ModeCommanding.h>
 #include <fsfw/pus/Service3Housekeeping.h>
+#include <mission/pus/Service11TelecommandScheduling.h>
 
 #include <test/testdevices/TestDeviceHandler.h>
 
@@ -128,6 +129,8 @@ void Factory::produce(void) {
 			pus::PUS_SERVICE_3);
 	new Service5EventReporting(objects::PUS_SERVICE_5_EVENT_REPORTING, apid::SOURCE_OBSW,
 			pus::PUS_SERVICE_5);
+	new Service11TelecommandScheduling(objects::PUS_SERVICE_11_TC_SCHED, apid::SOURCE_OBSW,
+			pus::PUS_SERVICE_11);
 	new Service17CustomTest(objects::PUS_SERVICE_17_TEST, apid::SOURCE_OBSW,
 			pus::PUS_SERVICE_17);
 
