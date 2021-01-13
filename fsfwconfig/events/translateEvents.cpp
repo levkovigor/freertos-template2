@@ -1,12 +1,15 @@
 /**
- * @brief    Auto-generated event translation file. Contains 81 translations.
- * Generated on: 2020-10-06 18:59:25 
+ * @brief    Auto-generated event translation file. Contains 84 translations.
+ * Generated on: 2021-01-02 20:06:22 
  */
-#include <fsfwconfig/events/translateEvents.h>
+#include "translateEvents.h"
 
 const char *GPS_STARTUP_FAILED_STRING = "GPS_STARTUP_FAILED";
 const char *GPS_FIX_STRING = "GPS_FIX";
 const char *GPS_LOST_FIX_STRING = "GPS_LOST_FIX";
+const char *CHANGE_OF_SETUP_PARAMETER_STRING = "CHANGE_OF_SETUP_PARAMETER";
+const char *LOW_REM_STACK_STRING = "LOW_REM_STACK";
+const char *BOOT_EVENT_STRING = "BOOT_EVENT";
 const char *STORE_SEND_WRITE_FAILED_STRING = "STORE_SEND_WRITE_FAILED";
 const char *STORE_WRITE_FAILED_STRING = "STORE_WRITE_FAILED";
 const char *STORE_SEND_READ_FAILED_STRING = "STORE_SEND_READ_FAILED";
@@ -94,6 +97,12 @@ const char * translateEvents(Event event){
 			return GPS_FIX_STRING;
 		case 1202:
 			return GPS_LOST_FIX_STRING;
+		case 1300:
+			return CHANGE_OF_SETUP_PARAMETER_STRING;
+		case 1600:
+			return LOW_REM_STACK_STRING;
+		case 1900:
+			return BOOT_EVENT_STRING;
 		case 2200:
 			return STORE_SEND_WRITE_FAILED_STRING;
 		case 2201:

@@ -94,6 +94,6 @@ unsigned char AMD_Program(
     unsigned int address,
     unsigned int data);
 
-const struct NorFlashOperations amdOperations;
+extern const struct NorFlashOperations amdOperations;
 
 #endif //#ifndef NORFLASHAMD_H

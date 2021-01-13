@@ -14,7 +14,7 @@ Service11TelecommandScheduling::Service11TelecommandScheduling(
         dummyCommand.storeId = 1;
         uint32_t millisecKey = 100;
 
-        telecommandMap.insert(etl::pair<uint32_t, TelecommandStruct>(millisecKey, dummyCommand));
+        //telecommandMap.insert(etl::pair<uint32_t, TelecommandStruct>(millisecKey, dummyCommand));
 
 }
 

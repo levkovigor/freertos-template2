@@ -169,7 +169,7 @@ private:
 	ReturnValue_t interpretingReply2(DeviceCommandId_t id, const uint8_t* packet);
 	ReturnValue_t interpretingReply3(DeviceCommandId_t id, const uint8_t* packet);
 
-	ReturnValue_t initializeLocalDataPool(LocalDataPool& localDataPoolMap,
+	ReturnValue_t initializeLocalDataPool(localpool::DataPool& localDataPoolMap,
 	        LocalDataPoolManager& poolManager) override;
 
 	// Test datasets which use the LocalDataPool of the test device

@@ -116,6 +116,7 @@ AT91_SRC += NandSpareScheme.c
 AT91_SRC += RawNandFlash.c
 AT91_SRC += SkipBlockNandFlash.c
 endif
+
 ifeq ($(USE_AT91LIB_STDIO_AND_STRING), 1)
 AT91_SRC += stdio.c
 endif
@@ -154,6 +155,7 @@ ASRC += board_cstartup.S
 
 endif
 
+ifeq ($(ADD_USB_DRIVER), 1)
 # USB drivers
 AT91_SRC += USBD_UDP.c
 AT91_SRC += USBDDriver.c
@@ -175,4 +177,5 @@ AT91_SRC += CDCDSerialDriver.c
 AT91_SRC += CDCDSerialDriverDescriptors.c
 AT91_SRC += CDCLineCoding.c
 AT91_SRC += CDCSetControlLineStateRequest.c
+endif
 

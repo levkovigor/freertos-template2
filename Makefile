@@ -51,6 +51,7 @@ endif
 
 CHIP_NAME = sam9g20
 BOARD_FILE_ROOT = $(CHIP_NAME)
+ADD_USB_DRIVER = 1
 
 ifdef IOBC
 CHIP_PATH = iobc
@@ -357,7 +358,7 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPENDDIR)/$*.d
 CUSTOM_DEFINES += -DUSE_AT91LIB_STDIO_AND_STRING=$(USE_AT91LIB_STDIO_AND_STRING)
 CUSTOM_DEFINES += -DNEWLIB_NANO_NO_C99_IO
 WARNING_FLAGS = -Wall -Wshadow=local -Wextra -Wimplicit-fallthrough=1 \
-		-Wno-unused-parameter 
+		-Wno-unused-parameter -Wno-psabi
 		
 CXXDEFINES := -DTRACE_LEVEL=$(TRACE_LEVEL) -DDYN_TRACES=$(DYN_TRACES) \
 		$(CUSTOM_DEFINES) -D$(MEMORIES)
@@ -502,8 +503,16 @@ $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).bin: $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).e
 	@echo $(MSG_BINARY) $@
 	@mkdir -p $(@D)
 	@$(BINCOPY) $< $@ 
+	
 ifeq ($(OS),Windows_NT)
+# Check whether stat is available.
+# Otherwise, try to display size with busybox
+ifeq (, $(shell where stat))
 	@echo Binary Size: `busybox stat -c %s $@` bytes
+else
+	@stat --printf='Binary Size: %s bytes' $@
+endif
+
 else
 	@stat --printf='Binary Size: %s bytes' $@
 endif
