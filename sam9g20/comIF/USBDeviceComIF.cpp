@@ -3,6 +3,7 @@
 #include <fsfw/ipc/MutexHelper.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Countdown.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 extern "C" {
 #include <board.h>

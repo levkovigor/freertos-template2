@@ -129,20 +129,32 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
 
 
         if(stepCounter == 0) {
+
 #ifdef AT91SAM9G20_EK
-            sif::info << "Copying AT91 software image SD card "
-                    << currentVolume << " slot "
-                    << static_cast<int>(imageSlot) << " to AT91 NAND-Flash.."
-                    << std::endl;
-#endif
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+            sif::info << "Copying AT91 software image SD card " << currentVolume << " slot "
+                    << static_cast<int>(imageSlot) << " to AT91 NAND-Flash.." << std::endl;
+#else
+            sif::printInfo("Copying AT91 software image SD card %d slot %d to AT91 NAND-Flash..\n",
+                    currentVolume, imageSlot);
+#endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
+#endif /* AT91SAM9G20_EK */
+
 #ifdef ISIS_OBC_G20
-            sif::info << "Copying iOBC software image SD card "
-                    << currentVolume << " slot "
-                    << static_cast<int>(imageSlot) << " to NOR-Flash.."
-                    << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+            sif::info << "Copying iOBC software image SD card " << currentVolume << " slot "
+                    << static_cast<int>(imageSlot) << " to NOR-Flash.." << std::endl;
+#else
+            sif::printInfo("Copying iOBC software image SD card %d slot %d to NOR-Flash..\n",
+                    currentVolume, imageSlot);
+#endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
+#endif /* ISIS_OBC_G20 */
+
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+            sif::info << "Binary size: " <<  currentFileSize << " bytes." << std::endl;
+#else
+            sif::printInfo("Binary size: %zu bytes.\n", currentFileSize);
 #endif
-            sif::info << "Binary size: " <<  currentFileSize
-                    << " bytes." << std::endl;
         }
 
         if(imageSlot == ImageSlot::IMAGE_0) {

@@ -6,7 +6,7 @@
 #include <fsfw/serialize/SerialLinkedListAdapter.h>
 #include <fsfw/serialize/SerialFixedArrayListAdapter.h>
 #include <fsfw/serialize/EndianConverter.h>
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <sam9g20/common/SDCardApi.h>
 
 
@@ -343,8 +343,13 @@ public:
 
 		if(*size + sizeToRead > maxSize) {
 			// Should not happen!
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 			sif::error << "SDCardHandlerPackets::ReadReply: Max Size specified "
-					<<"is not large enough" << std::endl;
+					<< "is not large enough" << std::endl;
+#else
+			sif::printError("SDCardHandlerPackets::ReadReply: Max Size specified "
+                    "is not large enough\n");
+#endif
 			return SerializeIF::BUFFER_TOO_SHORT;
 		}
 
@@ -352,8 +357,11 @@ public:
 				sizeToRead, fileHandle));
 		if(sizeRead != sizeToRead) {
 			// Should not happen!
-			sif::error << "SDCardHandlerPackets::ReadReply: Did not read"
-					<<"all bytes." << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+			sif::error << "SDCardHandlerPackets::ReadReply: Did not read all bytes." << std::endl;
+#else
+			sif::printError("SDCardHandlerPackets::ReadReply: Did not read all bytes.\n");
+#endif
 			return HasReturnvaluesIF::RETURN_FAILED;
 		}
 
@@ -431,9 +439,13 @@ ReturnValue_t deSerializeRepositoryAndFilename(const uint8_t **buffer,
             reinterpret_cast<const char*>(*buffer));
     if(repositoryLength > MAX_REPOSITORY_PATH_LENGTH) {
         // Packet too short or repository length to large.
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::warning << "WriteCommand: Repository path longer than "
-                << MAX_REPOSITORY_PATH_LENGTH << " or no '\0 terminator"
-                << std::endl;
+                << MAX_REPOSITORY_PATH_LENGTH << " or no '\0' terminator" << std::endl;
+#else
+        sif::printWarning("WriteCommand: Repository path longer than %d or no '\0' terminator\n",
+                MAX_REPOSITORY_PATH_LENGTH);
+#endif
     }
     if(*size < repositoryLength) {
         return SerializeIF::STREAM_TOO_SHORT;
@@ -453,9 +465,14 @@ ReturnValue_t deSerializeRepositoryAndFilename(const uint8_t **buffer,
     size_t filenameLength = std::strlen(
             reinterpret_cast<const char*>(*buffer));
     if(filenameLength > MAX_FILENAME_LENGTH) {
-        sif::warning << "WriteCommand: Repository path longer than "
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::warning << "WriteCommand: Filename longer than "
                 << MAX_FILENAME_LENGTH << " or no '\0 terminator"
                 << "detected!" << std::endl;
+#else
+        sif::printWarning("WriteCommand: Filename longer than %d or no '\0' terminator\n",
+                MAX_FILENAME_LENGTH);
+#endif
         return HasReturnvaluesIF::RETURN_OK;
     }
     if(*size < filenameLength) {
@@ -482,9 +499,13 @@ ReturnValue_t deSerializeRepositories(const uint8_t **buffer,
             reinterpret_cast<const char*>(*buffer));
     if(repositoryLength > MAX_REPOSITORY_PATH_LENGTH) {
         // Packet too short or repository length to large.
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::warning << "WriteCommand: Repository path longer than "
-                << MAX_REPOSITORY_PATH_LENGTH << " or no '\0 terminator"
-                << std::endl;
+                << MAX_REPOSITORY_PATH_LENGTH << " or no '\0 terminator" << std::endl;
+#else
+        sif::printWarning("WriteCommand: Repository path longer than %d or no '\0' terminator\n",
+                MAX_REPOSITORY_PATH_LENGTH);
+#endif
     }
     if(*size < repositoryLength) {
         return SerializeIF::STREAM_TOO_SHORT;
@@ -508,9 +529,13 @@ ReturnValue_t deSerializeRepositories(const uint8_t **buffer,
             reinterpret_cast<const char*>(*buffer));
     if(dirnameLength > allowedRemainingSize) {
         // Resulting path would be too long
-        sif::warning << "CreateDirectoryCommand::deSerialize: Directory "
-                << " would result in repository path length too large!"
-                << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::warning << "CreateDirectoryCommand::deSerialize: Directory would result in repository "
+                "path length too large!" << std::endl;
+#else
+        sif::printWarning("CreateDirectoryCommand::deSerialize: Directory would result in "
+                "repository path length too large!\n");
+#endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     if(*size < dirnameLength) {

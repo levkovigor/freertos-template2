@@ -3,7 +3,7 @@
 #include "SDCardHandlerPackets.h"
 #include <mission/memory/FileSystemMessage.h>
 
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/ipc/CommandMessage.h>
 #include <fsfw/timemanager/Countdown.h>
@@ -189,11 +189,19 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
     }
     case(FORMAT_SD_CARD): {
         // formats the currently active filesystem!
-        sif::info << "SDCardHandler::handleMessage: Formatting SD-Card "
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::warning << "SDCardHandler::handleMessage: Formatting SD-Card "
                 << activeVolume << "!" << std::endl;
+#else
+        sif::printWarning("SDCardHandler::handleMessage: Formatting SD-Card %d!\n", activeVolume);
+#endif
         int retval = f_format(0, F_FAT32_MEDIA);
         if(retval != F_NO_ERROR) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "SD-Card was formatted successfully!" << std::endl;
+#else
+            sif::printInfo("SD-Card was formatted successfully!\n");
+#endif
             result = retval;
         }
         actionHelper.finish(commandedBy, actionId, result);
@@ -264,8 +272,11 @@ ReturnValue_t SDCardHandler::handleFileMessage(CommandMessage* message) {
         break;
     }
     default: {
-        sif::debug << "SDCardHandler::handleFileMessage: "
-                << "Invalid filesystem command!" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::debug << "SDCardHandler::handleFileMessage: Invalid filesystem command!" << std::endl;
+#else
+        sif::printDebug("SDCardHandler::handleFileMessage: Invalid filesystem command!\n");
+#endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     }

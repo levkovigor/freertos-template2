@@ -4,6 +4,7 @@
 #include <fsfw/objectmanager/ObjectManagerIF.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 UartPollingBase::UartPollingBase(object_id_t objectId,
         object_id_t sharedRingBufferId, UARTbus uartBus,
@@ -98,7 +99,7 @@ ReturnValue_t UartPollingBase::handleTransferResult(
         sif::error << "RS232PollingTask::handleTransferResult: Unknown error with code "
                 << status << " occured!" << std::endl;
 #else
-        sif::printErrro("RS232PollingTask::handleTransferResult: Unknown error with code "
+        sif::printError("RS232PollingTask::handleTransferResult: Unknown error with code "
                 "%d occured!\n", status);
 #endif
         break;

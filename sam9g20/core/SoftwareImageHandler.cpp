@@ -7,6 +7,7 @@
 #include <fsfw/timemanager/Countdown.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/ipc/QueueFactory.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 
 SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
@@ -25,8 +26,13 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
             break;
         }
         else if(result != HasReturnvaluesIF::RETURN_OK) {
-            sif::debug << "SoftwareImageHandler::performOperation: Error"
-                    << " receiving message!" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+            sif::warning << "SoftwareImageHandler::performOperation: "
+                    "Error receiving message!" << std::endl;
+#else
+            sif::printWarning("SoftwareImageHandler::performOperation: "
+                    "Error receiving message!\n");
+#endif
         }
 
         result = actionHelper.handleActionMessage(&message);
