@@ -36,16 +36,16 @@ public:
         StaticLocalDataSet(sid_t(ctrlId, SAT_TEMPERATURES_SET_ID)) {}
 
 
-    lp_var_t<float> tempTestHkb = lp_var_t<float>(this->hkManager->getOwner(),
+    lp_var_t<float> tempTestHkb = lp_var_t<float>(sid.objectId,
             ThermalCtrlPoolIds::TEMP_TEST_HKB, this);
     // todo: add all PT1000s temperatures here.
-    lp_var_t<float> tempSyrlinks = lp_var_t<float>(this->hkManager->getOwner(),
+    lp_var_t<float> tempSyrlinks = lp_var_t<float>(sid.objectId,
             ThermalCtrlPoolIds::TEMP_SYRLINKS, this);
-    lp_var_t<float> tempMeshcam = lp_var_t<float>(this->hkManager->getOwner(),
+    lp_var_t<float> tempMeshcam = lp_var_t<float>(sid.objectId,
             ThermalCtrlPoolIds::TEMP_MESHCAM, this);
-    lp_var_t<float> tempCcsds = lp_var_t<float>(this->hkManager->getOwner(),
+    lp_var_t<float> tempCcsds = lp_var_t<float>(sid.objectId,
             ThermalCtrlPoolIds::TEMP_CCSDS, this);
-    lp_var_t<float> tempPloc = lp_var_t<float>(this->hkManager->getOwner(),
+    lp_var_t<float> tempPloc = lp_var_t<float>(sid.objectId,
             ThermalCtrlPoolIds::TEMP_PLOC, this);
 
 };

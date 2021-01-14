@@ -5,7 +5,7 @@
 
 #include <fsfw/ipc/MutexIF.h>
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
-#include <sam9g20/memory/SDCardApi.h>
+#include <sam9g20/common/SDCardApi.h>
 
 /**
  * This class will cache the currently active SD card. It is always

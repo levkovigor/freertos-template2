@@ -10,14 +10,13 @@
 """
 import re
 from enum import Enum
+from generatore_core.parserbase.mib_parser import FileParser
+from generatore_core.parserbase.mib_file_list_parser import FileListParser
+from generatore_core.utility.mib_csv_writer import CsvWriter
+from generatore_core.utility.mib_printer import Printer
 
-from parserbase.mib_file_list_parser import FileListParser
-from parserbase.mib_parser import FileParser
-from utility.mib_csv_writer import CsvWriter
-from utility.mib_printer import Printer
 
-
-DH_COMMAND_PACKET_DEFINITION_DESTINATION = "../../mission/devices/devicepackets/"
+DH_COMMAND_PACKET_DEFINITION_DESTINATION = "../../mission/devices/devicedefinitions/"
 DH_DEFINITION_DESTINATION = "../../mission/devices/"
 DH_COMMANDS_CSV_NAME = "mib_device_commands.csv"
 DH_COMMAND_HEADER_COLUMNS = [

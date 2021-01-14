@@ -3,7 +3,7 @@
 #include <sam9g20/comIF/RS485DeviceComIF.h>
 #include <sam9g20/comIF/cookies/RS485Cookie.h>
 
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/devicehandlers/DeviceHandlerIF.h>
 #include <fsfw/tasks/FixedTimeslotTaskIF.h>
 #include <fsfwconfig/objects/systemObjectList.h>
@@ -61,8 +61,13 @@ ReturnValue_t pst::pollingSequenceInitDefault(
 		return HasReturnvaluesIF::RETURN_OK;
 	}
 	else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "pst::pollingSequenceInitDefault: Sequence invalid!"
 		        << std::endl;
+#else
+		sif::printError("pst::pollingSequenceInitDefault: "
+		        "Sequence invalid!\n");
+#endif
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
 }
@@ -84,8 +89,12 @@ ReturnValue_t pst::pollingSequenceInitRS485(FixedTimeslotTaskIF *thisSequence) {
         return HasReturnvaluesIF::RETURN_OK;
     }
     else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "pst::pollingSequenceInitRS485: Sequence invalid!"
                 << std::endl;
+#else
+        sif::printError("pst::pollingSequenceInitRS485: Sequence invalid!\n");
+#endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 }
@@ -176,8 +185,12 @@ ReturnValue_t pst::pollingSequenceInitTest(FixedTimeslotTaskIF *thisSequence) {
 		return HasReturnvaluesIF::RETURN_OK;
 	}
 	else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 	    sif::error << "pst::pollingSequenceInitTest: Sequence invalid!"
 	                    << std::endl;
+#else
+	    sif::printError("pst::pollingSequenceInitTest: Sequence invalid!\n");
+#endif
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
 }

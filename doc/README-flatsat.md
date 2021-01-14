@@ -1,6 +1,7 @@
 <a id="top"></a> <a name="flatsat"></a> 
 
-The OBC engineering model was set up in the clean room at a flatsat computer which allows remot development and software deployment.
+The OBC engineering model was set up in the clean room at a flatsat computer which allows remote
+development and software deployment.
 
 ## Basic instructions for Flatsat
 
@@ -48,7 +49,80 @@ Build bootloader
 make mission -f Makefile-Bootloader IOBC=1 -j
 ```
 
-### Building software on flatsat computer
+### Setting up the Flatsat computer for remote deployment
+
+Under normal circumstances, it should not be necessary to change anything on
+the flatsat computer directly because all necessary additional tools run in
+separate `tmux` terminal sessions. However, these sessions are terminated on restart
+and are not set up automatically on restart so it is recommended to checkout
+whether all of them are working when starting a debug session. In any case,
+it is recommended to connect to the `tmux` session listening to the debug
+output fromt the iOBC.
+
+To verify all require services are running, it is recommended to open two `ssh`
+sesions in Eclipse and then run following command on the flatsat
+
+```sh
+tmux ls
+```
+
+This should show following 4 tmux sessions
+
+```sh
+source@flatsat:~$ tmux ls
+0_iobc: 1 windows (created Thu Nov 19 14:48:17 2020)
+1_vor: 1 windows (created Thu Dec 10 12:12:55 2020)
+2_iobc_dbg: 1 windows (created Thu Dec 10 12:33:31 2020)
+3_vor_dbg: 1 windows (created Thu Dec 10 13:44:08 2020) (attached)
+```
+
+Session 1 and 3 are related to the Vorago operations. The remote GDB server required
+to perform remote debugging is running inside the session `1_vor` and the debug output
+from the Vorago is tracked in the `3_vor_gdb` session.
+
+If the sessions show up, connect to them with the following commands in separate `ssh` sessions
+
+Debug output:
+```sh
+tmux a -t 2*
+```
+
+GDB Server:
+```sh
+tmux a -t 0*
+```
+
+If these sessions don't show up (e.g. after flatsat reboot), here are the 
+commands to get everything working again:
+
+Initiate the iOBC GDB Server in a new tmux session
+```sh
+tmux new -s 1_vor
+vor_iobc.sh
+```
+
+`vor_iobc.sh` is a shell script which will run the GDB Server with the correct configuration. 
+All scripts can be found in `~/scripts`.
+Then type `CTRL` + `B` and `d` to detach from the tmux session.
+Set up the debug session with the following commands:
+
+```sh
+tmux new -s 3_vor_iobc
+listen_iobc.sh
+```
+
+You will be prompted for a USB serial port. Select the port named 
+`TTL232R-3V3` to listen to the iOBC serial output.
+
+The shell script will start the `minicom.py` utility to read the USB port 
+with the correct settings.
+Now the debug output can be read in this session.
+To exit the session, use `CTRL` + `Alt` + `9` .
+
+All scripts are located inside the scripts folder in the home folder.
+
+### Building and flashing software on flatsat computer using the flatsat computer
+
 1. Navigate to obsw folder
 ```sh
 obsw
@@ -57,16 +131,16 @@ obsw
 2. JLink GDB server needs to run on the flatsat. It is run on standard port 2331
 with tmux in the normal case. To check whether a tmux is active, use `tmux ls` .
 If a tmux is active, check the status of the GDB server can be checked by using
-`tmux a`, detaching from the tmux session and moving it to the background
-is done by typing in `CRTL+D`, `:` and `detach`. To close the tmux session,
-use `kill-session` instead. In some cases, it can becomes necessary to restart
+`tmux a -t 0*`, detaching from the tmux session and moving it to the background
+is done by typing in `CRTL+B`, `:` and `d`. To close the tmux session,
+use `k` instead of `d` instead. In some cases, it can becomes necessary to restart
 the J-Link GDB Server. The GDB Server should be run with the following command
 
 ```sh
-JLinkGDBServerCLExe -select USB=261002202 -device AT91SAM9G20 -endian little -if JTAG -speed auto -noLocalhostOnly -nogui
+JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=261002202 -nogui
 ```
-Add a & at the end optionally to run it in the background. Background processes can be listed
-with `ps -aux` and killed with `kill <processId>`
+
+Background processes can be listed with `ps -aux` and killed with `kill <processId>`
 
 3. Binary can be built locally with
 ```sh
@@ -79,17 +153,13 @@ Or mission instead of virtual for mission build.
 make sdramCfg
 ```
 
-5. Open second shell session, connect to flatsat and run 
+5. Connect to the tmux session which is listening to the USB port. 
+You can check whether the tmux exists with the command `tmux ls`.
+Follow the steps specified in the previous section if it does not exist
+to create a new tmux serial listener session.
+
 ```sh
-listen_iobc.sh
-```
-This will only work if the dev path of the debug output
-is /dev/ttyUSB0, which will usually be the case and if the baudrate is
-115200.
-If it is not the case, the connected USB devices can be checked
-with `listUsb`and a generic version can be used.
-```sh
-listen_usb.sh <devPath> <baudRate>
+tmux a -t 2_*
 ```
 
 6. Start GDB (the following steps can propably be automated, but I don't know how yet.)
@@ -111,7 +181,39 @@ load _bin/iobc/<folder>/<binarary>.elf
 ```
 and press c to start
 
-### Setting up Eclipse for remote development
+### Loading binaries built locally to the non-volatile memory
+
+It is recommended to flash the software to the SDRAM directly for
+development purposes. To test the binary and the bootloader on 
+the non-volatile memories, the images need to be written
+to the 1MB NOR-Flash chip. This is either possible with SAM-BA
+when interfacing the iOBC with a Windows PC and the ISIS SAM-BA application
+installed or by uploading the binary via RS232 (same communication line
+used for TMTC commanding). For remote deployment, only the second
+way is currently possible. A recent software version needs to
+be running to perform this step as well.
+Following general steps need to be taken:
+
+1. Transfer the file with to the \_bin folder of
+the remote OBSW folder with SFTP. It is recommended to use Filezilla for this.
+It is possible to set common operations as favorites in Filezilla.
+
+2. Transfer the binary to the SD-Card first. The `tmtcclient` Python application
+inside the `tmtc` folder can be used to either transfer an OBSW Update or a bootloader.
+This mode is provided as a PyCharm run configuration when loading
+the `tmtc` folder as a PyCharm project.
+
+3. After that, a specific command provided by the `tmtmcclient` can be used 
+to write the  bootloader or OBSW image from SD-card to the NOR-Flash.
+
+4. Another command can be used to power cycle or reset the core to test the flashed
+software
+
+
+### Preparing the Eclipse without provided run configurations
+
+It is recommended to use the supplied launch configurations and project files
+instead of rerunning these steps.
 
 1. The current IP address of the flatsat computer is 
 192.128.199.228 . That address could change, and it can be checked
@@ -155,62 +257,4 @@ session like shown in the following picture.
 It is recommended to listen to the debug output by connecting
 to the tmux session with
 
-```sh
-tmux a -t 2*
-```
-
-Alternatively ways if the tmux session is closed:
-
-The output can be display by running these commands
-in the ssh session:
-```sh
-listen_iobc.sh
-```
-
-There is also a generic version to listen to USB ports:
-```sh
-listen_usb.sh <DevPath> <baudRate>
-```
-
-All dev paths can be listed with the command
-
-```sh
-list_usb.sh
-```
-
-or 
-
-```sh
-list_usb2.sh
-```
-
-These scripts are located inside the scripts folder in the home folder.
-
-### Loading binaries built locally to the non-volatile memory
-
-It is recommended to flash the software to the SDRAM directly for
-development purposes. To test the binary and the bootloader on 
-the non-volatile memories, the images need to be written
-to the 1MB NOR-Flash chip. This is either possible with SAM-BA
-when interfacing the iOBC with a Windows PC and the ISIS SAM-BA application
-installed or by uploading the binary via RS232 (same communication line
-used for TMTC commanding). For remote deployment, only the second
-way is currently possible. A recent software version needs to
-be running to perform this step as well.
-Following general steps need to be taken:
-
-1. Transfer the file with to the \_bin folder of
-the remote OBSW folder with SFTP. It is recommended to use Filezilla for this.
-It is possible to set common operations as favorites in Filezilla.
-
-2. Transfer the binary to the SD-Card first. The `tmtcclient` Python application
-inside the `tmtc` folder can be used to either transfer an OBSW Update or a bootloader.
-This mode is provided as a PyCharm run configuration when loading
-the `tmtc` folder as a PyCharm project.
-
-3. After that, a specific command provided by the `tmtmcclient` can be used 
-to write the  bootloader or OBSW image from SD-card to the NOR-Flash.
-
-4. Another command can be used to power cycle or reset the core to test the flashed
-software
 

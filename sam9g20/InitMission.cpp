@@ -1,19 +1,19 @@
 #include "Factory.h"
+#include <fsfwconfig/OBSWVersion.h>
+#include <FSFWConfig.h>
+#include <fsfwconfig/pollingsequence/PollingSequenceFactory.h>
+#include <fsfwconfig/objects/systemObjectList.h>
+#include <fsfwconfig/OBSWConfig.h>
+#include <utility/compile_time.h>
 
 #include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Clock.h>
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
-
+#include <fsfw/serviceinterface/ServiceInterface.h>
+#include <fsfw/unittest/internal/InternalUnitTester.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 
 #include <freertos/FreeRTOS.h>
-#include <fsfwconfig/objects/systemObjectList.h>
-#include <fsfwconfig/OBSWConfig.h>
-#include <fsfwconfig/pollingsequence/PollingSequenceFactory.h>
-#include <unittest/internal/InternalUnitTester.h>
-#include <utility/compile_time.h>
-#include <fsfwconfig/OBSWVersion.h>
 
 extern "C" {
 #include <board.h>
@@ -30,6 +30,7 @@ bool config::softwareInitializationComplete = false;
 #endif
 #endif
 
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 namespace sif {
 /* Set up output streams
  * Don't call these streams in HAL callback functions ! */
@@ -52,6 +53,7 @@ ServiceInterfaceStream warning("WARNING", true);
 ServiceInterfaceStream error("ERROR", true);
 #endif
 }
+#endif
 
 /* will be created in main */
 ObjectManagerIF* objectManager = nullptr;
@@ -101,18 +103,32 @@ void initMission(void) {
             SW_VERSION, SW_SUBVERSION, SW_SUBSUBVERSION);
     printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Initiating mission specific code." << std::endl;
+#else
+    sif::printInfo("Initiating mission specific code.\n");
+#endif
 
     // Allocate object manager here, as global constructors
     // might not be executed, depending on buildchain
     bool performSimpleTask = false;
 
     if(not performSimpleTask) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Creating objects." << std::endl;
+#else
+        sif::printInfo("Creating objects.\n");
+#endif
         objectManager = new ObjectManager(Factory::produce);
+
         objectManager->initialize();
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Creating tasks.." << std::endl;
+#else
+        sif::printInfo("Creating tasks..\n");
+#endif
         initTasks();
+
     }
     else {
     	runMinimalTask();
@@ -176,7 +192,11 @@ void initTasks(void) {
                     genericMissedDeadlineFunc);
     result = pst::pollingSequenceInitDefault(PollingSequenceTableTaskDefault);
     if (result != HasReturnvaluesIF::RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "InitMission: Creating PST failed!" << std::endl;
+#else
+        sif::printError("InitMission: Creating PST failed!\n");
+#endif
     }
 
     /* Event Manager */
@@ -366,15 +386,24 @@ void initTasks(void) {
     InternalUnitTester unitTestClass;
     result = unitTestClass.performTests();
     if(result != HasReturnvaluesIF::RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "InitMission: Internal unit tests did not run "
                 << "successfully!" << std::endl;
+#else
+        sif::printError("InitMission: Internal unit tests did not run "
+                "successfully!\n");
+#endif
     }
 
     /* Comment out for mission build */
     boardTestTaskInit();
 #endif
 
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Starting mission tasks.." << std::endl;
+#else
+    sif::printInfo("Starting mission tasks..\n");
+#endif
 
     TmTcPollingTask -> startTask();
     TmTcBridge -> startTask();
@@ -401,18 +430,38 @@ void initTasks(void) {
     RS485PollingTask->startTask();
     PollingSequenceTableTaskRS485->startTask();
 
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Remaining FreeRTOS heap size: " << std::dec
             << xPortGetFreeHeapSize() << " bytes." << std::endl;
+#else
+    sif::printInfo("Remaining FreeRTOS heap size: %zu bytes.\n",
+            xPortGetFreeHeapSize());
+#endif
     size_t remainingFactoryStack = TaskManagement::getTaskStackHighWatermark();
     if(remainingFactoryStack < 3000) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::warning << "Factory Task: Remaining stack size: "
                 << remainingFactoryStack << " bytes" << std::endl;
+#else
+        sif::printWarning("Factory Task: Remaining stack size: %zu bytes\n",
+                remainingFactoryStack);
+#endif
     }
 #if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Allocated size by new function: " << allocatedSize
             << " bytes." << std::endl;
+#else
+    sif::printInfo( "Allocated size by new function: %zu bytes.\n",
+            allocatedSize);
 #endif
+#endif
+
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Tasks started." << std::endl;
+#else
+    sif::printInfo("Tasks started.\n");
+#endif
 }
 
 #if OBSW_ADD_TEST_CODE == 1
@@ -425,7 +474,12 @@ void boardTestTaskInit() {
             "PST_TEST_TASK", 4, 2048 * 4, 0.4, genericMissedDeadlineFunc);
     result = pst::pollingSequenceInitTest(PollingSequenceTableTaskTest);
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "creating PST failed" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "boardTestTaskInit: Creating test PST failed"
+                << std::endl;
+#else
+        sif::printError("boardTestTaskInit: Creating test PST failed\n");
+#endif
     }
 
 
@@ -475,8 +529,11 @@ void boardTestTaskInit() {
     //    if (result != HasReturnvaluesIF::RETURN_OK) {
     //        sif::error << "Add component SPI Task failed" << std::endl;
     //    }
-
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Starting test tasks.." << std::endl;
+#else
+    sif::printInfo("Starting test tasks..\n");
+#endif
 
     //PollingSequenceTableTaskTest -> startTask ();
     TestTask -> startTask();
@@ -500,8 +557,13 @@ void* operator new(size_t size) {
     if(config::softwareInitializationComplete) {
         // To prevent infinite recursion in some cases.
         config::softwareInitializationComplete = false;
-    	sif::error << "Software Initialization complete but memory "
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+    	sif::warning << "Software Initialization complete but memory "
     			<< "is allocated!" << std::endl;
+#else
+    	sif::printWarning("Software Initialization complete but memory "
+    	        "is allocated!\n");
+#endif
     }
 #endif
     return std::malloc(size);
@@ -509,22 +571,36 @@ void* operator new(size_t size) {
 #endif
 
 void printAddError(object_id_t objectId) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::error << "InitMission::printAddError: Adding 0x" << std::hex
             << std::setfill('0') << std::setw(8) << objectId
             << " failed!" << std::dec << std::endl;
+#else
+    sif::printError("InitMission::printAddError: Adding 0x%08x failed!\n" ,
+            objectId);
+#endif
 }
 
 
 void genericMissedDeadlineFunc() {
 #if OBSW_PRINT_MISSED_DEADLINES == 1
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::debug << "PeriodicTask: " << pcTaskGetName(NULL) <<
             " missed deadline!" << std::endl;
+#else
+    sif::printDebug("PeriodicTask: %s missed deadline.\n",
+            pcTaskGetName(NULL));
+#endif
 #endif
 }
 
 void runMinimalTask(void) {
     while(1) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     	sif::info << "Alive" << std::endl;
+#else
+    	sif::printInfo("Alive\n");
+#endif
     	vTaskDelay(1000);
     }
 }

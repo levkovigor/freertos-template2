@@ -2,7 +2,6 @@
 #include "devicedefinitions/GyroPackets.h"
 
 #if defined(at91sam9g20)
-#include <systemObjectList.h>
 #include <sam9g20/core/CoreController.h>
 #endif
 
@@ -410,7 +409,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 	    if((packet[1] == gyroConfiguration[0]) and
 	            (packet[2] == gyroConfiguration[1])) {
 	        // store values to dataset.
-	    	ReturnValue_t result = gyroConfigSet.read(10);
+	    	ReturnValue_t result = gyroConfigSet.read();
 	    	if(result != HasReturnvaluesIF::RETURN_OK) {
 	    		return result;
 	    	}
@@ -422,7 +421,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 	    	gyroConfigSet.gyroGeneralConfigReg42 = gyroConfiguration[0];
 	    	gyroConfigSet.gyroRangeConfigReg43 = gyroConfiguration[1];
 
-	    	result = gyroConfigSet.commit(10);
+	    	result = gyroConfigSet.commit();
 	    	if(result != HasReturnvaluesIF::RETURN_OK) {
 	    		return result;
 	    	}
@@ -495,7 +494,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 				sif::info << "Z: " << angularVelocityZ << std::endl;
 			}
 #endif
-			ReturnValue_t result = gyroData.read(10);
+			ReturnValue_t result = gyroData.read();
 			if(result != HasReturnvaluesIF::RETURN_OK) {
 				// Configuration error.
 				return result;
@@ -509,7 +508,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 			gyroData.angVelocityY = angularVelocityY;
 			gyroData.angVelocityZ = angularVelocityZ;
 
-			gyroData.commit(10);
+			gyroData.commit();
 			if(result != HasReturnvaluesIF::RETURN_OK) {
 				// Configuration error.
 				return result;
@@ -523,15 +522,12 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-void GyroHandler::setNormalDatapoolEntriesInvalid() {
-}
-
 void GyroHandler::debugInterface(uint8_t positionTracker, object_id_t objectId,
         uint32_t parameter) {
 }
 
 uint32_t GyroHandler::getTransitionDelayMs(Mode_t modeFrom, Mode_t modeTo) {
-    return 8000;
+    return 5000;
 }
 
 ReturnValue_t GyroHandler::getSwitches(const uint8_t **switches,
@@ -540,13 +536,14 @@ ReturnValue_t GyroHandler::getSwitches(const uint8_t **switches,
 }
 
 void GyroHandler::modeChanged() {
-    if(mode != MODE_NORMAL) {
-        internalState = InternalStates::NONE;
-    }
+	// TODO: test whether this works without the if-clause. It should.
+	if(mode != MODE_NORMAL) {
+		internalState = InternalStates::NONE;
+	}
 }
 
-ReturnValue_t GyroHandler::initializeLocalDataPool(
-		LocalDataPool &localDataPoolMap, LocalDataPoolManager &poolManager) {
+ReturnValue_t GyroHandler::initializeLocalDataPool(localpool::DataPool &localDataPoolMap,
+		LocalDataPoolManager &poolManager) {
 	localDataPoolMap.emplace(GyroDefinitions::ANGULAR_VELOCITY_X,
 			new PoolEntry<float>({0.0}));
 	localDataPoolMap.emplace(GyroDefinitions::ANGULAR_VELOCITY_Y,
