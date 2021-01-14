@@ -1,4 +1,4 @@
-#include "Factory.h"
+#include "ObjectFactory.h"
 #include <fsfwconfig/OBSWVersion.h>
 #include <FSFWConfig.h>
 #include <fsfwconfig/pollingsequence/PollingSequenceFactory.h>
