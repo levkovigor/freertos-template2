@@ -1,5 +1,5 @@
 #include "I2cDeviceComIF.h"
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 #include <fsfwconfig/devices/logicalAddresses.h>
 
@@ -34,8 +34,11 @@ ReturnValue_t I2cDeviceComIF::initializeInterface(CookieIF * cookie) {
 	}
 	i2cCookie = dynamic_cast<I2cCookie*>(cookie);
 	if(i2cCookie == nullptr) {
-	    sif::error << "I2cDeviceComIF:: Passed Cookie is not a I2C Cookie!"
-	            << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+	    sif::error << "I2cDeviceComIF:: Passed Cookie is not a I2C Cookie!" << std::endl;
+#else
+	    sif::printError("I2cDeviceComIF:: Passed Cookie is not a I2C Cookie!\n");
+#endif
 	    return NULLPOINTER;
 	}
 
@@ -78,8 +81,11 @@ ReturnValue_t I2cDeviceComIF::sendMessage(CookieIF *cookie,
 	}
 
 	if(sendData == nullptr) {
-	    sif::error << "I2cDeviceComIF::sendMessage: Send Data is nullptr"
-	            << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+	    sif::warning << "I2cDeviceComIF::sendMessage: Send data is nullptr" << std::endl;
+#else
+	    sif::printWarning("I2cDeviceComIF::sendMessage: Send data is nullptr\n");
+#endif
 	    return RETURN_FAILED;
 	}
 
@@ -160,8 +166,13 @@ ReturnValue_t I2cDeviceComIF::requestReceiveMessage(CookieIF *cookie,
 	case(I2CtransferStatus::writeDoneReadStarted_i2c):
 	case(I2CtransferStatus::writeDone_i2c):
 	default:
-		sif::error << "I2C ComIF: Configuration Error Reading message with "
-						"error code "  << transferStatus << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "I2CDeviceComIF: Configuration error reading message with "
+		        "error code "  << transferStatus << std::endl;
+#else
+		sif::printError("I2CDeviceComIF: Configuration error reading message with "
+                "error code %d\n", transferStatus);
+#endif
 		return PROTOCOL_ERROR;
 	}
 	return RETURN_OK;
@@ -181,8 +192,13 @@ ReturnValue_t I2cDeviceComIF::requestReply(I2cCookie * i2cCookie,
 	result = i2cCookie->getSemaphoreObjectHandle().acquire(
 	        SemaphoreIF::TimeoutType::WAITING, 10);
 	if(result == SemaphoreIF::SEMAPHORE_TIMEOUT) {
-		sif::error << "I2cDeviceComIF::requestReply: Possible configuration"
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::warning << "I2cDeviceComIF::requestReply: Possible configuration"
 				"error, semaphore timeout!" << std::endl;
+#else
+		sif::printWarning("I2cDeviceComIF::requestReply: Possible configuration"
+                "error, semaphore timeout!\n");
+#endif
 		return result;
 	}
 	int transferInitResult = I2C_queueTransfer(&i2cTransfer);
@@ -213,8 +229,13 @@ ReturnValue_t I2cDeviceComIF::readReceivedMessage(CookieIF *cookie,
 	case(I2CtransferStatus::timeoutError_i2c):
 		return I2C_TRANSFER_TIMEOUT_ERROR;
 	default:
-		sif::error << "I2C ComIF: Configuration Error Reading message with "
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::warning << "I2CDeviceComIF: Configuration Error Reading message with "
 				"error code "  << transferStatus << std::endl;
+#else
+		sif::printWarning("I2CDeviceComIF: Configuration Error Reading message with "
+                "error code %d\n", transferStatus);
+#endif
 		return PROTOCOL_ERROR;
 	}
 }
@@ -226,13 +247,21 @@ ReturnValue_t I2cDeviceComIF::assignReply(I2cCookie * i2cCookie,
 	// This should never happen if the transfer result is success.
 	ReturnValue_t result = binSemaph.acquire();
 	if(result != RETURN_OK) {
-		sif::error << "I2cDeviceComIF::assignReply:"
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::warning << "I2cDeviceComIF::assignReply:"
 				" Configuration Error, taking semaphore !" << std::endl;
+#else
+		sif::printWarning("I2cDeviceComIF::assignReply: Configuration Error, taking semaphore!\n");
+#endif
 		return result;
 	}
 	if(result = binSemaph.release(); result != RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "I2cDeviceComIF: Configuration Error, "
-				"giving semaphore !" << std::endl;
+				"giving semaphore!" << std::endl;
+#else
+		sif::printError("I2cDeviceComIF: Configuration error, giving semaphore!\n");
+#endif
 		return result;
 	}
 	*buffer = i2cVectorMap[slaveAddress].data();
@@ -292,19 +321,36 @@ void I2cDeviceComIF::prepareI2cGenericTransfer(address_t slaveAddress,
 
 ReturnValue_t I2cDeviceComIF::handleI2cInitError(I2cInitResult result) {
 	if(result == I2cInitResult::I2C_PERIPHERAL_INIT_FAILURE) {
-		sif::error << "I2C ComIF: Peripheral Initialization Failure !" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "I2CDeviceComIF: Peripheral Initialization Failure!" << std::endl;
+#else
+		sif::printError("I2CDeviceComIF: Peripheral Initialization Failure!\n");
+#endif
 		return I2cDeviceComIF::I2C_PERIPHERAL_INIT_FAILURE;
 	}
 	else if(result == I2cInitResult::I2C_QUEUE_CREATION_FAILURE) {
-		sif::error << "I2C ComIF: Queue Creation Failure !" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "I2CDeviceComIF: Queue Creation Failure!" << std::endl;
+#else
+		sif::printError("I2CDeviceComIF: Queue Creation Failure!\n");
+#endif
 		return I2cDeviceComIF::I2C_QUEUE_CREATION_FAILURE;
 	}
 	else if(result == I2cInitResult::I2C_TASK_CREATION_FAILURE) {
-		sif::error << "I2C ComIF: Queue Creation Failure !" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "I2CDeviceComIF: Queue Creation Failure!" << std::endl;
+#else
+		sif::printError("I2CDeviceComIF: Queue Creation Failure!\n");
+#endif
 		return I2cDeviceComIF::I2C_TASK_CREATION_FAILURE;
 	}
 	else {
-		sif::error << "I2C ComIF: Unknown error has occured !" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "I2CDeviceComIF: Unknown error has occured!\n" << std::endl;
+#else
+		sif::printError("I2CDeviceComIF: Unknown error has occured!\n");
+#endif
+
 		return RETURN_FAILED;
 	}
 }
@@ -322,7 +368,11 @@ ReturnValue_t I2cDeviceComIF::handleI2cTransferInitResult(I2cCookie * comCookie,
 		return RETURN_OK;
 	}
 	else {
-		sif::error << "I2C ComIF: Unknown queue transfer init result!" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "I2CDeviceComIF: Unknown queue transfer init result!" << std::endl;
+#else
+		sif::printError("I2CDeviceComIF: Unknown queue transfer init result!\n");
+#endif
 		return RETURN_FAILED;
 	}
 }

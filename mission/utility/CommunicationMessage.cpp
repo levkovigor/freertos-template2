@@ -166,14 +166,13 @@ uint16_t CommunicationMessage::getDataUint16(uint8_t position) const{
 		return data;
 	}
 	else {
-
 #if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "CommunicationMessage::getDataUint16: Invalid byte position" << std::endl;
-        return 0;
 #else
         sif::printError("CommunicationMessage::getDataUint16: Invalid byte position\n");
 #endif
 	}
+    return 0;
 }
 
 CommunicationMessage::messageType CommunicationMessage::getMessageType() const{

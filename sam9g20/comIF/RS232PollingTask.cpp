@@ -1,6 +1,6 @@
 #include "RS232PollingTask.h"
 
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/tmtcservices/TmTcMessage.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
@@ -63,14 +63,20 @@ void RS232PollingTask::initiateUartTransfers() {
 	int result = UART_queueTransfer(&uartTransfer1);
 	if(result != 0) {
 		// config error
-		sif::error << "TcSerialPollingTask::initiateUartTransfers: Config error"
-				<< std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "TcSerialPollingTask::initiateUartTransfers: Config error" << std::endl;
+#else
+		sif::printError("TcSerialPollingTask::initiateUartTransfers: Config error\n");
+#endif
 	}
 	result = UART_queueTransfer(&uartTransfer2);
 	if(result != 0) {
 		// config error
-		sif::error << "TcSerialPollingTask::initiateUartTransfers: Config error"
-				<< std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "TcSerialPollingTask::initiateUartTransfers: Config error" << std::endl;
+#else
+		sif::printError("TcSerialPollingTask::initiateUartTransfers: Config error\n");
+#endif
 	}
 }
 

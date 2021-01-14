@@ -249,6 +249,10 @@ void SpiTestTask::readGyroSensorsBlockRead(SPItransfer &spiTransfer) {
     sif::info << "Y: " << angVelocityY << std::endl;
     sif::info << "Z: " << angVelocityZ << std::endl;
 #else
+    sif::printInfo("Angular velocities in degrees per second:\n");
+    sif::printInfo("X: %f\n", angVelocityX);
+    sif::printInfo("Y: %f\n", angVelocityY);
+    sif::printInfo("Z: %f\n", angVelocityZ);
 #endif
 }
 
@@ -282,6 +286,10 @@ void SpiTestTask::readGyroSensorsSeparateReads(SPItransfer &spiTransfer) {
     sif::info << "Y: " << angVelocityY << std::endl;
     sif::info << "Z: " << angVelocityZ << std::endl;
 #else
+    sif::printInfo("Angular velocities in degrees per second: \n");
+    sif::printInfo("X: %f\n", angVelocityX);
+    sif::printInfo("Y: %f\n", angVelocityY);
+    sif::printInfo("Z: %f\n", angVelocityZ);
 #endif
 }
 
@@ -454,6 +462,7 @@ void SpiTestTask::performBlockingPt1000Test() {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Current temp: " << approxTemp << std::endl;
 #else
+    sif::printInfo("Current temp: %f\n", approxTemp);
 #endif
 }
 

@@ -334,7 +334,7 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
     }
 
     if(stepCounter == 0 and extendedDebugOutput) {
-#ifdef OBSW_VERBOSE_LEVEL >= 2
+#if OBSW_VERBOSE_LEVEL >= 2
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::debug << "ARM Vectors: " << std::endl;
         uint32_t armVector;
