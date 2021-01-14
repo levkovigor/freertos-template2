@@ -208,6 +208,8 @@ private:
     ReturnValue_t readFile(uint8_t* buffer, size_t sizeToRead,
             size_t* sizeRead, F_FILE** file);
 
+    void handleInfoPrintout(int currentVolume);
+
 };
 
 #endif /* SAM9G20_CORE_IMAGECOPYINGENGINE_H_ */

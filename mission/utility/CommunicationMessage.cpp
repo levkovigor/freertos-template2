@@ -1,5 +1,5 @@
 #include <mission/utility/CommunicationMessage.h>
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 #include <cstring>
 
@@ -121,7 +121,11 @@ void CommunicationMessage::setDataByte(uint8_t byte, uint8_t position) {
 		memcpy(getData() + 3 * sizeof(uint32_t) + position * sizeof(uint8_t), &byte, sizeof(byte));
 	}
 	else {
-		sif::error << "Comm Message: Invalid byte position" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "CommunicationMessage::setDataByte: Invalid byte position" << std::endl;
+#else
+		sif::printError("CommunicationMessage::setDataByte: Invalid byte position\n");
+#endif
 	}
 }
 
@@ -133,7 +137,11 @@ uint8_t CommunicationMessage::getDataByte(uint8_t position) const {
 	}
 	else {
 		return 0;
-		sif::error << "Comm Message: Invalid byte position" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "CommunicationMessage::getDataByte: Invalid byte position" << std::endl;
+#else
+		sif::printError("CommunicationMessage::getDataByte: Invalid byte position\n");
+#endif
 	}
 }
 
@@ -142,7 +150,11 @@ void CommunicationMessage::setDataUint16(uint16_t data, uint8_t position) {
 		memcpy(getData() + 3 * sizeof(uint32_t) + position * sizeof(uint16_t), &data, sizeof(data));
 	}
 	else {
-		sif::error << "Comm Message: Invalid byte position" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "CommunicationMessage::setDataUint16: Invalid byte position" << std::endl;
+#else
+		sif::printError("CommunicationMessage::setDataUint16: Invalid byte position\n");
+#endif
 	}
 
 }
@@ -154,8 +166,13 @@ uint16_t CommunicationMessage::getDataUint16(uint8_t position) const{
 		return data;
 	}
 	else {
-		return 0;
-		sif::error << "Comm Message: Invalid byte position" << std::endl;
+
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "CommunicationMessage::getDataUint16: Invalid byte position" << std::endl;
+        return 0;
+#else
+        sif::printError("CommunicationMessage::getDataUint16: Invalid byte position\n");
+#endif
 	}
 }
 

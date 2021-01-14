@@ -8,7 +8,7 @@
 #include <sam9g20/core/CoreController.h>
 
 #include <FreeRTOSConfig.h>
-
+#include <FSFWConfig.h>
 #include <inttypes.h>
 
 
@@ -110,8 +110,11 @@ ReturnValue_t SystemStateTask::initializeAfterTaskCreation() {
     }
     // to prevent garbage output.
     TaskFactory::delayTask(5);
-    sif::info << "SystemStateTask: " << numberOfTasks << " tasks counted."
-            << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+    sif::info << "SystemStateTask: " << numberOfTasks << " tasks counted." << std::endl;
+#else
+    sif::printInfo("SystemStateTask: %hu tasks counted.\n", numberOfTasks);
+#endif
     return HasReturnvaluesIF::RETURN_OK;
 }
 

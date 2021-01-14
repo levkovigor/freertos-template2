@@ -111,7 +111,7 @@ void initMission(void) {
 #endif
 
 #if FSFW_CPP_OSTREAM_ENABLED == 0
-    setToAddCrAtEnd(true);
+    sif::setToAddCrAtEnd(true);
 #endif
 
     // Allocate object manager here, as global constructors

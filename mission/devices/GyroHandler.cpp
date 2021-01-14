@@ -1,3 +1,4 @@
+#include <fsfw/datapool/PoolReadHelper.h>
 #include "GyroHandler.h"
 #include "devicedefinitions/GyroPackets.h"
 
@@ -170,8 +171,13 @@ ReturnValue_t GyroHandler::buildTransitionDeviceCommand(DeviceCommandId_t *id) {
 	    return buildCommandFromCommand(*id, nullptr, 0);
 	}
 	default:
-		sif::error << "GyroHandler::buildTransitionDeviceCommand: Invalid"
-				" internal state!" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "GyroHandler::buildTransitionDeviceCommand: "
+		        "Invalid internal state!" << std::endl;
+#else
+		sif::printError("GyroHandler::buildTransitionDeviceCommand: "
+                "Invalid internal state!\n");
+#endif
 	}
 
 	return HasReturnvaluesIF::RETURN_OK;
@@ -486,31 +492,29 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 
 #if OBSW_VERBOSE_LEVEL >= 1
 			if(debugDivider->checkAndIncrement()) {
-				sif::info << "GyroHandler: Angular velocities in degrees per "
-						"second:" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+				sif::info << "GyroHandler: Angular velocities in degrees per second: " << std::endl;
 				sif::info << "X: " << angularVelocityX << std::endl;
 				sif::info << "Y: " << angularVelocityY << std::endl;
 				sif::info << "Z: " << angularVelocityZ << std::endl;
-			}
+#else
+				sif::printInfo("GyroHandler: Angular velocities in degrees per second: \n");
+				sif::printInfo("X: %f\n", angularVelocityX);
+                sif::printInfo("Y: %f\n", angularVelocityY);
+                sif::printInfo("Z: %f\n", angularVelocityZ);
 #endif
-			ReturnValue_t result = gyroData.read();
-			if(result != HasReturnvaluesIF::RETURN_OK) {
-				// Configuration error.
-				return result;
-			}
+            }
+#endif
 
-			if(not gyroData.isValid()) {
-				gyroData.setValidity(true, true);
-			}
+			PoolReadHelper readHelper(&gyroData);
+			if(readHelper.getReadResult() == HasReturnvaluesIF::RETURN_OK) {
+	            if(not gyroData.isValid()) {
+	                gyroData.setValidity(true, true);
+	            }
 
-			gyroData.angVelocityX = angularVelocityX;
-			gyroData.angVelocityY = angularVelocityY;
-			gyroData.angVelocityZ = angularVelocityZ;
-
-			gyroData.commit();
-			if(result != HasReturnvaluesIF::RETURN_OK) {
-				// Configuration error.
-				return result;
+	            gyroData.angVelocityX = angularVelocityX;
+	            gyroData.angVelocityY = angularVelocityY;
+	            gyroData.angVelocityZ = angularVelocityZ;
 			}
 		}
 		break;
