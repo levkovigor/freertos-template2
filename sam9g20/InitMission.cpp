@@ -349,7 +349,7 @@ void initTasks(void) {
                        genericMissedDeadlineFunc);
        result = RS485PollingTask->addComponent(objects::RS485_POLLING_TASK);
        if(result != HasReturnvaluesIF::RETURN_OK) {
-           printAddError(objects::RS485_POLLING_TASK);
+    	   InitMission::printAddObjectError("RS485 Polling Tasks", objects::RS485_POLLING_TASK);
     }
 
    /* RS485 Polling Sequence */
