@@ -1,5 +1,6 @@
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
-#include <hosted/boardtest/TestTaskHost.h>
+#include "TestTaskHost.h"
+#include <fsfw/serviceinterface/ServiceInterface.h>
+
 
 TestTaskHost::TestTaskHost(object_id_t object_id, bool periodicPrint):
 	TestTask(object_id), periodicPrint(periodicPrint) {
