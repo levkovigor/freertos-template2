@@ -21,7 +21,7 @@ MutextestTask::MutextestTask(const char *name, object_id_t setObjectId) :
 ReturnValue_t MutextestTask::performOperation(uint8_t operationCode) {
 	if (!locked){
 		sif::info << name << ": locking..." << std::endl;
-		ReturnValue_t result = mutex->lockMutex(MutexIF::BLOCKING);
+		ReturnValue_t result = mutex->lockMutex(MutexIF::TimeoutType::BLOCKING);
 		sif::info << name << ": locked with " << (int) result << std::endl;
 		if (result == HasReturnvaluesIF::RETURN_OK){
 			locked = true;
