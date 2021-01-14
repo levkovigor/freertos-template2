@@ -109,8 +109,8 @@ void Factory::produce(void) {
         sif::info << "Allocating " << storeSize + additionalSize << " bytes "
                 <<"for the IPC Store.." << std::endl;
 #else
-        sif::printInfo("Allocating %zu bytes for the IPC Store..\n",
-                storeSize + additionalSize);
+        sif::printInfo("Allocating %lu bytes for the IPC Store..\n",
+                static_cast<unsigned long>(storeSize + additionalSize));
 #endif
     }
 
@@ -126,8 +126,8 @@ void Factory::produce(void) {
         sif::info << "Allocating " << storeSize + additionalSize << " bytes "
                 <<"for the TM Store.." << std::endl;
 #else
-        sif::printInfo("Allocating %zu bytes for the TM Store..\n",
-                storeSize + additionalSize);
+        sif::printInfo("Allocating %lu bytes for the TM Store..\n",
+                static_cast<unsigned long>(storeSize + additionalSize));
 #endif
     }
 
@@ -143,8 +143,8 @@ void Factory::produce(void) {
         sif::info << "Allocating " << storeSize + additionalSize << " bytes "
                 <<"for the TC Store.." << std::endl;
 #else
-        sif::printInfo("Allocating %zu bytes for the TC Store..\n",
-                storeSize + additionalSize);
+        sif::printInfo("Allocating %lu bytes for the TC Store..\n",
+                static_cast<unsigned long>(storeSize + additionalSize));
 #endif
     }
 

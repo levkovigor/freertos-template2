@@ -394,8 +394,8 @@ void initTasks(void) {
     sif::info << "Remaining FreeRTOS heap size: " << std::dec
             << xPortGetFreeHeapSize() << " bytes." << std::endl;
 #else
-    sif::printInfo("Remaining FreeRTOS heap size: %zu bytes.\n",
-            xPortGetFreeHeapSize());
+    sif::printInfo("Remaining FreeRTOS heap size: %lu bytes.\n",
+            static_cast<unsigned long>(xPortGetFreeHeapSize()));
 #endif
     size_t remainingFactoryStack = TaskManagement::getTaskStackHighWatermark();
     if(remainingFactoryStack < 3000) {
@@ -403,8 +403,8 @@ void initTasks(void) {
         sif::warning << "Factory Task: Remaining stack size: "
                 << remainingFactoryStack << " bytes" << std::endl;
 #else
-        sif::printWarning("Factory Task: Remaining stack size: %zu bytes\n",
-                remainingFactoryStack);
+        sif::printWarning("Factory Task: Remaining stack size: %lu bytes\n",
+                static_cast<unsigned long>(remainingFactoryStack));
 #endif
     }
 #if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1
@@ -412,8 +412,8 @@ void initTasks(void) {
     sif::info << "Allocated size by new function: " << allocatedSize
             << " bytes." << std::endl;
 #else
-    sif::printInfo( "Allocated size by new function: %zu bytes.\n",
-            allocatedSize);
+    sif::printInfo( "Allocated size by new function: %lu bytes.\n",
+            static_cast<unsigned long>(allocatedSize));
 #endif
 #endif
 
