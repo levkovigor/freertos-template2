@@ -144,9 +144,8 @@ ReturnValue_t GyroHandler::buildTransitionDeviceCommand(DeviceCommandId_t *id) {
 	}
 	case(InternalStates::WRITE_POWER): {
 		*id = GyroDefinitions::WRITE_POWER;
-		commandBuffer[sizeof(commandBuffer)] = GyroDefinitions::POWER_CONFIG;
-		return buildCommandFromCommand(*id,
-				commandBuffer + sizeof(commandBuffer), 1);
+		uint8_t command = GyroDefinitions::POWER_CONFIG;
+		return buildCommandFromCommand(*id, &command, 1);
 	}
 	case(InternalStates::READ_PMU_STATUS): {
 		*id = GyroDefinitions::READ_PMU;
