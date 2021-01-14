@@ -240,7 +240,7 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
 
     if(currentByteIdx >= currentFileSize) {
         // operation finished.
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
         if(bootloader) {
             sif::info << "Copying bootloader to NOR-Flash finished with "
                     << stepCounter << " steps!" << std::endl;
@@ -304,7 +304,7 @@ void ImageCopyingEngine::writeBootloaderSizeAndCrc() {
 	if(retval != 0) {
 		sif::error << "Writing bootloader CRC16 failed!" << std::endl;
 	}
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
 	else {
     	sif::info << std::setfill('0') << std::setw(2) << std::hex
     			<< "Bootloader CRC16: " << "0x" << (crc16 >> 8 & 0xff) << ", "

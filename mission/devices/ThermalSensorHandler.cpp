@@ -7,7 +7,7 @@ ThermalSensorHandler::ThermalSensorHandler(object_id_t objectId,
 		object_id_t comIF, CookieIF *comCookie, uint8_t switchId):
 		DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId),
 		sensorDataset(this), sensorDatasetSid(sensorDataset.getSid()) {
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
 	debugDivider = new PeriodicOperationDivider(10);
 #endif
 }
@@ -84,7 +84,11 @@ ReturnValue_t ThermalSensorHandler::buildTransitionDeviceCommand(
 	}
 
 	default:
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "ThermalSensorHandler: Invalid internal state" << std::endl;
+#else
+		sif::printError("ThermalSensorHandler: Invalid internal state\n");
+#endif
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
 }
@@ -181,9 +185,12 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
     switch(id) {
     case(TSensorDefinitions::REQUEST_CONFIG): {
         if(packet[1] != DEFAULT_CONFIG) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             // it propably would be better if we at least try one restart..
-            sif::error << "ThermalSensorHandler: "
-                    "Invalid configuration reply!" << std::endl;
+            sif::error << "ThermalSensorHandler: Invalid configuration reply!" << std::endl;
+#else
+            sif::printError("ThermalSensorHandler: Invalid configuration reply!\n");
+#endif
             return HasReturnvaluesIF::RETURN_OK;
         }
         // set to true for invalid configs too for now.
@@ -216,13 +223,16 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
         // calculate approximation
         float approxTemp = adcCode / 32.0 - 256.0;
 
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
         if(debugDivider->checkAndIncrement()) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         	sif::info << "ThermalSensorHandler::interpretDeviceReply: Measure "
         			"resistance is " << rtdValue << " Ohms." << std::endl;
         	sif::info << "ThermalSensorHandler::interpretDeviceReply: "
         			<< "Approximated temperature is " << approxTemp << " C"
 					<< std::endl;
+#else
+#endif
         	 sensorDataset.setChanged(true);
         }
 #endif
@@ -254,7 +264,7 @@ ReturnValue_t ThermalSensorHandler::interpretDeviceReply(
     }
     case(TSensorDefinitions::REQUEST_FAULT_BYTE): {
         faultByte = packet[1];
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
         sif::info << "ThermalSensorHandler::interpretDeviceReply: Fault byte"
                 " is: 0b" << std::bitset<8>(faultByte) << std::endl;
 #endif

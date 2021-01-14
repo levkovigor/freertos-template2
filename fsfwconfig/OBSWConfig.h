@@ -26,7 +26,7 @@
 #define OBSW_MONITOR_ALLOCATION    				1
 #define OBSW_ADD_TEST_CODE                      1
 #define OBSW_PRINT_MISSED_DEADLINES             1
-#define OBSW_ENHANCED_PRINTOUT				    1
+#define OBSW_VERBOSE_LEVEL				        1
 
 #define MAX_REPOSITORY_PATH_LENGTH 			    64
 #define MAX_FILENAME_LENGTH 				    12

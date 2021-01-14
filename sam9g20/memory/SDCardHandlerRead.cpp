@@ -34,7 +34,7 @@ ReturnValue_t SDCardHandler::handleSequenceNumberRead(uint16_t sequenceNumber) {
         lastPacketReadNumber = 0;
     }
     else if((sequenceNumber == 1) and (lastPacketReadNumber != 0)) {
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
         sif::debug << "SDCardHandler::appendToFile: First sequence "
                 << "packet missed!" << std::endl;
 #endif
@@ -42,7 +42,7 @@ ReturnValue_t SDCardHandler::handleSequenceNumberRead(uint16_t sequenceNumber) {
         return SEQUENCE_PACKET_MISSING_READ;
     }
     else if((sequenceNumber - lastPacketReadNumber) > 1) {
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
         sif::debug << "SDCardHandler::appendToFile: Packet missing between "
                 << sequenceNumber << " and " << lastPacketReadNumber
                 << std::endl;

@@ -29,7 +29,7 @@ static void disableCaches() {
 
 void restart() {
     // Disable this for mission, this also allocated when using newlib
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
 	TRACE_ERROR_WP("\n\r____RESTARTING____\n\r");
 #endif
 	disableCaches();

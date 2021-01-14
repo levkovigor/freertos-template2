@@ -169,7 +169,7 @@ void SystemStateTask::generateStatsCsvAndCheckStack() {
         }
         if(task.pcTaskName != nullptr) {
 
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
             // human readable format here, tab seperator
             writeDebugStatLine(task, statsIdx, idleTicks, uptimeTicks);
 #else
@@ -183,7 +183,7 @@ void SystemStateTask::generateStatsCsvAndCheckStack() {
         }
     }
     statsVector[statsIdx] = '\0';
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
     printf("%s%s\r\n", sif::ANSI_COLOR_RESET, statsVector.data());
     printf("Number of bytes written: %d\r\n", statsIdx);
 #endif
