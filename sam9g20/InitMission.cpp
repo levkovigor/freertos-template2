@@ -346,7 +346,8 @@ void initTasks(void) {
 
 #if OBSW_ADD_TEST_CODE == 1
     InternalUnitTester unitTestClass;
-    result = unitTestClass.performTests();
+    InternalUnitTester::TestConfig testConfig;
+    result = unitTestClass.performTests(testConfig);
     if(result != HasReturnvaluesIF::RETURN_OK) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "InitMission: Internal unit tests did not run "
