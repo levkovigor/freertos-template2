@@ -37,7 +37,7 @@ int perform_iobc_copy_operation_to_sdram() {
     // determine which binary should be copied to SDRAM first.
 	BootSelect boot_select = BOOT_NOR_FLASH;
 	bool enable = false;
-	VolumeId volume = false;
+	VolumeId volume = SD_CARD_0;
 	get_software_to_be_updated(&enable, &volume);
 	int result = get_software_to_be_updated(&enable, &volume);
 	if (result != 0) {
