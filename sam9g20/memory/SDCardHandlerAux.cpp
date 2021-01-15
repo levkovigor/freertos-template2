@@ -339,7 +339,7 @@ ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "D: " << findResult.filename << std::endl;
 #else
-            sif::printInfo("%sD: %s", subdirDepth, findResult.filename);
+            sif::printInfo("%sD: %s\n", subdirDepth, findResult.filename);
             subdirsLen = 0;
 #endif
             printHelper(recursionDepth + 1);
