@@ -209,6 +209,7 @@ private:
             size_t* sizeRead, F_FILE** file);
 
     void handleInfoPrintout(int currentVolume);
+    void handleFinishPrintout();
 
 };
 

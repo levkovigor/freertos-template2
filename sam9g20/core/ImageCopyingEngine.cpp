@@ -153,7 +153,8 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "Binary size: " <<  currentFileSize << " bytes." << std::endl;
 #else
-            sif::printInfo("Binary size: %zu bytes.\n", currentFileSize);
+            sif::printInfo("Binary size: %lu bytes.\n",
+                    static_cast<unsigned long>(currentFileSize));
 #endif
         }
 
@@ -249,7 +250,7 @@ void ImageCopyingEngine::handleInfoPrintout(int currentVolume) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Bootloader size: " <<  currentFileSize << " bytes." << std::endl;
 #else
-    sif::printInfo("Bootloader size: %zu bytes.", currentFileSize);
+    sif::printInfo("Bootloader size: %lu bytes.", static_cast<unsigned long>(currentFileSize));
 #endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
 #endif /* OBSW_VERBOSE_LEVEL >= 1 */
 }

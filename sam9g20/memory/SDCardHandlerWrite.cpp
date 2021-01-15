@@ -265,7 +265,7 @@ ReturnValue_t SDCardHandler::generateFinishAppendReply(RepositoryPath *repoPath,
 #else
     sif::printInfo("Append operation on file %s in repository %s finished.", fileName->c_str(),
             repoPath->c_str());
-    sif::printInfo("Filesize: %zu. ", filesize);
+    sif::printInfo("Filesize: %lu. ", static_cast<unsigned long>(filesize));
     if(locked) {
         sif::printInfo("File was locked.\n");
     }

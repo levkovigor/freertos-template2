@@ -1,5 +1,6 @@
 #include "../ImageCopyingEngine.h"
 #include <fsfw/timemanager/Countdown.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 extern "C" {
 #include <sam9g20/common/FRAMApi.h>
@@ -71,8 +72,13 @@ ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
 ReturnValue_t ImageCopyingEngine::handleNorflashErasure() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     if(bootloader) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "ImageCopyingEngine::handleNorflashErasure: Deleting old"
                 << " bootloader!" << std::endl;
+#else
+        sif::printInfo("ImageCopyingEngine::handleNorflashErasure: Deleting old"
+                " bootloader!\n");
+#endif
         while(stepCounter < RESERVED_BL_SMALL_SECTORS) {
             result = NORFLASH_EraseSector(&NORFlash,
                     getBaseAddress(stepCounter, nullptr));
@@ -97,15 +103,22 @@ ReturnValue_t ImageCopyingEngine::handleNorflashErasure() {
 
 ReturnValue_t ImageCopyingEngine::handleObswErasure() {
     if(not helperFlag1) {
-        sif::info << "ImageCopyingEngine::handleNorflashErasure: Deleting old"
-                << " binary!" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::info << "ImageCopyingEngine::handleNorflashErasure: Deleting old binary!" << std::endl;
+#else
+        sif::printInfo("ImageCopyingEngine::handleNorflashErasure: Deleting old binary!\n");
+#endif
         SDCardAccess sdCardAccess;
         int result = change_directory(config::SW_REPOSITORY, true);
         if(result != F_NO_ERROR) {
             // The hardcoded repository does not exist. Exit!
-            sif::error << "ImageCopyingHelper::handleErasingForObsw: Software"
-                    << " repository does not exist. Cancelling erase operation"
-                    << "!" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+            sif::error << "ImageCopyingHelper::handleErasingForObsw: Software repository does "
+                    "not exist. Cancelling erase operation!" << std::endl;
+#else
+            sif::printError("ImageCopyingHelper::handleErasingForObsw: Software repository does "
+                    "not exist. Cancelling erase operation!\n");
+#endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         if(imageSlot == ImageSlot::IMAGE_0) {
@@ -198,8 +211,13 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
         }
         if(bytesRead < sizeToRead) {
             // should not happen..
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "SoftwareImageHandler::performNorCopyOperation:"
                     << " Bytes read smaller than size to read!" << std::endl;
+#else
+            sif::printError("SoftwareImageHandler::performNorCopyOperation:"
+                    " Bytes read smaller than size to read!\n");
+#endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
     }
@@ -218,8 +236,13 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
         errorCount++;
         if(errorCount >= 3) {
             // if writing to NAND failed 5 times, exit.
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "SoftwareImageHandler::copyBootloaderToNor"
                     << "Flash: Write error!" << std::endl;
+#else
+            sif::printError("SoftwareImageHandler::copyBootloaderToNor"
+                    "Flash: Write error!\n");
+#endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         // Maybe SD card is busy, so try in next cycle..
@@ -240,37 +263,8 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
 
     if(currentByteIdx >= currentFileSize) {
         // operation finished.
-#if OBSW_VERBOSE_LEVEL >= 1
-        if(bootloader) {
-            sif::info << "Copying bootloader to NOR-Flash finished with "
-                    << stepCounter << " steps!" << std::endl;
-            std::array<uint8_t, 7 * 4> armVectors;
-            uint32_t currentArmVector = 0;
-            NORFLASH_ReadData(&NORFlash, NORFLASH_SA0_ADDRESS,
-                    armVectors.data(), armVectors.size());
-            sif::debug << std::hex << std::setfill('0') << std::setw(8);
-            sif::debug << "Written ARM vectors: " << std::endl;
-            std::memcpy(&currentArmVector, armVectors.data(), 4);
-            sif::debug << "1: 0x" << currentArmVector << std::endl;
-            std::memcpy(&currentArmVector, armVectors.data() + 4, 4);
-            sif::debug << "2: 0x" << currentArmVector << std::endl;
-            std::memcpy(&currentArmVector, armVectors.data() + 8, 4);
-            sif::debug << "3: 0x" << currentArmVector << std::endl;
-            std::memcpy(&currentArmVector, armVectors.data() + 12, 4);
-            sif::debug << "4: 0x" << currentArmVector << std::endl;
-            std::memcpy(&currentArmVector, armVectors.data() + 16, 4);
-            sif::debug << "5: 0x" << currentArmVector << std::endl;
-            std::memcpy(&currentArmVector, armVectors.data() + 20, 4);
-            sif::debug << "6: 0x" << currentArmVector << std::endl;
-            std::memcpy(&currentArmVector, armVectors.data() + 24, 4);
-            sif::debug << "7: 0x" << currentArmVector << std::endl;
-            sif::debug << std::dec << std::setfill(' ');
-        }
-        else {
-            sif::info << "Copying OBSW image to NOR-Flash finished with "
-                    << stepCounter << " steps!" << std::endl;
-        }
-#endif
+        handleFinishPrintout();
+
         if(bootloader) {
         	writeBootloaderSizeAndCrc();
         }
@@ -290,7 +284,11 @@ void ImageCopyingEngine::writeBootloaderSizeAndCrc() {
 	int retval = NORFLASH_WriteData(&NORFlash, NORFLASH_BL_SIZE_START,
 			reinterpret_cast<unsigned char *>(&currentFileSize), 4);
 	if(retval != 0) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "Writing bootloader size failed!" << std::endl;
+#else
+		sif::printError("Writing bootloader size failed!\n");
+#endif
 	}
 	// calculate and write CRC to designated NOR-Flash address
 	// This will be used by the bootloader to determine SEUs in the
@@ -302,15 +300,24 @@ void ImageCopyingEngine::writeBootloaderSizeAndCrc() {
 			reinterpret_cast<unsigned char *>(&crc16),
 			sizeof(crc16));
 	if(retval != 0) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "Writing bootloader CRC16 failed!" << std::endl;
+#else
+		sif::printError("Writing bootloader CRC16 failed!\n");
+#endif
 	}
 #if OBSW_VERBOSE_LEVEL >= 1
 	else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     	sif::info << std::setfill('0') << std::setw(2) << std::hex
     			<< "Bootloader CRC16: " << "0x" << (crc16 >> 8 & 0xff) << ", "
-				<< "0x" << (crc16 & 0xff) << " written to address "
+				<< "0x" << (crc16 & 0xff) << " written to address " << std::setw(8)
 				<< "0x" << NORFLASH_BL_CRC16_START << std::setfill(' ')
 				<< std::dec << std::endl;
+#else
+    	sif::printInfo("Bootloader CRC16: 0x%02x,0x02x wirtten to address 0x%08x",
+    	        (crc16 >> 8) & 0xff, crc16 & 0xff, NORFLASH_BL_CRC16_START);
+#endif
 	}
 #endif
 }
@@ -414,4 +421,84 @@ uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
     return 0xffffffff;
 }
 
+void ImageCopyingEngine::handleFinishPrintout() {
+#if OBSW_VERBOSE_LEVEL >= 1
+    if(bootloader) {
+
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::info << "Copying bootloader to NOR-Flash finished with "
+                << stepCounter << " steps!" << std::endl;
+#else
+        sif::printInfo("Copying bootloader to NOR-Flash finished with %hu steps", stepCounter);
+#endif
+
+#if OBSW_VERBOSE_LEVEL >= 2
+        std::array<uint8_t, 7 * 4> armVectors;
+        uint32_t currentArmVector = 0;
+        NORFLASH_ReadData(&NORFlash, NORFLASH_SA0_ADDRESS,
+                armVectors.data(), armVectors.size());
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::debug << std::hex << std::setfill('0') << std::setw(8);
+        sif::debug << "Written ARM vectors: " << std::endl;
+#else
+        sif::printDebug("Written ARM vectors: \n");
+#endif
+        std::memcpy(&currentArmVector, armVectors.data(), 4);
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::debug << "1: 0x" << currentArmVector << std::endl;
+#else
+        sif::printDebug("1: 0x%08x\n", currentArmVector);
+#endif
+        std::memcpy(&currentArmVector, armVectors.data() + 4, 4);
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::debug << "2: 0x" << currentArmVector << std::endl;
+#else
+        sif::printDebug("2: 0x%08x\n", currentArmVector);
+#endif
+        std::memcpy(&currentArmVector, armVectors.data() + 8, 4);
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::debug << "3: 0x" << currentArmVector << std::endl;
+#else
+        sif::printDebug("3: 0x%08x\n", currentArmVector);
+#endif
+        std::memcpy(&currentArmVector, armVectors.data() + 12, 4);
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::debug << "4: 0x" << currentArmVector << std::endl;
+#else
+        sif::printDebug("4: 0x%08x\n", currentArmVector);
+#endif
+        std::memcpy(&currentArmVector, armVectors.data() + 16, 4);
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::debug << "5: 0x" << currentArmVector << std::endl;
+#else
+        sif::printDebug("5: 0x%08x\n", currentArmVector);
+#endif
+        std::memcpy(&currentArmVector, armVectors.data() + 20, 4);
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::debug << "6: 0x" << currentArmVector << std::endl;
+#else
+        sif::printDebug("6: 0x%08x\n", currentArmVector);
+#endif
+        std::memcpy(&currentArmVector, armVectors.data() + 24, 4);
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::debug << "7: 0x" << currentArmVector << std::endl;
+        sif::debug << std::dec << std::setfill(' ');
+#else
+        sif::printDebug("7: 0x%08x\n", currentArmVector);
+#endif
+#endif /* OBSW_VERBOSE_LEVEL >= 2 */
+
+    }
+    else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::info << "Copying OBSW image to NOR-Flash finished with "
+                << stepCounter << " steps!" << std::endl;
+#else
+        sif::printInfo("Copying OBSW image to NOR-Flash finished with %hu steps!\n",
+                stepCounter);
+#endif
+    }
+#endif /* OBSW_VERBOSE_LEVEL >= 1 */
+
+}
 

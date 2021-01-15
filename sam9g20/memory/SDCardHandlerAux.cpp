@@ -313,6 +313,11 @@ ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
         fileFound = f_findnext(&findResult);
     }
 
+#if FSFW_CPP_OSTREAM_ENABLED == 0
+    char subdirDepth[10];
+    uint8_t subdirsLen = 0;
+#endif
+
     for(uint8_t idx = 0; idx < 255; idx ++) {
         if(idx > 0) {
             fileFound = f_findnext(&findResult);
@@ -328,14 +333,14 @@ ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
                 sif::info << "-";
 #else
-                printf("-");
+                subdirsLen += sprintf(subdirDepth + subdirsLen , "-");
 #endif
-
             }
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "D: " << findResult.filename << std::endl;
 #else
-            sif::printInfo("D: %s\n", findResult.filename);
+            sif::printInfo("%sD: %s", subdirDepth, findResult.filename);
+            subdirsLen = 0;
 #endif
             printHelper(recursionDepth + 1);
             change_directory("..", false);
@@ -345,13 +350,14 @@ ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
                 sif::info << "-";
 #else
-                printf("-");
+                subdirsLen += sprintf(subdirDepth + subdirsLen , "-");
 #endif
             }
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "F: " << findResult.filename << std::endl;
 #else
-            sif::printInfo("F: %s\n", findResult.filename);
+            sif::printInfo("%sF: %s\n", subdirDepth, findResult.filename);
+            subdirsLen = 0;
 #endif
         }
     }

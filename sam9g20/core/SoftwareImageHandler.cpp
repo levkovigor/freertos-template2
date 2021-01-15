@@ -104,14 +104,14 @@ ReturnValue_t SoftwareImageHandler::initialize() {
 
     if(retval != 0) {
         // should never happen ! we should power cycle if this happens.
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "SoftwareImageHandler::initialize: NOR-Flash start failed"
                 << std::endl;
+#else
+        sif::printError("SoftwareImageHandler::initialize: NOR-Flash start failed\n");
+#endif
         return result;
     }
-//    retval = NORFLASH_EraseChip(&NORFlash);
-//    if(retval != 0) {
-//        sif::error << "Erasing NOR failed!" << std::endl;
-//    }
 #endif
 
     return HasReturnvaluesIF::RETURN_OK;

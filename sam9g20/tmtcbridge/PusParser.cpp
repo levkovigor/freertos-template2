@@ -47,7 +47,8 @@ ReturnValue_t PusParser::parsePusPackets(const uint8_t *frame,
 #else
 			sif::printDebug("TcSerialPollingTask::readNextPacket: Next packet "
                     "larger than remaining frame.\n");
-            sif::printDebug("Throwing away packet. Detected packet size: %zu", packetSize);
+            sif::printDebug("Throwing away packet. Detected packet size: %lu",
+                    static_cast<unsigned long>(packetSize));
 #endif
 		}
 		return SPLIT_PACKET;
@@ -115,7 +116,8 @@ ReturnValue_t PusParser::readNextPacket(const uint8_t *frame,
 #else
 			sif::printDebug("TcSerialPollingTask::readNextPacket: Next packet "
                     "larger than remaining frame.\n");
-			sif::printDebug("Throwing away packet. Detected packet size: %zu\n", nextPacketSize);
+			sif::printDebug("Throwing away packet. Detected packet size: %lu\n",
+			        static_cast<unsigned long>(nextPacketSize));
 #endif
 		}
 		return SPLIT_PACKET;

@@ -492,3 +492,26 @@ ReturnValue_t ImageCopyingEngine::nandFlashInit()
 
     return HasReturnvaluesIF::RETURN_OK;
 }
+
+void ImageCopyingEngine::handleFinishPrintout() {
+#if OBSW_VERBOSE_LEVEL >= 1
+    if(bootloader) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::info << "Copying bootloader to NAND-Flash finished with "
+                << stepCounter << " cycles!" << std::endl;
+#else
+        sif::printInfo("Copying bootloader to NAND-Flash finished with %hu cycles!\n",
+                stepCounter);
+#endif
+    }
+    else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::info << "Copying OBSW image to NAND-Flash finished with "
+                << stepCounter << " cycles!" << std::endl;
+#else
+        sif::printInfo("Copying OBSW image to NAND-Flash finished with %hu cycles!\n",
+                stepCounter);
+#endif
+    }
+#endif
+}

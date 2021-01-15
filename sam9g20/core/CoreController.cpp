@@ -41,7 +41,11 @@ CoreController::CoreController(object_id_t objectId,
                 systemStateTaskId(systemStateTaskId) {
     timeMutex = MutexFactory::instance()->createMutex();
 #ifdef ISIS_OBC_G20
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "CoreController: Starting Supervisor component." << std::endl;
+#else
+    sif::printInfo("CoreController: Starting Supervisor component.\n");
+#endif
     Supervisor_start(nullptr, 0);
 #endif
 }
@@ -249,8 +253,12 @@ ReturnValue_t CoreController::initialize() {
 #ifdef ISIS_OBC_G20
     framHandler = objectManager->get<FRAMHandler>(objects::FRAM_HANDLER);
     if(framHandler == nullptr) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "CoreController::initialize: No FRAM handler found!"
                 << std::endl;
+#else
+        sif::printError("CoreController::initialize: No FRAM handler found!\n");
+#endif
     }
 #endif
     return ExtendedControllerBase::initialize();
@@ -275,14 +283,23 @@ ReturnValue_t CoreController::setUpSystemStateTask() {
 
 ReturnValue_t CoreController::initializeIsisTimerDrivers() {
 #ifdef ISIS_OBC_G20
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "CoreController: Starting RTC and RTT." << std::endl;
+#else
+    sif::printInfo("CoreController: Starting RTC and RTT.\n");
+#endif
 
     // Time will be set later, this just starts the synchronization task
     // with a frequence of 0.5 seconds.
     int retval = Time_start(NULL, RTC_RTT_SYNC_INTERVAL);
     if(retval >> 8 == 0xFF) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "CoreController::initializeAfterTaskCreation:"
                 "ISIS RTC start failure!" << std::endl;
+#else
+        sif::printError("CoreController::initializeAfterTaskCreation:"
+                "ISIS RTC start failure!\n");
+#endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     retval = retval & 0xFF;
@@ -292,14 +309,24 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
     }
     else if(retval == 2) {
         // Should not happen, we did not specify time..
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "CoreController::initializeAfterTaskCreation: Config"
                 << " error!" << std::endl;
+#else
+        sif::printError("CoreController::initializeAfterTaskCreation: Config"
+                " error!\n");
+#endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     else if(retval == 3) {
         // Should not happen, the scheduler is already running
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "CoreController::initializeAfterTaskCreation: Config"
                 << " error, FreeRTOS scheduler not running!" << std::endl;
+#else
+        sif::printError("CoreController::initializeAfterTaskCreation: Config"
+                " error, FreeRTOS scheduler not running!\n");
+#endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
@@ -326,7 +353,12 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
     currentTime.tv_sec = secSinceEpoch;
     Clock::setClock(&currentTime);
 
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "CoreController: Clock set." << std::endl;
+#else
+    sif::printInfo("CoreController: Clock set.\n");
+#endif
+
 #else
     RTT_start();
     timeval currentTime;
