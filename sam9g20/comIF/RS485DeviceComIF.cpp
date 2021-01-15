@@ -5,6 +5,7 @@
  * @author	L.Rajer
  */
 #include <sam9g20/comIF/RS485DeviceComIF.h>
+#include <sam9g20/comIF/RS485TmTcTarget.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <sam9g20/comIF/cookies/RS485Cookie.h>
 #include <mission/utility/USLPTransferFrame.h>
@@ -69,6 +70,10 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 			sif::info << "Sending to FPGA" << std::endl;
 #endif
             GpioDeviceComIF::enableTransceiverFPGA1();
+            // Somewhat like this, but obviously not exactly, cause its not static
+//            while(RS485TmTcTarget::fillSendFrameBuffer){
+//                   // Send here
+//            }
             break;
         }
         case (RS485Devices::PCDU_VORAGO): {

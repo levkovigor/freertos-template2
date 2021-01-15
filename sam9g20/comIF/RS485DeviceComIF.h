@@ -121,6 +121,7 @@ private:
 
     std::array<uint8_t, TMTC_FRAME_MAX_LEN + 5> receiveArray;
 
+
     /**
      * @brief  Initializes one TransferFrame class with buffer for each device
      * @details Most of the values for a device like e.g. VCID, SCID, etc.
