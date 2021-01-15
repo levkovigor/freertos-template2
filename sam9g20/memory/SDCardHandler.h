@@ -67,6 +67,8 @@ public:
     static constexpr ActionId_t REPORT_ACTIVE_SD_CARD = 6;
     static constexpr ActionId_t SELECT_PREFERED_SD_CARD = 10;
     static constexpr ActionId_t REPORT_PREFERED_SD_CARD = 11;
+    static constexpr ActionId_t SET_LOAD_OBSW_UPDATE = 12;
+    static constexpr ActionId_t GET_LOAD_OBSW_UPDATE = 13;
 
     //! [EXPORT] : [COMMAND] Clears SD card. Use with care!
     static constexpr ActionId_t CLEAR_SD_CARD = 20;

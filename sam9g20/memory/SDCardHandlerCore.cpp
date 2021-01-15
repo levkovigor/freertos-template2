@@ -1,6 +1,7 @@
 #include "SDCardHandler.h"
 #include "SDCardAccess.h"
 #include "SDCardHandlerPackets.h"
+#include <sam9g20/common/FRAMApi.h>
 #include <mission/memory/FileSystemMessage.h>
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
@@ -9,6 +10,7 @@
 #include <fsfw/timemanager/Countdown.h>
 #include <fsfw/tasks/PeriodicTaskIF.h>
 #include <fsfw/timemanager/Stopwatch.h>
+
 
 SDCardHandler::SDCardHandler(object_id_t objectId): SystemObject(objectId),
     commandQueue(QueueFactory::instance()->
@@ -217,6 +219,35 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
         ActivePreferedVolumeReport reply(preferedVolume);
         result = actionHelper.reportData(commandedBy, actionId, &reply);
         actionHelper.finish(commandedBy, actionId, result);
+        break;
+    }
+    case(SET_LOAD_OBSW_UPDATE): {
+        if (size < 1) {
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+        if (data[0] != 0 or data[0] != 1) {
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+        bool enable = data[0];
+        VolumeId volume = SD_CARD_0;
+        if (enable ) {
+            if (size < 2) {
+                return HasActionsIF::INVALID_PARAMETERS;
+            }
+            if ((data[1] != SD_CARD_0) or (data[1] != SD_CARD_1)) {
+                return HasActionsIF::INVALID_PARAMETERS;
+            }
+            volume = data[1];
+        }
+        int result = set_to_load_softwareupdate(enable, volume);
+        if (result != 0) {
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+
+        break;
+    }
+    case(GET_LOAD_OBSW_UPDATE): {
+
         break;
     }
     default: {

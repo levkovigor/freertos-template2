@@ -120,8 +120,8 @@ int get_prefered_sd_card(VolumeId* volumeId);
 int write_bootloader_hamming_code(const uint8_t* code, size_t size);
 int read_bootloader_hamming_code(uint8_t* code, size_t* size);
 
-int set_to_load_softwareupdate(bool slot0);
-int get_software_to_be_updated(bool* yes, bool* slot0);
+int set_to_load_softwareupdate(bool enable, VolumeId volume);
+int get_software_to_be_updated(bool* enable, VolumeId* volume);
 
 #ifdef __cplusplus
 }
