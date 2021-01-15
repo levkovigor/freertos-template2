@@ -347,7 +347,7 @@ void initTasks(void) {
 #if OBSW_ADD_TEST_CODE == 1
     InternalUnitTester unitTestClass;
     InternalUnitTester::TestConfig testConfig;
-    //testConfig.testArrayPrinter = true;
+    testConfig.testArrayPrinter = false;
     result = unitTestClass.performTests(testConfig);
     if(result != HasReturnvaluesIF::RETURN_OK) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
