@@ -237,10 +237,10 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
             if ((data[1] != SD_CARD_0) or (data[1] != SD_CARD_1)) {
                 return HasActionsIF::INVALID_PARAMETERS;
             }
-            volume = data[1];
+            volume = static_cast<VolumeId>(data[1]);
         }
-        int result = set_to_load_softwareupdate(enable, volume);
-        if (result != 0) {
+        int retval = set_to_load_softwareupdate(enable, volume);
+        if (retval != 0) {
             return HasReturnvaluesIF::RETURN_FAILED;
         }
 
