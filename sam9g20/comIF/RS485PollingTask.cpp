@@ -1,4 +1,5 @@
 #include "RS485PollingTask.h"
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 bool RS485PollingTask::uart2Started = false;
 
@@ -55,14 +56,20 @@ void RS485PollingTask::initiateUartTransfers() {
     int result = UART_queueTransfer(&uartTransfer1);
     if(result != 0) {
         // config error
-        sif::error << "TcSerialPollingTask::initiateUartTransfers: Config error"
-                << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "RS485PollingTask::initiateUartTransfers: Config error" << std::endl;
+#else
+        sif::printError("RS485PollingTask::initiateUartTransfers: Config error\n");
+#endif
     }
     result = UART_queueTransfer(&uartTransfer2);
     if(result != 0) {
         // config error
-        sif::error << "TcSerialPollingTask::initiateUartTransfers: Config error"
-                << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "RS485PollingTask:initiateUartTransfers: Config error" << std::endl;
+#else
+        sif::printError("RS485PollingTask::initiateUartTransfers: Config error\n");
+#endif
     }
 }
 

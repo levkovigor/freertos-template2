@@ -1,6 +1,7 @@
 #include "SDCardHandler.h"
 #include "SDCardHandlerPackets.h"
 
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <mission/memory/FileSystemMessage.h>
 
 ReturnValue_t SDCardHandler::handleAppendCommand(CommandMessage* message){
@@ -32,8 +33,13 @@ ReturnValue_t SDCardHandler::handleAppendCommand(CommandMessage* message){
             sendCompletionReply(false, result, packetSequenceIfMissing);
         }
         else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "SDCardHandler::handleWriteCommand: Writing to file "
-                    << command.getFilename()  << " failed" << std::endl;
+                    << command.getFilename()  << " failed." << std::endl;
+#else
+            sif::printError("SDCardHandler::handleWriteCommand: Writing to file %s failed.\n",
+                    command.getFilename());
+#endif
             sendCompletionReply(false, result);
         }
 
@@ -55,8 +61,12 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
 
     uint16_t* packetSeqIfMissing = static_cast<uint16_t*>(args);
     if(packetSeqIfMissing == nullptr) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "SDCardHandler::appendToFile: Args invalid!"
                 << std::endl;
+#else
+        sif::printError("SDCardHandler::appendToFile: Args invalid!\n");
+#endif
     }
 
     result = handleSequenceNumberWrite(packetNumber, packetSeqIfMissing);
@@ -74,8 +84,13 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
         if(file != nullptr) {
             result = f_seek(file, 0, F_SEEK_END);
             if(result != F_NO_ERROR) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
                 sif::error << "SDCardHandler::appendToFile: f_seek failed with "
                         << "error code" << result << "!" << std::endl;
+#else
+                sif::printError("SDCardHandler::appendToFile: f_seek failed with "
+                        "error code %d!\n", result);
+#endif
             }
         }
     }
@@ -87,19 +102,33 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
     result = f_getlasterror();
     if(result != F_NO_ERROR){
         if(result == F_ERR_NOTFOUND) {
-            sif::error << "SDCardHandler::appendToFile: File to append to "
-                    << "does not exist, error code" << result
-                    << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+            sif::error << "SDCardHandler::appendToFile: File to append to does not exist, "
+                    "error code" << result << std::endl;
+#else
+            sif::printError("SDCardHandler::appendToFile: File to append to does not exist, "
+                    "error code %d\n", result);
+#endif
             return FILE_DOES_NOT_EXIST;
         }
         else if(result == F_ERR_LOCKED) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "SDCardHandler::appendToFile: File to append to is "
                     << "locked, error code" << result << std::endl;
+#else
+            sif::printError("SDCardHandler::appendToFile: File to append to is "
+                    "locked, error code %d.", result);
+#endif
             return FILE_LOCKED;
         }
         else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "SDCardHandler::appendToFile: Opening file failed "
                     << "with error code" << result << std::endl;
+#else
+            sif::printError("SDCardHandler::appendToFile: Opening file failed "
+                    "with error code %d.\n", result);
+#endif
         }
 
         return HasReturnvaluesIF::RETURN_FAILED;
@@ -109,8 +138,13 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
     long numberOfItemsWritten = f_write(data, sizeOfItems, size, file);
     /* if bytes written doesn't equal bytes to write, get the error */
     if (numberOfItemsWritten != (long) size) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "SDCardHandler::writeToFile: Not all bytes written,"
                 << " f_write error code " << f_getlasterror() << std::endl;
+#else
+        sif::printError("SDCardHandler::writeToFile: Not all bytes written,"
+                 " f_write error code %d\n", f_getlasterror());
+#endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
@@ -118,8 +152,13 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
     result = f_close(file);
 
     if (result != F_NO_ERROR){
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "SDCardHandler::writeToFile: Closing failed, f_close "
                 << "error code: " << result << std::endl;
+#else
+        sif::printError( "SDCardHandler::writeToFile: Closing failed, f_close "
+                "error code: %d\n", result);
+#endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     return HasReturnvaluesIF::RETURN_OK;
@@ -149,8 +188,13 @@ ReturnValue_t SDCardHandler::handleFinishAppendCommand(
         int retval = lock_file(finishAppendCommand.getRepositoryPathRaw(),
             finishAppendCommand.getFilenameRaw());
         if(retval != HasReturnvaluesIF::RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "SDCardHandler::handleFinishAppendCommand: Could"
                     << " not lock file, code " << result << "!" << std::endl;
+#else
+            sif::printError("SDCardHandler::handleFinishAppendCommand: Could"
+                    " not lock file, code %d\n", result);
+#endif
         }
     }
 
@@ -162,8 +206,13 @@ ReturnValue_t SDCardHandler::handleFinishAppendCommand(
             finishAppendCommand.getFilenameRaw(), &fileSize, &locked, nullptr,
             nullptr);
     if(retval != HasReturnvaluesIF::RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "SDCardHandler::handleFinishAppendCommand: get_file_info"
-                << " failed with error code " << result << "!" << std::endl;
+                << " failed with error code " << retval << "!" << std::endl;
+#else
+        sif::printError("SDCardHandler::handleFinishAppendCommand: get_file_info"
+                " failed with error code %d\n", retval);
+#endif
     }
 
     return generateFinishAppendReply(finishAppendCommand.getRepoPath(),
@@ -202,10 +251,10 @@ ReturnValue_t SDCardHandler::generateFinishAppendReply(RepositoryPath *repoPath,
         return result;
     }
 
-#if OBSW_ENHANCED_PRINTOUT == 1
-    sif::info << "Append operation on file " << fileName->c_str()
-            << " in repository " << repoPath->c_str()
-            << " finished." << std::endl;
+#if OBSW_VERBOSE_LEVEL >= 1
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+    sif::info << "Append operation on file " << fileName->c_str() << " in repository "
+            << repoPath->c_str() << " finished." << std::endl;
     sif::info <<  "Filesize: " << filesize << ".";
     if(locked) {
         sif::info << " File was locked." << std::endl;
@@ -213,7 +262,18 @@ ReturnValue_t SDCardHandler::generateFinishAppendReply(RepositoryPath *repoPath,
     else {
         sif::info << " File was not locked." << std::endl;
     }
-#endif
+#else
+    sif::printInfo("Append operation on file %s in repository %s finished.", fileName->c_str(),
+            repoPath->c_str());
+    sif::printInfo("Filesize: %zu. ", filesize);
+    if(locked) {
+        sif::printInfo("File was locked.\n");
+    }
+    else {
+        sif::printInfo("File was not locked.\n");
+    }
+#endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
+#endif /* OBSW_VERBOSE_LEVEL >= 1 */
     lastPacketWriteNumber = UNSET_SEQUENCE;
     return result;
 
@@ -226,19 +286,27 @@ ReturnValue_t SDCardHandler::handleSequenceNumberWrite(uint16_t sequenceNumber,
         lastPacketWriteNumber = 0;
     }
     else if((sequenceNumber == 1) and (lastPacketWriteNumber != 0)) {
-#if OBSW_ENHANCED_PRINTOUT == 1
-        sif::debug << "SDCardHandler::appendToFile: First sequence "
-                << "packet missed!" << std::endl;
+#if OBSW_VERBOSE_LEVEL >= 1
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::debug << "SDCardHandler::appendToFile: First sequence packet missed!" << std::endl;
+#else
+        sif::printDebug("SDCardHandler::appendToFile: First sequence packet missed!\n");
+#endif
 #endif
         triggerEvent(SEQUENCE_PACKET_MISSING_WRITE_EVENT, 0, 0);
         *packetSeqIfMissing = 0;
         return SEQUENCE_PACKET_MISSING_WRITE;
     }
     else if((sequenceNumber - lastPacketWriteNumber) > 1) {
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::debug << "SDCardHandler::appendToFile: Packet missing between "
                 << sequenceNumber << " and " << lastPacketWriteNumber
                 << std::endl;
+#else
+        sif::printDebug("SDCardHandler::appendToFile: Packet missing between %hu amd %hu\n",
+                sequenceNumber ,lastPacketWriteNumber);
+#endif
 #endif
         triggerEvent(SEQUENCE_PACKET_MISSING_WRITE_EVENT,
                 lastPacketWriteNumber + 1, 0);

@@ -52,7 +52,7 @@ protected:
 			const uint8_t *packet) override;
 	void fillCommandAndReplyMap() override;
 	void modeChanged(void) override;
-	ReturnValue_t initializeLocalDataPool(LocalDataPool &localDataPoolMap,
+	ReturnValue_t initializeLocalDataPool(localpool::DataPool &localDataPoolMap,
 			LocalDataPoolManager &poolManager) override;
 
 private:
@@ -157,7 +157,7 @@ private:
 	CommunicationStep communicationStep = CommunicationStep::DATA;
 	bool commandExecuted = false;
 
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
 	PeriodicOperationDivider* debugDivider;
 #endif
 

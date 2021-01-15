@@ -1,11 +1,11 @@
 #include "MGMHandlerLIS3MDL.h"
-
+#include <fsfw/datapool/PoolReadHelper.h>
 
 MGMHandlerLIS3MDL::MGMHandlerLIS3MDL(object_id_t objectId,
 		object_id_t deviceCommunication, CookieIF* comCookie):
 		DeviceHandlerBase(objectId, deviceCommunication, comCookie),
 		dataset(this) {
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
 	debugDivider = new PeriodicOperationDivider(10);
 #endif
 	// Set to default values right away.
@@ -74,8 +74,12 @@ ReturnValue_t MGMHandlerLIS3MDL::buildTransitionDeviceCommand(
 	}
 	default:
 		// might be a configuration error.
-		sif::debug << "GyroHandler::buildTransitionDeviceCommand: Unknown "
-				<< "internal state!" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::debug << "GyroHandler::buildTransitionDeviceCommand: Unknown internal state!"
+		        << std::endl;
+#else
+		sif::printDebug("GyroHandler::buildTransitionDeviceCommand: Unknown internal state!\n");
+#endif
 		return HasReturnvaluesIF::RETURN_OK;
 	}
 	return buildCommandFromCommand(*id, NULL, 0);
@@ -247,23 +251,28 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 		float mgmZ = static_cast<float>(mgmMeasurementRawZ) * sensitivityFactor
 				*  MGMLIS3MDL::GAUSS_TO_MICROTESLA_FACTOR;
 
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
 		if(debugDivider->checkAndIncrement()) {
-			sif::info << "MGMHandlerLIS3: Magnetic field strength in"
-					" microtesla:" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+			sif::info << "MGMHandlerLIS3: Magnetic field strength in microtesla:" << std::endl;
 			// Set terminal to utf-8 if there is an issue with micro printout.
 			sif::info << "X: " << mgmX << " \xC2\xB5T" << std::endl;
 			sif::info << "Y: " << mgmY << " \xC2\xB5T" << std::endl;
 			sif::info << "Z: " << mgmZ << " \xC2\xB5T" << std::endl;
+#else
+			sif::printInfo("MGMHandlerLIS3: Magnetic field strength in microtesla:\n");
+			sif::printInfo("X: %f \xC2\xB5T", mgmX);
+			sif::printInfo("Y: %f \xC2\xB5T", mgmY);
+			sif::printInfo("Z: %f \xC2\xB5T", mgmZ);
+#endif
 		}
 #endif
-		ReturnValue_t result = dataset.read();
-		if(result == HasReturnvaluesIF::RETURN_OK) {
+		PoolReadHelper readHelper(&dataset);
+		if(readHelper.getReadResult() == HasReturnvaluesIF::RETURN_OK) {
 		    dataset.fieldStrengthX = mgmX;
 		    dataset.fieldStrengthY = mgmY;
 		    dataset.fieldStrengthZ = mgmZ;
 		    dataset.setValidity(true, true);
-		    dataset.commit();
 		}
 		break;
 	}
@@ -271,11 +280,14 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 	case MGMLIS3MDL::READ_TEMPERATURE: {
 		int16_t tempValueRaw = packet[2] << 8 | packet[1];
 		float tempValue = 25.0 + ((static_cast<float>(tempValueRaw)) / 8.0);
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
 		if(debugDivider->check()) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 			// Set terminal to utf-8 if there is an issue with micro printout.
-			sif::info << "MGMHandlerLIS3: Temperature: " << tempValue<< " Â°C"
-					<< std::endl;
+			sif::info << "MGMHandlerLIS3: Temperature: " << tempValue<< " °C" << std::endl;
+#else
+			sif::printInfo("MGMHandlerLIS3: Temperature: %hu °C\n", tempValue);
+#endif
 		}
 #endif
         ReturnValue_t result = dataset.read();
@@ -422,8 +434,8 @@ void MGMHandlerLIS3MDL::modeChanged(void) {
 	internalState = InternalState::STATE_NONE;
 }
 
-ReturnValue_t MGMHandlerLIS3MDL::initializeLocalDataPool(
-		LocalDataPool &localDataPoolMap, LocalDataPoolManager &poolManager) {
+ReturnValue_t MGMHandlerLIS3MDL::initializeLocalDataPool(localpool::DataPool &localDataPoolMap,
+		LocalDataPoolManager &poolManager) {
 	localDataPoolMap.emplace(MGMLIS3MDL::FIELD_STRENGTH_X,
 			new PoolEntry<float>({0.0}));
 	localDataPoolMap.emplace(MGMLIS3MDL::FIELD_STRENGTH_Y,

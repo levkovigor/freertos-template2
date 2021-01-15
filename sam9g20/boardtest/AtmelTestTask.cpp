@@ -38,14 +38,14 @@ AtmelTestTask::AtmelTestTask(object_id_t object_id): TestTask(object_id) {
 AtmelTestTask::~AtmelTestTask() {}
 
 ReturnValue_t AtmelTestTask::performPeriodicAction() {
-	//performDataSetTesting(testMode);
-	// This leads to a crash!
-	//performExceptionTest();
+    //performDataSetTesting(testMode);
+    // This leads to a crash!
+    //performExceptionTest();
 #ifdef ISIS_OBC_G20
 #endif
 
-	//sif::info << "Hello, I am alive!" << std::endl;
-	return TestTask::performPeriodicAction();
+    //sif::info << "Hello, I am alive!" << std::endl;
+    return TestTask::performPeriodicAction();
 }
 
 
@@ -55,9 +55,9 @@ ReturnValue_t AtmelTestTask::performOneShotAction() {
     //printFilesTest();
 
 #ifdef ISIS_OBC_G20
-	performIOBCTest();
+    performIOBCTest();
 #endif
-	//performHammingTest();
+    //performHammingTest();
     return TestTask::performOneShotAction();
 }
 
@@ -116,7 +116,10 @@ void AtmelTestTask::performSDCardDemo() {
         result = DEMO_SD_Basic(1);
     }
     if(result == 0) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "AtmelTestTask: SD Card demo success" << std::endl;
+#else
+#endif
     }
 }
 
@@ -299,28 +302,43 @@ void AtmelTestTask::performHammingTest() {
     }
     uint8_t hamming[3];
     Hamming_Compute256x(test, 256, hamming);
-    sif::info << "Hamming code: " << std::hex << "0x" << (int) hamming[0]
-             << ", 0x" << (int) hamming[1] << ", 0x"
-             << (int) hamming[2] << std::endl;
+
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+    sif::info << "Hamming code: " << std::hex << "0x" << (int) hamming[0] << ", 0x" <<
+            (int) hamming[1] << ", 0x" << (int) hamming[2] << std::endl;
+#else
+#endif
     int result = Hamming_Verify256x(test, 256, hamming);
     if(result != 0) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "Hamming Verification failed with code "
                 << result << "!" << std::endl;
+#else
+#endif
     }
     else if(result == 0) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Hamming code verification success!" << std::endl;
+#else
+#endif
     }
 
     // introduce bit error
     test[0] = test[0] ^ 1;
     result = Hamming_Verify256x(test, 256, hamming);
     if(result == Hamming_ERROR_SINGLEBIT) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Hamming code one bit error corrected!" << std::endl;
+#else
+#endif
 
     }
     else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "Hamming Verification failed with code "
                 << result << "!" << std::endl;
+#else
+#endif
         return;
     }
 
@@ -328,12 +346,18 @@ void AtmelTestTask::performHammingTest() {
     test[156] = test[156] ^ (1 << 5);
     result = Hamming_Verify256x(test, 256, hamming);
     if(result == Hamming_ERROR_SINGLEBIT) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Hamming code one bit error corrected!" << std::endl;
+#else
+#endif
 
     }
     else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "Hamming Verification failed with code "
                 << result << "!" << std::endl;
+#else
+#endif
         return;
     }
 
@@ -342,12 +366,18 @@ void AtmelTestTask::performHammingTest() {
     test[0] = test[0] ^ 1;
     result = Hamming_Verify256x(test, 256, hamming);
     if(result == Hamming_ERROR_MULTIPLEBITS) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Hamming code two bit error detected!" << std::endl;
+#else
+#endif
 
     }
     else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "Hamming Verification failed with code "
                 << result << "!" << std::endl;
+#else
+#endif
         return;
     }
 }
@@ -378,10 +408,16 @@ void AtmelTestTask::printFilesTest() {
     stopwatch.start();
     int result = clear_sd_card();
     if(result == F_NO_ERROR) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "SD card cleared without errors" << std::endl;
+#else
+#endif
     }
     else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Errors clearing SD card" << std::endl;
+#else
+#endif
     }
     stopwatch.stop(true);
     stopwatch.start();

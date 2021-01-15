@@ -1,6 +1,6 @@
 #include <sam9g20/tmtcbridge/TmTcSerialBridge.h>
 
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/timemanager/Stopwatch.h>
@@ -47,15 +47,21 @@ ReturnValue_t TmTcSerialBridge::handleTc() {
 		if(result == HasReturnvaluesIF::RETURN_OK) {
 			result = handleTcReception(packetFoundLen);
 			if(result != HasReturnvaluesIF::RETURN_OK) {
-			    sif::debug << "TmTcSerialBridge::handleTc: Handling TC"
-			            << " failed!" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+			    sif::debug << "TmTcSerialBridge::handleTc: Handling TC failed!" << std::endl;
+#else
+	            sif::printDebug("TmTcSerialBridge::handleTc: Handling TC failed!\n");
+#endif
 				return result;
 			}
 		}
 		else if(result == RingBufferAnalyzer::POSSIBLE_PACKET_LOSS) {
 			// trigger event?
-		    sif::debug << "TmTcSerialBridge::handleTc: Possible data loss"
-		            << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		    sif::debug << "TmTcSerialBridge::handleTc: Possible data loss" << std::endl;
+#else
+		    sif::printDebug("TmTcSerialBridge::handleTc: Possible data loss\n");
+#endif
 			continue;
 		}
 		else if(result == RingBufferAnalyzer::NO_PACKET_FOUND) {
@@ -89,8 +95,12 @@ ReturnValue_t TmTcSerialBridge::sendTm(const uint8_t *data, size_t dataLen) {
     result = UART_write(bus0_uart, tmArray.data(), encodedLen);
 	//sif::info << "TmTcSerialBridge::sendTm: Sending telemetry." << std::endl;
 	if(result != RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "TmTcSerialBridge::sendTm: Send error with code "
 		      << static_cast<int>(result) << "on bus 0." << std::endl;
+#else
+		sif::printError("TmTcSerialBridge::sendTm: Send error with code &d on bus0\n", result);
+#endif
 	}
 	// If data is being sent too fast, this delay could be used.
 	// It will not block the CPU, because a context switch will be requested.

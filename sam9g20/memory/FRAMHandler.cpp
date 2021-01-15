@@ -1,5 +1,5 @@
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
-#include <sam9g20/memory/FRAMHandler.h>
+#include "FRAMHandler.h"
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 extern "C" {
 #include <hal/Storage/FRAM.h>
@@ -28,7 +28,11 @@ ReturnValue_t FRAMHandler::setAddress(uint32_t *startAddress) {
 }
 
 ReturnValue_t FRAMHandler::initialize() {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "FRAMHandler: Starting FRAM component." << std::endl;
+#else
+    sif::printInfo("FRAMHandler: Starting FRAM component.\n");
+#endif
     int result = FRAM_start();
     if(result != 0) {
         return HasReturnvaluesIF::RETURN_FAILED;
@@ -37,8 +41,15 @@ ReturnValue_t FRAMHandler::initialize() {
     result = write_software_version(SW_VERSION, SW_SUBVERSION,
             SW_SUBSUBVERSION);
     if(result != 0) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "FRAMHandler::initialize: Error writing software version "
                 "to FRAM" << std::endl;
+#else
+        sif::printError("FRAMHandler::initialize: Error writing software version "
+                "to FRAM\n");
+#endif
     }
+
+    //sif::info << "FRAM max addr: " << FRAM_getMaxAddress() << std::endl;
     return HasReturnvaluesIF::RETURN_OK;
 }

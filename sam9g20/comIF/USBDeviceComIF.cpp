@@ -3,6 +3,7 @@
 #include <fsfw/ipc/MutexHelper.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Countdown.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 extern "C" {
 #include <board.h>
@@ -24,123 +25,134 @@ static void ISR_Vbus(const Pin *pPin);
 static void VBus_Configure(void);
 
 #else
-    #define VBUS_CONFIGURE()    USBD_Connect()
+#define VBUS_CONFIGURE()    USBD_Connect()
 #endif //#if defined(PIN_USB_VBUS)
 
 
 USBDeviceComIF::USBDeviceComIF(object_id_t objectId,
-		SharedRingBuffer* usbRingBuffer): SystemObject(objectId),
-		usbRingBuffer(usbRingBuffer) {
-	// If they are present, configure Vbus & Wake-up pins
-	// we could assign a higher priority here maybe..
-	PIO_InitializeInterrupts(AT91C_AIC_PRIOR_LOWEST);
+        SharedRingBuffer* usbRingBuffer): SystemObject(objectId),
+                usbRingBuffer(usbRingBuffer) {
+    // If they are present, configure Vbus & Wake-up pins
+    // we could assign a higher priority here maybe..
+    PIO_InitializeInterrupts(AT91C_AIC_PRIOR_LOWEST);
 
-	// BOT driver initialization
-	CDCDSerialDriver_Initialize();
+    // BOT driver initialization
+    CDCDSerialDriver_Initialize();
 
-	// connect if needed
-	VBUS_CONFIGURE();
+    // connect if needed
+    VBUS_CONFIGURE();
 
 }
 
 
 
 ReturnValue_t USBDeviceComIF::initializeInterface(CookieIF *cookie) {
-	// Device is not configured
-	if (USBD_GetState() < USBD_STATE_CONFIGURED) {
-		// Connect pull-up, wait for configuration
-		USBD_Connect();
-		// Wait for max 5 ms for now.
-		Countdown countdown(5);
-		while (USBD_GetState() < USBD_STATE_CONFIGURED) {
-			if(countdown.hasTimedOut()) {
-				sif::error << "USBDeviceComIF::sendMessage: USB configuration"
-						"failed!" << std::endl;
-				return HasReturnvaluesIF::RETURN_FAILED;
-			}
-			TaskFactory::delayTask(1);
-		}
-	}
+    // Device is not configured
+    if (USBD_GetState() < USBD_STATE_CONFIGURED) {
+        // Connect pull-up, wait for configuration
+        USBD_Connect();
+        // Wait for max 5 ms for now.
+        Countdown countdown(5);
+        while (USBD_GetState() < USBD_STATE_CONFIGURED) {
+            if(countdown.hasTimedOut()) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+                sif::error << "USBDeviceComIF::sendMessage: USB configuration"
+                        "failed!" << std::endl;
+#else
+                sif::printError("USBDeviceComIF::sendMessage: USB configuration"
+                        "failed!\n");
+#endif
+                return HasReturnvaluesIF::RETURN_FAILED;
+            }
+            TaskFactory::delayTask(1);
+        }
+    }
 
-	if(usbRingBuffer == nullptr) {
-		sif::error << "USBPolling::initialize: Ring buffer is nullptr!"
-				<< std::endl;
-		return HasReturnvaluesIF::RETURN_FAILED;
-	}
-	return HasReturnvaluesIF::RETURN_OK;
+    if(usbRingBuffer == nullptr) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "USBPolling::initialize: Ring buffer is nullptr!" << std::endl;
+#else
+        sif::printError("USBPolling::initialize: Ring buffer is nullptr!\n");
+#endif
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t USBDeviceComIF::sendMessage(CookieIF *cookie,
-		const uint8_t *sendData, size_t sendLen) {
-	if((writeState == TransferStates::WRITE_BUSY or
-			writeState == TransferStates::WRITE_FAILURE) and not
-			errorOccuredOnce) {
-		// allow one failure.
-		writeState = TransferStates::WRITE_SUCCESS;
-		errorOccuredOnce = true;
-	}
-	else if(errorOccuredOnce) {
-		return HasReturnvaluesIF::RETURN_FAILED;
-	}
+        const uint8_t *sendData, size_t sendLen) {
+    if((writeState == TransferStates::WRITE_BUSY or
+            writeState == TransferStates::WRITE_FAILURE) and not
+            errorOccuredOnce) {
+        // allow one failure.
+        writeState = TransferStates::WRITE_SUCCESS;
+        errorOccuredOnce = true;
+    }
+    else if(errorOccuredOnce) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
 
 
-	// I am not sure this should happen at this point..
-	if (USBD_GetState() < USBD_STATE_CONFIGURED) {
-		sif::info << "USBDeviceComIF::sendMessage: USB device not configured!"
-				<< std::endl;
-		return HasReturnvaluesIF::RETURN_FAILED;
-	}
+    // I am not sure this should happen at this point..
+    if (USBD_GetState() < USBD_STATE_CONFIGURED) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::info << "USBDeviceComIF::sendMessage: USB device not configured!" << std::endl;
+#else
+        sif::printInfo("USBDeviceComIF::sendMessage: USB device not configured!\n");
+#endif
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
 
-	// will be set by callback (maybe not needed?)
-	sentDataLen = 0;
-	writeState = TransferStates::WRITE_BUSY;
-	uint8_t writeResult = CDCDSerialDriver_Write(const_cast<uint8_t*>(sendData),
-			sendLen, reinterpret_cast<TransferCallback>(UsbDataSent),
-			&writeState);
-	if(writeResult == USBD_STATUS_LOCKED) {
-		// configuration error.
-	}
+    // will be set by callback (maybe not needed?)
+    sentDataLen = 0;
+    writeState = TransferStates::WRITE_BUSY;
+    uint8_t writeResult = CDCDSerialDriver_Write(const_cast<uint8_t*>(sendData),
+            sendLen, reinterpret_cast<TransferCallback>(UsbDataSent),
+            &writeState);
+    if(writeResult == USBD_STATUS_LOCKED) {
+        // configuration error.
+    }
 
-	return HasReturnvaluesIF::RETURN_OK;
+    return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t USBDeviceComIF::getSendSuccess(CookieIF *cookie) {
-	if(writeState == TransferStates::WRITE_SUCCESS or
-			writeState == TransferStates::WRITE_BUSY) {
-		return HasReturnvaluesIF::RETURN_OK;
-	}
-	else {
-		return HasReturnvaluesIF::RETURN_FAILED;
-	}
+    if(writeState == TransferStates::WRITE_SUCCESS or
+            writeState == TransferStates::WRITE_BUSY) {
+        return HasReturnvaluesIF::RETURN_OK;
+    }
+    else {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
 
 }
 
 ReturnValue_t USBDeviceComIF::requestReceiveMessage(CookieIF *cookie,
-		size_t requestLen) {
-	MutexHelper(usbRingBuffer->getMutexHandle(),
-			MutexIF::TimeoutType::WAITING, 5);
-	auto fifoHandle = usbRingBuffer->getReceiveSizesFIFO();
-	if(fifoHandle->empty()) {
-		return HasReturnvaluesIF::RETURN_OK;
-	}
+        size_t requestLen) {
+    MutexHelper(usbRingBuffer->getMutexHandle(),
+            MutexIF::TimeoutType::WAITING, 5);
+    auto fifoHandle = usbRingBuffer->getReceiveSizesFIFO();
+    if(fifoHandle->empty()) {
+        return HasReturnvaluesIF::RETURN_OK;
+    }
 
-	if(not fifoHandle->empty()) {
-		 fifoHandle->retrieve(&sizeRead);
-	}
+    if(not fifoHandle->empty()) {
+        fifoHandle->retrieve(&sizeRead);
+    }
 
-	usbRingBuffer->readData(usbBuffer.data(), sizeRead);
-	return HasReturnvaluesIF::RETURN_OK;
+    usbRingBuffer->readData(usbBuffer.data(), sizeRead);
+    return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t USBDeviceComIF::readReceivedMessage(CookieIF *cookie,
-		uint8_t **buffer, size_t *size) {
-	if(sizeRead > 0) {
-		*buffer = usbBuffer.data();
-		*size = sizeRead;
-		sizeRead = 0;
-	}
+        uint8_t **buffer, size_t *size) {
+    if(sizeRead > 0) {
+        *buffer = usbBuffer.data();
+        *size = sizeRead;
+        sizeRead = 0;
+    }
 
-	return HasReturnvaluesIF::RETURN_OK;
+    return HasReturnvaluesIF::RETURN_OK;
 }
 
 
@@ -195,28 +207,28 @@ void VBus_Configure( void )
 }
 
 #else
-    #define VBUS_CONFIGURE()    USBD_Connect()
+#define VBUS_CONFIGURE()    USBD_Connect()
 #endif //#if defined(PIN_USB_VBUS)
 
 
 
 
 void USBDeviceComIF::UsbDataSent(void *writeState, unsigned char status,
-		unsigned int transferred, unsigned int remaining) {
-	TransferStates* transferState = static_cast<TransferStates*>(writeState);
-	if (status == USBD_STATUS_SUCCESS) {
+        unsigned int transferred, unsigned int remaining) {
+    TransferStates* transferState = static_cast<TransferStates*>(writeState);
+    if (status == USBD_STATUS_SUCCESS) {
 
-		*transferState = TransferStates::WRITE_SUCCESS;
-		TRACE_DEBUG("USBDeviceComIF::UsbDataSent: Data Sent");
-	}
-	else {
-		// Should not happen, callback will occur when transfer is completed.
-		TRACE_DEBUG("USBDeviceComIF::UsbDataSent: Data sent callback has"
-				" status %d\r\n", status);
-		errorStatus = status;
-		*transferState = TransferStates::WRITE_FAILURE;
-	}
-	sentDataLen = transferred;
+        *transferState = TransferStates::WRITE_SUCCESS;
+        TRACE_DEBUG("USBDeviceComIF::UsbDataSent: Data Sent");
+    }
+    else {
+        // Should not happen, callback will occur when transfer is completed.
+        TRACE_DEBUG("USBDeviceComIF::UsbDataSent: Data sent callback has"
+                " status %d\r\n", status);
+        errorStatus = status;
+        *transferState = TransferStates::WRITE_FAILURE;
+    }
+    sentDataLen = transferred;
 }
 
 // remove this if it is not needed anymore, this was test code to

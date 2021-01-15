@@ -1,5 +1,6 @@
 #include "../ImageCopyingEngine.h"
 #include <fsfw/timemanager/Countdown.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 extern "C" {
 // include nand flash stuff here
@@ -113,9 +114,13 @@ ReturnValue_t ImageCopyingEngine::configureNand(bool disableDebugOutput) {
     }
     ReturnValue_t result = nandFlashInit();
     if(result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "SoftwareImageHandler::copyBootloaderToNand"
-                << "Flash: Error initializing NAND-Flash."
-                << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash: "
+                "Error initializing NAND-Flash." << std::endl;
+#else
+        sif::printError("SoftwareImageHandler::copyBootloaderToNandFlash: "
+                "Error initializing NAND-Flash.\n");
+#endif
     }
     if(disableDebugOutput) {
         setTrace(TRACE_LEVEL_DEBUG);
@@ -137,8 +142,13 @@ ReturnValue_t ImageCopyingEngine::handleNandErasure(bool disableAt91Output) {
         int retval = SkipBlockNandFlash_EraseBlock(&skipBlockNf, 0,
                 NORMAL_ERASE);
         if(retval != 0) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash: "
                     << "Error erasing first block." << std::endl;
+#else
+            sif::printError("SoftwareImageHandler::copyBootloaderToNandFlash: "
+                    "Error erasing first block.\n");
+#endif
             // If this happens, this won't work anyway
             return HasReturnvaluesIF::RETURN_FAILED;
         }
@@ -173,9 +183,13 @@ ReturnValue_t ImageCopyingEngine::handleErasingForObsw() {
         int result = change_directory(config::SW_REPOSITORY, true);
         if(result != F_NO_ERROR) {
             // The hardcoded repository does not exist. Exit!
-            sif::error << "ImageCopyingHelper::handleErasingForObsw: Software"
-                    << " repository does not exist. Cancelling erase operation"
-                    << "!" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+            sif::error << "ImageCopyingHelper::handleErasingForObsw: Software repository does "
+                    "not exist. Cancelling erase operation!" << std::endl;
+#else
+            sif::printError("ImageCopyingHelper::handleErasingForObsw: Software repository does "
+                    "not exist. Cancelling erase operation!\n");
+#endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         if(imageSlot == ImageSlot::IMAGE_0) {
@@ -204,10 +218,13 @@ ReturnValue_t ImageCopyingEngine::handleErasingForObsw() {
                 helperCounter1 + 1, NORMAL_ERASE);
         if(retval != 0) {
             // skip the block.
-            sif::error << "SoftwareImageHandler::copyBootloaderTo"
-                    << "NandFlash: Faulty block " << helperCounter1
-                    << " detected!" << std::endl;
-
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+            sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash: Faulty block " <<
+                    helperCounter1 << " detected!" << std::endl;
+#else
+            sif::printError("SoftwareImageHandler::copyBootloaderToNandFlash: Faulty "
+                    "block %hu detected!\n", helperCounter1);
+#endif
         }
         helperCounter1++;
         if(countdown->hasTimedOut()) {
@@ -282,9 +299,13 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
         }
         if(bytesRead < sizeToRead) {
             // should not happen..
-            sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash:"
-                    << " Bytes read smaller than size to read!"
-                    << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+            sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash: "
+                    "Bytes read smaller than size to read!" << std::endl;
+#else
+            sif::printError("SoftwareImageHandler::copyBootloaderToNandFlash: "
+                    "Bytes read smaller than size to read!\n");
+#endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
     }
@@ -312,8 +333,9 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
         currentByteIdx = 0;
     }
 
-    if(stepCounter == 0 and extendedDebugOutput){
-#ifdef DEBUG
+    if(stepCounter == 0 and extendedDebugOutput) {
+#if OBSW_VERBOSE_LEVEL >= 2
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::debug << "ARM Vectors: " << std::endl;
         uint32_t armVector;
         sif::debug << std::hex << std::setfill('0') << std::setw(8);
@@ -332,7 +354,10 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
         std::memcpy(&armVector, imgBuffer->data() + 24, 4);
         sif::debug << "7: 0x" << armVector << std::endl;
         sif::debug << std::dec << std::setfill(' ');
-#endif
+#else
+
+#endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
+#endif /* OBSW_VERBOSE_LEVEL >= 2 */
     }
 
     // This is the logic necessary so that the block is incremented when
@@ -348,20 +373,31 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
         errorCount++;
         if(errorCount >= 3) {
             // if writing to NAND failed 5 times, exit.
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "SoftwareImageHandler::copyBootloaderToNand"
                     << "Flash: Write error!" << std::endl;
+#else
+            sif::printError("SoftwareImageHandler::copyBootloaderToNand"
+                    "Flash: Write error!\n");
+#endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         // Try in next cycle..
         return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
     }
-#ifdef DEBUG
+
     if(extendedDebugOutput) {
-        sif::debug << "Written " << NAND_PAGE_SIZE << " bytes to "
-                << "NAND-Flash Block " << helperCounter1 << " & Page "
-                << helperCounter2 << std::endl;
-    }
+#if OBSW_VERBOSE_LEVEL >= 1
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::debug << "Written " << NAND_PAGE_SIZE << " bytes to NAND-Flash Block " <<
+                helperCounter1 << " & Page " << helperCounter2 << std::endl;
+#else
+        sif::printDebug("Written %zu bytes to NAND-Flash block %hu & Page %hu\n", helperCounter1,
+                helperCounter2);
 #endif
+#endif
+    }
+
     // Increment to write to next page.
     helperCounter2++;
     // Set this flag to false, so that the next page will be read
@@ -376,14 +412,24 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
 
     if(currentByteIdx >= currentFileSize) {
         // operation finished.
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
         if(bootloader) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "Copying bootloader to NAND-Flash finished with "
                     << stepCounter << " cycles!" << std::endl;
+#else
+            sif::printInfo("Copying bootloader to NAND-Flash finished with %hu cycles!\n",
+                    stepCounter);
+#endif
         }
         else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "Copying OBSW image to NAND-Flash finished with "
                     << stepCounter << " cycles!" << std::endl;
+#else
+            sif::printInfo("Copying OBSW image to NAND-Flash finished with %hu cycles!\n",
+                    stepCounter);
+#endif
         }
 #endif
 
@@ -409,7 +455,7 @@ ReturnValue_t ImageCopyingEngine::nandFlashInit()
     //memset(&skipBlockNf, 0, sizeof(skipBlockNf));
 
     if (SkipBlockNandFlash_Initialize(&skipBlockNf, 0, cmdBytesAddr,
-             addrBytesAddr, dataBytesAddr, nfCePin, nfRbPin)) {
+            addrBytesAddr, dataBytesAddr, nfCePin, nfRbPin)) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 

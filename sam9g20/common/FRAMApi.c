@@ -48,8 +48,12 @@ const uint32_t SDC2SL2_REBOOT_COUNTER_ADDR =
 const uint32_t NUMBER_OF_ACTIVE_TASKS_ADDRESS =
         offsetof(FRAMCriticalData, number_of_active_tasks);
 
-/** Big blocks at the end of FRAM */
-static const uint32_t FRAM_END_ADDR = 0x100000;
+/**
+ * Big blocks at the end of FRAM. This address was retrieved FRAM_getMaxAddress.
+ * Actually the iOBC datasheet states that the FRAM has 256kB, but the functions returns
+ * almost double the size... We still hardcore half of the returned value.
+ */
+static const uint32_t FRAM_END_ADDR = 0x3ffff;
 
 // 512 bytes of the upper FRAM will be reserved for the bootloader hamming
 // code.

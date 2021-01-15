@@ -49,70 +49,6 @@ Build bootloader
 make mission -f Makefile-Bootloader IOBC=1 -j
 ```
 
-### Building abd flashing software on flatsat computer using the flatsat computer
-
-1. Navigate to obsw folder
-```sh
-obsw
-```
-
-2. JLink GDB server needs to run on the flatsat. It is run on standard port 2331
-with tmux in the normal case. To check whether a tmux is active, use `tmux ls` .
-If a tmux is active, check the status of the GDB server can be checked by using
-`tmux a`, detaching from the tmux session and moving it to the background
-is done by typing in `CRTL+D`, `:` and `detach`. To close the tmux session,
-use `kill-session` instead. In some cases, it can becomes necessary to restart
-the J-Link GDB Server. The GDB Server should be run with the following command
-
-```sh
-JLinkGDBServerCLExe -select USB=261002202 -device AT91SAM9G20 -endian little -if JTAG -speed auto -noLocalhostOnly -nogui
-```
-Add a & at the end optionally to run it in the background. Background processes can be listed
-with `ps -aux` and killed with `kill <processId>`
-
-3. Binary can be built locally with
-```sh
-make IOBC=1 virtual -j2
-```
-Or mission instead of virtual for mission build.
-
-4. Perform sdramCfg (only needs to be once after power cycle)
-```sh
-make sdramCfg
-```
-
-5. Open second shell session, connect to flatsat and run 
-```sh
-listen_iobc.sh
-```
-This will only work if the dev path of the debug output
-is /dev/ttyUSB0, which will usually be the case and if the baudrate is
-115200.
-If it is not the case, the connected USB devices can be checked
-with `listUsb`and a generic version can be used.
-```sh
-listen_usb.sh <devPath> <baudRate>
-```
-
-6. Start GDB (the following steps can propably be automated, but I don't know how yet.)
-
-```sh
-arm-none-eabi-gdb
-```
-
-7. Set target in 
-
-```sh
-target remote localhost:2331
-```
-
-8. Load .elf file
-
-```sh
-load _bin/iobc/<folder>/<binarary>.elf
-```
-and press c to start
-
 ### Setting up the Flatsat computer for remote deployment
 
 Under normal circumstances, it should not be necessary to change anything on
@@ -165,7 +101,7 @@ tmux new -s 1_vor
 vor_iobc.sh
 ```
 
-`vor_gdb.sh` is a shell script which will run the GDB Server with the correct configuration. 
+`vor_iobc.sh` is a shell script which will run the GDB Server with the correct configuration. 
 All scripts can be found in `~/scripts`.
 Then type `CTRL` + `B` and `d` to detach from the tmux session.
 Set up the debug session with the following commands:
@@ -175,15 +111,75 @@ tmux new -s 3_vor_iobc
 listen_iobc.sh
 ```
 
-The shell script will start the `screen` utility to read the USB port 
+You will be prompted for a USB serial port. Select the port named 
+`TTL232R-3V3` to listen to the iOBC serial output.
+
+The shell script will start the `minicom.py` utility to read the USB port 
 with the correct settings.
 Now the debug output can be read in this session.
-To exit the session, use `CTRL` + `A` and `k` to kill the screen session.
-This will be needed later to flash the non-volatile memories remotely.
-You can also exit the screen session without killing it with  `CTRL` + `A` and `d`
-and then later reconnect with `screen -r`.
+To exit the session, use `CTRL` + `Alt` + `9` .
 
 All scripts are located inside the scripts folder in the home folder.
+
+### Building and flashing software on flatsat computer using the flatsat computer
+
+1. Navigate to obsw folder
+```sh
+obsw
+```
+
+2. JLink GDB server needs to run on the flatsat. It is run on standard port 2331
+with tmux in the normal case. To check whether a tmux is active, use `tmux ls` .
+If a tmux is active, check the status of the GDB server can be checked by using
+`tmux a -t 0*`, detaching from the tmux session and moving it to the background
+is done by typing in `CRTL+B`, `:` and `d`. To close the tmux session,
+use `k` instead of `d` instead. In some cases, it can becomes necessary to restart
+the J-Link GDB Server. The GDB Server should be run with the following command
+
+```sh
+JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=261002202 -nogui
+```
+
+Background processes can be listed with `ps -aux` and killed with `kill <processId>`
+
+3. Binary can be built locally with
+```sh
+make IOBC=1 virtual -j2
+```
+Or mission instead of virtual for mission build.
+
+4. Perform sdramCfg (only needs to be once after power cycle)
+```sh
+make sdramCfg
+```
+
+5. Connect to the tmux session which is listening to the USB port. 
+You can check whether the tmux exists with the command `tmux ls`.
+Follow the steps specified in the previous section if it does not exist
+to create a new tmux serial listener session.
+
+```sh
+tmux a -t 2_*
+```
+
+6. Start GDB (the following steps can propably be automated, but I don't know how yet.)
+
+```sh
+arm-none-eabi-gdb
+```
+
+7. Set target in 
+
+```sh
+target remote localhost:2331
+```
+
+8. Load .elf file
+
+```sh
+load _bin/iobc/<folder>/<binarary>.elf
+```
+and press c to start
 
 ### Loading binaries built locally to the non-volatile memory
 

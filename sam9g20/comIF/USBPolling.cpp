@@ -1,6 +1,8 @@
+#include "USBPolling.h"
+
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 #include <fsfw/tasks/TaskFactory.h>
-#include "USBPolling.h"
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 extern "C" {
 #include <usb/device/cdc/CDCDSerialDriver.h>
@@ -26,8 +28,11 @@ USBPolling::USBPolling(object_id_t objectId, SharedRingBuffer* usbRingBuffer):
 
 ReturnValue_t USBPolling::initialize() {
 	if(usbRingBuffer == nullptr) {
-		sif::error << "USBPolling::initialize: Ring buffer is nullptr!"
-				<< std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "USBPolling::initialize: Ring buffer is nullptr!" << std::endl;
+#else
+		sif::printError("USBPolling::initialize: Ring buffer is nullptr!\n");
+#endif
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
 	return HasReturnvaluesIF::RETURN_OK;

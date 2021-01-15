@@ -13,7 +13,7 @@ SHELL = /bin/sh
 
 # Chip & board used for compilation
 # (can be overriden by adding CHIP=chip and BOARD=board to the command-line)
-BOARD_FILE_ROOT = hosted
+BOARD_FILE_ROOT = bsp_hosted
 BOARD = linux
 OS_FSFW = linux
 CUSTOM_DEFINES += -D$(OS_FSFW)

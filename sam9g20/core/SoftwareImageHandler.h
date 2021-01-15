@@ -14,6 +14,8 @@ extern "C" {
 #endif
 }
 
+#include <array>
+
 
 #if defined(ISIS_OBC_G20) && defined(AT91SAM9G20_EK)
 #error "Two board defined at once. Please check includes!"

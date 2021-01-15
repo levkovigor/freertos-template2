@@ -37,9 +37,9 @@ MutexIF* CoreController::timeMutex = nullptr;
 
 CoreController::CoreController(object_id_t objectId,
         object_id_t systemStateTaskId):
-        ExtendedControllerBase(objectId, objects::NO_OBJECT),
-        systemStateTaskId(systemStateTaskId) {
-	timeMutex = MutexFactory::instance()->createMutex();
+                ExtendedControllerBase(objectId, objects::NO_OBJECT),
+                systemStateTaskId(systemStateTaskId) {
+    timeMutex = MutexFactory::instance()->createMutex();
 #ifdef ISIS_OBC_G20
     sif::info << "CoreController: Starting Supervisor component." << std::endl;
     Supervisor_start(nullptr, 0);
@@ -47,14 +47,14 @@ CoreController::CoreController(object_id_t objectId,
 }
 
 uint32_t CoreController::getUptimeSeconds() {
-	MutexHelper(timeMutex, MutexIF::TimeoutType::WAITING, 20);
-	return uptimeSeconds;
+    MutexHelper(timeMutex, MutexIF::TimeoutType::WAITING, 20);
+    return uptimeSeconds;
 }
 
 void CoreController::performControlOperation() {
     // First task: Supervisor handling.
-	performSupervisorHandling();
-	// Second task: All time related handling.
+    performSupervisorHandling();
+    // Second task: All time related handling.
     performPeriodicTimeHandling();
 }
 
@@ -86,8 +86,8 @@ void CoreController::performPeriodicTimeHandling() {
     /* Dynamic memory allocation is only allowed at software startup */
 #if OBSW_MONITOR_ALLOCATION == 1
     if(currentUptimeSeconds > 2 and not
-    		config::softwareInitializationComplete) {
-    	config::softwareInitializationComplete = true;
+            config::softwareInitializationComplete) {
+        config::softwareInitializationComplete = true;
     }
 #endif
 
@@ -125,13 +125,13 @@ uint32_t CoreController::updateSecondsCounter() {
     // I am just going to assume that the first uptime encountered is going
     // to be larger than 0 milliseconds.
     if(uptimeMs <= lastUptimeMs) {
-    	msOverflowCounter++;
+        msOverflowCounter++;
     }
     currentUptimeSeconds /= configTICK_RATE_HZ;
 
     lastUptimeMs = uptimeMs;
     uptimeSeconds = msOverflowCounter * SECONDS_ON_MS_OVERFLOW +
-    		currentUptimeSeconds;
+            currentUptimeSeconds;
 #endif
     return uptimeSeconds;
 }
@@ -226,11 +226,16 @@ ReturnValue_t CoreController::initializeAfterTaskCreation() {
     }
 
 #ifdef ISIS_OBC_G20
-     uint32_t new_reboot_counter = 0;
+    uint32_t new_reboot_counter = 0;
     int retval = increment_reboot_counter(&new_reboot_counter);
     if(retval != 0) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "CoreController::initialize: Error incrementing the boot"
                 << " counter!" << std::endl;
+#else
+        sif::printError("CoreController::initialize: Error incrementing the boot"
+                " counter!\n");
+#endif
     }
     triggerEvent(BOOT_EVENT, new_reboot_counter, 0);
 #else
@@ -256,8 +261,13 @@ ReturnValue_t CoreController::setUpSystemStateTask() {
     systemStateTask = objectManager->
             get<SystemStateTask>(systemStateTaskId);
     if(systemStateTask == nullptr) {
-        sif::error << "CoreController::performControlOperation:"
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "CoreController::performControlOperation: "
                 "System state task invalid!" << std::endl;
+#else
+        sif::printError("CoreController::performControlOperation: "
+                "System state task invalid!\n");
+#endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     return HasReturnvaluesIF::RETURN_OK;
@@ -330,8 +340,8 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t CoreController::initializeLocalDataPool(
-        LocalDataPool &localDataPoolMap, LocalDataPoolManager &poolManager) {
+ReturnValue_t CoreController::initializeLocalDataPool(localpool::DataPool &localDataPoolMap,
+        LocalDataPoolManager &poolManager) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
