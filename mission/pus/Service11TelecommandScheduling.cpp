@@ -26,6 +26,10 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest(
 	if (ret != RETURN_OK){
 		return ret;
 	}
+	else if (pRawData == nullptr){
+		//NOTE: Don't know whether this is necessary, prevents nullpointer crashes though
+		return RETURN_FAILED;
+	}
 
 	//TODO: parse the duration (first 4 bytes here)
 	uint32_t parsedDuration = 1;
@@ -34,7 +38,11 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest(
 	//test
 	uint32_t object = 0;
 
-	SerializeAdapter::deSerialize<uint32_t>(&object, pRawData, size, SerializeIF::Endianness::BIG);
+	ret = SerializeAdapter::deSerialize<uint32_t>(&object, &pRawData, &size, SerializeIF::Endianness::BIG);
+	if (ret != RETURN_OK){
+		return ret;
+	}
+
 
 
 	// get store address
