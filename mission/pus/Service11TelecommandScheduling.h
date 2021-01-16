@@ -29,9 +29,9 @@ private:
         TelecommandStruct(uint32_t seconds, store_address_t storeId):
         seconds(seconds), storeId(storeId) { }
 
-        void DebugPrint(void) const {
+        void debugPrint(void) const {
         	sif::info << "TelecommandStruct{ seconds: " << this->seconds
-        			<< "  storeId: " << this->storeId << "}" << std::endl;
+        			<< "  storeId (raw): " << this->storeId.raw << "}" << std::endl;
         }
     };
 
