@@ -196,19 +196,16 @@ and press c to start
 
 ### Loading binaries built locally to the non-volatile memory
 
-It is recommended to flash the software to the SDRAM directly for
-development purposes. To test the binary and the bootloader on 
-the non-volatile memories, the images need to be written
-to the 1MB NOR-Flash chip. This is either possible with SAM-BA
-when interfacing the iOBC with a Windows PC and the ISIS SAM-BA application
-installed or by uploading the binary via RS232 (same communication line
-used for TMTC commanding). For remote deployment, only the second
-way is currently possible. A recent software version needs to
-be running to perform this step as well.
-Following general steps need to be taken:
+It is recommended to flash the software to the SDRAM directly for development purposes. 
+To test the binary and the bootloader on  the non-volatile memories, the images need to be written
+to the 1MB NOR-Flash chip. This is either possible with SAM-BA when interfacing the iOBC with a 
+Windows PC and the ISIS SAM-BA application installed or by uploading the binary via RS232 
+(same communication line used for TMTC commanding). For remote deployment, only the second
+way is currently possible. A recent software version needs to 
+be running to perform this step as well. Following general steps need to be taken:
 
 1. Transfer the file with to the \_bin folder of
-the remote OBSW folder with SFTP. It is recommended to use Filezilla for this.
+the remote OBSW folder with SFTP. It is recommended to use FileZilla for this.
 It is possible to set common operations as favorites in Filezilla.
 
 2. Transfer the binary to the SD-Card first. The `tmtcclient` Python application

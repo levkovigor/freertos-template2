@@ -73,6 +73,7 @@ VPATH += $(PERIPH)/usart
 VPATH += $(PERIPH)/rstc
 VPATH += $(PERIPH)/spi
 VPATH += $(PERIPH)/twi
+VPATH += $(AT91_MEMORIES)/sdmmc
 
 ifeq ($(BOOTLOADER), 1)
 VPATH += $(PERIPH)/mci
@@ -184,5 +185,11 @@ AT91_SRC += CDCDSerialDriver.c
 AT91_SRC += CDCDSerialDriverDescriptors.c
 AT91_SRC += CDCLineCoding.c
 AT91_SRC += CDCSetControlLineStateRequest.c
+endif
+
+ifeq ($(ADD_MMC_DRIVER), 1)
+AT91_SRC += Media.c
+AT91_SRC += MEDSdcard.c
+AT91_SRC += sdmmc_mci.c
 endif
 

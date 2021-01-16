@@ -8,6 +8,7 @@
 //! a difference, most of the AT91 lib uses IO so it is difficult to remove it)
 #define DEBUG_IO_LIB            1
 
+//! Additional debug output
 #define DEBUG_VERBOSE           0
 
 //! Use tiny FS instead of HCC FS.
