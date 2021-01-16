@@ -69,6 +69,9 @@ void genericMissedDeadlineFunc();
 void initTasks(void);
 void runMinimalTask(void);
 
+#define MAX_LUNS        1
+Media medias[MAX_LUNS];
+
 /**
  * @brief   Initializes mission specific implementation of FSFW,
  *          implements and starts all periodic tasks.

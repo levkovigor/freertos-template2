@@ -138,6 +138,14 @@ int copy_with_tinyfatfs_lib(BootSelect boot_select) {
         PIO_Clear(sd_select_pin);
     }
 
+    Pin npWrPinsThatDoMagic[2] = {PIN_NPWR_SD0, PIN_NPWR_SD1};
+    PIO_Configure(npWrPinsThatDoMagic, PIO_LISTSIZE(npWrPinsThatDoMagic));
+    PIO_Clear(npWrPinsThatDoMagic);
+    PIO_Clear(npWrPinsThatDoMagic + 1);
+
+    Pin pinsMci1Off[2] = {PINS_MCI1_OFF};
+    PIO_Configure(pinsMci1Off, PIO_LISTSIZE(pinsMci1Off));
+
     MEDSdcard_Initialize(&medias[ID_DRV], 0);
     memset(&fs, 0, sizeof(FATFS));  // Clear file system object
     res = f_mount(0, &fs);

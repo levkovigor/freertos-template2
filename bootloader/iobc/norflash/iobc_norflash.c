@@ -83,7 +83,7 @@ int iobc_norflash() {
     //-------------------------------------------------------------------------
     // iOBC Bootloader
     //-------------------------------------------------------------------------
-    xTaskCreate(handler_task, "HANDLER_TASK", 524, NULL, 4,
+    xTaskCreate(handler_task, "HANDLER_TASK", 1024, NULL, 4,
             &handler_task_handle_glob);
     xTaskCreate(init_task, "INIT_TASK", 524, handler_task_handle_glob,
             5, NULL);
