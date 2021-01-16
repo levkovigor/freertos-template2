@@ -44,10 +44,6 @@ private:
 
     TelecommandMap telecommandMap;
 
-    // storage for the raw data to be received
-    const uint8_t* pRawData = nullptr;
-    size_t size = 0;
-
 };
 
 
