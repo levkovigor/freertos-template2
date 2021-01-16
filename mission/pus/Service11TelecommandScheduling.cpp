@@ -24,6 +24,7 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest(
 	// get serialized data packet
 	ReturnValue_t ret = this->currentPacket.getData(&pRawData, &size);
 	if (ret != RETURN_OK){
+		// data not retrieved successfully
 		return ret;
 	}
 	else if (pRawData == nullptr){
@@ -31,18 +32,19 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest(
 		return RETURN_FAILED;
 	}
 
-	//TODO: parse the duration (first 4 bytes here)
-	uint32_t parsedDuration = 1;
-
-
 	//test
-	uint32_t object = 0;
+	uint32_t deserializedTimestamp = 0;
 
-	ret = SerializeAdapter::deSerialize<uint32_t>(&object, &pRawData, &size, SerializeIF::Endianness::BIG);
+	// for better understanding:
+	// pRawData: raw data buffer to be de-serialized
+	// size: remaining size of buffer to de-serialize. Is decreased by function (until 0 I assume)
+	// I assume: Function de-serializes byte-wise until remaining size is 0
+	ret = SerializeAdapter::deSerialize<uint32_t>(&deserializedTimestamp, &pRawData, &size, SerializeIF::Endianness::BIG);
 	if (ret != RETURN_OK){
 		return ret;
 	}
 
+	// deserializedTimestamp should now be the correct UNIX timestamp in sec, without any further bit-shifting etc.
 
 
 	// get store address
@@ -51,10 +53,8 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest(
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
 
-	// instanciate tcStruct & insert into multimap
-	TelecommandStruct tc(parsedDuration, addr);
-	telecommandMap.insert(std::pair<uint32_t, TelecommandStruct>(parsedDuration, tc));
-
+	TelecommandStruct tc(deserializedTimestamp, addr);
+	telecommandMap.insert(std::pair<uint32_t, TelecommandStruct>(deserializedTimestamp, tc));
 
     return HasReturnvaluesIF::RETURN_OK;
 }

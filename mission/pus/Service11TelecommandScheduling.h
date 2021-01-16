@@ -5,8 +5,8 @@
 #include <etl/multimap.h>
 #include <OBSWConfig.h>
 
-// from last meeting:
-// I can use max. C++17
+// for debug prints:
+#include <string>
 
 
 class Service11TelecommandScheduling final: public PusServiceBase {
@@ -28,6 +28,11 @@ private:
 
         TelecommandStruct(uint32_t seconds, store_address_t storeId):
         seconds(seconds), storeId(storeId) { }
+
+        void DebugPrint(void) const {
+        	sif::info << "TelecommandStruct{ seconds: " << this->seconds
+        			<< "  storeId: " << this->storeId << "}" << std::endl;
+        }
     };
 
     StorageManagerIF* tcStore = nullptr;
