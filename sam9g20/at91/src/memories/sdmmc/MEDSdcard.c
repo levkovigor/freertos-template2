@@ -45,7 +45,7 @@
 #include <string.h>
 
 
-#define TINY_MODE_FOR_FAT 1
+#define TINY_MODE_FOR_FAT 0
 
 //------------------------------------------------------------------------------
 //         Local variables
