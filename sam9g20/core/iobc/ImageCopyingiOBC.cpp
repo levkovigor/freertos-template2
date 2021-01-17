@@ -8,6 +8,8 @@ extern "C" {
 }
 
 #include <fsfw/globalfunctions/CRC.h>
+#include <sam9g20/at91/common/commonIOBCConfig.h>
+
 
 ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
     switch(imageHandlerState) {
@@ -72,6 +74,7 @@ ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
 ReturnValue_t ImageCopyingEngine::handleNorflashErasure() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     if(bootloader) {
+        // we only want to print this once.
         if(not helperFlag1) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "ImageCopyingEngine::handleNorflashErasure: Deleting old "
@@ -83,7 +86,7 @@ ReturnValue_t ImageCopyingEngine::handleNorflashErasure() {
             helperFlag1 = true;
         }
 
-        while(stepCounter < RESERVED_BL_SMALL_SECTORS) {
+        while(stepCounter < RESERVED_BL_SECTORS) {
             result = NORFLASH_EraseSector(&NORFlash,
                     getBaseAddress(stepCounter, nullptr));
             if(result != 0) {
@@ -136,10 +139,9 @@ ReturnValue_t ImageCopyingEngine::handleObswErasure() {
             currentFileSize = f_filelength(config::SW_UPDATE_SLOT_NAME);
         }
 
-         helperFlag1 = true;
-         uint8_t requiredBlocks = NORFLASH_SECTORS_NUMBER -
-        		 RESERVED_BL_SMALL_SECTORS;
-         helperCounter1 = requiredBlocks;
+        helperFlag1 = true;
+        uint8_t requiredBlocks = RESERVED_OBSW_SECTORS;
+        helperCounter1 = requiredBlocks;
     }
 
     while(stepCounter < helperCounter1) {
@@ -255,7 +257,7 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
         handleFinishPrintout();
 
         if(bootloader) {
-        	writeBootloaderSizeAndCrc();
+            writeBootloaderSizeAndCrc();
         }
 
         // cache last finished state.
@@ -270,44 +272,42 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
 }
 
 void ImageCopyingEngine::writeBootloaderSizeAndCrc() {
-	int retval = NORFLASH_WriteData(&NORFlash, NORFLASH_BL_SIZE_START,
-			reinterpret_cast<unsigned char *>(&currentFileSize), 4);
-	if(retval != 0) {
+    int retval = NORFLASH_WriteData(&NORFlash, NORFLASH_BL_SIZE_START,
+            reinterpret_cast<unsigned char *>(&currentFileSize), 4);
+    if(retval != 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-		sif::error << "Writing bootloader size failed!" << std::endl;
+        sif::error << "Writing bootloader size failed!" << std::endl;
 #else
-		sif::printError("Writing bootloader size failed!\n");
+        sif::printError("Writing bootloader size failed!\n");
 #endif
-	}
-	// calculate and write CRC to designated NOR-Flash address
-	// This will be used by the bootloader to determine SEUs in the
-	// bootloader.
-	uint16_t crc16 = CRC::crc16ccitt(reinterpret_cast<const uint8_t*>(
-			NORFLASH_BASE_ADDRESS_READ),
-			currentFileSize);
-	retval = NORFLASH_WriteData(&NORFlash, NORFLASH_BL_CRC16_START,
-			reinterpret_cast<unsigned char *>(&crc16),
-			sizeof(crc16));
-	if(retval != 0) {
+    }
+    // calculate and write CRC to designated NOR-Flash address
+    // This will be used by the bootloader to determine SEUs in the
+    // bootloader.
+    uint16_t crc16 = CRC::crc16ccitt(reinterpret_cast<const uint8_t*>(NORFLASH_BASE_ADDRESS_READ),
+            currentFileSize);
+    retval = NORFLASH_WriteData(&NORFlash, NORFLASH_BL_CRC16_START,
+            reinterpret_cast<unsigned char *>(&crc16), sizeof(crc16));
+    if(retval != 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-		sif::error << "Writing bootloader CRC16 failed!" << std::endl;
+        sif::error << "Writing bootloader CRC16 failed!" << std::endl;
 #else
-		sif::printError("Writing bootloader CRC16 failed!\n");
+        sif::printError("Writing bootloader CRC16 failed!\n");
 #endif
-	}
+    }
 #if OBSW_VERBOSE_LEVEL >= 1
-	else {
+    else {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-    	sif::info << std::setfill('0') << std::setw(2) << std::hex
-    			<< "Bootloader CRC16: " << "0x" << (crc16 >> 8 & 0xff) << ", "
-				<< "0x" << (crc16 & 0xff) << " written to address " << std::setw(8)
-				<< "0x" << NORFLASH_BL_CRC16_START << std::setfill(' ')
-				<< std::dec << std::endl;
+        sif::info << std::setfill('0') << std::setw(2) << std::hex
+                << "Bootloader CRC16: " << "0x" << (crc16 >> 8 & 0xff) << ", "
+                << "0x" << (crc16 & 0xff) << " written to address " << std::setw(8)
+                << "0x" << NORFLASH_BL_CRC16_START << std::setfill(' ')
+                << std::dec << std::endl;
 #else
-    	sif::printInfo("Bootloader CRC16: 0x%02x,0x02x wirtten to address 0x%08x",
-    	        (crc16 >> 8) & 0xff, crc16 & 0xff, NORFLASH_BL_CRC16_START);
+        sif::printInfo("Bootloader CRC16: 0x%02x,0x02x wirtten to address 0x%08x",
+                (crc16 >> 8) & 0xff, crc16 & 0xff, NORFLASH_BL_CRC16_START);
 #endif
-	}
+    }
 #endif
 }
 
@@ -316,9 +316,12 @@ void ImageCopyingEngine::writeBootloaderSizeAndCrc() {
  * read, erased or written. Perform changes with care!
  * Currently, the algorithm assumes that all small sectors are reserved for the bootloader.
  */
+#if IOBC_BOOTLOADER_SIZE == IOBC_SMALL_BOOTLOADER_65KB
+
 uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
         size_t* offset) {
     if(bootloader) {
+        // deletion steps, performed per-sector
         if(internalState == GenericInternalState::STEP_1) {
             switch(stepCounter) {
             case(0): return NORFLASH_SA0_ADDRESS;
@@ -331,6 +334,7 @@ uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
             case(7): return NORFLASH_SA7_ADDRESS;
             }
         }
+        // now we write in small sector buckets, so the offset is actually important.
         else if(internalState == GenericInternalState::STEP_2) {
             uint8_t baseIdx = currentByteIdx / NORFLASH_SMALL_SECTOR_SIZE;
             if(offset != nullptr) {
@@ -412,6 +416,136 @@ uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
     return 0xffffffff;
 }
 
+#elif IOBC_BOOTLOADER_SIZE == IOBC_LARGE_BOOTLOADER_128KB
+
+uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
+        size_t* offset) {
+    if(bootloader) {
+        // deletion steps, performed per-sector
+        if(internalState == GenericInternalState::STEP_1) {
+            switch(stepCounter) {
+            case(0): return NORFLASH_SA0_ADDRESS;
+            case(1): return NORFLASH_SA1_ADDRESS;
+            case(2): return NORFLASH_SA2_ADDRESS;
+            case(3): return NORFLASH_SA3_ADDRESS;
+            case(4): return NORFLASH_SA4_ADDRESS;
+            case(5): return NORFLASH_SA5_ADDRESS;
+            case(6): return NORFLASH_SA6_ADDRESS;
+            case(7): return NORFLASH_SA7_ADDRESS;
+            case(8): return NORFLASH_SA8_ADDRESS;
+            }
+        }
+        // now we write in small sector buckets, so the offset is actually important.
+        else if(internalState == GenericInternalState::STEP_2) {
+            uint8_t baseIdx = currentByteIdx / NORFLASH_SMALL_SECTOR_SIZE;
+            if(offset != nullptr) {
+                *offset = currentByteIdx % NORFLASH_SMALL_SECTOR_SIZE;
+            }
+            switch(baseIdx) {
+            case(0): return NORFLASH_SA0_ADDRESS;
+            case(1): return NORFLASH_SA1_ADDRESS;
+            case(2): return NORFLASH_SA2_ADDRESS;
+            case(3): return NORFLASH_SA3_ADDRESS;
+            case(4): return NORFLASH_SA4_ADDRESS;
+            case(5): return NORFLASH_SA5_ADDRESS;
+            case(6): return NORFLASH_SA6_ADDRESS;
+            case(7): return NORFLASH_SA7_ADDRESS;
+            case(8): return NORFLASH_SA8_ADDRESS;
+            // This sector is a large sector, so we need to set the offset here.
+            case(9): {
+                *offset = NORFLASH_SMALL_SECTOR_SIZE;
+                return NORFLASH_SA8_ADDRESS;
+            }
+            case(10): {
+                *offset = NORFLASH_SMALL_SECTOR_SIZE * 2;
+                return NORFLASH_SA8_ADDRESS;
+            }
+            case(11): {
+                *offset = NORFLASH_SMALL_SECTOR_SIZE * 3;
+                return NORFLASH_SA8_ADDRESS;
+            }
+            case(12): {
+                *offset = NORFLASH_SMALL_SECTOR_SIZE * 4;
+                return NORFLASH_SA8_ADDRESS;
+            }
+            case(13): {
+                *offset = NORFLASH_SMALL_SECTOR_SIZE * 5;
+                return NORFLASH_SA8_ADDRESS;
+            }
+            case(14): {
+                *offset = NORFLASH_SMALL_SECTOR_SIZE * 6;
+                return NORFLASH_SA8_ADDRESS;
+            }
+            case(15): {
+                *offset = NORFLASH_SMALL_SECTOR_SIZE * 7;
+                return NORFLASH_SA8_ADDRESS;
+            }
+            }
+        }
+    }
+    else {
+        if(internalState == GenericInternalState::STEP_1) {
+            switch(stepCounter) {
+            case(0): return NORFLASH_SA9_ADDRESS;
+            case(1): return NORFLASH_SA10_ADDRESS;
+            case(2): return NORFLASH_SA11_ADDRESS;
+            case(3): return NORFLASH_SA12_ADDRESS;
+            case(4): return NORFLASH_SA13_ADDRESS;
+            case(5): return NORFLASH_SA14_ADDRESS;
+            case(6): return NORFLASH_SA15_ADDRESS;
+            case(7): return NORFLASH_SA16_ADDRESS;
+            case(8): return NORFLASH_SA17_ADDRESS;
+            case(9): return NORFLASH_SA18_ADDRESS;
+            case(10): return NORFLASH_SA19_ADDRESS;
+            case(11): return NORFLASH_SA20_ADDRESS;
+            case(12): return NORFLASH_SA21_ADDRESS;
+            case(13): return NORFLASH_SA21_ADDRESS;
+            case(14): return NORFLASH_SA22_ADDRESS;
+            default: return NORFLASH_SA22_ADDRESS;
+            }
+        }
+        else if(internalState == GenericInternalState::STEP_2) {
+            switch(stepCounter) {
+            case(0): return NORFLASH_SA9_ADDRESS;
+            case(8): return NORFLASH_SA10_ADDRESS;
+            case(16): return NORFLASH_SA11_ADDRESS;
+            case(24): return NORFLASH_SA12_ADDRESS;
+            case(32): return NORFLASH_SA13_ADDRESS;
+            case(40): return NORFLASH_SA14_ADDRESS;
+            case(48): return NORFLASH_SA15_ADDRESS;
+            case(56): return NORFLASH_SA16_ADDRESS;
+            case(64): return NORFLASH_SA17_ADDRESS;
+            case(72): return NORFLASH_SA18_ADDRESS;
+            case(80): return NORFLASH_SA19_ADDRESS;
+            case(88): return NORFLASH_SA20_ADDRESS;
+            case(96): return NORFLASH_SA21_ADDRESS;
+            case(104): return NORFLASH_SA22_ADDRESS;
+            default:
+                if(stepCounter < 104 + 8) {
+                    *offset = (stepCounter % 8) * NORFLASH_SMALL_SECTOR_SIZE;
+                }
+                if(stepCounter < 8) return NORFLASH_SA9_ADDRESS;
+                if(stepCounter < 16) return NORFLASH_SA10_ADDRESS;
+                if(stepCounter < 24) return NORFLASH_SA11_ADDRESS;
+                if(stepCounter < 32) return NORFLASH_SA12_ADDRESS;
+                if(stepCounter < 40) return NORFLASH_SA13_ADDRESS;
+                if(stepCounter < 48) return NORFLASH_SA14_ADDRESS;
+                if(stepCounter < 56) return NORFLASH_SA15_ADDRESS;
+                if(stepCounter < 64) return NORFLASH_SA16_ADDRESS;
+                if(stepCounter < 72) return NORFLASH_SA17_ADDRESS;
+                if(stepCounter < 80) return NORFLASH_SA18_ADDRESS;
+                if(stepCounter < 88) return NORFLASH_SA19_ADDRESS;
+                if(stepCounter < 96) return NORFLASH_SA20_ADDRESS;
+                if(stepCounter < 104) return NORFLASH_SA21_ADDRESS;
+                if(stepCounter < 112) return NORFLASH_SA22_ADDRESS;
+            }
+        }
+    }
+    return 0xffffffff;
+}
+
+#endif /* IOBC_BOOTLOADER_SIZE == IOBC_LARGE_BOOTLOADER_128KB */
+
 void ImageCopyingEngine::handleFinishPrintout() {
 #if OBSW_VERBOSE_LEVEL >= 1
     if(bootloader) {
@@ -423,6 +557,7 @@ void ImageCopyingEngine::handleFinishPrintout() {
         sif::printInfo("Copying bootloader to NOR-Flash finished with %hu steps!\n", stepCounter);
 #endif
 
+        // Print the ARM vectors for the bootloader.
 #if OBSW_VERBOSE_LEVEL >= 2
         std::array<uint8_t, 7 * 4> armVectors;
         uint32_t currentArmVector = 0;

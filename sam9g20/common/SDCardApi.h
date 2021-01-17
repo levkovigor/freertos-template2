@@ -21,8 +21,8 @@ typedef enum {
  * for successfull execution.
  * @param volumeId
  */
-int open_filesystem(VolumeId volumeId);
-int close_filesystem(VolumeId volumeId);
+int open_filesystem();
+int close_filesystem();
 int select_sd_card(VolumeId volumeId);
 int switch_sd_card(VolumeId volumeId);
 

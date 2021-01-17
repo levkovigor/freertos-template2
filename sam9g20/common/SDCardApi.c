@@ -8,7 +8,7 @@
 
 static int delete_file_system_object(const char* name);
 
-int open_filesystem(VolumeId volume){
+int open_filesystem(){
 	/* Initialize the memory to be used by the filesystem */
 	hcc_mem_init();
 
@@ -23,7 +23,7 @@ int open_filesystem(VolumeId volume){
 	return result;
 }
 
-int close_filesystem(VolumeId volumeId) {
+int close_filesystem() {
 	int result = fs_delete();
 	if(result != F_NO_ERROR) {
 		TRACE_ERROR("close_filesystem: fs_delete failed with "

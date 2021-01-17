@@ -85,7 +85,7 @@ SDCardAccess::SDCardAccess() {
 #endif
     currentVolumeId = SDCardAccessManager::instance()->activeSdCard;
     if(SDCardAccessManager::instance()->activeAccesses == 0) {
-        result = open_filesystem(currentVolumeId);
+        result = open_filesystem();
         if(result != F_NO_ERROR) {
             // This could be major problem, maybe reboot or change of SD card
             // necessary!
@@ -120,6 +120,6 @@ SDCardAccess::~SDCardAccess() {
             config::SD_CARD_ACCESS_MUTEX_TIMEOUT);
     SDCardAccessManager::instance()->activeAccesses--;
     if(SDCardAccessManager::instance()->activeAccesses == 0) {
-        close_filesystem(currentVolumeId);
+        close_filesystem();
     }
 }

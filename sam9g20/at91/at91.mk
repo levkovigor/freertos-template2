@@ -211,3 +211,5 @@ AT91_SRC += $(CURRENTPATH)/tinyfatfs/src/tff.c
 INCLUDES += $(CURRENTPATH)/tinyfatfs/include
 endif
 
+INCLUDES += $(CURRENTPATH)/common
+

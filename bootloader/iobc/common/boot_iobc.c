@@ -90,11 +90,10 @@ int copy_norflash_binary_to_sdram(size_t binary_size)
 
     // This operation takes 100-200 milliseconds if the whole NOR-Flash is
     // copied.
-    memcpy((void*) SDRAM_DESTINATION, (const void*) BINARY_BASE_ADDRESS_READ,
-            binary_size);
-    /* verify that the binary was copied properly. A hamming code check
-	should have been performed previously. If this fails, we return with
-	error and try SD card boot. */
+    memcpy((void*) SDRAM_DESTINATION, (const void*) BINARY_BASE_ADDRESS_READ, binary_size);
+
+    /* Verify that the binary was copied properly. Ideally, we will also run a hamming
+    code check here in the future. */
     for(int idx = 0; idx < binary_size; idx++) {
         if(*(uint8_t*)(SDRAM_DESTINATION + idx) !=
                 *(uint8_t*)(BINARY_BASE_ADDRESS_READ + idx)) {

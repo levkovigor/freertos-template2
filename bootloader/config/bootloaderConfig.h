@@ -12,7 +12,7 @@
 #define DEBUG_VERBOSE           0
 
 //! Use tiny FS instead of HCC FS.
-#define USE_TINY_FS 			1
+#define USE_TINY_FS 			0
 
 //! 1 MB minus reserved size of bootloader.
 #ifdef AT91SAM9G20_EK

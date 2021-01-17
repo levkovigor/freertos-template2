@@ -155,9 +155,7 @@ void print_bl_info() {
 }
 
 void perform_bootloader_check() {
-    /* Check CRC of bootloader which will should be located at
-	0x1000A000 -2 and 0x1000A000 -1. The bootloader size will be located
-	at 0x1000A000 - 6.
+    /* Check CRC of bootloader:
 
 	If CRC16 is blank (0x00, 0xff), continue and emit warning (it is recommended
 	to write the CRC field when writing the bootloader. If SAM-BA is used
@@ -173,29 +171,24 @@ void perform_bootloader_check() {
 
     uint16_t written_crc16 = 0;
     size_t bootloader_size = 0;
-    // Bootloader size is written into the sixth ARM vector.
-    memcpy(&bootloader_size,
-            (const void *) (BOOTLOADER_END_ADDRESS_READ - 6), 4);
+    // Bootloader size and CRC16 are written at the end of the reserved bootloader space.
+    memcpy(&bootloader_size, (const void *) NORFLASH_BL_SIZE_START_READ, 4);
 #if DEBUG_IO_LIB == 1
     TRACE_INFO("Written bootloader size: %d bytes.\n\r", bootloader_size);
 #endif
-    memcpy(&written_crc16, (const void*) (BOOTLOADER_END_ADDRESS_READ - 2),
-            sizeof(written_crc16));
+    memcpy(&written_crc16, (const void*) NORFLASH_BL_CRC16_START_READ, sizeof(written_crc16));
 #if DEBUG_IO_LIB == 1
     TRACE_INFO("Written CRC16: 0x%4x.\n\r", written_crc16);
 #endif
     if(written_crc16 != 0x00 || written_crc16 != 0xff) {
         uint16_t calculated_crc = crc16ccitt_default_start_crc(
-                (const void *) BOOTLOADER_BASE_ADDRESS_READ,
-                bootloader_size);
+                (const void *) BOOTLOADER_BASE_ADDRESS_READ, bootloader_size);
         if(written_crc16 != calculated_crc) {
-            memcpy((void*)SDRAM_DESTINATION,
-                    (const void*) BINARY_BASE_ADDRESS_READ,
-                    NORFLASH_SIZE - BOOTLOADER_RESERVED_SIZE);
+            memcpy((void*)SDRAM_DESTINATION, (const void*) BINARY_BASE_ADDRESS_READ,
+                    IOBC_NORFLASH_SIZE - BOOTLOADER_RESERVED_SIZE);
             uint32_t bootloader_faulty_flag = 1;
             memcpy((void*) (SDRAM0_END - sizeof(bootloader_faulty_flag)),
-                    (const void *) &bootloader_faulty_flag,
-                    sizeof(bootloader_faulty_flag));
+                    (const void *) &bootloader_faulty_flag, sizeof(bootloader_faulty_flag));
             vTaskEndScheduler();
             jump_to_sdram_application();
         }
