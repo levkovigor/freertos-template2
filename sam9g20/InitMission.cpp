@@ -20,14 +20,10 @@
 extern "C" {
 #include <board.h>
 #include <AT91SAM9G20.h>
-#include <memories/sdmmc/MEDSdcard.h>
-#include <tinyfatfs/tff.h>
 }
 
 #include <OBSWConfig.h>
 #include <cstring>
-
-Media medias[1];
 
 #if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1 || OBSW_MONITOR_ALLOCATION == 1
 #include <new>
@@ -113,8 +109,6 @@ void initMission(void) {
     printf("-- Software version %s v%d.%d.%d --\n\r", SW_NAME, SW_VERSION, SW_SUBVERSION,
             SW_SUBSUBVERSION);
     printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
-
-    sdTest();
 
 #if DEBUG_IO_LIB == 1
     TRACE_INFO("Copying image \"%s\" from SD-Card %u to SDRAM\n\r", file_name,
