@@ -27,21 +27,29 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef MEDSDCARD_H
-#define MEDSDCARD_H
+#ifndef FF_UTIL_H
+#define FF_UTIL_H
+
+#include <fatfs_config.h>
+#if _FATFS_TINY != 1
+#include "ff.h"
+#else
+#include "tff.h"
+#endif
 
 //------------------------------------------------------------------------------
-//         Headers
+//         Definitions
+//------------------------------------------------------------------------------
+ 
+
+//------------------------------------------------------------------------------
+//         Global functions
 //------------------------------------------------------------------------------
 
-#include "Media.h"
+extern DWORD get_fattime( void );
 
-//------------------------------------------------------------------------------
-//      Exported functions
-//------------------------------------------------------------------------------
+extern void FF_ScanDir(char* path);
+extern const char* FF_GetStrResult(FRESULT res);
 
-extern void MEDSdcard_Initialize(Media *media, unsigned char mciID);
-extern void MEDSdcard_EraseAll(Media *media);
-extern void MEDSdcard_EraseBlock(Media *media, unsigned int block);
+#endif //#ifndef FF_UTIL_H
 
-#endif //#ifndef MEDSDCARD_H

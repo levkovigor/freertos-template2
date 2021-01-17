@@ -86,6 +86,10 @@ ifeq ($(LOAD_MCI), 1)
 VPATH += $(PERIPH)/mci
 endif
 
+ifeq ($(ADD_TINYFATFS), 1)
+VPATH += $(CURRENTPATH)/tinyfatfs/src
+endif
+
 ifeq ($(BOARD), ISIS_OBC_G20)
 VPATH += $(BOARDS)/ISIS_OBC_G20
 VPATH += $(BOARDS)/ISIS_OBC_G20/at91sam9g20
@@ -198,5 +202,12 @@ ifeq ($(ADD_MMC_DRIVER), 1)
 AT91_SRC += Media.c
 AT91_SRC += MEDSdcard.c
 AT91_SRC += sdmmc_mci.c
+endif
+
+ifeq ($(ADD_TINYFATFS), 1)
+AT91_SRC += $(CURRENTPATH)/tinyfatfs/src/diskio.c
+AT91_SRC += $(CURRENTPATH)/tinyfatfs/src/tff.c
+
+INCLUDES += $(CURRENTPATH)/tinyfatfs/include
 endif
 

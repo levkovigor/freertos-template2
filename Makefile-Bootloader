@@ -32,7 +32,11 @@ SHELL = /bin/sh
 # (can be overriden by adding CHIP=chip and BOARD=board to the command-line)
 CHIP  = at91sam9g20
 CUSTOM_DEFINES += -D$(CHIP)
+
 BOOTLOADER = 1
+ADD_MMC_DRIVER = 1
+ADD_TINYFATFS = 1
+
 # select the target platform. Add IOBC=1 to build the binary for the iOBC.
 ifdef IOBC
 BOARD = ISIS_OBC_G20

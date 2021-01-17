@@ -1,7 +1,7 @@
 #include "iobc_boot_sd.h"
 #include <bootloaderConfig.h>
 #include <fatfs_config.h>
-#include <memories/MEDSdcard.h>
+#include <memories/sdmmc/MEDSdcard.h>
 #include <string.h>
 #include <utility/trace.h>
 #include <iobc/norflash/iobc_norflash.h>
@@ -154,8 +154,8 @@ int copy_with_tinyfatfs_lib(BootSelect boot_select) {
         return 0;
     }
 
-    char file_name [strlen(SW_REPOSITORY) + strlen(SW_UPDATE_FILE_NAME) + 1];
-    snprintf(file_name, sizeof (file_name), "%s%s", SW_REPOSITORY, SW_UPDATE_FILE_NAME);
+    char file_name [strlen(SW_REPOSITORY) + strlen(SW_UPDATE_FILE_NAME) + 2];
+    snprintf(file_name, sizeof (file_name) + 1, "/%s%s", SW_REPOSITORY, SW_UPDATE_FILE_NAME);
 
 #if DEBUG_IO_LIB == 1
     TRACE_INFO("Copying image \"%s\" from SD-Card %u to SDRAM\n\r", file_name,
