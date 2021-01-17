@@ -74,6 +74,7 @@ ReturnValue_t TestTask::performOneShotAction() {
 	// Everything here will only be performed once.
     //SDCardTest();
 //    int res = 0;
+    //sdTest();
 //    SDCardAccess accessToken;
     //int res = open_filesystem(VolumeId::SD_CARD_0);
 
@@ -262,9 +263,6 @@ void TestTask::sdTest(void) {
     const int ID_DRV = 0;
     MEDSdcard_Initialize(&medias[ID_DRV], 0);
 
-
-
-
     memset(&fs, 0, sizeof(FATFS));  // Clear file system object
     int res = f_mount(0, &fs);
     if( res != FR_OK ) {
@@ -275,11 +273,11 @@ void TestTask::sdTest(void) {
 //    snprintf(file_name, sizeof (file_name) + 1, "/%s/%s", config::SW_REPOSITORY,
 //            config::SW_UPDATE_SLOT_NAME);
 
-#ifdef ISIS_OBC_G20
-    PIO_Set(npWrPins);
-    for(int idx = 0; idx < 100000; idx++) {};
-    PIO_Clear(npWrPins);
-#endif
+//#ifdef ISIS_OBC_G20
+//    PIO_Set(npWrPins);
+//    for(int idx = 0; idx < 100000; idx++) {};
+//    PIO_Clear(npWrPins);
+//#endif
 
     res = f_open(&fileObject, "test.bin", FA_OPEN_EXISTING|FA_READ);
     if( res != FR_OK ) {
