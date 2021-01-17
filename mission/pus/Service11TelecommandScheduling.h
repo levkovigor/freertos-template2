@@ -5,8 +5,6 @@
 #include <etl/multimap.h>
 #include <OBSWConfig.h>
 
-// for debug prints:
-#include <string>
 
 
 class Service11TelecommandScheduling final: public PusServiceBase {
