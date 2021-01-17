@@ -18,6 +18,7 @@
 #include <fsfw/container/SharedRingBuffer.h>
 #include <sam9g20/core/RingBufferAnalyzer.h>
 #include <mission/utility/USLPTransferFrame.h>
+#include <sam9g20/comIF/RS485TmTcTarget.h>
 
 extern "C" {
 
@@ -47,11 +48,12 @@ public:
 
     static constexpr size_t TMTC_FRAME_MAX_LEN = config::RS485_MAX_SERIAL_FRAME_SIZE;
     static constexpr uint8_t MAX_TC_PACKETS_HANDLED = 5;
+    static constexpr uint8_t MAX_TM_FRAMES_SENT_PER_CYCLE = 5;
     static constexpr uint8_t RETRY_COUNTER = 10;
     static constexpr char defaultMessage[] = { 'O', 'n', 'e', ' ', 'P', 'i', 'n', 'g', ' ', 'o',
             'n', 'l', 'y', ' ' };
 
-    RS485DeviceComIF(object_id_t objectId, object_id_t sharedRingBufferId);
+    RS485DeviceComIF(object_id_t objectId, object_id_t sharedRingBufferId, object_id_t tmTcTargetId);
     virtual ~RS485DeviceComIF();
 
     /**
@@ -99,6 +101,7 @@ public:
 private:
 
     uint8_t retryCount = 0;
+    uint8_t packetSentCounter = 0;
 
     // Stores one cookie for each device to communicate between ExecutableObjectIF overrides and DeviceComIF overrides
     std::array<CookieIF*, RS485Devices::DEVICE_COUNT_RS485> deviceCookies;
@@ -112,15 +115,21 @@ private:
     //Array with pointers to frame buffers
     std::array<USLPTransferFrame*, RS485Devices::DEVICE_COUNT_RS485> sendBuffer;
 
-    // Easy replacment for future queue, is just one deep for each device
+    // One deep frame buffer
     std::array<RS485WriteTransfer, RS485Devices::DEVICE_COUNT_RS485> sendQueue;
 
+    // Used for handling the TM Queue, this class is already big enough
+    object_id_t tmTcTargetId;
+    RS485TmTcTarget *tmTcTarget;
+
+
+
+
+
     object_id_t sharedRingBufferId;
-    SharedRingBuffer *sharedRingBuffer = nullptr;
     RingBufferAnalyzer *analyzerTask = nullptr;
 
     std::array<uint8_t, TMTC_FRAME_MAX_LEN + 5> receiveArray;
-
 
     /**
      * @brief  Initializes one TransferFrame class with buffer for each device
@@ -128,9 +137,16 @@ private:
      * 			stay the same, so they are set here and not changed later
      */
     void initTransferFrameSendBuffers();
-
+    /**
+     * @brief   Performs UART Transfer of DeviceCommands
+     * @details One Command in one frame is sent per cycle
+     */
     void handleSend(RS485Devices device, RS485Cookie *rs485Cookie);
-
+    /**
+     * @brief   Performs UART Transfer of  TM
+     * @details Calls RS485TmTcTarget fillFrameBuffer
+     */
+    void handleTmSend(RS485Devices device, RS485Cookie *rs485Cookie);
     ReturnValue_t handleReceiveBuffer();
     ReturnValue_t handlePacketReception(size_t foundLen);
     static void genericUartCallback(SystemContext context,

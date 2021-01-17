@@ -16,8 +16,9 @@ extern "C" {
 #include <hal/Drivers/UART.h>
 }
 
-RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t sharedRingBufferId) :
-        SystemObject(objectId), sharedRingBufferId(sharedRingBufferId) {
+RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t sharedRingBufferId,
+        object_id_t tmTcTargetId) :
+        SystemObject(objectId), sharedRingBufferId(sharedRingBufferId), tmTcTargetId(tmTcTargetId) {
 
     for (int i = 0; i < RS485Devices::DEVICE_COUNT_RS485; i++) {
         deviceCookies[i] = nullptr;
@@ -38,6 +39,10 @@ ReturnValue_t RS485DeviceComIF::initialize() {
     }
     analyzerTask = new RingBufferAnalyzer(ringBuffer, AnalyzerModes::DLE_ENCODING);
 
+    tmTcTarget = objectManager->get<RS485TmTcTarget>(tmTcTargetId);
+    if (tmTcTarget == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -70,10 +75,9 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 			sif::info << "Sending to FPGA" << std::endl;
 #endif
             GpioDeviceComIF::enableTransceiverFPGA1();
-            // Somewhat like this, but obviously not exactly, cause its not static
-//            while(RS485TmTcTarget::fillSendFrameBuffer){
-//                   // Send here
-//            }
+            // Normal device command to CCSDS board still need to be sent
+            handleSend(device, rs485Cookie);
+            handleTmSend(device, rs485Cookie);
             break;
         }
         case (RS485Devices::PCDU_VORAGO): {
@@ -81,12 +85,14 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 			sif::info << "Sending to PCDU" << std::endl;
 #endif
             GpioDeviceComIF::enableTransceiverPCDU();
+            handleSend(device, rs485Cookie);
             break;
         }
         case (RS485Devices::PL_VORAGO): {
 #ifdef DEBUG
 			sif::info << "Sending to PL_VORAGO" << std::endl;
 #endif
+            handleSend(device, rs485Cookie);
             GpioDeviceComIF::enableTransceiverVorago();
             break;
         }
@@ -94,6 +100,7 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 #ifdef DEBUG
 			sif::info << "Sending to PL_PIC24" << std::endl;
 #endif
+            handleSend(device, rs485Cookie);
             GpioDeviceComIF::enableTransceiverPIC24();
             break;
         }
@@ -106,7 +113,7 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
             break;
         }
         }
-        handleSend(device, rs485Cookie);
+
     } else {
         sif::error << "RS485 Device Cookies not initialized yet" << std::endl;
     }
@@ -225,6 +232,22 @@ void RS485DeviceComIF::handleSend(RS485Devices device, RS485Cookie *rs485Cookie)
         rs485Cookie->setComStatus(ComStatusRS485::TRANSFER_SUCCESS);
     }
 
+}
+
+void RS485DeviceComIF::handleTmSend(RS485Devices device, RS485Cookie *rs485Cookie) {
+
+    // TODO: Check if downlink available
+    for (packetSentCounter = 0; tmTcTarget->fillSendFrameBuffer() == HasReturnvaluesIF::RETURN_OK;
+            packetSentCounter++) {
+
+        // TODO: do something with result
+        UART_write(bus2_uart, sendBuffer[device]->getFullFrame(),
+                sendBuffer[device]->getFullFrameSize());
+
+        if (packetSentCounter >= MAX_TM_FRAMES_SENT_PER_CYCLE - 1) {
+            break;
+        }
+    }
 }
 
 ReturnValue_t RS485DeviceComIF::handleReceiveBuffer() {
