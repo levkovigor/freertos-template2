@@ -274,7 +274,8 @@ static unsigned char MEDSdcard_Read(Media         *media,
         return MED_STATUS_BUSY;
     }
 
-    TRACE_INFO("Address: %d\n\r", address);
+    // TRACE_INFO("Address: %d\n\r", address);
+
     // Check that the data to read is not too big
     if ((length + address) > (media->baseAddress + media->size)) {
 

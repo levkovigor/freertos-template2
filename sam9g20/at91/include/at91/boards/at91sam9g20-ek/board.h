@@ -84,6 +84,7 @@
 
 /// Name of the board.
 #define BOARD_NAME              "AT91SAM9G20-EK"
+#define BOARD_NAME_PRINT        BOARD_NAME
 /// Board definition.
 #ifndef AT91SAM9G20_EK
 #define AT91SAM9G20_EK

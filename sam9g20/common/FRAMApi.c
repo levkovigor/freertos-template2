@@ -263,7 +263,6 @@ int read_bootloader_hamming_code(uint8_t *code, size_t *size) {
 }
 
 int set_to_load_softwareupdate(bool enable, VolumeId volume) {
-
 	bool raw_data[3];
 	raw_data[0] = enable;
 	if (volume == SD_CARD_0){
@@ -276,8 +275,9 @@ int set_to_load_softwareupdate(bool enable, VolumeId volume) {
 			SOFTWARE_UPDATE_BOOL_ADDR, 3);
 }
 
-// "yes" tells you if a software update is required
-int get_software_to_be_updated(bool* enable, VolumeId* volume) {
+
+// "enable" will tell you if a software update is required
+int get_to_load_softwareupdate(bool* enable, VolumeId* volume) {
 	if (enable == NULL) {
 		return -3;
     }
@@ -297,6 +297,7 @@ int get_software_to_be_updated(bool* enable, VolumeId* volume) {
 	}
 
     if (raw_data[1] == true && raw_data[2] == true) {
+        // this should not happen, clear the fields.
     	memset(raw_data, 0, 3);
     	*enable = false;
     	return FRAM_writeAndVerify((unsigned char*) raw_data,
@@ -312,6 +313,7 @@ int get_software_to_be_updated(bool* enable, VolumeId* volume) {
     	*enable = true;
     }
 
+    // finish by clearing the fields.
 	memset(raw_data, 0, 3);
 	return FRAM_writeAndVerify((unsigned char*) raw_data,
 			SOFTWARE_UPDATE_BOOL_ADDR, 3);

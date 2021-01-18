@@ -37,10 +37,14 @@ int copy_sdcard_binary_to_sdram(BootSelect boot_select) {
 
 #if USE_TINY_FS == 0
 int copy_with_hcc_lib(BootSelect boot_select) {
-    VolumeId current_filesystem = SD_CARD_0;
+    VolumeId current_volume = SD_CARD_0;
     if (boot_select == BOOT_SD_CARD_1_UPDATE) {
-        current_filesystem = SD_CARD_1;
+        current_volume = SD_CARD_1;
     }
+
+#if DEBUG_IO_LIB == 1
+    TRACE_INFO("Setting up HCC filesystem.\n\r");
+#endif
 
     int result = open_filesystem();
     if(result != F_NO_ERROR) {
@@ -48,7 +52,7 @@ int copy_with_hcc_lib(BootSelect boot_select) {
         return -1;
     }
 
-    result = select_sd_card(current_filesystem);
+    result = select_sd_card(current_volume, true);
     if(result != F_NO_ERROR) {
         // not good, should not happen.
         return -1;
@@ -56,17 +60,30 @@ int copy_with_hcc_lib(BootSelect boot_select) {
 
     result = change_directory(SW_REPOSITORY, true);
     if(result != F_NO_ERROR) {
+#if DEBUG_IO_LIB == 1
+        TRACE_WARNING("Target SW repository \"%s\" does not exist.\n\r", SW_REPOSITORY);
+#endif
         // not good, should not happen.
         return -1;
     }
 
     F_FILE* file = f_open(SW_UPDATE_FILE_NAME, "r");
-    if (f_getlasterror() != F_NO_ERROR) {
+    result = f_getlasterror();
+    if (result != F_NO_ERROR) {
+#if DEBUG_IO_LIB == 1
+        TRACE_WARNING("f_open of file \"%s\" failed with code %d.\n\r",
+                SW_UPDATE_FILE_NAME, result);
+#endif
         // opening file failed!
         return -1;
     }
 
     size_t filelength = f_filelength(SW_UPDATE_FILE_NAME);
+
+#if DEBUG_IO_LIB == 1
+    TRACE_INFO("Copying image \"%s\" from SD-Card %u to SDRAM\n\r", SW_UPDATE_FILE_NAME,
+            (unsigned int) current_volume);
+#endif
 
     if(f_read((void*) SDRAM_DESTINATION, 1, filelength, file) != filelength) {
         // Not all bytes copied!
@@ -74,12 +91,15 @@ int copy_with_hcc_lib(BootSelect boot_select) {
     }
 
     f_close(file);
-    close_filesystem();
+    close_filesystem(true, true, current_volume);
     return 0;
-
 }
+
 #else
 
+// Unfortunately, the tiny FATFS library is not working yet. There are issues reading
+// files on the iOBC, possibly related to hardware related steps which are normally performed
+// by the HCC and could not be reverse engineered from the information ISIS has given us.
 int copy_with_tinyfatfs_lib(BootSelect boot_select) {
     FATFS fs;
     FIL fileObject;

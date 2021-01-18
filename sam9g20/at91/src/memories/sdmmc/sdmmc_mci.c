@@ -1514,8 +1514,6 @@ unsigned char SD_Init(SdCard *pSd, SdDriver *pSdDriver)
 
     // If SD CSD v2.0
     if((pSd->cardType != CARD_MMC) && (SD_CSD_STRUCTURE(pSd) == 1)) {
-        TRACE_INFO("%lu\n", SD_CSD_C_SIZE_HC(pSd));
-        uint64_t capBytes = (uint64_t) 524288 * (SD_CSD_C_SIZE_HC(pSd) + 1);
         pSd->totalSize = SD_CSD_TOTAL_SIZE_HC(pSd);
         pSd->blockNr = SD_CSD_BLOCKNR_HC(pSd);
     }

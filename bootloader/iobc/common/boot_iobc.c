@@ -1,22 +1,18 @@
 #include "boot_iobc.h"
+#include <bootloaderConfig.h>
+#include <iobc/norflash/iobc_norflash.h>
+#include <iobc/norflash/iobc_boot_sd.h>
+
+#include <sam9g20/common/FRAMApi.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
 #include <utility/trace.h>
 #include <utility/CRC.h>
 #include <hal/Drivers/LED.h>
 #include <hal/Timing/RTT.h>
-
 #include <string.h>
-#include <bootloaderConfig.h>
-#include <iobc/norflash/iobc_norflash.h>
 
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-
-#include <sam9g20/common/FRAMApi.h>
-
-#include <iobc/norflash/iobc_boot_sd.h>
-
-//static uint8_t read_buffer[256 * 11];
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
 
 void perform_bootloader_core_operation() {
@@ -38,8 +34,8 @@ int perform_iobc_copy_operation_to_sdram() {
     BootSelect boot_select = BOOT_NOR_FLASH;
     bool enable = false;
     VolumeId volume = SD_CARD_0;
-    get_software_to_be_updated(&enable, &volume);
-    int result = get_software_to_be_updated(&enable, &volume);
+    get_to_load_softwareupdate(&enable, &volume);
+    int result = get_to_load_softwareupdate(&enable, &volume);
     if (result != 0) {
         TRACE_ERROR("FRAM could not be read!\n\r");
     }
@@ -54,8 +50,6 @@ int perform_iobc_copy_operation_to_sdram() {
         }
     }
 
-    boot_select = BOOT_SD_CARD_0_UPDATE;
-
     if(boot_select == BOOT_NOR_FLASH) {
         result = copy_norflash_binary_to_sdram(OBSW_MAX_SIZE);
 
@@ -65,6 +59,7 @@ int perform_iobc_copy_operation_to_sdram() {
     }
     else {
         result = copy_sdcard_binary_to_sdram(boot_select);
+
         if(result != 0) {
             result = copy_norflash_binary_to_sdram(OBSW_MAX_SIZE);
         }
@@ -127,6 +122,11 @@ void idle_loop() {
 }
 
 
+/**
+ * Used internally to jump to SDRAM.
+ * @param jumpAddr
+ * @param matchType
+ */
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
 {
     typedef void (*fctType) (volatile unsigned int, volatile unsigned int);

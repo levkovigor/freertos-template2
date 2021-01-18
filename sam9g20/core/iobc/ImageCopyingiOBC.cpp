@@ -97,7 +97,7 @@ ReturnValue_t ImageCopyingEngine::handleNorflashErasure() {
                 return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
             }
         }
-        if(stepCounter == RESERVED_BL_SMALL_SECTORS) {
+        if(stepCounter == RESERVED_BL_SECTORS) {
             stepCounter = 0;
             helperFlag1 = false;
         }
@@ -188,6 +188,14 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
 
     // we will always copy in small buckets (8192 bytes)
     size_t sizeToRead = NORFLASH_SMALL_SECTOR_SIZE;
+
+    if(currentFileSize == 0) {
+#if FSFW_CPP_OSTREAM_ENABLED == 0
+        sif::printWarning("ImageCopyingEngine::performNorCopyOperation: Current file size is 0!\n");
+#endif
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
     if(currentFileSize - currentByteIdx < NORFLASH_SMALL_SECTOR_SIZE) {
         sizeToRead = currentFileSize - currentByteIdx;
     }
@@ -301,11 +309,11 @@ void ImageCopyingEngine::writeBootloaderSizeAndCrc() {
         sif::info << std::setfill('0') << std::setw(2) << std::hex
                 << "Bootloader CRC16: " << "0x" << (crc16 >> 8 & 0xff) << ", "
                 << "0x" << (crc16 & 0xff) << " written to address " << std::setw(8)
-                << "0x" << NORFLASH_BL_CRC16_START << std::setfill(' ')
+                << "0x" << NORFLASH_BL_CRC16_START_READ << std::setfill(' ')
                 << std::dec << std::endl;
 #else
-        sif::printInfo("Bootloader CRC16: 0x%02x,0x02x wirtten to address 0x%08x",
-                (crc16 >> 8) & 0xff, crc16 & 0xff, NORFLASH_BL_CRC16_START);
+        sif::printInfo("Bootloader CRC16: 0x%02x,0x%02x written to address 0x%08x\n",
+                (crc16 >> 8) & 0xff, crc16 & 0xff, NORFLASH_BL_CRC16_START_READ);
 #endif
     }
 #endif
@@ -551,8 +559,8 @@ void ImageCopyingEngine::handleFinishPrintout() {
     if(bootloader) {
 
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::info << "Copying bootloader to NOR-Flash finished with "
-                << stepCounter << " steps!" << std::endl;
+        sif::info << "Copying bootloader to NOR-Flash finished with " << stepCounter <<
+                " steps!" << std::endl;
 #else
         sif::printInfo("Copying bootloader to NOR-Flash finished with %hu steps!\n", stepCounter);
 #endif
@@ -617,8 +625,8 @@ void ImageCopyingEngine::handleFinishPrintout() {
     }
     else {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::info << "Copying OBSW image to NOR-Flash finished with "
-                << stepCounter << " steps!" << std::endl;
+        sif::info << "Copying OBSW image to NOR-Flash finished with " << stepCounter <<
+                " steps!" << std::endl;
 #else
         sif::printInfo("Copying OBSW image to NOR-Flash finished with %hu steps!\n",
                 stepCounter);

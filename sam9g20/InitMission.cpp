@@ -103,7 +103,7 @@ void runMinimalTask(void);
 void initMission(void) {
     printf("\n\r-- FreeRTOS task scheduler started --\n\r");
     printf("-- SOURCE On-Board Software --\n\r");
-    printf("-- %s --\n\r", BOARD_NAME);
+    printf("-- %s --\n\r", BOARD_NAME_PRINT);
     printf("-- Software version %s v%d.%d.%d --\n\r", SW_NAME, SW_VERSION, SW_SUBVERSION,
             SW_SUBSUBVERSION);
     printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
@@ -305,9 +305,9 @@ void initTasks(void) {
 #ifdef AT91SAM9G20_EK
     float sdCardTaskPeriod = 0.6;
 #else
-    /* iOBC SD-Cards SLC are usually slower than modern SD-Card,
+    /* iOBC SD-Cards SLC are usually slower than modern SD-Cards,
     therefore a spearate task period can be set here */
-    float sdCardTaskPeriod = 0.6;
+    float sdCardTaskPeriod = 0.8;
 #endif
     PeriodicTaskIF* SDCardTask = TaskFactory::instance()->createPeriodicTask(
             "SD_CARD_TASK", 3, 2048 * 4, sdCardTaskPeriod, genericMissedDeadlineFunc);

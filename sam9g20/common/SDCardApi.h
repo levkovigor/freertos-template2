@@ -22,8 +22,27 @@ typedef enum {
  * @param volumeId
  */
 int open_filesystem();
-int close_filesystem();
-int select_sd_card(VolumeId volumeId);
+
+/**
+ * Select the SD card. Specifying enterFs as true will also call f_enterFS to register the
+ * calling task in the file system.
+ * @param volumeId
+ * @param enterFs
+ * @return
+ */
+int select_sd_card(VolumeId volumeId, bool enterFs);
+
+/**
+ * Close the filesystem after finishing all operations. Specifying releaseFs will release
+ * the calling task from the filesystem. Specifying delVolume will also delete the volume
+ * so the SD card can be switched or the filesystem can be torn down.
+ * @param releaseFs
+ * @param delVolume
+ * @param volumeId Will only be used if delVolume is set to true.
+ * @return
+ */
+int close_filesystem(bool releaseFs, bool delVolume, VolumeId volumeId);
+
 int switch_sd_card(VolumeId volumeId);
 
 /**
