@@ -36,7 +36,11 @@ typedef struct __attribute__((__packed__))  _FRAMCriticalData {
     /* NOR-Flash binary information */
     uint32_t nor_flash_binary_size;
     uint32_t nor_flash_hamming_code_size;
-
+    /* This flag determines whether hamming codes will be used to check the binary.
+    It is recommended to clear the flag when updating an image and setting the flag after
+    the hamming code for this image has been uploaded as well. Otherwise, a new image might
+    be checked with an invalid old hamming code. */
+    uint32_t nor_flash_use_hamming_flag;
     uint32_t nor_flash_reboot_counter;
 
     /* SD-Card */
@@ -47,21 +51,29 @@ typedef struct __attribute__((__packed__))  _FRAMCriticalData {
 
     /* Reboot counters SD Card 0 slot 0 */
     uint32_t sdc0_image_slot0_reboot_counter;
+    /* Hamming code flag, explanation see above (nor_flash_use_hamming_flag) */
+    uint32_t sdc0_image_slot0_use_hamming_flag;
     /* Hamming code size for SD Card 0 slot 0 */
     uint32_t sdc0_image_slot0_hamming_size;
 
     /* Reboot counters SD Card Card 0 slot 1 */
     uint32_t sdc0_image_slot1_reboot_counter;
+    /* Hamming code flag, explanation see above */
+    uint32_t sdc0_image_slot1_use_hamming_flag;
     /* Hamming code size for SD Card 0 slot 1 */
     uint32_t sdc0_image_slot1_hamming_size;
 
     /* Reboot counters SD Card 1 slot 0 */
     uint32_t sdc1_image_slot0_reboot_counter;
+    /* Hamming code flag, explanation see above */
+    uint32_t sdc1_image_slot0_use_hamming_flag;
     /* Hamming code size for SD Card 1 slot 0 */
     uint32_t sdc1_image_slot0_hamming_size;
 
     /* Reboot counters SD Card Card 1 slot 1 */
     uint32_t sdc1_image_slot1_reboot_counter;
+    /* Hamming code flag, explanation see above */
+    uint32_t sdc1_image_slot1_use_hamming_flag;
     /* Hamming code size for SD Card 1 slot 1*/
     uint32_t sdc1_image_slot1_hamming_size;
 
