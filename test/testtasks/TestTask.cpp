@@ -10,21 +10,18 @@
 #include <fsfw/globalfunctions/arrayprinter.h>
 
 #include <etl/vector.h>
-//#include <sam9g20/common/SDCardApi.h>
-//#include <sam9g20/memory/SDCardAccess.h>
 #include <array>
 #include <cstring>
 
 extern "C" {
-//#include <privlib/hcc/demo/SDCardTest.h>
-#include <memories/sdmmc/MEDSdcard.h>
-#include <sam9g20/at91/tinyfatfs/include/tinyfatfs/tff.h>
-#include <peripherals/pio/pio.h>
-#include <utility/trace.h>
+//#include <memories/sdmmc/MEDSdcard.h>
+//#include <sam9g20/at91/tinyfatfs/include/tinyfatfs/tff.h>
+//#include <peripherals/pio/pio.h>
+//#include <utility/trace.h>
 }
 
 
-Media medias[1];
+//Media medias[1];
 
 
 
@@ -210,82 +207,82 @@ void TestTask::performEtlTemplateTest() {
 }
 
 
-void TestTask::sdTest(void) {
-    FATFS fs;
-    FIL fileObject;
-
-#ifdef ISIS_OBC_G20
-    uint8_t sdCard = 0;
-    Pin sdSelectPin[1] = {PIN_SDSEL};
-    PIO_Configure(sdSelectPin, PIO_LISTSIZE(sdSelectPin));
-//    bool high = PIO_Get(sdSelectPin);
-//    if(high) {
-//        PIO_Clear(sdSelectPin);
-//    }
-//    else {
+//void TestTask::sdTest(void) {
+//    FATFS fs;
+//    FIL fileObject;
+//
+//#ifdef ISIS_OBC_G20
+//    uint8_t sdCard = 0;
+//    Pin sdSelectPin[1] = {PIN_SDSEL};
+//    PIO_Configure(sdSelectPin, PIO_LISTSIZE(sdSelectPin));
+////    bool high = PIO_Get(sdSelectPin);
+////    if(high) {
+////        PIO_Clear(sdSelectPin);
+////    }
+////    else {
+////        PIO_Set(sdSelectPin);
+////    }
+//    if(sdCard == 0) {
 //        PIO_Set(sdSelectPin);
 //    }
-    if(sdCard == 0) {
-        PIO_Set(sdSelectPin);
-    }
-    else {
-        PIO_Clear(sdSelectPin);
-    }
-
-
-    Pin npWrPins[2] = {PIN_NPWR_SD0, PIN_NPWR_SD1};
-    PIO_Configure(npWrPins, PIO_LISTSIZE(npWrPins));
-    if(sdCard == 0) {
-        PIO_Clear(npWrPins);
-    }
-    if(sdCard == 1) {
-        PIO_Clear(npWrPins + 1);
-    }
-
-//    Pin pinsMci1Off[2] = {PINS_MCI1_OFF};
-//    PIO_Configure(pinsMci1Off, PIO_LISTSIZE(pinsMci1Off));
-//    PIO_Set(pinsMci1Off);
-//    PIO_Set(pinsMci1Off +  1);
-
-#endif
-
-    const int ID_DRV = 0;
-    MEDSdcard_Initialize(&medias[ID_DRV], 0);
-
-    memset(&fs, 0, sizeof(FATFS));  // Clear file system object
-    int res = f_mount(0, &fs);
-    if( res != FR_OK ) {
-        printf("f_mount pb: 0x%X\n\r", res);
-    }
-
-//    char file_name [strlen(config::SW_REPOSITORY) + strlen(config::SW_UPDATE_SLOT_NAME) + 2];
-//    snprintf(file_name, sizeof (file_name) + 1, "/%s/%s", config::SW_REPOSITORY,
-//            config::SW_UPDATE_SLOT_NAME);
-
-//#ifdef ISIS_OBC_G20
-//    PIO_Set(npWrPins);
-//    for(int idx = 0; idx < 100000; idx++) {};
-//    PIO_Clear(npWrPins);
+//    else {
+//        PIO_Clear(sdSelectPin);
+//    }
+//
+//
+//    Pin npWrPins[2] = {PIN_NPWR_SD0, PIN_NPWR_SD1};
+//    PIO_Configure(npWrPins, PIO_LISTSIZE(npWrPins));
+//    if(sdCard == 0) {
+//        PIO_Clear(npWrPins);
+//    }
+//    if(sdCard == 1) {
+//        PIO_Clear(npWrPins + 1);
+//    }
+//
+////    Pin pinsMci1Off[2] = {PINS_MCI1_OFF};
+////    PIO_Configure(pinsMci1Off, PIO_LISTSIZE(pinsMci1Off));
+////    PIO_Set(pinsMci1Off);
+////    PIO_Set(pinsMci1Off +  1);
+//
 //#endif
-
-    res = f_open(&fileObject, "test.bin", FA_OPEN_EXISTING|FA_READ);
-    if( res != FR_OK ) {
-        TRACE_ERROR("f_open read pb: 0x%X\n\r", res);
-    }
-
-//    res = f_open(&fileObject, file_name, FA_OPEN_EXISTING|FA_READ);
+//
+//    const int ID_DRV = 0;
+//    MEDSdcard_Initialize(&medias[ID_DRV], 0);
+//
+//    memset(&fs, 0, sizeof(FATFS));  // Clear file system object
+//    int res = f_mount(0, &fs);
+//    if( res != FR_OK ) {
+//        printf("f_mount pb: 0x%X\n\r", res);
+//    }
+//
+////    char file_name [strlen(config::SW_REPOSITORY) + strlen(config::SW_UPDATE_SLOT_NAME) + 2];
+////    snprintf(file_name, sizeof (file_name) + 1, "/%s/%s", config::SW_REPOSITORY,
+////            config::SW_UPDATE_SLOT_NAME);
+//
+////#ifdef ISIS_OBC_G20
+////    PIO_Set(npWrPins);
+////    for(int idx = 0; idx < 100000; idx++) {};
+////    PIO_Clear(npWrPins);
+////#endif
+//
+//    res = f_open(&fileObject, "test.bin", FA_OPEN_EXISTING|FA_READ);
 //    if( res != FR_OK ) {
 //        TRACE_ERROR("f_open read pb: 0x%X\n\r", res);
 //    }
-
-    size_t bytes_read = 0;
-    uint8_t* alotofMemory= new uint8_t[200000];
-    res = f_read(&fileObject, (void*) alotofMemory, 3, &bytes_read);
-    if(res != FR_OK) {
-        TRACE_ERROR("f_read pb: 0x%X\n\r", res);
-    }
-
-    delete(alotofMemory);
-}
+//
+////    res = f_open(&fileObject, file_name, FA_OPEN_EXISTING|FA_READ);
+////    if( res != FR_OK ) {
+////        TRACE_ERROR("f_open read pb: 0x%X\n\r", res);
+////    }
+//
+//    size_t bytes_read = 0;
+//    uint8_t* alotofMemory= new uint8_t[200000];
+//    res = f_read(&fileObject, (void*) alotofMemory, 3, &bytes_read);
+//    if(res != FR_OK) {
+//        TRACE_ERROR("f_read pb: 0x%X\n\r", res);
+//    }
+//
+//    delete(alotofMemory);
+//}
 
 

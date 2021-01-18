@@ -183,7 +183,8 @@ private:
     ReturnValue_t performNorCopyOperation(F_FILE** binaryFile);
     ReturnValue_t handleSdToNorCopyOperation();
     void writeBootloaderSizeAndCrc();
-#endif
+#endif /* AT91SAM9G20_EK */
+
     ReturnValue_t prepareGenericFileInformation(VolumeId currentVolume,
             F_FILE** filePtr);
 
