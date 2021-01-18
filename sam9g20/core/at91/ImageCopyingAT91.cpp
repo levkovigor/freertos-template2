@@ -192,15 +192,13 @@ ReturnValue_t ImageCopyingEngine::handleErasingForObsw() {
 #endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
-        if(sourceSlot == ImageSlot::IMAGE_0) {
+        if(sourceSlot == ImageSlot::SLOT_0) {
             currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
         }
-        else if(sourceSlot == ImageSlot::IMAGE_1) {
+        else if(sourceSlot == ImageSlot::SLOT_1) {
             currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
         }
-        else {
-            currentFileSize = f_filelength(config::SW_UPDATE_SLOT_NAME);
-        }
+
         helperFlag1 = true;
         helperCounter1 = 0;
         uint8_t requiredBlocks = std::ceil(

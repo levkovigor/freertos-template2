@@ -21,52 +21,65 @@
  * This struct will gather all critical data stored on FRAM.
  */
 typedef struct __attribute__((__packed__))  _FRAMCriticalData {
-    /* Software information [4, 0-3] */
+    /* Software information */
     uint8_t software_version;
     uint8_t software_subversion;
     uint8_t software_subsubversion;
     uint8_t filler_sw_version;
 
-    /* Reboot information [4, 4-7] */
-	uint32_t reboot_counter;
+    /* Reboot information */
+    uint32_t reboot_counter;
 
-	bool bootloader_faulty;
-	size_t bootloader_hamming_code_size;
+    /* Second counter */
+    uint32_t seconds_since_epoch;
 
-	/* Second counter [4, 8 - 11] */
-	uint32_t seconds_since_epoch;
+    /* NOR-Flash binary information */
+    uint32_t nor_flash_binary_size;
+    uint32_t nor_flash_hamming_code_size;
 
-	/* NOR-Flash binary information [4, 12 - 15] */
-	size_t nor_flash_binary_size;
-	size_t nor_flash_hamming_code_size;
-	uint8_t filler_nor_flash[3];
-	uint8_t nor_flash_reboot_counter;
+    uint32_t nor_flash_reboot_counter;
 
-	/* SD-Card */
-	// This value will be used on reboot to determine which SD card is the
-	// default SD card on reboot.
-	// 0: None, 1: SD Card 0, 2: SD Card 1
-	VolumeId preferedSdCard;
-	uint32_t sdc1sl1_reboot_counter;
-	uint32_t sdc1sl2_reboot_counter;
-	uint32_t sdc2sl1_reboot_counter;
-	uint32_t sdc2sl2_reboot_counter;
+    /* SD-Card */
 
-	/*
-	 * Bootloader binary information. Bootloader itself could also be stored
-	 * in FRAM. Hamming code will be stored in FRAM in any case.
-	 */
-	char bootloader_binary_file_name[16];
-	char bootloader_hamming_code_file_name[16];
+    /* These value will be used on reboot to determine which SD card is the
+	default SD card on reboot. 0: None, 1: SD Card 0, 2: SD Card 1 */
+    uint32_t preferedSdCard;
 
-	/* Software update information */
+    /* Reboot counters SD Card 0 slot 0 */
+    uint32_t sdc0_image_slot0_reboot_counter;
+    /* Hamming code size for SD Card 0 slot 0 */
+    uint32_t sdc0_image_slot0_hamming_size;
+
+    /* Reboot counters SD Card Card 0 slot 1 */
+    uint32_t sdc0_image_slot1_reboot_counter;
+    /* Hamming code size for SD Card 0 slot 1 */
+    uint32_t sdc0_image_slot1_hamming_size;
+
+    /* Reboot counters SD Card 1 slot 0 */
+    uint32_t sdc1_image_slot0_reboot_counter;
+    /* Hamming code size for SD Card 1 slot 0 */
+    uint32_t sdc1_image_slot0_hamming_size;
+
+    /* Reboot counters SD Card Card 1 slot 1 */
+    uint32_t sdc1_image_slot1_reboot_counter;
+    /* Hamming code size for SD Card 1 slot 1*/
+    uint32_t sdc1_image_slot1_hamming_size;
+
+    /*
+     * Bootloader binary information. Bootloader itself could also be stored
+     * in FRAM. Hamming code will be stored in FRAM in any case.
+     */
+    uint32_t bootloader_faulty;
+    uint32_t bootloader_hamming_code_size;
+
+    /* Software update information */
     uint8_t filler_software_update[1];
-    bool software_update_available;
-	uint8_t software_update_in_slot_0;
-	uint8_t software_update_in_slot_1;
+    uint8_t software_update_available;
+    uint8_t software_update_in_slot_0;
+    uint8_t software_update_in_slot_1;
 
-	/* Task information */
-	uint8_t filler_tasks[2];
+    /* Task information */
+    uint8_t filler_tasks[2];
     uint16_t number_of_active_tasks;
 } FRAMCriticalData;
 
@@ -107,9 +120,9 @@ int read_nor_flash_reboot_counter(uint8_t* nor_flash_reboot_counter);
 int reset_nor_flash_reboot_counter();
 
 
-int increment_sdc1sl1_reboot_counter();
-int read_sdc1sl1_reboot_counter(uint8_t* sdc1sl1_reboot_counter);
-int reset_sdc1sl1_reboot_counter();
+int increment_sdc0_slot0_reboot_counter();
+int read_sdc0_slot0_reboot_counter(uint8_t* sdc1sl1_reboot_counter);
+int reset_sdc0_slot0_reboot_counter();
 
 int set_bootloader_faulty(bool faulty);
 int is_bootloader_faulty(bool* faulty);

@@ -126,8 +126,8 @@ private:
 
     ImageHandlerStates imageHandlerState = ImageHandlerStates::IDLE;
     SdCard activeSdCard = SdCard::SD_CARD_0;
-    ImageSlot sourceSlot = ImageSlot::IMAGE_0;
-    ImageSlot targetSlot = ImageSlot::IMAGE_0;
+    ImageSlot sourceSlot = ImageSlot::SLOT_0;
+    ImageSlot targetSlot = ImageSlot::SLOT_0;
     GenericInternalState internalState = GenericInternalState::IDLE;
     bool performHammingCodeCheck = false;
     bool extendedDebugOutput = false;
