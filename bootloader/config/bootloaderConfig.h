@@ -2,7 +2,7 @@
 #define BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_
 
 #define BL_VERSION      1
-#define BL_SUBVERSION   1
+#define BL_SUBVERSION   2
 
 //! Can be used to disable printouts to reduce code size (does not make much of
 //! a difference, most of the AT91 lib uses IO so it is difficult to remove it)
