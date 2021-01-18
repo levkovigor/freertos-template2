@@ -108,20 +108,14 @@ void initMission(void) {
             SW_SUBSUBVERSION);
     printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 
-#if DEBUG_IO_LIB == 1
-    TRACE_INFO("Copying image \"%s\" from SD-Card %u to SDRAM\n\r", file_name,
-            (unsigned int) boot_select);
+#if FSFW_CPP_OSTREAM_ENABLED == 0
+    sif::setToAddCrAtEnd(true);
 #endif
-
 
 #if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Initiating mission specific code." << std::endl;
 #else
     sif::printInfo("Initiating mission specific code.\n");
-#endif
-
-#if FSFW_CPP_OSTREAM_ENABLED == 0
-    sif::setToAddCrAtEnd(true);
 #endif
 
     // Allocate object manager here, as global constructors
