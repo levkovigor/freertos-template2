@@ -249,17 +249,6 @@ void TestTask::sdTest(void) {
 
 #endif
 
-    if(sdCard == 0) {
-        PIO_Set(npWrPins);
-        for(int idx = 0; idx<10000; idx++) {}
-        PIO_Clear(npWrPins);
-    }
-    if(sdCard == 1) {
-        PIO_Set(npWrPins + 1);
-        for(int idx = 0; idx<10000; idx++) {}
-        PIO_Clear(npWrPins);
-    }
-
     const int ID_DRV = 0;
     MEDSdcard_Initialize(&medias[ID_DRV], 0);
 
