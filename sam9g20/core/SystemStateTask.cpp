@@ -8,7 +8,7 @@
 #include <sam9g20/core/CoreController.h>
 
 #include <FreeRTOSConfig.h>
-
+#include <FSFWConfig.h>
 #include <inttypes.h>
 
 
@@ -110,8 +110,11 @@ ReturnValue_t SystemStateTask::initializeAfterTaskCreation() {
     }
     // to prevent garbage output.
     TaskFactory::delayTask(5);
-    sif::info << "SystemStateTask: " << numberOfTasks << " tasks counted."
-            << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+    sif::info << "SystemStateTask: " << numberOfTasks << " tasks counted." << std::endl;
+#else
+    sif::printInfo("SystemStateTask: %hu tasks counted.\n", numberOfTasks);
+#endif
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -169,7 +172,7 @@ void SystemStateTask::generateStatsCsvAndCheckStack() {
         }
         if(task.pcTaskName != nullptr) {
 
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
             // human readable format here, tab seperator
             writeDebugStatLine(task, statsIdx, idleTicks, uptimeTicks);
 #else
@@ -183,7 +186,7 @@ void SystemStateTask::generateStatsCsvAndCheckStack() {
         }
     }
     statsVector[statsIdx] = '\0';
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
     printf("%s%s\r\n", sif::ANSI_COLOR_RESET, statsVector.data());
     printf("Number of bytes written: %d\r\n", statsIdx);
 #endif

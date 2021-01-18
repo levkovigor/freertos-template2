@@ -42,7 +42,10 @@ ReturnValue_t AtmelArduinoHandler::buildNormalDeviceCommand(
 
 void AtmelArduinoHandler::setI2cComType(I2cCommunicationType i2cComType) {
     if(comType != I2C) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "Arduino Handler: Invalid ComType!" << std::endl;
+#else
+#endif
         return;
     }
     I2cCookie * i2cCookie = dynamic_cast<I2cCookie *>(comCookie);
@@ -51,7 +54,10 @@ void AtmelArduinoHandler::setI2cComType(I2cCommunicationType i2cComType) {
 
 I2cCommunicationType AtmelArduinoHandler::getI2cComType() const {
     if(comType != I2C) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "Arduino Handler: Invalid ComType!" << std::endl;
+#else
+#endif
         return I2cCommunicationType::UNKNOWN;
     }
     I2cCookie * i2cCookie = dynamic_cast<I2cCookie *>(comCookie);
@@ -60,7 +66,10 @@ I2cCommunicationType AtmelArduinoHandler::getI2cComType() const {
 
 void AtmelArduinoHandler::setI2cReceiveDataSize(size_t receiveDataSize) {
 	if(comType != I2C) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "Arduino Handler: Invalid ComType!" << std::endl;
+#else
+#endif
 		return;
 	}
 	I2cCookie * i2cCookie = dynamic_cast<I2cCookie *>(comCookie);
@@ -87,8 +96,11 @@ ReturnValue_t AtmelArduinoHandler::initialize() {
 
 void AtmelArduinoHandler::printReply(uint8_t *reply, size_t reply_size) {
     if(comType == ComInterfaceType::SPI) {
-        sif::info  << "Arduino Handler received echo reply from "
-              << idString << ": " << reply + 1  << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::info  << "Arduino Handler received echo reply from " << idString << ": "
+                << reply + 1  << std::endl;
+#else
+#endif
     }
     else {
         ArduinoHandler::printReply(reply, reply_size);

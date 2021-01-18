@@ -2,16 +2,17 @@
 #define BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_
 
 #define BL_VERSION      1
-#define BL_SUBVERSION   1
+#define BL_SUBVERSION   2
 
 //! Can be used to disable printouts to reduce code size (does not make much of
 //! a difference, most of the AT91 lib uses IO so it is difficult to remove it)
 #define DEBUG_IO_LIB            1
 
+//! Additional debug output
 #define DEBUG_VERBOSE           0
 
 //! Use tiny FS instead of HCC FS.
-#define USE_TINY_FS 			1
+#define USE_TINY_FS 			0
 
 //! 1 MB minus reserved size of bootloader.
 #ifdef AT91SAM9G20_EK
@@ -32,4 +33,14 @@
 //! This flag should be enabled if the software is flashed with SAM-BA.
 #define SAM_BA_BOOT 1
 
+#ifdef AT91SAM9G20_EK
+static const char* const SW_REPOSITORY =                 "BIN/AT91/OBSW";
+#else
+static const char* const SW_REPOSITORY =                 "BIN/IOBC/OBSW";
+#endif
+
+static const char* const SW_UPDATE_FILE_NAME =           "obsw_up.bin";
+
+
 #endif /* BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_ */
+

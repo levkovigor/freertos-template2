@@ -2,7 +2,6 @@
 #define MISSION_DEVICES_GPSHANDLER_H_
 
 #include "devicedefinitions/GPSPackets.h"
-
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
 
 /**

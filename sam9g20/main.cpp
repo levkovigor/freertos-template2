@@ -58,13 +58,13 @@ int main(void)
     BaseType_t retval = pdFALSE;
 
 #ifdef ISIS_OBC_G20
-	// Task with the sole purpose of kicking the watchdog to prevent
-	// an iOBC restart. This should be done as soon as possible and before
-    // anything is printed.
+    /* Task with the sole purpose of kicking the watchdog to prevent
+    an iOBC restart. This should be done as soon as possible and before
+    anything is printed. */
     retval = startCustomIsisWatchdogTask(WATCHDOG_KICK_INTERVAL_MS, true);
-	if(retval != pdTRUE) {
-		TRACE_ERROR("Starting iOBC Watchdog Feed Task failed!\r\n");
-	}
+    if(retval != pdTRUE) {
+        TRACE_ERROR("Starting iOBC Watchdog Feed Task failed!\r\n");
+    }
 #endif
 
     // Enable Co-Processor instruction cache.
@@ -80,12 +80,12 @@ int main(void)
     Less priority than the watchdog task, but still very high to it can
     initiate the software as fast as possible */
     retval = xTaskCreate(initTask, "INIT_TASK", 3072, nullptr,
-    		configMAX_PRIORITIES - 2, nullptr);
+            configMAX_PRIORITIES - 2, nullptr);
 #else
     retval = xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, 9, nullptr);
 #endif
     if(retval != pdTRUE) {
-    	TRACE_ERROR("Creating Initialization Task failed!\n\r");
+        TRACE_ERROR("Creating Initialization Task failed!\n\r");
     }
     vTaskStartScheduler();
     // This should never be reached.
@@ -93,10 +93,10 @@ int main(void)
 }
 
 void initTask (void * args) {
-	configASSERT(args == nullptr);
+    configASSERT(args == nullptr);
 
-	initMission();
-	// Delete self.
+    initMission();
+    // Delete self.
     TaskFactory::instance()->deleteTask();
 }
 

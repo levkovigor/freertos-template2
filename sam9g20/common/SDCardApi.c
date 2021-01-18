@@ -8,7 +8,7 @@
 
 static int delete_file_system_object(const char* name);
 
-int open_filesystem(VolumeId volume){
+int open_filesystem(){
 	/* Initialize the memory to be used by the filesystem */
 	hcc_mem_init();
 
@@ -23,7 +23,50 @@ int open_filesystem(VolumeId volume){
 	return result;
 }
 
-int close_filesystem(VolumeId volumeId) {
+int select_sd_card(VolumeId volumeId, bool enterFs) {
+    int result = 0;
+    if(enterFs) {
+        result = f_enterFS();
+        if(result != F_NO_ERROR) {
+            TRACE_ERROR("open_filesystem: fs_enterFS failed with code %d\n\r", result);
+            return result;
+        }
+    }
+    /* Initialize volID as safe */
+    result = f_initvolume(0, atmel_mcipdc_initfunc, volumeId);
+
+    if((result != F_NO_ERROR) && (result != F_ERR_NOTFORMATTED)) {
+        TRACE_ERROR("select_sd_card: fs_initvolume failed with "
+                "code %d\n\r", result);
+        return result;
+    }
+
+    if(result == F_ERR_NOTFORMATTED) {
+        TRACE_INFO("select_sd_card: Formatting SD-Card %d for Safe-FAT\r\n",
+                volumeId);
+        /**
+         *  The file system has not been formatted to safeFat yet
+         *  Therefore format filesystem now
+         */
+        result = f_format( 0, F_FAT32_MEDIA);
+        if(result != F_NO_ERROR) {
+            TRACE_ERROR("select_sd_card: fs_format failed with "
+                    "code %d\n\r", result);
+            return result;
+        }
+    }
+    return 0;
+}
+
+int close_filesystem(bool releaseFs, bool delVolume, VolumeId volumeId) {
+    if(delVolume) {
+        f_delvolume(volumeId);
+    }
+
+    if(releaseFs) {
+        f_releaseFS();
+    }
+
 	int result = fs_delete();
 	if(result != F_NO_ERROR) {
 		TRACE_ERROR("close_filesystem: fs_delete failed with "
@@ -34,33 +77,6 @@ int close_filesystem(VolumeId volumeId) {
 	return hcc_mem_delete();
 }
 
-
-int select_sd_card(VolumeId volumeId){
-	/* Initialize volID as safe */
-	int result = f_initvolume(0, atmel_mcipdc_initfunc, volumeId);
-
-	if((result != F_NO_ERROR) && (result != F_ERR_NOTFORMATTED)) {
-		TRACE_ERROR("select_sd_card: fs_initvolume failed with "
-				"code %d\n\r", result);
-		return result;
-	}
-
-	if(result == F_ERR_NOTFORMATTED) {
-		TRACE_INFO("select_sd_card: Formatting SD-Card %d for Safe-FAT\r\n",
-				volumeId);
-		/**
-		 *  The file system has not been formatted to safeFat yet
-		 *  Therefore format filesystem now
-		 */
-		result = f_format( 0, F_FAT32_MEDIA);
-		if(result != F_NO_ERROR) {
-			TRACE_ERROR("select_sd_card: fs_format failed with "
-					"code %d\n\r", result);
-			return result;
-		}
-	}
-	return 0;
-}
 
 int switch_sd_card(VolumeId volumeId) {
 	VolumeId oldVolumeId;
@@ -76,7 +92,8 @@ int switch_sd_card(VolumeId volumeId) {
 				result);
 	}
 
-	return select_sd_card(volumeId);
+	// TODO: test whether we have to release the FS to switch the SD card.
+	return select_sd_card(volumeId, false);
 }
 
 int create_directory(const char *repository_path, const char *dirname) {

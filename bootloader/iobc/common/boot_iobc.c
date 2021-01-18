@@ -1,20 +1,18 @@
 #include "boot_iobc.h"
+#include <bootloaderConfig.h>
+#include <iobc/norflash/iobc_norflash.h>
+#include <iobc/norflash/iobc_boot_sd.h>
+
+#include <sam9g20/common/FRAMApi.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
 #include <utility/trace.h>
 #include <utility/CRC.h>
 #include <hal/Drivers/LED.h>
 #include <hal/Timing/RTT.h>
-
 #include <string.h>
-#include <bootloaderConfig.h>
-#include <iobc/norflash/iobc_norflash.h>
 
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-
-#include <sam9g20/common/FRAMApi.h>
-
-//static uint8_t read_buffer[256 * 11];
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
 
 void perform_bootloader_core_operation() {
@@ -33,36 +31,37 @@ void perform_bootloader_core_operation() {
 
 int perform_iobc_copy_operation_to_sdram() {
     // determine which binary should be copied to SDRAM first.
-	BootSelect boot_select = BOOT_NOR_FLASH;
-	bool yes = false;
-	bool slot0 = false;
-	get_software_to_be_updated(&yes, &slot0);
-	int result = get_software_to_be_updated(&yes, &slot0);
-	if (result != 0) {
-		TRACE_ERROR("FRAM could not be read!\n\r");
-	}
-	else {
-		if (yes) {
-			if (slot0) {
-				boot_select = BOOT_SD_CARD_0_UPDATE;
-			}
-			else {
-				boot_select = BOOT_SD_CARD_1_UPDATE;
-			}
-		}
-	}
+    BootSelect boot_select = BOOT_NOR_FLASH;
+    bool enable = false;
+    VolumeId volume = SD_CARD_0;
+    get_to_load_softwareupdate(&enable, &volume);
+    int result = get_to_load_softwareupdate(&enable, &volume);
+    if (result != 0) {
+        TRACE_ERROR("FRAM could not be read!\n\r");
+    }
+    else {
+        if (enable) {
+            if (volume == SD_CARD_0) {
+                boot_select = BOOT_SD_CARD_0_UPDATE;
+            }
+            else {
+                boot_select = BOOT_SD_CARD_1_UPDATE;
+            }
+        }
+    }
 
     if(boot_select == BOOT_NOR_FLASH) {
         result = copy_norflash_binary_to_sdram(OBSW_MAX_SIZE);
 
         if(result != 0) {
-        	result = copy_sdcard_binary_to_sdram(BOOT_SD_CARD_0_UPDATE);
+            result = copy_sdcard_binary_to_sdram(BOOT_SD_CARD_0_UPDATE);
         }
     }
     else {
         result = copy_sdcard_binary_to_sdram(boot_select);
+
         if(result != 0) {
-        	result = copy_norflash_binary_to_sdram(OBSW_MAX_SIZE);
+            result = copy_norflash_binary_to_sdram(OBSW_MAX_SIZE);
         }
     }
     return result;
@@ -80,26 +79,29 @@ int copy_norflash_binary_to_sdram(size_t binary_size)
     // Transfert data from Nor to External RAM
     //-------------------------------------------------------------------------
 
-	// To allow watchdog task to kick if necessary.
-	vTaskDelay(1);
-	// This operation takes 100-200 milliseconds if the whole NOR-Flash is
-	// copied.
-	memcpy((void*) SDRAM_DESTINATION, (const void*) BINARY_BASE_ADDRESS_READ,
-			binary_size);
-	/* verify that the binary was copied properly. A hamming code check
-	should have been performed previously. If this fails, we return with
-	error and try SD card boot. */
-	for(int idx = 0; idx < binary_size; idx++) {
-		if(*(uint8_t*)(SDRAM_DESTINATION + idx) !=
-				*(uint8_t*)(BINARY_BASE_ADDRESS_READ + idx)) {
-			TRACE_ERROR("Byte SDRAM %d : %2x\n\r", idx,
-					*(uint8_t*)(SDRAM_DESTINATION + idx));
-			TRACE_ERROR("Byte NORFLASH %d : %2x\n\r", idx,
-					*(uint8_t*)(BINARY_BASE_ADDRESS_READ + idx));
-			return -1;
-		}
-	}
-	TRACE_INFO("Copied successfully!\n\r");
+#if DEBUG_IO_LIB == 1
+    TRACE_INFO("Copying NOR-Flash binary to SDRAM..\n\r");
+#endif
+
+    // This operation takes 100-200 milliseconds if the whole NOR-Flash is
+    // copied.
+    memcpy((void*) SDRAM_DESTINATION, (const void*) BINARY_BASE_ADDRESS_READ, binary_size);
+
+    /* Verify that the binary was copied properly. Ideally, we will also run a hamming
+    code check here in the future. */
+    for(int idx = 0; idx < binary_size; idx++) {
+        if(*(uint8_t*)(SDRAM_DESTINATION + idx) !=
+                *(uint8_t*)(BINARY_BASE_ADDRESS_READ + idx)) {
+            TRACE_ERROR("Byte SDRAM %d : %2x\n\r", idx,
+                    *(uint8_t*)(SDRAM_DESTINATION + idx));
+            TRACE_ERROR("Byte NORFLASH %d : %2x\n\r", idx,
+                    *(uint8_t*)(BINARY_BASE_ADDRESS_READ + idx));
+            return -1;
+        }
+    }
+#if DEBUG_IO_LIB == 1
+    TRACE_INFO("Copied successfully!\n\r");
+#endif
     return 0;
 }
 
@@ -120,6 +122,11 @@ void idle_loop() {
 }
 
 
+/**
+ * Used internally to jump to SDRAM.
+ * @param jumpAddr
+ * @param matchType
+ */
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
 {
     typedef void (*fctType) (volatile unsigned int, volatile unsigned int);

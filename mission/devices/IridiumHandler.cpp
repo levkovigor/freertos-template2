@@ -57,7 +57,7 @@ void IridiumHandler::setNormalDatapoolEntriesInvalid() {
 }
 
 void IridiumHandler::calculateIsuChecksum(uint8_t *data, size_t dataSize) {
-    size_t dataSum;
+    size_t dataSum = 0;
     for(size_t idx = 0; idx < dataSize; idx ++) {
         dataSum += data[idx];
     }

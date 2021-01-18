@@ -73,7 +73,22 @@ VPATH += $(PERIPH)/usart
 VPATH += $(PERIPH)/rstc
 VPATH += $(PERIPH)/spi
 VPATH += $(PERIPH)/twi
+VPATH += $(AT91_MEMORIES)/sdmmc
 
+LOAD_MCI = 0
+ifeq ($(BOOTLOADER), 1)
+LOAD_MCI = 1
+endif
+ifeq ($(ADD_MMC_DRIVER), 1)
+LOAD_MCI = 1
+endif
+ifeq ($(LOAD_MCI), 1)
+VPATH += $(PERIPH)/mci
+endif
+
+ifeq ($(ADD_TINYFATFS), 1)
+VPATH += $(CURRENTPATH)/tinyfatfs/src
+endif
 
 ifeq ($(BOARD), ISIS_OBC_G20)
 VPATH += $(BOARDS)/ISIS_OBC_G20
@@ -139,6 +154,10 @@ AT91_SRC += spi_at91.c
 AT91_SRC += rstc.c
 AT91_SRC += usart_at91.c
 AT91_SRC += SDCardTest.c
+ifeq ($(LOAD_MCI), 1)
+AT91_SRC += mci.c
+endif
+
 ifeq ($(OS_APP),freeRTOS)
 
 AT91_SRC += demo_sd.c
@@ -178,4 +197,19 @@ AT91_SRC += CDCDSerialDriverDescriptors.c
 AT91_SRC += CDCLineCoding.c
 AT91_SRC += CDCSetControlLineStateRequest.c
 endif
+
+ifeq ($(ADD_MMC_DRIVER), 1)
+AT91_SRC += Media.c
+AT91_SRC += MEDSdcard.c
+AT91_SRC += sdmmc_mci.c
+endif
+
+ifeq ($(ADD_TINYFATFS), 1)
+AT91_SRC += $(CURRENTPATH)/tinyfatfs/src/diskio.c
+AT91_SRC += $(CURRENTPATH)/tinyfatfs/src/tff.c
+
+INCLUDES += $(CURRENTPATH)/tinyfatfs/include
+endif
+
+INCLUDES += $(CURRENTPATH)/common
 

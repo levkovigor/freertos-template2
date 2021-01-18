@@ -84,6 +84,7 @@
 
 /// Name of the board.
 #define BOARD_NAME              "AT91SAM9G20-EK"
+#define BOARD_NAME_PRINT        BOARD_NAME
 /// Board definition.
 #ifndef AT91SAM9G20_EK
 #define AT91SAM9G20_EK
@@ -363,6 +364,10 @@
     {0x0000003B, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_PERIPH_B, PIO_PULLUP}, \
     {1 << 8, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_PERIPH_A, PIO_DEFAULT}
 
+#define PINS_MCI1  \
+    {0xec0,  AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_PERIPH_A, PIO_PULLUP}, \
+    {1 << 8, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_PERIPH_A, PIO_DEFAULT}
+
 /// ADC_AD0 pin definition.
 #define PIN_ADC_ADC0 {1 << 0, AT91C_BASE_PIOC, AT91C_ID_PIOC, PIO_INPUT, PIO_DEFAULT}
 /// ADC_AD1 pin definition.
@@ -467,9 +472,11 @@
 /// Peripheral identifier of the MCI connected to the SD card.
 #define BOARD_SD_MCI_ID             AT91C_ID_MCI
 /// MCI pins that shall be configured to access the SD card.
-#define BOARD_SD_PINS               PINS_MCI
+// Adapted for SOURCE to be consistent with ISIS board.h file!
+#define BOARD_SD_PINS               PINS_MCI1
 /// MCI slot to which the SD card is connected to.
-#define BOARD_SD_SLOT               MCI_SD_SLOTB
+// Adapted for SOURCE to be consistent with ISIS board.h file!
+#define BOARD_SD_SLOT               MCI_SD_SLOTA
 /// SD boot slot
 #define BOARD_SD_BOOT_MCISLOT    0
 /// SD card detection pin definition.
