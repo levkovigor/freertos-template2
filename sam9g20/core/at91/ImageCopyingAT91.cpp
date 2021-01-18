@@ -31,7 +31,7 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
         return copySdCardImageToNandFlash();
     }
     case(ImageHandlerStates::REPLACE_SDC_IMG): {
-        break;
+        return copySdcImgToSdc();
     }
     case(ImageHandlerStates::COPY_FLASH_IMG_TO_SDC): {
         break;
@@ -192,10 +192,10 @@ ReturnValue_t ImageCopyingEngine::handleErasingForObsw() {
 #endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
-        if(imageSlot == ImageSlot::IMAGE_0) {
+        if(sourceSlot == ImageSlot::IMAGE_0) {
             currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
         }
-        else if(imageSlot == ImageSlot::IMAGE_1) {
+        else if(sourceSlot == ImageSlot::IMAGE_1) {
             currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
         }
         else {
