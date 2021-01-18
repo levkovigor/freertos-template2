@@ -58,7 +58,7 @@ private:
 
 	void performEtlTemplateTest();
 
-    void sdTest();
+    // void sdTest();
 
     struct TmManagerStructBase {
         virtual~TmManagerStructBase() = default;
