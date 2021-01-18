@@ -26,14 +26,14 @@ void ImageCopyingEngine::enableExtendedDebugOutput(bool enableMoreOutput) {
 ReturnValue_t ImageCopyingEngine::startSdcToFlashOperation(
         ImageSlot imageSlot) {
     imageHandlerState = ImageHandlerStates::COPY_SDC_IMG_TO_FLASH;
-    this->imageSlot = imageSlot;
+    this->sourceSlot = imageSlot;
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t ImageCopyingEngine::startFlashToSdcOperation(
         ImageSlot imageSlot) {
     imageHandlerState = ImageHandlerStates::COPY_FLASH_IMG_TO_SDC;
-    this->imageSlot = imageSlot;
+    this->sourceSlot = imageSlot;
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -116,13 +116,13 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         // Current file size only needs to be cached once.
         // Info output should only be printed once.
         if(stepCounter == 0) {
-            if(imageSlot == ImageSlot::IMAGE_0) {
+            if(sourceSlot == ImageSlot::IMAGE_0) {
                 currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
             }
-            else if(imageSlot == ImageSlot::IMAGE_1) {
+            else if(sourceSlot == ImageSlot::IMAGE_1) {
                 currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
             }
-            else if(imageSlot == ImageSlot::IMAGE_1) {
+            else if(sourceSlot == ImageSlot::IMAGE_1) {
                 currentFileSize = f_filelength(config::SW_UPDATE_SLOT_NAME);
             }
         }
@@ -133,20 +133,20 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
 #ifdef AT91SAM9G20_EK
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "Copying AT91 software image SD card " << currentVolume << " slot "
-                    << static_cast<int>(imageSlot) << " to AT91 NAND-Flash.." << std::endl;
+                    << static_cast<int>(sourceSlot) << " to AT91 NAND-Flash.." << std::endl;
 #else
             sif::printInfo("Copying AT91 software image SD card %d slot %d to AT91 NAND-Flash..\n",
-                    currentVolume, imageSlot);
+                    currentVolume, sourceSlot);
 #endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
 #endif /* AT91SAM9G20_EK */
 
 #ifdef ISIS_OBC_G20
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "Copying iOBC software image SD card " << currentVolume << " slot "
-                    << static_cast<int>(imageSlot) << " to NOR-Flash.." << std::endl;
+                    << static_cast<int>(sourceSlot) << " to NOR-Flash.." << std::endl;
 #else
             sif::printInfo("Copying iOBC software image SD card %d slot %d to NOR-Flash..\n",
-                    currentVolume, imageSlot);
+                    currentVolume, sourceSlot);
 #endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
 #endif /* ISIS_OBC_G20 */
 
@@ -158,10 +158,10 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
 #endif
         }
 
-        if(imageSlot == ImageSlot::IMAGE_0) {
+        if(sourceSlot == ImageSlot::IMAGE_0) {
             *filePtr = f_open(config::SW_SLOT_0_NAME, "r");
         }
-        else if(imageSlot == ImageSlot::IMAGE_1) {
+        else if(sourceSlot == ImageSlot::IMAGE_1) {
             *filePtr = f_open(config::SW_SLOT_1_NAME, "r");
         }
         else {
@@ -223,6 +223,10 @@ ReturnValue_t ImageCopyingEngine::readFile(uint8_t *buffer, size_t sizeToRead,
         return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
     }
     *sizeRead = static_cast<size_t>(bytesRead);
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t ImageCopyingEngine::copySdcImgToSdc() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 

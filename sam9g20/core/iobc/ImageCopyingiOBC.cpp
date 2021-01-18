@@ -129,10 +129,10 @@ ReturnValue_t ImageCopyingEngine::handleObswErasure() {
 #endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
-        if(imageSlot == ImageSlot::IMAGE_0) {
+        if(sourceSlot == ImageSlot::IMAGE_0) {
             currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
         }
-        else if(imageSlot == ImageSlot::IMAGE_1) {
+        else if(sourceSlot == ImageSlot::IMAGE_1) {
             currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
         }
         else {

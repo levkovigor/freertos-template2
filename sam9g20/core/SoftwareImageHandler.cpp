@@ -188,6 +188,11 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
         actionHelper.step(1, commandedBy, actionId, result);
         break;
     }
+    case(COPY_OBSW_SDC_TO_SDC): {
+        if(handlerState == HandlerState::COPYING) {
+            actionHelper.finish(commandedBy, actionId, BUSY);
+        }
+    }
     }
     return result;
 }

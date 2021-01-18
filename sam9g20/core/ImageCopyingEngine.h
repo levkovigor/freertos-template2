@@ -126,7 +126,8 @@ private:
 
     ImageHandlerStates imageHandlerState = ImageHandlerStates::IDLE;
     SdCard activeSdCard = SdCard::SD_CARD_0;
-    ImageSlot imageSlot = ImageSlot::IMAGE_0;
+    ImageSlot sourceSlot = ImageSlot::IMAGE_0;
+    ImageSlot targetSlot = ImageSlot::IMAGE_0;
     GenericInternalState internalState = GenericInternalState::IDLE;
     bool performHammingCodeCheck = false;
     bool extendedDebugOutput = false;
@@ -187,6 +188,8 @@ private:
 
     ReturnValue_t prepareGenericFileInformation(VolumeId currentVolume,
             F_FILE** filePtr);
+
+    ReturnValue_t copySdcImgToSdc();
 
     /**
      * Generic function to read file which also simplfies error handling.
