@@ -120,8 +120,16 @@ int get_prefered_sd_card(VolumeId* volumeId);
 int write_bootloader_hamming_code(const uint8_t* code, size_t size);
 int read_bootloader_hamming_code(uint8_t* code, size_t* size);
 
-int set_to_load_softwareupdate(bool slot0);
-int get_software_to_be_updated(bool* yes, bool* slot0);
+int set_to_load_softwareupdate(bool enable, VolumeId volume);
+
+/**
+ * Check whether the software should be loaded from the SD-Card or the NOR-Flash.
+ * @param enable Will be set to true if software update should be loaded.
+ * @param volume If enable is set to true, the target volume ID will be set as well.
+ * @return
+ * 0 on success, -1 and -2 on FRAM failures, -3 on invalid input.
+ */
+int get_to_load_softwareupdate(bool* enable, VolumeId* volume);
 
 #ifdef __cplusplus
 }

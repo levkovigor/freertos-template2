@@ -10,7 +10,7 @@
 #include <utility/trace.h>
 #include <utility/assert.h>
 #include <tinyfatfs/diskio.h>
-#include <memories/Media.h>
+#include <memories/sdmmc/Media.h>
 
 #include <string.h>
 #include <stdio.h>

@@ -7,6 +7,7 @@
 #include <fsfw/timemanager/Countdown.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/ipc/QueueFactory.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 
 SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
@@ -25,8 +26,13 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
             break;
         }
         else if(result != HasReturnvaluesIF::RETURN_OK) {
-            sif::debug << "SoftwareImageHandler::performOperation: Error"
-                    << " receiving message!" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+            sif::warning << "SoftwareImageHandler::performOperation: "
+                    "Error receiving message!" << std::endl;
+#else
+            sif::printWarning("SoftwareImageHandler::performOperation: "
+                    "Error receiving message!\n");
+#endif
         }
 
         result = actionHelper.handleActionMessage(&message);
@@ -98,14 +104,14 @@ ReturnValue_t SoftwareImageHandler::initialize() {
 
     if(retval != 0) {
         // should never happen ! we should power cycle if this happens.
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "SoftwareImageHandler::initialize: NOR-Flash start failed"
                 << std::endl;
+#else
+        sif::printError("SoftwareImageHandler::initialize: NOR-Flash start failed\n");
+#endif
         return result;
     }
-//    retval = NORFLASH_EraseChip(&NORFlash);
-//    if(retval != 0) {
-//        sif::error << "Erasing NOR failed!" << std::endl;
-//    }
 #endif
 
     return HasReturnvaluesIF::RETURN_OK;
@@ -181,6 +187,11 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
         handlerState = HandlerState::COPYING;
         actionHelper.step(1, commandedBy, actionId, result);
         break;
+    }
+    case(COPY_OBSW_SDC_TO_SDC): {
+        if(handlerState == HandlerState::COPYING) {
+            actionHelper.finish(commandedBy, actionId, BUSY);
+        }
     }
     }
     return result;

@@ -2,7 +2,7 @@
 
 #include <fsfw/serialize/SerializeAdapter.h>
 #include <sam9g20/comIF/RS232PollingTask.h>
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 RS232DeviceComIF::RS232DeviceComIF(object_id_t objectId):
 		SystemObject(objectId) {
@@ -25,8 +25,11 @@ ReturnValue_t RS232DeviceComIF::sendMessage(CookieIF *cookie,
 	if(not RS232PollingTask::uart0Started) {
 		// should not happen! The RS232 bus is started by the RS232PollingTask
 	    // at program initialization.
-		sif::error << "RS232DeviceComIF::sendMessage: UART bus 0 not active"
-				<< std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "RS232DeviceComIF::sendMessage: UART bus 0 not active" << std::endl;
+#else
+		sif::printError("RS232DeviceComIF::sendMessage: UART bus 0 not active\n");
+#endif
 		return RS232_INACTIVE;
 	}
 
@@ -39,8 +42,13 @@ ReturnValue_t RS232DeviceComIF::sendMessage(CookieIF *cookie,
 	}
 
 	// Configuration error.
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 	sif::error << "RS232DeviceComIF::sendMessage: UART_queueTransfer failed"
 			<< "with code " << retval << std::endl;
+#else
+	sif::printError("RS232DeviceComIF::sendMessage: UART_queueTransfer failed"
+            "with code %d\n", retval);
+#endif
 	triggerEvent(comconstants::RS232_SEND_FAILURE, retval, 0);
 	return HasReturnvaluesIF::RETURN_OK;
 }

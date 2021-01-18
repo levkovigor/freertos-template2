@@ -157,7 +157,7 @@ private:
 	CommunicationStep communicationStep = CommunicationStep::DATA;
 	bool commandExecuted = false;
 
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
 	PeriodicOperationDivider* debugDivider;
 #endif
 

@@ -1,16 +1,28 @@
-#include <test/testtasks/TestTask.h>
-#include <test/testtasks/PusTcInjector.h>
-#include <fsfw/unittest/internal/InternalUnitTester.h>
+#include "TestTask.h"
+#include "PusTcInjector.h"
 
-#include <fsfw/objectmanager/ObjectManagerIF.h>
-#include <fsfw/timemanager/Stopwatch.h>
-#include <fsfw/globalfunctions/arrayprinter.h>
-#include <etl/vector.h>
 #include <fsfwconfig/devices/logicalAddresses.h>
 #include <fsfwconfig/tmtc/apid.h>
 
+#include <fsfw/unittest/internal/InternalUnitTester.h>
+#include <fsfw/objectmanager/ObjectManagerIF.h>
+#include <fsfw/timemanager/Stopwatch.h>
+#include <fsfw/globalfunctions/arrayprinter.h>
+
+#include <etl/vector.h>
 #include <array>
 #include <cstring>
+
+extern "C" {
+//#include <memories/sdmmc/MEDSdcard.h>
+//#include <sam9g20/at91/tinyfatfs/include/tinyfatfs/tff.h>
+//#include <peripherals/pio/pio.h>
+//#include <utility/trace.h>
+}
+
+
+//Media medias[1];
+
 
 
 bool TestTask::oneShotAction = true;
@@ -57,6 +69,22 @@ ReturnValue_t TestTask::performOperation(uint8_t operationCode) {
 
 ReturnValue_t TestTask::performOneShotAction() {
 	// Everything here will only be performed once.
+    //SDCardTest();
+//    int res = 0;
+    //sdTest();
+//    SDCardAccess accessToken;
+    //int res = open_filesystem(VolumeId::SD_CARD_0);
+
+    //res = select_sd_card(VolumeId::SD_CARD_0);
+
+//    const char* const testString = "abc";
+//    F_FILE* file = f_open("test.bin", "w");
+//    if(file == nullptr) {
+//        return HasReturnvaluesIF::RETURN_FAILED;
+//    }
+//    res = f_write(testString, 3, 1, file);
+//
+//    f_close(file);
 
     //performEtlTemplateTest();
     return HasReturnvaluesIF::RETURN_OK;
@@ -85,7 +113,11 @@ void TestTask::performPusInjectorTest() {
 	        objects::CCSDS_PACKET_DISTRIBUTOR, objects::TC_STORE,
 	        apid::SOURCE_OBSW);
 	tcInjector.initialize();
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 	sif::info << "TestTask: injecting pus telecommand" << std::endl;
+#else
+	sif::printInfo("TestTask: injecting pus telecommand\n");
+#endif
 	tcInjector.injectPusTelecommand(17,1);
 }
 
@@ -123,12 +155,21 @@ void TestTask::examplePacketTest() {
 		ReturnValue_t result = testClass.deSerialize(&pointer, &size,
 		        SerializeIF::Endianness::BIG);
 		if(result != RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 			sif::error << "Deserialization did not work" << std::endl;
+#else
+			sif::printError("Deserialization did not work\n");
+#endif
 			return;
 		}
-		sif::info << "Priting deserialized packet members: " << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::info << "Printing deserialized packet members: " << std::endl;
 		sif::info << testClass.getHeader() << std::endl;
 		sif::info << testClass.getTail() << std::endl;
+#else
+		sif::printInfo("Printing deserialized packet members: \n");
+		sif::printInfo("%s\n%s\n", testClass.getHeader(), testClass.getTail());
+#endif
 		arrayprinter::print(testClass.getBuffer(), testClass.getBufferLength());
 	}
 
@@ -141,7 +182,11 @@ void TestTask::examplePacketTest() {
 		ReturnValue_t result = testClass2.serialize(&packetPointer,
 				&serializedSize, packetMaxSize, SerializeIF::Endianness::BIG);
 		if(result == RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 			sif::info << "Priting serialized packet:" << std::endl;
+#else
+			sif::printInfo("Priting serialized packet: \n");
+#endif
 			arrayprinter::print(packet, packetLen, OutputType::DEC);
 		}
 	}
@@ -158,6 +203,86 @@ void TestTask::performEtlTemplateTest() {
     }
     struct TmManagerStruct<templateSizes[poolId]>* test = dynamic_cast<
             struct TmManagerStruct<templateSizes[poolId]>*>(iter->second);
-    sif::info << test->testMap.size() << std::endl;
-    sif::info << test->testMap.max_size() << std::endl;
+    if(test) {}
 }
+
+
+//void TestTask::sdTest(void) {
+//    FATFS fs;
+//    FIL fileObject;
+//
+//#ifdef ISIS_OBC_G20
+//    uint8_t sdCard = 0;
+//    Pin sdSelectPin[1] = {PIN_SDSEL};
+//    PIO_Configure(sdSelectPin, PIO_LISTSIZE(sdSelectPin));
+////    bool high = PIO_Get(sdSelectPin);
+////    if(high) {
+////        PIO_Clear(sdSelectPin);
+////    }
+////    else {
+////        PIO_Set(sdSelectPin);
+////    }
+//    if(sdCard == 0) {
+//        PIO_Set(sdSelectPin);
+//    }
+//    else {
+//        PIO_Clear(sdSelectPin);
+//    }
+//
+//
+//    Pin npWrPins[2] = {PIN_NPWR_SD0, PIN_NPWR_SD1};
+//    PIO_Configure(npWrPins, PIO_LISTSIZE(npWrPins));
+//    if(sdCard == 0) {
+//        PIO_Clear(npWrPins);
+//    }
+//    if(sdCard == 1) {
+//        PIO_Clear(npWrPins + 1);
+//    }
+//
+////    Pin pinsMci1Off[2] = {PINS_MCI1_OFF};
+////    PIO_Configure(pinsMci1Off, PIO_LISTSIZE(pinsMci1Off));
+////    PIO_Set(pinsMci1Off);
+////    PIO_Set(pinsMci1Off +  1);
+//
+//#endif
+//
+//    const int ID_DRV = 0;
+//    MEDSdcard_Initialize(&medias[ID_DRV], 0);
+//
+//    memset(&fs, 0, sizeof(FATFS));  // Clear file system object
+//    int res = f_mount(0, &fs);
+//    if( res != FR_OK ) {
+//        printf("f_mount pb: 0x%X\n\r", res);
+//    }
+//
+////    char file_name [strlen(config::SW_REPOSITORY) + strlen(config::SW_UPDATE_SLOT_NAME) + 2];
+////    snprintf(file_name, sizeof (file_name) + 1, "/%s/%s", config::SW_REPOSITORY,
+////            config::SW_UPDATE_SLOT_NAME);
+//
+////#ifdef ISIS_OBC_G20
+////    PIO_Set(npWrPins);
+////    for(int idx = 0; idx < 100000; idx++) {};
+////    PIO_Clear(npWrPins);
+////#endif
+//
+//    res = f_open(&fileObject, "test.bin", FA_OPEN_EXISTING|FA_READ);
+//    if( res != FR_OK ) {
+//        TRACE_ERROR("f_open read pb: 0x%X\n\r", res);
+//    }
+//
+////    res = f_open(&fileObject, file_name, FA_OPEN_EXISTING|FA_READ);
+////    if( res != FR_OK ) {
+////        TRACE_ERROR("f_open read pb: 0x%X\n\r", res);
+////    }
+//
+//    size_t bytes_read = 0;
+//    uint8_t* alotofMemory= new uint8_t[200000];
+//    res = f_read(&fileObject, (void*) alotofMemory, 3, &bytes_read);
+//    if(res != FR_OK) {
+//        TRACE_ERROR("f_read pb: 0x%X\n\r", res);
+//    }
+//
+//    delete(alotofMemory);
+//}
+
+

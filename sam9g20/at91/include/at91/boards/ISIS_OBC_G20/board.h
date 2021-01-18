@@ -74,6 +74,7 @@
 
 /// Name of the board.
 #define BOARD_NAME              "ISIS_OBC_G20"
+#define BOARD_NAME_PRINT        "ISIS iOBC"
 /// Board definition.
 #ifndef ISIS_OBC_G20
 #define ISIS_OBC_G20

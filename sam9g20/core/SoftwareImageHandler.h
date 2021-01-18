@@ -14,6 +14,8 @@ extern "C" {
 #endif
 }
 
+#include <array>
+
 
 #if defined(ISIS_OBC_G20) && defined(AT91SAM9G20_EK)
 #error "Two board defined at once. Please check includes!"
@@ -45,7 +47,7 @@ enum class SdCard {
 };
 
 /** Image slots on SD cards */
-enum class ImageSlot {
+enum ImageSlot: uint8_t {
     IMAGE_0, //!< Primary Image
     IMAGE_1, //!< Secondary image
     SW_UPDATE //!< Software update slot.
@@ -240,9 +242,9 @@ private:
     ReturnValue_t copyFramBootloaderToNorFlash();
 
     // Handler functions for the SD cards
-    ReturnValue_t copySdCardImageToNorFlash(SdCard sdCard, ImageSlot imageSlot);
+    ReturnValue_t copySdCardImageToNorFlash(SdCard sdCard, ImageSlot sourceSlot);
     ReturnValue_t copyNorFlashImageToSdCards(SdCard sdCard,
-            ImageSlot imageSlot);
+            ImageSlot sourceSlot);
     // Scrubbing functions
     ReturnValue_t checkNorFlashImage();
 #else

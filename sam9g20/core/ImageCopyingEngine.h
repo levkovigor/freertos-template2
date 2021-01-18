@@ -1,6 +1,7 @@
 #ifndef SAM9G20_CORE_IMAGECOPYINGENGINE_H_
 #define SAM9G20_CORE_IMAGECOPYINGENGINE_H_
 
+#include <OBSWConfig.h>
 #include <sam9g20/common/SDCardApi.h>
 #include <sam9g20/core/SoftwareImageHandler.h>
 #include <sam9g20/memory/SDCardDefinitions.h>
@@ -12,6 +13,7 @@ extern "C" {
 }
 #else
 #include <hal/Storage/NORflash.h>
+#include <sam9g20/at91/common/commonIOBCConfig.h>
 #endif
 
 /**
@@ -124,7 +126,8 @@ private:
 
     ImageHandlerStates imageHandlerState = ImageHandlerStates::IDLE;
     SdCard activeSdCard = SdCard::SD_CARD_0;
-    ImageSlot imageSlot = ImageSlot::IMAGE_0;
+    ImageSlot sourceSlot = ImageSlot::IMAGE_0;
+    ImageSlot targetSlot = ImageSlot::IMAGE_0;
     GenericInternalState internalState = GenericInternalState::IDLE;
     bool performHammingCodeCheck = false;
     bool extendedDebugOutput = false;
@@ -160,21 +163,16 @@ private:
     ReturnValue_t nandFlashInit();
     ReturnValue_t performNandCopyAlgorithm(F_FILE** binaryFile);
 #else
-    static constexpr uint8_t NORFLASH_SMALL_SECTORS_NUMBER = 8;
-    static constexpr uint8_t RESERVED_BL_SMALL_SECTORS = 5;
-    static constexpr uint8_t RESERVED_OBSW_SMALL_SECTORS =
-    		NORFLASH_SMALL_SECTORS_NUMBER - RESERVED_BL_SMALL_SECTORS;
+    /** Please note that the algorithms are not currently written in a way to support
+    variable bootloader small sectors numbers depending on these configuration constants!
+    The algorithms assumes 8 small sectors are reserved for the bootloader! */
     static constexpr size_t NORFLASH_TOTAL_SMALL_SECTOR_MEM_OBSW =
     		RESERVED_OBSW_SMALL_SECTORS * NORFLASH_SMALL_SECTOR_SIZE;
-    static constexpr uint8_t NORFLASH_MEDIUM_SECTORS_NUMBER = 15;
-    static constexpr uint8_t NORFLASH_SECTORS_NUMBER = 23;
-    static constexpr uint32_t NORFLASH_BASE_ADDRESS_READ = 0x10000000;
-    static constexpr uint32_t NORFLASH_BL_SIZE_START = NORFLASH_SA5_ADDRESS - 6;
-    static constexpr uint32_t NORFLASH_BL_CRC16_START = NORFLASH_SA5_ADDRESS - 2;
     static constexpr size_t COPYING_BUCKET_SIZE = 2048;
     ReturnValue_t copySdCardImageToNorFlash();
+
     /**
-     * For the bootloader, 5 small sectors (8192 * 5 = 40960 bytes) will
+     * For the bootloader, all small sectors (8192 * 8 = 65536 bytes) will
      * be erased. For the primary image, all the remaining sectors will
      * be deleted.
      * @param bootloader
@@ -186,9 +184,12 @@ private:
     ReturnValue_t performNorCopyOperation(F_FILE** binaryFile);
     ReturnValue_t handleSdToNorCopyOperation();
     void writeBootloaderSizeAndCrc();
-#endif
+#endif /* AT91SAM9G20_EK */
+
     ReturnValue_t prepareGenericFileInformation(VolumeId currentVolume,
             F_FILE** filePtr);
+
+    ReturnValue_t copySdcImgToSdc();
 
     /**
      * Generic function to read file which also simplfies error handling.
@@ -207,6 +208,9 @@ private:
      */
     ReturnValue_t readFile(uint8_t* buffer, size_t sizeToRead,
             size_t* sizeRead, F_FILE** file);
+
+    void handleInfoPrintout(int currentVolume);
+    void handleFinishPrintout();
 
 };
 
