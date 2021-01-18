@@ -237,7 +237,8 @@ void RS485DeviceComIF::handleSend(RS485Devices device, RS485Cookie *rs485Cookie)
 void RS485DeviceComIF::handleTmSend(RS485Devices device, RS485Cookie *rs485Cookie) {
 
     // TODO: Check if downlink available
-    for (packetSentCounter = 0; tmTcTarget->fillSendFrameBuffer() == HasReturnvaluesIF::RETURN_OK;
+    for (packetSentCounter = 0;
+            tmTcTarget->fillSendFrameBuffer(sendBuffer[device]) == HasReturnvaluesIF::RETURN_OK;
             packetSentCounter++) {
 
         // TODO: do something with result

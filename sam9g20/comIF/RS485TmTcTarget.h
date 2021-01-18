@@ -13,6 +13,7 @@
 #include <fsfw/ipc/MessageQueueIF.h>
 #include <fsfw/tmtcservices/TmTcMessage.h>
 #include <fsfw/container/DynamicFIFO.h>
+#include <mission/utility/USLPTransferFrame.h>
 
 /**
  * @brief       Is used by RS485DeviceComIF to send TM
@@ -20,7 +21,7 @@
  * Has access to frame buffer of RS485DeviceComIF and is called by it
  * @author      L. Rajer
  */
-class RS485TmTcTarget : public AcceptsTelemetryIF,
+class RS485TmTcTarget: public AcceptsTelemetryIF,
         public SystemObject {
 public:
     static constexpr uint8_t TMTC_RECEPTION_QUEUE_DEPTH = 20;
@@ -39,18 +40,21 @@ public:
     /** AcceptsTelemetryIF override */
     MessageQueueId_t getReportReceptionQueue(uint8_t virtualChannel = 0) override;
 
-    ReturnValue_t fillSendFrameBuffer();
+    ReturnValue_t fillSendFrameBuffer(USLPTransferFrame *frame);
 
 private:
     object_id_t tmStoreId = objects::NO_OBJECT;
 
     MessageQueueIF *tmTcReceptionQueue = nullptr;
-    StorageManagerIF* tmStore = nullptr;
+    StorageManagerIF *tmStore = nullptr;
+    // Used to split packets into different frames
+    TmTcMessage *overhangMessage = nullptr;
+    uint8_t overhangMessageSentBytes = 0;
     /**
      * This fifo can be used to store downlink data
      * which can not be sent at the moment.
      */
-    DynamicFIFO<store_address_t>* tmFifo = nullptr;
+    DynamicFIFO<store_address_t> *tmFifo = nullptr;
     uint8_t sentPacketsPerCycle = DEFAULT_STORED_DATA_SENT_PER_CYCLE;
     uint8_t maxNumberOfPacketsStored = DEFAULT_DOWNLINK_PACKETS_STORED;
 
