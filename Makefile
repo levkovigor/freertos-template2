@@ -51,13 +51,18 @@ endif
 
 CHIP_NAME = sam9g20
 BOARD_FILE_ROOT = $(CHIP_NAME)
+
 ADD_USB_DRIVER = 1
+ADD_MMC_DRIVER = 1
+ADD_TINYFATFS = 1
 
 ifdef IOBC
 CHIP_PATH = iobc
 else
 CHIP_PATH = sam9g20ek
 endif
+
+ENABLE_FLTO = 0
 
 OS_FSFW = freeRTOS
 OS_APP = $(OS_FSFW)
@@ -421,9 +426,16 @@ mission: OPTIMIZATION += -fno-isolate-erroneous-paths-dereference
 
 # Link time optimization can lead to issues, so  if there is an issue with the
 # mission binary, try to disable it to see if that fixes the problem.
+ifeq ($(ENABLE_FLTO), 1)
 mission: LINK_TIME_OPTIMIZATION = -flto
+endif
+
 mission: TARGET = Mission binary
+ifeq ($(ENABLE_FLTO), 1)
 mission: OPTIMIZATION_MESSAGE = On with Link Time Optimization.
+else
+mission: OPTIMIZATION_MESSAGE = On without Link Time Optimization.
+endif
 mission: DEBUG_LEVEL = -g0
 
 debug: CXXDEFINES += -DDEBUG

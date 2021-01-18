@@ -7,9 +7,9 @@ else
 # iOBC sources
 CSRC += $(wildcard $(CURRENTPATH)/iobc/*.c)
 CSRC += $(wildcard $(CURRENTPATH)/iobc/common/*.c)
-CSRC += $(wildcard $(CURRENTPATH)/fat/tinyfatfs/src/*.c)
-CSRC += $(wildcard $(CURRENTPATH)/fat/memories/*.c)
-CSRC += $(wildcard $(CURRENTPATH)/fat/memories/sdmmc/*.c)
+CSRC += $(wildcard $(CURRENTPATH)/tinyfatfs/src/*.c)
+CSRC += $(wildcard $(CURRENTPATH)/tinyfatfs/memories/*.c)
+CSRC += $(wildcard $(CURRENTPATH)/tinyfatfs/memories/sdmmc/*.c)
 
 ifeq ($(MEMORY_TYPE), norflash)
 CSRC += $(wildcard $(CURRENTPATH)/iobc/norflash/*.c)
@@ -22,7 +22,7 @@ endif
 CSRC += $(wildcard $(CURRENTPATH)/utility/*.c)
 
 INCLUDES += $(CURRENTPATH)
-INCLUDES += $(CURRENTPATH)/fat
-INCLUDES += $(CURRENTPATH)/fat/tinyfatfs/include
+INCLUDES += $(CURRENTPATH)/tinyfatfs
+INCLUDES += $(CURRENTPATH)/tinyfatfs/include
 INCLUDES += $(CURRENTPATH)/utility
 INCLUDES += $(CURRENTPATH)/config

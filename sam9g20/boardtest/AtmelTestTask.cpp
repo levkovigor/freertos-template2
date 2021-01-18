@@ -1,5 +1,5 @@
 #include <fsfw/storagemanager/PoolManager.h>
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Stopwatch.h>
 
@@ -38,14 +38,14 @@ AtmelTestTask::AtmelTestTask(object_id_t object_id): TestTask(object_id) {
 AtmelTestTask::~AtmelTestTask() {}
 
 ReturnValue_t AtmelTestTask::performPeriodicAction() {
-	//performDataSetTesting(testMode);
-	// This leads to a crash!
-	//performExceptionTest();
+    //performDataSetTesting(testMode);
+    // This leads to a crash!
+    //performExceptionTest();
 #ifdef ISIS_OBC_G20
 #endif
 
-	//sif::info << "Hello, I am alive!" << std::endl;
-	return TestTask::performPeriodicAction();
+    //sif::info << "Hello, I am alive!" << std::endl;
+    return TestTask::performPeriodicAction();
 }
 
 
@@ -55,9 +55,9 @@ ReturnValue_t AtmelTestTask::performOneShotAction() {
     //printFilesTest();
 
 #ifdef ISIS_OBC_G20
-	performIOBCTest();
+    performIOBCTest();
 #endif
-	//performHammingTest();
+    //performHammingTest();
     return TestTask::performOneShotAction();
 }
 
@@ -116,7 +116,10 @@ void AtmelTestTask::performSDCardDemo() {
         result = DEMO_SD_Basic(1);
     }
     if(result == 0) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "AtmelTestTask: SD Card demo success" << std::endl;
+#else
+#endif
     }
 }
 
@@ -130,14 +133,30 @@ void AtmelTestTask::performIOBCTest() {
 }
 
 void AtmelTestTask::performSupervisorTest() {
-
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Testing supervisor." << std::endl;
+#else
+    sif::printInfo("Testing supervisor.\n");
+#endif
+
     Supervisor_start(NULL, 0);
+
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Supervisor started successfull!" << std::endl;
+#else
+    sif::printInfo("Supervisor started successfull!\n");
+#endif
+
     uint8_t supervisorIndex = -1;
     supervisor_housekeeping_t houseKeeping;
     int result = Supervisor_getHousekeeping(&houseKeeping, supervisorIndex);
+
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Supervisor Housekeeping Call Result: " << result << std::endl;
+#else
+    sif::printInfo("Supervisor Housekeeping Call Result: %d", result);
+#endif
+
     printf("Supervisor Uptime       : %03d:%02d:%02d \n\r",
             (int)(houseKeeping.fields.supervisorUptime / 3600),
             (int)(houseKeeping.fields.supervisorUptime % 3600) / 60,
@@ -172,7 +191,13 @@ void AtmelTestTask::performSupervisorTest() {
     printf("_current_measurement_3v3  : %04d | %d mA \n\r", houseKeeping.fields.adcData[_current_measurement_3v3], adcValue[_current_measurement_3v3]);
     printf("_current_measurement_1v8  : %04d | %d mA \n\r", houseKeeping.fields.adcData[_current_measurement_1v8], adcValue[_current_measurement_1v8]);
     printf("_current_measurement_1v0  : %04d | %d mA \n\r\n\r", houseKeeping.fields.adcData[_current_measurement_1v0], adcValue[_current_measurement_1v0]);
+
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Supervisor test successfull!" << std::endl;
+#else
+    sif::printInfo("Supervisor test successfull!\n");
+#endif
+
 }
 
 void AtmelTestTask::performNorFlashTest(bool displayDebugOutput) {
@@ -180,8 +205,12 @@ void AtmelTestTask::performNorFlashTest(bool displayDebugOutput) {
 
     if(result != 0) {
         if(displayDebugOutput) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "AtmelTestTask::performNorFlashTest: Starting failed"
                     << std::endl;
+#else
+            sif::printInfo("AtmelTestTask::performNorFlashTest: Starting failed\n");
+#endif
         }
 
         return;
@@ -200,8 +229,12 @@ void AtmelTestTask::performNorFlashTest(bool displayDebugOutput) {
     stopwatch.start();
 
     if(displayDebugOutput) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "AtmelTestTask::performNorFlashTest: Erase result: "
                 << result << std::endl;
+#else
+        sif::printInfo("AtmelTestTask::performNorFlashTest: Erase result: %d", result);
+#endif
     }
 
     uint8_t test[4] = {1, 2, 3, 5};
@@ -215,11 +248,17 @@ void AtmelTestTask::performNorFlashTest(bool displayDebugOutput) {
 
     result = NORFLASH_ReadData(&NORFlash, NORFLASH_SA22_ADDRESS, reception, 4);
     if(displayDebugOutput) {
-        sif::info << "AtmelTestTask::performNorFlashTest: Read result: "
-                << (int) result << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::info << "AtmelTestTask::performNorFlashTest: Read result: " << (int) result
+                << std::endl;
         sif::info << "Read API: " << (int) reception[0] <<
                 (int) reception[1]  << (int) reception[2] << (int) reception[3] <<
                 std::endl;
+#else
+        sif::printInfo("AtmelTestTask::performNorFlashTest: Read result: %d\n", result);
+        sif::printInfo("Read API: %d%d%d%d\n", reception[0], reception[1],
+                reception[2], reception[3]);
+#endif
     }
 
 
@@ -227,9 +266,12 @@ void AtmelTestTask::performNorFlashTest(bool displayDebugOutput) {
             NOR_FLASH_BASE_ADDRESS + NORFLASH_SA22_ADDRESS), 4);
 
     if(displayDebugOutput) {
-        sif::info << "memcpy: " << (int) reception[0] <<
-                (int) reception[1] << (int) reception[2] << (int) reception[3] <<
-                std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::info << "memcpy: " << (int) reception[0] << (int) reception[1] << (int) reception[2]  <<
+                (int) reception[3] << std::endl;
+#else
+        sif::printInfo("memcpy: %d%d%d%d\n", reception);
+#endif
     }
 
 
@@ -237,16 +279,26 @@ void AtmelTestTask::performNorFlashTest(bool displayDebugOutput) {
             test, 4);
     if(result != 0) {
         if(displayDebugOutput)  {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "AtmelTestTask::performNorFlashTest: Second write "
                     "failed" << std::endl;
+#else
+            sif::printInfo("AtmelTestTask::performNorFlashTest: Second write "
+                    "failed\n");
+#endif
         }
 
         return;
     }
 
     if(displayDebugOutput)  {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "AtmelTestTask::performNorFlashTest: Second write operation "
                 "successfull" << std::endl;
+#else
+        sif::printInfo("AtmelTestTask::performNorFlashTest: Second write operation "
+                "successfull\n");
+#endif
     }
 
 
@@ -254,17 +306,26 @@ void AtmelTestTask::performNorFlashTest(bool displayDebugOutput) {
             NOR_FLASH_BASE_ADDRESS + NORFLASH_SA22_ADDRESS + 256), 4);
 
     if(displayDebugOutput)  {
-        sif::info << "memcpy second: " << (int) reception[0] <<
-                (int) reception[1] << (int) reception[2] << (int) reception[3] <<
-                std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::info << "memcpy second: " << (int) reception[0] << (int) reception[1] <<
+                (int) reception[2] << (int) reception[3] << std::endl;
+#else
+        sif::printInfo("memcpy second: %d%d%d%d", reception[0], reception[1],
+                reception[2], reception[3]);
+#endif
     }
 
     // we can't write to uneraed sectors.
     result = NORFLASH_WriteData(&NORFlash, NORFLASH_SA0_ADDRESS, test, 4);
     if(result != 0) {
         if(displayDebugOutput) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "AtmelTestTask::performNorFlashTest: Third write failed "
                     "(expected, sector not erased!)" <<  std::endl;
+#else
+            sif::printInfo("AtmelTestTask::performNorFlashTest: Third write failed "
+                    "(expected, sector not erased!)\n");
+#endif
         }
 
     }
@@ -278,12 +339,21 @@ void AtmelTestTask::performFRAMTest() {
     int result = read_software_version(&swVersion, &swSubversion,
             &swSubsubversion);
     if(result == 0) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "AtmelTestTask::performFRAMTest: Software version "
                 << (int) swVersion << std::endl;
         sif::info << "AtmelTestTask::performFRAMTest: Software subversion "
                 << (int) swSubversion << std::endl;
         sif::info << "AtmelTestTask::performFRAMTest: Software subsubversion "
                 << (int) swSubsubversion << std::endl;
+#else
+        sif::printInfo("AtmelTestTask::performFRAMTest: Software version %d",
+                static_cast<int>(swVersion));
+        sif::printInfo("AtmelTestTask::performFRAMTest: Software subversion %d",
+                static_cast<int>(swSubversion));
+        sif::printInfo("AtmelTestTask::performFRAMTest: Software subsubversion %d",
+                static_cast<int>(swSubsubversion));
+#endif
     }
 }
 
@@ -299,28 +369,43 @@ void AtmelTestTask::performHammingTest() {
     }
     uint8_t hamming[3];
     Hamming_Compute256x(test, 256, hamming);
-    sif::info << "Hamming code: " << std::hex << "0x" << (int) hamming[0]
-             << ", 0x" << (int) hamming[1] << ", 0x"
-             << (int) hamming[2] << std::endl;
+
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+    sif::info << "Hamming code: " << std::hex << "0x" << (int) hamming[0] << ", 0x" <<
+            (int) hamming[1] << ", 0x" << (int) hamming[2] << std::endl;
+#else
+#endif
     int result = Hamming_Verify256x(test, 256, hamming);
     if(result != 0) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "Hamming Verification failed with code "
                 << result << "!" << std::endl;
+#else
+#endif
     }
     else if(result == 0) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Hamming code verification success!" << std::endl;
+#else
+#endif
     }
 
     // introduce bit error
     test[0] = test[0] ^ 1;
     result = Hamming_Verify256x(test, 256, hamming);
     if(result == Hamming_ERROR_SINGLEBIT) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Hamming code one bit error corrected!" << std::endl;
+#else
+#endif
 
     }
     else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "Hamming Verification failed with code "
                 << result << "!" << std::endl;
+#else
+#endif
         return;
     }
 
@@ -328,12 +413,18 @@ void AtmelTestTask::performHammingTest() {
     test[156] = test[156] ^ (1 << 5);
     result = Hamming_Verify256x(test, 256, hamming);
     if(result == Hamming_ERROR_SINGLEBIT) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Hamming code one bit error corrected!" << std::endl;
+#else
+#endif
 
     }
     else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "Hamming Verification failed with code "
                 << result << "!" << std::endl;
+#else
+#endif
         return;
     }
 
@@ -342,12 +433,18 @@ void AtmelTestTask::performHammingTest() {
     test[0] = test[0] ^ 1;
     result = Hamming_Verify256x(test, 256, hamming);
     if(result == Hamming_ERROR_MULTIPLEBITS) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Hamming code two bit error detected!" << std::endl;
+#else
+#endif
 
     }
     else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "Hamming Verification failed with code "
                 << result << "!" << std::endl;
+#else
+#endif
         return;
     }
 }
@@ -378,10 +475,16 @@ void AtmelTestTask::printFilesTest() {
     stopwatch.start();
     int result = clear_sd_card();
     if(result == F_NO_ERROR) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "SD card cleared without errors" << std::endl;
+#else
+#endif
     }
     else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Errors clearing SD card" << std::endl;
+#else
+#endif
     }
     stopwatch.stop(true);
     stopwatch.start();

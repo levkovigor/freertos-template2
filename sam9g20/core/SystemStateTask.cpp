@@ -1,12 +1,14 @@
 #include "SystemStateTask.h"
 
+#include <fsfw/serviceinterface/ServiceInterfacePrinter.h>
+#include <fsfw/serviceinterface/serviceInterfaceDefintions.h>
 #include <fsfw/objectmanager/ObjectManagerIF.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfwconfig/OBSWConfig.h>
 #include <sam9g20/core/CoreController.h>
 
 #include <FreeRTOSConfig.h>
-
+#include <FSFWConfig.h>
 #include <inttypes.h>
 
 
@@ -108,8 +110,11 @@ ReturnValue_t SystemStateTask::initializeAfterTaskCreation() {
     }
     // to prevent garbage output.
     TaskFactory::delayTask(5);
-    sif::info << "SystemStateTask: " << numberOfTasks << " tasks counted."
-            << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+    sif::info << "SystemStateTask: " << numberOfTasks << " tasks counted." << std::endl;
+#else
+    sif::printInfo("SystemStateTask: %hu tasks counted.\n", numberOfTasks);
+#endif
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -131,15 +136,22 @@ void SystemStateTask::generateStatsCsvAndCheckStack() {
             loggerTime.hour,
             loggerTime.minute,
             loggerTime.second);
-    std::string infoColumn = "10 kHz time base used for CPU statistics\n\r";
-    std::string headerColumn = "Task Name\tAbsTime [Ticks]\tRelTime [%]\t"
+    const char* const infoColumn = "10 kHz time base used for CPU statistics\n\r";
+    size_t infoSize = strlen(infoColumn);
+    if(infoSize > 50) {
+        infoSize = 50;
+    }
+    const char* const headerColumn = "Task Name\tAbsTime [Ticks]\tRelTime [%]\t"
             "LstRemStack [bytes]\n\r";
-    std::memcpy(statsVector.data() + statsIdx, infoColumn.data(),
-            infoColumn.size());
-    statsIdx += infoColumn.size();
-    std::memcpy(statsVector.data() + statsIdx, headerColumn.data(),
-            headerColumn.size());
-    statsIdx += headerColumn.size();
+    size_t headerSize = strlen(headerColumn);
+    if(headerSize > 70) {
+        headerSize = 70;
+    }
+
+    std::memcpy(statsVector.data() + statsIdx, infoColumn, infoSize);
+    statsIdx += infoSize;
+    std::memcpy(statsVector.data() + statsIdx, headerColumn, headerSize);
+    statsIdx += headerSize;
 
     /* For percentage calculations. */
     uptimeTicks /= 100UL;
@@ -160,7 +172,7 @@ void SystemStateTask::generateStatsCsvAndCheckStack() {
         }
         if(task.pcTaskName != nullptr) {
 
-#ifdef DEBUG
+#if OBSW_VERBOSE_LEVEL >= 1
             // human readable format here, tab seperator
             writeDebugStatLine(task, statsIdx, idleTicks, uptimeTicks);
 #else
@@ -174,11 +186,9 @@ void SystemStateTask::generateStatsCsvAndCheckStack() {
         }
     }
     statsVector[statsIdx] = '\0';
-#if OBSW_ENHANCED_PRINTOUT == 1
-#ifdef DEBUG
-    printf("%s\r\n",statsVector.data());
+#if OBSW_VERBOSE_LEVEL >= 1
+    printf("%s%s\r\n", sif::ANSI_COLOR_RESET, statsVector.data());
     printf("Number of bytes written: %d\r\n", statsIdx);
-#endif
 #endif
 
 }

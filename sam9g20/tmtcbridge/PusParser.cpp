@@ -1,5 +1,5 @@
 #include "PusParser.h"
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 PusParser::PusParser(uint16_t maxExpectedPusPackets,
 		bool storeSplitPackets): indexSizePairFIFO(maxExpectedPusPackets) {
@@ -8,12 +8,20 @@ PusParser::PusParser(uint16_t maxExpectedPusPackets,
 ReturnValue_t PusParser::parsePusPackets(const uint8_t *frame,
 		size_t frameSize) {
 	if(frame == nullptr or frameSize < 5) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "PusParser::parsePusPackets: Frame invalid!" << std::endl;
+#else
+		sif::printError("PusParser::parsePusPackets: Frame invalid!\n");
+#endif
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
 
 	if(indexSizePairFIFO.full()) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "PusParser::parsePusPackets: FIFO is full!" << std::endl;
+#else
+		sif::printError("PusParser::parsePusPackets: FIFO is full!\n");
+#endif
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
 
@@ -31,10 +39,17 @@ ReturnValue_t PusParser::parsePusPackets(const uint8_t *frame,
 			indexSizePairFIFO.insert(indexSizePair(0, frameSize));
 		}
 		else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 			sif::debug << "TcSerialPollingTask::readNextPacket: Next packet "
 					<< "larger than remaining frame," << std::endl;
 			sif::debug << "Throwing away packet. Detected packet size: "
 					<< packetSize << std::endl;
+#else
+			sif::printDebug("TcSerialPollingTask::readNextPacket: Next packet "
+                    "larger than remaining frame.\n");
+            sif::printDebug("Throwing away packet. Detected packet size: %lu",
+                    static_cast<unsigned long>(packetSize));
+#endif
 		}
 		return SPLIT_PACKET;
 	}
@@ -93,10 +108,17 @@ ReturnValue_t PusParser::readNextPacket(const uint8_t *frame,
 			indexSizePairFIFO.insert(indexSizePair(currentIndex, remainingSize));
 		}
 		else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 			sif::debug << "TcSerialPollingTask::readNextPacket: Next packet "
-					<< "larger than remaining frame," << std::endl;
+					<< "larger than remaining frame." << std::endl;
 			sif::debug << "Throwing away packet. Detected packet size: "
 					<< nextPacketSize << std::endl;
+#else
+			sif::printDebug("TcSerialPollingTask::readNextPacket: Next packet "
+                    "larger than remaining frame.\n");
+			sif::printDebug("Throwing away packet. Detected packet size: %lu\n",
+			        static_cast<unsigned long>(nextPacketSize));
+#endif
 		}
 		return SPLIT_PACKET;
 	}
@@ -105,8 +127,13 @@ ReturnValue_t PusParser::readNextPacket(const uint8_t *frame,
 			nextPacketSize));
 	if (result != HasReturnvaluesIF::RETURN_OK) {
 		// FIFO full.
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::debug << "PusParser: Issue inserting into start index size "
 		        << "FIFO, it is full!" << std::endl;
+#else
+		sif::printDebug("PusParser: Issue inserting into start index size "
+                "FIFO, it is full!\n");
+#endif
 	}
 	currentIndex += nextPacketSize;
 

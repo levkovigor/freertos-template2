@@ -51,7 +51,7 @@ int at91_main()
 
 #if DEBUG_IO_LIB == 1
     TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
-    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME);
+    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME_PRINT);
     TRACE_INFO_WP("-- Software version v%d.%d --\n\r", BL_VERSION, BL_SUBVERSION);
     TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
     TRACE_INFO("Running initialization task..\n\r");

@@ -1,5 +1,6 @@
-#include <fsfwconfig/OBSWConfig.h>
 #include "ImageCopyingEngine.h"
+#include <fsfwconfig/OBSWConfig.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 ImageCopyingEngine::ImageCopyingEngine(SoftwareImageHandler *owner,
         Countdown *countdown, SoftwareImageHandler::ImageBuffer *imgBuffer):
@@ -100,19 +101,9 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         // Info output should only be printed once.
         if(stepCounter == 0) {
             currentFileSize = f_filelength(config::BOOTLOADER_NAME);
-#if OBSW_ENHANCED_PRINTOUT == 1
-#ifdef AT91SAM9G20_EK
-            sif::info << "Copying AT91 bootloader on SD card "
-                    << currentVolume << " to AT91 NAND-Flash.." << std::endl;
-#endif
-#ifdef ISIS_OBC_G20
-            sif::info << "Copying iOBC bootloader on SD card "
-                    << currentVolume << " to NOR-Flash.." << std::endl;
-#endif
-            sif::info << "Bootloader size: " <<  currentFileSize
-                    << " bytes." << std::endl;
+            handleInfoPrintout(currentVolume);
         }
-#endif
+
         *filePtr = f_open(config::BOOTLOADER_NAME, "r");
     }
     else {
@@ -138,20 +129,33 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
 
 
         if(stepCounter == 0) {
+
 #ifdef AT91SAM9G20_EK
-            sif::info << "Copying AT91 software image SD card "
-                    << currentVolume << " slot "
-                    << static_cast<int>(imageSlot) << " to AT91 NAND-Flash.."
-                    << std::endl;
-#endif
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+            sif::info << "Copying AT91 software image SD card " << currentVolume << " slot "
+                    << static_cast<int>(imageSlot) << " to AT91 NAND-Flash.." << std::endl;
+#else
+            sif::printInfo("Copying AT91 software image SD card %d slot %d to AT91 NAND-Flash..\n",
+                    currentVolume, imageSlot);
+#endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
+#endif /* AT91SAM9G20_EK */
+
 #ifdef ISIS_OBC_G20
-            sif::info << "Copying iOBC software image SD card "
-                    << currentVolume << " slot "
-                    << static_cast<int>(imageSlot) << " to NOR-Flash.."
-                    << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+            sif::info << "Copying iOBC software image SD card " << currentVolume << " slot "
+                    << static_cast<int>(imageSlot) << " to NOR-Flash.." << std::endl;
+#else
+            sif::printInfo("Copying iOBC software image SD card %d slot %d to NOR-Flash..\n",
+                    currentVolume, imageSlot);
+#endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
+#endif /* ISIS_OBC_G20 */
+
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+            sif::info << "Binary size: " <<  currentFileSize << " bytes." << std::endl;
+#else
+            sif::printInfo("Binary size: %lu bytes.\n",
+                    static_cast<unsigned long>(currentFileSize));
 #endif
-            sif::info << "Binary size: " <<  currentFileSize
-                    << " bytes." << std::endl;
         }
 
         if(imageSlot == ImageSlot::IMAGE_0) {
@@ -168,12 +172,22 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
     if(f_getlasterror() != F_NO_ERROR) {
         // Opening file failed!
         if(bootloader) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "ImageCopyingHelper::prepareGenericFileInformation: "
                     << "Bootloader file not found!" << std::endl;
+#else
+            sif::printError("ImageCopyingHelper::prepareGenericFileInformation: "
+                    "Bootloader file not found!\n");
+#endif
         }
         else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "ImageCopyingHelper::prepareGenericFileInformation: "
                     << "OBSW file not found!" << std::endl;
+#else
+            sif::printError("ImageCopyingHelper::prepareGenericFileInformation: "
+                    "OBSW file not found!\n");
+#endif
         }
         return HasReturnvaluesIF::RETURN_FAILED;
     }
@@ -196,8 +210,13 @@ ReturnValue_t ImageCopyingEngine::readFile(uint8_t *buffer, size_t sizeToRead,
         errorCount++;
         // if reading a file failed 3 times, exit.
         if(errorCount >= 3) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "ImageCopyingHelper::performNandCopyAlgorithm: "
                     << "Reading file failed!" << std::endl;
+#else
+            sif::printError("ImageCopyingHelper::performNandCopyAlgorithm: "
+                    "Reading file failed!\n");
+#endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         // reading file failed. retry next cycle
@@ -205,4 +224,33 @@ ReturnValue_t ImageCopyingEngine::readFile(uint8_t *buffer, size_t sizeToRead,
     }
     *sizeRead = static_cast<size_t>(bytesRead);
     return HasReturnvaluesIF::RETURN_OK;
+}
+
+void ImageCopyingEngine::handleInfoPrintout(int currentVolume) {
+#if OBSW_VERBOSE_LEVEL >= 1
+#ifdef AT91SAM9G20_EK
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+    sif::info << "Copying AT91 bootloader on SD card "
+            << currentVolume << " to AT91 NAND-Flash.." << std::endl;
+#else
+    sif::printInfo("Copying AT91 bootloader on SD card %d to AT91 NAND-Flash..\n",
+            currentVolume);
+#endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
+#endif /* AT91SAM9G20_EK */
+
+#ifdef ISIS_OBC_G20
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+    sif::info << "Copying iOBC bootloader on SD card "
+            << currentVolume << " to NOR-Flash.." << std::endl;
+#else
+    sif::printInfo("Copying iOBC bootloader on SD card %d to NOR-Flash..\n", currentVolume);
+#endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
+#endif /* ISIS_OBC_G20 */
+
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+    sif::info << "Bootloader size: " <<  currentFileSize << " bytes." << std::endl;
+#else
+    sif::printInfo("Bootloader size: %lu bytes.", static_cast<unsigned long>(currentFileSize));
+#endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
+#endif /* OBSW_VERBOSE_LEVEL >= 1 */
 }

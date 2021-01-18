@@ -62,7 +62,7 @@ int iobc_norflash() {
     // Initiate watchdog for iOBC
     //-------------------------------------------------------------------------
     BaseType_t retval = startCustomIsisWatchdogTask(WATCHDOG_KICK_INTERVAL_MS,
-    		true);
+            true);
     if(retval != pdTRUE) {
 #if DEBUG_IO_LIB == 1
         TRACE_ERROR("Starting iOBC Watchdog Feed Task failed!\r\n");
@@ -83,7 +83,7 @@ int iobc_norflash() {
     //-------------------------------------------------------------------------
     // iOBC Bootloader
     //-------------------------------------------------------------------------
-    xTaskCreate(handler_task, "HANDLER_TASK", 524, NULL, 4,
+    xTaskCreate(handler_task, "HANDLER_TASK", 1024, NULL, 4,
             &handler_task_handle_glob);
     xTaskCreate(init_task, "INIT_TASK", 524, handler_task_handle_glob,
             5, NULL);
@@ -97,18 +97,18 @@ int iobc_norflash() {
 }
 
 void init_task(void * args) {
-	// This check is only possible if CRC and bootloader size were written
-	// at special memory locations. SAM-BA can't do this.
+    // This check is only possible if CRC and bootloader size were written
+    // at special memory locations. SAM-BA can't do this.
 #if SAM_BA_BOOT == 0
-	// If we do this check inside a task, the watchdog task can take care of
-	// feeding the watchdog.
-	perform_bootloader_check();
+    // If we do this check inside a task, the watchdog task can take care of
+    // feeding the watchdog.
+    perform_bootloader_check();
 #endif
 
 #if DEBUG_IO_LIB == 1
-	print_bl_info();
+    print_bl_info();
 #else
-	printf("SOURCEBoot\n\r");
+    printf("SOURCEBoot\n\r");
 #endif
     TRACE_INFO("Remaining FreeRTOS heap size: %d bytes.\n\r",
             xPortGetFreeHeapSize());
@@ -145,19 +145,17 @@ void handler_task(void * args) {
 }
 
 void print_bl_info() {
-		TRACE_INFO_WP("\n\rStarting FreeRTOS task scheduler.\n\r");
-		TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
-	    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME);
-	    TRACE_INFO_WP("-- Software version v%d.%d --\n\r", BL_VERSION,
-	    		BL_SUBVERSION);
-	    TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
-	    TRACE_INFO("Running initialization task..\n\r");
+    TRACE_INFO_WP("\n\rStarting FreeRTOS task scheduler.\n\r");
+    TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
+    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME_PRINT);
+    TRACE_INFO_WP("-- Software version v%d.%d --\n\r", BL_VERSION,
+            BL_SUBVERSION);
+    TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
+    TRACE_INFO("Running initialization task..\n\r");
 }
 
 void perform_bootloader_check() {
-	/* Check CRC of bootloader which will should be located at
-	0x1000A000 -2 and 0x1000A000 -1. The bootloader size will be located
-	at 0x1000A000 - 6.
+    /* Check CRC of bootloader:
 
 	If CRC16 is blank (0x00, 0xff), continue and emit warning (it is recommended
 	to write the CRC field when writing the bootloader. If SAM-BA is used
@@ -171,41 +169,36 @@ void perform_bootloader_check() {
 	variable to the end of SRAM0 to notify the primary software that the
 	bootloader is faulty. */
 
-	uint16_t written_crc16 = 0;
-	size_t bootloader_size = 0;
-	// Bootloader size is written into the sixth ARM vector.
-	memcpy(&bootloader_size,
-			(const void *) (BOOTLOADER_END_ADDRESS_READ - 6), 4);
+    uint16_t written_crc16 = 0;
+    size_t bootloader_size = 0;
+    // Bootloader size and CRC16 are written at the end of the reserved bootloader space.
+    memcpy(&bootloader_size, (const void *) NORFLASH_BL_SIZE_START_READ, 4);
 #if DEBUG_IO_LIB == 1
-	TRACE_INFO("Written bootloader size: %d bytes.\n\r", bootloader_size);
+    TRACE_INFO("Written bootloader size: %d bytes.\n\r", bootloader_size);
 #endif
-	memcpy(&written_crc16, (const void*) (BOOTLOADER_END_ADDRESS_READ - 2),
-			sizeof(written_crc16));
+    memcpy(&written_crc16, (const void*) NORFLASH_BL_CRC16_START_READ, sizeof(written_crc16));
 #if DEBUG_IO_LIB == 1
-	TRACE_INFO("Written CRC16: 0x%4x.\n\r", written_crc16);
+    TRACE_INFO("Written CRC16: 0x%4x.\n\r", written_crc16);
 #endif
-	if(written_crc16 != 0x00 || written_crc16 != 0xff) {
-		uint16_t calculated_crc = crc16ccitt_default_start_crc(
-				(const void *) BOOTLOADER_BASE_ADDRESS_READ,
-				bootloader_size);
-		if(written_crc16 != calculated_crc) {
-			memcpy((void*)SDRAM_DESTINATION,
-					(const void*) BINARY_BASE_ADDRESS_READ,
-					NORFLASH_SIZE - BOOTLOADER_RESERVED_SIZE);
-			uint32_t bootloader_faulty_flag = 1;
-			memcpy((void*) (SDRAM0_END - sizeof(bootloader_faulty_flag)),
-					(const void *) &bootloader_faulty_flag,
-					sizeof(bootloader_faulty_flag));
-			vTaskEndScheduler();
-			jump_to_sdram_application();
-		}
-	}
-	else {
+    if(written_crc16 != 0x00 || written_crc16 != 0xff) {
+        uint16_t calculated_crc = crc16ccitt_default_start_crc(
+                (const void *) BOOTLOADER_BASE_ADDRESS_READ, bootloader_size);
+        if(written_crc16 != calculated_crc) {
+            memcpy((void*)SDRAM_DESTINATION, (const void*) BINARY_BASE_ADDRESS_READ,
+                    IOBC_NORFLASH_SIZE - BOOTLOADER_RESERVED_SIZE);
+            uint32_t bootloader_faulty_flag = 1;
+            memcpy((void*) (SDRAM0_END - sizeof(bootloader_faulty_flag)),
+                    (const void *) &bootloader_faulty_flag, sizeof(bootloader_faulty_flag));
+            vTaskEndScheduler();
+            jump_to_sdram_application();
+        }
+    }
+    else {
 #if DEBUG_IO_LIB == 1
-		TRACE_WARNING("CRC field at 0x1000A000 - 2 and "
-				"0x1000A000 -1 is blank!\n\r");
+        TRACE_WARNING("CRC field at 0x1000A000 - 2 and "
+                "0x1000A000 -1 is blank!\n\r");
 #endif
-	}
+    }
 }
 
 void initialize_all_iobc_peripherals() {
@@ -215,7 +208,7 @@ void initialize_all_iobc_peripherals() {
     if(result != 0) {
         // This should not happen!
         TRACE_ERROR("initialize_iobc_peripherals: Could not start "
-        		"FRAM, code %d!\n\r", result);
+                "FRAM, code %d!\n\r", result);
     }
 }
 

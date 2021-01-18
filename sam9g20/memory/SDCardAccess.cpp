@@ -85,7 +85,7 @@ SDCardAccess::SDCardAccess() {
 #endif
     currentVolumeId = SDCardAccessManager::instance()->activeSdCard;
     if(SDCardAccessManager::instance()->activeAccesses == 0) {
-        result = open_filesystem(currentVolumeId);
+        result = open_filesystem();
         if(result != F_NO_ERROR) {
             // This could be major problem, maybe reboot or change of SD card
             // necessary!
@@ -95,13 +95,7 @@ SDCardAccess::SDCardAccess() {
     SDCardAccessManager::instance()->activeAccesses++;
 
     /* Register this task with filesystem */
-    result = f_enterFS();
-    if(result != F_NO_ERROR){
-        TRACE_ERROR("open_filesystem: fs_enterFS failed with "
-                "code %d\n\r", result);
-    }
-
-    result = select_sd_card(currentVolumeId);
+    result = select_sd_card(currentVolumeId, true);
     if(result != F_NO_ERROR){
         TRACE_ERROR("open_filesystem: SD Card %d not present or "
                 "defect.\n\r", currentVolumeId);
@@ -120,6 +114,6 @@ SDCardAccess::~SDCardAccess() {
             config::SD_CARD_ACCESS_MUTEX_TIMEOUT);
     SDCardAccessManager::instance()->activeAccesses--;
     if(SDCardAccessManager::instance()->activeAccesses == 0) {
-        close_filesystem(currentVolumeId);
+        close_filesystem(false, false, VolumeId::SD_CARD_0);
     }
 }

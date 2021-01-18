@@ -1,11 +1,24 @@
 #include "iobc_boot_sd.h"
 #include <bootloaderConfig.h>
+#include <fatfs_config.h>
+#include <memories/sdmmc/MEDSdcard.h>
+#include <string.h>
+#include <utility/trace.h>
+#include <iobc/norflash/iobc_norflash.h>
+
 
 #if USE_TINY_FS == 0
 #include <sam9g20/common/SDCardApi.h>
+
 #else
+
 #include <tinyfatfs/tff.h>
-#endif
+#include <peripherals/pio/pio.h>
+
+#define MAX_LUNS        1
+Media medias[MAX_LUNS];
+
+#endif /* USE_TINY_FS == 0 */
 
 #if USE_TINY_FS == 0
 int copy_with_hcc_lib(BootSelect boot_select);
@@ -15,105 +28,140 @@ int copy_with_tinyfatfs_lib(BootSelect boot_select);
 
 int copy_sdcard_binary_to_sdram(BootSelect boot_select) {
 #if USE_TINY_FS == 0
-	return copy_with_hcc_lib(boot_select);
+    return copy_with_hcc_lib(boot_select);
 #else
-	return copy_with_tinyfatfs_lib(boot_select);
+    return copy_with_tinyfatfs_lib(boot_select);
 #endif
 }
 
 
 #if USE_TINY_FS == 0
 int copy_with_hcc_lib(BootSelect boot_select) {
-	VolumeId current_filesystem = SD_CARD_0;
-	if (boot_select == BOOT_SD_CARD_1_UPDATE) {
-		current_filesystem = SD_CARD_1;
-	}
-	int result = open_filesystem(current_filesystem);
-	if(result != 0) {
-		// should not happen..
-		result = open_filesystem(SD_CARD_1);
-		if(result != 0) {
-			// not good at all. boot from NOR-Flash instead
-			return -1;
-		}
-	}
+    VolumeId current_volume = SD_CARD_0;
+    if (boot_select == BOOT_SD_CARD_1_UPDATE) {
+        current_volume = SD_CARD_1;
+    }
 
-	switch(boot_select) {
-	case(BOOT_SD_CARD_0_UPDATE): {
-		// get repostiory
-		char bin_folder_name[16];
-		// hardcoded
-		//int result = read_sdc_bin_folder_name(bin_folder_name);
-		if(result != 0) {
-			// not good
-		}
-		result = change_directory(bin_folder_name, true);
-		if(result != F_NO_ERROR) {
-			// not good
-		}
-		char binary_name[16];
-		char hamming_name[16];
-		// hardcoded
-		//result = read_sdc1sl1_bin_names(binary_name, hamming_name);
-		if(result != 0) {
+#if DEBUG_IO_LIB == 1
+    TRACE_INFO("Setting up HCC filesystem.\n\r");
+#endif
 
-		}
-		// read in buckets.. multiple of 256. maybe 10 * 256 bytes?
-		F_FILE* file = f_open(binary_name, "r");
-		if (f_getlasterror() != F_NO_ERROR) {
-			// opening file failed!
-			return -1;
-		}
-		// get total file size.
-		long filesize = f_filelength(binary_name);
-		size_t current_idx = 0;
-		size_t read_bucket_size = 10 * 256;
-		while(true) {
-			// we are close to the end of the file and don't have to read
-			// the full bucket size
-			if(filesize - current_idx < read_bucket_size) {
-				read_bucket_size = filesize - current_idx;
-			}
-			// copy to SDRAM directly
-			size_t bytes_read = f_read(
-					(void *) (SDRAM_DESTINATION + current_idx),
-					sizeof(uint8_t),
-					read_bucket_size,
-					file);
-			if(bytes_read == -1) {
-				// this should definitely not happen
-				// we need to ensure we will not be locked in a permanent loop.
-			}
-			else if(bytes_read < 10 * 256) {
-				// should not happen!
-			}
+    int result = open_filesystem();
+    if(result != F_NO_ERROR) {
+        // not good, should not happen.
+        return -1;
+    }
 
-			// now we could perform the hamming check on the RAM code directly
-			// If the last bucket is smaller than 256, we pad with 0
-			// and assume the hamming code calculation was performed with
-			// padding too.
-			current_idx += bytes_read;
-			if(current_idx >= filesize) {
-				break;
-			}
+    result = select_sd_card(current_volume, true);
+    if(result != F_NO_ERROR) {
+        // not good, should not happen.
+        return -1;
+    }
 
-		}
-		break;
-	}
+    result = change_directory(SW_REPOSITORY, true);
+    if(result != F_NO_ERROR) {
+#if DEBUG_IO_LIB == 1
+        TRACE_WARNING("Target SW repository \"%s\" does not exist.\n\r", SW_REPOSITORY);
+#endif
+        // not good, should not happen.
+        return -1;
+    }
 
-	case(BOOT_SD_CARD_1_UPDATE): {
-		break;
-	}
-	case(BOOT_NOR_FLASH): {
-		return -1;
-	}
-	}
-	close_filesystem(current_filesystem);
+    F_FILE* file = f_open(SW_UPDATE_FILE_NAME, "r");
+    result = f_getlasterror();
+    if (result != F_NO_ERROR) {
+#if DEBUG_IO_LIB == 1
+        TRACE_WARNING("f_open of file \"%s\" failed with code %d.\n\r",
+                SW_UPDATE_FILE_NAME, result);
+#endif
+        // opening file failed!
+        return -1;
+    }
+
+    size_t filelength = f_filelength(SW_UPDATE_FILE_NAME);
+
+#if DEBUG_IO_LIB == 1
+    TRACE_INFO("Copying image \"%s\" from SD-Card %u to SDRAM\n\r", SW_UPDATE_FILE_NAME,
+            (unsigned int) current_volume);
+#endif
+
+    if(f_read((void*) SDRAM_DESTINATION, 1, filelength, file) != filelength) {
+        // Not all bytes copied!
+        return -1;
+    }
+
+    f_close(file);
+    close_filesystem(true, true, current_volume);
+    return 0;
 }
+
 #else
 
+// Unfortunately, the tiny FATFS library is not working yet. There are issues reading
+// files on the iOBC, possibly related to hardware related steps which are normally performed
+// by the HCC and could not be reverse engineered from the information ISIS has given us.
 int copy_with_tinyfatfs_lib(BootSelect boot_select) {
-	return 0;
+    FATFS fs;
+    FIL fileObject;
+
+    const int ID_DRV = DRV_MMC;
+    FRESULT res = 0;
+    Pin sd_select_pin[1] = {PIN_SDSEL};
+    PIO_Configure(sd_select_pin, PIO_LISTSIZE(sd_select_pin));
+
+    if (boot_select == BOOT_SD_CARD_1_UPDATE) {
+        PIO_Set(sd_select_pin);
+    }
+    else {
+        PIO_Clear(sd_select_pin);
+    }
+
+    Pin npWrPinsThatDoMagic[2] = {PIN_NPWR_SD0, PIN_NPWR_SD1};
+    PIO_Configure(npWrPinsThatDoMagic, PIO_LISTSIZE(npWrPinsThatDoMagic));
+    PIO_Clear(npWrPinsThatDoMagic);
+    PIO_Clear(npWrPinsThatDoMagic + 1);
+
+    Pin pinsMci1Off[2] = {PINS_MCI1_OFF};
+    PIO_Configure(pinsMci1Off, PIO_LISTSIZE(pinsMci1Off));
+
+    MEDSdcard_Initialize(&medias[ID_DRV], 0);
+    memset(&fs, 0, sizeof(FATFS));  // Clear file system object
+    res = f_mount(0, &fs);
+    if( res != FR_OK ) {
+        printf("f_mount pb: 0x%X\n\r", res);
+        return 0;
+    }
+
+    char file_name [strlen(SW_REPOSITORY) + strlen(SW_UPDATE_FILE_NAME) + 2];
+    snprintf(file_name, sizeof (file_name) + 1, "/%s%s", SW_REPOSITORY, SW_UPDATE_FILE_NAME);
+
+#if DEBUG_IO_LIB == 1
+    TRACE_INFO("Copying image \"%s\" from SD-Card %u to SDRAM\n\r", file_name,
+            (unsigned int) boot_select);
+#endif
+
+    res = f_open(&fileObject, file_name, FA_OPEN_EXISTING|FA_READ);
+    if( res != FR_OK ) {
+        TRACE_ERROR("f_open read pb: 0x%X\n\r", res);
+        return 0;
+    }
+    size_t bytes_read;
+    res = f_read(&fileObject, (void*)(SDRAM_DESTINATION), OBSW_MAX_SIZE, &bytes_read);
+    if(res != FR_OK) {
+        TRACE_ERROR("f_read pb: 0x%X\n\r", res);
+        return 0;
+    }
+
+#if DEBUG_IO_LIB == 1
+    TRACE_INFO("Copied %lu bytes from to SDRAM successfully.\n\r", (unsigned long) bytes_read);
+#endif
+
+    res = f_close(&fileObject);
+    if( res != FR_OK ) {
+        TRACE_ERROR("f_close pb: 0x%X\n\r", res);
+        return 0;
+    }
+    return 0;
 }
 
 #endif

@@ -81,5 +81,4 @@ ReturnValue_t Service11TelecommandScheduling::initialize() {
 	}
 
 	return res;
-
 }

@@ -1,19 +1,21 @@
 #include "Factory.h"
+#include "boardtest/TestTaskHost.h"
 
 #include <systemObjectList.h>
 #include <apid.h>
 #include <pusIds.h>
 
 #include <test/testinterfaces/DummyEchoComIF.h>
+#include <test/testdevices/TestDeviceHandler.h>
 
 #include <mission/pus/Service17CustomTest.h>
-#include <fsfw/timemanager/TimeStamper.h>
 #include <mission/utility/TmFunnel.h>
 
 #include <fsfw/events/EventManager.h>
 #include <fsfw/health/HealthTable.h>
 #include <fsfw/internalError/InternalErrorReporter.h>
 #include <fsfw/objectmanager/frameworkObjects.h>
+#include <fsfw/timemanager/TimeStamper.h>
 
 #include <fsfw/storagemanager/PoolManager.h>
 #include <fsfw/tcdistribution/CCSDSDistributor.h>
@@ -24,12 +26,9 @@
 #include <fsfw/pus/Service2DeviceAccess.h>
 #include <fsfw/pus/Service5EventReporting.h>
 #include <fsfw/pus/Service8FunctionManagement.h>
-#include <hosted/boardtest/TestTaskHost.h>
 #include <fsfw/pus/CService200ModeCommanding.h>
 #include <fsfw/pus/Service3Housekeeping.h>
 #include <mission/pus/Service11TelecommandScheduling.h>
-
-#include <test/testdevices/TestDeviceHandler.h>
 
 #ifdef LINUX
 #include <fsfw/osal/linux/TmTcUnixUdpBridge.h>
