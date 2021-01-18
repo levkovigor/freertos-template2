@@ -3,6 +3,86 @@
 
 #include <string.h>
 
+/**
+ * This struct will gather all critical data stored on FRAM.
+ */
+typedef struct __attribute__((__packed__))  _FRAMCriticalData {
+    /* Software information */
+    uint8_t software_version;
+    uint8_t software_subversion;
+    uint8_t software_subsubversion;
+    uint8_t filler_sw_version;
+
+    /* Reboot information */
+    uint32_t reboot_counter;
+
+    /* Second counter */
+    uint32_t seconds_since_epoch;
+
+    /* NOR-Flash binary information */
+    uint32_t nor_flash_binary_size;
+    /* NOR-Flash binary hamming code size */
+    size_t nor_flash_hamming_code_size;
+    /* This flag determines whether hamming codes will be used to check the binary.
+    It is recommended to clear the flag when updating an image and setting the flag after
+    the hamming code for this image has been uploaded as well. Otherwise, a new image might
+    be checked with an invalid old hamming code. */
+    uint32_t nor_flash_use_hamming_flag;
+    uint32_t nor_flash_reboot_counter;
+
+    /* SD-Card */
+
+    /* These value will be used on reboot to determine which SD card is the
+    default SD card on reboot. 0: None, 1: SD Card 0, 2: SD Card 1 */
+    uint32_t preferedSdCard;
+
+    /* Reboot counters SD Card 0 slot 0 */
+    uint32_t sdc0_image_slot0_reboot_counter;
+    /* Hamming code flag, explanation see above (nor_flash_use_hamming_flag) */
+    uint32_t sdc0_image_slot0_use_hamming_flag;
+    /* Hamming code size for SD Card 0 slot 0 */
+    size_t sdc0_image_slot0_hamming_size;
+
+    /* Reboot counters SD Card Card 0 slot 1 */
+    uint32_t sdc0_image_slot1_reboot_counter;
+    /* Hamming code flag, explanation see above */
+    uint32_t sdc0_image_slot1_use_hamming_flag;
+    /* Hamming code size for SD Card 0 slot 1 */
+    size_t sdc0_image_slot1_hamming_size;
+
+    /* Reboot counters SD Card 1 slot 0 */
+    uint32_t sdc1_image_slot0_reboot_counter;
+    /* Hamming code flag, explanation see above */
+    uint32_t sdc1_image_slot0_use_hamming_flag;
+    /* Hamming code size for SD Card 1 slot 0 */
+    size_t sdc1_image_slot0_hamming_size;
+
+    /* Reboot counters SD Card Card 1 slot 1 */
+    uint32_t sdc1_image_slot1_reboot_counter;
+    /* Hamming code flag, explanation see above */
+    uint32_t sdc1_image_slot1_use_hamming_flag;
+    /* Hamming code size for SD Card 1 slot 1*/
+    size_t sdc1_image_slot1_hamming_size;
+
+    /*
+     * Bootloader binary information. Bootloader itself could also be stored
+     * in FRAM. Hamming code will be stored in FRAM in any case.
+     */
+    uint32_t bootloader_faulty;
+    uint32_t bootloader_hamming_code_size;
+
+    /* Software update information */
+    uint8_t filler_software_update[1];
+    uint8_t software_update_available;
+    uint8_t software_update_in_slot_0;
+    uint8_t software_update_in_slot_1;
+
+    /* Task information */
+    uint8_t filler_tasks[2];
+    uint16_t number_of_active_tasks;
+} FRAMCriticalData;
+
+
 /* Software information offsets */
 static const uint8_t SOFTWARE_VERSION_ADDR =
         offsetof(FRAMCriticalData, software_version);
@@ -26,11 +106,14 @@ const uint32_t SOFTWARE_UPDATE_BOOL_ADDR =
         offsetof(FRAMCriticalData, software_update_available);
 
 /* NOR-Flash binary offsets */
-static const uint32_t NOR_FLASH_BINARY_SIZE_ADDRESS =
+const uint32_t NOR_FLASH_BINARY_SIZE_ADDR =
         offsetof(FRAMCriticalData, nor_flash_binary_size);
-static const uint32_t NOR_FLASH_HAMMING_CODE_OFFSET_ADDRESS =
+const uint32_t NOR_FLASH_HAMMING_CODE_SIZE_ADDR =
         offsetof(FRAMCriticalData, nor_flash_hamming_code_size);
-static const uint32_t NOR_FLASH_REBOOT_COUNTER_ADDRESS =
+const uint32_t NOR_FLASH_HAMMING_SET_ADDR =
+        offsetof(FRAMCriticalData, nor_flash_use_hamming_flag);
+
+const uint32_t NOR_FLASH_REBOOT_COUNTER_ADDRESS =
         offsetof(FRAMCriticalData, nor_flash_reboot_counter);
 
 
@@ -66,15 +149,20 @@ const uint32_t NUMBER_OF_ACTIVE_TASKS_ADDRESS =
  */
 static const uint32_t FRAM_END_ADDR = 0x3ffff;
 
-// 512 bytes of the upper FRAM will be reserved for the bootloader hamming
-// code.
-static const size_t BOOTLOADER_HAMMING_RESERVED_SIZE = 512;
+//! Calculated required size: 0x20000 (bootloader) * 3 / 256
+//! (because 3 parity bits are generated per 256 byte block)
+static const size_t BOOTLOADER_HAMMING_RESERVED_SIZE = 0x600;
 static const uint32_t BOOTLOADER_HAMMING_ADDR = FRAM_END_ADDR - BOOTLOADER_HAMMING_RESERVED_SIZE;
 
-// 12 kB of the upper FRAM will be reserved for the NOR-Flash binary hamming
-// code.
-const uint32_t NOR_FLASH_HAMMING_RESERVED_SIZE = 12288;
+//! Calculated required size for images: 0x100000 (NOR-Flash) - 0x20000 (bootloader) * 3 / 256
+const uint32_t NOR_FLASH_HAMMING_RESERVED_SIZE = 0x2A00;
 const uint32_t NOR_FLASH_HAMMING_ADDR = BOOTLOADER_HAMMING_ADDR - NOR_FLASH_HAMMING_RESERVED_SIZE;
+const uint32_t SDC0_SLOT0_HAMMING_ADDR = NOR_FLASH_HAMMING_ADDR - NOR_FLASH_HAMMING_RESERVED_SIZE;
+const uint32_t SDC0_SLOT1_HAMMING_ADDR =  SDC0_SLOT0_HAMMING_ADDR - NOR_FLASH_HAMMING_RESERVED_SIZE;
+const uint32_t SDC1_SLOT0_HAMMING_ADDR = SDC0_SLOT1_HAMMING_ADDR - NOR_FLASH_HAMMING_RESERVED_SIZE;
+const uint32_t SDC1_SLOT1_HAMMING_ADDR =  SDC1_SLOT0_HAMMING_ADDR - NOR_FLASH_HAMMING_RESERVED_SIZE;
+
+int get_generic_hamming_flag(uint32_t addr, bool* flag_set);
 
 int write_software_version(uint8_t software_version,
         uint8_t software_subversion, uint8_t sw_subsubversion) {
@@ -141,29 +229,78 @@ int reset_reboot_counter() {
 
 
 
-int write_nor_flash_binary_info(size_t binary_size, size_t hamming_code_offset) {
-    int result = FRAM_writeAndVerify((unsigned char*) &binary_size,
-            NOR_FLASH_BINARY_SIZE_ADDRESS, sizeof(binary_size));
-    if(result != 0) {
-        return result;
-    }
-
-    return FRAM_writeAndVerify((unsigned char*) hamming_code_offset,
-            NOR_FLASH_HAMMING_CODE_OFFSET_ADDRESS, sizeof(hamming_code_offset));
+int write_nor_flash_binary_size(size_t binary_size) {
+    return FRAM_writeAndVerify((unsigned char*) &binary_size, NOR_FLASH_BINARY_SIZE_ADDR,
+            sizeof(binary_size));
 }
 
-int read_nor_flash_binary_info(size_t* binary_size, size_t* hamming_code_offset) {
-    int result = FRAM_read((unsigned char*) binary_size,
-            NOR_FLASH_BINARY_SIZE_ADDRESS,
+int read_nor_flash_binary_size(size_t* binary_size) {
+    return FRAM_read((unsigned char*) binary_size, NOR_FLASH_BINARY_SIZE_ADDR,
             sizeof(((FRAMCriticalData*)0)->nor_flash_binary_size));
+}
+
+int clear_nor_flash_hamming_flag() {
+    uint32_t cleared_flag = 0;
+    return FRAM_writeAndVerify((unsigned char*) &cleared_flag,
+            NOR_FLASH_HAMMING_SET_ADDR, sizeof(cleared_flag));
+}
+
+int set_nor_flash_hamming_flag() {
+    uint32_t set_flag = 1;
+    return FRAM_writeAndVerify((unsigned char*) &set_flag,
+            NOR_FLASH_HAMMING_SET_ADDR, sizeof(set_flag));
+}
+
+int get_nor_flash_hamming_flag(bool* flag_set) {
+    return get_generic_hamming_flag(NOR_FLASH_HAMMING_SET_ADDR, flag_set);
+}
+
+int write_nor_flash_hamming_size(size_t hamming_size, bool set_hamming_flag) {
+    return FRAM_writeAndVerify((unsigned char*) set_hamming_flag,
+            NOR_FLASH_HAMMING_CODE_SIZE_ADDR,
+            sizeof(((FRAMCriticalData*)0)->nor_flash_hamming_code_size));
+}
+
+
+int write_nor_flash_hamming_code(uint8_t* hamming_code, size_t current_offset,
+        size_t size_to_write) {
+    return FRAM_writeAndVerify((unsigned char*) hamming_code + current_offset,
+            NOR_FLASH_HAMMING_ADDR, size_to_write);
+}
+
+int read_nor_flash_hamming_code(uint8_t *buffer, const size_t max_buffer, size_t* size_read) {
+    size_t hamming_code_size = 0;
+    int result = FRAM_read((unsigned char*) hamming_code_size,
+            NOR_FLASH_HAMMING_CODE_SIZE_ADDR, sizeof(size_t));
     if(result != 0) {
         return result;
     }
 
-    return FRAM_read((unsigned char*) hamming_code_offset,
-            NOR_FLASH_HAMMING_CODE_OFFSET_ADDRESS,
+    if(hamming_code_size > max_buffer) {
+        return -3;
+    }
+
+    if(size_read != NULL) {
+        *size_read = hamming_code_size;
+    }
+    return FRAM_read((unsigned char*) buffer, NOR_FLASH_HAMMING_ADDR, hamming_code_size);
+}
+
+
+int read_nor_flash_hamming_size(size_t* hamming_size, bool* hamming_flag_set) {
+    if(hamming_size == NULL  ||  hamming_flag_set == NULL) {
+        return -3;
+    }
+    int result = FRAM_read((unsigned char*) hamming_flag_set,
+            NOR_FLASH_HAMMING_CODE_SIZE_ADDR,
             sizeof(((FRAMCriticalData*)0)->nor_flash_hamming_code_size));
-    return 0;
+    if(result != 0) {
+        return result;
+    }
+
+    return FRAM_read((unsigned char*) hamming_flag_set,
+            NOR_FLASH_HAMMING_SET_ADDR,
+            sizeof(((FRAMCriticalData*)0)->nor_flash_use_hamming_flag));
 }
 
 int set_bootloader_faulty(bool faulty) {
@@ -327,3 +464,24 @@ int get_to_load_softwareupdate(bool* enable, VolumeId* volume) {
     return FRAM_writeAndVerify((unsigned char*) raw_data,
             SOFTWARE_UPDATE_BOOL_ADDR, 3);
 }
+
+int get_generic_hamming_flag(uint32_t addr, bool* flag_set) {
+    uint32_t flag_status = 0;
+    int result = FRAM_read((unsigned char*) &flag_status, addr, sizeof(flag_status));
+    if(result != 0) {
+        return result;
+    }
+
+    if(flag_set == NULL) {
+        return -3;
+    }
+
+    if(flag_status > 0) {
+        *flag_set = true;
+    }
+    else {
+        *flag_set = false;
+    }
+    return result;
+}
+
