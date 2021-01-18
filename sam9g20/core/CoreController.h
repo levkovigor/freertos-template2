@@ -78,7 +78,7 @@ public:
 	static constexpr ActionId_t REQUEST_CPU_STATS_CHECK_STACK = 0;
 	static constexpr ActionId_t RESET_OBC = 10;
 	static constexpr ActionId_t POWERCYCLE_OBC = 11;
-	// hier dino
+
 	static constexpr ActionId_t  CLEAR_STORE_PAGE = 12;
 	static constexpr ActionId_t  CLEAR_WHOLE_STORE = 13;
 
