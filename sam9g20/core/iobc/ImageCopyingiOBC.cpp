@@ -19,7 +19,7 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
     case(ImageHandlerStates::COPY_SDC_IMG_TO_FLASH): {
         return copySdCardImageToNorFlash();
     }
-    case(ImageHandlerStates::REPLACE_SDC_IMG): {
+    case(ImageHandlerStates::COPY_SDC_IMG_TO_SDC): {
         break;
     }
     case(ImageHandlerStates::COPY_FLASH_IMG_TO_SDC): {

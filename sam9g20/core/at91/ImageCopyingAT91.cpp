@@ -30,7 +30,7 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
         }
         return copySdCardImageToNandFlash();
     }
-    case(ImageHandlerStates::REPLACE_SDC_IMG): {
+    case(ImageHandlerStates::COPY_SDC_IMG_TO_SDC): {
         return copySdcImgToSdc();
     }
     case(ImageHandlerStates::COPY_FLASH_IMG_TO_SDC): {

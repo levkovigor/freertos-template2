@@ -35,7 +35,7 @@ public:
         // Copy bootloader in FRAM to NOR-Flash or NAND-Flash
         COPY_FRAM_BL_TO_FLASH,
         // Replace image on SD-Card by another image on SD-Card
-        REPLACE_SDC_IMG
+        COPY_SDC_IMG_TO_SDC
     };
 
     ImageCopyingEngine(SoftwareImageHandler* owner, Countdown* countdown,
