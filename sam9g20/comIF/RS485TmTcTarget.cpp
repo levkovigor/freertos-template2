@@ -54,6 +54,7 @@ ReturnValue_t RS485TmTcTarget::fillSendFrameBuffer(USLPTransferFrame *frame) {
             bytesPackedCounter += size;
             overhangMessage = nullptr;
             overhangMessageSentBytes = 0;
+            tmStore->deleteData(message.getStorageId());
         } else {
             (void) std::memcpy(frame->getDataZone(), data + overhangMessageSentBytes,
                     config::RS485_COM_FPGA_TFDZ_SIZE);
@@ -87,33 +88,4 @@ ReturnValue_t RS485TmTcTarget::fillSendFrameBuffer(USLPTransferFrame *frame) {
     return result;
 }
 
-//ReturnValue_t RS485TmTcTarget::handleTmQueue() {
-//    TmTcMessage message;
-//    const uint8_t *data = nullptr;
-//    size_t size = 0;
-//    ReturnValue_t status = HasReturnvaluesIF::RETURN_OK;
-//    for (ReturnValue_t result = tmTcReceptionQueue->receiveMessage(&message);
-//            result == HasReturnvaluesIF::RETURN_OK;
-//            result = tmTcReceptionQueue->receiveMessage(&message)) {
-//
-//        if (packetSentCounter >= sentPacketsPerCycle) {
-//            storeDownlinkData(&message);
-//            continue;
-//        }
-//
-//        result = tmStore->getData(message.getStorageId(), &data, &size);
-//        if (result != HasReturnvaluesIF::RETURN_OK) {
-//            status = result;
-//            continue;
-//        }
-//
-//        result = sendTm(data, size);
-//        if (result != HasReturnvaluesIF::RETURN_OK) {
-//            status = result;
-//        } else {
-//            tmStore->deleteData(message.getStorageId());
-//            packetSentCounter++;
-//        }
-//    }
-//    return status;
-//}
+

@@ -30,10 +30,6 @@ extern "C" {
  * @details In the future, this should be a specialized class like TMTCMessage
  * 			with a message queue for each device
  */
-struct RS485WriteTransfer {
-    unsigned char *writeData;
-    size_t sendLen;
-};
 
 /**
  * @brief   This class is the sending and receiving interface for the RS485 Bus.
@@ -53,7 +49,8 @@ public:
     static constexpr char defaultMessage[] = { 'O', 'n', 'e', ' ', 'P', 'i', 'n', 'g', ' ', 'o',
             'n', 'l', 'y', ' ' };
 
-    RS485DeviceComIF(object_id_t objectId, object_id_t sharedRingBufferId, object_id_t tmTcTargetId);
+    RS485DeviceComIF(object_id_t objectId, object_id_t sharedRingBufferId,
+            object_id_t tmTcTargetId);
     virtual ~RS485DeviceComIF();
 
     /**
@@ -115,18 +112,13 @@ private:
     //Array with pointers to frame buffers
     std::array<USLPTransferFrame*, RS485Devices::DEVICE_COUNT_RS485> sendBuffer;
 
-    // One deep frame buffer
-    std::array<RS485WriteTransfer, RS485Devices::DEVICE_COUNT_RS485> sendQueue;
-
     // Used for handling the TM Queue, this class is already big enough
-    object_id_t tmTcTargetId;
-    RS485TmTcTarget *tmTcTarget;
+    object_id_t tmTcTargetId = objects::NO_OBJECT;
 
+    RS485TmTcTarget *tmTcTarget = objects::NO_OBJECT;
 
+    object_id_t sharedRingBufferId = objects::NO_OBJECT;
 
-
-
-    object_id_t sharedRingBufferId;
     RingBufferAnalyzer *analyzerTask = nullptr;
 
     std::array<uint8_t, TMTC_FRAME_MAX_LEN + 5> receiveArray;
