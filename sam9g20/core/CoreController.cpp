@@ -145,6 +145,40 @@ ReturnValue_t CoreController::checkModeCommand(Mode_t mode, Submode_t submode,
     return HasReturnvaluesIF::RETURN_OK;
 }
 
+
+
+ReturnValue_t CoreController::handleClearStoreCommand(
+        Stores storeType, ActionId_t pageOrWholeStore,
+        StorageManagerIF::max_pools_t pageIndex) {
+
+    StorageManagerIF* store = nullptr;
+
+    switch(storeType) {
+    case(TM_STORE): {
+        store = objectManager->get<StorageManagerIF>(objects::TM_STORE);
+        break;
+    }
+    case(TC_STORE): {
+        store = objectManager->get<StorageManagerIF>(objects::TC_STORE);
+        break;
+    }
+    case(IPC_STORE): {
+        store = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
+        break;
+    }
+    default: {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    }
+    if (pageOrWholeStore == CLEAR_STORE_PAGE) {
+        store->clearPage(pageIndex);
+    }
+    else if (pageOrWholeStore == CLEAR_WHOLE_STORE){
+        store->clearStore();
+    }
+    return HasActionsIF::EXECUTION_FINISHED;
+}
+
 ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
     switch(actionId) {
@@ -173,6 +207,19 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         Supervisor_powerCycleIobc(&reply, SUPERVISOR_INDEX);
 #endif
         return HasReturnvaluesIF::RETURN_OK;
+    }
+    case(CLEAR_STORE_PAGE): {
+        if (size > 2 or size < 1){
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+        return handleClearStoreCommand(static_cast<Stores>(data[STORE_TYPE]), actionId,
+                data[PAGE_INDEX]);
+    }
+    case(CLEAR_WHOLE_STORE): {
+        if (size != 1){
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+        return handleClearStoreCommand(static_cast<Stores>(data[STORE_TYPE]), actionId, 0);
     }
     default:
         return HasActionsIF::INVALID_ACTION_ID;

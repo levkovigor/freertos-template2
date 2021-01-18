@@ -3,6 +3,7 @@
 
 #include <fsfw/controller/ExtendedControllerBase.h>
 
+
 #ifdef ISIS_OBC_G20
 extern "C" {
 #include <hal/supervisor.h>
@@ -20,6 +21,12 @@ class SystemStateTask;
  */
 class CoreController: public ExtendedControllerBase {
 public:
+    enum Stores: uint8_t{
+        TM_STORE = 0,
+        TC_STORE = 1,
+        IPC_STORE = 2
+    };
+
     static constexpr uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::CORE_CONTROLLER;
 
     //! Triggered on startup. P1 Boot counter.
@@ -50,6 +57,9 @@ public:
 
 	ReturnValue_t initialize() override;
 	ReturnValue_t initializeAfterTaskCreation() override;
+	//hier dino
+	ReturnValue_t handleClearStoreCommand(Stores storeType, ActionId_t pageOrWholeStore,
+	            StorageManagerIF::max_pools_t pageIndex);
 
 	/**
 	 * This function can be used by other software components as well
@@ -68,6 +78,9 @@ public:
 	static constexpr ActionId_t REQUEST_CPU_STATS_CHECK_STACK = 0;
 	static constexpr ActionId_t RESET_OBC = 10;
 	static constexpr ActionId_t POWERCYCLE_OBC = 11;
+	// hier dino
+	static constexpr ActionId_t  CLEAR_STORE_PAGE = 12;
+	static constexpr ActionId_t  CLEAR_WHOLE_STORE = 13;
 
 private:
 
@@ -103,6 +116,10 @@ private:
 	ReturnValue_t initializeIsisTimerDrivers();
 	void generateStatsCsvAndCheckStack();
 	void writePaddedName(uint8_t* buffer, const char *pcTaskName);
+    enum DataIdx {
+        STORE_TYPE,
+        PAGE_INDEX
+    };
 };
 
 
