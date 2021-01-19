@@ -386,7 +386,7 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
 
 ReturnValue_t CoreController::handleClearStoreCommand(
         Stores storeType, ActionId_t pageOrWholeStore,
-        StorageManagerIF::max_pools_t poolIndex) {
+        StorageManagerIF::max_subpools_t poolIndex) {
 
     StorageManagerIF* store = nullptr;
     switch(storeType) {
@@ -412,10 +412,10 @@ ReturnValue_t CoreController::handleClearStoreCommand(
     }
 
     if (pageOrWholeStore == CLEAR_STORE_PAGE) {
-        if(poolIndex >= store->getNumberOfPools()) {
+        if(poolIndex >= store->getNumberOfSubPools()) {
             return HasActionsIF::INVALID_PARAMETERS;
         }
-        store->clearPool(poolIndex);
+        store->clearSubPool(poolIndex);
     }
     else if (pageOrWholeStore == CLEAR_WHOLE_STORE){
         store->clearStore();

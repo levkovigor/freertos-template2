@@ -57,9 +57,9 @@ public:
 
 	ReturnValue_t initialize() override;
 	ReturnValue_t initializeAfterTaskCreation() override;
-	//hier dino
+
 	ReturnValue_t handleClearStoreCommand(Stores storeType, ActionId_t pageOrWholeStore,
-	            StorageManagerIF::max_pools_t pageIndex);
+	            StorageManagerIF::max_subpools_t pageIndex);
 
 	/**
 	 * This function can be used by other software components as well
