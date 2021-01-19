@@ -16,25 +16,54 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
     case(ImageHandlerStates::IDLE): {
         return HasReturnvaluesIF::RETURN_OK;
     }
-    case(ImageHandlerStates::COPY_SDC_IMG_TO_FLASH): {
+    case(ImageHandlerStates::COPY_IMG_SDC_TO_FLASH): {
         return copySdCardImageToNorFlash();
     }
-    case(ImageHandlerStates::REPLACE_SDC_IMG): {
-        break;
+    case(ImageHandlerStates::COPY_IMG_SDC_TO_SDC): {
+        return HasReturnvaluesIF::RETURN_FAILED;
     }
-    case(ImageHandlerStates::COPY_FLASH_IMG_TO_SDC): {
-        break;
+    case(ImageHandlerStates::COPY_IMG_HAMMING_SDC_TO_FRAM): {
+        return HasReturnvaluesIF::RETURN_FAILED;
     }
-    case(ImageHandlerStates::COPY_FRAM_BL_TO_FLASH): {
-        break;
+    case(ImageHandlerStates::COPY_IMG_FLASH_TO_SDC): {
+        return HasReturnvaluesIF::RETURN_FAILED;
     }
-    case(ImageHandlerStates::COPY_SDC_BL_TO_FLASH): {
+    case(ImageHandlerStates::COPY_BL_FRAM_TO_FLASH): {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    case(ImageHandlerStates::COPY_BL_SDC_TO_FLASH): {
         return copySdCardImageToNorFlash();
+    }
+    case(ImageHandlerStates::COPY_BL_SDC_TO_FRAM): {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    case(ImageHandlerStates::COPY_BL_HAMMING_SDC_TO_FRAM): {
+        return HasReturnvaluesIF::RETURN_FAILED;
     }
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
 
+ReturnValue_t ImageCopyingEngine::startHammingCodeToFramOperation(ImageSlot respectiveSlot,
+        bool bootloader) {
+    if(respectiveSlot == ImageSlot::NONE) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    hammingCode = true;
+    this->bootloader = bootloader;
+    if(not bootloader) {
+        sourceSlot = respectiveSlot;
+    }
+
+    if(bootloader) {
+        imageHandlerState = ImageHandlerStates::COPY_BL_HAMMING_SDC_TO_FRAM;
+    }
+    else {
+        imageHandlerState = ImageHandlerStates::COPY_IMG_HAMMING_SDC_TO_FRAM;
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+}
 
 
 ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
@@ -129,14 +158,11 @@ ReturnValue_t ImageCopyingEngine::handleObswErasure() {
 #endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
-        if(sourceSlot == ImageSlot::IMAGE_0) {
+        if(sourceSlot == ImageSlot::SDC_SLOT_0) {
             currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
         }
-        else if(sourceSlot == ImageSlot::IMAGE_1) {
+        else if(sourceSlot == ImageSlot::SDC_SLOT_1) {
             currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
-        }
-        else {
-            currentFileSize = f_filelength(config::SW_UPDATE_SLOT_NAME);
         }
 
         helperFlag1 = true;

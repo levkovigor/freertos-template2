@@ -26,31 +26,29 @@ public:
 
     enum class ImageHandlerStates {
         IDLE,
-        // Copy SDC image either to NOR-Flash (iOBC) or NAND-Flash (AT91 EK)
-        COPY_SDC_IMG_TO_FLASH,
-        // Copy image on NOR-Flash or NAND-Flash to SD-Card
-        COPY_FLASH_IMG_TO_SDC,
-        // Copy bootloader on SD-Card to NOR-Flash or NAND-Flash
-        COPY_SDC_BL_TO_FLASH,
-        // Copy bootloader in FRAM to NOR-Flash or NAND-Flash
-        COPY_FRAM_BL_TO_FLASH,
-        // Replace image on SD-Card by another image on SD-Card
-        REPLACE_SDC_IMG
+        //! Copy SDC image either to NOR-Flash (iOBC) or NAND-Flash (AT91 EK)
+        COPY_IMG_SDC_TO_FLASH,
+        //! Copy image on NOR-Flash or NAND-Flash to SD-Card
+        COPY_IMG_FLASH_TO_SDC,
+        //! Replace image on SD-Card by another image on SD-Card
+        COPY_IMG_SDC_TO_SDC,
+        //! Copy image hamming code (of NOR-Flash or SDC image) to FRAM
+        COPY_IMG_HAMMING_SDC_TO_FRAM,
+
+        //! Copy bootloader in FRAM to NOR-Flash
+        COPY_BL_FRAM_TO_FLASH,
+        //! Copy bootloader hamming code to FRAM
+        COPY_BL_HAMMING_SDC_TO_FRAM,
+        //! Copy bootloader on SD-Card to NOR-Flash or NAND-Flash
+        COPY_BL_SDC_TO_FLASH,
+        //! Copy bootloader on SD-Card to FRAM
+        COPY_BL_SDC_TO_FRAM
     };
 
     ImageCopyingEngine(SoftwareImageHandler* owner, Countdown* countdown,
             SoftwareImageHandler::ImageBuffer* imgBuffer);
 
-    /**
-     * Specify whether a hamming code check will be performed for all
-     * operations.
-     * @param enableHammingCodeCheck
-     */
-    void setHammingCodeCheck(bool enableHammingCodeCheck);
-
-    void setActiveSdCard(SdCard sdCard);
-
-    void enableExtendedDebugOutput(bool enableMoreOutput);
+    // void setActiveSdCard(SdCard sdCard);
 
 #ifdef AT91SAM9G20_EK
     /**
@@ -83,14 +81,14 @@ public:
      * @param imageSlot     Select the image slot (if OBSW is copied)
      * @return
      */
-    ReturnValue_t startSdcToFlashOperation(ImageSlot imageSlot);
+    ReturnValue_t startSdcToFlashOperation(ImageSlot sourceSlot);
 
     /**
      * Starts to copy the bootloader to the flash. Use with care!
      * Parts of this operation might be performed in a special high
      * priority task which can not be preempted and interrupted to ensure
      * nothing goes wrong.
-     * @param fromFRAM  Specify whether to copy the bootloader from the FRAM.
+     * @param fromFRAM  Specify whether to copy the bootloader from the FRAM instead of the SD-Card.
      * Only works on the iOBC.
      * @return
      */
@@ -103,15 +101,26 @@ public:
      * @param imageSlot
      * @return
      */
-    ReturnValue_t startFlashToSdcOperation(ImageSlot imageSlot);
+    ReturnValue_t startFlashToSdcOperation(ImageSlot targetSlot);
+
+#ifdef ISIS_OBC_G20
+    /**
+     * Copy the hamming code belonging to a certain image to the FRAM.
+     * @param respectiveSlot    Hamming code belongs to this image
+     * @param bootloader        Specify to true to copy the hamming code of the bootloader
+     * @return
+     */
+    ReturnValue_t startHammingCodeToFramOperation(ImageSlot respectiveSlot,
+            bool bootloader = false);
+#endif
 
     /**
      * Continue the current operation.
      * @return
-     * -@c RETURN_OK if the operation was finished
-     * -@c TASK_PERIOD_OVER_SOON if the operation was continued but not finished
-     *     and the task period is over soon.
-     * -@c RETURN_FAILED if the operation has failed.
+     *      -@c RETURN_OK if the operation was finished
+     *      -@c TASK_PERIOD_OVER_SOON if the operation was continued but not finished
+     *          and the task period is over soon.
+     *      -@c RETURN_FAILED if the operation has failed.
      */
     ReturnValue_t continueCurrentOperation();
 
@@ -125,13 +134,15 @@ private:
     SoftwareImageHandler::ImageBuffer* imgBuffer;
 
     ImageHandlerStates imageHandlerState = ImageHandlerStates::IDLE;
-    SdCard activeSdCard = SdCard::SD_CARD_0;
-    ImageSlot sourceSlot = ImageSlot::IMAGE_0;
-    ImageSlot targetSlot = ImageSlot::IMAGE_0;
     GenericInternalState internalState = GenericInternalState::IDLE;
-    bool performHammingCodeCheck = false;
-    bool extendedDebugOutput = false;
+
+    // might not be needed.
+    //SdCard activeSdCard = SdCard::SD_CARD_0;
+
+    ImageSlot sourceSlot = ImageSlot::NONE;
+    ImageSlot targetSlot = ImageSlot::NONE;
     bool bootloader = false;
+    bool hammingCode = false;
     uint16_t stepCounter = 0;
     size_t currentByteIdx = 0;
     size_t currentFileSize = 0;

@@ -46,11 +46,12 @@ enum class SdCard {
     SD_CARD_1
 };
 
-/** Image slots on SD cards */
+/** Image slots on the iOBC */
 enum ImageSlot: uint8_t {
-    IMAGE_0, //!< Primary Image
-    IMAGE_1, //!< Secondary image
-    SW_UPDATE //!< Software update slot.
+    NONE,
+    NORFLASH, //! NOR-Flash image slot
+    SDC_SLOT_0, //!< Primary Image SD Card (for each SD Card)
+    SDC_SLOT_1, //!< Secondary and update image (for each SD Card)
 };
 
 /**
@@ -74,24 +75,25 @@ enum ImageSlot: uint8_t {
  * @author  R. Mueller, J. Meier
  *
  */
-class SoftwareImageHandler: public SystemObject,
+class SoftwareImageHandler:
+        public SystemObject,
         public ExecutableObjectIF,
         public HasActionsIF,
         public ReceivesParameterMessagesIF {
 public:
-	//static constexpr uint8_t SUBSYSTEM_ID = CLASS_ID::SW_IMAGE_HANDLER;
-	static constexpr uint8_t INTERFACE_ID = CLASS_ID::SW_IMAGE_HANDLER;
-	static constexpr ReturnValue_t OPERATION_FINISHED = MAKE_RETURN_CODE(0x00);
-	static constexpr ReturnValue_t TASK_PERIOD_OVER_SOON = MAKE_RETURN_CODE(0x01);
-	static constexpr ReturnValue_t BUSY = MAKE_RETURN_CODE(0x02);
+    //static constexpr uint8_t SUBSYSTEM_ID = CLASS_ID::SW_IMAGE_HANDLER;
+    static constexpr uint8_t INTERFACE_ID = CLASS_ID::SW_IMAGE_HANDLER;
+    static constexpr ReturnValue_t OPERATION_FINISHED = MAKE_RETURN_CODE(0x00);
+    static constexpr ReturnValue_t TASK_PERIOD_OVER_SOON = MAKE_RETURN_CODE(0x01);
+    static constexpr ReturnValue_t BUSY = MAKE_RETURN_CODE(0x02);
 
-	static constexpr uint8_t SW_IMG_HANDLER_MQ_DEPTH = 5;
-	static constexpr uint8_t MAX_MESSAGES_HANDLED  = 5;
+    static constexpr uint8_t SW_IMG_HANDLER_MQ_DEPTH = 5;
+    static constexpr uint8_t MAX_MESSAGES_HANDLED  = 5;
 
 #ifdef AT91SAM9G20_EK
-	using ImageBuffer = std::array<uint8_t, 2048>;
+    using ImageBuffer = std::array<uint8_t, 2048>;
 #else
-	using ImageBuffer = std::array<uint8_t, NORFLASH_SMALL_SECTOR_SIZE>;
+    using ImageBuffer = std::array<uint8_t, NORFLASH_SMALL_SECTOR_SIZE>;
 #endif
 
     SoftwareImageHandler(object_id_t objectId);
@@ -158,13 +160,16 @@ private:
     //! TODO: Should be a prameter instead
     static constexpr ActionId_t SET_HAMMING_CODE_CHECK_FOR_COPYING = 3;
 
-    //! Instruct the image handler to copy a SD-card binary to the flash
-    //! start-up memory. Two uint8_t data field should be supplied, which have
-    //! the following meaning:
-    //!
-    //! First byte:     Binary slot, 0 for slot 1, 1 for slot 2, 2 for the
-    //!                 software update slot
+    /**
+     * Instruct the image handler to copy a SD-card binary to the flash
+     * start-up memory. Two uint8_t data field should be supplied, which have
+     * the following meaning:
+     *
+     * First byte:     Binary slot, 0 for slot 1, 1 for slot 2, 2 for the
+     *                 software update slot
+     */
     static constexpr ActionId_t COPY_OBSW_SDC_TO_FLASH = 4;
+
     //! Copies the image on the flash memory to the SD-card. Two uint8_t data
     //! fields should be supplied, which have the following meaning:
     //!
@@ -185,11 +190,14 @@ private:
 
     /** Scurbbing operation IDs */
 
-    //! Scrub the backup bootloader. One uint8_t data field should be supplied
-    //! which has the following meaning
-    //! First byte:     0 for FRAM bootloader or 1 for SDC bootloader.
-    //!                 On AT91, 0 will be ignored and the image handler will
-    //!                 always try to scrub the SDC bootloader.
+    /**
+     * Scrub the backup bootloader. One uint8_t data field should be supplied
+     *
+     * which has the following meaning
+     * First byte:     0 for FRAM bootloader or 1 for SDC bootloader.
+     *                 On AT91, 0 will be ignored and the image handler will
+     *                 always try to scrub the SDC bootloader.
+     */
     static constexpr ActionId_t SCRUB_BACKUP_BOOTLOADER = 6;
     //! Scrub the OBSW on the boot flash memory manually.
     static constexpr ActionId_t SCRUB_OBSW_ON_FLASH = 7;

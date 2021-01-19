@@ -20,7 +20,7 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
     case(ImageHandlerStates::IDLE): {
         return HasReturnvaluesIF::RETURN_OK;
     }
-    case(ImageHandlerStates::COPY_SDC_IMG_TO_FLASH): {
+    case(ImageHandlerStates::COPY_IMG_SDC_TO_FLASH): {
         if(not nandConfigured) {
             ReturnValue_t result = configureNand(true);
             if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -30,16 +30,16 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
         }
         return copySdCardImageToNandFlash();
     }
-    case(ImageHandlerStates::REPLACE_SDC_IMG): {
+    case(ImageHandlerStates::COPY_IMG_SDC_TO_SDC): {
         return copySdcImgToSdc();
     }
-    case(ImageHandlerStates::COPY_FLASH_IMG_TO_SDC): {
+    case(ImageHandlerStates::COPY_IMG_FLASH_TO_SDC): {
         break;
     }
-    case(ImageHandlerStates::COPY_FRAM_BL_TO_FLASH): {
+    case(ImageHandlerStates::COPY_BL_FRAM_TO_FLASH): {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
-    case(ImageHandlerStates::COPY_SDC_BL_TO_FLASH): {
+    case(ImageHandlerStates::COPY_BL_SDC_TO_FLASH): {
         if(not nandConfigured) {
             ReturnValue_t result = configureNand(true);
             if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -49,6 +49,15 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
         }
         return copySdCardImageToNandFlash();
         break;
+    }
+    case(ImageHandlerStates::COPY_BL_SDC_TO_FRAM): {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    case(ImageHandlerStates::COPY_BL_HAMMING_SDC_TO_FRAM): {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    case(ImageHandlerStates::COPY_IMG_HAMMING_SDC_TO_FRAM): {
+        return HasReturnvaluesIF::RETURN_FAILED;
     }
     }
     return HasReturnvaluesIF::RETURN_OK;
@@ -192,15 +201,13 @@ ReturnValue_t ImageCopyingEngine::handleErasingForObsw() {
 #endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
-        if(sourceSlot == ImageSlot::IMAGE_0) {
+        if(sourceSlot == ImageSlot::SDC_SLOT_0) {
             currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
         }
-        else if(sourceSlot == ImageSlot::IMAGE_1) {
+        else if(sourceSlot == ImageSlot::SDC_SLOT_1) {
             currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
         }
-        else {
-            currentFileSize = f_filelength(config::SW_UPDATE_SLOT_NAME);
-        }
+
         helperFlag1 = true;
         helperCounter1 = 0;
         uint8_t requiredBlocks = std::ceil(
@@ -333,7 +340,7 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
         currentByteIdx = 0;
     }
 
-    if(stepCounter == 0 and extendedDebugOutput) {
+    if(stepCounter == 0) {
 #if OBSW_VERBOSE_LEVEL >= 2
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::debug << "ARM Vectors: " << std::endl;
@@ -386,17 +393,16 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
         return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
     }
 
-    if(extendedDebugOutput) {
 #if OBSW_VERBOSE_LEVEL >= 1
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::debug << "Written " << NAND_PAGE_SIZE << " bytes to NAND-Flash Block " <<
-                helperCounter1 << " & Page " << helperCounter2 << std::endl;
+    sif::debug << "Written " << NAND_PAGE_SIZE << " bytes to NAND-Flash Block " <<
+            helperCounter1 << " & Page " << helperCounter2 << std::endl;
 #else
-        sif::printDebug("Written %zu bytes to NAND-Flash block %hu & Page %hu\n", helperCounter1,
-                helperCounter2);
+    sif::printDebug("Written %zu bytes to NAND-Flash block %hu & Page %hu\n", helperCounter1,
+            helperCounter2);
 #endif
 #endif
-    }
+
 
     // Increment to write to next page.
     helperCounter2++;
@@ -475,7 +481,7 @@ ReturnValue_t ImageCopyingEngine::nandFlashInit()
     numPagesPerBlock = NandFlashModel_GetBlockSizeInPages(
             &skipBlockNf.ecc.raw.model);
 
-    if(extendedDebugOutput) {
+#if OBSW_VERBOSE_LEVEL >= 2
         TRACE_INFO("Size of the whole device in bytes : 0x%x \n\r",
                 memSize);
         TRACE_INFO("Size in bytes of one single block of a device : 0x%x \n\r",
@@ -487,8 +493,7 @@ ReturnValue_t ImageCopyingEngine::nandFlashInit()
         TRACE_INFO("Number of pages in the entire device : 0x%x \n\r",
                 numPagesPerBlock);
         TRACE_INFO("Bus width : %d \n\r",nfBusWidth);
-
-    }
+#endif
 
     return HasReturnvaluesIF::RETURN_OK;
 }

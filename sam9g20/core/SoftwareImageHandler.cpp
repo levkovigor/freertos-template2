@@ -11,7 +11,7 @@
 
 
 SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
-        SystemObject(objectId), receptionQueue(QueueFactory::instance()->
+SystemObject(objectId), receptionQueue(QueueFactory::instance()->
         createMessageQueue(SW_IMG_HANDLER_MQ_DEPTH)),
         actionHelper(this, receptionQueue), parameterHelper(this) {
 }
@@ -119,21 +119,21 @@ ReturnValue_t SoftwareImageHandler::initialize() {
 
 
 ReturnValue_t SoftwareImageHandler::initializeAfterTaskCreation() {
-	countdown = new Countdown(static_cast<float>(
-	        this->executingTask->getPeriodMs()) * 0.75);
-	imgCpHelper = new ImageCopyingEngine(this, countdown, &imgBuffer);
-	if(imgCpHelper == nullptr) {
-	    return HasReturnvaluesIF::RETURN_FAILED;
-	}
-	scrubbingEngine = new ScrubbingEngine(this);
+    countdown = new Countdown(static_cast<float>(
+            this->executingTask->getPeriodMs()) * 0.75);
+    imgCpHelper = new ImageCopyingEngine(this, countdown, &imgBuffer);
+    if(imgCpHelper == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    scrubbingEngine = new ScrubbingEngine(this);
     if(scrubbingEngine == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
-	return HasReturnvaluesIF::RETURN_OK;
+    return HasReturnvaluesIF::RETURN_OK;
 }
 
 void SoftwareImageHandler::setTaskIF(PeriodicTaskIF *executingTask) {
-	this->executingTask = executingTask;
+    this->executingTask = executingTask;
 }
 
 
@@ -172,16 +172,19 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
         if(size != 1) {
             return HasActionsIF::INVALID_PARAMETERS;
         }
+
         uint8_t targetBinary = data[0];
+
         if(targetBinary == 0) {
-            imgCpHelper->startSdcToFlashOperation(ImageSlot::IMAGE_0);
+            imgCpHelper->startSdcToFlashOperation(ImageSlot::SDC_SLOT_0);
         }
         else if(targetBinary == 1) {
-            imgCpHelper->startSdcToFlashOperation(ImageSlot::IMAGE_1);
+            imgCpHelper->startSdcToFlashOperation(ImageSlot::SDC_SLOT_1);
         }
         else {
-            imgCpHelper->startSdcToFlashOperation(ImageSlot::SW_UPDATE);
+            return HasActionsIF::INVALID_PARAMETERS;
         }
+
         currentAction = actionId;
         recipient = commandedBy;
         handlerState = HandlerState::COPYING;

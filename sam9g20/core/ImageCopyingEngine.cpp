@@ -15,25 +15,25 @@ bool ImageCopyingEngine::getIsOperationOngoing() const {
     }
 }
 
-void ImageCopyingEngine::setHammingCodeCheck(bool enableHammingCodeCheck) {
-    this->performHammingCodeCheck = enableHammingCodeCheck;
-}
-
-void ImageCopyingEngine::enableExtendedDebugOutput(bool enableMoreOutput) {
-    this->extendedDebugOutput = enableMoreOutput;
-}
-
 ReturnValue_t ImageCopyingEngine::startSdcToFlashOperation(
-        ImageSlot imageSlot) {
-    imageHandlerState = ImageHandlerStates::COPY_SDC_IMG_TO_FLASH;
-    this->sourceSlot = imageSlot;
+        ImageSlot sourceSlot) {
+    if(sourceSlot == ImageSlot::NORFLASH or sourceSlot == ImageSlot::NONE) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    imageHandlerState = ImageHandlerStates::COPY_IMG_SDC_TO_FLASH;
+    this->sourceSlot = sourceSlot;
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t ImageCopyingEngine::startFlashToSdcOperation(
-        ImageSlot imageSlot) {
-    imageHandlerState = ImageHandlerStates::COPY_FLASH_IMG_TO_SDC;
-    this->sourceSlot = imageSlot;
+        ImageSlot targetSlot) {
+    if(targetSlot == ImageSlot::NORFLASH or targetSlot == ImageSlot::NONE) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    imageHandlerState = ImageHandlerStates::COPY_IMG_FLASH_TO_SDC;
+    this->sourceSlot = targetSlot;
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -42,13 +42,13 @@ ReturnValue_t ImageCopyingEngine::startBootloaderToFlashOperation(
     bootloader = true;
     if(fromFRAM) {
 #ifdef ISIS_OBC_G20
-        imageHandlerState = ImageHandlerStates::COPY_FRAM_BL_TO_FLASH;
+        imageHandlerState = ImageHandlerStates::COPY_BL_FRAM_TO_FLASH;
 #else
         return HasReturnvaluesIF::RETURN_FAILED;
 #endif
     }
     else {
-        imageHandlerState = ImageHandlerStates::COPY_SDC_BL_TO_FLASH;
+        imageHandlerState = ImageHandlerStates::COPY_BL_SDC_TO_FLASH;
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -68,13 +68,15 @@ ImageCopyingEngine::getLastFinishedState() const {
     return lastFinishedState;
 }
 
-void ImageCopyingEngine::setActiveSdCard(SdCard sdCard) {
-    this->activeSdCard = sdCard;
-}
+//void ImageCopyingEngine::setActiveSdCard(SdCard sdCard) {
+//    this->activeSdCard = sdCard;
+//}
 
 void ImageCopyingEngine::reset() {
     internalState = GenericInternalState::IDLE;
     imageHandlerState = ImageHandlerStates::IDLE;
+    sourceSlot = ImageSlot::NONE;
+    targetSlot = ImageSlot::NONE;
     stepCounter = 0;
     currentByteIdx = 0;
     currentFileSize = 0;
@@ -84,6 +86,7 @@ void ImageCopyingEngine::reset() {
     helperCounter1 = 0;
     helperCounter2 = 0;
     bootloader = false;
+    hammingCode = false;
 }
 
 
@@ -116,13 +119,13 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         // Current file size only needs to be cached once.
         // Info output should only be printed once.
         if(stepCounter == 0) {
-            if(sourceSlot == ImageSlot::IMAGE_0) {
+            if(sourceSlot == ImageSlot::SDC_SLOT_0) {
                 currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
             }
-            else if(sourceSlot == ImageSlot::IMAGE_1) {
+            else if(sourceSlot == ImageSlot::SDC_SLOT_1) {
                 currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
             }
-            else if(sourceSlot == ImageSlot::IMAGE_1) {
+            else if(sourceSlot == ImageSlot::SDC_SLOT_1) {
                 currentFileSize = f_filelength(config::SW_UPDATE_SLOT_NAME);
             }
         }
@@ -158,10 +161,10 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
 #endif
         }
 
-        if(sourceSlot == ImageSlot::IMAGE_0) {
+        if(sourceSlot == ImageSlot::SDC_SLOT_0) {
             *filePtr = f_open(config::SW_SLOT_0_NAME, "r");
         }
-        else if(sourceSlot == ImageSlot::IMAGE_1) {
+        else if(sourceSlot == ImageSlot::SDC_SLOT_1) {
             *filePtr = f_open(config::SW_SLOT_1_NAME, "r");
         }
         else {
