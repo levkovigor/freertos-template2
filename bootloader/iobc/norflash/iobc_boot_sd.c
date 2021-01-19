@@ -3,6 +3,7 @@
 #include <bootloaderConfig.h>
 #include <fatfs_config.h>
 
+#include <hcc/api_hcc_mem.h>
 #include <memories/sdmmc/MEDSdcard.h>
 #include <utility/trace.h>
 #if USE_TINY_FS == 0
@@ -13,7 +14,7 @@
 
 #define MAX_LUNS        1
 Media medias[MAX_LUNS];
-#endif /* USE_TINY_FS == 0 */
+#endif /* USE_TINY_FS != 1 */
 
 #include <string.h>
 
@@ -43,7 +44,7 @@ int copy_with_hcc_lib(BootSelect boot_select) {
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Setting up HCC filesystem.\n\r");
-#endif
+#endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
     int result = open_filesystem();
     if(result != F_NO_ERROR) {
@@ -90,7 +91,7 @@ int copy_with_hcc_lib(BootSelect boot_select) {
 
     if(f_read((void*) SDRAM_DESTINATION, 1, filelength, file) != filelength) {
         /* Not all bytes copied! */
-        fclose(file);
+        f_close(file);
         close_filesystem(true, true, current_volume);
         return -1;
     }
@@ -169,5 +170,5 @@ int copy_with_tinyfatfs_lib(BootSelect boot_select) {
     return 0;
 }
 
-#endif
+#endif /* USE_TINY_FS != 1 */
 

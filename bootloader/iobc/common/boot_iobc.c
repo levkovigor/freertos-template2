@@ -1,5 +1,6 @@
 #include "boot_iobc.h"
 #include <bootloaderConfig.h>
+#include <commonIOBCConfig.h>
 #include "../norflash/bl_iobc_norflash.h"
 #include "../norflash/iobc_boot_sd.h"
 
