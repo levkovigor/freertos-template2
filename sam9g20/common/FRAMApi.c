@@ -142,20 +142,8 @@ const uint32_t SDC1_SL1_HAMMING_SIZ_ADDR =
 const uint32_t NUMBER_OF_ACTIVE_TASKS_ADDRESS =
         offsetof(FRAMCriticalData, number_of_active_tasks);
 
-/**
- * Big blocks at the end of FRAM. This address was retrieved FRAM_getMaxAddress.
- * Actually the iOBC datasheet states that the FRAM has 256kB, but the functions returns
- * almost double the size... We still hardcode half of the returned value.
- */
-static const uint32_t FRAM_END_ADDR = 0x3ffff;
-
-//! Calculated required size: 0x20000 (bootloader) * 3 / 256
-//! (because 3 parity bits are generated per 256 byte block)
-static const size_t BOOTLOADER_HAMMING_RESERVED_SIZE = 0x600;
 static const uint32_t BOOTLOADER_HAMMING_ADDR = FRAM_END_ADDR - BOOTLOADER_HAMMING_RESERVED_SIZE;
 
-//! Calculated required size for images: 0x100000 (NOR-Flash) - 0x20000 (bootloader) * 3 / 256
-const uint32_t NOR_FLASH_HAMMING_RESERVED_SIZE = 0x2A00;
 const uint32_t NOR_FLASH_HAMMING_ADDR = BOOTLOADER_HAMMING_ADDR - NOR_FLASH_HAMMING_RESERVED_SIZE;
 const uint32_t SDC0_SLOT0_HAMMING_ADDR = NOR_FLASH_HAMMING_ADDR - NOR_FLASH_HAMMING_RESERVED_SIZE;
 const uint32_t SDC0_SLOT1_HAMMING_ADDR =  SDC0_SLOT0_HAMMING_ADDR - NOR_FLASH_HAMMING_RESERVED_SIZE;

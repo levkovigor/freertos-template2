@@ -64,6 +64,16 @@ int perform_iobc_copy_operation_to_sdram() {
             result = copy_norflash_binary_to_sdram(OBSW_MAX_SIZE);
         }
     }
+
+#if DEBUG_IO_LIB == 1
+    if(result == 0) {
+        TRACE_INFO("Copied successfully!\n\r");
+    }
+    else {
+        TRACE_ERROR("Copy failed with code %d!\n\r", result);
+    }
+#endif /* DEBUG_IO_LIB == 1 */
+
     return result;
 }
 
@@ -84,24 +94,48 @@ int copy_norflash_binary_to_sdram(size_t binary_size)
 #endif
 
     // This operation takes 100-200 milliseconds if the whole NOR-Flash is
-    // copied.
+    // copied. But the watchdog is running in a separate task with the highest priority
+    // and we are using a pre-emtpive scheduler so this should not be an issue.
     memcpy((void*) SDRAM_DESTINATION, (const void*) BINARY_BASE_ADDRESS_READ, binary_size);
 
     /* Verify that the binary was copied properly. Ideally, we will also run a hamming
     code check here in the future. */
-    for(int idx = 0; idx < binary_size; idx++) {
-        if(*(uint8_t*)(SDRAM_DESTINATION + idx) !=
-                *(uint8_t*)(BINARY_BASE_ADDRESS_READ + idx)) {
-            TRACE_ERROR("Byte SDRAM %d : %2x\n\r", idx,
-                    *(uint8_t*)(SDRAM_DESTINATION + idx));
-            TRACE_ERROR("Byte NORFLASH %d : %2x\n\r", idx,
-                    *(uint8_t*)(BINARY_BASE_ADDRESS_READ + idx));
-            return -1;
-        }
-    }
+    /* Check whether a hamming code check is necessary */
+    bool hamming_flag = false;
+    int result = get_nor_flash_hamming_flag(&hamming_flag);
+    if(result != 0) {
 #if DEBUG_IO_LIB == 1
-    TRACE_INFO("Copied successfully!\n\r");
+        TRACE_WARNING("Could not read FRAM for hamming flag, error code %d!\n\r", result);
 #endif
+        return 0;
+    }
+    else if(hamming_flag) {
+        /* now we can perform the hamming code check here. We will allocate enough memory in the
+        SDRAM to store the hamming code, which is stored in the FRAM */
+        uint8_t* hamming_code = malloc(NOR_FLASH_HAMMING_RESERVED_SIZE);
+        size_t size_read = 0;
+        int result = read_nor_flash_hamming_code(hamming_code,
+                NOR_FLASH_HAMMING_RESERVED_SIZE, &size_read);
+        if(result != 0) {
+#if DEBUG_IO_LIB == 1
+            TRACE_WARNING("Could not read hamming code, error code %d!\n\r", result);
+#endif
+            return 0;
+        }
+
+    }
+
+    //    for(int idx = 0; idx < binary_size; idx++) {
+    //        if(*(uint8_t*)(SDRAM_DESTINATION + idx) !=
+    //                *(uint8_t*)(BINARY_BASE_ADDRESS_READ + idx)) {
+    //            TRACE_ERROR("Byte SDRAM %d : %2x\n\r", idx,
+    //                    *(uint8_t*)(SDRAM_DESTINATION + idx));
+    //            TRACE_ERROR("Byte NORFLASH %d : %2x\n\r", idx,
+    //                    *(uint8_t*)(BINARY_BASE_ADDRESS_READ + idx));
+    //            return -1;
+    //        }
+    //    }
+
     return 0;
 }
 

@@ -22,9 +22,10 @@
         |               CRITICAL BLOCK               |
         |____________________________________________|
         |                                            |
+        |                                            |
         |____________________________________________|
         |                                            |
-        |               ADC UPDATE FLAG              |
+        |                                            |
         |____________________________________________|
         |                                            |
         |              BOOTLOADER_HAMMING            |
@@ -35,6 +36,20 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * Big blocks at the end of FRAM. This address was retrieved FRAM_getMaxAddress.
+ * Actually the iOBC datasheet states that the FRAM has 256kB, but the functions returns
+ * almost double the size... We still hardcode half of the returned value.
+ */
+static const uint32_t FRAM_END_ADDR = 0x3ffff;
+
+//! Calculated required size: 0x20000 (bootloader) * 3 / 256
+//! (because 3 parity bits are generated per 256 byte block)
+static const size_t BOOTLOADER_HAMMING_RESERVED_SIZE = 0x600;
+
+//! Calculated required size for images: 0x100000 (NOR-Flash) - 0x20000 (bootloader) * 3 / 256
+const uint32_t NOR_FLASH_HAMMING_RESERVED_SIZE = 0x2A00;
 
 int write_software_version(uint8_t sw_version, uint8_t sw_subversion,
         uint8_t sw_subsubversion);
