@@ -15,10 +15,6 @@ bool ImageCopyingEngine::getIsOperationOngoing() const {
     }
 }
 
-void ImageCopyingEngine::setHammingCodeCheck(bool enableHammingCodeCheck) {
-    this->performHammingCodeCheck = enableHammingCodeCheck;
-}
-
 ReturnValue_t ImageCopyingEngine::startSdcToFlashOperation(
         ImageSlot imageSlot) {
     imageHandlerState = ImageHandlerStates::COPY_IMG_SDC_TO_FLASH;

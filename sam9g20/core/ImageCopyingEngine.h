@@ -38,7 +38,7 @@ public:
         //! Copy bootloader in FRAM to NOR-Flash
         COPY_BL_FRAM_TO_FLASH,
         //! Copy bootloader hamming code to FRAM
-        COPY_BL_HAMMING_TO_FRAM,
+        COPY_BL_HAMMING_SDC_TO_FRAM,
         //! Copy bootloader on SD-Card to NOR-Flash or NAND-Flash
         COPY_BL_SDC_TO_FLASH,
         //! Copy bootloader on SD-Card to FRAM
@@ -48,16 +48,7 @@ public:
     ImageCopyingEngine(SoftwareImageHandler* owner, Countdown* countdown,
             SoftwareImageHandler::ImageBuffer* imgBuffer);
 
-    /**
-     * Specify whether a hamming code check will be performed for all
-     * operations.
-     * @param enableHammingCodeCheck
-     */
-    void setHammingCodeCheck(bool enableHammingCodeCheck);
-
     void setActiveSdCard(SdCard sdCard);
-
-    void enableExtendedDebugOutput(bool enableMoreOutput);
 
 #ifdef AT91SAM9G20_EK
     /**

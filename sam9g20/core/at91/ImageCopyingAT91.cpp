@@ -50,6 +50,15 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
         return copySdCardImageToNandFlash();
         break;
     }
+    case(ImageHandlerStates::COPY_BL_SDC_TO_FRAM): {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    case(ImageHandlerStates::COPY_BL_HAMMING_SDC_TO_FRAM): {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    case(ImageHandlerStates::COPY_IMG_HAMMING_SDC_TO_FRAM): {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -472,7 +481,7 @@ ReturnValue_t ImageCopyingEngine::nandFlashInit()
     numPagesPerBlock = NandFlashModel_GetBlockSizeInPages(
             &skipBlockNf.ecc.raw.model);
 
-    if(extendedDebugOutput) {
+#if OBSW_VERBOSE_LEVEL >= 2
         TRACE_INFO("Size of the whole device in bytes : 0x%x \n\r",
                 memSize);
         TRACE_INFO("Size in bytes of one single block of a device : 0x%x \n\r",
@@ -484,8 +493,7 @@ ReturnValue_t ImageCopyingEngine::nandFlashInit()
         TRACE_INFO("Number of pages in the entire device : 0x%x \n\r",
                 numPagesPerBlock);
         TRACE_INFO("Bus width : %d \n\r",nfBusWidth);
-
-    }
+#endif
 
     return HasReturnvaluesIF::RETURN_OK;
 }
