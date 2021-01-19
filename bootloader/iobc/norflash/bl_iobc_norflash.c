@@ -1,8 +1,9 @@
-#include "iobc_norflash.h"
+#include "bl_iobc_norflash.h"
 
 #include <bootloaderConfig.h>
-#include <iobc/common/boot_iobc.h>
-#include <utility/CRC.h>
+#include <commonIOBCConfig.h>
+#include <bootloader/iobc/common/boot_iobc.h>
+#include <bootloader/utility/CRC.h>
 
 #include <sam9g20/common/FRAMApi.h>
 #include <sam9g20/common/watchdog.h>
@@ -19,15 +20,14 @@
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
 #include <utility/trace.h>
-#endif
+#endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
-#include <hal/Drivers/LED.h>
-#include <hal/Timing/RTT.h>
-
+#include <FreeRTOSConfig.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
-#include <FreeRTOSConfig.h>
+#include <hal/Drivers/LED.h>
+#include <hal/Timing/RTT.h>
 #include <hal/Timing/WatchDogTimer.h>
 #include <hal/Storage/FRAM.h>
 #include <hal/Storage/NORflash.h>
@@ -40,19 +40,16 @@ void init_task(void* args);
 void perform_bootloader_check();
 void handler_task(void * args);
 void initialize_all_iobc_peripherals();
-
-
-//void idle_loop();
-
-static TaskHandle_t handler_task_handle_glob = NULL;
-
-static const uint32_t WATCHDOG_KICK_INTERVAL_MS = 15;
-
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
 void print_bl_info();
-#endif
+#endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
-int iobc_norflash() {
+static TaskHandle_t handler_task_handle_glob = NULL;
+static const uint32_t WATCHDOG_KICK_INTERVAL_MS = 15;
+bool fram_faulty = false;
+
+
+int boot_iobc_from_norflash() {
     //-------------------------------------------------------------------------
     // Configure traces
     //-------------------------------------------------------------------------
@@ -80,15 +77,14 @@ int iobc_norflash() {
     LED_glow(led_3);
     LED_glow(led_4);
 
-    //-------------------------------------------------------------------------
-    // iOBC Bootloader
-    //-------------------------------------------------------------------------
+    /* iOBC Bootloader */
     xTaskCreate(handler_task, "HANDLER_TASK", 1024, NULL, 4,
             &handler_task_handle_glob);
     xTaskCreate(init_task, "INIT_TASK", 524, handler_task_handle_glob,
             5, NULL);
     vTaskStartScheduler();
-    // This should never be reached.
+
+    /* This should never be reached. */
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_ERROR("FreeRTOS scheduler error!\n\r");
 #endif
@@ -97,50 +93,48 @@ int iobc_norflash() {
 }
 
 void init_task(void * args) {
-    // This check is only possible if CRC and bootloader size were written
-    // at special memory locations. SAM-BA can't do this.
+    /* This check is only possible if CRC and bootloader size were written
+    at special memory locations. SAM-BA can't do this. */
 #if SAM_BA_BOOT == 0
-    // If we do this check inside a task, the watchdog task can take care of
-    // feeding the watchdog.
+    /* We do this check inside a task so that the watchdog task can take care of
+    feeding the watchdog. */
     perform_bootloader_check();
-#endif
+#endif /* SAM_BA_BOOT */
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     print_bl_info();
     TRACE_INFO("Remaining FreeRTOS heap size: %d bytes.\n\r", xPortGetFreeHeapSize());
 #else
     printf("SOURCEBoot\n\r");
-#endif
+#endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
     initialize_all_iobc_peripherals();
 
-    // start handler task
+    /* Start handler task */
     TaskHandle_t handler_task_handle = (TaskHandle_t) args;
     if(handler_task_handle != NULL) {
+        /* Wait till the handler task is suspended */
         while(eTaskGetState(handler_task_handle) != eSuspended) {
             vTaskDelay(1);
         }
+        /* Initialization is finished and the handler task can start */
         vTaskResume(handler_task_handle);
     }
 
-    // Initialization task not needed anymore, deletes itself.
+    /* Initialization task not needed anymore, deletes itself. */
     vTaskDelete(NULL);
 }
 
 
 void handler_task(void * args) {
-    // Wait for initialization to finish
+    /* Wait for initialization to finish */
     vTaskSuspend(NULL);
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Running handler task..\n\r");
-#endif
+#endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
     perform_bootloader_core_operation();
-
-    // will not be reached when bootloader is finished. Test function which
-    // blinks LED2.
-    // idle_loop();
 }
 
 void print_bl_info() {
@@ -170,13 +164,17 @@ void perform_bootloader_check() {
     size_t bootloader_size = 0;
     // Bootloader size and CRC16 are written at the end of the reserved bootloader space.
     memcpy(&bootloader_size, (const void *) NORFLASH_BL_SIZE_START_READ, 4);
+
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Written bootloader size: %d bytes.\n\r", bootloader_size);
-#endif
+#endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
+
     memcpy(&written_crc16, (const void*) NORFLASH_BL_CRC16_START_READ, sizeof(written_crc16));
+
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Written CRC16: 0x%4x.\n\r", written_crc16);
-#endif
+#endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
+
     if(written_crc16 != 0x00 || written_crc16 != 0xff) {
         uint16_t calculated_crc = crc16ccitt_default_start_crc(
                 (const void *) BOOTLOADER_BASE_ADDRESS_READ, bootloader_size);
@@ -190,9 +188,8 @@ void perform_bootloader_check() {
     }
     else {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-        TRACE_WARNING("CRC field at 0x1000A000 - 2 and "
-                "0x1000A000 -1 is blank!\n\r");
-#endif
+        TRACE_WARNING("CRC field is blank!\n\r");
+#endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
     }
 }
 
@@ -202,8 +199,11 @@ void initialize_all_iobc_peripherals() {
     int result = FRAM_start();
     if(result != 0) {
         // This should not happen!
-        TRACE_ERROR("initialize_iobc_peripherals: Could not start "
-                "FRAM, code %d!\n\r", result);
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        TRACE_ERROR("initialize_iobc_peripherals: Could not start FRAM, code %d!\n\r", result);
+        set_sram0_status_field(SRAM_FRAM_ISSUES);
+        fram_faulty = true;
+#endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
     }
 }
 

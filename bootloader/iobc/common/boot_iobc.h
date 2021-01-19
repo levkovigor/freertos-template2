@@ -1,3 +1,7 @@
+/**
+ * @brief   Bootloader core module.
+ * @
+ */
 #ifndef BOOTLOADER_CORE_BOOTIOBC_H_
 #define BOOTLOADER_CORE_BOOTIOBC_H_
 

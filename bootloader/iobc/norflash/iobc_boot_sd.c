@@ -1,30 +1,29 @@
 #include "iobc_boot_sd.h"
+#include "bl_iobc_norflash.h"
 #include <bootloaderConfig.h>
 #include <fatfs_config.h>
+
 #include <memories/sdmmc/MEDSdcard.h>
-#include <string.h>
 #include <utility/trace.h>
-#include <iobc/norflash/iobc_norflash.h>
-
-
 #if USE_TINY_FS == 0
 #include <sam9g20/common/SDCardApi.h>
-
 #else
-
 #include <tinyfatfs/tff.h>
 #include <peripherals/pio/pio.h>
 
 #define MAX_LUNS        1
 Media medias[MAX_LUNS];
-
 #endif /* USE_TINY_FS == 0 */
+
+#include <string.h>
+
 
 #if USE_TINY_FS == 0
 int copy_with_hcc_lib(BootSelect boot_select);
 #else
 int copy_with_tinyfatfs_lib(BootSelect boot_select);
 #endif
+
 
 int copy_sdcard_binary_to_sdram(BootSelect boot_select) {
 #if USE_TINY_FS == 0
@@ -48,13 +47,15 @@ int copy_with_hcc_lib(BootSelect boot_select) {
 
     int result = open_filesystem();
     if(result != F_NO_ERROR) {
-        // not good, should not happen.
+        /* not good, should not happen. */
+        hcc_mem_delete();
         return -1;
     }
 
     result = select_sd_card(current_volume, true);
     if(result != F_NO_ERROR) {
         /* not good, should not happen. */
+        close_filesystem(true, true, current_volume);
         return -1;
     }
 
@@ -64,6 +65,7 @@ int copy_with_hcc_lib(BootSelect boot_select) {
         TRACE_WARNING("Target SW repository \"%s\" does not exist.\n\r", SW_REPOSITORY);
 #endif
         /* not good, should not happen. */
+        close_filesystem(true, true, current_volume);
         return -1;
     }
 
@@ -75,6 +77,7 @@ int copy_with_hcc_lib(BootSelect boot_select) {
                 SW_UPDATE_FILE_NAME, result);
 #endif
         /* opening file failed! */
+        close_filesystem(true, true, current_volume);
         return -1;
     }
 
@@ -87,6 +90,8 @@ int copy_with_hcc_lib(BootSelect boot_select) {
 
     if(f_read((void*) SDRAM_DESTINATION, 1, filelength, file) != filelength) {
         /* Not all bytes copied! */
+        fclose(file);
+        close_filesystem(true, true, current_volume);
         return -1;
     }
 
