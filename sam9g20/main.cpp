@@ -75,9 +75,6 @@ int main(void)
     configureEk();
 #endif
 
-    int32_t test = get_sram0_status_field();
-    TRACE_INFO("SRAM status field: %d\n\r", (int) test);
-
 #ifdef ISIS_OBC_G20
     /* Core Task. Custom interrupts should be configured inside a task.
     Less priority than the watchdog task, but still very high to it can

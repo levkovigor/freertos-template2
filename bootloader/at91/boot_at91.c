@@ -50,7 +50,7 @@ int copy_nandflash_binary_to_sdram(bool enable_full_printout) {
 
 
     NandInit();
-    //set_sram0_status_field(2);
+    set_sram0_status_field(16);
 
     BOOT_NAND_CopyBin(NAND_FLASH_OFFSET, OBSW_BINARY_MAX_SIZE);
 

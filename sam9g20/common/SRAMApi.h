@@ -6,12 +6,11 @@
 #ifndef SAM9G20_COMMON_SRAMAPI_H_
 #define SAM9G20_COMMON_SRAMAPI_H_
 
-#include <stdint.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#include <stdint.h>
 
 static const uint32_t SRAM0_END = 0x204000;
 
