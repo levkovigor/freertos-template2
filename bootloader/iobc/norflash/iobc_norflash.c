@@ -6,6 +6,7 @@
 
 #include <sam9g20/common/FRAMApi.h>
 #include <sam9g20/common/watchdog.h>
+#include <sam9g20/common/SRAMApi.h>
 
 #include <board.h>
 #include <AT91SAM9G20.h>
@@ -182,6 +183,7 @@ void perform_bootloader_check() {
         if(written_crc16 != calculated_crc) {
             memcpy((void*)SDRAM_DESTINATION, (const void*) BINARY_BASE_ADDRESS_READ,
                     IOBC_NORFLASH_SIZE - BOOTLOADER_RESERVED_SIZE);
+            set_sram0_status_field(SRAM_BOOTLOADER_INVALID);
             vTaskEndScheduler();
             jump_to_sdram_application();
         }

@@ -14,15 +14,15 @@ static const uint32_t SRAM0_END = 0x204000;
  * Possible values for the status field. The status field will be stored in the last
  * 4 bytes of the SRAM0 memory.
  */
-static const int32_t DEFAULT = 0;
-static const int32_t HAMMING_ERROR_SINGLE_BIT = 1;
-static const int32_t HAMMING_ERROR_ECC = 2;
-static const int32_t HAMMING_ERROR_MULTIBIT = 3;
-static const int32_t FRAM_ISSUES = 4;
-static const int32_t BOOTLOADER_INVALID = 5;
+static const int32_t SRAM_OK = 0;
+static const int32_t SRAM_HAMMING_ERROR_SINGLE_BIT = 1;
+static const int32_t SRAM_HAMMING_ERROR_ECC = 2;
+static const int32_t SRAM_HAMMING_ERROR_MULTIBIT = 3;
+static const int32_t SRAM_FRAM_ISSUES = 4;
+static const int32_t SRAM_BOOTLOADER_INVALID = 5;
 
-void setStatusField(int32_t status);
-int getStatusField();
+void set_sram0_status_field(int32_t status);
+int32_t get_sram0_status_field();
 
 
 #endif /* SAM9G20_COMMON_SRAMAPI_H_ */

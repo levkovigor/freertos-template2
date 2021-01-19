@@ -4,6 +4,8 @@
 #include <iobc/norflash/iobc_boot_sd.h>
 
 #include <sam9g20/common/FRAMApi.h>
+#include <sam9g20/common/SRAMApi.h>
+
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
@@ -118,6 +120,7 @@ int copy_norflash_binary_to_sdram(size_t copy_size)
 #endif
         /* We still jump to the binary for now but we set a flag in SRAM to notify
         OBSW of FRAM issues */
+        set_sram0_status_field(SRAM_FRAM_ISSUES);
         result = 0;
     }
     else if(hamming_flag) {
@@ -128,19 +131,23 @@ int copy_norflash_binary_to_sdram(size_t copy_size)
         if(result != 0) {
             if(result == -1) {
                 /* FRAM issues, we still jump to binary for now */
+                set_sram0_status_field(SRAM_FRAM_ISSUES);
                 return 0;
             }
             else if(result == Hamming_ERROR_SINGLEBIT) {
                 /* We set a flag in SRAM to notify primary OBSW of bit flip */
+                set_sram0_status_field(SRAM_HAMMING_ERROR_SINGLE_BIT);
                 return 0;
             }
             else if(result == Hamming_ERROR_ECC) {
                 /* We set a flag in SRAM to notify primary OBSW of bit flip in hamming code */
+                set_sram0_status_field(SRAM_HAMMING_ERROR_ECC);
                 return 0;
             }
             else if(result == Hamming_ERROR_MULTIPLEBITS) {
                 /* We set a flag in SRAM to notify primary OBSW of uncorrectable error
                 in hamming code and try to load image from SD Card instead */
+                set_sram0_status_field(SRAM_HAMMING_ERROR_MULTIBIT);
                 return -1;
             }
         }
