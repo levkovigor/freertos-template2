@@ -126,7 +126,7 @@ SECTIONS
     /* Place .bss in sdram because it will grow quite large when using FreeRTOS */
     .bss (NOLOAD) : 
     {
-    	. = . + 0x200000;
+    	. = . + 0x200000; /* This space is reserved for the primary software image */
         /* This is used by the startup in order to initialize the .bss secion */
 		_sbss = .;         /* define a global symbol at bss start */
 		__bss_start__ = _sbss;
