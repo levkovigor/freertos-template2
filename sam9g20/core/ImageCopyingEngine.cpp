@@ -25,14 +25,14 @@ void ImageCopyingEngine::enableExtendedDebugOutput(bool enableMoreOutput) {
 
 ReturnValue_t ImageCopyingEngine::startSdcToFlashOperation(
         ImageSlot imageSlot) {
-    imageHandlerState = ImageHandlerStates::COPY_SDC_IMG_TO_FLASH;
+    imageHandlerState = ImageHandlerStates::COPY_IMG_SDC_TO_FLASH;
     this->sourceSlot = imageSlot;
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t ImageCopyingEngine::startFlashToSdcOperation(
         ImageSlot imageSlot) {
-    imageHandlerState = ImageHandlerStates::COPY_FLASH_IMG_TO_SDC;
+    imageHandlerState = ImageHandlerStates::COPY_IMG_FLASH_TO_SDC;
     this->sourceSlot = imageSlot;
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -42,13 +42,13 @@ ReturnValue_t ImageCopyingEngine::startBootloaderToFlashOperation(
     bootloader = true;
     if(fromFRAM) {
 #ifdef ISIS_OBC_G20
-        imageHandlerState = ImageHandlerStates::COPY_FRAM_BL_TO_FLASH;
+        imageHandlerState = ImageHandlerStates::COPY_BL_FRAM_TO_FLASH;
 #else
         return HasReturnvaluesIF::RETURN_FAILED;
 #endif
     }
     else {
-        imageHandlerState = ImageHandlerStates::COPY_SDC_BL_TO_FLASH;
+        imageHandlerState = ImageHandlerStates::COPY_BL_SDC_TO_FLASH;
     }
     return HasReturnvaluesIF::RETURN_OK;
 }

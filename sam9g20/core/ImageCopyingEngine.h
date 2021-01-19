@@ -26,16 +26,23 @@ public:
 
     enum class ImageHandlerStates {
         IDLE,
-        // Copy SDC image either to NOR-Flash (iOBC) or NAND-Flash (AT91 EK)
-        COPY_SDC_IMG_TO_FLASH,
-        // Copy image on NOR-Flash or NAND-Flash to SD-Card
-        COPY_FLASH_IMG_TO_SDC,
-        // Copy bootloader on SD-Card to NOR-Flash or NAND-Flash
-        COPY_SDC_BL_TO_FLASH,
-        // Copy bootloader in FRAM to NOR-Flash or NAND-Flash
-        COPY_FRAM_BL_TO_FLASH,
-        // Replace image on SD-Card by another image on SD-Card
-        COPY_SDC_IMG_TO_SDC
+        //! Copy SDC image either to NOR-Flash (iOBC) or NAND-Flash (AT91 EK)
+        COPY_IMG_SDC_TO_FLASH,
+        //! Copy image on NOR-Flash or NAND-Flash to SD-Card
+        COPY_IMG_FLASH_TO_SDC,
+        //! Replace image on SD-Card by another image on SD-Card
+        COPY_IMG_SDC_TO_SDC,
+        //! Copy image hamming code (of NOR-Flash or SDC image) to FRAM
+        COPY_IMG_HAMMING_SDC_TO_FRAM,
+
+        //! Copy bootloader in FRAM to NOR-Flash
+        COPY_BL_FRAM_TO_FLASH,
+        //! Copy bootloader hamming code to FRAM
+        COPY_BL_HAMMING_TO_FRAM,
+        //! Copy bootloader on SD-Card to NOR-Flash or NAND-Flash
+        COPY_BL_SDC_TO_FLASH,
+        //! Copy bootloader on SD-Card to FRAM
+        COPY_BL_SDC_TO_FRAM
     };
 
     ImageCopyingEngine(SoftwareImageHandler* owner, Countdown* countdown,

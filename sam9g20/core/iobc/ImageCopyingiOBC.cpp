@@ -16,19 +16,19 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
     case(ImageHandlerStates::IDLE): {
         return HasReturnvaluesIF::RETURN_OK;
     }
-    case(ImageHandlerStates::COPY_SDC_IMG_TO_FLASH): {
+    case(ImageHandlerStates::COPY_IMG_SDC_TO_FLASH): {
         return copySdCardImageToNorFlash();
     }
-    case(ImageHandlerStates::COPY_SDC_IMG_TO_SDC): {
+    case(ImageHandlerStates::COPY_IMG_SDC_TO_SDC): {
         break;
     }
-    case(ImageHandlerStates::COPY_FLASH_IMG_TO_SDC): {
+    case(ImageHandlerStates::COPY_IMG_FLASH_TO_SDC): {
         break;
     }
-    case(ImageHandlerStates::COPY_FRAM_BL_TO_FLASH): {
+    case(ImageHandlerStates::COPY_BL_FRAM_TO_FLASH): {
         break;
     }
-    case(ImageHandlerStates::COPY_SDC_BL_TO_FLASH): {
+    case(ImageHandlerStates::COPY_BL_SDC_TO_FLASH): {
         return copySdCardImageToNorFlash();
     }
     }
