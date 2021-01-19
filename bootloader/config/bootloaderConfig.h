@@ -4,12 +4,8 @@
 #define BL_VERSION      1
 #define BL_SUBVERSION   2
 
-//! Can be used to disable printouts to reduce code size (does not make much of
-//! a difference, most of the AT91 lib uses IO so it is difficult to remove it)
-#define DEBUG_IO_LIB            1
-
-//! Additional debug output
-#define DEBUG_VERBOSE           0
+//! Can be used to enable or disable diagnostic printouts in the bootloader.
+#define BOOTLOADER_VERBOSE_LEVEL    1
 
 //! Use tiny FS instead of HCC FS.
 #define USE_TINY_FS 			0
@@ -31,7 +27,7 @@
 //! If the bootloader is flashed with SAM-BA, certain operations like writing
 //! CRC of binary sizes and checks performed with them are not possible anymore
 //! This flag should be enabled if the software is flashed with SAM-BA.
-#define SAM_BA_BOOT 1
+#define SAM_BA_BOOT         1
 
 #ifdef AT91SAM9G20_EK
 static const char* const SW_REPOSITORY =                 "BIN/AT91/OBSW";

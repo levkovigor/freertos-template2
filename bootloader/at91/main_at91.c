@@ -15,7 +15,7 @@
 
 #include <hal/Timing/RTT.h>
 
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
 #include <utility/trace.h>
 #endif
 
@@ -41,15 +41,14 @@ int at91_main()
     //-------------------------------------------------------------------------
     // Configure traces
     //-------------------------------------------------------------------------
-#if DEBUG_IO_LIB == 1
     TRACE_CONFIGURE(DBGU_STANDARD, 115200, BOARD_MCK);
-#endif
+
     //-------------------------------------------------------------------------
     // Enable I-Cache
     //-------------------------------------------------------------------------
     CP15_Enable_I_Cache();
 
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
     TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME_PRINT);
     TRACE_INFO_WP("-- Software version v%d.%d --\n\r", BL_VERSION, BL_SUBVERSION);
@@ -97,7 +96,7 @@ void idle_loop() {
     for(;;) {
         uint32_t curr_time = RTT_GetTime();
         if(curr_time - last_time >= 1) {
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
             TRACE_INFO("Bootloader idle..\n\r");
 #endif
             last_time = curr_time;
@@ -121,7 +120,7 @@ int perform_bootloader_core_operation() {
     LED_Clear(1);
     copy_nandflash_binary_to_sdram(false);
     LED_Set(0);
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Jumping to SDRAM application!\n\r");
 #endif
     jump_to_sdram_application();

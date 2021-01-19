@@ -3,8 +3,4 @@
 
 #include <commonIOBCConfig.h>
 
-#if DEBUG_IO_LIB == 1
-extern const char* DEBUG_INTRO_OUTPUT;
-#endif
-
 #endif /* BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_ */

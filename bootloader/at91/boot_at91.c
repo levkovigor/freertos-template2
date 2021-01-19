@@ -174,7 +174,7 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
         	do {
         		error = SkipBlockNandFlash_ReadPage(&skipBlockNf, block,
         				page, ptr, 0);
-#if DEBUG_VERBOSE == 1 && DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 2
         		if((block == 1) && (page == 0)) {
         			unsigned int armVector = 0;
         			memcpy(&armVector, ptr, 4);
@@ -192,7 +192,7 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
         			memcpy(&armVector, ptr + 24, 4);
         			TRACE_WARNING("7: %08x\n\r", armVector);
         		}
-#endif
+#endif /* BOOTLOADER_VERBOSE_LEVEL >= 2 */
 //        		TRACE_WARNING("SkipBlockNandFlash_ReadBlock: Reading block %d "
 //       				"page %d.\n\r", block, page);
         		if (error == NandCommon_ERROR_BADBLOCK) {

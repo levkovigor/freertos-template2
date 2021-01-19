@@ -6,10 +6,8 @@
 #include <main.h>
 
 void perform_bootloader_core_operation();
-int perform_iobc_copy_operation_to_sdram();
-void idle_loop();
-
 int copy_norflash_binary_to_sdram(size_t binary_size);
 
+void idle_loop();
 
 #endif /* BOOTLOADER_CORE_BOOTIOBC_H_ */

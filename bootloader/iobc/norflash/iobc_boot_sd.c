@@ -42,7 +42,7 @@ int copy_with_hcc_lib(BootSelect boot_select) {
         current_volume = SD_CARD_1;
     }
 
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Setting up HCC filesystem.\n\r");
 #endif
 
@@ -54,39 +54,39 @@ int copy_with_hcc_lib(BootSelect boot_select) {
 
     result = select_sd_card(current_volume, true);
     if(result != F_NO_ERROR) {
-        // not good, should not happen.
+        /* not good, should not happen. */
         return -1;
     }
 
     result = change_directory(SW_REPOSITORY, true);
     if(result != F_NO_ERROR) {
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_WARNING("Target SW repository \"%s\" does not exist.\n\r", SW_REPOSITORY);
 #endif
-        // not good, should not happen.
+        /* not good, should not happen. */
         return -1;
     }
 
     F_FILE* file = f_open(SW_UPDATE_FILE_NAME, "r");
     result = f_getlasterror();
     if (result != F_NO_ERROR) {
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_WARNING("f_open of file \"%s\" failed with code %d.\n\r",
                 SW_UPDATE_FILE_NAME, result);
 #endif
-        // opening file failed!
+        /* opening file failed! */
         return -1;
     }
 
     size_t filelength = f_filelength(SW_UPDATE_FILE_NAME);
 
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Copying image \"%s\" from SD-Card %u to SDRAM\n\r", SW_UPDATE_FILE_NAME,
             (unsigned int) current_volume);
 #endif
 
     if(f_read((void*) SDRAM_DESTINATION, 1, filelength, file) != filelength) {
-        // Not all bytes copied!
+        /* Not all bytes copied! */
         return -1;
     }
 
@@ -135,7 +135,7 @@ int copy_with_tinyfatfs_lib(BootSelect boot_select) {
     char file_name [strlen(SW_REPOSITORY) + strlen(SW_UPDATE_FILE_NAME) + 2];
     snprintf(file_name, sizeof (file_name) + 1, "/%s%s", SW_REPOSITORY, SW_UPDATE_FILE_NAME);
 
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Copying image \"%s\" from SD-Card %u to SDRAM\n\r", file_name,
             (unsigned int) boot_select);
 #endif
@@ -152,7 +152,7 @@ int copy_with_tinyfatfs_lib(BootSelect boot_select) {
         return 0;
     }
 
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Copied %lu bytes from to SDRAM successfully.\n\r", (unsigned long) bytes_read);
 #endif
 

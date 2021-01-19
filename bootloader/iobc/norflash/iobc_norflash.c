@@ -16,7 +16,7 @@
 #include <peripherals/pio/pio.h>
 #include <cp15/cp15.h>
 
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
 #include <utility/trace.h>
 #endif
 
@@ -46,9 +46,8 @@ void initialize_all_iobc_peripherals();
 static TaskHandle_t handler_task_handle_glob = NULL;
 
 static const uint32_t WATCHDOG_KICK_INTERVAL_MS = 15;
-static const uint32_t SDRAM0_END = 0x204000;
 
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
 void print_bl_info();
 #endif
 
@@ -64,7 +63,7 @@ int iobc_norflash() {
     BaseType_t retval = startCustomIsisWatchdogTask(WATCHDOG_KICK_INTERVAL_MS,
             true);
     if(retval != pdTRUE) {
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_ERROR("Starting iOBC Watchdog Feed Task failed!\r\n");
 #endif
     }
@@ -89,7 +88,7 @@ int iobc_norflash() {
             5, NULL);
     vTaskStartScheduler();
     // This should never be reached.
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_ERROR("FreeRTOS scheduler error!\n\r");
 #endif
     for(;;) {};
@@ -105,13 +104,12 @@ void init_task(void * args) {
     perform_bootloader_check();
 #endif
 
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
     print_bl_info();
+    TRACE_INFO("Remaining FreeRTOS heap size: %d bytes.\n\r", xPortGetFreeHeapSize());
 #else
     printf("SOURCEBoot\n\r");
 #endif
-    TRACE_INFO("Remaining FreeRTOS heap size: %d bytes.\n\r",
-            xPortGetFreeHeapSize());
 
     initialize_all_iobc_peripherals();
 
@@ -133,7 +131,7 @@ void handler_task(void * args) {
     // Wait for initialization to finish
     vTaskSuspend(NULL);
 
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Running handler task..\n\r");
 #endif
 
@@ -161,23 +159,21 @@ void perform_bootloader_check() {
 	to write the CRC field when writing the bootloader. If SAM-BA is used
 	this can also be perform in software)
 
-	If not, check it by calculating CRC16 with the given bootloader
-	size.
-
+	If not, check it by calculating CRC16 with the given bootloader size.
 	If it is invalid, copy binary and jump there
-	immediately to reduce number of  instructions. We could write a special
-	variable to the end of SRAM0 to notify the primary software that the
+	immediately to reduce number of  instructions. We also set a special
+	variable at the end of SRAM0 to notify the primary software that the
 	bootloader is faulty. */
 
     uint16_t written_crc16 = 0;
     size_t bootloader_size = 0;
     // Bootloader size and CRC16 are written at the end of the reserved bootloader space.
     memcpy(&bootloader_size, (const void *) NORFLASH_BL_SIZE_START_READ, 4);
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Written bootloader size: %d bytes.\n\r", bootloader_size);
 #endif
     memcpy(&written_crc16, (const void*) NORFLASH_BL_CRC16_START_READ, sizeof(written_crc16));
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Written CRC16: 0x%4x.\n\r", written_crc16);
 #endif
     if(written_crc16 != 0x00 || written_crc16 != 0xff) {
@@ -186,15 +182,12 @@ void perform_bootloader_check() {
         if(written_crc16 != calculated_crc) {
             memcpy((void*)SDRAM_DESTINATION, (const void*) BINARY_BASE_ADDRESS_READ,
                     IOBC_NORFLASH_SIZE - BOOTLOADER_RESERVED_SIZE);
-            uint32_t bootloader_faulty_flag = 1;
-            memcpy((void*) (SDRAM0_END - sizeof(bootloader_faulty_flag)),
-                    (const void *) &bootloader_faulty_flag, sizeof(bootloader_faulty_flag));
             vTaskEndScheduler();
             jump_to_sdram_application();
         }
     }
     else {
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_WARNING("CRC field at 0x1000A000 - 2 and "
                 "0x1000A000 -1 is blank!\n\r");
 #endif
