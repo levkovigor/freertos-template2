@@ -8,6 +8,11 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 static const uint32_t SRAM0_END = 0x204000;
 
 /**
@@ -23,6 +28,10 @@ static const int32_t SRAM_BOOTLOADER_INVALID = 5;
 
 void set_sram0_status_field(int32_t status);
 int32_t get_sram0_status_field();
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* SAM9G20_COMMON_SRAMAPI_H_ */

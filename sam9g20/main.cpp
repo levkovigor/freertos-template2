@@ -2,24 +2,18 @@ extern "C"{
 #include <board.h>
 #include <AT91SAM9G20.h>
 #include <at91/peripherals/cp15/cp15.h>
+#include <at91/peripherals/pio/pio.h>
+#include <at91/utility/trace.h>
 
 #if defined(AT91SAM9G20_EK)
 #include <led_ek.h>
 #else
 #include <hal/Drivers/LED.h>
 #include <sam9g20/common/watchdog.h>
-#endif
-
-#include <at91/peripherals/pio/pio.h>
-#include <at91/utility/trace.h>
-
-#include <FreeRTOSConfig.h>
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
+#endif /* !defined(AT91SAM9G20_EK) */
 
 #include <hal/Timing/WatchDogTimer.h>
 #include <hal/Storage/FRAM.h>
-#include <sam9g20/common/FRAMApi.h>
 
 #ifdef ETHERNET
 #include <emac.h>
@@ -32,7 +26,13 @@ extern struct netif *netif;
 #endif
 }
 
+#include <sam9g20/common/FRAMApi.h>
+#include <sam9g20/common/SRAMApi.h>
 #include <fsfw/tasks/TaskFactory.h>
+
+#include <FreeRTOSConfig.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
 // quick fix to bypass link error
 extern "C" void __sync_synchronize() {}
@@ -74,6 +74,9 @@ int main(void)
     ConfigureLeds();
     configureEk();
 #endif
+
+    int32_t test = get_sram0_status_field();
+    TRACE_INFO("SRAM status field: %d\n\r", (int) test);
 
 #ifdef ISIS_OBC_G20
     /* Core Task. Custom interrupts should be configured inside a task.

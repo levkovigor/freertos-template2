@@ -43,6 +43,8 @@
 //------------------------------------------------------------------------------
 //         Headers
 //------------------------------------------------------------------------------
+// Added for SOURCE to specify SAM-BA boot.
+#include <OBSWConfig.h>
 
 #include <AT91SAM9G20.h>
 #include <board.h>
@@ -115,8 +117,10 @@ void LowLevelInit(void)
     // does not configure the SDRAM correctly!
 
     // For J-Link flashes or for the NAND-Flash boot (default),
-    // this is not be required and should not be done!
+    // this is not be required and should not be done.
+#if SAM_BA_BOOT == 0
 #ifndef sdram
+#endif
     /* Initialize main oscillator
      ****************************/
     AT91C_BASE_PMC->PMC_MOR = BOARD_OSCOUNT | AT91C_CKGR_MOSCEN;
@@ -151,7 +155,10 @@ void LowLevelInit(void)
     /* Switch to PLL + prescaler */
     AT91C_BASE_PMC->PMC_MCKR |= AT91C_PMC_CSS_PLLA_CLK;
     while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY));
+#if SAM_BA_BOOT == 0
 #endif
+#endif
+
 
     /* Initialize AIC
      ****************/

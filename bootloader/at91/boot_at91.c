@@ -2,6 +2,8 @@
 #include <bootloaderConfig.h>
 #include <main.h>
 
+#include <sam9g20/common/SRAMApi.h>
+
 #include <at91/boards/at91sam9g20-ek/board.h>
 #include <at91/boards/at91sam9g20-ek/board_memories.h>
 #include <at91/utility/trace.h>
@@ -48,6 +50,8 @@ int copy_nandflash_binary_to_sdram(bool enable_full_printout) {
 
 
     NandInit();
+    //set_sram0_status_field(2);
+
     BOOT_NAND_CopyBin(NAND_FLASH_OFFSET, OBSW_BINARY_MAX_SIZE);
 
     if(!enable_full_printout) {
