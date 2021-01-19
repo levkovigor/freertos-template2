@@ -16,16 +16,24 @@ bool ImageCopyingEngine::getIsOperationOngoing() const {
 }
 
 ReturnValue_t ImageCopyingEngine::startSdcToFlashOperation(
-        ImageSlot imageSlot) {
+        ImageSlot sourceSlot) {
+    if(sourceSlot == ImageSlot::NORFLASH or sourceSlot == ImageSlot::NONE) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
     imageHandlerState = ImageHandlerStates::COPY_IMG_SDC_TO_FLASH;
-    this->sourceSlot = imageSlot;
+    this->sourceSlot = sourceSlot;
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t ImageCopyingEngine::startFlashToSdcOperation(
-        ImageSlot imageSlot) {
+        ImageSlot targetSlot) {
+    if(targetSlot == ImageSlot::NORFLASH or targetSlot == ImageSlot::NONE) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
     imageHandlerState = ImageHandlerStates::COPY_IMG_FLASH_TO_SDC;
-    this->sourceSlot = imageSlot;
+    this->sourceSlot = targetSlot;
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -60,13 +68,15 @@ ImageCopyingEngine::getLastFinishedState() const {
     return lastFinishedState;
 }
 
-void ImageCopyingEngine::setActiveSdCard(SdCard sdCard) {
-    this->activeSdCard = sdCard;
-}
+//void ImageCopyingEngine::setActiveSdCard(SdCard sdCard) {
+//    this->activeSdCard = sdCard;
+//}
 
 void ImageCopyingEngine::reset() {
     internalState = GenericInternalState::IDLE;
     imageHandlerState = ImageHandlerStates::IDLE;
+    sourceSlot = ImageSlot::NONE;
+    targetSlot = ImageSlot::NONE;
     stepCounter = 0;
     currentByteIdx = 0;
     currentFileSize = 0;
@@ -76,6 +86,7 @@ void ImageCopyingEngine::reset() {
     helperCounter1 = 0;
     helperCounter2 = 0;
     bootloader = false;
+    hammingCode = false;
 }
 
 

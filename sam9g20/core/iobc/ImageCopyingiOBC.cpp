@@ -44,6 +44,26 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
+ReturnValue_t ImageCopyingEngine::startHammingCodeToFramOperation(ImageSlot respectiveSlot,
+        bool bootloader) {
+    if(respectiveSlot == ImageSlot::NONE) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    hammingCode = true;
+    this->bootloader = bootloader;
+    if(not bootloader) {
+        sourceSlot = respectiveSlot;
+    }
+
+    if(bootloader) {
+        imageHandlerState = ImageHandlerStates::COPY_BL_HAMMING_SDC_TO_FRAM;
+    }
+    else {
+        imageHandlerState = ImageHandlerStates::COPY_IMG_HAMMING_SDC_TO_FRAM;
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+}
 
 
 ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
