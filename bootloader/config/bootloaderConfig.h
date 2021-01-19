@@ -13,7 +13,7 @@
 //! 1 MB minus reserved size of bootloader.
 #ifdef AT91SAM9G20_EK
 // Can be set to actual binary size or a conservative upper bound.
-#define OBSW_BINARY_MAX_SIZE 1100000 // 1.007.616 bytes
+#define OBSW_BINARY_MAX_SIZE 0x100000 - 0xA000 // 1.007.616 bytes
 #else
 // Limited by NOR-Flash size, but can also be set to actual binary size.
 #define OBSW_BINARY_MAX_SIZE 0x100000 - 0xA000 // 1.007.616 bytes
@@ -27,7 +27,7 @@
 //! If the bootloader is flashed with SAM-BA, certain operations like writing
 //! CRC of binary sizes and checks performed with them are not possible anymore
 //! This flag should be enabled if the software is flashed with SAM-BA.
-#define SAM_BA_BOOT         1
+#define SAM_BA_BOOT         0
 
 #ifdef AT91SAM9G20_EK
 static const char* const SW_REPOSITORY =                 "BIN/AT91/OBSW";
