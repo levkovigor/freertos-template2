@@ -331,7 +331,7 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
         currentByteIdx = 0;
     }
 
-    if(stepCounter == 0 and extendedDebugOutput) {
+    if(stepCounter == 0) {
 #if OBSW_VERBOSE_LEVEL >= 2
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::debug << "ARM Vectors: " << std::endl;
@@ -384,17 +384,16 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
         return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
     }
 
-    if(extendedDebugOutput) {
 #if OBSW_VERBOSE_LEVEL >= 1
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::debug << "Written " << NAND_PAGE_SIZE << " bytes to NAND-Flash Block " <<
-                helperCounter1 << " & Page " << helperCounter2 << std::endl;
+    sif::debug << "Written " << NAND_PAGE_SIZE << " bytes to NAND-Flash Block " <<
+            helperCounter1 << " & Page " << helperCounter2 << std::endl;
 #else
-        sif::printDebug("Written %zu bytes to NAND-Flash block %hu & Page %hu\n", helperCounter1,
-                helperCounter2);
+    sif::printDebug("Written %zu bytes to NAND-Flash block %hu & Page %hu\n", helperCounter1,
+            helperCounter2);
 #endif
 #endif
-    }
+
 
     // Increment to write to next page.
     helperCounter2++;

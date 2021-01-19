@@ -137,7 +137,7 @@ private:
     ImageSlot targetSlot = ImageSlot::SLOT_0;
     GenericInternalState internalState = GenericInternalState::IDLE;
     bool performHammingCodeCheck = false;
-    bool extendedDebugOutput = false;
+
     bool bootloader = false;
     uint16_t stepCounter = 0;
     size_t currentByteIdx = 0;

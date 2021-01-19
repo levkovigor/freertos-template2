@@ -19,10 +19,6 @@ void ImageCopyingEngine::setHammingCodeCheck(bool enableHammingCodeCheck) {
     this->performHammingCodeCheck = enableHammingCodeCheck;
 }
 
-void ImageCopyingEngine::enableExtendedDebugOutput(bool enableMoreOutput) {
-    this->extendedDebugOutput = enableMoreOutput;
-}
-
 ReturnValue_t ImageCopyingEngine::startSdcToFlashOperation(
         ImageSlot imageSlot) {
     imageHandlerState = ImageHandlerStates::COPY_IMG_SDC_TO_FLASH;
