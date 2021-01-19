@@ -112,13 +112,13 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         // Current file size only needs to be cached once.
         // Info output should only be printed once.
         if(stepCounter == 0) {
-            if(sourceSlot == ImageSlot::SLOT_0) {
+            if(sourceSlot == ImageSlot::SDC_SLOT_0) {
                 currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
             }
-            else if(sourceSlot == ImageSlot::SLOT_1) {
+            else if(sourceSlot == ImageSlot::SDC_SLOT_1) {
                 currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
             }
-            else if(sourceSlot == ImageSlot::SLOT_1) {
+            else if(sourceSlot == ImageSlot::SDC_SLOT_1) {
                 currentFileSize = f_filelength(config::SW_UPDATE_SLOT_NAME);
             }
         }
@@ -154,10 +154,10 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
 #endif
         }
 
-        if(sourceSlot == ImageSlot::SLOT_0) {
+        if(sourceSlot == ImageSlot::SDC_SLOT_0) {
             *filePtr = f_open(config::SW_SLOT_0_NAME, "r");
         }
-        else if(sourceSlot == ImageSlot::SLOT_1) {
+        else if(sourceSlot == ImageSlot::SDC_SLOT_1) {
             *filePtr = f_open(config::SW_SLOT_1_NAME, "r");
         }
         else {

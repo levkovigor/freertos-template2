@@ -132,13 +132,13 @@ private:
     SoftwareImageHandler::ImageBuffer* imgBuffer;
 
     ImageHandlerStates imageHandlerState = ImageHandlerStates::IDLE;
-    SdCard activeSdCard = SdCard::SD_CARD_0;
-    ImageSlot sourceSlot = ImageSlot::SLOT_0;
-    ImageSlot targetSlot = ImageSlot::SLOT_0;
     GenericInternalState internalState = GenericInternalState::IDLE;
-    bool performHammingCodeCheck = false;
+    SdCard activeSdCard = SdCard::SD_CARD_0;
+    ImageSlot sourceSlot = ImageSlot::SDC_SLOT_0;
+    ImageSlot targetSlot = ImageSlot::SDC_SLOT_0;
 
     bool bootloader = false;
+    bool hammingCode = false;
     uint16_t stepCounter = 0;
     size_t currentByteIdx = 0;
     size_t currentFileSize = 0;

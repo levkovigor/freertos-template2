@@ -176,10 +176,10 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
         uint8_t targetBinary = data[0];
 
         if(targetBinary == 0) {
-            imgCpHelper->startSdcToFlashOperation(ImageSlot::SLOT_0);
+            imgCpHelper->startSdcToFlashOperation(ImageSlot::SDC_SLOT_0);
         }
         else if(targetBinary == 1) {
-            imgCpHelper->startSdcToFlashOperation(ImageSlot::SLOT_1);
+            imgCpHelper->startSdcToFlashOperation(ImageSlot::SDC_SLOT_1);
         }
         else {
             return HasActionsIF::INVALID_PARAMETERS;

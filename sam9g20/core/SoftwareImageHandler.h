@@ -46,10 +46,11 @@ enum class SdCard {
     SD_CARD_1
 };
 
-/** Image slots on SD cards */
+/** Image slots on the iOBC */
 enum ImageSlot: uint8_t {
-    SLOT_0, //!< Primary Image
-    SLOT_1, //!< Secondary and update image
+    NORFLASH, //! NOR-Flash image slot
+    SDC_SLOT_0, //!< Primary Image SD Card (for each SD Card)
+    SDC_SLOT_1, //!< Secondary and update image (for each SD Card)
 };
 
 /**
