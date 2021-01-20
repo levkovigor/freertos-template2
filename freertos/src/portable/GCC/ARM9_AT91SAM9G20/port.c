@@ -84,6 +84,7 @@
 #include <board.h>
 #include <at91/peripherals/aic/aic.h>
 #include <at91/peripherals/pit/pit.h>
+#include <at91/utility/trace.h>
 
 /*-----------------------------------------------------------*/
 

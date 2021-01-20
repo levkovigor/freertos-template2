@@ -75,7 +75,7 @@
 #define BOARD_PLLACOUNT         (0x3F << 8)
 #define BOARD_MULA              (AT91C_CKGR_MULA & (0x2A << 16))
 #define BOARD_DIVA              (AT91C_CKGR_DIVA & 1)
-#define BOARD_PRESCALER         (0x00001300) 
+#define BOARD_PRESCALER         ((BOARD_PRES<<2) | (BOARD_MDIV<<8) | (BOARD_PDIV<<12))
 
 #define BOARD_USBDIV            AT91C_CKGR_USBDIV_1
 #define BOARD_CKGR_PLLB         AT91C_CKGR_OUTB_0
@@ -118,7 +118,7 @@ void LowLevelInit(void)
     // For J-Link flashes or for the NAND-Flash boot (default),
     // this is not be required and should not be done.
 //#if SAM_BA_BOOT == 0
-#ifndef sdram
+//#ifndef sdram
 //#endif
     /* Initialize main oscillator
      ****************************/
@@ -155,7 +155,7 @@ void LowLevelInit(void)
     AT91C_BASE_PMC->PMC_MCKR |= AT91C_PMC_CSS_PLLA_CLK;
     while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY));
 //#if SAM_BA_BOOT == 0
-#endif
+//#endif
 //#endif
 
 
@@ -170,8 +170,7 @@ void LowLevelInit(void)
     AT91C_BASE_AIC->AIC_SPU = (unsigned int) defaultSpuriousHandler;
 
     // Unstack nested interrupts
-    for (i = 0; i < 8 ; i++) {
-
+    for (i = 0; i < 32 ; i++) {
         AT91C_BASE_AIC->AIC_EOICR = 0;
     }
 

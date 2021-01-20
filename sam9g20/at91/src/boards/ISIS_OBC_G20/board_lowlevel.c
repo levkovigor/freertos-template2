@@ -226,17 +226,6 @@ void LowLevelInit(void)
 void clearBssSection(void) {
     extern char _sbss, _ebss;
     memset(&_sbss, 0, &_ebss - &_sbss);
-//    void * currentAddress = (void *) &_sbss;
-//    int sizeToClear = 200000;
-//    while(currentAddress < (void *) &_ebss) {
-//    	if((void*) &_ebss - currentAddress < 200000) {
-//    		sizeToClear = (void*) &_ebss - currentAddress;
-//    	}
-//        memset(currentAddress, 0, sizeToClear);
-//        WDT_forceKick();
-//        currentAddress += sizeToClear;
-//    }
-//   WDT_forceKick();
 }
 
 
