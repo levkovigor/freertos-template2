@@ -40,7 +40,7 @@ MEMORY
 {
     sram0 (W!RX) : ORIGIN = 0x200000, LENGTH = 0x4000
     sram1 (W!RX) : ORIGIN = 0x300000, LENGTH = 0x4000
-    sdram (W!RX) : ORIGIN = 0x20100000, LENGTH = 0x2000000 /* First 1 MB reserved for image */
+    sdram (W!RX) : ORIGIN = 0x20100000, LENGTH = 0x1F00000 /* First 1 MB reserved for image */
 }
 
 SECTIONS
@@ -51,6 +51,8 @@ SECTIONS
     {
         . = ALIGN(4);
         _sprerelocate = .;
+        KEEP(*(.vectors));
+        *(.sramfunc*);
         . = ALIGN(4);
         _eprerelocate = .;
     } >sram0
@@ -60,8 +62,6 @@ SECTIONS
     {
         . = ALIGN(4);
         _spostrelocate = .;
-        KEEP(*(.vectors));
-        *(.sramfunc*);
         . = ALIGN(4);
         _epostrelocate = .;
     } >sram0 

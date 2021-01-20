@@ -215,7 +215,8 @@ resetHandler:
  	mov     sp, r0
 
 /* Supervisor mode (interrupts enabled) */
-        msr     CPSR_c, #ARM_MODE_SVC | F_BIT
+    msr     CPSR_c, #ARM_MODE_SVC | F_BIT
+//   msr     CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
 
 /* Branch to main()
  ******************/
@@ -226,12 +227,14 @@ resetHandler:
 1:
 	b       1b
 
-/* Jump to application and put the core into default power-on state */
+/* Jump to application and put the core into default power-on state.
+First argument is the jump address */
 	.globl jump_to_sdram_application
 	.align 4
 	.type jump_to_sdram_application, %function
 
 jump_to_sdram_application:
 	msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
-	ldr r0, =JUMP_ADDRESS
 	mov pc, r0
+
+

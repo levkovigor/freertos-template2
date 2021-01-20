@@ -21,9 +21,10 @@
 #include <stdbool.h>
 #include <string.h>
 
+extern void jump_to_sdram_application(uint32_t jump_address);
+
 int perform_bootloader_core_operation();
 
-//void idle_loop();
 
 /**
  * @brief   Bootloader which will copy the primary software to SDRAM and
@@ -104,8 +105,7 @@ int perform_bootloader_core_operation() {
 
     // copy arm vectors.
     memcpy((void*) SDRAM_DESTINATION, (const void*) SECOND_STAGE_BL_JUMP_ADDR, 7 * 4);
-    go_to_jump_address(SECOND_STAGE_BL_JUMP_ADDR, 0);
-    //jump_to_sdram_application();
+    jump_to_sdram_application(SECOND_STAGE_BL_JUMP_ADDR);
     return 0;
 }
 

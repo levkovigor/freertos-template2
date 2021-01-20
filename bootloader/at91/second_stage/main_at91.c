@@ -1,6 +1,7 @@
 #include "../common/at91_boot_from_nand.h"
 #include <bootloaderConfig.h>
 #include <core/timer.h>
+#include <sam9g20/common/SRAMApi.h>
 
 #include <board.h>
 #include <AT91SAM9G20.h>
@@ -23,6 +24,8 @@
 
 #include <stdbool.h>
 #include <string.h>
+
+extern void jump_to_sdram_application(uint32_t jump_address);
 
 void init_task(void* args);
 void handler_task(void * args);
@@ -56,16 +59,6 @@ int at91_main()
     CP15_Enable_I_Cache();
 
     //-------------------------------------------------------------------------
-    // Initiate periodic MS interrupt
-    //-------------------------------------------------------------------------
-    //setup_timer_interrupt();
-
-    //-------------------------------------------------------------------------
-    // Configure SDRAM
-    //-------------------------------------------------------------------------
-    //BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
-
-    //-------------------------------------------------------------------------
     // Configure LEDs and set both of them.
     //-------------------------------------------------------------------------
     LED_Configure(1);
@@ -74,10 +67,8 @@ int at91_main()
     LED_Set(1);
 
     /* AT91 Bootloader */
-    xTaskCreate(handler_task, "HANDLER_TASK", 1024, NULL, 4,
-            &handler_task_handle_glob);
-    xTaskCreate(init_task, "INIT_TASK", 524, handler_task_handle_glob,
-            5, NULL);
+    xTaskCreate(handler_task, "HANDLER_TASK", 1024, NULL, 4, &handler_task_handle_glob);
+    xTaskCreate(init_task, "INIT_TASK", 524, handler_task_handle_glob, 5, NULL);
     vTaskStartScheduler();
 
     /* This should never be reached. */
@@ -91,7 +82,6 @@ int at91_main()
 void init_task(void * args) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     print_bl_info();
-    TRACE_INFO("Remaining FreeRTOS heap size: %d bytes.\n\r", xPortGetFreeHeapSize());
 #else
     printf("SOURCEBoot\n\r");
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
@@ -117,7 +107,6 @@ void init_task(void * args) {
 void handler_task(void * args) {
     /* Wait for initialization to finish */
     vTaskSuspend(NULL);
-
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Running handler task..\n\r");
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
@@ -126,8 +115,6 @@ void handler_task(void * args) {
 }
 
 void initialize_all_peripherals() {
-    /* Configure RTT for second time base. */
-    RTT_start();
 }
 
 int perform_bootloader_core_operation() {
@@ -144,17 +131,17 @@ int perform_bootloader_core_operation() {
             (unsigned int) SDRAM_DESTINATION);
 #endif
 
-    go_to_jump_address(SDRAM_DESTINATION, 0);
+    vTaskEndScheduler();
+    jump_to_sdram_application(SDRAM_DESTINATION);
     return 0;
 }
 
 void print_bl_info() {
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO_WP("\n\r-- SOURCE Bootloader (Second Stage SDRAM) --\n\r");
     TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME_PRINT);
     TRACE_INFO_WP("-- Software version v%d.%d --\n\r", BL_VERSION, BL_SUBVERSION);
     TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
-#endif
+    TRACE_INFO("Remaining FreeRTOS heap size: %d bytes.\n\r", xPortGetFreeHeapSize());
 }
 
 

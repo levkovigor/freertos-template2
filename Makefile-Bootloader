@@ -157,7 +157,7 @@ endif
 
 # Output file basename
 BASENAME = sourcebl-$(STAGE_NAME)
-SECONDARY_NAME= $(BOARD_NAME)-$(MEMORY_TYPE)
+SECONDARY_NAME= $(BOARD_NAME)-$(MEMORY_TYPE)-$(MAKECMDGOALS)
 BINARY_NAME = $(BASENAME)-$(SECONDARY_NAME)
 # Output files will be put in this directory inside
 OUTPUT_FOLDER = $(CHIP_PATH)/bootloader

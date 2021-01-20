@@ -307,7 +307,8 @@ resetHandler:
 
 /* Start in supervisor mode, Operation will switch to system mode when the
 first task starts */
-	msr     CPSR_c, #ARM_MODE_SVC | F_BIT
+    msr     CPSR_c, #ARM_MODE_SVC | F_BIT
+//	msr     CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
 
 /* Call static constructors, required for C++ code.
 this call deactivates the interrupts agein
@@ -327,3 +328,14 @@ placed in the .init_array and calls all static constructors */
 1:
 	b       1b
 
+/* Jump to application and put the core into default power-on state.
+First argument is the jump address, use
+extern void jump_to_sdram_application(uint32_t jump_address) in C code or
+extern "C" extern void jump_to_sdram_application(uint32_t jump_address) in C++ code to use it */
+    .globl jump_to_sdram_application
+    .align 4
+    .type jump_to_sdram_application, %function
+
+jump_to_sdram_application:
+    msr CPSR_c, #ARM_MODE_SVC | F_BIT | I_BIT
+    mov pc, r0
