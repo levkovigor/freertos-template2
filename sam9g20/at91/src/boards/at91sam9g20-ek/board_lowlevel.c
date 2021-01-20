@@ -170,7 +170,7 @@ void LowLevelInit(void)
     AT91C_BASE_AIC->AIC_SPU = (unsigned int) defaultSpuriousHandler;
 
     // Unstack nested interrupts
-    for (i = 0; i < 32 ; i++) {
+    for (i = 0; i < 8 ; i++) {
         AT91C_BASE_AIC->AIC_EOICR = 0;
     }
 
