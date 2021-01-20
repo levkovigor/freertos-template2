@@ -92,6 +92,7 @@ int main(void)
 }
 
 void initTask (void * args) {
+    TRACE_INFO("lul\n\r");
     configASSERT(args == nullptr);
 
     initMission();
