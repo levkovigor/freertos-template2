@@ -23,6 +23,7 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     case(ImageHandlerStates::COPY_IMG_HAMMING_SDC_TO_FRAM): {
+        return copyImgHammingSdcToFram();
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     case(ImageHandlerStates::COPY_IMG_FLASH_TO_SDC): {
@@ -98,6 +99,22 @@ ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
     }
 
     return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
+    if(internalState == GenericInternalState::IDLE) {
+        internalState = GenericInternalState::STEP_1;
+    }
+    if(internalState == GenericInternalState::STEP_1) {
+        if(sourceSlot == ImageSlot::NORFLASH) {
+
+        }
+        SDCardAccess access;
+        F_FILE* file;
+        prepareGenericFileInformation(access.currentVolumeId, &file);
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+
 }
 
 ReturnValue_t ImageCopyingEngine::handleNorflashErasure() {

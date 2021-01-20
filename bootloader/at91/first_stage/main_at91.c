@@ -94,6 +94,8 @@ int perform_bootloader_core_operation() {
     LED_Clear(0);
     LED_Clear(1);
 
+    memset((void*) SECOND_STAGE_BL_JUMP_ADDR, 0, SECOND_STAGE_BL_RESERVED_SIZE);
+
     copy_nandflash_binary_to_sdram(SECOND_STAGE_BL_NAND_OFFSET, SECOND_STAGE_BL_RESERVED_SIZE,
             SECOND_STAGE_SDRAM_OFFSET, true);
 
@@ -103,8 +105,6 @@ int perform_bootloader_core_operation() {
     TRACE_INFO("Jumping to SDRAM application address 0x%08x!\n\r", SECOND_STAGE_BL_JUMP_ADDR);
 #endif
 
-    // copy arm vectors.
-    memcpy((void*) SDRAM_DESTINATION, (const void*) SECOND_STAGE_BL_JUMP_ADDR, 7 * 4);
     jump_to_sdram_application(SECOND_STAGE_BL_JUMP_ADDR);
     return 0;
 }

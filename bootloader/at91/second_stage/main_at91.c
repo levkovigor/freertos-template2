@@ -121,6 +121,8 @@ int perform_bootloader_core_operation() {
     LED_Clear(0);
     LED_Clear(1);
 
+    memset((void*) SDRAM_DESTINATION, 0, PRIMARY_IMAGE_RESERVED_SIZE);
+
     copy_nandflash_binary_to_sdram(PRIMARY_IMAGE_NAND_OFFSET, PRIMARY_IMAGE_RESERVED_SIZE,
             PRIMARY_IMAGE_SDRAM_OFFSET, false);
 

@@ -68,10 +68,6 @@ ImageCopyingEngine::getLastFinishedState() const {
     return lastFinishedState;
 }
 
-//void ImageCopyingEngine::setActiveSdCard(SdCard sdCard) {
-//    this->activeSdCard = sdCard;
-//}
-
 void ImageCopyingEngine::reset() {
     internalState = GenericInternalState::IDLE;
     imageHandlerState = ImageHandlerStates::IDLE;
@@ -103,8 +99,14 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         // Current file size only needs to be cached once.
         // Info output should only be printed once.
         if(stepCounter == 0) {
-            currentFileSize = f_filelength(config::BOOTLOADER_NAME);
-            handleInfoPrintout(currentVolume);
+            if(hammingCode) {
+                currentFileSize = f_filelength(config::BL_HAMMING_NAME);
+            }
+            else {
+                currentFileSize = f_filelength(config::BOOTLOADER_NAME);
+                // TODO: pass hammingCode flag to info printout
+                handleInfoPrintout(currentVolume);
+            }
         }
 
         *filePtr = f_open(config::BOOTLOADER_NAME, "r");
@@ -120,13 +122,20 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         // Info output should only be printed once.
         if(stepCounter == 0) {
             if(sourceSlot == ImageSlot::SDC_SLOT_0) {
-                currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
+                if(hammingCode) {
+                    currentFileSize = f_filelength(config::SW_SLOT_0_HAMMING_NAME);
+                }
+                else {
+                    currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
+                }
             }
             else if(sourceSlot == ImageSlot::SDC_SLOT_1) {
-                currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
-            }
-            else if(sourceSlot == ImageSlot::SDC_SLOT_1) {
-                currentFileSize = f_filelength(config::SW_UPDATE_SLOT_NAME);
+                if(hammingCode) {
+                    currentFileSize = f_filelength(config::SW_SLOT_1_HAMMING_NAME);
+                }
+                else {
+                    currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
+                }
             }
         }
 
@@ -167,9 +176,6 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         else if(sourceSlot == ImageSlot::SDC_SLOT_1) {
             *filePtr = f_open(config::SW_SLOT_1_NAME, "r");
         }
-        else {
-            *filePtr = f_open(config::SW_UPDATE_SLOT_NAME, "r");
-        }
     }
 
     if(f_getlasterror() != F_NO_ERROR) {
@@ -207,8 +213,7 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
 
 ReturnValue_t ImageCopyingEngine::readFile(uint8_t *buffer, size_t sizeToRead,
         size_t *sizeRead, F_FILE** file) {
-    ssize_t bytesRead = f_read(imgBuffer->data(), sizeof(uint8_t),
-            sizeToRead, *file);
+    ssize_t bytesRead = f_read(imgBuffer->data(), sizeof(uint8_t), sizeToRead, *file);
     if(bytesRead < 0) {
         errorCount++;
         // if reading a file failed 3 times, exit.

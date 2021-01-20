@@ -180,6 +180,7 @@ private:
     static constexpr size_t NORFLASH_TOTAL_SMALL_SECTOR_MEM_OBSW =
     		RESERVED_OBSW_SMALL_SECTORS * NORFLASH_SMALL_SECTOR_SIZE;
     static constexpr size_t COPYING_BUCKET_SIZE = 2048;
+    ReturnValue_t copyImgHammingSdcToFram();
     ReturnValue_t copySdCardImageToNorFlash();
 
     /**
