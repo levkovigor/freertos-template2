@@ -79,8 +79,7 @@ int main(void)
     /* Core Task. Custom interrupts should be configured inside a task.
     Less priority than the watchdog task, but still very high to it can
     initiate the software as fast as possible */
-    retval = xTaskCreate(initTask, "INIT_TASK", 3072, nullptr,
-            configMAX_PRIORITIES - 2, nullptr);
+    retval = xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, configMAX_PRIORITIES - 2, nullptr);
 #else
     retval = xTaskCreate(initTask, "INIT_TASK", 3072, nullptr, 9, nullptr);
 #endif

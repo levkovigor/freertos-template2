@@ -52,6 +52,7 @@
 #include <board_memories.h>
 #include <at91/peripherals/pmc/pmc.h>
 #include <at91/utility/trace.h>
+#include <led_ek.h>
 
 #include <string.h>
 
@@ -111,6 +112,7 @@ void LowLevelInit(void) __attribute__((optimize("O0")));
 void LowLevelInit(void)
 {
     unsigned int i = 0;
+
     // Sometimes we have do this when flashing the SDRAM with SAM-BA
     // because the SAM-BA low level init
     // does not configure the SDRAM correctly!

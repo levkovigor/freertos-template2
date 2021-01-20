@@ -210,6 +210,7 @@ portBASE_TYPE xPortStartScheduler( void )
 	here already. */
 	prvSetupTimerInterrupt();
 
+	TRACE_INFO("hello2!\n\r");
 	/* Start the first task. */
 	vPortISRStartFirstTask();	
 
