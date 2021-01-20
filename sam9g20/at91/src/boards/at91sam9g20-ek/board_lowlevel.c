@@ -110,17 +110,17 @@
 void LowLevelInit(void) __attribute__((optimize("O0")));
 void LowLevelInit(void)
 {
-    unsigned char i;
-
     // Sometimes we have do this when flashing the SDRAM with SAM-BA
     // because the SAM-BA low level init
     // does not configure the SDRAM correctly!
+#ifdef sdram
+#endif
 
     // For J-Link flashes or for the NAND-Flash boot (default),
     // this is not be required and should not be done.
-#if SAM_BA_BOOT == 0
-#ifndef sdram
-#endif
+//#if SAM_BA_BOOT == 0
+//#ifndef sdram
+//#endif
     /* Initialize main oscillator
      ****************************/
     AT91C_BASE_PMC->PMC_MOR = BOARD_OSCOUNT | AT91C_CKGR_MOSCEN;
@@ -155,23 +155,23 @@ void LowLevelInit(void)
     /* Switch to PLL + prescaler */
     AT91C_BASE_PMC->PMC_MCKR |= AT91C_PMC_CSS_PLLA_CLK;
     while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY));
-#if SAM_BA_BOOT == 0
-#endif
-#endif
+//#if SAM_BA_BOOT == 0
+//#endif
+//#endif
 
 
     /* Initialize AIC
      ****************/
     AT91C_BASE_AIC->AIC_IDCR = 0xFFFFFFFF;
     AT91C_BASE_AIC->AIC_SVR[0] = (unsigned int) defaultFiqHandler;
-    for (i = 1; i < 31; i++) {
+    for (int i = 1; i < 31; i++) {
 
         AT91C_BASE_AIC->AIC_SVR[i] = (unsigned int) defaultIrqHandler;
     }
     AT91C_BASE_AIC->AIC_SPU = (unsigned int) defaultSpuriousHandler;
 
     // Unstack nested interrupts
-    for (i = 0; i < 8 ; i++) {
+    for (int i = 0; i < 8 ; i++) {
 
         AT91C_BASE_AIC->AIC_EOICR = 0;
     }
