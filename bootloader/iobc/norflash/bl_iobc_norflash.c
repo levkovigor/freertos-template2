@@ -180,7 +180,7 @@ void perform_bootloader_check() {
                 (const void *) BOOTLOADER_BASE_ADDRESS_READ, bootloader_size);
         if(written_crc16 != calculated_crc) {
             memcpy((void*)SDRAM_DESTINATION, (const void*) BINARY_BASE_ADDRESS_READ,
-                    IOBC_NORFLASH_SIZE - BOOTLOADER_RESERVED_SIZE);
+                    PRIMARY_IMAGE_RESERVED_SIZE);
             set_sram0_status_field(SRAM_BOOTLOADER_INVALID);
             vTaskEndScheduler();
             jump_to_sdram_application();

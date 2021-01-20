@@ -172,7 +172,7 @@ else
 
 ASRC += board_cstartup.S
 
-endif
+endif # ($(OS_APP),freeRTOS)
 
 ifeq ($(ADD_USB_DRIVER), 1)
 # USB drivers

@@ -5,7 +5,7 @@
  *      Author: pbot
  */
 
-#ifdef ISIS_OBC_G20
+#if defined(freeRTOS)
 
 #include <freertos/include/freertos/FreeRTOS.h>
 #include <freertos/include/freertos/task.h>
@@ -42,5 +42,5 @@ void vApplicationIdleHook( void )
 	return;
 }
 
-#endif
+#endif /* defined(FREERTOS) */
 

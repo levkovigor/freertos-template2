@@ -44,12 +44,14 @@
 #define IRQ_STACK_SIZE	0x00000400		/* Stack size for "IRQ" normal interrupts				*/
 #define SVC_STACK_SIZE	0x00000400		/* Stack size for "SVC" supervisor mode                 */
 #elif sdram
+// TODO: smaller stack for second stage bootloader.
 // Around 200 kB of stack for non-system modes.
 #define UND_STACK_SIZE	0x00000200		/* Stack size for "undefined instruction" interrupts	*/
 #define ABT_STACK_SIZE	0x00000200		/* Stack size for "abort" interrupts					*/
 #define FIQ_STACK_SIZE	0x00000000		/* Stack size for "FIQ" interrupts						*/
 #define IRQ_STACK_SIZE	0x00018000		/* Stack size for "IRQ" normal interrupts				*/
 #define SVC_STACK_SIZE	0x00018000		/* Stack size for "SVC" supervisor mode                 */
+
 #endif
 
 #define ARM_MODE_USR	0x10	/* Normal User Mode											*/
@@ -200,7 +202,7 @@ resetHandler:
 	ldr     r0, =resetVector
 
 /* Set pc to actual code location (i.e. not in remap zone) */
-	ldr     pc, =1f
+    ldr     pc, =1f
 
 /* Initialize the prerelocate segment */
 1:

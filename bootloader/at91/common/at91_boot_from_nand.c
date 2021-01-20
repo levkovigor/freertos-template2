@@ -1,12 +1,15 @@
-#include "boot_at91.h"
+#include "at91_boot_from_nand.h"
 #include <bootloaderConfig.h>
-#include <main.h>
 
 #include <sam9g20/common/SRAMApi.h>
 
 #include <at91/boards/at91sam9g20-ek/board.h>
 #include <at91/boards/at91sam9g20-ek/board_memories.h>
+#include <memories/nandflash/SkipBlockNandFlash.h>
 #include <at91/utility/trace.h>
+
+#include <hal/Timing/RTT.h>
+
 #include <inttypes.h>
 #include <string.h>
 
@@ -43,20 +46,28 @@ static const Pin nfRbPin = BOARD_NF_RB_PIN;
 #define BOOT_NAND_ERROR_NO_DEVICE    1 /// No nand devices has been detected
 #define BOOT_NAND_ERROR_GP           2
 
-int copy_nandflash_binary_to_sdram(bool enable_full_printout) {
-    if(!enable_full_printout) {
-        setTrace(TRACE_LEVEL_WARNING);
+int copy_nandflash_binary_to_sdram(const uint32_t source_offset, const size_t source_size,
+        const size_t target_offset, bool configureNand) {
+    /* Disable most traces because there is a lot of spam from the NAND drivers */
+#if BOOTLOADER_VERBOSE_LEVEL <= 1
+    setTrace(TRACE_LEVEL_WARNING);
+#endif
+
+    if(configureNand) {
+        NandInit();
     }
+    // set_sram0_status_field(16);
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+    printf("-I- Start copying %d bytes from NAND address 0x%08x..\n\r",
+            (int) source_size, (unsigned int) source_offset);
+#endif
 
+    BOOT_NAND_CopyBin(source_offset, source_size, target_offset);
 
-    NandInit();
-    set_sram0_status_field(16);
-
-    BOOT_NAND_CopyBin(NAND_FLASH_OFFSET, OBSW_BINARY_MAX_SIZE);
-
-    if(!enable_full_printout) {
-        setTrace(TRACE_LEVEL_DEBUG);
-    }
+    /* Enable traces */
+#if BOOTLOADER_VERBOSE_LEVEL <= 1
+    setTrace(TRACE_LEVEL_DEBUG);
+#endif
 
     return 0;
 }
@@ -110,7 +121,7 @@ void NandInit()
 /// \param binary_offset     Offset of start
 /// \param binary_size       Size of binary
 //------------------------------------------------------------------------------
-int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
+int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size, size_t target_offset)
 {
     unsigned short block;
     unsigned short page;
@@ -165,48 +176,49 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
     }
 #endif
 
-    printf("-I- Access translation: Start copying %d bytes from block %d "
-            "and page %d.\n\r", binary_size, block, page);
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+    printf("-I- Access translation: Starting at block %d and page %d..\n\r", block, page);
+#endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
     // Initialize to SDRAM start address
-    ptr = (unsigned char*)SDRAM_DESTINATION;
+    ptr = (unsigned char*)SDRAM_DESTINATION + target_offset;
     bytes_read = binary_size;
     while(block < numBlocks)
     {
         for(page = 0; page < numPagesPerBlock; page++) {
 
-        	do {
-        		error = SkipBlockNandFlash_ReadPage(&skipBlockNf, block,
-        				page, ptr, 0);
+            do {
+                error = SkipBlockNandFlash_ReadPage(&skipBlockNf, block,
+                        page, ptr, 0);
 #if BOOTLOADER_VERBOSE_LEVEL >= 2
-        		if((block == 1) && (page == 0)) {
-        			unsigned int armVector = 0;
-        			memcpy(&armVector, ptr, 4);
-        			TRACE_WARNING("1: %08x\n\r", armVector);
-        			memcpy(&armVector, ptr + 4, 4);
-        			TRACE_WARNING("2: %08x\n\r", armVector);
-        			memcpy(&armVector, ptr + 8, 4);
-        			TRACE_WARNING("3: %08x\n\r", armVector);
-        			memcpy(&armVector, ptr + 12, 4);
-        			TRACE_WARNING("4: %08x\n\r", armVector);
-        			memcpy(&armVector, ptr + 16, 4);
-        			TRACE_WARNING("5: %08x\n\r", armVector);
-        			memcpy(&armVector, ptr + 20, 4);
-        			TRACE_WARNING("6: %08x\n\r", armVector);
-        			memcpy(&armVector, ptr + 24, 4);
-        			TRACE_WARNING("7: %08x\n\r", armVector);
-        		}
+                if((block == 1) && (page == 0)) {
+                    unsigned int armVector = 0;
+                    memcpy(&armVector, ptr, 4);
+                    TRACE_WARNING("1: %08x\n\r", armVector);
+                    memcpy(&armVector, ptr + 4, 4);
+                    TRACE_WARNING("2: %08x\n\r", armVector);
+                    memcpy(&armVector, ptr + 8, 4);
+                    TRACE_WARNING("3: %08x\n\r", armVector);
+                    memcpy(&armVector, ptr + 12, 4);
+                    TRACE_WARNING("4: %08x\n\r", armVector);
+                    memcpy(&armVector, ptr + 16, 4);
+                    TRACE_WARNING("5: %08x\n\r", armVector);
+                    memcpy(&armVector, ptr + 20, 4);
+                    TRACE_WARNING("6: %08x\n\r", armVector);
+                    memcpy(&armVector, ptr + 24, 4);
+                    TRACE_WARNING("7: %08x\n\r", armVector);
+                }
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 2 */
-//        		TRACE_WARNING("SkipBlockNandFlash_ReadBlock: Reading block %d "
-//       				"page %d.\n\r", block, page);
-        		if (error == NandCommon_ERROR_BADBLOCK) {
-        		    block++;
-        		}
-        		else {
-        		    break;
-        		}
-        	}
-        	while(block < numBlocks && page == 0);
+                //        		TRACE_WARNING("SkipBlockNandFlash_ReadBlock: Reading block %d "
+                //       				"page %d.\n\r", block, page);
+                if (error == NandCommon_ERROR_BADBLOCK) {
+                    block++;
+                }
+                else {
+                    break;
+                }
+            }
+            while(block < numBlocks && page == 0);
 
 #if !defined(OP_BOOTSTRAP_on)
             if (error) {
@@ -235,3 +247,28 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size)
     }
     return BOOT_NAND_SUCCESS;
 }
+
+void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType) {
+    typedef void (*fctType) (volatile unsigned int, volatile unsigned int);
+    void (*pFct) (volatile unsigned int r0_val, volatile unsigned int r1_val);
+
+    pFct = (fctType) jumpAddr;
+    pFct(0/*dummy value in r0*/, matchType/*matchType in r1*/);
+
+    while(1);//never reach
+}
+
+
+void idle_loop() {
+    uint32_t last_time = RTT_GetTime();
+    for(;;) {
+        uint32_t curr_time = RTT_GetTime();
+        if(curr_time - last_time >= 1) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+            TRACE_INFO("Bootloader idle..\n\r");
+#endif
+            last_time = curr_time;
+        }
+    }
+}
+

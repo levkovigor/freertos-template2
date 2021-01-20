@@ -1,0 +1,160 @@
+#include "../common/at91_boot_from_nand.h"
+#include <bootloaderConfig.h>
+#include <core/timer.h>
+
+#include <board.h>
+#include <AT91SAM9G20.h>
+#include <led_ek.h>
+#include <board_memories.h>
+#include <peripherals/dbgu/dbgu.h>
+#include <peripherals/pio/pio.h>
+#include <peripherals/aic/aic.h>
+#include <peripherals/pio/pio.h>
+#include <cp15/cp15.h>
+
+#include <hal/Timing/RTT.h>
+
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+#include <utility/trace.h>
+#endif
+
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+
+#include <stdbool.h>
+#include <string.h>
+
+void init_task(void* args);
+void handler_task(void * args);
+int perform_bootloader_core_operation();
+void initialize_all_peripherals();
+void print_bl_info();
+
+static TaskHandle_t handler_task_handle_glob = NULL;
+//void idle_loop();
+
+/**
+ * @brief   Bootloader which will copy the primary software to SDRAM and
+ *          execute it.
+ * @details
+ * This is the implementation for the AT91SAM9G20-EK  and its NAND-Flash.
+ * Please note that the compiled binary needs to be smaller than 16kB to fit
+ * into SRAM. When written with SAM-BA, use ther special option "Send Boot File"
+ * to ensure the sixth ARM vector is set to the binary size.
+ * @author  R. Mueller
+ */
+int at91_main()
+{
+    //-------------------------------------------------------------------------
+    // Configure traces
+    //-------------------------------------------------------------------------
+    TRACE_CONFIGURE(DBGU_STANDARD, 115200, BOARD_MCK);
+
+    //-------------------------------------------------------------------------
+    // Enable I-Cache
+    //-------------------------------------------------------------------------
+    CP15_Enable_I_Cache();
+
+    //-------------------------------------------------------------------------
+    // Initiate periodic MS interrupt
+    //-------------------------------------------------------------------------
+    //setup_timer_interrupt();
+
+    //-------------------------------------------------------------------------
+    // Configure SDRAM
+    //-------------------------------------------------------------------------
+    //BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
+
+    //-------------------------------------------------------------------------
+    // Configure LEDs and set both of them.
+    //-------------------------------------------------------------------------
+    LED_Configure(1);
+    LED_Configure(0);
+    LED_Set(0);
+    LED_Set(1);
+
+    /* AT91 Bootloader */
+    xTaskCreate(handler_task, "HANDLER_TASK", 1024, NULL, 4,
+            &handler_task_handle_glob);
+    xTaskCreate(init_task, "INIT_TASK", 524, handler_task_handle_glob,
+            5, NULL);
+    vTaskStartScheduler();
+
+    /* This should never be reached. */
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+    TRACE_ERROR("FreeRTOS scheduler error!\n\r");
+#endif
+    for(;;) {};
+    return 0;
+}
+
+void init_task(void * args) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+    print_bl_info();
+    TRACE_INFO("Remaining FreeRTOS heap size: %d bytes.\n\r", xPortGetFreeHeapSize());
+#else
+    printf("SOURCEBoot\n\r");
+#endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
+
+    initialize_all_peripherals();
+
+    /* Start handler task */
+    TaskHandle_t handler_task_handle = (TaskHandle_t) args;
+    if(handler_task_handle != NULL) {
+        /* Wait till the handler task is suspended */
+        while(eTaskGetState(handler_task_handle) != eSuspended) {
+            vTaskDelay(1);
+        }
+        /* Initialization is finished and the handler task can start */
+        vTaskResume(handler_task_handle);
+    }
+
+    /* Initialization task not needed anymore, deletes itself. */
+    vTaskDelete(NULL);
+}
+
+
+void handler_task(void * args) {
+    /* Wait for initialization to finish */
+    vTaskSuspend(NULL);
+
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+    TRACE_INFO("Running handler task..\n\r");
+#endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
+
+    perform_bootloader_core_operation();
+}
+
+void initialize_all_peripherals() {
+    /* Configure RTT for second time base. */
+    RTT_start();
+}
+
+int perform_bootloader_core_operation() {
+    LED_Clear(0);
+    LED_Clear(1);
+
+    copy_nandflash_binary_to_sdram(PRIMARY_IMAGE_NAND_OFFSET, PRIMARY_IMAGE_RESERVED_SIZE,
+            PRIMARY_IMAGE_SDRAM_OFFSET, false);
+
+    LED_Set(0);
+
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+    TRACE_INFO("Jumping to SDRAM application address 0x%08x!\n\r",
+            (unsigned int) SDRAM_DESTINATION);
+#endif
+
+    go_to_jump_address(SDRAM_DESTINATION, 0);
+    return 0;
+}
+
+void print_bl_info() {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+    TRACE_INFO_WP("\n\r-- SOURCE Bootloader (Second Stage SDRAM) --\n\r");
+    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME_PRINT);
+    TRACE_INFO_WP("-- Software version v%d.%d --\n\r", BL_VERSION, BL_SUBVERSION);
+    TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
+#endif
+}
+
+

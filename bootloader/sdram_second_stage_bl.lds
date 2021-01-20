@@ -29,6 +29,7 @@
 
 /*------------------------------------------------------------------------------
  *      Linker script for running in external SDRAM on the AT91SAM9G20
+ *      Adaption for the second stage bootloader.
  *----------------------------------------------------------------------------*/
 
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
@@ -39,11 +40,32 @@ MEMORY
 {
     sram0 (W!RX) : ORIGIN = 0x200000, LENGTH = 0x4000
     sram1 (W!RX) : ORIGIN = 0x300000, LENGTH = 0x4000
-    sdram (W!RX) : ORIGIN = 0x20000000, LENGTH = 0x2000000
+    sdram (W!RX) : ORIGIN = 0x20100000, LENGTH = 0x2000000 /* First 1 MB reserved for image */
 }
 
 SECTIONS
 {     
+    /* Will be copied to SRAM at startup, but loaded in SDRAM */
+
+    .prerelocate : AT (_efixed)
+    {
+        . = ALIGN(4);
+        _sprerelocate = .;
+        . = ALIGN(4);
+        _eprerelocate = .;
+    } >sram0
+    
+    /* Will also be copied to SRAM */
+    .postrelocate : AT (_efixed + SIZEOF(.prerelocate))
+    {
+        . = ALIGN(4);
+        _spostrelocate = .;
+        KEEP(*(.vectors));
+        *(.sramfunc*);
+        . = ALIGN(4);
+        _epostrelocate = .;
+    } >sram0 
+    
     .fixed :
 	{
         . = ALIGN(4);			/* tells the linker that these section ought to be word aligned */
@@ -105,28 +127,6 @@ SECTIONS
     
     . = ALIGN(4);
     _efixed = .;
-    
-    /* Will be copied to SRAM at startup, but loaded in SDRAM */
-
-    .prerelocate : AT (_efixed)
-    {
-        . = ALIGN(4);
-        _sprerelocate = .;
-        KEEP(*(.vectors));
-        . = ALIGN(4);
-        _eprerelocate = .;
-    } >sram0
-    
-    /* Will also be copied to SRAM */
-    .postrelocate : AT (_efixed + SIZEOF(.prerelocate))
-    {
-        . = ALIGN(4);
-        _spostrelocate = .;
-
-		*(.sramfunc*);
-        . = ALIGN(4);
-        _epostrelocate = .;
-    } >sram0 
          
     .sramdata : AT (_efixed + SIZEOF(.prerelocate) + SIZEOF(.postrelocate))
     {

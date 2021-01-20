@@ -1,6 +1,5 @@
 #include "boot_iobc.h"
 #include <bootloaderConfig.h>
-#include <commonIOBCConfig.h>
 #include "../norflash/bl_iobc_norflash.h"
 #include "../norflash/iobc_boot_sd.h"
 
@@ -65,7 +64,7 @@ int perform_iobc_copy_operation_to_sdram() {
     }
 
     if(boot_select == BOOT_NOR_FLASH) {
-        result = copy_norflash_binary_to_sdram(OBSW_MAX_SIZE);
+        result = copy_norflash_binary_to_sdram(PRIMARY_IMAGE_RESERVED_SIZE);
 
         if(result != 0) {
             result = copy_sdcard_binary_to_sdram(BOOT_SD_CARD_0_UPDATE);
@@ -78,7 +77,7 @@ int perform_iobc_copy_operation_to_sdram() {
         result = copy_sdcard_binary_to_sdram(boot_select);
 
         if(result != 0) {
-            result = copy_norflash_binary_to_sdram(OBSW_MAX_SIZE);
+            result = copy_norflash_binary_to_sdram(PRIMARY_IMAGE_RESERVED_SIZE);
         }
     }
 
