@@ -115,7 +115,7 @@ private:
     // Used for handling the TM Queue, this class is already big enough
     object_id_t tmTcTargetId = objects::NO_OBJECT;
 
-    RS485TmTcTarget *tmTcTarget = objects::NO_OBJECT;
+    RS485TmTcTarget *tmTcTarget = nullptr;
 
     object_id_t sharedRingBufferId = objects::NO_OBJECT;
 

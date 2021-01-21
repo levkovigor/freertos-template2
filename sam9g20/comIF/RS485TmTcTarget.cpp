@@ -88,4 +88,3 @@ ReturnValue_t RS485TmTcTarget::fillSendFrameBuffer(USLPTransferFrame *frame) {
     return result;
 }
 
-
