@@ -60,8 +60,8 @@ ReturnValue_t AtmelTestTask::performOneShotAction() {
     //Stopwatch stopwatch;
     //performSDCardDemo();
     //printFilesTest();
-    int32_t test = get_sram0_status_field();
-    TRACE_INFO("SRAM status field: %d\n\r", (int) test);
+    //int32_t test = get_sram0_status_field();
+    //TRACE_INFO("SRAM status field: %d\n\r", (int) test);
 
 #ifdef ISIS_OBC_G20
     performIOBCTest();

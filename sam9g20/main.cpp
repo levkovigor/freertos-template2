@@ -41,6 +41,8 @@ extern "C" void __sync_synchronize() {}
 void ConfigureLeds(void);
 void configureEk(void);
 #endif
+unsigned int asm_get_cpsr(void);
+void asm_set_cpsr(unsigned int val);
 
 // This will be the entry to the mission specific code
 void initMission();
@@ -86,13 +88,14 @@ int main(void)
     if(retval != pdTRUE) {
         TRACE_ERROR("Creating Initialization Task failed!\n\r");
     }
+
     vTaskStartScheduler();
     // This should never be reached.
     for(;;) {}
 }
 
 void initTask (void * args) {
-    TRACE_INFO("lul\n\r");
+    //TRACE_INFO("initTask reached.\n\r");
     configASSERT(args == nullptr);
 
     initMission();
@@ -113,4 +116,15 @@ void configureEk(void) {
 
 }
 #endif
+
+unsigned int asm_get_cpsr(void) {
+  unsigned long retval;
+  asm volatile (" mrs  %0, cpsr" : "=r" (retval) : /* no inputs */  );
+  return retval;
+}
+
+void asm_set_cpsr(unsigned int val) {
+    asm volatile (" msr cpsr, %0" : /* no outputs */ : "r" (val) );
+}
+
 

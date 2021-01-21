@@ -198,6 +198,13 @@ private:
     void writeBootloaderSizeAndCrc();
 #endif /* AT91SAM9G20_EK */
 
+    /**
+     * Generic handler to open files and read important information like size.
+     * @param currentVolume
+     * @param filePtr
+     * @return
+     *  - F_ERR_NOTFOUND if file was not found.
+     */
     ReturnValue_t prepareGenericFileInformation(VolumeId currentVolume,
             F_FILE** filePtr);
 

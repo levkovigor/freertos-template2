@@ -109,7 +109,12 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
             }
         }
 
-        *filePtr = f_open(config::BOOTLOADER_NAME, "r");
+        if(hammingCode) {
+            *filePtr = f_open(config::BL_HAMMING_NAME, "r");
+        }
+        else {
+            *filePtr = f_open(config::BOOTLOADER_NAME, "r");
+        }
     }
     else {
         result = change_directory(config::SW_REPOSITORY, true);
@@ -180,25 +185,33 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
 
     if(f_getlasterror() != F_NO_ERROR) {
         // Opening file failed!
+        char* missingFile = nullptr;
         if(bootloader) {
-#if FSFW_CPP_OSTREAM_ENABLED == 1
-            sif::error << "ImageCopyingHelper::prepareGenericFileInformation: "
-                    << "Bootloader file not found!" << std::endl;
-#else
-            sif::printError("ImageCopyingHelper::prepareGenericFileInformation: "
-                    "Bootloader file not found!\n");
-#endif
+            if(hammingCode) {
+                missingFile = "Bootloader hamming code";
+            }
+            else {
+                missingFile = "Bootloader";
+            }
         }
         else {
+            if(hammingCode) {
+                missingFile = "OBSW hamming code";
+            }
+            else {
+                missingFile = "OBSW file";
+            }
+        }
+        if(missingFile != nullptr) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-            sif::error << "ImageCopyingHelper::prepareGenericFileInformation: "
-                    << "OBSW file not found!" << std::endl;
+            sif::error << "ImageCopyingHelper::prepareGenericFileInformation: " << missingFile
+                    << "file not found!" << std::endl;
 #else
             sif::printError("ImageCopyingHelper::prepareGenericFileInformation: "
-                    "OBSW file not found!\n");
+                    "%s not found!\n", missingFile);
 #endif
         }
-        return HasReturnvaluesIF::RETURN_FAILED;
+        return F_ERR_NOTFOUND;
     }
 
     // Seek correct position in file. This needs to be done every time
