@@ -54,7 +54,7 @@ int copy_nandflash_binary_to_sdram(const uint32_t source_offset, const size_t so
 #endif
 
     if(configureNand) {
-        NandInit();
+        // NandInit();
     }
     // set_sram0_status_field(16);
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
@@ -181,7 +181,7 @@ int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size, size_t t
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
     // Initialize to SDRAM start address
-    ptr = (unsigned char*)SDRAM_DESTINATION + target_offset;
+    ptr = (unsigned char*) (SDRAM_DESTINATION + target_offset);
     bytes_read = binary_size;
     while(block < numBlocks)
     {

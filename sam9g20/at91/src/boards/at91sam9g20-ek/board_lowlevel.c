@@ -113,12 +113,8 @@ void LowLevelInit(void)
 {
     unsigned int i = 0;
 
-    // Sometimes we have do this when flashing the SDRAM with SAM-BA
-    // because the SAM-BA low level init
-    // does not configure the SDRAM correctly!
-
-    // For J-Link flashes or for the NAND-Flash boot (default),
-    // this is not be required and should not be done.
+    /* Sometimes we have do this when flashing the SDRAM with SAM-BA
+    because the SAM-BA low level init does not configure the SDRAM correctly! */
 //#if SAM_BA_BOOT == 0
 //#ifndef sdram
 //#endif
@@ -159,7 +155,6 @@ void LowLevelInit(void)
 //#if SAM_BA_BOOT == 0
 //#endif
 //#endif
-
 
     /* Initialize AIC
      ****************/

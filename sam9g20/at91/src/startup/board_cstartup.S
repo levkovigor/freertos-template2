@@ -235,6 +235,6 @@ First argument is the jump address */
 jump_to_sdram_application:
 	msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
 	mov sp, r0
-	mov pc, r0
+	mov pc, r1
 
 

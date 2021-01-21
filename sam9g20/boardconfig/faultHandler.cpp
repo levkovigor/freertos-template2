@@ -99,7 +99,7 @@ void defaultIrqHandler( void )
  */
 void data_abort_irq_handler(void)
 {
-#ifdef OBSW_VERBOSE_LEVEL >= 1
+#if OBSW_VERBOSE_LEVEL >= 1
 	uint32_t v1, v2, dfsr = 0;
 
 	asm volatile ("mrc p15, 0, %0, c5, c0, 0" : "=r"(v1));
@@ -136,7 +136,7 @@ void data_abort_irq_handler(void)
  */
 void prefetch_abort_irq_handler(void)
 {
-#ifdef OBSW_VERBOSE_LEVEL >= 1
+#if OBSW_VERBOSE_LEVEL >= 1
 	uint32_t v1, v2, ifsr = 0;
 
 	asm volatile ("mrc p15, 0, %0, c5, c0, 1" : "=r"(v1));
