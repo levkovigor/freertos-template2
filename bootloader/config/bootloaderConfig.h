@@ -2,6 +2,7 @@
 #define BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef ISIS_OBC_G20
 #include <commonIOBCConfig.h>
