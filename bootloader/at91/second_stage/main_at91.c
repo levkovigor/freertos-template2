@@ -25,7 +25,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define USE_FREERTOS            0
+#define USE_FREERTOS            1
 #define RSTC_KEY_PASSWORD       (0xA5 << 24)
 
 extern void jump_to_sdram_application(uint32_t stack_ptr, uint32_t jump_address);
@@ -87,6 +87,7 @@ int at91_main()
     xTaskCreate(handler_task, "HANDLER_TASK", 1024, NULL, 4, &handler_task_handle_glob);
     xTaskCreate(init_task, "INIT_TASK", 1024, handler_task_handle_glob, 5, NULL);
     TRACE_INFO("Remaining FreeRTOS heap size: %d bytes.\n\r", xPortGetFreeHeapSize());
+    TRACE_INFO("Init Task Address: 0x%08x\n\r", (unsigned int) init_task);
 
     vTaskStartScheduler();
 #endif /* USE_FREERTOS == 0 */

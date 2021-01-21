@@ -87,6 +87,7 @@
 #include <at91/utility/trace.h>
 
 /*-----------------------------------------------------------*/
+#define DEBUG_FIRST_TASK_START          1
 
 #define TICK_SYSTEM_PRIORITY			(AT91C_AIC_PRIOR_LOWEST)
 
@@ -109,6 +110,10 @@
 
 /* Setup the timer to generate the tick interrupts. */
 static void prvSetupTimerInterrupt( void );
+
+#if DEBUG_FIRST_TASK_START == 1
+static void debugFirstTaskStart(void);
+#endif
 
 /* 
  * The scheduler can only be started from ARM mode, so 
@@ -213,6 +218,10 @@ portBASE_TYPE xPortStartScheduler( void )
 
     // TRACE_INFO("Starting first FreeRTOS task..\n\r");
     // TRACE_INFO("Current TCB Pointer: 0x%08x\n\r", (unsigned int) pxCurrentTCB);
+
+#if DEBUG_FIRST_TASK_START == 1
+    debugFirstTaskStart();
+#endif
 
     /* Start the first task. */
     vPortISRStartFirstTask();
@@ -388,5 +397,49 @@ void vPortExitCritical( void )
     }
 }
 
+#if DEBUG_FIRST_TASK_START == 1
+static void debugFirstTaskStart(void) {
+    extern volatile void * volatile pxCurrentTCB;
+    TRACE_INFO("Starting first FreeRTOS task..\n\r");
+    TRACE_INFO("Current TCB Pointer: 0x%08x\n\r", (unsigned int) pxCurrentTCB);
+    uint32_t currentStackPtr = *((uint32_t*) pxCurrentTCB);
+    TRACE_INFO("Current Stack Pointer: 0x%08x\n\r", (unsigned int) *((uint32_t*) pxCurrentTCB));
+    TRACE_INFO("Current Critical Nesting: %d\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("Current SPSR: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("Current function parameter: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R1: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R2: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R3: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R4: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R5: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R6: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R7: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R8: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R9: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R10: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R11: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R12: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("Task stack: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R14: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("Return address: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+}
+#endif
 
 
