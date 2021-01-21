@@ -83,9 +83,6 @@ int at91_main()
     // AT91 Bootloader
     //-------------------------------------------------------------------------
     perform_bootloader_core_operation();
-
-    // to see its alive, will not be reached later.
-    //idle_loop();
     return 0;
 }
 
