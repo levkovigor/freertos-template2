@@ -25,7 +25,9 @@
 #include <stdbool.h>
 #include <string.h>
 
+#define USE_FREERTOS            0
 #define RSTC_KEY_PASSWORD       (0xA5 << 24)
+
 extern void jump_to_sdram_application(uint32_t stack_ptr, uint32_t jump_address);
 
 void init_task(void* args);
@@ -34,8 +36,9 @@ int perform_bootloader_core_operation();
 void initialize_all_peripherals();
 void print_bl_info();
 
+#if USE_FREERTOS == 1
 static TaskHandle_t handler_task_handle_glob = NULL;
-//void idle_loop();
+#endif
 
 /**
  * @brief   Bootloader which will copy the primary software to SDRAM and
@@ -67,11 +70,26 @@ int at91_main()
     LED_Set(0);
     LED_Set(1);
 
+#if USE_FREERTOS == 0
+    /* Info printout */
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+    print_bl_info();
+#else
+    printf("SOURCEBoot\n\r");
+#endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
+
+
     /* AT91 Bootloader */
+    perform_bootloader_core_operation();
+#else
+    /* Right now, FreeRTOS is problematic, program crashes in portRESTORE_CONTEXT() when
+    branching to first task. */
     xTaskCreate(handler_task, "HANDLER_TASK", 1024, NULL, 4, &handler_task_handle_glob);
-    xTaskCreate(init_task, "INIT_TASK", 524, handler_task_handle_glob, 5, NULL);
+    xTaskCreate(init_task, "INIT_TASK", 1024, handler_task_handle_glob, 5, NULL);
+    TRACE_INFO("Remaining FreeRTOS heap size: %d bytes.\n\r", xPortGetFreeHeapSize());
 
     vTaskStartScheduler();
+#endif /* USE_FREERTOS == 0 */
 
     /* This should never be reached. */
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
@@ -99,6 +117,9 @@ void init_task(void * args) {
         }
         /* Initialization is finished and the handler task can start */
         vTaskResume(handler_task_handle);
+    }
+    else {
+        TRACE_ERROR("init_task: handler_task_handle invalid!\n\r");
     }
 
     /* Initialization task not needed anymore, deletes itself. */
@@ -135,7 +156,9 @@ int perform_bootloader_core_operation() {
             (unsigned int) SDRAM_DESTINATION);
 #endif
 
+#if USE_FREERTOS == 1
     vTaskEndScheduler();
+#endif
     //CP15_Disable_I_Cache();
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
     return 0;
@@ -146,7 +169,6 @@ void print_bl_info() {
     TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME_PRINT);
     TRACE_INFO_WP("-- Software version v%d.%d --\n\r", BL_VERSION, BL_SUBVERSION);
     TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
-    TRACE_INFO("Remaining FreeRTOS heap size: %d bytes.\n\r", xPortGetFreeHeapSize());
 }
 
 
