@@ -56,6 +56,7 @@ static const char* const SW_SLOT_0_NAME =                "obsw_sl0.bin";
 static const char* const SW_SLOT_1_NAME =                "obsw_sl1.bin";
 
 static const char* const BL_HAMMING_NAME =               "bl_ham.bin";
+static const char* const SW_NORFLASH_NAME =              "nor_ham.bin";
 static const char* const SW_SLOT_0_HAMMING_NAME =        "sl0_hamm.bin";
 static const char* const SW_SLOT_1_HAMMING_NAME =        "sl1_hamm.bin";
 
