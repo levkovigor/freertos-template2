@@ -154,8 +154,8 @@ extern volatile unsigned portLONG ulCriticalNesting;					\
 																		\
 	/* Set the LR to the task stack. */									\
 	asm volatile (														\
-	"LDR		R1, =pxCurrentTCB								\n\t"	\
-	"LDR		R0, [R1]										\n\t"	\
+	"LDR		R0, =pxCurrentTCB								\n\t"	\
+	"LDR		R0, [R0]										\n\t"	\
 	"LDR		LR, [R0]										\n\t"	\
 																		\
 	/* The critical nesting depth is the first item on the stack. */	\

@@ -19,7 +19,6 @@
     function then they must be declared static – otherwise they will be allocated on
     the stack and so not exists after this function exits. */
 static StaticTask_t xIdleTaskTCB;
-
 #endif
 
 
