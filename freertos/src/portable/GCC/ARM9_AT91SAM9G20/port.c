@@ -211,11 +211,11 @@ portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE
 /*-----------------------------------------------------------*/
 portBASE_TYPE xPortStartScheduler( void )
 {
-    extern volatile void * volatile pxCurrentTCB;
     /* Start the timer that generates the tick ISR.  Interrupts are disabled
     here already. */
     prvSetupTimerInterrupt();
 
+    // extern volatile void * volatile pxCurrentTCB;
     // TRACE_INFO("Starting first FreeRTOS task..\n\r");
     // TRACE_INFO("Current TCB Pointer: 0x%08x\n\r", (unsigned int) pxCurrentTCB);
 
