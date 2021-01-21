@@ -13,7 +13,7 @@
 //! Can be used to enable or disable diagnostic printouts in the bootloader.
 #define BOOTLOADER_VERBOSE_LEVEL    1
 
-#define BOOTLOADER_ONE_STAGE        1
+#define BOOTLOADER_ONE_STAGE        0
 
 //! Use tiny FS instead of HCC FS.
 #define USE_TINY_FS 			0
@@ -23,8 +23,6 @@ static const uint32_t SDRAM_DESTINATION = 0x20000000;
 #ifdef AT91SAM9G20_EK
 
 #if BOOTLOADER_ONE_STAGE == 1
-
-
 
 //! This should translate to the third block of the NAND flash.
 static const size_t PRIMARY_IMAGE_NAND_OFFSET = 0x20000;

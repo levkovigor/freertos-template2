@@ -338,4 +338,5 @@ extern "C" extern void jump_to_sdram_application(uint32_t jump_address) in C++ c
 
 jump_to_sdram_application:
     msr CPSR_c, #ARM_MODE_SVC | F_BIT | I_BIT
-    mov pc, r0
+    mov sp, r0
+    mov pc, r1

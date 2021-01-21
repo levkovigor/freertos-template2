@@ -25,7 +25,8 @@
 #include <stdbool.h>
 #include <string.h>
 
-extern void jump_to_sdram_application(uint32_t jump_address);
+#define RSTC_KEY_PASSWORD       (0xA5 << 24)
+extern void jump_to_sdram_application(uint32_t stack_ptr, uint32_t jump_address);
 
 void init_task(void* args);
 void handler_task(void * args);
@@ -134,7 +135,8 @@ int perform_bootloader_core_operation() {
 #endif
 
     vTaskEndScheduler();
-    jump_to_sdram_application(SDRAM_DESTINATION);
+    //CP15_Disable_I_Cache();
+    jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
     return 0;
 }
 

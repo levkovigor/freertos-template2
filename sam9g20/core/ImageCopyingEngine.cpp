@@ -185,7 +185,7 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
 
     if(f_getlasterror() != F_NO_ERROR) {
         // Opening file failed!
-        char* missingFile = nullptr;
+        char const* missingFile = nullptr;
         if(bootloader) {
             if(hammingCode) {
                 missingFile = "Bootloader hamming code";

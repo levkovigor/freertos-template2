@@ -21,7 +21,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-extern void jump_to_sdram_application(uint32_t jump_address);
+extern void jump_to_sdram_application(uint32_t stack_ptr, uint32_t jump_address);
 
 int perform_bootloader_core_operation();
 
@@ -105,7 +105,7 @@ int perform_bootloader_core_operation() {
     TRACE_INFO("Jumping to SDRAM application address 0x%08x!\n\r", SECOND_STAGE_BL_JUMP_ADDR);
 #endif
 
-    jump_to_sdram_application(SECOND_STAGE_BL_JUMP_ADDR);
+    jump_to_sdram_application(0x22000000 - 1024, SECOND_STAGE_BL_JUMP_ADDR);
     return 0;
 }
 

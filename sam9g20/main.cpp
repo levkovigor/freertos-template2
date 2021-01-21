@@ -43,6 +43,7 @@ void configureEk(void);
 #endif
 unsigned int asm_get_cpsr(void);
 void asm_set_cpsr(unsigned int val);
+void printProcessorState(void);
 
 // This will be the entry to the mission specific code
 void initMission();
@@ -89,6 +90,7 @@ int main(void)
         TRACE_ERROR("Creating Initialization Task failed!\n\r");
     }
 
+    // printProcessorState();
     vTaskStartScheduler();
     // This should never be reached.
     for(;;) {}
@@ -99,6 +101,7 @@ void initTask (void * args) {
     configASSERT(args == nullptr);
 
     initMission();
+
     // Delete self.
     TaskFactory::instance()->deleteTask();
 }
@@ -127,4 +130,10 @@ void asm_set_cpsr(unsigned int val) {
     asm volatile (" msr cpsr, %0" : /* no outputs */ : "r" (val) );
 }
 
+void printProcessorState(void) {
+    int cpsr = asm_get_cpsr();
+    TRACE_INFO("CPSR: 0x%08x\n\r", cpsr);
+    register int stack_ptr asm("sp");
+    TRACE_INFO("Stack pointer: 0x%08x\n\r", stack_ptr);
+}
 

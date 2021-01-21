@@ -187,36 +187,35 @@ resetHandler:
 
 /* Setup stacks
  **************/
-	ldr     r0, =_sstack /* Save the start of the stack in r0 */
-	ldr     sp, =_sstack
+    ldr     r0, =_sstack /* Save the start of the stack in r0 */
+    ldr     sp, =_sstack
 
 /* IRQ mode */
-	msr     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
-	mov     sp, r0
-	sub     r0, sp, #IRQ_STACK_SIZE
+    msr     CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
+    mov     sp, r0
+    sub     r0, sp, #IRQ_STACK_SIZE
 
 /* Abort mode */
-	msr     CPSR_c, #ARM_MODE_ABT | I_BIT | F_BIT
-	mov     sp, r0
-	sub     r0, r0, #ABT_STACK_SIZE
+    msr     CPSR_c, #ARM_MODE_ABT | I_BIT | F_BIT
+    mov     sp, r0
+    sub     r0, r0, #ABT_STACK_SIZE
 
 /* Undefined mode */
-	msr     CPSR_c, #ARM_MODE_UND | I_BIT | F_BIT
-	mov     sp, r0
-	sub     r0, r0, #UND_STACK_SIZE
+    msr     CPSR_c, #ARM_MODE_UND | I_BIT | F_BIT
+    mov     sp, r0
+    sub     r0, r0, #UND_STACK_SIZE
 
 /* Supervisor mode */
-	msr     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
-	mov     sp, r0
-	sub     r0, r0, #SVC_STACK_SIZE
+    msr     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
+    mov     sp, r0
+    sub     r0, r0, #SVC_STACK_SIZE
 
 /* System mode, the normal mode of operation */
-	msr     CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
- 	mov     sp, r0
+    msr     CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
+    mov     sp, r0
 
 /* Supervisor mode (interrupts enabled) */
     msr     CPSR_c, #ARM_MODE_SVC | F_BIT
-//   msr     CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
 
 /* Branch to main()
  ******************/
@@ -235,6 +234,7 @@ First argument is the jump address */
 
 jump_to_sdram_application:
 	msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
+	mov sp, r0
 	mov pc, r0
 
 
