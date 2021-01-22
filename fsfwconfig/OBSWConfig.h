@@ -52,14 +52,12 @@ static const char* const SW_REPOSITORY =                 "BIN/IOBC/OBSW";
 #endif
 
 static const char* const BOOTLOADER_NAME =               "bl.bin";
-static const char* const SW_SLOT_0_NAME =                "obsw_sl1.bin";
-static const char* const SW_SLOT_1_NAME =                "obsw_sl2.bin";
-static const char* const SW_UPDATE_SLOT_NAME =           "obsw_up.bin";
+static const char* const SW_SLOT_0_NAME =                "obsw_sl0.bin";
+static const char* const SW_SLOT_1_NAME =                "obsw_sl1.bin";
 
 static const char* const BL_HAMMING_NAME =               "bl_ham.bin";
-static const char* const SW_SLOT_0_HAMMING_NAME =        "sl1_hamm.bin";
-static const char* const SW_SLOT_1_HAMMING_NAME =        "sl2_hamm.bin";
-static const char* const SW_UPDATE_HAMMING_NAME =        "up_hamm.bin";
+static const char* const SW_SLOT_0_HAMMING_NAME =        "sl0_hamm.bin";
+static const char* const SW_SLOT_1_HAMMING_NAME =        "sl1_hamm.bin";
 
 //! Reserved small sectors for the bootloader. Each of the small sectors has 8192 bytes
 //! and there are 8 small sectors on the iOBC NOR-Flash chip.

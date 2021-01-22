@@ -180,6 +180,7 @@ private:
     static constexpr size_t NORFLASH_TOTAL_SMALL_SECTOR_MEM_OBSW =
     		RESERVED_OBSW_SMALL_SECTORS * NORFLASH_SMALL_SECTOR_SIZE;
     static constexpr size_t COPYING_BUCKET_SIZE = 2048;
+    ReturnValue_t copyImgHammingSdcToFram();
     ReturnValue_t copySdCardImageToNorFlash();
 
     /**
@@ -197,6 +198,13 @@ private:
     void writeBootloaderSizeAndCrc();
 #endif /* AT91SAM9G20_EK */
 
+    /**
+     * Generic handler to open files and read important information like size.
+     * @param currentVolume
+     * @param filePtr
+     * @return
+     *  - F_ERR_NOTFOUND if file was not found.
+     */
     ReturnValue_t prepareGenericFileInformation(VolumeId currentVolume,
             F_FILE** filePtr);
 

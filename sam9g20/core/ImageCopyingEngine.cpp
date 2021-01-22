@@ -68,10 +68,6 @@ ImageCopyingEngine::getLastFinishedState() const {
     return lastFinishedState;
 }
 
-//void ImageCopyingEngine::setActiveSdCard(SdCard sdCard) {
-//    this->activeSdCard = sdCard;
-//}
-
 void ImageCopyingEngine::reset() {
     internalState = GenericInternalState::IDLE;
     imageHandlerState = ImageHandlerStates::IDLE;
@@ -103,11 +99,22 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         // Current file size only needs to be cached once.
         // Info output should only be printed once.
         if(stepCounter == 0) {
-            currentFileSize = f_filelength(config::BOOTLOADER_NAME);
-            handleInfoPrintout(currentVolume);
+            if(hammingCode) {
+                currentFileSize = f_filelength(config::BL_HAMMING_NAME);
+            }
+            else {
+                currentFileSize = f_filelength(config::BOOTLOADER_NAME);
+                // TODO: pass hammingCode flag to info printout
+                handleInfoPrintout(currentVolume);
+            }
         }
 
-        *filePtr = f_open(config::BOOTLOADER_NAME, "r");
+        if(hammingCode) {
+            *filePtr = f_open(config::BL_HAMMING_NAME, "r");
+        }
+        else {
+            *filePtr = f_open(config::BOOTLOADER_NAME, "r");
+        }
     }
     else {
         result = change_directory(config::SW_REPOSITORY, true);
@@ -120,13 +127,20 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         // Info output should only be printed once.
         if(stepCounter == 0) {
             if(sourceSlot == ImageSlot::SDC_SLOT_0) {
-                currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
+                if(hammingCode) {
+                    currentFileSize = f_filelength(config::SW_SLOT_0_HAMMING_NAME);
+                }
+                else {
+                    currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
+                }
             }
             else if(sourceSlot == ImageSlot::SDC_SLOT_1) {
-                currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
-            }
-            else if(sourceSlot == ImageSlot::SDC_SLOT_1) {
-                currentFileSize = f_filelength(config::SW_UPDATE_SLOT_NAME);
+                if(hammingCode) {
+                    currentFileSize = f_filelength(config::SW_SLOT_1_HAMMING_NAME);
+                }
+                else {
+                    currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
+                }
             }
         }
 
@@ -167,32 +181,37 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         else if(sourceSlot == ImageSlot::SDC_SLOT_1) {
             *filePtr = f_open(config::SW_SLOT_1_NAME, "r");
         }
-        else {
-            *filePtr = f_open(config::SW_UPDATE_SLOT_NAME, "r");
-        }
     }
 
     if(f_getlasterror() != F_NO_ERROR) {
         // Opening file failed!
+        char const* missingFile = nullptr;
         if(bootloader) {
-#if FSFW_CPP_OSTREAM_ENABLED == 1
-            sif::error << "ImageCopyingHelper::prepareGenericFileInformation: "
-                    << "Bootloader file not found!" << std::endl;
-#else
-            sif::printError("ImageCopyingHelper::prepareGenericFileInformation: "
-                    "Bootloader file not found!\n");
-#endif
+            if(hammingCode) {
+                missingFile = "Bootloader hamming code";
+            }
+            else {
+                missingFile = "Bootloader";
+            }
         }
         else {
+            if(hammingCode) {
+                missingFile = "OBSW hamming code";
+            }
+            else {
+                missingFile = "OBSW file";
+            }
+        }
+        if(missingFile != nullptr) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-            sif::error << "ImageCopyingHelper::prepareGenericFileInformation: "
-                    << "OBSW file not found!" << std::endl;
+            sif::error << "ImageCopyingHelper::prepareGenericFileInformation: " << missingFile
+                    << "file not found!" << std::endl;
 #else
             sif::printError("ImageCopyingHelper::prepareGenericFileInformation: "
-                    "OBSW file not found!\n");
+                    "%s not found!\n", missingFile);
 #endif
         }
-        return HasReturnvaluesIF::RETURN_FAILED;
+        return F_ERR_NOTFOUND;
     }
 
     // Seek correct position in file. This needs to be done every time
@@ -207,8 +226,7 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
 
 ReturnValue_t ImageCopyingEngine::readFile(uint8_t *buffer, size_t sizeToRead,
         size_t *sizeRead, F_FILE** file) {
-    ssize_t bytesRead = f_read(imgBuffer->data(), sizeof(uint8_t),
-            sizeToRead, *file);
+    ssize_t bytesRead = f_read(imgBuffer->data(), sizeof(uint8_t), sizeToRead, *file);
     if(bytesRead < 0) {
         errorCount++;
         // if reading a file failed 3 times, exit.

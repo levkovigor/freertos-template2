@@ -1,7 +1,6 @@
-#include "main.h"
-#include "config/bootloaderConfig.h"
-#include "at91/boot_at91.h"
-#include "core/timer.h"
+#include "../common/at91_boot_from_nand.h"
+#include <bootloaderConfig.h>
+#include <core/timer.h>
 
 #include <board.h>
 #include <AT91SAM9G20.h>
@@ -22,9 +21,10 @@
 #include <stdbool.h>
 #include <string.h>
 
+extern void jump_to_sdram_application(uint32_t stack_ptr, uint32_t jump_address);
+
 int perform_bootloader_core_operation();
 
-//void idle_loop();
 
 /**
  * @brief   Bootloader which will copy the primary software to SDRAM and
@@ -49,11 +49,10 @@ int at91_main()
     CP15_Enable_I_Cache();
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-    TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
+    TRACE_INFO_WP("-- SOURCE Bootloader (First Stage SRAM) --\n\r");
     TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME_PRINT);
     TRACE_INFO_WP("-- Software version v%d.%d --\n\r", BL_VERSION, BL_SUBVERSION);
     TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
-    TRACE_INFO("Running initialization task..\n\r");
 #endif
 
     //-------------------------------------------------------------------------
@@ -64,7 +63,7 @@ int at91_main()
     //-------------------------------------------------------------------------
     // Configure SDRAM
     //-------------------------------------------------------------------------
-    BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
+    //BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
 
     //-------------------------------------------------------------------------
     // Configure LEDs and set both of them.
@@ -84,46 +83,27 @@ int at91_main()
     // AT91 Bootloader
     //-------------------------------------------------------------------------
     perform_bootloader_core_operation();
-
-    // to see its alive, will not be reached later.
-    //idle_loop();
     return 0;
 }
 
 
-void idle_loop() {
-    uint32_t last_time = RTT_GetTime();
-    for(;;) {
-        uint32_t curr_time = RTT_GetTime();
-        if(curr_time - last_time >= 1) {
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
-            TRACE_INFO("Bootloader idle..\n\r");
-#endif
-            last_time = curr_time;
-        }
-    }
-}
-
-void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
-{
-    typedef void (*fctType) (volatile unsigned int, volatile unsigned int);
-    void (*pFct) (volatile unsigned int r0_val, volatile unsigned int r1_val);
-
-    pFct = (fctType) jumpAddr;
-    pFct(0/*dummy value in r0*/, matchType/*matchType in r1*/);
-
-    while(1);//never reach
-}
-
 int perform_bootloader_core_operation() {
     LED_Clear(0);
     LED_Clear(1);
-    copy_nandflash_binary_to_sdram(false);
+
+    memset((void*) SECOND_STAGE_BL_JUMP_ADDR, 0, SECOND_STAGE_BL_RESERVED_SIZE);
+
+    copy_nandflash_binary_to_sdram(SECOND_STAGE_BL_NAND_OFFSET, SECOND_STAGE_BL_RESERVED_SIZE,
+            SECOND_STAGE_SDRAM_OFFSET, true);
+
     LED_Set(0);
+
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-    TRACE_INFO("Jumping to SDRAM application!\n\r");
+    TRACE_INFO("Jumping to SDRAM application address 0x%08x!\n\r", SECOND_STAGE_BL_JUMP_ADDR);
 #endif
-    jump_to_sdram_application();
+    //CP15_Disable_I_Cache();
+
+    jump_to_sdram_application(0x304000, SECOND_STAGE_BL_JUMP_ADDR);
     return 0;
 }
 

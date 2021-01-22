@@ -381,11 +381,10 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
         if(errorCount >= 3) {
             // if writing to NAND failed 5 times, exit.
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-            sif::error << "SoftwareImageHandler::copyBootloaderToNand"
-                    << "Flash: Write error!" << std::endl;
+            sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash: Write error!"
+                    << std::endl;
 #else
-            sif::printError("SoftwareImageHandler::copyBootloaderToNand"
-                    "Flash: Write error!\n");
+            sif::printError("SoftwareImageHandler::copyBootloaderToNandFlash: Write error!\n");
 #endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
@@ -393,13 +392,13 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
         return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
     }
 
-#if OBSW_VERBOSE_LEVEL >= 1
+#if OBSW_VERBOSE_LEVEL >= 2
 #if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::debug << "Written " << NAND_PAGE_SIZE << " bytes to NAND-Flash Block " <<
             helperCounter1 << " & Page " << helperCounter2 << std::endl;
 #else
-    sif::printDebug("Written %zu bytes to NAND-Flash block %hu & Page %hu\n", helperCounter1,
-            helperCounter2);
+    sif::printDebug("Written %lu bytes to NAND-Flash block %hu & Page %hu\n",
+            static_cast<unsigned long>(helperCounter1), helperCounter2);
 #endif
 #endif
 

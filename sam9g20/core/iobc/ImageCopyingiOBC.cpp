@@ -23,6 +23,7 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     case(ImageHandlerStates::COPY_IMG_HAMMING_SDC_TO_FRAM): {
+        return copyImgHammingSdcToFram();
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     case(ImageHandlerStates::COPY_IMG_FLASH_TO_SDC): {
@@ -98,6 +99,63 @@ ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
     }
 
     return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
+    if(internalState == GenericInternalState::IDLE) {
+        internalState = GenericInternalState::STEP_1;
+    }
+    if(internalState == GenericInternalState::STEP_1) {
+        if(sourceSlot == ImageSlot::NORFLASH) {
+
+        }
+        SDCardAccess access;
+        F_FILE* file = nullptr;
+        prepareGenericFileInformation(access.currentVolumeId, &file);
+
+        while(currentByteIdx < currentFileSize) {
+            size_t sizeToRead = 0;
+            if(currentFileSize > sizeToRead) {
+                sizeToRead = imgBuffer->size();
+            }
+            else {
+                currentFileSize = sizeToRead;
+            }
+            size_t sizeRead = f_read(imgBuffer->data(), 1, sizeToRead, file);
+            if(sizeRead != sizeToRead) {
+                // Should not happen!
+                sif::printWarning("ImageCopyingEngine::copyImgHammingSdcToFram: "
+                        "Not all bytes read!");
+                return HasReturnvaluesIF::RETURN_FAILED;
+            }
+
+            int result = write_nor_flash_hamming_code(imgBuffer->data(), currentByteIdx, sizeRead);
+            if(result != 0) {
+                return HasReturnvaluesIF::RETURN_FAILED;
+            }
+            currentByteIdx += sizeRead;
+
+            if(countdown->hasTimedOut()) {
+                return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+            }
+        }
+        reset();
+#if OBSW_VERBOSE_LEVEL >= 1
+        const char* message = nullptr;
+        if(sourceSlot == ImageSlot::NORFLASH) {
+            message = "NOR-Flash hamming code";
+        }
+        else if(sourceSlot == ImageSlot::SDC_SLOT_0) {
+            message = "SD Card slot 0 hamming code";
+        }
+        else if(sourceSlot == ImageSlot::SDC_SLOT_1) {
+            message = "SD Card slot 1 hamming code";
+        }
+        sif::printInfo("Copied %s successfully to storage (FRAM)\n\r", message);
+#endif
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+
 }
 
 ReturnValue_t ImageCopyingEngine::handleNorflashErasure() {

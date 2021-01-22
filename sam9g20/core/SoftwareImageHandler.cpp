@@ -150,7 +150,7 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
         MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     switch(actionId) {
-    case(COPY_BOOTLOADER_TO_FLASH): {
+    case(COPY_BOOTLOADER_SDC_TO_FLASH): {
         if(handlerState == HandlerState::COPYING) {
             return HasActionsIF::IS_BUSY;
         }
