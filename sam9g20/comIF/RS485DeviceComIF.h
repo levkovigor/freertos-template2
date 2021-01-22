@@ -15,8 +15,6 @@
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 #include <fsfwconfig/OBSWConfig.h>
-#include <fsfw/container/SharedRingBuffer.h>
-#include <sam9g20/core/RingBufferAnalyzer.h>
 #include <mission/utility/USLPTransferFrame.h>
 #include <sam9g20/comIF/RS485TmTcTarget.h>
 
@@ -43,14 +41,12 @@ class RS485DeviceComIF: public DeviceCommunicationIF,
 public:
 
     static constexpr size_t TMTC_FRAME_MAX_LEN = config::RS485_MAX_SERIAL_FRAME_SIZE;
-    static constexpr uint8_t MAX_TC_PACKETS_HANDLED = 5;
     static constexpr uint8_t MAX_TM_FRAMES_SENT_PER_CYCLE = 5;
     static constexpr uint8_t RETRY_COUNTER = 10;
     static constexpr char defaultMessage[] = { 'O', 'n', 'e', ' ', 'P', 'i', 'n', 'g', ' ', 'o',
             'n', 'l', 'y', ' ' };
 
-    RS485DeviceComIF(object_id_t objectId, object_id_t sharedRingBufferId,
-            object_id_t tmTcTargetId);
+    RS485DeviceComIF(object_id_t objectId, object_id_t tmTcTargetId);
     virtual ~RS485DeviceComIF();
 
     /**
@@ -117,12 +113,6 @@ private:
 
     RS485TmTcTarget *tmTcTarget = nullptr;
 
-    object_id_t sharedRingBufferId = objects::NO_OBJECT;
-
-    RingBufferAnalyzer *analyzerTask = nullptr;
-
-    std::array<uint8_t, TMTC_FRAME_MAX_LEN + 5> receiveArray;
-
     /**
      * @brief  Initializes one TransferFrame class with buffer for each device
      * @details Most of the values for a device like e.g. VCID, SCID, etc.
@@ -139,8 +129,6 @@ private:
      * @details Calls RS485TmTcTarget fillFrameBuffer
      */
     void handleTmSend(RS485Devices device, RS485Cookie *rs485Cookie);
-    ReturnValue_t handleReceiveBuffer();
-    ReturnValue_t handlePacketReception(size_t foundLen);
     static void genericUartCallback(SystemContext context,
     xSemaphoreHandle sem);
 

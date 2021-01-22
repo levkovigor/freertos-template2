@@ -16,9 +16,8 @@ extern "C" {
 #include <hal/Drivers/UART.h>
 }
 
-RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t sharedRingBufferId,
-        object_id_t tmTcTargetId) :
-        SystemObject(objectId), sharedRingBufferId(sharedRingBufferId), tmTcTargetId(tmTcTargetId) {
+RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t tmTcTargetId) :
+        SystemObject(objectId), tmTcTargetId(tmTcTargetId) {
 
     for (int i = 0; i < RS485Devices::DEVICE_COUNT_RS485; i++) {
         deviceCookies[i] = nullptr;
@@ -31,13 +30,6 @@ ReturnValue_t RS485DeviceComIF::initialize() {
 
     // Init of the default transfer frame buffers for each device
     initTransferFrameSendBuffers();
-
-    // The ring buffer analyzer will run at the end of performOperation
-    SharedRingBuffer *ringBuffer = objectManager->get<SharedRingBuffer>(sharedRingBufferId);
-    if (ringBuffer == nullptr) {
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-    analyzerTask = new RingBufferAnalyzer(ringBuffer, AnalyzerModes::DLE_ENCODING);
 
     tmTcTarget = objectManager->get<RS485TmTcTarget>(tmTcTargetId);
     if (tmTcTarget == nullptr) {
@@ -118,11 +110,6 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
         sif::error << "RS485 Device Cookies not initialized yet" << std::endl;
     }
 
-    //Reception
-//    sif::info << "Handling Receive Buffer" << std::endl;
-//    handleReceiveBuffer();
-
-    // printout and event.
     if (retryCount > 0) {
 #ifdef DEBUG
         sif::error << "RS485DeviceComIF::performOperation: RS485DeviceComIF"
@@ -249,40 +236,6 @@ void RS485DeviceComIF::handleTmSend(RS485Devices device, RS485Cookie *rs485Cooki
             break;
         }
     }
-}
-
-ReturnValue_t RS485DeviceComIF::handleReceiveBuffer() {
-    for (uint8_t tcPacketIdx = 0; tcPacketIdx < MAX_TC_PACKETS_HANDLED; tcPacketIdx++) {
-        size_t packetFoundLen = 0;
-        ReturnValue_t result = analyzerTask->checkForPackets(receiveArray.data(),
-                receiveArray.size(), &packetFoundLen);
-        if (result == HasReturnvaluesIF::RETURN_OK) {
-            result = handlePacketReception(packetFoundLen);
-            if (result != HasReturnvaluesIF::RETURN_OK) {
-                sif::debug << "RS485DeviceComIF::handleReceiveBuffer: Handling Buffer" << " failed!"
-                        << std::endl;
-                return result;
-            }
-        } else if (result == RingBufferAnalyzer::POSSIBLE_PACKET_LOSS) {
-            // trigger event?
-            sif::debug << "RS485DeviceComIF::handleReceiveBuffer: Possible data loss" << std::endl;
-            continue;
-        } else if (result == RingBufferAnalyzer::NO_PACKET_FOUND) {
-            return HasReturnvaluesIF::RETURN_OK;
-        }
-    }
-
-    return HasReturnvaluesIF::RETURN_OK;
-}
-
-// Just an echo function for testing
-ReturnValue_t RS485DeviceComIF::handlePacketReception(size_t foundLen) {
-    store_address_t storeId;
-    RS485Cookie *memoryLeakCookie = new RS485Cookie(COM_FPGA);
-
-    ReturnValue_t result = sendMessage(memoryLeakCookie,
-            reinterpret_cast<unsigned char*>(const_cast<char*>("SendMessage")), 6);
-    return result;
 }
 
 void RS485DeviceComIF::genericUartCallback(SystemContext context,

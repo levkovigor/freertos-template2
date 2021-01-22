@@ -9,11 +9,15 @@
 #define SAM9G20_COMIF_RS485TMTCTARGET_H_
 
 #include <fsfw/objectmanager/SystemObject.h>
+#include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/tmtcservices/AcceptsTelemetryIF.h>
 #include <fsfw/ipc/MessageQueueIF.h>
 #include <fsfw/tmtcservices/TmTcMessage.h>
 #include <fsfw/container/DynamicFIFO.h>
 #include <mission/utility/USLPTransferFrame.h>
+#include <fsfw/container/SharedRingBuffer.h>
+#include <sam9g20/core/RingBufferAnalyzer.h>
+#include <fsfwconfig/OBSWConfig.h>
 
 /**
  * @brief       Is used by RS485DeviceComIF to send TM
@@ -22,6 +26,7 @@
  * @author      L. Rajer
  */
 class RS485TmTcTarget: public AcceptsTelemetryIF,
+        public ExecutableObjectIF,
         public SystemObject {
 public:
     static constexpr uint8_t TMTC_RECEPTION_QUEUE_DEPTH = 20;
@@ -31,11 +36,16 @@ public:
     static constexpr uint8_t DEFAULT_STORED_DATA_SENT_PER_CYCLE = 5;
     static constexpr uint8_t DEFAULT_DOWNLINK_PACKETS_STORED = 10;
 
-    RS485TmTcTarget(object_id_t objectId, object_id_t tmStoreId);
+    static constexpr size_t TMTC_FRAME_MAX_LEN = config::RS485_MAX_SERIAL_FRAME_SIZE;
+    static constexpr uint8_t MAX_TC_PACKETS_HANDLED = 5;
+
+    RS485TmTcTarget(object_id_t objectId, object_id_t tmStoreId, object_id_t sharedRingBufferId);
     virtual ~RS485TmTcTarget();
 
     /** SystemObject override */
     ReturnValue_t initialize() override;
+
+    ReturnValue_t performOperation(uint8_t opCode) override;
 
     /** AcceptsTelemetryIF override */
     MessageQueueId_t getReportReceptionQueue(uint8_t virtualChannel = 0) override;
@@ -50,6 +60,13 @@ private:
     // Used to split packets into different frames
     TmTcMessage *overhangMessage = nullptr;
     uint8_t overhangMessageSentBytes = 0;
+
+    ReturnValue_t handleReceiveBuffer();
+    ReturnValue_t handlePacketReception(size_t foundLen);
+
+    object_id_t sharedRingBufferId = objects::NO_OBJECT;
+    RingBufferAnalyzer *analyzerTask = nullptr;
+    std::array<uint8_t, TMTC_FRAME_MAX_LEN + 5> receiveArray;
     /**
      * This fifo can be used to store downlink data
      * which can not be sent at the moment.

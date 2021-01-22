@@ -9,8 +9,8 @@
 #include <mission/utility/USLPTransferFrame.h>
 #include <fsfwconfig/OBSWConfig.h>
 
-RS485TmTcTarget::RS485TmTcTarget(object_id_t objectId, object_id_t tmStoreId) :
-        SystemObject(objectId), tmStoreId(tmStoreId) {
+RS485TmTcTarget::RS485TmTcTarget(object_id_t objectId, object_id_t tmStoreId, object_id_t sharedRingBufferId) :
+        SystemObject(objectId), tmStoreId(tmStoreId), sharedRingBufferId(sharedRingBufferId) {
     tmTcReceptionQueue = QueueFactory::instance()->createMessageQueue(TMTC_RECEPTION_QUEUE_DEPTH);
 }
 
@@ -30,6 +30,17 @@ ReturnValue_t RS485TmTcTarget::initialize() {
 
     tmFifo = new DynamicFIFO<store_address_t>(maxNumberOfPacketsStored);
 
+    // The ring buffer analyzer will run in performOperation
+    SharedRingBuffer *ringBuffer = objectManager->get<SharedRingBuffer>(sharedRingBufferId);
+    if (ringBuffer == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    analyzerTask = new RingBufferAnalyzer(ringBuffer, AnalyzerModes::DLE_ENCODING);
+
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t RS485TmTcTarget::performOperation(uint8_t opCode){
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -86,5 +97,35 @@ ReturnValue_t RS485TmTcTarget::fillSendFrameBuffer(USLPTransferFrame *frame) {
     }
 
     return result;
+}
+
+ReturnValue_t RS485TmTcTarget::handleReceiveBuffer() {
+    for (uint8_t tcPacketIdx = 0; tcPacketIdx < MAX_TC_PACKETS_HANDLED; tcPacketIdx++) {
+        size_t packetFoundLen = 0;
+        ReturnValue_t result = analyzerTask->checkForPackets(receiveArray.data(),
+                receiveArray.size(), &packetFoundLen);
+        if (result == HasReturnvaluesIF::RETURN_OK) {
+            result = handlePacketReception(packetFoundLen);
+            if (result != HasReturnvaluesIF::RETURN_OK) {
+                sif::debug << "RS485DeviceComIF::handleReceiveBuffer: Handling Buffer" << " failed!"
+                        << std::endl;
+                return result;
+            }
+        } else if (result == RingBufferAnalyzer::POSSIBLE_PACKET_LOSS) {
+            // trigger event?
+            sif::debug << "RS485DeviceComIF::handleReceiveBuffer: Possible data loss" << std::endl;
+            continue;
+        } else if (result == RingBufferAnalyzer::NO_PACKET_FOUND) {
+            return HasReturnvaluesIF::RETURN_OK;
+        }
+    }
+
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+// Just an echo function for testing
+ReturnValue_t RS485TmTcTarget::handlePacketReception(size_t foundLen) {
+    // Do something
+    return HasReturnvaluesIF::RETURN_OK;
 }
 
