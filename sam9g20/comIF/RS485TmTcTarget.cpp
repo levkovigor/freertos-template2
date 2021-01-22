@@ -9,8 +9,10 @@
 #include <mission/utility/USLPTransferFrame.h>
 #include <fsfwconfig/OBSWConfig.h>
 
-RS485TmTcTarget::RS485TmTcTarget(object_id_t objectId, object_id_t tmStoreId, object_id_t sharedRingBufferId) :
-        SystemObject(objectId), tmStoreId(tmStoreId), sharedRingBufferId(sharedRingBufferId) {
+RS485TmTcTarget::RS485TmTcTarget(object_id_t objectId, object_id_t tcDistributor,
+        object_id_t tmStoreId, object_id_t tcStoreId, object_id_t sharedRingBufferId) :
+        SystemObject(objectId), tmStoreId(tmStoreId), tcStoreId(tcStoreId), sharedRingBufferId(
+                sharedRingBufferId) {
     tmTcReceptionQueue = QueueFactory::instance()->createMessageQueue(TMTC_RECEPTION_QUEUE_DEPTH);
 }
 
@@ -19,10 +21,31 @@ RS485TmTcTarget::~RS485TmTcTarget() {
 
 ReturnValue_t RS485TmTcTarget::initialize() {
 
+    tcStore = objectManager->get<StorageManagerIF>(tcStoreId);
+    if (tcStore == nullptr) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "RS485TmTcTarget::initialize: TC store invalid. Make sure"
+                "it is created and set up properly." << std::endl;
+#endif
+        return ObjectManagerIF::CHILD_INIT_FAILED;
+    }
+
+    AcceptsTelecommandsIF *tcDistributor = objectManager->get<AcceptsTelecommandsIF>(tcDestination);
+    if (tcDistributor == nullptr) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "RS485TmTcTarget::initialize: TC Distributor invalid" << std::endl;
+#endif
+        return ObjectManagerIF::CHILD_INIT_FAILED;
+    }
+
+    tmFifo = new DynamicFIFO<store_address_t>(maxNumberOfPacketsStored);
+
+    tmTcReceptionQueue->setDefaultDestination(tcDistributor->getRequestQueue());
+
     tmStore = objectManager->get<StorageManagerIF>(tmStoreId);
     if (tmStore == nullptr) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::error << "TmTcBridge::initialize: TM store invalid. Make sure"
+        sif::error << "RS485TmTcTarget::initialize: TM store invalid. Make sure"
                 "it is created and set up properly." << std::endl;
 #endif
         return ObjectManagerIF::CHILD_INIT_FAILED;
@@ -40,7 +63,7 @@ ReturnValue_t RS485TmTcTarget::initialize() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t RS485TmTcTarget::performOperation(uint8_t opCode){
+ReturnValue_t RS485TmTcTarget::performOperation(uint8_t opCode) {
     handleReceiveBuffer();
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -124,9 +147,22 @@ ReturnValue_t RS485TmTcTarget::handleReceiveBuffer() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-
 ReturnValue_t RS485TmTcTarget::handlePacketReception(size_t foundLen) {
-    // Do something
-    return HasReturnvaluesIF::RETURN_OK;
+    store_address_t storeId;
+    ReturnValue_t result = tcStore->addData(&storeId, receiveArray.data(), foundLen);
+    if (result == HasReturnvaluesIF::RETURN_FAILED) {
+        return result;
+    }
+    TmTcMessage tcMessage(storeId);
+    return MessageQueueSenderIF::sendMessage(getRequestQueue(), &tcMessage);
 }
 
+uint16_t RS485TmTcTarget::getIdentifier() {
+    // This is no PUS service, so we just return 0
+    return 0;
+}
+
+MessageQueueId_t RS485TmTcTarget::getRequestQueue() {
+    // Default implementation: Relay TC messages to TC distributor directly.
+    return tmTcReceptionQueue->getDefaultDestination();
+}

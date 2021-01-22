@@ -11,6 +11,7 @@
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/tmtcservices/AcceptsTelemetryIF.h>
+#include <fsfw/tmtcservices/AcceptsTelecommandsIF.h>
 #include <fsfw/ipc/MessageQueueIF.h>
 #include <fsfw/tmtcservices/TmTcMessage.h>
 #include <fsfw/container/DynamicFIFO.h>
@@ -26,6 +27,7 @@
  * @author      L. Rajer
  */
 class RS485TmTcTarget: public AcceptsTelemetryIF,
+        public AcceptsTelecommandsIF,
         public ExecutableObjectIF,
         public SystemObject {
 public:
@@ -39,7 +41,8 @@ public:
     static constexpr size_t TMTC_FRAME_MAX_LEN = config::RS485_MAX_SERIAL_FRAME_SIZE;
     static constexpr uint8_t MAX_TC_PACKETS_HANDLED = 5;
 
-    RS485TmTcTarget(object_id_t objectId, object_id_t tmStoreId, object_id_t sharedRingBufferId);
+    RS485TmTcTarget(object_id_t objectId_, object_id_t tcDistributor, object_id_t tmStoreId,
+            object_id_t tcStoreId, object_id_t sharedRingBufferId);
     virtual ~RS485TmTcTarget();
 
     /** SystemObject override */
@@ -50,13 +53,20 @@ public:
     /** AcceptsTelemetryIF override */
     MessageQueueId_t getReportReceptionQueue(uint8_t virtualChannel = 0) override;
 
+    /** AcceptsTelecommandsIF override */
+    virtual uint16_t getIdentifier() override;
+    virtual MessageQueueId_t getRequestQueue() override;
+
     ReturnValue_t fillSendFrameBuffer(USLPTransferFrame *frame);
 
 private:
     object_id_t tmStoreId = objects::NO_OBJECT;
+    object_id_t tcStoreId = objects::NO_OBJECT;
+    object_id_t tcDestination = objects::NO_OBJECT;
 
     MessageQueueIF *tmTcReceptionQueue = nullptr;
     StorageManagerIF *tmStore = nullptr;
+    StorageManagerIF *tcStore = nullptr;
     // Used to split packets into different frames
     TmTcMessage *overhangMessage = nullptr;
     uint8_t overhangMessageSentBytes = 0;

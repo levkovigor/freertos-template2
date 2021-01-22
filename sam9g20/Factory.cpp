@@ -231,7 +231,8 @@ void Factory::produce(void) {
 
     new SharedRingBuffer(objects::RS485_RING_BUFFER, 6144, true, 30);
     new RS485PollingTask(objects::RS485_POLLING_TASK, objects::RS485_RING_BUFFER);
-    new RS485TmTcTarget(objects::RS485_TM_TC_TARGET, objects::TM_STORE, objects::RS485_RING_BUFFER);
+    new RS485TmTcTarget(objects::RS485_TM_TC_TARGET, objects::CCSDS_PACKET_DISTRIBUTOR,
+            objects::TM_STORE, objects::TC_STORE, objects::RS485_RING_BUFFER);
     new RS485DeviceComIF(objects::RS485_DEVICE_COM_IF,
             objects::RS485_TM_TC_TARGET);
 
