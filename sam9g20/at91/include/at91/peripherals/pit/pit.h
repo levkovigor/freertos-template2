@@ -61,6 +61,8 @@ extern void PIT_SetPIV(unsigned int piv);
 
 extern void PIT_Enable(void);
 
+extern void PIT_Disable(void);
+
 extern void PIT_EnableIT(void);
 
 extern void PIT_DisableIT(void);

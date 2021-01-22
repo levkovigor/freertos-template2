@@ -51,6 +51,15 @@ static const size_t BOOTLOADER_HAMMING_RESERVED_SIZE = 0x600;
 //! Calculated required size for images: 0x100000 (NOR-Flash) - 0x20000 (bootloader) * 3 / 256
 static const uint32_t NOR_FLASH_HAMMING_RESERVED_SIZE = 0x2A00;
 
+/**
+ * Read the whole critical block. Size of buffer has to be provided in max_size.
+ * It is recommended to set max_size to sizeof(CriticalDataBlock)
+ * @param buffer
+ * @param max_size
+ * @return
+ */
+int read_critical_block(uint8_t* buffer, const size_t max_size);
+
 int write_software_version(uint8_t sw_version, uint8_t sw_subversion,
         uint8_t sw_subsubversion);
 int read_software_version(uint8_t* sw_version, uint8_t* sw_subversion,
@@ -77,6 +86,19 @@ int reset_reboot_counter();
 int update_seconds_since_epoch(uint32_t secondsSinceEpoch);
 int read_seconds_since_epoch(uint32_t* secondsSinceEpoch);
 
+/**
+ * Shall be used to disable hamming code checks, e.g. if software was updated but hamming
+ * code has not been updated yet.
+ * @return
+ */
+int clear_hamming_check_flag();
+/**
+ * Shall be used to enable hamming code checks for the bootloader or the scrubbing engine.
+ * @return
+ */
+int set_hamming_check_flag();
+int get_hamming_check_flag();
+
 int write_nor_flash_binary_size(size_t binary_size);
 int read_nor_flash_binary_size(size_t* binary_size);
 
@@ -86,19 +108,7 @@ int read_nor_flash_binary_size(size_t* binary_size);
  * @param set_hamming_flag
  * @return
  */
-int write_nor_flash_hamming_size(size_t hamming_size, bool set_hamming_flag);
-/**
- * Shall be used to disable hamming code checks, e.g. if software was updated but hamming
- * code has not been updated yet.
- * @return
- */
-int clear_nor_flash_hamming_flag();
-/**
- * Shall be used to enable hamming code checks for the bootloader or the scrubbing engine.
- * @return
- */
-int set_nor_flash_hamming_flag();
-int get_nor_flash_hamming_flag();
+int write_nor_flash_hamming_size(size_t hamming_size, bool set_hamming_flag);;
 /**
  * Shall be used to update the hamming code for the NOR-Flash binary.
  * Can be performed in multiple steps by supplying the current offset and a pointer

@@ -9,6 +9,11 @@
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 
+#ifdef ISIS_OBC_G20
+#include <sam9g20/common/FRAMApi.h>
+#else
+#include <sam9g20/common/VirtualFRAMApi.h>
+#endif
 
 SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
 SystemObject(objectId), receptionQueue(QueueFactory::instance()->
@@ -194,6 +199,14 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
     case(COPY_OBSW_SDC_TO_SDC): {
         if(handlerState == HandlerState::COPYING) {
             actionHelper.finish(commandedBy, actionId, BUSY);
+        }
+        break;
+    }
+    case(ENABLE_HAMMING_CODE_CHECK_FOR_COPYING): {
+        SDCardAccess access;
+        result = set_hamming_check_flag();
+        if(result != 0) {
+            return HasReturnvaluesIF::RETURN_FAILED;
         }
     }
     }
