@@ -84,6 +84,7 @@ typedef struct __attribute__((__packed__))  _CriticalDataBlock {
     uint16_t number_of_active_tasks;
 } CriticalDataBlock;
 
+static const uint8_t CRITICAL_BLOCK_START_ADDR = 0x0;
 
 /* Software information offsets */
 static const uint8_t SOFTWARE_VERSION_ADDR =

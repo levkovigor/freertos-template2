@@ -10,8 +10,11 @@
 //bool handle_filesystem_opening = false;
 //VolumeId volume_for_filesystem = SD_CARD_0;
 
+/* Private functions */
 int open_fram_file(F_FILE** file, size_t seek_pos, const char* const access_type);
 int close_fram_file(F_FILE* file);
+
+/* Implementation */
 
 int FRAM_start() {
     return create_generic_fram_file();
@@ -58,6 +61,28 @@ int create_generic_fram_file() {
 
     return close_fram_file(file);
 }
+
+
+int read_critical_block(uint8_t* buffer, const size_t max_size) {
+    size_t size_to_read = sizeof(CriticalDataBlock);
+    if(max_size < size_to_read) {
+        return -3;
+    }
+
+    F_FILE* file = NULL;
+    int result = open_fram_file(&file, CRITICAL_BLOCK_START_ADDR, "r");
+    if(result != 0) {
+        return result;
+    }
+
+    size_t readSize = f_read(buffer, 1, size_to_read, file);
+    if(readSize != size_to_read) {
+        close_fram_file(file);
+        return -1;
+    }
+    return close_fram_file(file);
+}
+
 
 int delete_generic_fram_file() {
     int result = change_directory(VIRT_FRAM_PATH , true);

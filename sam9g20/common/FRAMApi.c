@@ -4,6 +4,7 @@
 
 #include <string.h>
 
+/* Private constants */
 static const uint32_t BOOTLOADER_HAMMING_ADDR = FRAM_END_ADDR - BOOTLOADER_HAMMING_RESERVED_SIZE;
 
 const uint32_t NOR_FLASH_HAMMING_ADDR = BOOTLOADER_HAMMING_ADDR - NOR_FLASH_HAMMING_RESERVED_SIZE;
@@ -12,7 +13,18 @@ const uint32_t SDC0_SLOT1_HAMMING_ADDR =  SDC0_SLOT0_HAMMING_ADDR - NOR_FLASH_HA
 const uint32_t SDC1_SLOT0_HAMMING_ADDR = SDC0_SLOT1_HAMMING_ADDR - NOR_FLASH_HAMMING_RESERVED_SIZE;
 const uint32_t SDC1_SLOT1_HAMMING_ADDR =  SDC1_SLOT0_HAMMING_ADDR - NOR_FLASH_HAMMING_RESERVED_SIZE;
 
+/* Private functions */
 int get_generic_hamming_flag(uint32_t addr, bool* flag_set);
+
+/* Implementation */
+
+int read_critical_block(uint8_t* buffer, const size_t max_size) {
+    if(max_size < sizeof(CriticalDataBlock)) {
+        return -3;
+    }
+
+    return FRAM_read((unsigned char*) buffer, CRITICAL_BLOCK_START_ADDR, sizeof(CriticalDataBlock));
+}
 
 int write_software_version(uint8_t software_version,
         uint8_t software_subversion, uint8_t sw_subsubversion) {

@@ -51,6 +51,15 @@ static const size_t BOOTLOADER_HAMMING_RESERVED_SIZE = 0x600;
 //! Calculated required size for images: 0x100000 (NOR-Flash) - 0x20000 (bootloader) * 3 / 256
 static const uint32_t NOR_FLASH_HAMMING_RESERVED_SIZE = 0x2A00;
 
+/**
+ * Read the whole critical block. Size of buffer has to be provided in max_size.
+ * It is recommended to set max_size to sizeof(CriticalDataBlock)
+ * @param buffer
+ * @param max_size
+ * @return
+ */
+int read_critical_block(uint8_t* buffer, const size_t max_size);
+
 int write_software_version(uint8_t sw_version, uint8_t sw_subversion,
         uint8_t sw_subsubversion);
 int read_software_version(uint8_t* sw_version, uint8_t* sw_subversion,

@@ -24,6 +24,8 @@ static const char* const VIRT_FRAM_PATH = "misc";
  */
 int FRAM_start();
 
+int read_critical_block(uint8_t* buffer, const size_t max_size);
+
 /**
  * Call this to create the generic FRAM file if it does not exist yet.
  * This function will allocate the memory required for the critical block from the heap,
