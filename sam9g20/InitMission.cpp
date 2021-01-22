@@ -345,22 +345,31 @@ void initTasks(void) {
 
     /* RS485 Polling Task */
     PeriodicTaskIF* RS485PollingTask = TaskFactory::instance()->
-               createPeriodicTask("RS485_POLLING_TASK", 6, 1024 * 4, 0.4,
-                       genericMissedDeadlineFunc);
-       result = RS485PollingTask->addComponent(objects::RS485_POLLING_TASK);
-       if(result != HasReturnvaluesIF::RETURN_OK) {
-    	   InitMission::printAddObjectError("RS485 Polling Tasks", objects::RS485_POLLING_TASK);
+            createPeriodicTask("RS485_POLLING_TASK", 6, 1024 * 4, 0.4,
+                    genericMissedDeadlineFunc);
+    result = RS485PollingTask->addComponent(objects::RS485_POLLING_TASK);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        InitMission::printAddObjectError("RS485 Polling Tasks", objects::RS485_POLLING_TASK);
     }
 
-   /* RS485 Polling Sequence */
-	 FixedTimeslotTaskIF * PollingSequenceTableTaskRS485 =
-			 TaskFactory::instance()-> createFixedTimeslotTask(
-					 "PST_TASK_RS485", 5, 2048 * 4, 0.4,
-					 genericMissedDeadlineFunc);
-	 result = pst::pollingSequenceInitRS485(PollingSequenceTableTaskRS485);
-	 if (result != HasReturnvaluesIF::RETURN_OK) {
-		 sif::error << "InitMission: Creating RS485 PST failed!" << std::endl;
-	 }
+    /* RS485 Sending Polling Sequence */
+    FixedTimeslotTaskIF * PollingSequenceTableTaskRS485 =
+            TaskFactory::instance()-> createFixedTimeslotTask(
+                    "PST_TASK_RS485", 5, 2048 * 4, 0.4,
+                    genericMissedDeadlineFunc);
+    result = pst::pollingSequenceInitRS485(PollingSequenceTableTaskRS485);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        sif::error << "InitMission: Creating RS485 PST failed!" << std::endl;
+    }
+
+    /* RS485 TmTcTarget Task */
+    PeriodicTaskIF* RS485TmTcTask = TaskFactory::instance()->
+            createPeriodicTask("RS485_TM_TC_TARGET_TASK", 6, 1024 * 4, 0.4,
+                    genericMissedDeadlineFunc);
+    result = RS485TmTcTask->addComponent(objects::RS485_TM_TC_TARGET);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        InitMission::printAddObjectError("RS485 TmTcTarget Task", objects::RS485_TM_TC_TARGET);
+    }
 
 #if OBSW_ADD_TEST_CODE == 1
     InternalUnitTester unitTestClass;

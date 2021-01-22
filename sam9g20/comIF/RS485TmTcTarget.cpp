@@ -41,6 +41,7 @@ ReturnValue_t RS485TmTcTarget::initialize() {
 }
 
 ReturnValue_t RS485TmTcTarget::performOperation(uint8_t opCode){
+    handleReceiveBuffer();
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -123,7 +124,7 @@ ReturnValue_t RS485TmTcTarget::handleReceiveBuffer() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-// Just an echo function for testing
+
 ReturnValue_t RS485TmTcTarget::handlePacketReception(size_t foundLen) {
     // Do something
     return HasReturnvaluesIF::RETURN_OK;
