@@ -75,21 +75,28 @@
 	.section    .vectors, "a", %progbits
 
 resetVector:
-	ldr     pc, =resetHandler       	/* Reset */
+	ldr     pc, =resetHandler       		/* Reset */
 undefVector:
-	b       undefVector            		/* Undefined instruction */
+	b       undefVector            			/* Undefined instruction */
 swiVector:
-	ldr     pc, =vPortYieldProcessor 	/* Software interrupt */
+	ldr     pc, =vPortYieldProcessor 		/* Software interrupt */
+#ifdef BOOTLOADER
 prefetchAbortVector:
-	b       prefetchAbortVector      	/* Prefetch abort */
+	ldr     pc, =restartPrefetchAbort 		/* Prefetch abort */
 dataAbortVector:
-	b       dataAbortVector         	/* Data abort */
+	ldr     pc, =restartDataAbort     		/* Data abort */
+#else
+prefetchAbortVector:
+	ldr     pc, =prefetch_abort_irq_handler	/* Prefetch abort */
+dataAbortVector:
+	ldr     pc, =data_abort_irq_handler  	/* Data abort */
+#endif
 reservedVector:
-	b       reservedVector          	/* Reserved for future use */
+	b       reservedVector          		/* Reserved for future use */
 irqVector:
-	b       irqHandler              	/* Interrupt */
+	b       irqHandler              		/* Interrupt */
 fiqVector:
-                                        /* Fast interrupt */
+                                        	/* Fast interrupt */
 //------------------------------------------------------------------------------
 /// Handles a fast interrupt request by branching to the address defined in the
 /// AIC.

@@ -37,13 +37,13 @@ void restart() {
 }
 
 void restartPrefetchAbort() {
-	//TRACE_WARNING_WP("\n\r\t\t ____PREFETCH ABORT! RESTARTING____\n\r");
+	TRACE_WARNING_WP("\n\r\t\t ____PREFETCH ABORT! RESTARTING____\n\r");
 	disableCaches();
 	gracefulReset();
 }
 
 void restartDataAbort() {
-	//TRACE_WARNING_WP("\n\r\t\t ____DATA ABORT! RESTARTING____\n\r");
+	TRACE_WARNING_WP("\n\r\t\t ____DATA ABORT! RESTARTING____\n\r");
 	disableCaches();
 	gracefulReset();
 }
