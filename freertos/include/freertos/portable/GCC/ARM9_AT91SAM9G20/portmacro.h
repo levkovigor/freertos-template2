@@ -171,6 +171,7 @@ extern volatile unsigned portLONG ulCriticalNesting;					\
 	/* Restore all system mode registers for the task. */				\
 	"LDMFD	    LR, {R0-R14}^									\n\t"	\
 	"NOP														\n\t"	\
+    "NOP                                                        \n\t"   \
 																		\
 	/* Restore the return address. */									\
 	"LDR		LR, [LR, #+60]									\n\t"	\

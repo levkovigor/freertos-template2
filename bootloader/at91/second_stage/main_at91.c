@@ -27,8 +27,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define USE_FREERTOS            0
-
+#define USE_FREERTOS            1
 extern void jump_to_sdram_application(uint32_t stack_ptr, uint32_t jump_address);
 
 void init_task(void* args);
