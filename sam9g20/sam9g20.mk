@@ -21,17 +21,21 @@ endif
 CXXSRC += $(wildcard $(CURRENTPATH)/pus/*.cpp)
 CSRC += $(wildcard $(CURRENTPATH)/pus/*.c)
 
-CXXSRC += $(wildcard $(CURRENTPATH)/memory/*.cpp)
-CSRC += $(wildcard $(CURRENTPATH)/memory/*.c)
+ifeq ($(BOARD), ISIS_OBC_G20)
+CXXSRC += $(wildcard $(CURRENTPATH)/memory/FRAMHandler.cpp)
+endif
+
+CXXSRC += $(wildcard $(CURRENTPATH)/memory/SDCardAccess.cpp)
+CXXSRC += $(wildcard $(CURRENTPATH)/memory/SDCardHandlerAux.cpp)
+CXXSRC += $(wildcard $(CURRENTPATH)/memory/SDCardHandlerCore.cpp)
+CXXSRC += $(wildcard $(CURRENTPATH)/memory/SDCardHandlerRead.cpp)
+CXXSRC += $(wildcard $(CURRENTPATH)/memory/SDCardHandlerWrite.cpp)
 
 CXXSRC += $(wildcard $(CURRENTPATH)/comIF/*.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/comIF/cookies/*.cpp)
 
-CSRC += $(wildcard $(CURRENTPATH)/common/*.c)
-
 INCLUDES += $(CURRENTPATH)
 INCLUDES += $(CURRENTPATH)/boardconfig
-
 
 # The utility folder has not been included to prevent name-clashes with
 # C/C++ standard libaries.

@@ -65,7 +65,7 @@
 #include <sam9g20/core/CoreController.h>
 #include <sam9g20/core/SoftwareImageHandler.h>
 #include <sam9g20/core/SystemStateTask.h>
-#include <sam9g20/memory/FRAMHandler.h>
+
 #include <sam9g20/memory/SDCardHandler.h>
 #include <sam9g20/pus/Service9CustomTimeManagement.h>
 #include <sam9g20/boardtest/LedTask.h>
@@ -75,6 +75,9 @@
 #include <sam9g20/tmtcbridge/TmTcUdpBridge.h>
 #endif
 
+#ifdef ISIS_OBC_G20
+#include <sam9g20/memory/FRAMHandler.h>
+#endif
 
 #include <cstdint>
 

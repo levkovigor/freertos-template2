@@ -121,7 +121,7 @@ int copy_norflash_binary_to_sdram(size_t copy_size)
     code check here in the future.
     Check whether a hamming code check is necessary first. */
     bool hamming_flag = false;
-    int result = get_nor_flash_hamming_flag(&hamming_flag);
+    int result = get_hamming_check_flag(&hamming_flag);
     if(result != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_WARNING("Could not read FRAM for hamming flag, error code %d!\n\r", result);

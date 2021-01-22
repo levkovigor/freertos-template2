@@ -14,6 +14,8 @@
 #include <cp15/cp15.h>
 
 #include <hal/Timing/RTT.h>
+#include <privlib/hcc/include/hcc/api_hcc_mem.h>
+#include <sam9g20/common/SDCardApi.h>
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
 #include <utility/trace.h>
@@ -172,4 +174,28 @@ void print_bl_info() {
     TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 }
 
+//VolumeId current_volume = SD_CARD_0;
+//int result = open_filesystem();
+//if(result != F_NO_ERROR) {
+//   /* not good, should not happen.
+//   hcc_mem_delete();
+//   return -1;
+//}
+//
+//result = select_sd_card(current_volume, true);
+//if(result != F_NO_ERROR) {
+//   /* not good, should not happen. */
+//   close_filesystem(true, true, current_volume);
+//   return -1;
+//}
+//
+//result = change_directory(SW_REPOSITORY, true);
+//if(result != F_NO_ERROR) {
+//#if BOOTLOADER_VERBOSE_LEVEL >= 1
+//   TRACE_WARNING("Target SW repository \"%s\" does not exist.\n\r", SW_REPOSITORY);
+//#endif
+//   /* not good, should not happen. */
+//   close_filesystem(true, true, current_volume);
+//   return -1;
+//}
 

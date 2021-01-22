@@ -1,146 +1,8 @@
 #include "FRAMApi.h"
+#include "CriticalDataBlock.h"
 #include <hal/Storage/FRAM.h>
 
 #include <string.h>
-
-/**
- * This struct will gather all critical data stored on FRAM.
- */
-typedef struct __attribute__((__packed__))  _FRAMCriticalData {
-    /* Software information */
-    uint8_t software_version;
-    uint8_t software_subversion;
-    uint8_t software_subsubversion;
-    uint8_t filler_sw_version;
-
-    /* Reboot information */
-    uint32_t reboot_counter;
-
-    /* Second counter */
-    uint32_t seconds_since_epoch;
-
-    /* NOR-Flash binary information */
-    uint32_t nor_flash_binary_size;
-    /* NOR-Flash binary hamming code size */
-    size_t nor_flash_hamming_code_size;
-    /* This flag determines whether hamming codes will be used to check the binary.
-    It is recommended to clear the flag when updating an image and setting the flag after
-    the hamming code for this image has been uploaded as well. Otherwise, a new image might
-    be checked with an invalid old hamming code. */
-    uint32_t nor_flash_use_hamming_flag;
-    uint32_t nor_flash_reboot_counter;
-
-    /* SD-Card */
-
-    /* These value will be used on reboot to determine which SD card is the
-    default SD card on reboot. 0: None, 1: SD Card 0, 2: SD Card 1 */
-    uint32_t preferedSdCard;
-
-    /* Reboot counters SD Card 0 slot 0 */
-    uint32_t sdc0_image_slot0_reboot_counter;
-    /* Hamming code flag, explanation see above (nor_flash_use_hamming_flag) */
-    uint32_t sdc0_image_slot0_use_hamming_flag;
-    /* Hamming code size for SD Card 0 slot 0 */
-    size_t sdc0_image_slot0_hamming_size;
-
-    /* Reboot counters SD Card Card 0 slot 1 */
-    uint32_t sdc0_image_slot1_reboot_counter;
-    /* Hamming code flag, explanation see above */
-    uint32_t sdc0_image_slot1_use_hamming_flag;
-    /* Hamming code size for SD Card 0 slot 1 */
-    size_t sdc0_image_slot1_hamming_size;
-
-    /* Reboot counters SD Card 1 slot 0 */
-    uint32_t sdc1_image_slot0_reboot_counter;
-    /* Hamming code flag, explanation see above */
-    uint32_t sdc1_image_slot0_use_hamming_flag;
-    /* Hamming code size for SD Card 1 slot 0 */
-    size_t sdc1_image_slot0_hamming_size;
-
-    /* Reboot counters SD Card Card 1 slot 1 */
-    uint32_t sdc1_image_slot1_reboot_counter;
-    /* Hamming code flag, explanation see above */
-    uint32_t sdc1_image_slot1_use_hamming_flag;
-    /* Hamming code size for SD Card 1 slot 1*/
-    size_t sdc1_image_slot1_hamming_size;
-
-    /*
-     * Bootloader binary information. Bootloader itself could also be stored
-     * in FRAM. Hamming code will be stored in FRAM in any case.
-     */
-    uint32_t bootloader_faulty;
-    uint32_t bootloader_hamming_code_size;
-
-    /* Software update information */
-    uint8_t filler_software_update[1];
-    uint8_t software_update_available;
-    uint8_t software_update_in_slot_0;
-    uint8_t software_update_in_slot_1;
-
-    /* Task information */
-    uint8_t filler_tasks[2];
-    uint16_t number_of_active_tasks;
-} FRAMCriticalData;
-
-
-/* Software information offsets */
-static const uint8_t SOFTWARE_VERSION_ADDR =
-        offsetof(FRAMCriticalData, software_version);
-static const uint8_t SOFTWARE_SUBVERSION_ADDR =
-        offsetof(FRAMCriticalData, software_subversion);
-static const uint8_t SOFTWARE_SUBSUBVERSION_ADDR =
-        offsetof(FRAMCriticalData, software_subsubversion);
-
-/* Reboot info offset */
-static const uint32_t REBOOT_COUNTER_ADDR =
-        offsetof(FRAMCriticalData, reboot_counter);
-
-static const uint32_t BOOTLOADER_HAMMING_SIZE_ADDR =
-        offsetof(FRAMCriticalData, bootloader_hamming_code_size);
-static const uint32_t BOOTLOADER_FAULTY_ADDRESS =
-        offsetof(FRAMCriticalData, bootloader_faulty);
-
-static const uint32_t SEC_SINCE_EPOCH_ADDR =
-        offsetof(FRAMCriticalData, seconds_since_epoch);
-const uint32_t SOFTWARE_UPDATE_BOOL_ADDR =
-        offsetof(FRAMCriticalData, software_update_available);
-
-/* NOR-Flash binary offsets */
-const uint32_t NOR_FLASH_BINARY_SIZE_ADDR =
-        offsetof(FRAMCriticalData, nor_flash_binary_size);
-const uint32_t NOR_FLASH_HAMMING_CODE_SIZE_ADDR =
-        offsetof(FRAMCriticalData, nor_flash_hamming_code_size);
-const uint32_t NOR_FLASH_HAMMING_SET_ADDR =
-        offsetof(FRAMCriticalData, nor_flash_use_hamming_flag);
-
-const uint32_t NOR_FLASH_REBOOT_COUNTER_ADDRESS =
-        offsetof(FRAMCriticalData, nor_flash_reboot_counter);
-
-
-static const uint32_t PREFERED_SD_CARD_ADDR = offsetof(FRAMCriticalData, preferedSdCard);
-
-const uint32_t SDC0_SL0_REBOOT_COUNTER_ADDR =
-        offsetof(FRAMCriticalData, sdc0_image_slot0_reboot_counter);
-const uint32_t SDC0_SL0_HAMMING_SIZ_ADDR =
-        offsetof(FRAMCriticalData, sdc0_image_slot0_hamming_size);
-
-const uint32_t SDC0_SL1_REBOOT_COUNTER_ADDR =
-        offsetof(FRAMCriticalData, sdc0_image_slot1_reboot_counter);
-const uint32_t SDC0_SL1_HAMMING_SIZ_ADDR =
-        offsetof(FRAMCriticalData, sdc0_image_slot1_hamming_size);
-
-const uint32_t SDC1_SL0_REBOOT_COUNTER_ADDR =
-        offsetof(FRAMCriticalData, sdc1_image_slot0_reboot_counter);
-const uint32_t SDC1_SL0_HAMMING_SIZ_ADDR =
-        offsetof(FRAMCriticalData, sdc1_image_slot0_hamming_size);
-
-const uint32_t SDC1_SL1_REBOOT_COUNTER_ADDR =
-        offsetof(FRAMCriticalData, sdc1_image_slot1_reboot_counter);
-const uint32_t SDC1_SL1_HAMMING_SIZ_ADDR =
-        offsetof(FRAMCriticalData, sdc1_image_slot1_hamming_size);
-
-const uint32_t NUMBER_OF_ACTIVE_TASKS_ADDRESS =
-        offsetof(FRAMCriticalData, number_of_active_tasks);
 
 static const uint32_t BOOTLOADER_HAMMING_ADDR = FRAM_END_ADDR - BOOTLOADER_HAMMING_RESERVED_SIZE;
 
@@ -174,21 +36,21 @@ int read_software_version(uint8_t *software_version,
         uint8_t* software_subversion, uint8_t* sw_subsubversion) {
     int result = FRAM_read((unsigned char*) software_version,
             SOFTWARE_VERSION_ADDR,
-            sizeof(((FRAMCriticalData*)0)->software_version));
+            sizeof(((CriticalDataBlock*)0)->software_version));
     if(result != 0) {
         return result;
     }
 
     result = FRAM_read((unsigned char*) software_subversion,
             SOFTWARE_SUBVERSION_ADDR,
-            sizeof(((FRAMCriticalData*)0)->software_subversion));
+            sizeof(((CriticalDataBlock*)0)->software_subversion));
     if(result != 0) {
         return result;
     }
 
     return FRAM_read((unsigned char*) sw_subsubversion,
             SOFTWARE_SUBSUBVERSION_ADDR,
-            sizeof(((FRAMCriticalData*)0)->software_subsubversion));
+            sizeof(((CriticalDataBlock*)0)->software_subsubversion));
 }
 
 int increment_reboot_counter(uint32_t* new_reboot_counter) {
@@ -215,8 +77,6 @@ int reset_reboot_counter() {
             REBOOT_COUNTER_ADDR, sizeof(new_counter));
 }
 
-
-
 int write_nor_flash_binary_size(size_t binary_size) {
     return FRAM_writeAndVerify((unsigned char*) &binary_size, NOR_FLASH_BINARY_SIZE_ADDR,
             sizeof(binary_size));
@@ -224,29 +84,29 @@ int write_nor_flash_binary_size(size_t binary_size) {
 
 int read_nor_flash_binary_size(size_t* binary_size) {
     return FRAM_read((unsigned char*) binary_size, NOR_FLASH_BINARY_SIZE_ADDR,
-            sizeof(((FRAMCriticalData*)0)->nor_flash_binary_size));
+            sizeof(((CriticalDataBlock*)0)->nor_flash_binary_size));
 }
 
-int clear_nor_flash_hamming_flag() {
+int clear_hamming_check_flag() {
     uint32_t cleared_flag = 0;
     return FRAM_writeAndVerify((unsigned char*) &cleared_flag,
-            NOR_FLASH_HAMMING_SET_ADDR, sizeof(cleared_flag));
+            HAMMING_CHECK_FLAG_ADDR, sizeof(cleared_flag));
 }
 
-int set_nor_flash_hamming_flag() {
+int set_hamming_check_flag() {
     uint32_t set_flag = 1;
     return FRAM_writeAndVerify((unsigned char*) &set_flag,
-            NOR_FLASH_HAMMING_SET_ADDR, sizeof(set_flag));
+            HAMMING_CHECK_FLAG_ADDR, sizeof(set_flag));
 }
 
-int get_nor_flash_hamming_flag(bool* flag_set) {
-    return get_generic_hamming_flag(NOR_FLASH_HAMMING_SET_ADDR, flag_set);
+int get_hamming_check_flag(bool* flag_set) {
+    return get_generic_hamming_flag(HAMMING_CHECK_FLAG_ADDR, flag_set);
 }
 
 int write_nor_flash_hamming_size(size_t hamming_size, bool set_hamming_flag) {
     return FRAM_writeAndVerify((unsigned char*) set_hamming_flag,
             NOR_FLASH_HAMMING_CODE_SIZE_ADDR,
-            sizeof(((FRAMCriticalData*)0)->nor_flash_hamming_code_size));
+            sizeof(((CriticalDataBlock*)0)->nor_flash_hamming_code_size));
 }
 
 
@@ -281,14 +141,14 @@ int read_nor_flash_hamming_size(size_t* hamming_size, bool* hamming_flag_set) {
     }
     int result = FRAM_read((unsigned char*) hamming_flag_set,
             NOR_FLASH_HAMMING_CODE_SIZE_ADDR,
-            sizeof(((FRAMCriticalData*)0)->nor_flash_hamming_code_size));
+            sizeof(((CriticalDataBlock*)0)->nor_flash_hamming_code_size));
     if(result != 0) {
         return result;
     }
 
     return FRAM_read((unsigned char*) hamming_flag_set,
-            NOR_FLASH_HAMMING_SET_ADDR,
-            sizeof(((FRAMCriticalData*)0)->nor_flash_use_hamming_flag));
+            HAMMING_CHECK_FLAG_ADDR,
+            sizeof(((CriticalDataBlock*)0)->use_hamming_flag));
 }
 
 int set_bootloader_faulty(bool faulty) {
@@ -299,7 +159,7 @@ int set_bootloader_faulty(bool faulty) {
 
 int is_bootloader_faulty(bool *faulty) {
     return FRAM_read((unsigned char*)faulty, BOOTLOADER_FAULTY_ADDRESS,
-            sizeof(((FRAMCriticalData*)0)->bootloader_faulty));
+            sizeof(((CriticalDataBlock*)0)->bootloader_faulty));
 }
 
 int increment_nor_flash_reboot_counter() {
@@ -316,7 +176,7 @@ int increment_nor_flash_reboot_counter() {
 int read_nor_flash_reboot_counter(uint8_t *nor_flash_reboot_counter) {
     return FRAM_read((unsigned char*)nor_flash_reboot_counter,
             NOR_FLASH_REBOOT_COUNTER_ADDRESS,
-            sizeof(((FRAMCriticalData*)0)->nor_flash_reboot_counter));
+            sizeof(((CriticalDataBlock*)0)->nor_flash_reboot_counter));
 }
 
 int reset_nor_flash_reboot_counter() {
@@ -339,7 +199,7 @@ int increment_sdc0_slot0_reboot_counter() {
 int read_sdc0_slot0_reboot_counter(uint8_t *sdc1sl1_reboot_counter) {
     return FRAM_read((unsigned char*)sdc1sl1_reboot_counter,
             SDC1_SL1_REBOOT_COUNTER_ADDR,
-            sizeof(((FRAMCriticalData*)0)->sdc0_image_slot0_reboot_counter));
+            sizeof(((CriticalDataBlock*)0)->sdc0_image_slot0_reboot_counter));
 }
 
 int reset_sdc0_slot0_reboot_counter() {
@@ -356,7 +216,7 @@ int update_seconds_since_epoch(uint32_t secondsSinceEpoch) {
 int read_seconds_since_epoch(uint32_t *secondsSinceEpoch) {
     return FRAM_read((unsigned char*) secondsSinceEpoch,
             SEC_SINCE_EPOCH_ADDR,
-            sizeof(((FRAMCriticalData*)0)->seconds_since_epoch));
+            sizeof(((CriticalDataBlock*)0)->seconds_since_epoch));
 }
 
 int set_prefered_sd_card(VolumeId volumeId) {
@@ -367,7 +227,7 @@ int set_prefered_sd_card(VolumeId volumeId) {
 int get_prefered_sd_card(VolumeId *volumeId) {
     return FRAM_read((unsigned char*) volumeId,
             PREFERED_SD_CARD_ADDR,
-            sizeof(((FRAMCriticalData*)0)->preferedSdCard));
+            sizeof(((CriticalDataBlock*)0)->preferedSdCard));
 }
 
 int write_bootloader_hamming_code(const uint8_t *code, size_t size) {

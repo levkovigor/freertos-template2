@@ -26,7 +26,6 @@ extern struct netif *netif;
 #endif
 }
 
-#include <sam9g20/common/FRAMApi.h>
 #include <sam9g20/common/SRAMApi.h>
 #include <fsfw/tasks/TaskFactory.h>
 
