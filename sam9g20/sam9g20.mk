@@ -21,10 +21,7 @@ endif
 CXXSRC += $(wildcard $(CURRENTPATH)/pus/*.cpp)
 CSRC += $(wildcard $(CURRENTPATH)/pus/*.c)
 
-ifeq ($(BOARD), ISIS_OBC_G20)
 CXXSRC += $(wildcard $(CURRENTPATH)/memory/FRAMHandler.cpp)
-endif
-
 CXXSRC += $(wildcard $(CURRENTPATH)/memory/SDCardAccess.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/memory/SDCardHandlerAux.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/memory/SDCardHandlerCore.cpp)

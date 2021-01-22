@@ -211,11 +211,11 @@ resetHandler:
     sub     r0, r0, #SVC_STACK_SIZE
 
 /* System mode, the normal mode of operation */
-    msr     CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
+    msr     CPSR_c, #ARM_MODE_SYS | F_BIT
     mov     sp, r0
 
 /* Supervisor mode (interrupts enabled) */
-    msr     CPSR_c, #ARM_MODE_SVC | F_BIT
+#    msr     CPSR_c, #ARM_MODE_SVC | F_BIT
 
 /* Branch to main()
  ******************/

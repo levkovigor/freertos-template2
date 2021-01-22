@@ -1,17 +1,21 @@
 #include "FRAMHandler.h"
 #include <fsfw/serviceinterface/ServiceInterface.h>
+#include <fsfw/timemanager/Stopwatch.h>
 
-extern "C" {
+#ifdef ISIS_OBC_G20
 #include <hal/Storage/FRAM.h>
-}
+#else
+#include <sam9g20/common/VirtualFRAMApi.h>
+#include <sam9g20/memory/SDCardAccess.h>
+#endif
+
 
 #include <fsfwconfig/OBSWVersion.h>
 
 FRAMHandler::FRAMHandler(object_id_t objectId): SystemObject(objectId) {
 }
 
-FRAMHandler::~FRAMHandler() {
-}
+FRAMHandler::~FRAMHandler() {}
 
 ReturnValue_t FRAMHandler::handleMemoryLoad(uint32_t address,
 		const uint8_t *data, uint32_t size, uint8_t **dataPointer) {
@@ -28,11 +32,17 @@ ReturnValue_t FRAMHandler::setAddress(uint32_t *startAddress) {
 }
 
 ReturnValue_t FRAMHandler::initialize() {
+    Stopwatch watch;
 #if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "FRAMHandler: Starting FRAM component." << std::endl;
 #else
     sif::printInfo("FRAMHandler: Starting FRAM component.\n");
 #endif
+
+#ifdef AT91SAM9G20_EK
+    SDCardAccess access;
+#endif
+
     int result = FRAM_start();
     if(result != 0) {
         return HasReturnvaluesIF::RETURN_FAILED;
@@ -49,7 +59,6 @@ ReturnValue_t FRAMHandler::initialize() {
                 "to FRAM\n");
 #endif
     }
-
-    //sif::info << "FRAM max addr: " << FRAM_getMaxAddress() << std::endl;
+    // sif::printInfo("FRAM maximum address: %d\n\r", FRAM_getMaxAddress());
     return HasReturnvaluesIF::RETURN_OK;
 }

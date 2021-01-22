@@ -87,7 +87,7 @@
 #include <at91/utility/trace.h>
 
 /*-----------------------------------------------------------*/
-#define DEBUG_FIRST_TASK_START          1
+#define DEBUG_FIRST_TASK_START          0
 
 #define TICK_SYSTEM_PRIORITY			(AT91C_AIC_PRIOR_LOWEST)
 

@@ -9,7 +9,7 @@
 #include <peripherals/dbgu/dbgu.h>
 #include <peripherals/pio/pio.h>
 #include <peripherals/aic/aic.h>
-#include <peripherals/pio/pio.h>
+#include <peripherals/pit/pit.h>
 #include <cp15/cp15.h>
 
 #include <hal/Timing/RTT.h>
@@ -21,6 +21,7 @@
 #include <stdbool.h>
 #include <string.h>
 
+void disablePitAic();
 extern void jump_to_sdram_application(uint32_t stack_ptr, uint32_t jump_address);
 
 int perform_bootloader_core_operation();
@@ -58,7 +59,8 @@ int at91_main()
     //-------------------------------------------------------------------------
     // Initiate periodic MS interrupt
     //-------------------------------------------------------------------------
-    setup_timer_interrupt();
+    // Issues if this is enabled..
+    //setup_timer_interrupt();
 
     //-------------------------------------------------------------------------
     // Configure SDRAM
@@ -76,8 +78,8 @@ int at91_main()
     //-------------------------------------------------------------------------
     // AT91SAM9G20-EK Bootloader
     //-------------------------------------------------------------------------
-    // Configure RTT for second time base.
-    RTT_start();
+    // Configure RTT for second time base. Not required for now.
+    // RTT_start();
 
     //-------------------------------------------------------------------------
     // AT91 Bootloader
@@ -91,8 +93,6 @@ int perform_bootloader_core_operation() {
     LED_Clear(0);
     LED_Clear(1);
 
-    memset((void*) SECOND_STAGE_BL_JUMP_ADDR, 0, SECOND_STAGE_BL_RESERVED_SIZE);
-
     copy_nandflash_binary_to_sdram(SECOND_STAGE_BL_NAND_OFFSET, SECOND_STAGE_BL_RESERVED_SIZE,
             SECOND_STAGE_SDRAM_OFFSET, true);
 
@@ -101,10 +101,22 @@ int perform_bootloader_core_operation() {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Jumping to SDRAM application address 0x%08x!\n\r", SECOND_STAGE_BL_JUMP_ADDR);
 #endif
-    //CP15_Disable_I_Cache();
+
+    CP15_Disable_I_Cache();
+
+    /* Not required, PIT not used for now */
+    // disablePitAic();
 
     jump_to_sdram_application(0x304000, SECOND_STAGE_BL_JUMP_ADDR);
+
+    /* Should never be reached */
     return 0;
+}
+
+void disablePitAic() {
+    AIC_DisableIT( AT91C_ID_SYS );
+    PIT_DisableIT();
+    PIT_Disable();
 }
 
 

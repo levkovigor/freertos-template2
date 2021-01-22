@@ -16,41 +16,28 @@ int get_generic_hamming_flag(uint32_t addr, bool* flag_set);
 
 int write_software_version(uint8_t software_version,
         uint8_t software_subversion, uint8_t sw_subsubversion) {
-    int result = FRAM_writeAndVerify((unsigned char*) &software_version,
-            SOFTWARE_VERSION_ADDR, sizeof(software_version));
-    if(result != 0) {
-        return result;
-    }
-
-    result = FRAM_writeAndVerify((unsigned char*) &software_subversion,
-            SOFTWARE_SUBVERSION_ADDR, sizeof(software_subversion));
-    if(result != 0) {
-        return result;
-    }
-
-    return FRAM_writeAndVerify((unsigned char*) &sw_subsubversion,
-            SOFTWARE_SUBSUBVERSION_ADDR, sizeof(sw_subsubversion));
+    uint8_t write_buffer[3] = {software_version, software_subversion, sw_subsubversion};
+    return FRAM_writeAndVerify((unsigned char*) write_buffer,
+            SOFTWARE_VERSION_ADDR, sizeof(write_buffer));
 }
 
 int read_software_version(uint8_t *software_version,
         uint8_t* software_subversion, uint8_t* sw_subsubversion) {
-    int result = FRAM_read((unsigned char*) software_version,
-            SOFTWARE_VERSION_ADDR,
-            sizeof(((CriticalDataBlock*)0)->software_version));
+    if(!software_subversion || ! software_subversion || !sw_subsubversion) {
+        return -3;
+    }
+
+    uint8_t read_buffer[3];
+    int result = FRAM_read((unsigned char*) read_buffer,
+            SOFTWARE_VERSION_ADDR, 3);
     if(result != 0) {
         return result;
     }
 
-    result = FRAM_read((unsigned char*) software_subversion,
-            SOFTWARE_SUBVERSION_ADDR,
-            sizeof(((CriticalDataBlock*)0)->software_subversion));
-    if(result != 0) {
-        return result;
-    }
-
-    return FRAM_read((unsigned char*) sw_subsubversion,
-            SOFTWARE_SUBSUBVERSION_ADDR,
-            sizeof(((CriticalDataBlock*)0)->software_subsubversion));
+    *software_version = read_buffer[0];
+    *software_subversion = read_buffer[1];
+    *sw_subsubversion = read_buffer[2];
+    return 0;
 }
 
 int increment_reboot_counter(uint32_t* new_reboot_counter) {

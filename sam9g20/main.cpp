@@ -55,9 +55,13 @@ static constexpr uint32_t WATCHDOG_KICK_INTERVAL_MS = 15;
 
 int main(void)
 {
+    BaseType_t retval = pdFALSE;
+
     // DBGU output configuration
     TRACE_CONFIGURE(DBGU_STANDARD, 115200, BOARD_MCK);
-    BaseType_t retval = pdFALSE;
+
+    // Enable Co-Processor instruction cache.
+    CP15_Enable_I_Cache();
 
 #ifdef ISIS_OBC_G20
     /* Task with the sole purpose of kicking the watchdog to prevent
@@ -68,9 +72,6 @@ int main(void)
         TRACE_ERROR("Starting iOBC Watchdog Feed Task failed!\r\n");
     }
 #endif
-
-    // Enable Co-Processor instruction cache.
-    CP15_Enable_I_Cache();
 
 #if defined(AT91SAM9G20_EK)
     ConfigureLeds();

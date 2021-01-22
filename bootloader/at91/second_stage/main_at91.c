@@ -28,7 +28,6 @@
 #include <string.h>
 
 #define USE_FREERTOS            0
-#define RSTC_KEY_PASSWORD       (0xA5 << 24)
 
 extern void jump_to_sdram_application(uint32_t stack_ptr, uint32_t jump_address);
 
@@ -43,13 +42,10 @@ static TaskHandle_t handler_task_handle_glob = NULL;
 #endif
 
 /**
- * @brief   Bootloader which will copy the primary software to SDRAM and
- *          execute it.
+ * @brief   Bootloader which will be run from SDRAM and is loaded by the first stage bootloader.
+ *          It can also be flashed regularly with a debugger probe.
  * @details
- * This is the implementation for the AT91SAM9G20-EK  and its NAND-Flash.
- * Please note that the compiled binary needs to be smaller than 16kB to fit
- * into SRAM. When written with SAM-BA, use ther special option "Send Boot File"
- * to ensure the sixth ARM vector is set to the binary size.
+ * Currently, there are issues with FreeRTOS, so FreeRTOS support can be disabled optionally.
  * @author  R. Mueller
  */
 int at91_main()
@@ -73,6 +69,9 @@ int at91_main()
     LED_Set(1);
 
 #if USE_FREERTOS == 0
+    /* Activate MS interrupt for timer base */
+    setup_timer_interrupt();
+
     /* Info printout */
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     print_bl_info();
@@ -89,7 +88,7 @@ int at91_main()
     xTaskCreate(handler_task, "HANDLER_TASK", 1024, NULL, 4, &handler_task_handle_glob);
     xTaskCreate(init_task, "INIT_TASK", 1024, handler_task_handle_glob, 5, NULL);
     TRACE_INFO("Remaining FreeRTOS heap size: %d bytes.\n\r", xPortGetFreeHeapSize());
-    TRACE_INFO("Init Task Address: 0x%08x\n\r", (unsigned int) init_task);
+    // TRACE_INFO("Init Task Address: 0x%08x\n\r", (unsigned int) init_task);
 
     vTaskStartScheduler();
 #endif /* USE_FREERTOS == 0 */
@@ -162,8 +161,11 @@ int perform_bootloader_core_operation() {
 #if USE_FREERTOS == 1
     vTaskEndScheduler();
 #endif
-    //CP15_Disable_I_Cache();
+    CP15_Disable_I_Cache();
+
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
+
+    /* Should never be reached */
     return 0;
 }
 
