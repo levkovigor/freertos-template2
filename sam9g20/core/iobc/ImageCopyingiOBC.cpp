@@ -732,17 +732,17 @@ void ImageCopyingEngine::handleInfoPrintout(image::ImageSlot sourceSlot,
     char targetPrint[15];
     char typePrint[15];
     if(imageHandlerState == ImageHandlerStates::COPY_IMG_SDC_TO_FLASH) {
-        if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
-            sprintf(typePrint, "bootloader");
-        }
-        else {
-            sprintf(typePrint, "primary image");
-        }
+        sprintf(typePrint, "primary image");
+        sprintf(targetPrint, "NOR-Flash");
+        sprintf(sourcePrint, "SD Card %u", static_cast<int>(currentVolume));
+    }
+    else if(imageHandlerState == ImageHandlerStates::COPY_BL_SDC_TO_FLASH) {
+        sprintf(typePrint, "bootloader");
         sprintf(targetPrint, "NOR-Flash");
         sprintf(sourcePrint, "SD Card %u", static_cast<int>(currentVolume));
     }
 
-    handleGenericInfoPrintout("AT91", typePrint, sourcePrint, targetPrint);
+    handleGenericInfoPrintout("iOBC", typePrint, sourcePrint, targetPrint);
 #endif /* OBSW_VERBOSE_LEVEL >= 1 */
 }
 
