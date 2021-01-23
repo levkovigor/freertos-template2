@@ -30,6 +30,10 @@
 #ifndef NANDCOMMON_H
 #define NANDCOMMON_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 //         Definitions
 //------------------------------------------------------------------------------
@@ -119,6 +123,10 @@
 #define NandCommon_ERROR_CANNOTCOPY         14
 
 //------------------------------------------------------------------------------
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //#ifndef NANDCOMMON_H
 

@@ -1,13 +1,26 @@
+/**
+ * Common configuration constants for both bootloader and main OBSW for the iOBC
+ * will be located here.
+ */
 #ifndef SAM9G20_AT91_COMMON_COMMONIOBCCONFIG_H_
 #define SAM9G20_AT91_COMMON_COMMONIOBCCONFIG_H_
 
+#include "commonConfig.h"
 #include <hal/Storage/NORflash.h>
 #include <stdint.h>
 #include <stddef.h>
 
-/**
- * Common configuration constants for both bootloader and main OBSW will be located here.
- */
+#ifdef __cplusplus
+namespace config {
+#endif
+
+
+static const char* const BOOTLOADER_REPOSITORY =         "BIN/IOBC/BL";
+static const char* const SW_REPOSITORY =                 "BIN/IOBC/OBSW";
+
+#ifdef __cplusplus
+}
+#endif
 
 //! Use 8 small sections of the NOR-Flash for the bootloader.
 #define IOBC_SMALL_BOOTLOADER_65KB 0
@@ -85,6 +98,6 @@ static const uint32_t NORFLASH_BL_CRC16_START_READ = BOOTLOADER_BASE_ADDRESS_REA
 static const uint32_t NORFLASH_BASE_ADDRESS_READ = NOR_FLASH_BASE_ADDRESS;
 static const size_t IOBC_NORFLASH_SIZE = 0x100000;
 
-static const size_t OBSW_MAX_SIZE = IOBC_NORFLASH_SIZE - BOOTLOADER_RESERVED_SIZE;
+static const size_t PRIMARY_IMAGE_RESERVED_SIZE = IOBC_NORFLASH_SIZE - BOOTLOADER_RESERVED_SIZE;
 
 #endif /* SAM9G20_AT91_COMMON_COMMONIOBCCONFIG_H_ */

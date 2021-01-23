@@ -1,8 +1,8 @@
 #ifdef sram
-int iobc_sram();
+extern int iobc_sram();
 #elif defined(norflash)
-int iobc_norflash();
-#endif
+extern int boot_iobc_from_norflash();
+#endif /* sram */
 
 /**
  * @brief   Bootloader for the iOBC. Can be compiled for NOR-Flash and SRAM.
@@ -13,9 +13,9 @@ int iobc_main()
 #ifdef sram
 	return iobc_sram();
 #elif defined(norflash)
-	return iobc_norflash();
+	return boot_iobc_from_norflash();
 #else
 	return -1;
-#endif
+#endif /* sram */
 }
 

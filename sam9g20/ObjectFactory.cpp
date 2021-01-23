@@ -245,9 +245,7 @@ void Factory::produce(void) {
 
     new SoftwareImageHandler(objects::SOFTWARE_IMAGE_HANDLER);
     new SDCardHandler(objects::SD_CARD_HANDLER);
-#ifdef ISIS_OBC_G20
     new FRAMHandler(objects::FRAM_HANDLER);
-#endif
 
     /* Communication Interfaces */
     //	new RS232DeviceComIF(objects::RS232_DEVICE_COM_IF);

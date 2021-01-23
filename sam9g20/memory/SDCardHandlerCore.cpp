@@ -1,7 +1,6 @@
 #include "SDCardHandler.h"
 #include "SDCardAccess.h"
 #include "SDCardHandlerPackets.h"
-#include <sam9g20/common/FRAMApi.h>
 #include <mission/memory/FileSystemMessage.h>
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
@@ -10,6 +9,12 @@
 #include <fsfw/timemanager/Countdown.h>
 #include <fsfw/tasks/PeriodicTaskIF.h>
 #include <fsfw/timemanager/Stopwatch.h>
+
+#ifdef ISIS_OBC_G20
+#include <sam9g20/common/FRAMApi.h>
+#else
+#include <sam9g20/common/VirtualFRAMApi.h>
+#endif
 
 
 SDCardHandler::SDCardHandler(object_id_t objectId): SystemObject(objectId),

@@ -1,20 +1,31 @@
 #ifndef SAM9G20_CORE_IMAGECOPYINGENGINE_H_
 #define SAM9G20_CORE_IMAGECOPYINGENGINE_H_
 
+#include "imageHandlerDefintions.h"
 #include <OBSWConfig.h>
+
+#include <hcc/api_fat.h>
 #include <sam9g20/common/SDCardApi.h>
-#include <sam9g20/core/SoftwareImageHandler.h>
-#include <sam9g20/memory/SDCardDefinitions.h>
-#include <sam9g20/memory/SDCardAccess.h>
 
 #ifdef AT91SAM9G20_EK
-extern "C" {
-#include <at91/memories/nandflash/NandCommon.h>
-}
-#else
-#include <hal/Storage/NORflash.h>
-#include <sam9g20/at91/common/commonIOBCConfig.h>
+#include <sam9g20/common/config/commonAt91Config.h>
+#else /* iOBC */
+#include <sam9g20/common/config/commonIOBCConfig.h>
 #endif
+
+class SoftwareImageHandler;
+class Countdown;
+
+/**
+ * These generic states can be used inside the primary state machine.
+ * They will also be used by the action helper to generate step replies.
+ */
+enum class GenericInternalState {
+    IDLE,
+    STEP_1,
+    STEP_2,
+    STEP_3
+};
 
 /**
  * @brief   This class encapsulates all image copying operations required by
@@ -46,7 +57,7 @@ public:
     };
 
     ImageCopyingEngine(SoftwareImageHandler* owner, Countdown* countdown,
-            SoftwareImageHandler::ImageBuffer* imgBuffer);
+            image::ImageBuffer* imgBuffer);
 
     // void setActiveSdCard(SdCard sdCard);
 
@@ -81,7 +92,7 @@ public:
      * @param imageSlot     Select the image slot (if OBSW is copied)
      * @return
      */
-    ReturnValue_t startSdcToFlashOperation(ImageSlot sourceSlot);
+    ReturnValue_t startSdcToFlashOperation(image::ImageSlot sourceSlot);
 
     /**
      * Starts to copy the bootloader to the flash. Use with care!
@@ -92,7 +103,7 @@ public:
      * Only works on the iOBC.
      * @return
      */
-    ReturnValue_t startBootloaderToFlashOperation(bool fromFRAM);
+    ReturnValue_t startBootloaderToFlashOperation(image::ImageSlot bootloaderType, bool fromFram);
 
     /**
      * Copy the image on flash to the SD card. Don't forget to configure the
@@ -101,7 +112,7 @@ public:
      * @param imageSlot
      * @return
      */
-    ReturnValue_t startFlashToSdcOperation(ImageSlot targetSlot);
+    ReturnValue_t startFlashToSdcOperation(image::ImageSlot targetSlot);
 
 #ifdef ISIS_OBC_G20
     /**
@@ -110,8 +121,7 @@ public:
      * @param bootloader        Specify to true to copy the hamming code of the bootloader
      * @return
      */
-    ReturnValue_t startHammingCodeToFramOperation(ImageSlot respectiveSlot,
-            bool bootloader = false);
+    ReturnValue_t startHammingCodeToFramOperation(image::ImageSlot respectiveSlot);
 #endif
 
     /**
@@ -128,10 +138,11 @@ public:
      * Reset the state of the helper class.
      */
     void reset();
+
 private:
-    SoftwareImageHandler* owner;
-    Countdown* countdown;
-    SoftwareImageHandler::ImageBuffer* imgBuffer;
+    SoftwareImageHandler* owner = nullptr;
+    Countdown* countdown = nullptr;
+    image::ImageBuffer* imgBuffer = nullptr;
 
     ImageHandlerStates imageHandlerState = ImageHandlerStates::IDLE;
     GenericInternalState internalState = GenericInternalState::IDLE;
@@ -139,9 +150,12 @@ private:
     // might not be needed.
     //SdCard activeSdCard = SdCard::SD_CARD_0;
 
-    ImageSlot sourceSlot = ImageSlot::NONE;
-    ImageSlot targetSlot = ImageSlot::NONE;
-    bool bootloader = false;
+    image::ImageSlot sourceSlot = image::ImageSlot::NONE;
+    image::ImageSlot targetSlot = image::ImageSlot::NONE;
+//    bool bootloader = false;
+//#if defined(AT91SAM9G20_EK) && BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE
+//    bool secondBootloader = false;
+//#endif
     bool hammingCode = false;
     uint16_t stepCounter = 0;
     size_t currentByteIdx = 0;
@@ -153,7 +167,6 @@ private:
     uint16_t helperCounter2 = 0;
 
     ImageHandlerStates lastFinishedState = ImageHandlerStates::IDLE;
-
 
 #ifdef AT91SAM9G20_EK
     bool nandConfigured = false;
@@ -179,7 +192,8 @@ private:
     The algorithms assumes 8 small sectors are reserved for the bootloader! */
     static constexpr size_t NORFLASH_TOTAL_SMALL_SECTOR_MEM_OBSW =
     		RESERVED_OBSW_SMALL_SECTORS * NORFLASH_SMALL_SECTOR_SIZE;
-    static constexpr size_t COPYING_BUCKET_SIZE = 2048;
+    static constexpr size_t COPYING_BUCKET_SIZE = NORFLASH_SMALL_SECTOR_SIZE;
+    ReturnValue_t copyImgHammingSdcToFram();
     ReturnValue_t copySdCardImageToNorFlash();
 
     /**
@@ -197,6 +211,13 @@ private:
     void writeBootloaderSizeAndCrc();
 #endif /* AT91SAM9G20_EK */
 
+    /**
+     * Generic handler to open files and read important information like size.
+     * @param currentVolume
+     * @param filePtr
+     * @return
+     *  - F_ERR_NOTFOUND if file was not found.
+     */
     ReturnValue_t prepareGenericFileInformation(VolumeId currentVolume,
             F_FILE** filePtr);
 
@@ -205,8 +226,7 @@ private:
     /**
      * Generic function to read file which also simplfies error handling.
      * Plese note that this only works if the file already has been opened.
-     * Also, the pointer from where to read inb the file
-     * should be set beforehand.
+     * Also, the pointer from where to read in the file should be set beforehand.
      * @param buffer    Buffer where the read data will be stored
      * @param sizeToRead
      * @param sizeRead  Actual number of bytes read, can be smaller if close
@@ -217,8 +237,7 @@ private:
      * -@c RETURN_FAILED Reading failed 3 times
      * -@c RETURN_OK Read success
      */
-    ReturnValue_t readFile(uint8_t* buffer, size_t sizeToRead,
-            size_t* sizeRead, F_FILE** file);
+    ReturnValue_t readFile(uint8_t* buffer, size_t sizeToRead, size_t* sizeRead, F_FILE** file);
 
     void handleInfoPrintout(int currentVolume);
     void handleFinishPrintout();

@@ -2,7 +2,7 @@
 #define SAM9G20_CORE_CORECONTROLLER_H_
 
 #include <fsfw/controller/ExtendedControllerBase.h>
-
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 #ifdef ISIS_OBC_G20
 extern "C" {
@@ -57,9 +57,12 @@ public:
 
 	ReturnValue_t initialize() override;
 	ReturnValue_t initializeAfterTaskCreation() override;
-	//hier dino
+
+	ReturnValue_t storeSelect(StorageManagerIF** store, Stores storeType);
+	ReturnValue_t getFillCountCommand(Stores storeType, MessageQueueId_t commandedBy,
+	            ActionId_t replyId);
 	ReturnValue_t handleClearStoreCommand(Stores storeType, ActionId_t pageOrWholeStore,
-	            StorageManagerIF::max_pools_t pageIndex);
+	            StorageManagerIF::max_subpools_t pageIndex);
 
 	/**
 	 * This function can be used by other software components as well
@@ -79,8 +82,9 @@ public:
 	static constexpr ActionId_t RESET_OBC = 10;
 	static constexpr ActionId_t POWERCYCLE_OBC = 11;
 
-	static constexpr ActionId_t  CLEAR_STORE_PAGE = 12;
-	static constexpr ActionId_t  CLEAR_WHOLE_STORE = 13;
+	static constexpr ActionId_t CLEAR_STORE_PAGE = 12;
+	static constexpr ActionId_t CLEAR_WHOLE_STORE = 13;
+	static constexpr ActionId_t GET_FILL_COUNT = 14;
 
 private:
 

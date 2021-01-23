@@ -112,6 +112,7 @@ SECTIONS
     {
         . = ALIGN(4);
         _sprerelocate = .;
+        KEEP(*(.vectors));
         . = ALIGN(4);
         _eprerelocate = .;
     } >sram0
@@ -121,7 +122,7 @@ SECTIONS
     {
         . = ALIGN(4);
         _spostrelocate = .;
-		KEEP(*(.vectors));
+
 		*(.sramfunc*);
         . = ALIGN(4);
         _epostrelocate = .;
@@ -131,7 +132,7 @@ SECTIONS
     {
         . = ALIGN(4);
         _ssramdata = .;
-        *(.sramdata)
+        *(.sramdata*)
         . = ALIGN(4);
         _esramdata = .;
     } >sram1
@@ -146,20 +147,20 @@ SECTIONS
     } >sram1
 
     /* this section holds uninitialized global and static data  */
-	.bss (NOLOAD) : 
-	{
-	 	. = ALIGN(4);
-	    /* This is used by the startup in order to initialize the .bss secion */
-	    _sbss = .;         /* define a global symbol at bss start */
-	    __bss_start__ = _sbss;
-	    *(.bss)
-	    *(.bss*)
-	    *(COMMON)
-		*(COMMON.*)
-	    . = ALIGN(4);
-	    _ebss = .;         /* define a global symbol at bss end */
-	    __bss_end__ = _ebss;
-  	} >sdram
+    .bss (NOLOAD) : 
+    {
+        . = ALIGN(4);
+        /* This is used by the startup in order to initialize the .bss secion */
+        _sbss = .;         /* define a global symbol at bss start */
+        __bss_start__ = _sbss;
+        *(COMMON)
+        *(COMMON.*)
+        *(.bss)
+        *(.bss*)
+        . = ALIGN(4);
+        _ebss = .;         /* define a global symbol at bss end */
+        __bss_end__ = _ebss;
+    } >sdram
 
     /* Heap section */
     . = ALIGN(4);
