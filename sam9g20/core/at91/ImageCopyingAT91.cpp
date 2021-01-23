@@ -565,6 +565,12 @@ void ImageCopyingEngine::handleInfoPrintout(image::ImageSlot sourceSlot,
     char targetPrint[15];
     char typePrint[25];
     if(imageHandlerState == ImageHandlerStates::COPY_IMG_SDC_TO_FLASH) {
+        sprintf(typePrint, "primary image");
+        sprintf(targetPrint, "NAND-Flash");
+        sprintf(sourcePrint, "SD Card %u", static_cast<int>(currentVolume));
+    }
+
+    else if(imageHandlerState == ImageHandlerStates::COPY_BL_SDC_TO_FLASH) {
         if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
     #if BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE
             sprintf(typePrint, "bootloader");
@@ -574,10 +580,6 @@ void ImageCopyingEngine::handleInfoPrintout(image::ImageSlot sourceSlot,
         }
         else if(sourceSlot == image::ImageSlot::BOOTLOADER_1) {
             sprintf(typePrint, "second-stage bootloader");
-        }
-        else {
-            sprintf(typePrint, "primary image");
-
         }
         sprintf(targetPrint, "NAND-Flash");
         sprintf(sourcePrint, "SD Card %u", static_cast<int>(currentVolume));
