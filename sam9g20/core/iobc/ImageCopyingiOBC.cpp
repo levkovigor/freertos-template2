@@ -47,7 +47,7 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
 
 ReturnValue_t ImageCopyingEngine::startBootloaderToFlashOperation(bool fromFRAM)
 {
-    bootloader = true;
+    sourceSlot == image::ImageSlot::BOOTLOADER_0;
     if(fromFRAM) {
         imageHandlerState = ImageHandlerStates::COPY_BL_FRAM_TO_FLASH;
     }
@@ -57,19 +57,16 @@ ReturnValue_t ImageCopyingEngine::startBootloaderToFlashOperation(bool fromFRAM)
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t ImageCopyingEngine::startHammingCodeToFramOperation(image::ImageSlot respectiveSlot,
-        bool bootloader) {
-    if(respectiveSlot == image::ImageSlot::NONE) {
+ReturnValue_t ImageCopyingEngine::startHammingCodeToFramOperation(image::ImageSlot respectiveSlot) {
+    if(respectiveSlot == image::ImageSlot::NONE or
+            respectiveSlot == image::ImageSlot::BOOTLOADER_1) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
     hammingCode = true;
-    this->bootloader = bootloader;
-    if(not bootloader) {
-        sourceSlot = respectiveSlot;
-    }
+    sourceSlot = respectiveSlot;
 
-    if(bootloader) {
+    if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
         imageHandlerState = ImageHandlerStates::COPY_BL_HAMMING_SDC_TO_FRAM;
     }
     else {
@@ -172,7 +169,7 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
 
 ReturnValue_t ImageCopyingEngine::handleNorflashErasure() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
-    if(bootloader) {
+    if(image::ImageSlot::BOOTLOADER_0) {
         // we only want to print this once.
         if(not helperFlag1) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -360,7 +357,7 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
         // operation finished.
         handleFinishPrintout();
 
-        if(bootloader) {
+        if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
             writeBootloaderSizeAndCrc();
         }
 
@@ -524,7 +521,7 @@ uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
 
 uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
         size_t* offset) {
-    if(bootloader) {
+    if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
         // deletion steps, performed per-sector
         if(internalState == GenericInternalState::STEP_1) {
             switch(stepCounter) {
@@ -652,7 +649,7 @@ uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
 
 void ImageCopyingEngine::handleFinishPrintout() {
 #if OBSW_VERBOSE_LEVEL >= 1
-    if(bootloader) {
+    if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
 
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Copying bootloader to NOR-Flash finished with " << stepCounter <<

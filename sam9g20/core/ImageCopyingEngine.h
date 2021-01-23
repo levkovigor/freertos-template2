@@ -9,7 +9,6 @@
 
 #ifdef AT91SAM9G20_EK
 #include <sam9g20/common/config/commonAt91Config.h>
-#include <at91/memories/nandflash/NandCommon.h>
 #else /* iOBC */
 #include <sam9g20/common/config/commonIOBCConfig.h>
 #endif
@@ -126,8 +125,7 @@ public:
      * @param bootloader        Specify to true to copy the hamming code of the bootloader
      * @return
      */
-    ReturnValue_t startHammingCodeToFramOperation(image::ImageSlot respectiveSlot,
-            bool bootloader = false);
+    ReturnValue_t startHammingCodeToFramOperation(image::ImageSlot respectiveSlot);
 #endif
 
     /**
@@ -144,6 +142,7 @@ public:
      * Reset the state of the helper class.
      */
     void reset();
+
 private:
     SoftwareImageHandler* owner = nullptr;
     Countdown* countdown = nullptr;
@@ -157,10 +156,10 @@ private:
 
     image::ImageSlot sourceSlot = image::ImageSlot::NONE;
     image::ImageSlot targetSlot = image::ImageSlot::NONE;
-    bool bootloader = false;
-#if defined(AT91SAM9G20_EK) && BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE
-    bool secondBootloader = false;
-#endif
+//    bool bootloader = false;
+//#if defined(AT91SAM9G20_EK) && BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE
+//    bool secondBootloader = false;
+//#endif
     bool hammingCode = false;
     uint16_t stepCounter = 0;
     size_t currentByteIdx = 0;
@@ -172,7 +171,6 @@ private:
     uint16_t helperCounter2 = 0;
 
     ImageHandlerStates lastFinishedState = ImageHandlerStates::IDLE;
-
 
 #ifdef AT91SAM9G20_EK
     bool nandConfigured = false;
@@ -198,7 +196,7 @@ private:
     The algorithms assumes 8 small sectors are reserved for the bootloader! */
     static constexpr size_t NORFLASH_TOTAL_SMALL_SECTOR_MEM_OBSW =
     		RESERVED_OBSW_SMALL_SECTORS * NORFLASH_SMALL_SECTOR_SIZE;
-    static constexpr size_t COPYING_BUCKET_SIZE = 2048;
+    static constexpr size_t COPYING_BUCKET_SIZE = NORFLASH_SMALL_SECTOR_SIZE;
     ReturnValue_t copyImgHammingSdcToFram();
     ReturnValue_t copySdCardImageToNorFlash();
 
@@ -232,8 +230,7 @@ private:
     /**
      * Generic function to read file which also simplfies error handling.
      * Plese note that this only works if the file already has been opened.
-     * Also, the pointer from where to read inb the file
-     * should be set beforehand.
+     * Also, the pointer from where to read in the file should be set beforehand.
      * @param buffer    Buffer where the read data will be stored
      * @param sizeToRead
      * @param sizeRead  Actual number of bytes read, can be smaller if close
@@ -244,8 +241,7 @@ private:
      * -@c RETURN_FAILED Reading failed 3 times
      * -@c RETURN_OK Read success
      */
-    ReturnValue_t readFile(uint8_t* buffer, size_t sizeToRead,
-            size_t* sizeRead, F_FILE** file);
+    ReturnValue_t readFile(uint8_t* buffer, size_t sizeToRead, size_t* sizeRead, F_FILE** file);
 
     void handleInfoPrintout(int currentVolume);
     void handleFinishPrintout();

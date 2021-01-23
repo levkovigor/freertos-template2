@@ -2,6 +2,7 @@
 #define SAM9G20_AT91_COMMON_COMMONAT91CONFIG_H_
 
 #include "commonConfig.h"
+#include <at91/memories/nandflash/NandCommon.h>
 
 /**
  * The one-stage bootloader is loaded into the NAND-Flash at address 0x0 while the primary binary

@@ -65,7 +65,7 @@ void ImageCopyingEngine::reset() {
     helperFlag2 = false;
     helperCounter1 = 0;
     helperCounter2 = 0;
-    bootloader = false;
+//  bootloader = false;
     hammingCode = false;
 }
 
@@ -73,7 +73,10 @@ void ImageCopyingEngine::reset() {
 ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         VolumeId currentVolume, F_FILE** filePtr) {
     int result = 0;
-    if(bootloader) {
+    bool bootloader = false;
+    if(sourceSlot == image::ImageSlot::BOOTLOADER_0 or
+            sourceSlot == image::ImageSlot::BOOTLOADER_1) {
+        bootloader = true;
         result = change_directory(config::BOOTLOADER_REPOSITORY, true);
         if(result != F_NO_ERROR) {
             // changing directory failed!
