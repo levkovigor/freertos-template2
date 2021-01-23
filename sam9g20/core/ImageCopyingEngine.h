@@ -103,11 +103,7 @@ public:
      * Only works on the iOBC.
      * @return
      */
-#if defined(AT91SAM9G20_EK) && BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE
-    ReturnValue_t startBootloaderToFlashOperation(bool fromFRAM, bool secondStageBootloader);
-#else
-    ReturnValue_t startBootloaderToFlashOperation(bool fromFRAM);
-#endif
+    ReturnValue_t startBootloaderToFlashOperation(image::ImageSlot bootloaderType, bool fromFram);
 
     /**
      * Copy the image on flash to the SD card. Don't forget to configure the

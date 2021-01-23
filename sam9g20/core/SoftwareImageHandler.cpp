@@ -163,19 +163,25 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
             return HasActionsIF::IS_BUSY;
         }
 #if defined(AT91SAM9G20_EK)
-
-#if BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE
         /* No FRAM support yet */
         if(size < 1) {
             return HasActionsIF::INVALID_PARAMETERS;
         }
-        bool secondLevelBootloader = data[0];
-        imgCpHelper->startBootloaderToFlashOperation(false, secondLevelBootloader);
-#else
-        /* Only one bootloader */
-        imgCpHelper->startBootloaderToFlashOperation(false);
-#endif /* BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE */
+        image::ImageSlot sourceSlot = image::ImageSlot::NONE;
+        if(data[0] == 0) {
+            sourceSlot = image::ImageSlot::BOOTLOADER_0;
+        }
+#if BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE
+        else if(data[0] == 1) {
+            sourceSlot = image::ImageSlot::BOOTLOADER_1;
 
+        }
+#endif
+        else {
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+
+        imgCpHelper->startBootloaderToFlashOperation(sourceSlot, false);
 #else /* iOBC */
 
         if(size != 1) {
@@ -183,7 +189,7 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
         }
 
         bool fromFram = data[0];
-        imgCpHelper->startBootloaderToFlashOperation(fromFram);
+        imgCpHelper->startBootloaderToFlashOperation(image::ImageSlot::BOOTLOADER_0, fromFram);
 
 #endif
 
