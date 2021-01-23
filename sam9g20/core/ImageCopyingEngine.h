@@ -1,21 +1,32 @@
 #ifndef SAM9G20_CORE_IMAGECOPYINGENGINE_H_
 #define SAM9G20_CORE_IMAGECOPYINGENGINE_H_
 
+#include "imageHandlerDefintions.h"
 #include <OBSWConfig.h>
+
+#include <hcc/api_fat.h>
 #include <sam9g20/common/SDCardApi.h>
-#include <sam9g20/core/SoftwareImageHandler.h>
-#include <sam9g20/memory/SDCardDefinitions.h>
-#include <sam9g20/memory/SDCardAccess.h>
 
 #ifdef AT91SAM9G20_EK
-#include <commonAt91Config.h>
-extern "C" {
+#include <sam9g20/common/config/commonAt91Config.h>
 #include <at91/memories/nandflash/NandCommon.h>
-}
-#else
-#include <hal/Storage/NORflash.h>
+#else /* iOBC */
 #include <sam9g20/common/config/commonIOBCConfig.h>
 #endif
+
+class SoftwareImageHandler;
+class Countdown;
+
+/**
+ * These generic states can be used inside the primary state machine.
+ * They will also be used by the action helper to generate step replies.
+ */
+enum class GenericInternalState {
+    IDLE,
+    STEP_1,
+    STEP_2,
+    STEP_3
+};
 
 /**
  * @brief   This class encapsulates all image copying operations required by
@@ -47,7 +58,7 @@ public:
     };
 
     ImageCopyingEngine(SoftwareImageHandler* owner, Countdown* countdown,
-            SoftwareImageHandler::ImageBuffer* imgBuffer);
+            image::ImageBuffer* imgBuffer);
 
     // void setActiveSdCard(SdCard sdCard);
 
@@ -82,7 +93,7 @@ public:
      * @param imageSlot     Select the image slot (if OBSW is copied)
      * @return
      */
-    ReturnValue_t startSdcToFlashOperation(ImageSlot sourceSlot);
+    ReturnValue_t startSdcToFlashOperation(image::ImageSlot sourceSlot);
 
     /**
      * Starts to copy the bootloader to the flash. Use with care!
@@ -106,7 +117,7 @@ public:
      * @param imageSlot
      * @return
      */
-    ReturnValue_t startFlashToSdcOperation(ImageSlot targetSlot);
+    ReturnValue_t startFlashToSdcOperation(image::ImageSlot targetSlot);
 
 #ifdef ISIS_OBC_G20
     /**
@@ -115,7 +126,7 @@ public:
      * @param bootloader        Specify to true to copy the hamming code of the bootloader
      * @return
      */
-    ReturnValue_t startHammingCodeToFramOperation(ImageSlot respectiveSlot,
+    ReturnValue_t startHammingCodeToFramOperation(image::ImageSlot respectiveSlot,
             bool bootloader = false);
 #endif
 
@@ -134,9 +145,9 @@ public:
      */
     void reset();
 private:
-    SoftwareImageHandler* owner;
-    Countdown* countdown;
-    SoftwareImageHandler::ImageBuffer* imgBuffer;
+    SoftwareImageHandler* owner = nullptr;
+    Countdown* countdown = nullptr;
+    image::ImageBuffer* imgBuffer = nullptr;
 
     ImageHandlerStates imageHandlerState = ImageHandlerStates::IDLE;
     GenericInternalState internalState = GenericInternalState::IDLE;
@@ -144,8 +155,8 @@ private:
     // might not be needed.
     //SdCard activeSdCard = SdCard::SD_CARD_0;
 
-    ImageSlot sourceSlot = ImageSlot::NONE;
-    ImageSlot targetSlot = ImageSlot::NONE;
+    image::ImageSlot sourceSlot = image::ImageSlot::NONE;
+    image::ImageSlot targetSlot = image::ImageSlot::NONE;
     bool bootloader = false;
 #if defined(AT91SAM9G20_EK) && BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE
     bool secondBootloader = false;

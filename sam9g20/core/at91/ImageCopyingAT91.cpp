@@ -1,9 +1,9 @@
 #include "../ImageCopyingEngine.h"
 #include <fsfw/timemanager/Countdown.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
+#include <sam9g20/memory/SDCardAccess.h>
 
 extern "C" {
-// include nand flash stuff here
 #include <at91/boards/at91sam9g20-ek/board.h>
 #include <at91/boards/at91sam9g20-ek/board_memories.h>
 #include <at91/peripherals/pio/pio.h>
@@ -11,6 +11,7 @@ extern "C" {
 #include <at91/utility/hamming.h>
 #include <at91/memories/nandflash/SkipBlockNandFlash.h>
 }
+
 #include <cinttypes>
 #include <cmath>
 #include <cstring>
@@ -161,7 +162,7 @@ ReturnValue_t ImageCopyingEngine::handleNandErasure(bool disableAt91Output) {
     }
 
     if(countdown->hasTimedOut()) {
-        return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+        return image::TASK_PERIOD_OVER_SOON;
     }
 
     if(bootloader) {
@@ -200,8 +201,8 @@ ReturnValue_t ImageCopyingEngine::handleNandErasure(bool disableAt91Output) {
 #endif
     else {
         ReturnValue_t result = handleErasingForObsw();
-        if(result == SoftwareImageHandler::TASK_PERIOD_OVER_SOON) {
-            return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+        if(result == image::TASK_PERIOD_OVER_SOON) {
+            return image::TASK_PERIOD_OVER_SOON;
         }
         else if(result != HasReturnvaluesIF::RETURN_OK) {
             return result;
@@ -215,7 +216,7 @@ ReturnValue_t ImageCopyingEngine::handleNandErasure(bool disableAt91Output) {
     internalState = GenericInternalState::STEP_2;
 
     if(countdown->hasTimedOut()) {
-        return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+        return image::TASK_PERIOD_OVER_SOON;
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -237,10 +238,10 @@ ReturnValue_t ImageCopyingEngine::handleErasingForObsw() {
 #endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
-        if(sourceSlot == ImageSlot::SDC_SLOT_0) {
+        if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
             currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
         }
-        else if(sourceSlot == ImageSlot::SDC_SLOT_1) {
+        else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
             currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
         }
 
@@ -279,7 +280,7 @@ ReturnValue_t ImageCopyingEngine::handleErasingForObsw() {
         }
         helperCounter1++;
         if(countdown->hasTimedOut()) {
-            return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+            return image::TASK_PERIOD_OVER_SOON;
         }
     }
     stepCounter = 0;
@@ -326,7 +327,7 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
     // to have multiple attempts, so we need to check for a timeout
     // at the start as well.
     if(countdown->hasTimedOut()) {
-        return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+        return image::TASK_PERIOD_OVER_SOON;
     }
 
     size_t sizeToRead = NAND_PAGE_SIZE;
@@ -433,7 +434,7 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         // Try in next cycle..
-        return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+        return image::TASK_PERIOD_OVER_SOON;
     }
 
 #if OBSW_VERBOSE_LEVEL >= 2
@@ -485,10 +486,10 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
         // cache last finished state.
         lastFinishedState = imageHandlerState;
         reset();
-        return SoftwareImageHandler::OPERATION_FINISHED;
+        return image::OPERATION_FINISHED;
     }
     else if(countdown->hasTimedOut()) {
-        return  SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+        return  image::TASK_PERIOD_OVER_SOON;
     }
     return HasReturnvaluesIF::RETURN_OK;
 }

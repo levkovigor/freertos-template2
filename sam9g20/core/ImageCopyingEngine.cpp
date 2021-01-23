@@ -1,9 +1,9 @@
 #include "ImageCopyingEngine.h"
-#include <fsfwconfig/OBSWConfig.h>
+
 #include <fsfw/serviceinterface/ServiceInterface.h>
 
 ImageCopyingEngine::ImageCopyingEngine(SoftwareImageHandler *owner,
-        Countdown *countdown, SoftwareImageHandler::ImageBuffer *imgBuffer):
+        Countdown *countdown, image::ImageBuffer *imgBuffer):
         owner(owner), countdown(countdown), imgBuffer(imgBuffer) {}
 
 bool ImageCopyingEngine::getIsOperationOngoing() const {
@@ -16,8 +16,8 @@ bool ImageCopyingEngine::getIsOperationOngoing() const {
 }
 
 ReturnValue_t ImageCopyingEngine::startSdcToFlashOperation(
-        ImageSlot sourceSlot) {
-    if(sourceSlot == ImageSlot::NORFLASH or sourceSlot == ImageSlot::NONE) {
+        image::ImageSlot sourceSlot) {
+    if(sourceSlot == image::ImageSlot::NORFLASH or sourceSlot == image::ImageSlot::NONE) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
@@ -27,8 +27,8 @@ ReturnValue_t ImageCopyingEngine::startSdcToFlashOperation(
 }
 
 ReturnValue_t ImageCopyingEngine::startFlashToSdcOperation(
-        ImageSlot targetSlot) {
-    if(targetSlot == ImageSlot::NORFLASH or targetSlot == ImageSlot::NONE) {
+        image::ImageSlot targetSlot) {
+    if(targetSlot == image::ImageSlot::NORFLASH or targetSlot == image::ImageSlot::NONE) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
@@ -55,8 +55,8 @@ ImageCopyingEngine::getLastFinishedState() const {
 void ImageCopyingEngine::reset() {
     internalState = GenericInternalState::IDLE;
     imageHandlerState = ImageHandlerStates::IDLE;
-    sourceSlot = ImageSlot::NONE;
-    targetSlot = ImageSlot::NONE;
+    sourceSlot = image::ImageSlot::NONE;
+    targetSlot = image::ImageSlot::NONE;
     stepCounter = 0;
     currentByteIdx = 0;
     currentFileSize = 0;
@@ -110,7 +110,7 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         // Current file size only needs to be cached once.
         // Info output should only be printed once.
         if(stepCounter == 0) {
-            if(sourceSlot == ImageSlot::SDC_SLOT_0) {
+            if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
                 if(hammingCode) {
                     currentFileSize = f_filelength(config::SW_SLOT_0_HAMMING_NAME);
                 }
@@ -118,7 +118,7 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
                     currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
                 }
             }
-            else if(sourceSlot == ImageSlot::SDC_SLOT_1) {
+            else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
                 if(hammingCode) {
                     currentFileSize = f_filelength(config::SW_SLOT_1_HAMMING_NAME);
                 }
@@ -159,10 +159,10 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
 #endif
         }
 
-        if(sourceSlot == ImageSlot::SDC_SLOT_0) {
+        if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
             *filePtr = f_open(config::SW_SLOT_0_NAME, "r");
         }
-        else if(sourceSlot == ImageSlot::SDC_SLOT_1) {
+        else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
             *filePtr = f_open(config::SW_SLOT_1_NAME, "r");
         }
     }
@@ -225,7 +225,7 @@ ReturnValue_t ImageCopyingEngine::readFile(uint8_t *buffer, size_t sizeToRead,
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         // reading file failed. retry next cycle
-        return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+        return image::TASK_PERIOD_OVER_SOON;
     }
     *sizeRead = static_cast<size_t>(bytesRead);
     return HasReturnvaluesIF::RETURN_OK;

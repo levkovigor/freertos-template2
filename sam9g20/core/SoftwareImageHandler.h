@@ -1,18 +1,17 @@
 #ifndef SAM9G20_CORE_SOFTWAREIMAGEHANDLER_H_
 #define SAM9G20_CORE_SOFTWAREIMAGEHANDLER_H_
 
+#include "imageHandlerDefintions.h"
+
 #include <fsfw/action/HasActionsIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/parameters/ParameterHelper.h>
 #include <fsfw/parameters/ReceivesParameterMessagesIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 
-extern "C" {
 #ifdef ISIS_OBC_G20
 #include <hal/Storage/NORflash.h>
-#else
 #endif
-}
 
 #include <array>
 
@@ -27,17 +26,6 @@ class ScrubbingEngine;
 class Countdown;
 
 /**
- * These generic states can be used inside the primary state machine.
- * They will also be used by the action helper to generate step replies.
- */
-enum class GenericInternalState {
-    IDLE,
-    STEP_1,
-    STEP_2,
-    STEP_3
-};
-
-/**
  * There are 2 SD cards available.
  * In normal cases, SD card 0 will be preferred
  */
@@ -46,13 +34,6 @@ enum class SdCard {
     SD_CARD_1
 };
 
-/** Image slots on the iOBC */
-enum ImageSlot: uint8_t {
-    NONE,
-    NORFLASH, //! NOR-Flash image slot
-    SDC_SLOT_0, //!< Primary Image SD Card (for each SD Card)
-    SDC_SLOT_1, //!< Secondary and update image (for each SD Card)
-};
 
 /**
  * @brief   Commandable handler object to manage software updates and
@@ -82,19 +63,9 @@ class SoftwareImageHandler:
         public ReceivesParameterMessagesIF {
 public:
     //static constexpr uint8_t SUBSYSTEM_ID = CLASS_ID::SW_IMAGE_HANDLER;
-    static constexpr uint8_t INTERFACE_ID = CLASS_ID::SW_IMAGE_HANDLER;
-    static constexpr ReturnValue_t OPERATION_FINISHED = MAKE_RETURN_CODE(0x00);
-    static constexpr ReturnValue_t TASK_PERIOD_OVER_SOON = MAKE_RETURN_CODE(0x01);
-    static constexpr ReturnValue_t BUSY = MAKE_RETURN_CODE(0x02);
 
     static constexpr uint8_t SW_IMG_HANDLER_MQ_DEPTH = 5;
     static constexpr uint8_t MAX_MESSAGES_HANDLED  = 5;
-
-#ifdef AT91SAM9G20_EK
-    using ImageBuffer = std::array<uint8_t, 2048>;
-#else
-    using ImageBuffer = std::array<uint8_t, NORFLASH_SMALL_SECTOR_SIZE>;
-#endif
 
     SoftwareImageHandler(object_id_t objectId);
 
@@ -216,7 +187,7 @@ private:
     PeriodicTaskIF* executingTask = nullptr;
     ActionHelper actionHelper;
     ParameterHelper parameterHelper;
-    ImageBuffer imgBuffer;
+    image::ImageBuffer imgBuffer;
     Countdown* countdown = nullptr;
     ImageCopyingEngine* imgCpHelper = nullptr;
     ScrubbingEngine* scrubbingEngine = nullptr;
@@ -245,19 +216,19 @@ private:
     ReturnValue_t copyFramBootloaderToNorFlash();
 
     // Handler functions for the SD cards
-    ReturnValue_t copySdCardImageToNorFlash(SdCard sdCard, ImageSlot sourceSlot);
+    ReturnValue_t copySdCardImageToNorFlash(SdCard sdCard, image::ImageSlot sourceSlot);
     ReturnValue_t copyNorFlashImageToSdCards(SdCard sdCard,
-            ImageSlot sourceSlot);
+            image::ImageSlot sourceSlot);
     // Scrubbing functions
     ReturnValue_t checkNorFlashImage();
 #else
     ReturnValue_t copySdBootloaderToNandFlash(SdCard sdCard,
-            ImageSlot imageSlot);
-    ReturnValue_t copySdImageToNandFlash(SdCard sdCard, ImageSlot imageSlot);
+            image::ImageSlot imageSlot);
+    ReturnValue_t copySdImageToNandFlash(SdCard sdCard, image::ImageSlot imageSlot);
     ReturnValue_t checkNandFlashImage();
 #endif
 
-    void checkSdCardImage(SdCard sdCard, ImageSlot imageSlot);
+    void checkSdCardImage(SdCard sdCard, image::ImageSlot imageSlot);
 
 };
 
