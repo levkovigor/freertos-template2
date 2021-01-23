@@ -91,6 +91,24 @@ static const Pin nfCePin = BOARD_NF_CE_PIN;
 /// Nandflash ready/busy pin.
 static const Pin nfRbPin = BOARD_NF_RB_PIN;
 
+#if BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE
+ReturnValue_t ImageCopyingEngine::startBootloaderToFlashOperation(bool fromFram,
+        bool secondStageBootloader)
+#else
+ReturnValue_t ImageCopyingEngine::startBootloaderToFlashOperation(bool fromFram)
+#endif
+{
+    bootloader = true;
+    /* Not implemented yet */
+    if(fromFram) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    else {
+        imageHandlerState = ImageHandlerStates::COPY_BL_SDC_TO_FLASH;
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
 ReturnValue_t ImageCopyingEngine::copySdCardImageToNandFlash() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
 
@@ -147,7 +165,7 @@ ReturnValue_t ImageCopyingEngine::handleNandErasure(bool disableAt91Output) {
     }
 
     if(bootloader) {
-        // First block will be used for bootloader, so we erase it first.
+        /* First block will be used for bootloader, so we erase it first. */
         int retval = SkipBlockNandFlash_EraseBlock(&skipBlockNf, 0,
                 NORMAL_ERASE);
         if(retval != 0) {
@@ -158,10 +176,28 @@ ReturnValue_t ImageCopyingEngine::handleNandErasure(bool disableAt91Output) {
             sif::printError("SoftwareImageHandler::copyBootloaderToNandFlash: "
                     "Error erasing first block.\n");
 #endif
-            // If this happens, this won't work anyway
+            /* If this happens, this won't work anyway */
             return HasReturnvaluesIF::RETURN_FAILED;
         }
     }
+#if BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE
+    else if(secondBootloader) {
+        /* First block will be used for bootloader, so we erase it first. */
+        int retval = SkipBlockNandFlash_EraseBlock(&skipBlockNf, 1,
+                NORMAL_ERASE);
+        if(retval != 0) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+            sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash: "
+                    << "Error erasing second block." << std::endl;
+#else
+            sif::printError("SoftwareImageHandler::copyBootloaderToNandFlash: "
+                    "Error erasing second block.\n");
+#endif
+            /* If this happens, this won't work anyway */
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+    }
+#endif
     else {
         ReturnValue_t result = handleErasingForObsw();
         if(result == SoftwareImageHandler::TASK_PERIOD_OVER_SOON) {
@@ -213,16 +249,24 @@ ReturnValue_t ImageCopyingEngine::handleErasingForObsw() {
         uint8_t requiredBlocks = std::ceil(
                 static_cast<float>(currentFileSize) /
                 (PAGES_PER_BLOCK * NAND_PAGE_SIZE));
-        // We start counting at one to skip the bootloader,
-        // so we need to add one here.
+        /* We start counting at one to skip the bootloader, so we need to add one here. */
+#if BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE
         helperCounter2 = requiredBlocks + 1;
+#else
+        helperCounter2 = requiredBlocks + 2;
+#endif /* BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE */
     }
 
     while(helperCounter1 < helperCounter2) {
         // erase multiple blocks for required binary size.
         // Don't erase first block, is reserved for bootloader.
+#if BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE
         int retval = SkipBlockNandFlash_EraseBlock(&skipBlockNf,
                 helperCounter1 + 1, NORMAL_ERASE);
+#else
+        int retval = SkipBlockNandFlash_EraseBlock(&skipBlockNf,
+                helperCounter1 + 2, NORMAL_ERASE);
+#endif /* BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE */
         if(retval != 0) {
             // skip the block.
 #if FSFW_CPP_OSTREAM_ENABLED == 1

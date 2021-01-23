@@ -5,6 +5,13 @@
 #include <stddef.h>
 
 /**
+ * Big blocks at the end of FRAM. This address was retrieved FRAM_getMaxAddress.
+ * Actually the iOBC datasheet states that the FRAM has 256kB, but the functions returns
+ * almost double the size... We still hardcode half of the returned value.
+ */
+static const uint32_t FRAM_END_ADDR = 0x3ffff;
+
+/**
  * This struct will gather all critical data stored on (virutalized) FRAM.
  */
 typedef struct __attribute__((__packed__))  _CriticalDataBlock {

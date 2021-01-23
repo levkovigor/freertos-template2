@@ -1,14 +1,15 @@
 #include "../ImageCopyingEngine.h"
+#include <sam9g20/common/config/commonIOBCConfig.h>
+
 #include <fsfw/timemanager/Countdown.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
+#include <fsfw/globalfunctions/CRC.h>
 
 extern "C" {
 #include <sam9g20/common/FRAMApi.h>
 #include <hal/Storage/NORflash.h>
+#include <memories/norflash/NorFlashApi.h>
 }
-
-#include <fsfw/globalfunctions/CRC.h>
-#include <sam9g20/at91/common/commonIOBCConfig.h>
 
 
 ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
@@ -41,6 +42,19 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
     case(ImageHandlerStates::COPY_BL_HAMMING_SDC_TO_FRAM): {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+
+ReturnValue_t ImageCopyingEngine::startBootloaderToFlashOperation(bool fromFRAM)
+{
+    bootloader = true;
+    if(fromFRAM) {
+        imageHandlerState = ImageHandlerStates::COPY_BL_FRAM_TO_FLASH;
+    }
+    else {
+        imageHandlerState = ImageHandlerStates::COPY_BL_SDC_TO_FLASH;
     }
     return HasReturnvaluesIF::RETURN_OK;
 }

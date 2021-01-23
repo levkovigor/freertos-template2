@@ -37,22 +37,6 @@ ReturnValue_t ImageCopyingEngine::startFlashToSdcOperation(
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t ImageCopyingEngine::startBootloaderToFlashOperation(
-        bool fromFRAM) {
-    bootloader = true;
-    if(fromFRAM) {
-#ifdef ISIS_OBC_G20
-        imageHandlerState = ImageHandlerStates::COPY_BL_FRAM_TO_FLASH;
-#else
-        return HasReturnvaluesIF::RETURN_FAILED;
-#endif
-    }
-    else {
-        imageHandlerState = ImageHandlerStates::COPY_BL_SDC_TO_FLASH;
-    }
-    return HasReturnvaluesIF::RETURN_OK;
-}
-
 
 ImageCopyingEngine::ImageHandlerStates
 ImageCopyingEngine::getImageHandlerState() const {

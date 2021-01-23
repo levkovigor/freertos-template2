@@ -15,8 +15,13 @@
 #include <stdbool.h>
 #endif
 
-#include <portmacro.h>
+#ifdef AT91SAM9G20_EK
+#include <commonAt91Config.h>
+#else
+#include <commonIOBCConfig.h>
+#endif
 
+#include <portmacro.h>
 
 #define OBSW_RS485_WITH_TERMINATION             1
 
@@ -41,24 +46,6 @@ namespace config {
 #if OBSW_MONITOR_ALLOCATION == 1
 extern bool softwareInitializationComplete;
 #endif
-
-/* Hardcoded file names */
-#ifdef AT91SAM9G20_EK
-static const char* const BOOTLOADER_REPOSITORY =         "BIN/AT91/BL";
-static const char* const SW_REPOSITORY =                 "BIN/AT91/OBSW";
-#else
-static const char* const BOOTLOADER_REPOSITORY =         "BIN/IOBC/BL";
-static const char* const SW_REPOSITORY =                 "BIN/IOBC/OBSW";
-#endif
-
-static const char* const BOOTLOADER_NAME =               "bl.bin";
-static const char* const SW_SLOT_0_NAME =                "obsw_sl0.bin";
-static const char* const SW_SLOT_1_NAME =                "obsw_sl1.bin";
-
-static const char* const BL_HAMMING_NAME =               "bl_ham.bin";
-static const char* const SW_NORFLASH_NAME =              "nor_ham.bin";
-static const char* const SW_SLOT_0_HAMMING_NAME =        "sl0_hamm.bin";
-static const char* const SW_SLOT_1_HAMMING_NAME =        "sl1_hamm.bin";
 
 //! Reserved small sectors for the bootloader. Each of the small sectors has 8192 bytes
 //! and there are 8 small sectors on the iOBC NOR-Flash chip.

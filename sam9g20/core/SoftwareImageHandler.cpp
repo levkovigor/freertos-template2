@@ -37,7 +37,7 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
 #else
             sif::printWarning("SoftwareImageHandler::performOperation: "
                     "Error receiving message!\n");
-#endif
+#endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
         }
 
         result = actionHelper.handleActionMessage(&message);
@@ -114,7 +114,7 @@ ReturnValue_t SoftwareImageHandler::initialize() {
                 << std::endl;
 #else
         sif::printError("SoftwareImageHandler::initialize: NOR-Flash start failed\n");
-#endif
+#endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
         return result;
     }
 #endif
@@ -159,11 +159,31 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
         if(handlerState == HandlerState::COPYING) {
             return HasActionsIF::IS_BUSY;
         }
+#if defined(AT91SAM9G20_EK)
+
+#if BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE
+        /* No FRAM support yet */
+        if(size < 1) {
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+        bool secondLevelBootloader = data[0];
+        imgCpHelper->startBootloaderToFlashOperation(false, secondLevelBootloader);
+#else
+        /* Only one bootloader */
+        imgCpHelper->startBootloaderToFlashOperation(false);
+#endif /* BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE */
+
+#else /* iOBC */
+
         if(size != 1) {
             return HasActionsIF::INVALID_PARAMETERS;
         }
 
-        imgCpHelper->startBootloaderToFlashOperation(false);
+        bool fromFram = data[0];
+        imgCpHelper->startBootloaderToFlashOperation(fromFram);
+
+#endif
+
         currentAction = actionId;
         recipient = commandedBy;
         handlerState = HandlerState::COPYING;

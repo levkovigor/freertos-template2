@@ -8,12 +8,13 @@
 #include <sam9g20/memory/SDCardAccess.h>
 
 #ifdef AT91SAM9G20_EK
+#include <commonAt91Config.h>
 extern "C" {
 #include <at91/memories/nandflash/NandCommon.h>
 }
 #else
 #include <hal/Storage/NORflash.h>
-#include <sam9g20/at91/common/commonIOBCConfig.h>
+#include <sam9g20/common/config/commonIOBCConfig.h>
 #endif
 
 /**
@@ -92,7 +93,11 @@ public:
      * Only works on the iOBC.
      * @return
      */
+#if defined(AT91SAM9G20_EK) && BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE
+    ReturnValue_t startBootloaderToFlashOperation(bool fromFRAM, bool secondStageBootloader);
+#else
     ReturnValue_t startBootloaderToFlashOperation(bool fromFRAM);
+#endif
 
     /**
      * Copy the image on flash to the SD card. Don't forget to configure the
@@ -142,6 +147,9 @@ private:
     ImageSlot sourceSlot = ImageSlot::NONE;
     ImageSlot targetSlot = ImageSlot::NONE;
     bool bootloader = false;
+#if defined(AT91SAM9G20_EK) && BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE
+    bool secondBootloader = false;
+#endif
     bool hammingCode = false;
     uint16_t stepCounter = 0;
     size_t currentByteIdx = 0;
