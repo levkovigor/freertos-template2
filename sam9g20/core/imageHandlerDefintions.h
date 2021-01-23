@@ -31,7 +31,7 @@ enum ImageSlot: uint8_t {
     NONE,
     BOOTLOADER_0,   //!< Primary bootloader.
     BOOTLOADER_1,   //!< Second-stage bootloader (optional for AT91 board)
-    NORFLASH,       //!< NOR-Flash image slot
+    FLASH,       //!< NOR-Flash image slot
     SDC_SLOT_0,     //!< Primary Image SD Card (for each SD Card)
     SDC_SLOT_1,     //!< Secondary and update image (for each SD Card)
 };

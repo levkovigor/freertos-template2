@@ -557,3 +557,32 @@ void ImageCopyingEngine::handleFinishPrintout() {
 
 #endif /* OBSW_VERBOSE_LEVEL >= 1 */
 }
+
+void ImageCopyingEngine::handleInfoPrintout(image::ImageSlot sourceSlot,
+        image::ImageSlot targetSlot, VolumeId currentVolume) {
+#if OBSW_VERBOSE_LEVEL >= 1
+    char sourcePrint[15];
+    char targetPrint[15];
+    char typePrint[25];
+    if(imageHandlerState == ImageHandlerStates::COPY_IMG_SDC_TO_FLASH) {
+        if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
+    #if BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE
+            sprintf(typePrint, "bootloader");
+    #else
+            sprintf(typePrint, "first-stage bootloader");
+    #endif
+        }
+        else if(sourceSlot == image::ImageSlot::BOOTLOADER_1) {
+            sprintf(typePrint, "second-stage bootloader");
+        }
+        else {
+            sprintf(typePrint, "primary image");
+
+        }
+        sprintf(targetPrint, "NAND-Flash");
+        sprintf(sourcePrint, "SD Card %u", static_cast<int>(currentVolume));
+    }
+
+    handleGenericInfoPrintout("AT91", typePrint, sourcePrint, targetPrint);
+#endif /* OBSW_VERBOSE_LEVEL >= 1 */
+}

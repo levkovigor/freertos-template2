@@ -231,7 +231,10 @@ private:
      */
     ReturnValue_t readFile(uint8_t* buffer, size_t sizeToRead, size_t* sizeRead, F_FILE** file);
 
-    void handleInfoPrintout(int currentVolume);
+    void handleInfoPrintout(image::ImageSlot sourceSlot, image::ImageSlot targetSlot,
+            VolumeId currentVolume);
+    void handleGenericInfoPrintout(char const* board, char const* typePrint,
+            char const* sourcePrint, char const* targetPrint);
     void handleFinishPrintout();
 
 };
