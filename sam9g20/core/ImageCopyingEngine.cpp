@@ -91,7 +91,12 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
                 currentFileSize = f_filelength(config::BL_HAMMING_NAME);
             }
             else {
-                currentFileSize = f_filelength(config::BOOTLOADER_NAME);
+                if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
+                    currentFileSize = f_filelength(config::BOOTLOADER_NAME);
+                }
+                else {
+                    currentFileSize = f_filelength(config::BOOTLOADER_2_NAME);
+                }
             }
         }
 
@@ -99,7 +104,12 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
             *filePtr = f_open(config::BL_HAMMING_NAME, "r");
         }
         else {
-            *filePtr = f_open(config::BOOTLOADER_NAME, "r");
+            if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
+                *filePtr = f_open(config::BOOTLOADER_NAME, "r");
+            }
+            else {
+                *filePtr = f_open(config::BOOTLOADER_2_NAME, "r");
+            }
         }
     }
     else {
@@ -128,11 +138,6 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
                     currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
                 }
             }
-        }
-
-
-        if(stepCounter == 0) {
-            handleInfoPrintout(currentVolume);
         }
 
         if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
@@ -172,6 +177,10 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
 #endif
         }
         return F_ERR_NOTFOUND;
+    }
+
+    if(stepCounter == 0) {
+        handleInfoPrintout(currentVolume);
     }
 
     // Seek correct position in file. This needs to be done every time

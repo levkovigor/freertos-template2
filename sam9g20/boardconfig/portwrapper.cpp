@@ -48,7 +48,7 @@ extern "C" void __malloc_lock (struct _reent *reent) {
         // This prevents an infinite recursion because printf can allocate
 	    // memory when using newlib.
         config::softwareInitializationComplete = false;
-		TRACE_WARNING_WP("\n\r-W- Software initialization complete but "
+		TRACE_WARNING_WP("-W- Software initialization complete but "
 				"memory is allocated!\n\r");
 	}
 #endif
