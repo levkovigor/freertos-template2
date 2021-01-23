@@ -725,8 +725,7 @@ void ImageCopyingEngine::handleFinishPrintout() {
 #endif /* OBSW_VERBOSE_LEVEL >= 1 */
 }
 
-void ImageCopyingEngine::handleInfoPrintout(image::ImageSlot sourceSlot,
-        image::ImageSlot targetSlot, VolumeId currentVolume) {
+void ImageCopyingEngine::handleInfoPrintout(VolumeId currentVolume) {
 #if OBSW_VERBOSE_LEVEL >= 1
     char sourcePrint[20];
     char targetPrint[20];
