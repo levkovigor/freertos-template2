@@ -45,10 +45,10 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
 }
 
 
-ReturnValue_t ImageCopyingEngine::startBootloaderToFlashOperation(bool fromFRAM)
-{
-    sourceSlot == image::ImageSlot::BOOTLOADER_0;
-    if(fromFRAM) {
+ReturnValue_t ImageCopyingEngine::startBootloaderToFlashOperation(image::ImageSlot bootloaderType,
+        bool fromFram) {
+    sourceSlot = image::ImageSlot::BOOTLOADER_0;
+    if(fromFram) {
         imageHandlerState = ImageHandlerStates::COPY_BL_FRAM_TO_FLASH;
     }
     else {

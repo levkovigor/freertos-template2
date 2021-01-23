@@ -86,8 +86,7 @@ public:
 
     /**
      * Start an operation to copy something from the SD card to the flash
-     * memory. Don't forget to configure the NAND-Flash once
-     * when calling this on the AT91 board.
+     * memory. Don't forget to configure the NAND-Flash once when calling this on the AT91 board.
      * @param sdCard        Select the SD card
      * @param imageSlot     Select the image slot (if OBSW is copied)
      * @return
@@ -95,12 +94,11 @@ public:
     ReturnValue_t startSdcToFlashOperation(image::ImageSlot sourceSlot);
 
     /**
-     * Starts to copy the bootloader to the flash. Use with care!
-     * Parts of this operation might be performed in a special high
-     * priority task which can not be preempted and interrupted to ensure
-     * nothing goes wrong.
+     * Starts to copy the bootloader to the flash. Use with care! Parts of this operation might
+     * be performed in a special high priority task which can not be preempted and interrupted
+     * to ensure nothing goes wrong.
      * @param fromFRAM  Specify whether to copy the bootloader from the FRAM instead of the SD-Card.
-     * Only works on the iOBC.
+     *                  Only works on the iOBC.
      * @return
      */
     ReturnValue_t startBootloaderToFlashOperation(image::ImageSlot bootloaderType, bool fromFram);
@@ -147,15 +145,9 @@ private:
     ImageHandlerStates imageHandlerState = ImageHandlerStates::IDLE;
     GenericInternalState internalState = GenericInternalState::IDLE;
 
-    // might not be needed.
-    //SdCard activeSdCard = SdCard::SD_CARD_0;
-
     image::ImageSlot sourceSlot = image::ImageSlot::NONE;
     image::ImageSlot targetSlot = image::ImageSlot::NONE;
-//    bool bootloader = false;
-//#if defined(AT91SAM9G20_EK) && BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE
-//    bool secondBootloader = false;
-//#endif
+
     bool hammingCode = false;
     uint16_t stepCounter = 0;
     size_t currentByteIdx = 0;

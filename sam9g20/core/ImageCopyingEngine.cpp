@@ -1,6 +1,7 @@
 #include "ImageCopyingEngine.h"
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
+#include <sam9g20/core/SoftwareImageHandler.h>
 
 ImageCopyingEngine::ImageCopyingEngine(SoftwareImageHandler *owner,
         Countdown *countdown, image::ImageBuffer *imgBuffer):
@@ -65,7 +66,6 @@ void ImageCopyingEngine::reset() {
     helperFlag2 = false;
     helperCounter1 = 0;
     helperCounter2 = 0;
-//  bootloader = false;
     hammingCode = false;
 }
 
