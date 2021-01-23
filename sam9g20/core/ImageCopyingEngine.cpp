@@ -132,7 +132,7 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
 
 
         if(stepCounter == 0) {
-            handleInfoPrintout(sourceSlot, targetSlot, currentVolume);
+            handleInfoPrintout(currentVolume);
         }
 
         if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
