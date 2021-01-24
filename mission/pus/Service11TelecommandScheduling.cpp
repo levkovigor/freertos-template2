@@ -2,7 +2,8 @@
 #include "etl/utility.h"
 //#include <fsfw/returnvalues/HasReturnvaluesIF.h>	// this is probably not needed
 #include <fsfw/serialize/SerializeAdapter.h>
-#include <fsfw/serviceinterface/ServiceInterface.h>
+#include <fsfw/serviceinterface/ServiceInterfacePrinter.h>
+
 
 
 Service11TelecommandScheduling::Service11TelecommandScheduling(
