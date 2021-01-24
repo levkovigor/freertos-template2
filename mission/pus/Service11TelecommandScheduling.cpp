@@ -48,8 +48,8 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest(uint8_t subservice) 
         // pRawData: raw data buffer to be de-serialized
         // size: remaining size of buffer to de-serialize. Is decreased by function (until 0 I assume)
         // I assume: Function de-serializes byte-wise until remaining size is 0
-        ReturnValue_t ret = SerializeAdapter::deSerialize<uint32_t>(&deserializedTimestamp, &pRawData, &appDataSize,
-                SerializeIF::Endianness::BIG);
+        ReturnValue_t ret = SerializeAdapter::deSerialize<uint32_t>(&deserializedTimestamp,
+                &pRawData, &appDataSize, SerializeIF::Endianness::BIG);
         if (ret != RETURN_OK){
             return ret;
         }
@@ -65,9 +65,10 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest(uint8_t subservice) 
         }
 
         TelecommandStruct tc(deserializedTimestamp, addr);
-        telecommandMap.insert(std::pair<uint32_t, TelecommandStruct>(deserializedTimestamp, tc));
-
-        //TODO add it check if it::end?? => failed
+        auto it = telecommandMap.insert(std::pair<uint32_t, TelecommandStruct>(deserializedTimestamp, tc));
+        if (it == telecommandMap.end()){
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
 
     }
 
