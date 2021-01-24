@@ -14,8 +14,7 @@ Service11TelecommandScheduling::Service11TelecommandScheduling(
 Service11TelecommandScheduling::~Service11TelecommandScheduling() { }
 
 
-ReturnValue_t Service11TelecommandScheduling::handleRequest(
-        uint8_t subservice) {
+ReturnValue_t Service11TelecommandScheduling::handleRequest(uint8_t subservice) {
 
 	// storage for the raw data to be received
 	    const uint8_t* pRawData = nullptr;	// "(non-const) pointer to const unsigned 8-bit int"
