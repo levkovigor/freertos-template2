@@ -312,7 +312,7 @@ void Factory::setStaticFrameworkObjectIds() {
 #if defined(ETHERNET)
 	TmFunnel::downlinkDestination = objects::UDP_TMTC_BRIDGE;
 #else
-    TmFunnel::downlinkDestination = objects::SERIAL_TMTC_BRIDGE;
+    TmFunnel::downlinkDestination = objects::RS485_TM_TC_TARGET;
 #endif
 }
 

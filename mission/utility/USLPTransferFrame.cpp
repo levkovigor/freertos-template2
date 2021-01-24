@@ -114,7 +114,10 @@ uint16_t USLPTransferFrame::getDataZoneSize(){
 }
 
 uint8_t* USLPTransferFrame::getDataZone(){
-	return &frame->dataZone;
+    // I have honestly no idea why we have to do this, but if we don't, memcpy copies to the
+    // 9th byte of the frame instead of to the 8th like it is supposed to
+    // TODO: Pointer gods enlighten me
+	return &(this->frame->dataZone) - 1;
 }
 
 uint8_t* USLPTransferFrame::getFullFrame(){

@@ -237,6 +237,11 @@ void RS485DeviceComIF::handleTmSend(RS485Devices device, RS485Cookie *rs485Cooki
         UART_write(bus2_uart, sendBuffer[device]->getFullFrame(),
                 sendBuffer[device]->getFullFrameSize());
 
+        //TODO:  We  memset here but USLP wants encapsulation idle packet according to
+        // CCSDS 133.1-B-2, additionally there have been problems with non-randomized idle data
+        // so we will replace this later
+        memset(sendBuffer[device]->getDataZone(), 0, sendBuffer[device]->getDataZoneSize());
+
         if (packetSentCounter >= MAX_TM_FRAMES_SENT_PER_CYCLE - 1) {
             break;
         }
