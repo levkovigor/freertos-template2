@@ -27,9 +27,12 @@ ReturnValue_t SystemStateTask::performOperation(uint8_t opCode) {
             semaphore->acquire();
             break;
         }
-        case(InternalState::READING_STATS): {
+        case(InternalState::GENERATING_STATS_CSV):
+        case(InternalState::GENERATING_STATS_PRINT): {
+
             if(numberOfTasks > 0) {
 #if configGENERATE_RUN_TIME_STATS == 1
+                // liest Daten um Runtime Stats zu generieren
                 uxTaskGetSystemState(taskStatArray.data(),
                         numberOfTasks, nullptr);
 #else
@@ -37,25 +40,16 @@ ReturnValue_t SystemStateTask::performOperation(uint8_t opCode) {
                         << "disabled!" << std::endl;
                 internalState = InternalState::IDLE;
 #endif
-                if(not readOnce) {
-                    readOnce = true;
-                }
-            }
-
-            if(doubleOperationRequested) {
-                internalState = InternalState::GENERATING_STATS;
-                doubleOperationRequested = false;
             }
             else {
                 internalState = InternalState::IDLE;
+                sif::printWarning("SystemStateTask::performOperation: Number of tasks is 0!\n");
+                break;
             }
 
-            break;
-        }
-
-        case(InternalState::GENERATING_STATS): {
-            generateStatsCsvAndCheckStack();
+            performStatsGeneration(internalState);
             internalState = InternalState::IDLE;
+
             break;
         }
         }
@@ -64,32 +58,22 @@ ReturnValue_t SystemStateTask::performOperation(uint8_t opCode) {
 }
 
 
-bool SystemStateTask::readAndGenerateStats() {
-    doubleOperationRequested = true;
+bool SystemStateTask::generateStatsCsv() {
     if(internalState != InternalState::IDLE) {
         return false;
     }
 
-    internalState = InternalState::READING_STATS;
+    internalState = InternalState::GENERATING_STATS_CSV;
     semaphore->release();
     return true;
 }
 
-bool SystemStateTask::readSystemState() {
+bool SystemStateTask::generateStatsPrint() {
     if(internalState != InternalState::IDLE) {
         return false;
     }
 
-    internalState = InternalState::READING_STATS;
-    semaphore->release();
-    return true;
-}
-
-bool SystemStateTask::generateStatsAndCheckStack() {
-    if(not readOnce or internalState != InternalState::IDLE) {
-        return false;
-    }
-
+    internalState = InternalState::GENERATING_STATS_PRINT;
     semaphore->release();
     return true;
 }
@@ -118,9 +102,10 @@ ReturnValue_t SystemStateTask::initializeAfterTaskCreation() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-void SystemStateTask::generateStatsCsvAndCheckStack() {
+void SystemStateTask::performStatsGeneration(InternalState csvOrPrint) {
     // TODO: write to file directly? or generate raw telemetry as service 8
     // data reply, but data might become too big.
+    // bool, csv oder printen, if true then csv
     uint64_t uptimeTicks = coreController->getTotalRunTimeCounter();
     uint64_t idleTicks = coreController->getTotalIdleRunTimeCounter();
 
@@ -170,15 +155,15 @@ void SystemStateTask::generateStatsCsvAndCheckStack() {
                     sizeof(secondFourLetters));
             triggerEvent(LOW_REM_STACK, firstFourLetters, secondFourLetters);
         }
+
         if(task.pcTaskName != nullptr) {
 
-#if OBSW_VERBOSE_LEVEL >= 1
-            // human readable format here, tab seperator
-            writeDebugStatLine(task, statsIdx, idleTicks, uptimeTicks);
-#else
-            // CSV format here, tab seperator
-            writeCsvStatLine(task, statsIdx, idleTicks, uptimeTicks);
-#endif
+            if (csvOrPrint == InternalState::GENERATING_STATS_CSV) {
+                writeCsvStatLine(task, statsIdx, idleTicks, uptimeTicks);
+            }
+            else {
+                writeDebugStatLine(task, statsIdx, idleTicks, uptimeTicks);
+            }
             statsVector[statsIdx] = '\n';
             statsIdx ++;
             statsVector[statsIdx] = '\r';
@@ -186,11 +171,15 @@ void SystemStateTask::generateStatsCsvAndCheckStack() {
         }
     }
     statsVector[statsIdx] = '\0';
-#if OBSW_VERBOSE_LEVEL >= 1
-    printf("%s%s\r\n", sif::ANSI_COLOR_RESET, statsVector.data());
-    printf("Number of bytes written: %d\r\n", statsIdx);
-#endif
 
+    if (csvOrPrint == InternalState::GENERATING_STATS_PRINT) {
+#if OBSW_VERBOSE_LEVEL >= 1
+        printf("%s%s\r\n", sif::ANSI_COLOR_RESET, statsVector.data());
+        printf("Number of bytes written: %d\r\n", statsIdx);
+#endif
+        return;
+    }
+// csv handling, store in ipc store and send message
 }
 
 void SystemStateTask::writeDebugStatLine(const TaskStatus_t& task,

@@ -78,7 +78,8 @@ public:
 	static uint64_t getTotalRunTimeCounter();
 	static uint64_t getTotalIdleRunTimeCounter();
 
-	static constexpr ActionId_t REQUEST_CPU_STATS_CHECK_STACK = 0;
+	static constexpr ActionId_t REQUEST_CPU_STATS_CSV = 0;
+	static constexpr ActionId_t REQUEST_CPU_STATS_PRINT = 1;
 	static constexpr ActionId_t RESET_OBC = 10;
 	static constexpr ActionId_t POWERCYCLE_OBC = 11;
 

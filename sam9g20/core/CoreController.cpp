@@ -148,8 +148,15 @@ ReturnValue_t CoreController::checkModeCommand(Mode_t mode, Submode_t submode,
 ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
     switch(actionId) {
-    case(REQUEST_CPU_STATS_CHECK_STACK): {
-        if(not systemStateTask->readAndGenerateStats()) {
+    case(REQUEST_CPU_STATS_CSV): {
+            if(not systemStateTask->generateStatsCsv()) {
+                return HasActionsIF::IS_BUSY;
+            }
+            actionHelper.finish(commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
+            return HasReturnvaluesIF::RETURN_OK;
+        }
+    case(REQUEST_CPU_STATS_PRINT): {
+        if(not systemStateTask->generateStatsPrint()) {
             return HasActionsIF::IS_BUSY;
         }
         actionHelper.finish(commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
@@ -426,10 +433,10 @@ ReturnValue_t CoreController::getFillCountCommand(Stores storeType, MessageQueue
         return result;
     }
     uint8_t numberOfPools = store->getNumberOfSubPools();
-    uint8_t buffer[numberOfPools + 1];
+    uint8_t buffer[numberOfPools + 2];
     uint8_t bytesWritten;
-
-    store->getFillCount(buffer, &bytesWritten);
+    buffer[0] = storeType;
+    store->getFillCount(&buffer[1], &bytesWritten);
     result = actionHelper.reportData(commandedBy, replyId, buffer, bytesWritten);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         return result;
