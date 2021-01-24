@@ -150,7 +150,7 @@ int read_sdc0_slot0_reboot_counter(uint8_t* sdc1sl1_reboot_counter);
 int reset_sdc0_slot0_reboot_counter();
 
 int set_sdc_hamming_flag(VolumeId volume, SdSlots slot);
-int get_sdc_hamming_flag(VolumeId volume, SdSlots slot);
+int get_sdc_hamming_flag(bool* flag_set, VolumeId volume, SdSlots slot);
 int clear_sdc_hamming_flag(VolumeId volume, SdSlots slot);
 
 int set_bootloader_faulty(bool faulty);
