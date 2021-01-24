@@ -3,23 +3,22 @@
 #include <bootloaderConfig.h>
 #include <core/timer.h>
 
-#include <board.h>
-#include <AT91SAM9G20.h>
-#include <led_ek.h>
-#include <board_memories.h>
-#include <peripherals/dbgu/dbgu.h>
-#include <peripherals/pio/pio.h>
-#include <peripherals/aic/aic.h>
-#include <peripherals/pio/pio.h>
-#include <cp15/cp15.h>
-
-#include <hal/Timing/RTT.h>
 #include <sam9g20/common/SRAMApi.h>
 #include <sam9g20/common/VirtualFRAMApi.h>
 
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
-#include <utility/trace.h>
-#endif
+#include <at91/boards/at91sam9g20-ek/board.h>
+#include <at91/boards/at91sam9g20-ek/at91sam9g20/AT91SAM9G20.h>
+#include <at91/boards/at91sam9g20-ek/led_ek.h>
+#include <at91/boards/at91sam9g20-ek/board_memories.h>
+#include <at91/peripherals/pit/pit.h>
+#include <at91/peripherals/dbgu/dbgu.h>
+#include <at91/peripherals/pio/pio.h>
+#include <at91/peripherals/aic/aic.h>
+#include <at91/peripherals/pio/pio.h>
+#include <at91/peripherals/cp15/cp15.h>
+#include <at91/utility/trace.h>
+
+#include <hal/Timing/RTT.h>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -27,7 +26,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define USE_FREERTOS            0
+#define USE_FREERTOS            1
 extern void jump_to_sdram_application(uint32_t stack_ptr, uint32_t jump_address);
 
 void init_task(void* args);
@@ -161,7 +160,14 @@ int perform_bootloader_core_operation() {
 
 #if USE_FREERTOS == 1
     vTaskEndScheduler();
+    // Clear AIC and PIT interrupts and disable them.
+    AT91C_BASE_AIC->AIC_ICCR = 1 << AT91C_ID_SYS;
+    AIC_DisableIT( AT91C_ID_SYS );
+    PIT_GetPIVR();
+    PIT_DisableIT();
+    PIT_Disable();
 #endif
+
     CP15_Disable_I_Cache();
 
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
