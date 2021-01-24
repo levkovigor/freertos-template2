@@ -9,9 +9,9 @@
 #include <mission/utility/USLPTransferFrame.h>
 #include <fsfwconfig/OBSWConfig.h>
 
-RS485TmTcTarget::RS485TmTcTarget(object_id_t objectId, object_id_t tcDistributor,
+RS485TmTcTarget::RS485TmTcTarget(object_id_t objectId, object_id_t tcDestination,
         object_id_t tmStoreId, object_id_t tcStoreId, object_id_t sharedRingBufferId) :
-        SystemObject(objectId), tmStoreId(tmStoreId), tcStoreId(tcStoreId), sharedRingBufferId(
+        SystemObject(objectId), tcDestination(tcDestination), tmStoreId(tmStoreId), tcStoreId(tcStoreId), sharedRingBufferId(
                 sharedRingBufferId) {
     tmTcReceptionQueue = QueueFactory::instance()->createMessageQueue(TMTC_RECEPTION_QUEUE_DEPTH);
 }

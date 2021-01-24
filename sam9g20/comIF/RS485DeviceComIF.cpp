@@ -184,7 +184,7 @@ void RS485DeviceComIF::initTransferFrameSendBuffers() {
         sendBuffer[i]->setVersionNumber(12);
         sendBuffer[i]->setSpacecraftId(0xAFFE);
         sendBuffer[i]->setSourceFlag(true);
-        sendBuffer[i]->setVirtualChannelId(3);
+        sendBuffer[i]->setVirtualChannelId(0);
         sendBuffer[i]->setMapId(1);
         sendBuffer[i]->setTruncatedFlag(true);
         sendBuffer[i]->setTFDZConstructionRules(0);
@@ -192,6 +192,9 @@ void RS485DeviceComIF::initTransferFrameSendBuffers() {
         sendBuffer[i]->setFirstHeaderOffset(0);
 
     }
+    sendBuffer[RS485Devices::PCDU_VORAGO]->setVirtualChannelId(1);
+    sendBuffer[RS485Devices::PL_PIC24]->setVirtualChannelId(2);
+    sendBuffer[RS485Devices::PL_VORAGO]->setVirtualChannelId(3);
     //TODO: Correct VCID and MAP ID for each buffer
 
 }
@@ -207,9 +210,11 @@ void RS485DeviceComIF::handleSend(RS485Devices device, RS485Cookie *rs485Cookie)
     // Buffer is already filled, so just send it
     int retval = UART_write(bus2_uart, sendBuffer[device]->getFullFrame(),
             sendBuffer[device]->getFullFrameSize());
-    //TODO:  We could memset here but USLP wants encapsulation idle packet according to
+
+    //TODO:  We  memset here but USLP wants encapsulation idle packet according to
     // CCSDS 133.1-B-2, additionally there have been problems with non-randomized idle data
-    // so we will not do this
+    // so we will replace this later
+    memset(sendBuffer[device]->getDataZone(), 0, sendBuffer[device]->getDataZoneSize());
 
     //TODO: Mutex for ComStatus
     rs485Cookie->setReturnValue(retval);
