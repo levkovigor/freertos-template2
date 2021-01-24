@@ -91,6 +91,7 @@ BSP_PATH = $(BOARD_FILE_ROOT)
 # Private (non-public) libraries.
 # If programming for AT91 development board or iOBC, add the libraries manually.
 AT91_PATH = $(BOARD_FILE_ROOT)/at91
+SAM9G20_COMMON_PATH = $(BOARD_FILE_ROOT)/common
 HCC_PATH = $(PRIVLIB_PATH)/hcc
 HAL_PATH = $(PRIVLIB_PATH)/hal
 
@@ -210,7 +211,7 @@ INCLUDES :=
 # Source files and includes can be added in those submakefiles.
 SUBDIRS := $(CONFIG_PATH) $(FRAMEWORK_PATH) $(MISSION_PATH) $(BSP_PATH) \
 		$(AT91_PATH) $(TEST_PATH) $(TMTCBRIDGE_PATH) $(PRIVLIB_PATH) \
-		$(FREERTOS_PATH) $(UNITTEST_PATH)
+		$(FREERTOS_PATH) $(UNITTEST_PATH) $(SAM9G20_COMMON_PATH)
 		
 # $(info $${SUBDIRS} is [${SUBDIRS}])	
 # to include the lwip source files

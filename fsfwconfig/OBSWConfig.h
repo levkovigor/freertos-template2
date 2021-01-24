@@ -15,8 +15,13 @@
 #include <stdbool.h>
 #endif
 
-#include <portmacro.h>
+#ifdef AT91SAM9G20_EK
+#include <commonAt91Config.h>
+#else
+#include <commonIOBCConfig.h>
+#endif
 
+#include <portmacro.h>
 
 #define OBSW_RS485_WITH_TERMINATION             1
 
@@ -28,6 +33,9 @@
 #define OBSW_PRINT_MISSED_DEADLINES             1
 #define OBSW_VERBOSE_LEVEL				        1
 
+//! Set to one for SAM-BA boot, necessary for proper low level initialization.
+#define SAM_BA_BOOT                             1
+
 #define MAX_REPOSITORY_PATH_LENGTH 			    64
 #define MAX_FILENAME_LENGTH 				    12
 
@@ -38,25 +46,6 @@ namespace config {
 #if OBSW_MONITOR_ALLOCATION == 1
 extern bool softwareInitializationComplete;
 #endif
-
-/* Hardcoded file names */
-#ifdef AT91SAM9G20_EK
-const char* const BOOTLOADER_REPOSITORY =         "BIN/AT91/BL";
-const char* const SW_REPOSITORY =                 "BIN/AT91/OBSW";
-#else
-const char* const BOOTLOADER_REPOSITORY =         "BIN/IOBC/BL";
-const char* const SW_REPOSITORY =                 "BIN/IOBC/OBSW";
-#endif
-
-const char* const BOOTLOADER_NAME =               "bl.bin";
-const char* const SW_SLOT_0_NAME =                "obsw_sl1.bin";
-const char* const SW_SLOT_1_NAME =                "obsw_sl2.bin";
-const char* const SW_UPDATE_SLOT_NAME =           "obsw_up.bin";
-
-const char* const BL_HAMMING_NAME =               "bl_ham.bin";
-const char* const SW_SLOT_0_HAMMING_NAME =        "sl1_hamm.bin";
-const char* const SW_SLOT_1_HAMMING_NAME =        "sl2_hamm.bin";
-const char* const SW_UPDATE_HAMMING_NAME =        "up_hamm.bin";
 
 //! Reserved small sectors for the bootloader. Each of the small sectors has 8192 bytes
 //! and there are 8 small sectors on the iOBC NOR-Flash chip.

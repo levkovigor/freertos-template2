@@ -49,7 +49,7 @@ SECTIONS
         . = ALIGN(4);
         _sfixed0 = .;
         KEEP(*(.vectors));
-        KEEP(*(.startup));  /* Start up code needed  for FreeRTOS */
+        KEEP(*(.startup)); /* Start up code needed for FreeRTOS */
  		*(.sramfunc)
         *(.text*)
         *(.rodata*)
@@ -136,8 +136,11 @@ SECTIONS
     
     /* Heap section */
 	_sheap_ = .;
-	
+	end = .;
+    PROVIDE ( end = . );
+    PROVIDE ( _end = . );
     _sstack = 0x304000;
+
 }
-end = .;
+
 

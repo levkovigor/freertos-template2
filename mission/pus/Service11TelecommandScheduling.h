@@ -18,6 +18,19 @@ public:
     ReturnValue_t performService() override;
     ReturnValue_t initialize() override;
 
+    enum Subservice {
+        ENABLE_SCHEDULING = 1,
+        DISABLE_SCHEDULING = 2,
+        RESET_SCHEDULING = 3,
+        INSERT_ACTIVITY = 4,    // basic
+        DELETE_ACTIVITY = 5,    // basic
+        FILTER_ACTIVITY = 6,
+        TIMESHIFT_ACTIVITY = 7,
+        DETAIL_REPORT = 9,
+        TIMEBASE_SCHEDULE_DETAIL_REPORT = 10,
+        TIMESHIFT_ALL_SCHEDULE_ACTIVITIES = 15
+    };
+
 
 private:
     struct TelecommandStruct {

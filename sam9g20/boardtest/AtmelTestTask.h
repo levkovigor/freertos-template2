@@ -37,6 +37,7 @@ private:
     void performHammingTest();
     void printFilesTest();
 
+    void tinyfatFsTest();
     Countdown countdown;
 };
 

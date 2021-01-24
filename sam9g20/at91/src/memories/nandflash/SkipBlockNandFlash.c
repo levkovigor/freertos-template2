@@ -160,11 +160,10 @@ unsigned char SkipBlockNandFlash_Initialize(
                                     dataAddress,
                                     pinChipEnable,
                                     pinReadyBusy);
-	#endif
+	#endif /* !defined(OP_BOOTSTRAP_on) */
 
 	#if !defined(OP_BOOTSTRAP_on)
     if (error) {
-
         return error;
     }
 
@@ -193,6 +192,8 @@ unsigned char SkipBlockNandFlash_Initialize(
             }
         }
     }
+    #else
+    if(error) {}
 	#endif
 
     return 0;

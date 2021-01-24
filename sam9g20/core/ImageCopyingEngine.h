@@ -1,20 +1,31 @@
 #ifndef SAM9G20_CORE_IMAGECOPYINGENGINE_H_
 #define SAM9G20_CORE_IMAGECOPYINGENGINE_H_
 
+#include "imageHandlerDefintions.h"
 #include <OBSWConfig.h>
+
+#include <hcc/api_fat.h>
 #include <sam9g20/common/SDCardApi.h>
-#include <sam9g20/core/SoftwareImageHandler.h>
-#include <sam9g20/memory/SDCardDefinitions.h>
-#include <sam9g20/memory/SDCardAccess.h>
 
 #ifdef AT91SAM9G20_EK
-extern "C" {
-#include <at91/memories/nandflash/NandCommon.h>
-}
-#else
-#include <hal/Storage/NORflash.h>
-#include <sam9g20/at91/common/commonIOBCConfig.h>
+#include <sam9g20/common/config/commonAt91Config.h>
+#else /* iOBC */
+#include <sam9g20/common/config/commonIOBCConfig.h>
 #endif
+
+class SoftwareImageHandler;
+class Countdown;
+
+/**
+ * These generic states can be used inside the primary state machine.
+ * They will also be used by the action helper to generate step replies.
+ */
+enum class GenericInternalState {
+    IDLE,
+    STEP_1,
+    STEP_2,
+    STEP_3
+};
 
 /**
  * @brief   This class encapsulates all image copying operations required by
@@ -26,31 +37,29 @@ public:
 
     enum class ImageHandlerStates {
         IDLE,
-        // Copy SDC image either to NOR-Flash (iOBC) or NAND-Flash (AT91 EK)
-        COPY_SDC_IMG_TO_FLASH,
-        // Copy image on NOR-Flash or NAND-Flash to SD-Card
-        COPY_FLASH_IMG_TO_SDC,
-        // Copy bootloader on SD-Card to NOR-Flash or NAND-Flash
-        COPY_SDC_BL_TO_FLASH,
-        // Copy bootloader in FRAM to NOR-Flash or NAND-Flash
-        COPY_FRAM_BL_TO_FLASH,
-        // Replace image on SD-Card by another image on SD-Card
-        REPLACE_SDC_IMG
+        //! Copy SDC image either to NOR-Flash (iOBC) or NAND-Flash (AT91 EK)
+        COPY_IMG_SDC_TO_FLASH,
+        //! Copy image on NOR-Flash or NAND-Flash to SD-Card
+        COPY_IMG_FLASH_TO_SDC,
+        //! Replace image on SD-Card by another image on SD-Card
+        COPY_IMG_SDC_TO_SDC,
+        //! Copy image hamming code (of NOR-Flash or SDC image) to FRAM
+        COPY_IMG_HAMMING_SDC_TO_FRAM,
+
+        //! Copy bootloader in FRAM to NOR-Flash
+        COPY_BL_FRAM_TO_FLASH,
+        //! Copy bootloader hamming code to FRAM
+        COPY_BL_HAMMING_SDC_TO_FRAM,
+        //! Copy bootloader on SD-Card to NOR-Flash or NAND-Flash
+        COPY_BL_SDC_TO_FLASH,
+        //! Copy bootloader on SD-Card to FRAM
+        COPY_BL_SDC_TO_FRAM
     };
 
     ImageCopyingEngine(SoftwareImageHandler* owner, Countdown* countdown,
-            SoftwareImageHandler::ImageBuffer* imgBuffer);
+            image::ImageBuffer* imgBuffer);
 
-    /**
-     * Specify whether a hamming code check will be performed for all
-     * operations.
-     * @param enableHammingCodeCheck
-     */
-    void setHammingCodeCheck(bool enableHammingCodeCheck);
-
-    void setActiveSdCard(SdCard sdCard);
-
-    void enableExtendedDebugOutput(bool enableMoreOutput);
+    // void setActiveSdCard(SdCard sdCard);
 
 #ifdef AT91SAM9G20_EK
     /**
@@ -77,24 +86,22 @@ public:
 
     /**
      * Start an operation to copy something from the SD card to the flash
-     * memory. Don't forget to configure the NAND-Flash once
-     * when calling this on the AT91 board.
+     * memory. Don't forget to configure the NAND-Flash once when calling this on the AT91 board.
      * @param sdCard        Select the SD card
      * @param imageSlot     Select the image slot (if OBSW is copied)
      * @return
      */
-    ReturnValue_t startSdcToFlashOperation(ImageSlot imageSlot);
+    ReturnValue_t startSdcToFlashOperation(image::ImageSlot sourceSlot);
 
     /**
-     * Starts to copy the bootloader to the flash. Use with care!
-     * Parts of this operation might be performed in a special high
-     * priority task which can not be preempted and interrupted to ensure
-     * nothing goes wrong.
-     * @param fromFRAM  Specify whether to copy the bootloader from the FRAM.
-     * Only works on the iOBC.
+     * Starts to copy the bootloader to the flash. Use with care! Parts of this operation might
+     * be performed in a special high priority task which can not be preempted and interrupted
+     * to ensure nothing goes wrong.
+     * @param fromFRAM  Specify whether to copy the bootloader from the FRAM instead of the SD-Card.
+     *                  Only works on the iOBC.
      * @return
      */
-    ReturnValue_t startBootloaderToFlashOperation(bool fromFRAM);
+    ReturnValue_t startBootloaderToFlashOperation(image::ImageSlot bootloaderType, bool fromFram);
 
     /**
      * Copy the image on flash to the SD card. Don't forget to configure the
@@ -103,15 +110,25 @@ public:
      * @param imageSlot
      * @return
      */
-    ReturnValue_t startFlashToSdcOperation(ImageSlot imageSlot);
+    ReturnValue_t startFlashToSdcOperation(image::ImageSlot targetSlot);
+
+#ifdef ISIS_OBC_G20
+    /**
+     * Copy the hamming code belonging to a certain image to the FRAM.
+     * @param respectiveSlot    Hamming code belongs to this image
+     * @param bootloader        Specify to true to copy the hamming code of the bootloader
+     * @return
+     */
+    ReturnValue_t startHammingCodeToFramOperation(image::ImageSlot respectiveSlot);
+#endif
 
     /**
      * Continue the current operation.
      * @return
-     * -@c RETURN_OK if the operation was finished
-     * -@c TASK_PERIOD_OVER_SOON if the operation was continued but not finished
-     *     and the task period is over soon.
-     * -@c RETURN_FAILED if the operation has failed.
+     *      -@c RETURN_OK if the operation was finished
+     *      -@c TASK_PERIOD_OVER_SOON if the operation was continued but not finished
+     *          and the task period is over soon.
+     *      -@c RETURN_FAILED if the operation has failed.
      */
     ReturnValue_t continueCurrentOperation();
 
@@ -119,18 +136,19 @@ public:
      * Reset the state of the helper class.
      */
     void reset();
+
 private:
-    SoftwareImageHandler* owner;
-    Countdown* countdown;
-    SoftwareImageHandler::ImageBuffer* imgBuffer;
+    SoftwareImageHandler* owner = nullptr;
+    Countdown* countdown = nullptr;
+    image::ImageBuffer* imgBuffer = nullptr;
 
     ImageHandlerStates imageHandlerState = ImageHandlerStates::IDLE;
-    SdCard activeSdCard = SdCard::SD_CARD_0;
-    ImageSlot imageSlot = ImageSlot::IMAGE_0;
     GenericInternalState internalState = GenericInternalState::IDLE;
-    bool performHammingCodeCheck = false;
-    bool extendedDebugOutput = false;
-    bool bootloader = false;
+
+    image::ImageSlot sourceSlot = image::ImageSlot::NONE;
+    image::ImageSlot targetSlot = image::ImageSlot::NONE;
+
+    bool hammingCode = false;
     uint16_t stepCounter = 0;
     size_t currentByteIdx = 0;
     size_t currentFileSize = 0;
@@ -141,7 +159,6 @@ private:
     uint16_t helperCounter2 = 0;
 
     ImageHandlerStates lastFinishedState = ImageHandlerStates::IDLE;
-
 
 #ifdef AT91SAM9G20_EK
     bool nandConfigured = false;
@@ -167,7 +184,8 @@ private:
     The algorithms assumes 8 small sectors are reserved for the bootloader! */
     static constexpr size_t NORFLASH_TOTAL_SMALL_SECTOR_MEM_OBSW =
     		RESERVED_OBSW_SMALL_SECTORS * NORFLASH_SMALL_SECTOR_SIZE;
-    static constexpr size_t COPYING_BUCKET_SIZE = 2048;
+    static constexpr size_t COPYING_BUCKET_SIZE = NORFLASH_SMALL_SECTOR_SIZE;
+    ReturnValue_t copyImgHammingSdcToFram();
     ReturnValue_t copySdCardImageToNorFlash();
 
     /**
@@ -185,14 +203,22 @@ private:
     void writeBootloaderSizeAndCrc();
 #endif /* AT91SAM9G20_EK */
 
+    /**
+     * Generic handler to open files and read important information like size.
+     * @param currentVolume
+     * @param filePtr
+     * @return
+     *  - F_ERR_NOTFOUND if file was not found.
+     */
     ReturnValue_t prepareGenericFileInformation(VolumeId currentVolume,
             F_FILE** filePtr);
+
+    ReturnValue_t copySdcImgToSdc();
 
     /**
      * Generic function to read file which also simplfies error handling.
      * Plese note that this only works if the file already has been opened.
-     * Also, the pointer from where to read inb the file
-     * should be set beforehand.
+     * Also, the pointer from where to read in the file should be set beforehand.
      * @param buffer    Buffer where the read data will be stored
      * @param sizeToRead
      * @param sizeRead  Actual number of bytes read, can be smaller if close
@@ -203,10 +229,11 @@ private:
      * -@c RETURN_FAILED Reading failed 3 times
      * -@c RETURN_OK Read success
      */
-    ReturnValue_t readFile(uint8_t* buffer, size_t sizeToRead,
-            size_t* sizeRead, F_FILE** file);
+    ReturnValue_t readFile(uint8_t* buffer, size_t sizeToRead, size_t* sizeRead, F_FILE** file);
 
-    void handleInfoPrintout(int currentVolume);
+    void handleInfoPrintout(VolumeId currentVolume);
+    void handleGenericInfoPrintout(char const* board, char const* typePrint,
+            char const* sourcePrint, char const* targetPrint);
     void handleFinishPrintout();
 
 };
