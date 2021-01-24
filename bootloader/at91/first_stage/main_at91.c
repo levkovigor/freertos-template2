@@ -93,7 +93,7 @@ int perform_bootloader_core_operation() {
     LED_Clear(0);
     LED_Clear(1);
 
-    copy_nandflash_binary_to_sdram(SECOND_STAGE_BL_NAND_OFFSET, SECOND_STAGE_BL_RESERVED_SIZE,
+    copy_nandflash_image_to_sdram(SECOND_STAGE_BL_NAND_OFFSET, SECOND_STAGE_BL_RESERVED_SIZE,
             SECOND_STAGE_SDRAM_OFFSET, true);
 
     LED_Set(0);
