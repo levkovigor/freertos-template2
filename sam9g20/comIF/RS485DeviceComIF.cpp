@@ -248,20 +248,6 @@ void RS485DeviceComIF::handleTmSend(RS485Devices device, RS485Cookie *rs485Cooki
     }
 }
 
-void RS485DeviceComIF::genericUartCallback(SystemContext context,
-xSemaphoreHandle sem) {
-    BaseType_t higherPriorityTaskAwoken = pdFALSE;
-    if (context == SystemContext::task_context) {
-        BinarySemaphore::release(sem);
-    } else {
-        BinarySemaphore::releaseFromISR(sem, &higherPriorityTaskAwoken);
-    }
-    if (context == SystemContext::isr_context and higherPriorityTaskAwoken == pdPASS) {
-        // Request a context switch before exiting ISR, as recommended
-        // by FreeRTOS.
-        TaskManagement::requestContextSwitch(CallContext::ISR);
-    }
-}
 
 ReturnValue_t RS485DeviceComIF::checkDriverState(uint8_t *retryCount) {
     UARTdriverState readState = UART_getDriverState(bus2_uart, read_uartDir);

@@ -108,9 +108,8 @@ private:
     //Array with pointers to frame buffers
     std::array<USLPTransferFrame*, RS485Devices::DEVICE_COUNT_RS485> sendBuffer;
 
-    // Used for handling the TM Queue, this class is already big enough
+    // Used for handling the TM and TC Queue, this class is already big enough
     object_id_t tmTcTargetId = objects::NO_OBJECT;
-
     RS485TmTcTarget *tmTcTarget = nullptr;
 
     /**
@@ -129,8 +128,6 @@ private:
      * @details Calls RS485TmTcTarget fillFrameBuffer
      */
     void handleTmSend(RS485Devices device, RS485Cookie *rs485Cookie);
-    static void genericUartCallback(SystemContext context,
-    xSemaphoreHandle sem);
 
     ReturnValue_t checkDriverState(uint8_t *retryCount);
 
