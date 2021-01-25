@@ -416,7 +416,8 @@ void initTasks(void) {
     SystemStateTask -> startTask();
     //ThermalController -> startTask();
     SpiComTask->startTask();
-    RS485PollingTask->startTask();
+    //RS485PollingTask->startTask();
+    //RS485TmTcTask->startTask();
     PollingSequenceTableTaskRS485->startTask();
 
 #if FSFW_CPP_OSTREAM_ENABLED == 1
