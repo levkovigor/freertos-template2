@@ -73,10 +73,13 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
     }
 
     RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(deviceCookies[device]);
-    // We stop the bus here so that it is active for the whole comSlot of one device
 
-    // TODO: See what happens if the bus is not active and stopped
+    // We stop the bus here so that it is active for the whole comSlot of one device
+    // If we stop when its not active, bad things happen
+    int status = UART_getDriverState(bus2_uart, write_uartDir);
+    if(status != uninitialized_uartState){
     int status = UART_stop(bus2_uart);
+    }
 
     // Setting baudrate
     uartConfig.baudrate = rs485Cookie->getBaudrate();

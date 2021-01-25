@@ -239,7 +239,7 @@ void Factory::produce(void) {
     rs485CookieFPGA = new RS485Cookie(RS485Devices::COM_FPGA, RS485BaudRates::FAST);
 
     CookieIF *rs485CookiePCDU = nullptr;
-    rs485CookiePCDU = new RS485Cookie(RS485Devices::COM_FPGA, RS485BaudRates::NORMAL);
+    rs485CookiePCDU = new RS485Cookie(RS485Devices::PCDU_VORAGO, RS485BaudRates::NORMAL);
 
     new TestDevice(objects::DUMMY_HANDLER_RS485_1, objects::RS485_DEVICE_COM_IF, rs485CookieFPGA,
             true);
