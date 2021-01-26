@@ -43,14 +43,22 @@
 #define FIQ_STACK_SIZE	0x00000100		/* Stack size for "FIQ" interrupts						*/
 #define IRQ_STACK_SIZE	0x00000400		/* Stack size for "IRQ" normal interrupts				*/
 #define SVC_STACK_SIZE	0x00000400		/* Stack size for "SVC" supervisor mode                 */
+
 #elif sdram
-// TODO: smaller stack for second stage bootloader.
-// Around 200 kB of stack for non-system modes.
+
+#ifdef BOOTLOADER
 #define UND_STACK_SIZE	0x00000200		/* Stack size for "undefined instruction" interrupts	*/
 #define ABT_STACK_SIZE	0x00000200		/* Stack size for "abort" interrupts					*/
 #define FIQ_STACK_SIZE	0x00000100		/* Stack size for "FIQ" interrupts						*/
 #define IRQ_STACK_SIZE	0x00018000		/* Stack size for "IRQ" normal interrupts				*/
 #define SVC_STACK_SIZE	0x00018000		/* Stack size for "SVC" supervisor mode                 */
+#else
+#define UND_STACK_SIZE  0x00000200      /* Stack size for "undefined instruction" interrupts    */
+#define ABT_STACK_SIZE  0x00000200      /* Stack size for "abort" interrupts                    */
+#define FIQ_STACK_SIZE  0x00000100      /* Stack size for "FIQ" interrupts                      */
+#define IRQ_STACK_SIZE  0x00002000      /* Stack size for "IRQ" normal interrupts               */
+#define SVC_STACK_SIZE  0x00002000      /* Stack size for "SVC" supervisor mode                 */
+#endif
 
 #endif
 
@@ -312,9 +320,9 @@ resetHandler:
 	msr     CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
 	mov     sp, r0
 
-/* Start in supervisor mode, Operation will switch to system mode when the
+/* Start in supervisor mode, Operation will switch to system mode with enabled interrupts when the
 first task starts */
-    msr     CPSR_c, #ARM_MODE_SVC | F_BIT
+    msr     CPSR_c, #ARM_MODE_SVC | F_BIT | I_BIT
 
 /* Call static constructors, required for C++ code.
 this call deactivates the interrupts agein
@@ -335,14 +343,16 @@ placed in the .init_array and calls all static constructors */
 	b       1b
 
 /* Jump to application and put the core into default power-on state.
-First argument is the jump address, use
-extern void jump_to_sdram_application(uint32_t jump_address) in C code or
-extern "C" extern void jump_to_sdram_application(uint32_t jump_address) in C++ code to use it */
+First argument is the jump address, use it like this:
+C: extern void jump_to_sdram_application(uint32_t stack_ptr, uint32_t jump_address)
+C++: extern "C" extern void jump_to_sdram_application(uint32_t stack_ptr, uint32_t jump_address)
+ */
     .globl jump_to_sdram_application
     .align 4
     .type jump_to_sdram_application, %function
 
 jump_to_sdram_application:
+    /* Put the core into supervisor mode with interrupts disabled */
     msr CPSR_c, #ARM_MODE_SVC | F_BIT | I_BIT
     mov sp, r0
     mov pc, r1

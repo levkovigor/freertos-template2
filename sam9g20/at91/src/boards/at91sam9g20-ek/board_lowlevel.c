@@ -51,6 +51,8 @@
 #include <board_lowlevel.h>
 #include <board_memories.h>
 #include <at91/peripherals/pmc/pmc.h>
+#include <at91/peripherals/aic/aic.h>
+#include <at91/peripherals/pit/pit.h>
 #include <at91/utility/trace.h>
 #include <led_ek.h>
 
@@ -185,6 +187,13 @@ void LowLevelInit(void)
     AT91C_BASE_RTTC->RTTC_RTMR &= ~(AT91C_RTTC_ALMIEN | AT91C_RTTC_RTTINCIEN);
     AT91C_BASE_PITC->PITC_PIMR &= ~AT91C_PITC_PITIEN;
     
+    // Clear AIC and PIT interrupts and disable them.
+    AT91C_BASE_AIC->AIC_ICCR = 1 << AT91C_ID_SYS;
+    AIC_DisableIT( AT91C_ID_SYS );
+    PIT_GetPIVR();
+    PIT_DisableIT();
+    PIT_Disable();
+
 #if defined(norflash)
     BOARD_ConfigureNorFlash(BOARD_NORFLASH_DFT_BUS_SIZE);
 #endif    

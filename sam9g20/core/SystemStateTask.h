@@ -31,11 +31,8 @@ public:
     ReturnValue_t performOperation(uint8_t opCode) override;
 
     // Read system state into the task status array.
-    bool readSystemState();
-    bool generateStatsAndCheckStack();
-    // Perform both operation at once
-    bool readAndGenerateStats();
-
+    bool generateStatsCsv();
+    bool generateStatsPrint();
     /**
      * Called manually.
      * @return
@@ -46,12 +43,11 @@ public:
 private:
     enum class InternalState {
     	IDLE,
-        READING_STATS,
-        GENERATING_STATS,
+        GENERATING_STATS_CSV,
+        GENERATING_STATS_PRINT
     };
     InternalState internalState;
-    bool readOnce = false;
-    bool doubleOperationRequested = false;
+    bool dataRead = false;
 
     object_id_t coreControllerId;
     CoreController* coreController = nullptr;
@@ -63,7 +59,7 @@ private:
     TaskStatus_t* taskStatusWritePtr = nullptr;
 
 
-    void generateStatsCsvAndCheckStack();
+    void performStatsGeneration(InternalState csvOrPrint);
     void writePaddedName(uint8_t* buffer,
             const char *pcTaskName);
     void writeDebugStatLine(const TaskStatus_t& task,

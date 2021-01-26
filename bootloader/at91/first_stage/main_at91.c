@@ -59,12 +59,13 @@ int at91_main()
     //-------------------------------------------------------------------------
     // Initiate periodic MS interrupt
     //-------------------------------------------------------------------------
-    // Issues if this is enabled..
+    /* Issues if this is enabled.. Possible related to FreeRTOS issue in second-level bootloader */
     //setup_timer_interrupt();
 
     //-------------------------------------------------------------------------
     // Configure SDRAM
     //-------------------------------------------------------------------------
+    /* Was already done in LowLevelInit, so we don't need to do this again */
     //BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
 
     //-------------------------------------------------------------------------
@@ -78,7 +79,7 @@ int at91_main()
     //-------------------------------------------------------------------------
     // AT91SAM9G20-EK Bootloader
     //-------------------------------------------------------------------------
-    // Configure RTT for second time base. Not required for now.
+    /* Configure RTT for second time base. Not required for now. */
     // RTT_start();
 
     //-------------------------------------------------------------------------
@@ -93,7 +94,7 @@ int perform_bootloader_core_operation() {
     LED_Clear(0);
     LED_Clear(1);
 
-    copy_nandflash_binary_to_sdram(SECOND_STAGE_BL_NAND_OFFSET, SECOND_STAGE_BL_RESERVED_SIZE,
+    copy_nandflash_image_to_sdram(SECOND_STAGE_BL_NAND_OFFSET, SECOND_STAGE_BL_RESERVED_SIZE,
             SECOND_STAGE_SDRAM_OFFSET, true);
 
     LED_Set(0);
