@@ -92,7 +92,7 @@ ReturnValue_t SystemStateTask::initializeAfterTaskCreation() {
     if(coreController == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
-    // to prevent garbage output.
+    /* To prevent mangled output */
     TaskFactory::delayTask(5);
 #if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "SystemStateTask: " << numberOfTasks << " tasks counted." << std::endl;
