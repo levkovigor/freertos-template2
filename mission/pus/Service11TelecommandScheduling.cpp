@@ -24,8 +24,6 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest(uint8_t subservice) 
         const uint8_t* pRawData = nullptr;  // "(non-const) pointer to const unsigned 8-bit int"
 
         // get serialized data packet
-        //ReturnValue_t ret = this->currentPacket.getData(&pRawData, &size);
-        //ReturnValue_t ret = this->currentPacket.getApplicationData();
         pRawData = this->currentPacket.getApplicationData();
 //        if (ret != RETURN_OK){
 //            // data not retrieved successfully
@@ -81,6 +79,10 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest(uint8_t subservice) 
 ReturnValue_t Service11TelecommandScheduling::performService() {
 
     //sif::info << "Service11TelecommandScheduling performing." << std::endl;
+
+    for (auto it = telecommandMap.begin(); it != telecommandMap.end(); ++it) {
+        // check if TC shall run
+    }
 
     return HasReturnvaluesIF::RETURN_OK;
 }
