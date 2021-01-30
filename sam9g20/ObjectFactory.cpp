@@ -78,7 +78,6 @@
 
 #include <cstdint>
 
-
 /**
  * Build tasks by using SystemObject Interface (Interface).
  * Header files of all tasks must be included
@@ -100,7 +99,7 @@ void Factory::produce(void) {
     {
         LocalPool::LocalPoolConfig poolConfig = {
                 {250, 32}, {120, 64}, {100, 128}, {50, 256},
-                {25, 512}, {10, 1024}, {10, 2048}
+                {25, 512}, {10, config::STORE_LARGE_BUCKET_SIZE}, {10, 2048}
         };
         PoolManager* ipcStore = new PoolManager(objects::IPC_STORE, poolConfig);
         size_t additionalSize = 0;
@@ -117,7 +116,7 @@ void Factory::produce(void) {
     {
         LocalPool::LocalPoolConfig poolConfig = {
                 {500, 32}, {250, 64}, {120, 128}, {60, 256},
-                {30, 512}, {15, 1024}, {10, 2048}
+                {30, 512}, {15, config::STORE_LARGE_BUCKET_SIZE}, {10, 2048}
         };
         PoolManager* tmStore = new PoolManager(objects::TM_STORE, poolConfig);
         size_t additionalSize = 0;
@@ -134,7 +133,7 @@ void Factory::produce(void) {
     {
         LocalPool::LocalPoolConfig poolConfig = {
                 {500, 32}, {250, 64}, {120, 128},
-                {60, 256}, {30, 512}, {15, 1024}, {10, 2048}
+                {60, 256}, {30, 512}, {15, config::STORE_LARGE_BUCKET_SIZE}, {10, 2048}
         };
         PoolManager* tcStore =new PoolManager(objects::TC_STORE, poolConfig);
         size_t additionalSize = 0;

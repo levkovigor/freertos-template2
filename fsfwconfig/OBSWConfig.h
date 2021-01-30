@@ -99,6 +99,8 @@ static const uint32_t SPI_DEFAULT_TIMEOUT_MS =          40;
 static const size_t USB_FRAME_SIZE =                    1500;
 static const uint32_t MAX_STORED_TELECOMMANDS =         2000;
 
+static const size_t STORE_LARGE_BUCKET_SIZE =           1024;
+static const size_t STORE_VERY_LARGE_BUCKET_SIZE =      2048;
 
 #ifdef __cplusplus
 }
