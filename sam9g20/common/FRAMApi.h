@@ -11,11 +11,6 @@
 #ifndef MISSION_MEMORY_FRAMAPI_H_
 #define MISSION_MEMORY_FRAMAPI_H_
 
-#include <sam9g20/common/SDCardApi.h>
-#include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
-
 /**
          ____________________________________________
         |                                            |
@@ -37,12 +32,11 @@
 extern "C" {
 #endif
 
-/**
- * Big blocks at the end of FRAM. This address was retrieved FRAM_getMaxAddress.
- * Actually the iOBC datasheet states that the FRAM has 256kB, but the functions returns
- * almost double the size... We still hardcode half of the returned value.
- */
-static const uint32_t FRAM_END_ADDR = 0x3ffff;
+#include <sam9g20/common/SDCardApi.h>
+#include <sam9g20/common/config/commonConfig.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
 
 //! Calculated required size: 0x20000 (bootloader) * 3 / 256
 //! (because 3 parity bits are generated per 256 byte block)
@@ -120,6 +114,15 @@ int write_nor_flash_hamming_size(size_t hamming_size, bool set_hamming_flag);;
 int write_nor_flash_hamming_code(uint8_t* hamming_code, size_t current_offset,
         size_t size_to_write);
 /**
+ * Functions used to enable hamming flag checks for the NOR-Flash. Should be cleared
+ * when the NOR-Flash image is updated and set again when  the corresponding hamming code
+ * has been uploaded.
+ * @return
+ */
+int set_flash_hamming_flag();
+int clear_flash_hamming_flag();
+int get_flash_hamming_flag();
+/**
  * Can be used to determine the size of the hamming code.
  * @param hamming_size
  * @param set_hamming_flag
@@ -145,6 +148,10 @@ int reset_nor_flash_reboot_counter();
 int increment_sdc0_slot0_reboot_counter();
 int read_sdc0_slot0_reboot_counter(uint8_t* sdc1sl1_reboot_counter);
 int reset_sdc0_slot0_reboot_counter();
+
+int set_sdc_hamming_flag(VolumeId volume, SdSlots slot);
+int get_sdc_hamming_flag(bool* flag_set, VolumeId volume, SdSlots slot);
+int clear_sdc_hamming_flag(VolumeId volume, SdSlots slot);
 
 int set_bootloader_faulty(bool faulty);
 int is_bootloader_faulty(bool* faulty);

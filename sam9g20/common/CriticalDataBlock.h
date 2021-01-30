@@ -5,6 +5,13 @@
 #include <stddef.h>
 
 /**
+ * Big blocks at the end of FRAM. This address was retrieved FRAM_getMaxAddress.
+ * Actually the iOBC datasheet states that the FRAM has 256kB, but the functions returns
+ * almost double the size... We still hardcode half of the returned value.
+ */
+static const uint32_t FRAM_END_ADDR = 0x3ffff;
+
+/**
  * This struct will gather all critical data stored on (virutalized) FRAM.
  */
 typedef struct __attribute__((__packed__))  _CriticalDataBlock {
@@ -30,6 +37,7 @@ typedef struct __attribute__((__packed__))  _CriticalDataBlock {
     uint32_t nor_flash_binary_size;
     /* NOR-Flash binary hamming code size */
     size_t nor_flash_hamming_code_size;
+    uint32_t nor_flash_hamming_flag;
     uint32_t nor_flash_reboot_counter;
 
     /* SD-Card */
@@ -41,28 +49,28 @@ typedef struct __attribute__((__packed__))  _CriticalDataBlock {
     /* Reboot counters SD Card 0 slot 0 */
     uint32_t sdc0_image_slot0_reboot_counter;
     /* Hamming code flag, explanation see above (nor_flash_use_hamming_flag) */
-    uint32_t sdc0_image_slot0_use_hamming_flag;
+    uint32_t sdc0_image_slot0_hamming_flag;
     /* Hamming code size for SD Card 0 slot 0 */
     size_t sdc0_image_slot0_hamming_size;
 
     /* Reboot counters SD Card Card 0 slot 1 */
     uint32_t sdc0_image_slot1_reboot_counter;
     /* Hamming code flag, explanation see above */
-    uint32_t sdc0_image_slot1_use_hamming_flag;
+    uint32_t sdc0_image_slot1_hamming_flag;
     /* Hamming code size for SD Card 0 slot 1 */
     size_t sdc0_image_slot1_hamming_size;
 
     /* Reboot counters SD Card 1 slot 0 */
     uint32_t sdc1_image_slot0_reboot_counter;
     /* Hamming code flag, explanation see above */
-    uint32_t sdc1_image_slot0_use_hamming_flag;
+    uint32_t sdc1_image_slot0_hamming_flag;
     /* Hamming code size for SD Card 1 slot 0 */
     size_t sdc1_image_slot0_hamming_size;
 
     /* Reboot counters SD Card Card 1 slot 1 */
     uint32_t sdc1_image_slot1_reboot_counter;
     /* Hamming code flag, explanation see above */
-    uint32_t sdc1_image_slot1_use_hamming_flag;
+    uint32_t sdc1_image_slot1_hamming_flag;
     /* Hamming code size for SD Card 1 slot 1*/
     size_t sdc1_image_slot1_hamming_size;
 
@@ -114,6 +122,8 @@ static const uint32_t HAMMING_CHECK_FLAG_ADDR =
 /* NOR-Flash binary offsets */
 static const uint32_t NOR_FLASH_BINARY_SIZE_ADDR =
         offsetof(CriticalDataBlock, nor_flash_binary_size);
+static const uint32_t NOR_FLASH_HAMMING_FLAG_ADDR =
+        offsetof(CriticalDataBlock, nor_flash_hamming_flag);
 static const uint32_t NOR_FLASH_HAMMING_CODE_SIZE_ADDR =
         offsetof(CriticalDataBlock, nor_flash_hamming_code_size);
 static const uint32_t NOR_FLASH_REBOOT_COUNTER_ADDRESS =
@@ -124,23 +134,31 @@ static const uint32_t PREFERED_SD_CARD_ADDR = offsetof(CriticalDataBlock, prefer
 
 static const uint32_t SDC0_SL0_REBOOT_COUNTER_ADDR =
         offsetof(CriticalDataBlock, sdc0_image_slot0_reboot_counter);
-static const uint32_t SDC0_SL0_HAMMING_SIZ_ADDR =
+static const uint32_t SDC0_SL0_HAMMING_SIZE_ADDR =
         offsetof(CriticalDataBlock, sdc0_image_slot0_hamming_size);
+static const uint32_t SDC0_SL0_HAMMING_FLAG_ADDR =
+        offsetof(CriticalDataBlock, sdc0_image_slot0_hamming_flag);
 
 static const uint32_t SDC0_SL1_REBOOT_COUNTER_ADDR =
         offsetof(CriticalDataBlock, sdc0_image_slot1_reboot_counter);
-static const uint32_t SDC0_SL1_HAMMING_SIZ_ADDR =
+static const uint32_t SDC0_SL1_HAMMING_SIZE_ADDR =
         offsetof(CriticalDataBlock, sdc0_image_slot1_hamming_size);
+static const uint32_t SDC0_SL1_HAMMING_FLAG_ADDR =
+        offsetof(CriticalDataBlock, sdc0_image_slot1_hamming_flag);
 
 static const uint32_t SDC1_SL0_REBOOT_COUNTER_ADDR =
         offsetof(CriticalDataBlock, sdc1_image_slot0_reboot_counter);
 static const uint32_t SDC1_SL0_HAMMING_SIZ_ADDR =
         offsetof(CriticalDataBlock, sdc1_image_slot0_hamming_size);
+static const uint32_t SDC1_SL0_HAMMING_FLAG_ADDR =
+        offsetof(CriticalDataBlock, sdc1_image_slot0_hamming_flag);
 
 static const uint32_t SDC1_SL1_REBOOT_COUNTER_ADDR =
         offsetof(CriticalDataBlock, sdc1_image_slot1_reboot_counter);
 static const uint32_t SDC1_SL1_HAMMING_SIZ_ADDR =
         offsetof(CriticalDataBlock, sdc1_image_slot1_hamming_size);
+static const uint32_t SDC1_SL1_HAMMING_FLAG_ADDR =
+        offsetof(CriticalDataBlock, sdc1_image_slot1_hamming_flag);
 
 static const uint32_t NUMBER_OF_ACTIVE_TASKS_ADDRESS =
         offsetof(CriticalDataBlock, number_of_active_tasks);

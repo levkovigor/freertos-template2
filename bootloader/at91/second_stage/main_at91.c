@@ -1,25 +1,24 @@
 #include "../common/at91_boot_from_nand.h"
+#include "at91_boot_from_sd.h"
 #include <bootloaderConfig.h>
 #include <core/timer.h>
-#include <sam9g20/common/SRAMApi.h>
 
-#include <board.h>
-#include <AT91SAM9G20.h>
-#include <led_ek.h>
-#include <board_memories.h>
-#include <peripherals/dbgu/dbgu.h>
-#include <peripherals/pio/pio.h>
-#include <peripherals/aic/aic.h>
-#include <peripherals/pio/pio.h>
-#include <cp15/cp15.h>
+#include <sam9g20/common/SRAMApi.h>
+#include <sam9g20/common/VirtualFRAMApi.h>
+
+#include <at91/boards/at91sam9g20-ek/board.h>
+#include <at91/boards/at91sam9g20-ek/at91sam9g20/AT91SAM9G20.h>
+#include <at91/boards/at91sam9g20-ek/led_ek.h>
+#include <at91/boards/at91sam9g20-ek/board_memories.h>
+#include <at91/peripherals/pit/pit.h>
+#include <at91/peripherals/dbgu/dbgu.h>
+#include <at91/peripherals/pio/pio.h>
+#include <at91/peripherals/aic/aic.h>
+#include <at91/peripherals/pio/pio.h>
+#include <at91/peripherals/cp15/cp15.h>
+#include <at91/utility/trace.h>
 
 #include <hal/Timing/RTT.h>
-#include <privlib/hcc/include/hcc/api_hcc_mem.h>
-#include <sam9g20/common/SDCardApi.h>
-
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
-#include <utility/trace.h>
-#endif
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -83,7 +82,7 @@ int at91_main()
     perform_bootloader_core_operation();
 #else
     /* Right now, FreeRTOS is problematic, program crashes in portRESTORE_CONTEXT() when
-    branching to first task. */
+    branching to first task sometimes. It was not possible to solve this problem. */
     xTaskCreate(handler_task, "HANDLER_TASK", 1024, NULL, 4, &handler_task_handle_glob);
     xTaskCreate(init_task, "INIT_TASK", 1024, handler_task_handle_glob, 5, NULL);
     TRACE_INFO("Remaining FreeRTOS heap size: %d bytes.\n\r", xPortGetFreeHeapSize());
@@ -145,10 +144,12 @@ int perform_bootloader_core_operation() {
     LED_Clear(0);
     LED_Clear(1);
 
-    memset((void*) SDRAM_DESTINATION, 0, PRIMARY_IMAGE_RESERVED_SIZE);
-
-    copy_nandflash_binary_to_sdram(PRIMARY_IMAGE_NAND_OFFSET, PRIMARY_IMAGE_RESERVED_SIZE,
+    int result = 0;
+    //result = copy_sdc_image_to_sdram();
+    result = copy_nandflash_image_to_sdram(PRIMARY_IMAGE_NAND_OFFSET, PRIMARY_IMAGE_RESERVED_SIZE,
             PRIMARY_IMAGE_SDRAM_OFFSET, false);
+
+    if(result != 0) {};
 
     LED_Set(0);
 
@@ -159,7 +160,14 @@ int perform_bootloader_core_operation() {
 
 #if USE_FREERTOS == 1
     vTaskEndScheduler();
+    // Clear AIC and PIT interrupts and disable them.
+    AT91C_BASE_AIC->AIC_ICCR = 1 << AT91C_ID_SYS;
+    AIC_DisableIT( AT91C_ID_SYS );
+    PIT_GetPIVR();
+    PIT_DisableIT();
+    PIT_Disable();
 #endif
+
     CP15_Disable_I_Cache();
 
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
@@ -175,28 +183,4 @@ void print_bl_info() {
     TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 }
 
-//VolumeId current_volume = SD_CARD_0;
-//int result = open_filesystem();
-//if(result != F_NO_ERROR) {
-//   /* not good, should not happen.
-//   hcc_mem_delete();
-//   return -1;
-//}
-//
-//result = select_sd_card(current_volume, true);
-//if(result != F_NO_ERROR) {
-//   /* not good, should not happen. */
-//   close_filesystem(true, true, current_volume);
-//   return -1;
-//}
-//
-//result = change_directory(SW_REPOSITORY, true);
-//if(result != F_NO_ERROR) {
-//#if BOOTLOADER_VERBOSE_LEVEL >= 1
-//   TRACE_WARNING("Target SW repository \"%s\" does not exist.\n\r", SW_REPOSITORY);
-//#endif
-//   /* not good, should not happen. */
-//   close_filesystem(true, true, current_volume);
-//   return -1;
-//}
 

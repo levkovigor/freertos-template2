@@ -115,7 +115,7 @@ ReturnValue_t SystemStateTask::initializeAfterTaskCreation() {
                         "Core Controller does not exist");
         return HasReturnvaluesIF::RETURN_FAILED;
     }
-    // to prevent garbage output.
+    /* To prevent mangled output */
     TaskFactory::delayTask(5);
 #if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "SystemStateTask: " << numberOfTasks << " tasks counted." << std::endl;

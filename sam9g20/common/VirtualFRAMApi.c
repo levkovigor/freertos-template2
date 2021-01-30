@@ -53,7 +53,7 @@ int create_generic_fram_file() {
 
     /* We do it like this so we don't have to allocate a buffer just to create an empty file
     with the correct length */
-    file = f_truncate(VIRT_FRAM_NAME, sizeof(CriticalDataBlock));
+    file = f_truncate(VIRT_FRAM_NAME, FRAM_END_ADDR + 1);
     if(file == NULL) {
         /* Could not truncate file should not happen! */
         return -1;

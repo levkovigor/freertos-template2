@@ -2,12 +2,15 @@
 #include "ImageCopyingEngine.h"
 #include "ScrubbingEngine.h"
 
-#include <sam9g20/memory/SDCardHandler.h>
+
 #include <fsfw/tasks/PeriodicTaskIF.h>
 #include <fsfw/timemanager/Countdown.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
+
+#include <sam9g20/memory/SDCardHandler.h>
+#include <sam9g20/memory/SDCardAccess.h>
 
 #ifdef ISIS_OBC_G20
 #include <sam9g20/common/FRAMApi.h>
@@ -37,7 +40,7 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
 #else
             sif::printWarning("SoftwareImageHandler::performOperation: "
                     "Error receiving message!\n");
-#endif
+#endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
         }
 
         result = actionHelper.handleActionMessage(&message);
@@ -62,7 +65,7 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
 
             result = imgCpHelper->continueCurrentOperation();
             // timeout or failure.
-            if(result == TASK_PERIOD_OVER_SOON) {
+            if(result == image::TASK_PERIOD_OVER_SOON) {
                 return HasReturnvaluesIF::RETURN_OK;
             }
             else if(result == HasReturnvaluesIF::RETURN_FAILED) {
@@ -114,7 +117,7 @@ ReturnValue_t SoftwareImageHandler::initialize() {
                 << std::endl;
 #else
         sif::printError("SoftwareImageHandler::initialize: NOR-Flash start failed\n");
-#endif
+#endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
         return result;
     }
 #endif
@@ -144,7 +147,7 @@ void SoftwareImageHandler::setTaskIF(PeriodicTaskIF *executingTask) {
 
 
 void SoftwareImageHandler::checkSdCardImage(SdCard sdCard,
-        ImageSlot imageSlot) {
+        image::ImageSlot imageSlot) {
 }
 
 MessageQueueId_t SoftwareImageHandler::getCommandQueue() const {
@@ -159,11 +162,37 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
         if(handlerState == HandlerState::COPYING) {
             return HasActionsIF::IS_BUSY;
         }
+#if defined(AT91SAM9G20_EK)
+        /* No FRAM support yet */
+        if(size < 1) {
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+        image::ImageSlot sourceSlot = image::ImageSlot::NONE;
+        if(data[0] == 0) {
+            sourceSlot = image::ImageSlot::BOOTLOADER_0;
+        }
+#if BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE
+        else if(data[0] == 1) {
+            sourceSlot = image::ImageSlot::BOOTLOADER_1;
+
+        }
+#endif
+        else {
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+
+        imgCpHelper->startBootloaderToFlashOperation(sourceSlot, false);
+#else /* iOBC */
+
         if(size != 1) {
             return HasActionsIF::INVALID_PARAMETERS;
         }
 
-        imgCpHelper->startBootloaderToFlashOperation(false);
+        bool fromFram = data[0];
+        imgCpHelper->startBootloaderToFlashOperation(image::ImageSlot::BOOTLOADER_0, fromFram);
+
+#endif
+
         currentAction = actionId;
         recipient = commandedBy;
         handlerState = HandlerState::COPYING;
@@ -172,7 +201,7 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
     }
     case(COPY_OBSW_SDC_TO_FLASH): {
         if(handlerState == HandlerState::COPYING) {
-            actionHelper.finish(commandedBy, actionId, BUSY);
+            actionHelper.finish(commandedBy, actionId, image::BUSY);
         }
         if(size != 1) {
             return HasActionsIF::INVALID_PARAMETERS;
@@ -181,10 +210,10 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
         uint8_t targetBinary = data[0];
 
         if(targetBinary == 0) {
-            imgCpHelper->startSdcToFlashOperation(ImageSlot::SDC_SLOT_0);
+            imgCpHelper->startSdcToFlashOperation(image::ImageSlot::SDC_SLOT_0);
         }
         else if(targetBinary == 1) {
-            imgCpHelper->startSdcToFlashOperation(ImageSlot::SDC_SLOT_1);
+            imgCpHelper->startSdcToFlashOperation(image::ImageSlot::SDC_SLOT_1);
         }
         else {
             return HasActionsIF::INVALID_PARAMETERS;
@@ -198,7 +227,7 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
     }
     case(COPY_OBSW_SDC_TO_SDC): {
         if(handlerState == HandlerState::COPYING) {
-            actionHelper.finish(commandedBy, actionId, BUSY);
+            actionHelper.finish(commandedBy, actionId, image::BUSY);
         }
         break;
     }
@@ -229,12 +258,12 @@ ReturnValue_t SoftwareImageHandler::getParameter(uint8_t domainId,
 #ifdef ISIS_OBC_G20
 
 ReturnValue_t SoftwareImageHandler::copySdCardImageToNorFlash(SdCard sdCard,
-        ImageSlot imageSlot) {
+        image::ImageSlot imageSlot) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t SoftwareImageHandler::copyNorFlashImageToSdCards(SdCard sdCard,
-        ImageSlot imageSlot) {
+        image::ImageSlot imageSlot) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
