@@ -19,12 +19,6 @@ extern "C" {
 RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t tmTcTargetId) :
         SystemObject(objectId), tmTcTargetId(tmTcTargetId) {
 
-#if RS485_WITH_TERMINATION == 1
-    configBus2.busType = rs422_withTermination_uart;
-#endif
-    uartConfig.rxtimeout = RS485_SERIAL_TIMEOUT_BAUDTICKS;
-    uartConfig.baudrate = 115200; //< Standard value, overwritten by device cookies
-
     for (int i = 0; i < RS485Devices::DEVICE_COUNT_RS485; i++) {
         deviceCookies[i] = nullptr;
     }
@@ -41,7 +35,6 @@ ReturnValue_t RS485DeviceComIF::initialize() {
     if (tmTcTarget == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
-
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -63,77 +56,58 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 
     RS485Devices device = static_cast<RS485Devices>(opCode);
 
-    if (deviceCookies[device] == nullptr) {
-#ifdef DEBUG
-        sif::error << "RS485 Device Cookies not initialized yet" << std::endl;
-#endif
-        // Returnvalue of performOperation is ignored anyway, can be changed in the future if this
-        /// is not the case anymore
-        return HasReturnvaluesIF::RETURN_OK;
-    }
-
-    RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(deviceCookies[device]);
-    // We stop the bus here so that it is active for the whole comSlot of one device
-
-    // TODO: See what happens if the bus is not active and stopped
-    int status = UART_stop(bus2_uart);
-
-    // Setting baudrate
-    uartConfig.baudrate = rs485Cookie->getBaudrate();
-    status = UART_start(bus2_uart, uartConfig);
-    if (status != 0){
-#ifdef DEBUG
-        sif::error << "RS485DeviceComIF:performOperation: Error while starting UART" << std::endl;
-#endif
-        // Returnvalue of performOperation is ignored anyway, can be changed in the future if this
-        /// is not the case anymore
-        return HasReturnvaluesIF::RETURN_OK;
-    }
-
-    switch (device) {
-    case (RS485Devices::COM_FPGA): {
-        // TODO: Check which FPGA is active (should probably be set via DeviceHandler in Cookie)
+    if (deviceCookies[device] != nullptr) {
+        // TODO: Make sure this does not turn into a bad cast as we have no exceptions
+        RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(deviceCookies[device]);
+        // This switch only handles the correct GPIO for Transceivers
+        switch (device) {
+        case (RS485Devices::COM_FPGA): {
+            // TODO: Check which FPGA is active (should probably be set via DeviceHandler in Cookie)
 #ifdef DEBUG
 			sif::info << "Sending to FPGA" << std::endl;
 #endif
-        GpioDeviceComIF::enableTransceiverFPGA1();
-        // Normal device command to CCSDS board still need to be sent
-        handleSend(device, rs485Cookie);
-        handleTmSend(device, rs485Cookie);
-        break;
-    }
-    case (RS485Devices::PCDU_VORAGO): {
+            GpioDeviceComIF::enableTransceiverFPGA1();
+            // Normal device command to CCSDS board still need to be sent
+            handleSend(device, rs485Cookie);
+            handleTmSend(device, rs485Cookie);
+            break;
+        }
+        case (RS485Devices::PCDU_VORAGO): {
 #ifdef DEBUG
 			sif::info << "Sending to PCDU" << std::endl;
 #endif
-        GpioDeviceComIF::enableTransceiverPCDU();
-        handleSend(device, rs485Cookie);
-        break;
-    }
-    case (RS485Devices::PL_VORAGO): {
+            GpioDeviceComIF::enableTransceiverPCDU();
+            handleSend(device, rs485Cookie);
+            break;
+        }
+        case (RS485Devices::PL_VORAGO): {
 #ifdef DEBUG
 			sif::info << "Sending to PL_VORAGO" << std::endl;
 #endif
-        handleSend(device, rs485Cookie);
-        GpioDeviceComIF::enableTransceiverVorago();
-        break;
-    }
-    case (RS485Devices::PL_PIC24): {
+            handleSend(device, rs485Cookie);
+            GpioDeviceComIF::enableTransceiverVorago();
+            break;
+        }
+        case (RS485Devices::PL_PIC24): {
 #ifdef DEBUG
 			sif::info << "Sending to PL_PIC24" << std::endl;
 #endif
-        handleSend(device, rs485Cookie);
-        GpioDeviceComIF::enableTransceiverPIC24();
-        break;
-    }
-    default: {
+            handleSend(device, rs485Cookie);
+            GpioDeviceComIF::enableTransceiverPIC24();
+            break;
+        }
+        default: {
 #ifdef DEBUG
 			// should not happen
 			// TODO: Is there anything special to do in this case
 			sif::error << "RS485 Device Number out of bounds" << std::endl;
 #endif
-        break;
-    }
+            break;
+        }
+        }
+
+    } else {
+        sif::error << "RS485 Device Cookies not initialized yet" << std::endl;
     }
 
     if (retryCount > 0) {
@@ -273,6 +247,7 @@ void RS485DeviceComIF::handleTmSend(RS485Devices device, RS485Cookie *rs485Cooki
         }
     }
 }
+
 
 ReturnValue_t RS485DeviceComIF::checkDriverState(uint8_t *retryCount) {
     UARTdriverState readState = UART_getDriverState(bus2_uart, read_uartDir);

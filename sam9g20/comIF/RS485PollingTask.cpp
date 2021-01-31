@@ -24,13 +24,11 @@ ReturnValue_t RS485PollingTask::performOperation(uint8_t opCode) {
 }
 
 ReturnValue_t RS485PollingTask::initialize() {
-    sharedRingBuffer = objectManager->get<SharedRingBuffer>(sharedRingBufferId);
-    if(sharedRingBuffer == nullptr) {
-        sif::error << "RS485PollingTask::initialize: Passed ring buffer"
-                " invalid !" << std::endl;
-        return HasReturnvaluesIF::RETURN_FAILED;
+    ReturnValue_t result = UartPollingBase::initialize();
+    if(result == HasReturnvaluesIF::RETURN_OK) {
+        uart2Started = true;
     }
-    return HasReturnvaluesIF::RETURN_OK;
+    return result;
 }
 
 void RS485PollingTask::initiateUartTransfers() {

@@ -20,7 +20,6 @@
 
 extern "C" {
 
-#include <AT91SAM9G20.h>
 #include <hal/Drivers/UART.h>
 }
 
@@ -46,9 +45,6 @@ public:
     static constexpr uint8_t RETRY_COUNTER = 10;
     static constexpr char defaultMessage[] = { 'O', 'n', 'e', ' ', 'P', 'i', 'n', 'g', ' ', 'o',
             'n', 'l', 'y', ' ' };
-
-    static constexpr float RS485_SERIAL_TIMEOUT_BAUDTICKS =
-            config::RS485_SERIAL_TIMEOUT_BAUDTICKS;
 
     RS485DeviceComIF(object_id_t objectId, object_id_t tmTcTargetId);
     virtual ~RS485DeviceComIF();
@@ -100,13 +96,6 @@ private:
     uint8_t retryCount = 0;
     uint8_t packetSentCounter = 0;
 
-    // Config necessary for switching baudrates
-    UARTconfig uartConfig = { .mode = AT91C_US_USMODE_NORMAL |
-            AT91C_US_CLKS_CLOCK | AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE |
-            AT91C_US_OVER_16 | AT91C_US_NBSTOP_1_BIT, .baudrate = 115200,
-            .timeGuard = 0, .busType = rs422_noTermination_uart,
-            .rxtimeout = 0xFFFF };
-
     // Stores one cookie for each device to communicate between ExecutableObjectIF overrides and DeviceComIF overrides
     std::array<CookieIF*, RS485Devices::DEVICE_COUNT_RS485> deviceCookies;
 
@@ -116,7 +105,7 @@ private:
     std::array<uint8_t, config::RS485_PAYLOAD_VORAGO_TFDZ_SIZE + USLPTransferFrame::FRAME_OVERHEAD> transmitBufferVorago;
     std::array<uint8_t, config::RS485_PAYLOAD_PIC24_TFDZ_SIZE + USLPTransferFrame::FRAME_OVERHEAD> transmitBufferPIC24;
 
-    //Array with pointers to frame buffers for sending
+    //Array with pointers to frame buffers
     std::array<USLPTransferFrame*, RS485Devices::DEVICE_COUNT_RS485> sendBuffer;
 
     // Used for handling the TM and TC Queue, this class is already big enough
