@@ -13,7 +13,7 @@
 #include <fsfw/events/EventManager.h>
 #include <fsfw/fdir/FailureIsolationBase.h>
 #include <fsfw/health/HealthTable.h>
-#include <fsfw/pus/CService200ModeCommanding.h>
+
 #include <fsfw/tmtcpacket/pus/TmPacketStored.h>
 
 /* PUS Includes */
@@ -24,6 +24,8 @@
 #include <fsfw/pus/Service3Housekeeping.h>
 #include <fsfw/pus/Service5EventReporting.h>
 #include <fsfw/pus/Service8FunctionManagement.h>
+#include <fsfw/pus/CService200ModeCommanding.h>
+#include <fsfw/pus/Service20ParameterManagement.h>
 #include <fsfw/timemanager/TimeStamper.h>
 #include <fsfwconfig/devices/logicalAddresses.h>
 #include <fsfwconfig/devices/powerSwitcherList.h>
@@ -32,7 +34,6 @@
 #include <mission/controller/ThermalController.h>
 #include <mission/pus/Service6MemoryManagement.h>
 #include <mission/pus/Service17CustomTest.h>
-#include <mission/pus/Service20ParameterManagement.h>
 #include <mission/pus/Service23FileManagement.h>
 #include <mission/utility/TmFunnel.h>
 #include <mission/devices/PCDUHandler.h>
@@ -197,7 +198,8 @@ void Factory::produce(void) {
             apid::SOURCE_OBSW, pus::PUS_SERVICE_6);
     new Service8FunctionManagement(objects::PUS_SERVICE_8_FUNCTION_MGMT,
             apid::SOURCE_OBSW, pus::PUS_SERVICE_8);
-    new Service20ParameterManagement(objects::PUS_SERVICE_20_PARAM_MGMT);
+    new Service20ParameterManagement(objects::PUS_SERVICE_20_PARAM_MGMT, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_20);
     new Service23FileManagement(objects::PUS_SERVICE_23_FILE_MGMT, apid::SOURCE_OBSW,
             pus::PUS_SERVICE_23);
     new CService200ModeCommanding(objects::PUS_SERVICE_200_MODE_MGMT,
