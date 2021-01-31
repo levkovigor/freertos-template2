@@ -189,8 +189,8 @@ void Factory::produce(void) {
     CookieIF *dummyCookie0 = new TestCookie(addresses::PCDU);
     new PCDUHandler(objects::PCDU_HANDLER, objects::DUMMY_ECHO_COM_IF, dummyCookie0);
     CookieIF *dummyCookie1 = new TestCookie(addresses::DUMMY_ECHO);
-//	new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_ECHO_COM_IF,
-//			dummyCookie1, true);
+	new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_ECHO_COM_IF,
+			dummyCookie1, true);
 
     new CoreController(objects::CORE_CONTROLLER, objects::SYSTEM_STATE_TASK);
     new SystemStateTask(objects::SYSTEM_STATE_TASK, objects::CORE_CONTROLLER);
@@ -236,11 +236,17 @@ void Factory::produce(void) {
     new RS485DeviceComIF(objects::RS485_DEVICE_COM_IF,
             objects::RS485_TM_TC_TARGET);
 
-
+    // RS485 Test devices
     CookieIF *rs485CookieFPGA = nullptr;
-    rs485CookieFPGA = new RS485Cookie(RS485Devices::COM_FPGA);
+    rs485CookieFPGA = new RS485Cookie(RS485Devices::COM_FPGA, RS485BaudRates::FAST);
 
-    new TestDevice(objects::DUMMY_HANDLER, objects::RS485_DEVICE_COM_IF, rs485CookieFPGA, true);
+    CookieIF *rs485CookiePCDU = nullptr;
+    rs485CookiePCDU = new RS485Cookie(RS485Devices::COM_FPGA, RS485BaudRates::NORMAL);
+
+    new TestDevice(objects::DUMMY_HANDLER_RS485_1, objects::RS485_DEVICE_COM_IF, rs485CookieFPGA,
+                true);
+    new TestDevice(objects::DUMMY_HANDLER_RS485_2, objects::RS485_DEVICE_COM_IF, rs485CookiePCDU,
+                true);
 
     /* Test Tasks AT91 */
     //size_t I2C_MAX_REPLY_LEN = 256;

@@ -2,8 +2,8 @@
 
 
 
-RS485Cookie::RS485Cookie(RS485Devices device){
-	this->device = device;
+RS485Cookie::RS485Cookie(RS485Devices device, RS485BaudRates baudrate) :
+        device(device), baudrate(baudrate) {
 }
 
 RS485Cookie::~RS485Cookie(){}
@@ -31,3 +31,6 @@ void RS485Cookie::setReturnValue(int8_t retval){
 	this->returnValue = retval;
 }
 
+uint32_t RS485Cookie::getBaudrate(){
+    return baudrate;
+}
