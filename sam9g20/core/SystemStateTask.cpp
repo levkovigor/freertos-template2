@@ -126,9 +126,6 @@ ReturnValue_t SystemStateTask::initializeAfterTaskCreation() {
 }
 
 void SystemStateTask::performStatsGeneration(InternalState csvOrPrint) {
-    // TODO: write to file directly? or generate raw telemetry as service 8
-    // data reply, but data might become too big.
-    // bool, csv oder printen, if true then csv
     if (statsVector.size() == 0) {
         sif::printWarning("SystemStateTask::performStatsGeneration size of statsVector is 0");
         return;
