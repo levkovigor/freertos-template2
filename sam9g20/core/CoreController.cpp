@@ -152,6 +152,7 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
             if(not systemStateTask->generateStatsCsv()) {
                 return HasActionsIF::IS_BUSY;
             }
+
             actionHelper.finish(commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
             return HasReturnvaluesIF::RETURN_OK;
         }

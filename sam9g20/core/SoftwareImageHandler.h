@@ -201,7 +201,7 @@ private:
     bool oneShot = false;
 
     ReturnValue_t getParameter(uint8_t domainId,
-            uint16_t uniqueIdentifier, ParameterWrapper *parameterWrapper,
+            uint8_t uniqueIdentifier, ParameterWrapper *parameterWrapper,
             const ParameterWrapper *newValues, uint16_t startAtIndex) override;
 
 #ifdef ISIS_OBC_G20
