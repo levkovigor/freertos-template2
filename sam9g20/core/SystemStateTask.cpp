@@ -102,9 +102,9 @@ ReturnValue_t SystemStateTask::initializeAfterTaskCreation() {
     statsVector.resize(sizeToReserve);
 
     HasFileSystemIF* sdCardHandler = objectManager->get<HasFileSystemIF>(objects::SD_CARD_HANDLER);
-    if (sdCardHandler) {
+    if (sdCardHandler == nullptr) {
         sif::printError("SystemStateTask::initializeAfterTaskCreation: "
-                "SD Card Handler does not exist");
+                "SD Card Handler does not exist\n");
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     queueId = sdCardHandler->getCommandQueue();
@@ -112,7 +112,7 @@ ReturnValue_t SystemStateTask::initializeAfterTaskCreation() {
     coreController = objectManager->get<CoreController>(coreControllerId);
     if(coreController == nullptr) {
         sif::printError("SystemStateTask::initializeAfterTaskCreation: "
-                        "Core Controller does not exist");
+                "Core Controller does not exist\n");
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     /* To prevent mangled output */
