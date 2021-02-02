@@ -101,14 +101,3 @@ echo <newMsgMax> | sudo tee /proc/sys/fs/mqueue/msg_max
 ```
 or running the `unlockRealtime` script.
 
-
-## <a name="unittest"></a> Unit Tests
-Refer to the [egit repostiory readme](https://egit.irs.uni-stuttgart.de/fsfw/fsfw_tests).<br>
-Leave out step 1, and run make with following command:
-```sh
-make -f  Makefile-Unittest all
-```
-
-Furthermore, the unlockRealtime script is located in the linux folder now.
-Right now, the Unittest does not make use of pthread yet, but consider the
-steps above to unlock real time functionalities if they are used.
