@@ -98,10 +98,12 @@ void USLPTransferFrame::setProtocolIdentifier(uint8_t protocolId) {
 }
 
 uint16_t USLPTransferFrame::getFirstHeaderOffset() {
-    return this->frame->dataFieldHeader.firstHeaderPointer;
+    return (this->frame->dataFieldHeader.firstHeaderPointer_h << 8)
+            + this->frame->dataFieldHeader.firstHeaderPointer_l;
 }
 void USLPTransferFrame::setFirstHeaderOffset(uint16_t offset) {
-    this->frame->dataFieldHeader.firstHeaderPointer = offset;
+    this->frame->dataFieldHeader.firstHeaderPointer_h = offset >> 8;
+    this->frame->dataFieldHeader.firstHeaderPointer_h = offset & 0b0000000011111111;
 }
 
 uint8_t* USLPTransferFrame::getFirstHeader() {
@@ -117,10 +119,7 @@ uint16_t USLPTransferFrame::getDataZoneSize() {
 }
 
 uint8_t* USLPTransferFrame::getDataZone() {
-    // I have honestly no idea why we have to do this, but if we don't, memcpy copies to the
-    // 9th byte of the frame instead of to the 8th like it is supposed to
-    // TODO: Pointer gods enlighten me
-    return &(this->frame->dataZone) - 1;
+    return &(this->frame->dataZone);
 }
 
 uint8_t* USLPTransferFrame::getFullFrame() {

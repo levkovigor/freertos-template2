@@ -28,7 +28,9 @@ protected:
 	 */
 	struct USLPTransferFrameDataFieldHeader {
 		uint8_t rulesAndprotocolid;	//!< Highest byte with TFDZ Construction Rules and USLP Protocol Identifier
-		uint16_t firstHeaderPointer;	//!< Two Bytes with First Header Pointer
+		// This has to be done in two bytes, a uint16_t does not work here
+		uint8_t firstHeaderPointer_h;	//!< First Bytes with First Header Pointer
+		uint8_t firstHeaderPointer_l;  //!< Second Bytes with First Header Pointer
 	};
 	/**
 	 * The struct defining the whole Transfer Frame.
