@@ -13,6 +13,10 @@ the GCC toolchain.
 pacman -S mingw-w64-x86_64-toolchain
 ```
 
+Make sure that you have added the folder containing the MinGW64 binaries to the 
+Windows system environmental variables and test whether the toolchain can be called 
+from Windows with `gcc --version` and `mingw32-make --version`.
+
 After that, you should be able to build the binary with the following command
 
 ```sh

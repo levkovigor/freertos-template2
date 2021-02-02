@@ -41,7 +41,7 @@ in the QEMU documentation.
 [Common TMTC commands](doc/README-tmtc.md#top)<br>
 [Test summary and progress](doc/README-test.md#top)<br>
 [QEMU getting started](doc/README-qemu.md#top)<br>
-[Hosted build getting Ssarted](doc/README-hosted.md#top)<br>
+[Hosted build getting started](doc/README-hosted.md#top)<br>
 
 ## Prerequisites
 1. Make installed
