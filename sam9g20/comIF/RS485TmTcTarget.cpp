@@ -87,12 +87,16 @@ ReturnValue_t RS485TmTcTarget::fillSendFrameBuffer(USLPTransferFrame *frame) {
         if (size - overhangMessageSentBytes <= config::RS485_COM_FPGA_TFDZ_SIZE) {
             (void) std::memcpy(frame->getDataZone(), data + overhangMessageSentBytes, size);
             bytesPackedCounter += size;
+            // Set first header pointer to position of first packet header
+            frame->setFirstHeaderOffset(bytesPackedCounter);
             overhangMessage = nullptr;
             overhangMessageSentBytes = 0;
             tmStore->deleteData(message.getStorageId());
         } else {
             (void) std::memcpy(frame->getDataZone(), data + overhangMessageSentBytes,
                     config::RS485_COM_FPGA_TFDZ_SIZE);
+            // Set first header pointer to 0xFFFF as no packet header is present
+            frame->setFirstHeaderOffset(0xFFFF);
             overhangMessageSentBytes += config::RS485_COM_FPGA_TFDZ_SIZE;
             return HasReturnvaluesIF::RETURN_OK;
         }
