@@ -181,8 +181,8 @@ void RS485DeviceComIF::initTransferFrameSendBuffers() {
 
     // Default values, most don't change
     for (int i = 0; i < RS485Devices::DEVICE_COUNT_RS485; i++) {
-        sendBuffer[i]->setVersionNumber(12);
-        sendBuffer[i]->setSpacecraftId(0xAFFE);
+        sendBuffer[i]->setVersionNumber(config::RS485_USLP_TFVN);
+        sendBuffer[i]->setSpacecraftId(config::RS485_USLP_SCID);
         sendBuffer[i]->setSourceFlag(true);
         sendBuffer[i]->setVirtualChannelId(0);
         sendBuffer[i]->setMapId(1);
@@ -207,6 +207,9 @@ void RS485DeviceComIF::handleSend(RS485Devices device, RS485Cookie *rs485Cookie)
                 sizeof(defaultMessage));
     }
 
+    // Set address just to be sure it was not changed
+    sendBuffer[device]->setVirtualChannelId(rs485Cookie->getVcId());
+    sendBuffer[device]->setMapId(rs485Cookie->getMapId());
     // Buffer is already filled, so just send it
     int retval = UART_write(bus2_uart, sendBuffer[device]->getFullFrame(),
             sendBuffer[device]->getFullFrameSize());
@@ -233,6 +236,8 @@ void RS485DeviceComIF::handleTmSend(RS485Devices device, RS485Cookie *rs485Cooki
             tmTcTarget->fillSendFrameBuffer(sendBuffer[device]) == HasReturnvaluesIF::RETURN_OK;
             packetSentCounter++) {
 
+        // TODO: Integrate this into cookie
+        sendBuffer[device]->setMapId(config::RS485_USLP_MAPID_COM_FPGA_1_TM);
         // TODO: do something with result
         UART_write(bus2_uart, sendBuffer[device]->getFullFrame(),
                 sendBuffer[device]->getFullFrameSize());

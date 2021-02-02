@@ -101,6 +101,9 @@ ReturnValue_t RS485TmTcTarget::fillSendFrameBuffer(USLPTransferFrame *frame) {
             return HasReturnvaluesIF::RETURN_OK;
         }
     }
+    else{
+        frame->setFirstHeaderOffset(0);
+    }
 
     while (tmTcReceptionQueue->receiveMessage(&message) == HasReturnvaluesIF::RETURN_OK) {
 

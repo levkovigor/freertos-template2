@@ -71,14 +71,25 @@ static const size_t RS232_MAX_SERIAL_FRAME_SIZE =       1500;
 static const size_t TRANSPORT_LAYER_ADDITION =          500;
 static const uint32_t RS232_SERIAL_TIMEOUT_BAUDTICKS =  5;
 static const uint16_t RS232_MUTEX_TIMEOUT =             20;
-
+/* RS485 general config */
 static const uint32_t RS485_REGULAR_BAUD =              115200;
 static const uint32_t RS485_FAST_BAUD =                 115200;
 static const size_t RS485_MAX_SERIAL_FRAME_SIZE =       1500;
 static const uint32_t RS485_SERIAL_TIMEOUT_BAUDTICKS =  5;
 static const uint16_t RS485_MUTEX_TIMEOUT =             20;
+/* RS485 USLP frame config  */
+static const uint8_t RS485_USLP_TFVN =                  0b1100;
+static const uint16_t RS485_USLP_SCID =                 0xAFFE;
+
+static const uint8_t RS485_USLP_VCID_COM_FPGA_1 =       0b000011;
+static const uint8_t RS485_USLP_MAPID_COM_FPGA_1_TM =   0b0010;
+static const uint8_t RS485_USLP_MAPID_COM_FPGA_1_CTRL = 0b0001;
 static const size_t RS485_COM_FPGA_TFDZ_SIZE =       	119;
+
+static const uint8_t RS485_USLP_VCID_PCDU_VORAGO =      0b000000;
+static const uint8_t RS485_USLP_MAPID_PCDU_VORAGO =     0b0000;
 static const size_t RS485_PCDU_VORAGO_TFDZ_SIZE =       7;
+
 static const size_t RS485_PAYLOAD_VORAGO_TFDZ_SIZE =    7;
 static const size_t RS485_PAYLOAD_PIC24_TFDZ_SIZE =     7;
 

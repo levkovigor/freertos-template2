@@ -29,7 +29,8 @@ enum class ComStatusRS485 : uint8_t {
 
 class RS485Cookie: public CookieIF {
 public:
-    RS485Cookie(RS485Devices device, RS485BaudRates baudrate);
+    RS485Cookie(RS485Devices device, RS485BaudRates baudrate, uint8_t uslp_virtual_channel_id,
+            uint8_t uslp_multiplexer_access_point_id);
     virtual ~RS485Cookie();
 
     void setDevice(RS485Devices device);
@@ -42,12 +43,21 @@ public:
     void setReturnValue(int8_t retval);
 
     uint32_t getBaudrate();
+
+    uint8_t getVcId();
+
+    uint8_t getMapId();
 private:
     // Device that is communicated with
     RS485Devices device = PCDU_VORAGO;
-
     // Baudrate of device
     RS485BaudRates baudrate = NORMAL;
+    // VCID
+    uint8_t uslp_virtual_channel_id;
+    // MAP ID
+    uint8_t uslp_multiplexer_access_point_id;
+
+
     // Stores returnvalues from UART driver, can also be negative
     int8_t returnValue = 0;
     // Stores communication status
