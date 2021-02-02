@@ -1,8 +1,33 @@
+# <a id="top"></a> <a name="host"></a> Host
+
+## Windows
+
+On Windows, it is necessary to install a GCC toolchain, and it is recommended to use MinGW64
+for this. If not already done so, install MinGW64 by using the
+[MSYS2 installer](https://www.msys2.org/).
+
+After that, open the MinGW64 shell and run the following commands to install
+the GCC toolchain.
+
+```sh
+pacman -S mingw-w64-x86_64-toolchain
+```
+
+After that, you should be able to build the binary with the following command
+
+```sh
+mingw32-make -f Makefile-Hosted
+```
+
+## Linux
+
+Follow the steps in the following Linux section but replace `Makefile-Linux` with `Makefile-Hosted`.
+
 # <a id="top"></a> <a name="linux"></a> Linux
+
 Please note that a full linux installation should be available,
 either inside a virtual machine or as dualboot or stand-alone installation to run
-the linux binary.<br>
-These steps were tested for Ubuntu 20.04.
+the linux binary. These steps were tested for Ubuntu 20.04.
 If not done yet, install the full C++ build chain:
 ```sh
 sudo apt-get install build-essential

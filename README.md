@@ -41,20 +41,19 @@ in the QEMU documentation.
 [Common TMTC commands](doc/README-tmtc.md#top)<br>
 [Test summary and progress](doc/README-test.md#top)<br>
 [QEMU getting started](doc/README-qemu.md#top)<br>
-[Linux and Unittest getting started](doc/README-linux.md#top)<br>
-[STM32 getting started](stm32/README-stm32.md#top)<br>
+[Hosted build getting Ssarted](doc/README-hosted.md#top)<br>
 
 ## Prerequisites
 1. Make installed
 2. Development board binaries: [GNU ARM Toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/) 
-   installed, hardware or QEMU set-up available. See the [Setting up prerequisites](#setting-up-prerequisites)<br>
-   section
-3. For Linux and Unit Test binaries: Linux OS or virtual Machine, at leastfull C++
-   build chain installed
-4. For QEMU: QEMU repository cloned and set up in same folder in which 
+   installed, hardware or QEMU set-up available. See the
+   [Setting up prerequisites](#setting-up-prerequisites) section
+3. For Host build: On Windows, GCC toolchain (MinGW64)
+4. For QEMU: QEMU repository cloned and set up in same folder in which
    this repository was cloned
 
 ## Building the software
+
 ### Clone software and create OBSW binary
 
 1. Create directory for OBSW (e.g. with mkdir Source_OBSW).
