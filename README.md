@@ -13,9 +13,9 @@ interface of the commander.
 
 Used development boards and environments:
 
-- STM32 Nucleo-144 H743ZI
+- iOBC
 - AT91SAM9G20-EK
-- Linux
+- Hosted (Linux and Windows)
 - QEMU
 
 Additional Note: The ISIS library is not public because
