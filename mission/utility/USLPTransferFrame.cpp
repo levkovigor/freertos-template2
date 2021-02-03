@@ -103,7 +103,7 @@ uint16_t USLPTransferFrame::getFirstHeaderOffset() {
 }
 void USLPTransferFrame::setFirstHeaderOffset(uint16_t offset) {
     this->frame->dataFieldHeader.firstHeaderPointer_h = offset >> 8;
-    this->frame->dataFieldHeader.firstHeaderPointer_h = offset & 0b0000000011111111;
+    this->frame->dataFieldHeader.firstHeaderPointer_l = offset & 0b0000000011111111;
 }
 
 uint8_t* USLPTransferFrame::getFirstHeader() {
