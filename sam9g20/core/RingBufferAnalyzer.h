@@ -5,7 +5,8 @@
 #include <vector>
 
 enum class AnalyzerModes {
-	DLE_ENCODING //!< DLE encoded packets.
+	DLE_ENCODING, //!< DLE encoded packets.
+	USLP_FRAMES //!< USLP frames with truncated primary header
 };
 
 /**
@@ -48,6 +49,8 @@ private:
 	SharedRingBuffer* ringBuffer;
 	std::vector<uint8_t> analysisVector;
 	bool dataInAnalysisVectorLeft = false;
+	std::array<uint8_t, 3> uslpHeaderMarker;
+
 
 	size_t currentBytesRead = 0;
 
@@ -57,6 +60,10 @@ private:
 	ReturnValue_t parseForDleEncodedPackets(size_t bytesToRead,
 			uint8_t* receptionBuffer, size_t maxSize,
 			size_t* packetSize, size_t* readSize);
+
+	ReturnValue_t handleUslpParsing(uint8_t* receptionBuffer, size_t maxSize,
+                size_t* packetSize);
+	ReturnValue_t parseForUslpHeader(size_t bytesToRead);
 };
 
 
