@@ -1,9 +1,10 @@
 #include "RS485Cookie.h"
 
 RS485Cookie::RS485Cookie(RS485Devices device, RS485BaudRates baudrate,
-        uint8_t uslp_virtual_channel_id, uint8_t uslp_multiplexer_access_point_id) :
+        uint8_t uslp_virtual_channel_id, uint8_t uslp_multiplexer_access_point_id,
+        size_t uslp_tfdz_size) :
         device(device), baudrate(baudrate), uslp_virtual_channel_id(uslp_virtual_channel_id), uslp_multiplexer_access_point_id(
-                uslp_multiplexer_access_point_id) {
+                uslp_multiplexer_access_point_id), uslp_tfdz_size(uslp_tfdz_size) {
 }
 
 RS485Cookie::~RS485Cookie() {

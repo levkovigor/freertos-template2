@@ -11,6 +11,10 @@
 
 #include <fsfw/devicehandlers/CookieIF.h>
 
+#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
+
+
+
 enum RS485Devices : uint8_t {
     COM_FPGA,	// Redundant FPGA not counted here, set in device handler
     PCDU_VORAGO,
@@ -30,7 +34,7 @@ enum class ComStatusRS485 : uint8_t {
 class RS485Cookie: public CookieIF {
 public:
     RS485Cookie(RS485Devices device, RS485BaudRates baudrate, uint8_t uslp_virtual_channel_id,
-            uint8_t uslp_multiplexer_access_point_id);
+            uint8_t uslp_multiplexer_access_point_id, size_t uslp_tfdz_size);
     virtual ~RS485Cookie();
 
     void setDevice(RS485Devices device);
@@ -56,6 +60,8 @@ private:
     uint8_t uslp_virtual_channel_id;
     // MAP ID
     uint8_t uslp_multiplexer_access_point_id;
+    // Fixed frame data zone size
+    size_t uslp_tfdz_size;
 
 
     // Stores returnvalues from UART driver, can also be negative

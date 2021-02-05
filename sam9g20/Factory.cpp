@@ -189,8 +189,7 @@ void Factory::produce(void) {
     CookieIF *dummyCookie0 = new TestCookie(addresses::PCDU);
     new PCDUHandler(objects::PCDU_HANDLER, objects::DUMMY_ECHO_COM_IF, dummyCookie0);
     CookieIF *dummyCookie1 = new TestCookie(addresses::DUMMY_ECHO);
-	new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_ECHO_COM_IF,
-			dummyCookie1, true);
+    new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_ECHO_COM_IF, dummyCookie1, true);
 
     new CoreController(objects::CORE_CONTROLLER, objects::SYSTEM_STATE_TASK);
     new SystemStateTask(objects::SYSTEM_STATE_TASK, objects::CORE_CONTROLLER);
@@ -233,22 +232,23 @@ void Factory::produce(void) {
     new RS485PollingTask(objects::RS485_POLLING_TASK, objects::RS485_RING_BUFFER);
     new RS485TmTcTarget(objects::RS485_TM_TC_TARGET, objects::CCSDS_PACKET_DISTRIBUTOR,
             objects::TM_STORE, objects::TC_STORE, objects::RS485_RING_BUFFER);
-    new RS485DeviceComIF(objects::RS485_DEVICE_COM_IF,
-            objects::RS485_TM_TC_TARGET);
+    new RS485DeviceComIF(objects::RS485_DEVICE_COM_IF, objects::RS485_TM_TC_TARGET);
 
     // RS485 Test devices
     CookieIF *rs485CookieFPGA = nullptr;
     rs485CookieFPGA = new RS485Cookie(RS485Devices::COM_FPGA, RS485BaudRates::FAST,
-            config::RS485_USLP_VCID_COM_FPGA_1, config::RS485_USLP_MAPID_COM_FPGA_1_CTRL);
+            config::RS485_USLP_VCID_COM_FPGA_1, config::RS485_USLP_MAPID_COM_FPGA_1_CTRL,
+            config::RS485_COM_FPGA_TFDZ_SIZE);
 
     CookieIF *rs485CookiePCDU = nullptr;
     rs485CookiePCDU = new RS485Cookie(RS485Devices::PCDU_VORAGO, RS485BaudRates::NORMAL,
-            config::RS485_USLP_VCID_PCDU_VORAGO, config::RS485_USLP_MAPID_PCDU_VORAGO);
+            config::RS485_USLP_VCID_PCDU_VORAGO, config::RS485_USLP_MAPID_PCDU_VORAGO,
+            config::RS485_PAYLOAD_VORAGO_TFDZ_SIZE);
 
     new TestDevice(objects::DUMMY_HANDLER_RS485_1, objects::RS485_DEVICE_COM_IF, rs485CookieFPGA,
-                true);
+            true);
     new TestDevice(objects::DUMMY_HANDLER_RS485_2, objects::RS485_DEVICE_COM_IF, rs485CookiePCDU,
-                true);
+            true);
 
     /* Test Tasks AT91 */
     //size_t I2C_MAX_REPLY_LEN = 256;
