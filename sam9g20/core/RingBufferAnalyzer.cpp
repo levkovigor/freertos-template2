@@ -133,7 +133,7 @@ ReturnValue_t RingBufferAnalyzer::handleUslpParsing(uint8_t *receptionBuffer, si
 }
 
 ReturnValue_t RingBufferAnalyzer::parseForUslpHeader(size_t bytesToRead) {
-
+    bool headerFound = false;
     // This only works for byte aligned data
     // TODO: Check if non byte aligned data is possible
     for (size_t vectorIdx = 0; vectorIdx < bytesToRead - 2; vectorIdx++) {
@@ -141,7 +141,8 @@ ReturnValue_t RingBufferAnalyzer::parseForUslpHeader(size_t bytesToRead) {
         // Check first 20 bits of packet for frame
         if (analysisVector[vectorIdx] == uslpHeaderMarker[0]
                 && analysisVector[vectorIdx + 1] == uslpHeaderMarker[1]
-                && analysisVector[vectorIdx + 2] == uslpHeaderMarker[2]) {
+                && (analysisVector[vectorIdx + 2] & 0xF0)  == uslpHeaderMarker[2]) {
+            headerFound = true;
         }
 
     }
