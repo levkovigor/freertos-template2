@@ -30,16 +30,16 @@ public:
 			AnalyzerModes mode = AnalyzerModes::DLE_ENCODING);
 
 	/**
-	 * Search for DLE encoded packets
-	 * @param buffer If a packet is found, it will be copied into that buffer
+	 * Search for DLE encoded packets or USLP Frames
+	 * @param buffer If a packet/frame is found, it will be copied into that buffer
 	 * @param maxSize Maximum size of the supplied buffer. Should be large
-	 * enough to accomodate maximum designated packet size
-	 * @param packetSize Found packet size
+	 * enough to accomodate maximum designated packet/frame size
+	 * @param packetSize Found packet/frame size
 	 * @return
-	 * -@c RETURN_OK if a packet was found. Read pointer is incremented.
-	 * -@c NO_PACKET_FOUND if no packet was found.
-	 * -@c POSSIBLE_LOST_PACKET if there is a possiblity of a lost packet
-	 *     (end marker found without start marker). Read pointer is incremented.
+	 * -@c RETURN_OK if a packet/frame was found. Read pointer is incremented.
+	 * -@c NO_PACKET_FOUND if no packet/frame was found.
+	 * -@c POSSIBLE_LOST_PACKET if there is a possiblity of a lost packets/frame
+	 *     (end marker found without start marker / header found within frame). Read pointer is incremented.
 	 */
 	ReturnValue_t checkForPackets(uint8_t* buffer,
 			size_t maxData, size_t* packetSize);
