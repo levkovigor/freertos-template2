@@ -55,15 +55,15 @@ private:
 	size_t currentBytesRead = 0;
 
 	ReturnValue_t readRingBuffer();
-	ReturnValue_t handleDleParsing(uint8_t* receptionBuffer, size_t maxSize,
+	ReturnValue_t handleParsing(uint8_t* receptionBuffer, size_t maxSize,
 				size_t* packetSize);
 	ReturnValue_t parseForDleEncodedPackets(size_t bytesToRead,
 			uint8_t* receptionBuffer, size_t maxSize,
 			size_t* packetSize, size_t* readSize);
 
-	ReturnValue_t handleUslpParsing(uint8_t* receptionBuffer, size_t maxSize,
-                size_t* packetSize);
-	ReturnValue_t parseForUslpHeader(size_t bytesToRead);
+	ReturnValue_t parseForUslpFrames(size_t bytesToRead,
+            uint8_t* receptionBuffer, size_t maxSize,
+            size_t* packetSize, size_t* readSize);
 };
 
 

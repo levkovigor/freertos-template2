@@ -35,11 +35,8 @@ ReturnValue_t RingBufferAnalyzer::checkForPackets(uint8_t *receptionBuffer, size
         return result;
     }
 
-    if (mode == AnalyzerModes::DLE_ENCODING) {
-        result = handleDleParsing(receptionBuffer, maxData, packetSize);
-    } else if (mode == AnalyzerModes::USLP_FRAMES) {
+    result = handleParsing(receptionBuffer, maxData, packetSize);
 
-    }
     return result;
 }
 
@@ -65,17 +62,23 @@ ReturnValue_t RingBufferAnalyzer::readRingBuffer() {
     return result;
 }
 
-ReturnValue_t RingBufferAnalyzer::handleDleParsing(uint8_t *receptionBuffer, size_t maxSize,
+ReturnValue_t RingBufferAnalyzer::handleParsing(uint8_t *receptionBuffer, size_t maxSize,
         size_t *packetSize) {
     size_t readSize = 0;
-    ReturnValue_t result = parseForDleEncodedPackets(currentBytesRead, receptionBuffer, maxSize,
-            packetSize, &readSize);
+    ReturnValue_t result = NO_PACKET_FOUND;
+    if (mode == AnalyzerModes::DLE_ENCODING) {
+        ReturnValue_t result = parseForDleEncodedPackets(currentBytesRead, receptionBuffer, maxSize,
+                packetSize, &readSize);
+    } else if (mode == AnalyzerModes::USLP_FRAMES) {
+        result = parseForUslpFrames(currentBytesRead, receptionBuffer, maxSize, packetSize,
+                &readSize);
+    }
     if (result == HasReturnvaluesIF::RETURN_OK) {
         // Packet found, advance read pointer.
         currentBytesRead = 0;
         ringBuffer->deleteData(readSize);
     } else if (result == POSSIBLE_PACKET_LOSS) {
-        // STX or ETX found at wrong place
+        // Markers found at wrong place
         // which might be a hint for a possibly lost packet.
         currentBytesRead = 0;
         ringBuffer->deleteData(readSize);
@@ -125,14 +128,9 @@ ReturnValue_t RingBufferAnalyzer::parseForDleEncodedPackets(size_t bytesToRead,
     return NO_PACKET_FOUND;
 }
 
-ReturnValue_t RingBufferAnalyzer::handleUslpParsing(uint8_t *receptionBuffer, size_t maxSize,
-        size_t *packetSize) {
-
-    ReturnValue_t result = POSSIBLE_PACKET_LOSS;
-    return result;
-}
-
-ReturnValue_t RingBufferAnalyzer::parseForUslpHeader(size_t bytesToRead) {
+ReturnValue_t RingBufferAnalyzer::parseForUslpFrames(size_t bytesToRead,
+        uint8_t* receptionBuffer, size_t maxSize,
+        size_t* packetSize, size_t* readSize) {
     bool headerFound = false;
     // This only works for byte aligned data
     // TODO: Check if non byte aligned data is possible
@@ -141,8 +139,10 @@ ReturnValue_t RingBufferAnalyzer::parseForUslpHeader(size_t bytesToRead) {
         // Check first 20 bits of packet for frame
         if (analysisVector[vectorIdx] == uslpHeaderMarker[0]
                 && analysisVector[vectorIdx + 1] == uslpHeaderMarker[1]
-                && (analysisVector[vectorIdx + 2] & 0xF0)  == uslpHeaderMarker[2]) {
+                && (analysisVector[vectorIdx + 2] & 0xF0) == uslpHeaderMarker[2]) {
             headerFound = true;
+            // Get iterator with VCIDs and corresponding lengths from RS485ComIF
+            //
         }
 
     }
