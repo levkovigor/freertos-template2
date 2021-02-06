@@ -43,6 +43,9 @@ ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {
         RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
         RS485Devices device = rs485Cookie->getDevice();
         deviceCookies[device] = cookie;
+        //TODO: Returnvalue for map insertion
+        virtualChannelTfdzSizes.insert(
+                std::pair<uint8_t, size_t>(rs485Cookie->getVcId(), rs485Cookie->getTfdzSize()));
         return HasReturnvaluesIF::RETURN_OK;
     } else {
         sif::error << "RS485DeviceComIF::initializeInterface failed: Cookie is null pointer"
@@ -252,7 +255,6 @@ void RS485DeviceComIF::handleTmSend(RS485Devices device, RS485Cookie *rs485Cooki
         }
     }
 }
-
 
 ReturnValue_t RS485DeviceComIF::checkDriverState(uint8_t *retryCount) {
     UARTdriverState readState = UART_getDriverState(bus2_uart, read_uartDir);

@@ -43,3 +43,7 @@ uint8_t RS485Cookie::getVcId() {
 uint8_t RS485Cookie::getMapId() {
     return uslp_multiplexer_access_point_id;
 }
+
+size_t RS485Cookie::getTfdzSize() {
+    return uslp_tfdz_size;
+}

@@ -51,6 +51,8 @@ public:
     uint8_t getVcId();
 
     uint8_t getMapId();
+
+    size_t getTfdzSize();
 private:
     // Device that is communicated with
     RS485Devices device = PCDU_VORAGO;

@@ -99,6 +99,9 @@ private:
     // Stores one cookie for each device to communicate between ExecutableObjectIF overrides and DeviceComIF overrides
     std::array<CookieIF*, RS485Devices::DEVICE_COUNT_RS485> deviceCookies;
 
+    // Every device has one virtual channel, the specific size is stored here for access by other tasks
+    std::map<uint8_t, size_t> virtualChannelTfdzSizes;
+
     // Frame buffers for each device
     std::array<uint8_t, config::RS485_COM_FPGA_TFDZ_SIZE + USLPTransferFrame::FRAME_OVERHEAD> transmitBufferFPGA;
     std::array<uint8_t, config::RS485_PCDU_VORAGO_TFDZ_SIZE + USLPTransferFrame::FRAME_OVERHEAD> transmitBufferPCDU;
