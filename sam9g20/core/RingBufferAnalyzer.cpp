@@ -30,7 +30,7 @@ RingBufferAnalyzer::RingBufferAnalyzer(SharedRingBuffer *ringBuffer,
     } else if (mode != AnalyzerModes::USLP_FRAMES) {
         sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
                 "Wrong constructor for USLP mode!" << std::endl;
-    } else if (virtualChannelFrameSizes == nullptr) {
+    } else if (virtualChannelFrameSizes == nullptr || virtualChannelFrameSizes->empty()) {
         sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
                 "No VCID lengths provided!" << std::endl;
     }

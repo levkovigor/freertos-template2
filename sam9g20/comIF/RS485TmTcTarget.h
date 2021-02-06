@@ -57,6 +57,15 @@ public:
     virtual uint16_t getIdentifier() override;
     virtual MessageQueueId_t getRequestQueue() override;
 
+    /**
+     * @brief   Provides this class with the VC/size map
+     * @details Needs to be called before any frames can be received
+     * @param virtualChannelFrameSizes  Pointer to Map of <VCID, Total Frame size>
+     * @returns -@c RETURN_OK If valid
+     *          -@c RETURN_FAILED If nullpointer or empty
+     */
+    ReturnValue_t setvirtualChannelFrameSizes(std::map<uint8_t, size_t>* virtualChannelFrameSizes);
+
     ReturnValue_t fillSendFrameBuffer(USLPTransferFrame *frame);
 
 private:
@@ -77,6 +86,9 @@ private:
     object_id_t sharedRingBufferId = objects::NO_OBJECT;
     RingBufferAnalyzer *analyzerTask = nullptr;
     std::array<uint8_t, TMTC_FRAME_MAX_LEN + 5> receiveArray;
+
+    // Stores VC Length map
+    std::map<uint8_t, size_t>* virtualChannelFrameSizes = nullptr;
     /**
      * This fifo can be used to store downlink data
      * which can not be sent at the moment.

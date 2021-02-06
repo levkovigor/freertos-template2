@@ -35,7 +35,8 @@ ReturnValue_t RS485DeviceComIF::initialize() {
     if (tmTcTarget == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
-    return HasReturnvaluesIF::RETURN_OK;
+    ReturnValue_t result = tmTcTarget->setvirtualChannelFrameSizes(&virtualChannelFrameSizes);
+    return result;
 }
 
 ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {

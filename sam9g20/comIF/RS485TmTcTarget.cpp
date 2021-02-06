@@ -11,8 +11,8 @@
 
 RS485TmTcTarget::RS485TmTcTarget(object_id_t objectId, object_id_t tcDestination,
         object_id_t tmStoreId, object_id_t tcStoreId, object_id_t sharedRingBufferId) :
-        SystemObject(objectId), tcDestination(tcDestination), tmStoreId(tmStoreId), tcStoreId(tcStoreId), sharedRingBufferId(
-                sharedRingBufferId) {
+        SystemObject(objectId), tcDestination(tcDestination), tmStoreId(tmStoreId), tcStoreId(
+                tcStoreId), sharedRingBufferId(sharedRingBufferId) {
     tmTcReceptionQueue = QueueFactory::instance()->createMessageQueue(TMTC_RECEPTION_QUEUE_DEPTH);
 }
 
@@ -58,7 +58,7 @@ ReturnValue_t RS485TmTcTarget::initialize() {
     if (ringBuffer == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
-    analyzerTask = new RingBufferAnalyzer(ringBuffer, AnalyzerModes::DLE_ENCODING);
+    analyzerTask = new RingBufferAnalyzer(ringBuffer, virtualChannelFrameSizes, AnalyzerModes::USLP_FRAMES);
 
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -126,6 +126,21 @@ ReturnValue_t RS485TmTcTarget::fillSendFrameBuffer(USLPTransferFrame *frame) {
     }
 
     return result;
+}
+
+ReturnValue_t RS485TmTcTarget::setvirtualChannelFrameSizes(
+        std::map<uint8_t, size_t> *virtualChannelFrameSizes) {
+
+        if (virtualChannelFrameSizes == nullptr){
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+        else if (virtualChannelFrameSizes->empty()){
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+
+        this->virtualChannelFrameSizes = virtualChannelFrameSizes;
+        return HasReturnvaluesIF::RETURN_OK;
+
 }
 
 ReturnValue_t RS485TmTcTarget::handleReceiveBuffer() {
