@@ -75,6 +75,7 @@ static const uint16_t RS232_MUTEX_TIMEOUT =             20;
 static const uint32_t RS485_REGULAR_BAUD =              115200;
 static const uint32_t RS485_FAST_BAUD =                 115200;
 static const size_t RS485_MAX_SERIAL_FRAME_SIZE =       1500;
+static const size_t RS485_MIN_SERIAL_FRAME_SIZE =       16;
 static const uint32_t RS485_SERIAL_TIMEOUT_BAUDTICKS =  5;
 static const uint16_t RS485_MUTEX_TIMEOUT =             20;
 /* RS485 USLP frame config  */

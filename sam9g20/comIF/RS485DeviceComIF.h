@@ -80,12 +80,18 @@ public:
      * @returns -@c RETURN_OK if buffer is filled
      * 			-@c RETURN_FALIED if there already is a message pending
      */
-    virtual ReturnValue_t sendMessage(CookieIF *cookie, const uint8_t *sendData, size_t sendLen)
-            override;
-    virtual ReturnValue_t getSendSuccess(CookieIF *cookie) override;
-    virtual ReturnValue_t requestReceiveMessage(CookieIF *cookie, size_t requestLen) override;
-    virtual ReturnValue_t readReceivedMessage(CookieIF *cookie, uint8_t **buffer, size_t *size)
-            override;
+    ReturnValue_t sendMessage(CookieIF *cookie, const uint8_t *sendData, size_t sendLen) override;
+    ReturnValue_t getSendSuccess(CookieIF *cookie) override;
+    ReturnValue_t requestReceiveMessage(CookieIF *cookie, size_t requestLen) override;
+    ReturnValue_t readReceivedMessage(CookieIF *cookie, uint8_t **buffer, size_t *size) override;
+    /**
+     * @brief  Getter for Vcid/frame_size map
+     * @details Each device has an own VCID with a fixed TFDZ size. Therefore, the size for the
+     * whole frame can differ between VC. This function is used if other tasks need to access
+     * the frame length for a specific VCID. (e.g. RingBufferAnalyzer)
+     * @returns std::map<uint8_t, size_t> with <vcid, frame_size>
+     */
+    std::map<uint8_t, size_t>* getVcidSizeMap();
 
     static constexpr uint8_t INTERFACE_ID = CLASS_ID::RS485_COM_IF;
 
@@ -100,7 +106,7 @@ private:
     std::array<CookieIF*, RS485Devices::DEVICE_COUNT_RS485> deviceCookies;
 
     // Every device has one virtual channel, the specific size is stored here for access by other tasks
-    std::map<uint8_t, size_t> virtualChannelTfdzSizes;
+    std::map<uint8_t, size_t> virtualChannelFrameSizes;
 
     // Frame buffers for each device
     std::array<uint8_t, config::RS485_COM_FPGA_TFDZ_SIZE + USLPTransferFrame::FRAME_OVERHEAD> transmitBufferFPGA;

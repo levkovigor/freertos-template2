@@ -5,6 +5,7 @@
 #include <sam9g20/core/RingBufferAnalyzer.h>
 #include <cstring>
 #include <mission/utility/USLPTransferFrame.h>
+#include <sam9g20/comIF/RS485DeviceComIF.h>
 
 RingBufferAnalyzer::RingBufferAnalyzer(SharedRingBuffer *ringBuffer, AnalyzerModes mode) :
         mode(mode), ringBuffer(ringBuffer) {
@@ -128,13 +129,13 @@ ReturnValue_t RingBufferAnalyzer::parseForDleEncodedPackets(size_t bytesToRead,
     return NO_PACKET_FOUND;
 }
 
-ReturnValue_t RingBufferAnalyzer::parseForUslpFrames(size_t bytesToRead,
-        uint8_t* receptionBuffer, size_t maxSize,
-        size_t* packetSize, size_t* readSize) {
+ReturnValue_t RingBufferAnalyzer::parseForUslpFrames(size_t bytesToRead, uint8_t *receptionBuffer,
+        size_t maxSize, size_t *packetSize, size_t *readSize) {
     bool headerFound = false;
     // This only works for byte aligned data
     // TODO: Check if non byte aligned data is possible
-    for (size_t vectorIdx = 0; vectorIdx < bytesToRead - 2; vectorIdx++) {
+    for (size_t vectorIdx = 0; vectorIdx <= bytesToRead - config::RS485_MIN_SERIAL_FRAME_SIZE;
+            vectorIdx++) {
 
         // Check first 20 bits of packet for frame
         if (analysisVector[vectorIdx] == uslpHeaderMarker[0]

@@ -45,7 +45,8 @@ ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {
         deviceCookies[device] = cookie;
         //TODO: Returnvalue for map insertion
         virtualChannelTfdzSizes.insert(
-                std::pair<uint8_t, size_t>(rs485Cookie->getVcId(), rs485Cookie->getTfdzSize()));
+                std::pair<uint8_t, size_t>(rs485Cookie->getVcId(),
+                        rs485Cookie->getTfdzSize() + sendBuffer[device]->FRAME_OVERHEAD));
         return HasReturnvaluesIF::RETURN_OK;
     } else {
         sif::error << "RS485DeviceComIF::initializeInterface failed: Cookie is null pointer"
@@ -168,6 +169,10 @@ ReturnValue_t RS485DeviceComIF::requestReceiveMessage(CookieIF *cookie, size_t r
 ReturnValue_t RS485DeviceComIF::readReceivedMessage(CookieIF *cookie, uint8_t **buffer,
         size_t *size) {
     return HasReturnvaluesIF::RETURN_OK;
+}
+
+std::map<uint8_t, size_t>* RS485DeviceComIF::getVcidSizeMap() {
+    return &virtualChannelFrameSizes;
 }
 
 void RS485DeviceComIF::initTransferFrameSendBuffers() {
