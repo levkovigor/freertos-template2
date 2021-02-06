@@ -23,7 +23,7 @@ RingBufferAnalyzer::RingBufferAnalyzer(SharedRingBuffer *ringBuffer, AnalyzerMod
 
 RingBufferAnalyzer::RingBufferAnalyzer(SharedRingBuffer *ringBuffer,
         std::map<uint8_t, size_t> *virtualChannelFrameSizes, AnalyzerModes mode) :
-        mode(mode), ringBuffer(ringBuffer), virtualChannelFrameSizes(virtualChannelFrameSizes) {
+        mode(mode), ringBuffer(ringBuffer), virtualChannelFrameSizes(virtualChannelFrameSizes){
 
     if (ringBuffer == nullptr) {
         sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
@@ -33,7 +33,7 @@ RingBufferAnalyzer::RingBufferAnalyzer(SharedRingBuffer *ringBuffer,
         sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
                         "Wrong constructor for USLP mode!" << std::endl;
     }
-    else if (virtualChannelFrameSizes == nullptr){{
+    else if (virtualChannelFrameSizes == nullptr){
         sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
                                 "No VCID lengths provided!" << std::endl;
     }
