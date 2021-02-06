@@ -3,6 +3,7 @@
 
 #include <fsfw/container/SharedRingBuffer.h>
 #include <vector>
+#include <map>
 
 enum class AnalyzerModes {
 	DLE_ENCODING, //!< DLE encoded packets.
@@ -22,12 +23,21 @@ public:
 	static constexpr ReturnValue_t POSSIBLE_PACKET_LOSS = MAKE_RETURN_CODE(0x02);
 
 	/**
-	 * Initialize the serial analyzer with a supplied shared ring buffer.
+	 * Initialize the serial analyzer for DLE encoding with a supplied shared ring buffer.
 	 * @param buffer
 	 * @param mode
 	 */
 	RingBufferAnalyzer(SharedRingBuffer* buffer,
 			AnalyzerModes mode = AnalyzerModes::DLE_ENCODING);
+
+    /**
+     * Initialize the serial analyzer for USLP frames a supplied shared ring buffer.
+     * @param buffer
+     * @param virtualChannelFrameSizes Pointer to map with frame sizes for each VC
+     * @param mode
+     */
+    RingBufferAnalyzer(SharedRingBuffer* buffer, std::map<uint8_t, size_t>* virtualChannelFrameSizes,
+            AnalyzerModes mode = AnalyzerModes::USLP_FRAMES);
 
 	/**
 	 * Search for DLE encoded packets or USLP Frames
@@ -50,6 +60,8 @@ private:
 	std::vector<uint8_t> analysisVector;
 	bool dataInAnalysisVectorLeft = false;
 	std::array<uint8_t, 3> uslpHeaderMarker;
+	// Stores VC Length map necessary for frame copying
+	std::map<uint8_t, size_t>* virtualChannelFrameSizes = nullptr;
 
 
 	size_t currentBytesRead = 0;

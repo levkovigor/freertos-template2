@@ -13,14 +13,38 @@ RingBufferAnalyzer::RingBufferAnalyzer(SharedRingBuffer *ringBuffer, AnalyzerMod
         sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
                 "Passed ring buffer invalid!" << std::endl;
     }
+    else if (mode != AnalyzerModes::DLE_ENCODING){
+        sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
+                        "Wrong constructor for DLE mode!" << std::endl;
+    }
+    analysisVector = std::vector<uint8_t>(ringBuffer->getMaxSize());
+
+}
+
+RingBufferAnalyzer::RingBufferAnalyzer(SharedRingBuffer *ringBuffer,
+        std::map<uint8_t, size_t> *virtualChannelFrameSizes, AnalyzerModes mode) :
+        mode(mode), ringBuffer(ringBuffer), virtualChannelFrameSizes(virtualChannelFrameSizes) {
+
+    if (ringBuffer == nullptr) {
+        sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
+                "Passed ring buffer invalid!" << std::endl;
+    }
+    else if (mode != AnalyzerModes::USLP_FRAMES){
+        sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
+                        "Wrong constructor for USLP mode!" << std::endl;
+    }
+    else if (virtualChannelFrameSizes == nullptr){{
+        sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
+                                "No VCID lengths provided!" << std::endl;
+    }
+
     analysisVector = std::vector<uint8_t>(ringBuffer->getMaxSize());
 
     // The first 20 bits of the USLP header are constant and used instead of a sync marker
-    if (mode == AnalyzerModes::USLP_FRAMES) {
-        uslpHeaderMarker[0] = (config::RS485_USLP_TFVN << 4) + (config::RS485_USLP_SCID >> 12);
-        uslpHeaderMarker[1] = (config::RS485_USLP_SCID & 0x0FF0) >> 4;
-        uslpHeaderMarker[2] = (config::RS485_USLP_SCID & 0x000f) << 4;
-    }
+    uslpHeaderMarker[0] = (config::RS485_USLP_TFVN << 4) + (config::RS485_USLP_SCID >> 12);
+    uslpHeaderMarker[1] = (config::RS485_USLP_SCID & 0x0FF0) >> 4;
+    uslpHeaderMarker[2] = (config::RS485_USLP_SCID & 0x000f) << 4;
+
 }
 
 ReturnValue_t RingBufferAnalyzer::checkForPackets(uint8_t *receptionBuffer, size_t maxData,

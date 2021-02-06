@@ -44,7 +44,7 @@ ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {
         RS485Devices device = rs485Cookie->getDevice();
         deviceCookies[device] = cookie;
         //TODO: Returnvalue for map insertion
-        virtualChannelTfdzSizes.insert(
+        virtualChannelFrameSizes.insert(
                 std::pair<uint8_t, size_t>(rs485Cookie->getVcId(),
                         rs485Cookie->getTfdzSize() + sendBuffer[device]->FRAME_OVERHEAD));
         return HasReturnvaluesIF::RETURN_OK;
