@@ -7,7 +7,7 @@
 
 enum class AnalyzerModes {
 	DLE_ENCODING, //!< DLE encoded packets.
-	USLP_FRAMES //!< USLP frames with truncated primary header
+	USLP_FRAMES //!< USLP frames with !truncated! primary header
 };
 
 /**
@@ -31,7 +31,7 @@ public:
 			AnalyzerModes mode = AnalyzerModes::DLE_ENCODING);
 
     /**
-     * Initialize the serial analyzer for USLP frames a supplied shared ring buffer.
+     * Initialize the serial analyzer for fixed size USLP frames a supplied shared ring buffer.
      * @param buffer
      * @param virtualChannelFrameSizes Pointer to map with frame sizes for each VC
      * @param mode

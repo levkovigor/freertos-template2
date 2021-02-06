@@ -12,10 +12,9 @@ RingBufferAnalyzer::RingBufferAnalyzer(SharedRingBuffer *ringBuffer, AnalyzerMod
     if (ringBuffer == nullptr) {
         sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
                 "Passed ring buffer invalid!" << std::endl;
-    }
-    else if (mode != AnalyzerModes::DLE_ENCODING){
+    } else if (mode != AnalyzerModes::DLE_ENCODING) {
         sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
-                        "Wrong constructor for DLE mode!" << std::endl;
+                "Wrong constructor for DLE mode!" << std::endl;
     }
     analysisVector = std::vector<uint8_t>(ringBuffer->getMaxSize());
 
@@ -23,19 +22,17 @@ RingBufferAnalyzer::RingBufferAnalyzer(SharedRingBuffer *ringBuffer, AnalyzerMod
 
 RingBufferAnalyzer::RingBufferAnalyzer(SharedRingBuffer *ringBuffer,
         std::map<uint8_t, size_t> *virtualChannelFrameSizes, AnalyzerModes mode) :
-        mode(mode), ringBuffer(ringBuffer), virtualChannelFrameSizes(virtualChannelFrameSizes){
+        mode(mode), ringBuffer(ringBuffer), virtualChannelFrameSizes(virtualChannelFrameSizes) {
 
     if (ringBuffer == nullptr) {
         sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
                 "Passed ring buffer invalid!" << std::endl;
-    }
-    else if (mode != AnalyzerModes::USLP_FRAMES){
+    } else if (mode != AnalyzerModes::USLP_FRAMES) {
         sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
-                        "Wrong constructor for USLP mode!" << std::endl;
-    }
-    else if (virtualChannelFrameSizes == nullptr){
+                "Wrong constructor for USLP mode!" << std::endl;
+    } else if (virtualChannelFrameSizes == nullptr) {
         sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
-                                "No VCID lengths provided!" << std::endl;
+                "No VCID lengths provided!" << std::endl;
     }
 
     analysisVector = std::vector<uint8_t>(ringBuffer->getMaxSize());
@@ -92,7 +89,7 @@ ReturnValue_t RingBufferAnalyzer::handleParsing(uint8_t *receptionBuffer, size_t
     size_t readSize = 0;
     ReturnValue_t result = NO_PACKET_FOUND;
     if (mode == AnalyzerModes::DLE_ENCODING) {
-        ReturnValue_t result = parseForDleEncodedPackets(currentBytesRead, receptionBuffer, maxSize,
+        result = parseForDleEncodedPackets(currentBytesRead, receptionBuffer, maxSize,
                 packetSize, &readSize);
     } else if (mode == AnalyzerModes::USLP_FRAMES) {
         result = parseForUslpFrames(currentBytesRead, receptionBuffer, maxSize, packetSize,
@@ -132,7 +129,7 @@ ReturnValue_t RingBufferAnalyzer::parseForDleEncodedPackets(size_t bytesToRead,
         // handle ETX char
         if (analysisVector[vectorIdx] == DleEncoder::ETX_CHAR) {
             if (stxFound) {
-                // This is propably a packet, so we decode it.
+                // This is probably a packet, so we decode it.
 
                 ReturnValue_t result = DleEncoder::decode(&analysisVector[stxIdx],
                         bytesToRead - stxIdx, readSize, receptionBuffer, maxSize, packetSize);
@@ -155,7 +152,7 @@ ReturnValue_t RingBufferAnalyzer::parseForDleEncodedPackets(size_t bytesToRead,
 
 ReturnValue_t RingBufferAnalyzer::parseForUslpFrames(size_t bytesToRead, uint8_t *receptionBuffer,
         size_t maxSize, size_t *packetSize, size_t *readSize) {
-    bool headerFound = false;
+    std::map<uint8_t, size_t>::iterator iter = virtualChannelFrameSizes->end();
     // This only works for byte aligned data
     // TODO: Check if non byte aligned data is possible
     for (size_t vectorIdx = 0; vectorIdx <= bytesToRead - config::RS485_MIN_SERIAL_FRAME_SIZE;
@@ -165,9 +162,29 @@ ReturnValue_t RingBufferAnalyzer::parseForUslpFrames(size_t bytesToRead, uint8_t
         if (analysisVector[vectorIdx] == uslpHeaderMarker[0]
                 && analysisVector[vectorIdx + 1] == uslpHeaderMarker[1]
                 && (analysisVector[vectorIdx + 2] & 0xF0) == uslpHeaderMarker[2]) {
-            headerFound = true;
-            // Get iterator with VCIDs and corresponding lengths from RS485ComIF
-            //
+            // Get VCID
+            // We don't need to analyze the whole frame here, so we just get the relevant bits
+            uint8_t vcid = ((analysisVector[vectorIdx + 2] & 0b00000111) << 3)
+                    + ((analysisVector[vectorIdx + 3] & 0b11100000) >> 5);
+
+            iter = virtualChannelFrameSizes->find(vcid);
+
+            if (iter == virtualChannelFrameSizes->end()) {
+                // If we don't know the VCID, we either read at the wrong place, or we received an
+                // unknown VCID, both are not good, so we just skip this section by advancing the
+                // read pointer
+                *readSize = ++vectorIdx;
+                return POSSIBLE_PACKET_LOSS;
+            }
+            else{
+                *packetSize = iter->second;
+                // If we would decode the USLP Frame here this would be more relevant, here it is
+                // just to be compatible with the DLE encoding part
+                *readSize = iter->second;
+                (void) std::memcpy(receptionBuffer, &analysisVector[vectorIdx], *packetSize);
+                return HasReturnvaluesIF::RETURN_OK;
+            }
+
         }
 
     }
