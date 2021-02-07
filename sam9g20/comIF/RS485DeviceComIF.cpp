@@ -208,7 +208,7 @@ void RS485DeviceComIF::initTransferFrameSendBuffers() {
 
 }
 void RS485DeviceComIF::handleSend(RS485Devices device, RS485Cookie *rs485Cookie) {
-
+    int retval = 0;
     // This condition sets the buffer to default messages if there is no message
     // or if last communication was faulty
     if (rs485Cookie->getComStatus() != ComStatusRS485::TRANSFER_INIT_SUCCESS) {
@@ -219,9 +219,13 @@ void RS485DeviceComIF::handleSend(RS485Devices device, RS485Cookie *rs485Cookie)
     // Set address just to be sure it was not changed
     sendBuffer[device]->setVirtualChannelId(rs485Cookie->getVcId());
     sendBuffer[device]->setMapId(rs485Cookie->getMapId());
-    // Buffer is already filled, so just send it
-    int retval = UART_write(bus2_uart, sendBuffer[device]->getFullFrame(),
-            sendBuffer[device]->getFullFrameSize());
+
+    // Check if messag is available
+    if (rs485Cookie->getComStatus() == ComStatusRS485::TRANSFER_INIT_SUCCESS) {
+        // Buffer is already filled, so just send it
+           retval = UART_write(bus2_uart, sendBuffer[device]->getFullFrame(),
+                   sendBuffer[device]->getFullFrameSize());
+    }
 
     //TODO:  We  memset here but USLP wants encapsulation idle packet according to
     // CCSDS 133.1-B-2, additionally there have been problems with non-randomized idle data

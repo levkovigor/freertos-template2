@@ -169,7 +169,8 @@ ReturnValue_t RS485TmTcTarget::handleReceiveBuffer() {
 
 ReturnValue_t RS485TmTcTarget::handlePacketReception(size_t foundLen) {
     store_address_t storeId;
-    ReturnValue_t result = tcStore->addData(&storeId, receiveArray.data(), foundLen);
+    //TODO: Just for testing
+    ReturnValue_t result = tcStore->addData(&storeId, receiveArray.data()+7, foundLen-7);
     if (result == HasReturnvaluesIF::RETURN_FAILED) {
         return result;
     }
