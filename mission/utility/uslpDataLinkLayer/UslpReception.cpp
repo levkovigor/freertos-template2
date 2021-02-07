@@ -55,6 +55,8 @@ ReturnValue_t UslpReception::virtualChannelDemultiplexing() {
 
 ReturnValue_t UslpReception::processFrame(uint16_t length) {
     receivedDataLength = length;
+    USLPTransferFrame frame_candidate(frameBuffer, length - USLPTransferFrame::FRAME_OVERHEAD);
+    this->currentFrame = frame_candidate;
     ReturnValue_t status = frameValidationCheck();
     if (status != RETURN_OK) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
