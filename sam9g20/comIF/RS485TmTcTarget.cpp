@@ -58,7 +58,8 @@ ReturnValue_t RS485TmTcTarget::initialize() {
     if (ringBuffer == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
-    analyzerTask = new RingBufferAnalyzer(ringBuffer, virtualChannelFrameSizes, AnalyzerModes::USLP_FRAMES);
+    analyzerTask = new RingBufferAnalyzer(ringBuffer, virtualChannelFrameSizes,
+            AnalyzerModes::USLP_FRAMES);
 
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -131,15 +132,14 @@ ReturnValue_t RS485TmTcTarget::fillSendFrameBuffer(USLPTransferFrame *frame) {
 ReturnValue_t RS485TmTcTarget::setvirtualChannelFrameSizes(
         std::map<uint8_t, size_t> *virtualChannelFrameSizes) {
 
-        if (virtualChannelFrameSizes == nullptr){
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
-        else if (virtualChannelFrameSizes->empty()){
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
+    if (virtualChannelFrameSizes == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    } else if (virtualChannelFrameSizes->empty()) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
 
-        this->virtualChannelFrameSizes = virtualChannelFrameSizes;
-        return HasReturnvaluesIF::RETURN_OK;
+    this->virtualChannelFrameSizes = virtualChannelFrameSizes;
+    return HasReturnvaluesIF::RETURN_OK;
 
 }
 

@@ -96,12 +96,12 @@ void RS485PollingTask::pollUart() {
 
 void RS485PollingTask::uart1Callback(SystemContext context,
         xSemaphoreHandle sem) {
-    transfer1bytesReceived = UART_getPrevBytesRead(bus0_uart);
+    transfer1bytesReceived = UART_getPrevBytesRead(bus2_uart);
     genericUartCallback(context, sem);
 }
 
 void RS485PollingTask::uart2Callback(SystemContext context,
         xSemaphoreHandle sem) {
-    transfer2bytesReceived = UART_getPrevBytesRead(bus0_uart);
+    transfer2bytesReceived = UART_getPrevBytesRead(bus2_uart);
     genericUartCallback(context, sem);
 }
