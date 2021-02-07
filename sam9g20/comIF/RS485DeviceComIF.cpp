@@ -8,8 +8,7 @@
 #include <sam9g20/comIF/RS485TmTcTarget.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <sam9g20/comIF/cookies/RS485Cookie.h>
-#include <mission/utility/USLPTransferFrame.h>
-
+#include "../../mission/utility/uslpDataLinkLayer/USLPTransferFrame.h"
 #include "GpioDeviceComIF.h"
 
 extern "C" {

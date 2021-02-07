@@ -4,8 +4,8 @@
 #include <fsfwconfig/OBSWConfig.h>
 #include <sam9g20/core/RingBufferAnalyzer.h>
 #include <cstring>
-#include <mission/utility/USLPTransferFrame.h>
 #include <sam9g20/comIF/RS485DeviceComIF.h>
+#include "../../mission/utility/uslpDataLinkLayer/USLPTransferFrame.h"
 
 RingBufferAnalyzer::RingBufferAnalyzer(SharedRingBuffer *ringBuffer, AnalyzerModes mode) :
         mode(mode), ringBuffer(ringBuffer) {

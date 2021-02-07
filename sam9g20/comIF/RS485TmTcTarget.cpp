@@ -6,8 +6,8 @@
  */
 #include "RS485TmTcTarget.h"
 #include <fsfw/ipc/QueueFactory.h>
-#include <mission/utility/USLPTransferFrame.h>
 #include <fsfwconfig/OBSWConfig.h>
+#include "../../mission/utility/uslpDataLinkLayer/USLPTransferFrame.h"
 
 RS485TmTcTarget::RS485TmTcTarget(object_id_t objectId, object_id_t tcDestination,
         object_id_t tmStoreId, object_id_t tcStoreId, object_id_t sharedRingBufferId) :

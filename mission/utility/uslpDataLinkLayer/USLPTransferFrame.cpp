@@ -5,7 +5,7 @@
  * @author	L. Rajer
  */
 
-#include "USLPTransferFrame.h"
+#include "uslpDataLinkLayer/USLPTransferFrame.h"
 
 USLPTransferFrame::USLPTransferFrame() {
     this->frame = NULL;

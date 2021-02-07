@@ -15,8 +15,8 @@
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 #include <fsfwconfig/OBSWConfig.h>
-#include <mission/utility/USLPTransferFrame.h>
 #include <sam9g20/comIF/RS485TmTcTarget.h>
+#include "../../mission/utility/uslpDataLinkLayer/USLPTransferFrame.h"
 
 extern "C" {
 

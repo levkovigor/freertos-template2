@@ -15,10 +15,10 @@
 #include <fsfw/ipc/MessageQueueIF.h>
 #include <fsfw/tmtcservices/TmTcMessage.h>
 #include <fsfw/container/DynamicFIFO.h>
-#include <mission/utility/USLPTransferFrame.h>
 #include <fsfw/container/SharedRingBuffer.h>
 #include <sam9g20/core/RingBufferAnalyzer.h>
 #include <fsfwconfig/OBSWConfig.h>
+#include "../../mission/utility/uslpDataLinkLayer/USLPTransferFrame.h"
 
 /**
  * @brief       Is used by RS485DeviceComIF to send TM
