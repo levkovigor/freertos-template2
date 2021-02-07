@@ -5,6 +5,7 @@ CXXSRC += $(wildcard $(CURRENTPATH)/fdir/*.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/controller/*.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/memory/*.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/utility/*.cpp)
+CXXSRC += $(wildcard $(CURRENTPATH)/utility/uslpDataLinkLayer/*.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/assembly/*.cpp)
 
 

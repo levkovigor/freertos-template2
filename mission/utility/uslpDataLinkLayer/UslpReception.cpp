@@ -1,14 +1,14 @@
 #include "UslpReception.h"
-#include "../globalfunctions/CRC.h"
-#include "../serviceinterface/ServiceInterfaceStream.h"
+#include <fsfw/globalfunctions/CRC.h>
+#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include "USLPTransferFrame.h"
 
 UslpReception::UslpReception(uint8_t *set_frame_buffer, uint16_t set_scid) :
-        spacecraftId(set_scid), frameBuffer(set_frame_buffer), receivedDataLength(0), currentFrame(
-        NULL) {
+        spacecraftId(set_scid), frameBuffer(set_frame_buffer), receivedDataLength(0) {
     //Nothing to do except from setting the values above.
 }
 
-DataLinkLayer::~DataLinkLayer() {
+UslpReception::~UslpReception() {
 
 }
 
@@ -26,14 +26,6 @@ ReturnValue_t UslpReception::frameValidationCheck() {
         return NO_VALID_FRAME_TYPE;
     }
 
-    //Compare detected frame length with the one in the header
-    uint16_t length = currentFrame.getFullSize();
-    if (length > receivedDataLength) {
-        //Frame is too long or just right
-//      error << "frameValidationCheck: Too short.";
-//      currentFrame.print();
-        return TOO_SHORT;
-    }
     if (USE_CRC) {
         return this->frameCheckCRC();
     }
@@ -42,7 +34,7 @@ ReturnValue_t UslpReception::frameValidationCheck() {
 
 ReturnValue_t UslpReception::frameCheckCRC() {
     uint16_t checkValue = CRC::crc16ccitt(this->currentFrame.getFullFrame(),
-            this->currentFrame.getFullSize());
+            this->currentFrame.getFullFrameSize());
     if (checkValue == 0) {
         return RETURN_OK;
     } else {
@@ -57,7 +49,7 @@ ReturnValue_t UslpReception::virtualChannelDemultiplexing() {
     if (iter == virtualChannels.end()) {
         return RETURN_FAILED;
     } else {
-        return (iter->second)->frameAcceptanceAndReportingMechanism(&currentFrame, clcw);
+        return (iter->second)->frameAcceptanceAndReportingMechanism(&currentFrame);
     }
 }
 
@@ -77,9 +69,9 @@ ReturnValue_t UslpReception::processFrame(uint16_t length) {
 }
 
 ReturnValue_t UslpReception::addVirtualChannel(uint8_t virtualChannelId,
-        VirtualChannelReceptionIF *object) {
+        UslpVirtualChannelIF *object) {
     std::pair<virtualChannelIterator, bool> returnValue = virtualChannels.insert(
-            std::pair<uint8_t, VirtualChannelReceptionIF*>(virtualChannelId, object));
+            std::pair<uint8_t, UslpVirtualChannelIF*>(virtualChannelId, object));
     if (returnValue.second == true) {
         return RETURN_OK;
     } else {

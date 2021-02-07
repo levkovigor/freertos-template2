@@ -8,7 +8,7 @@
 #include <sam9g20/comIF/RS485TmTcTarget.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <sam9g20/comIF/cookies/RS485Cookie.h>
-#include "../../mission/utility/uslpDataLinkLayer/USLPTransferFrame.h"
+#include <mission/utility/uslpDataLinkLayer/USLPTransferFrame.h>
 #include "GpioDeviceComIF.h"
 
 extern "C" {
@@ -130,7 +130,6 @@ ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie, const uint8_t *sen
 
     RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
     RS485Devices device = rs485Cookie->getDevice();
-
     // Check if there already is a message that has not been processed yet
     if (rs485Cookie->getComStatus() == ComStatusRS485::IDLE) {
         // Copy Message into corresponding sendFrameBuffer

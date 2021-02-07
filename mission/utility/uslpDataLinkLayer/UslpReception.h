@@ -3,7 +3,7 @@
 
 #include <map>
 #include "USLPTransferFrame.h"
-#include <fsfw/datalinklayer/VirtualChannelReceptionIF.h>
+#include "UslpVirtualChannelIF.h"
 #include <fsfw/datalinklayer/CCSDSReturnValuesIF.h>
 /**
  * @brief   Class for receiving fixed length USLP Frames
@@ -40,14 +40,14 @@ public:
      * @param object    Reference to the object that handles the Frame.
      * @return  @c RETURN_OK on success, @c RETURN_FAILED otherwise.
      */
-    ReturnValue_t addVirtualChannel(uint8_t virtualChannelId, VirtualChannelReceptionIF* object );
+    ReturnValue_t addVirtualChannel(uint8_t virtualChannelId, UslpVirtualChannelIF* object );
     /**
      * The initialization method calls the @c initialize routine of all virtual channels.
      * @return The return code of the first failed VC initialization or @c RETURN_OK.
      */
     ReturnValue_t initialize();
 private:
-    typedef std::map<uint8_t, VirtualChannelReceptionIF*>::iterator virtualChannelIterator; //!< Typedef to simplify handling the #virtualChannels map.
+    typedef std::map<uint8_t, UslpVirtualChannelIF*>::iterator virtualChannelIterator; //!< Typedef to simplify handling the #virtualChannels map.
     static const uint8_t FRAME_VERSION_NUMBER_DEFAULT = 0x00;   //!< Constant for the default value of Frame Version Numbers.
     static const uint8_t FRAME_PRIMARY_HEADER_LENGTH = 4;   //!< Length of the frame's primary header.
     static const bool USE_CRC = true;   //!< A global, so called "Managed Parameter" that identifies if incoming frames have CRC's or not.
@@ -55,7 +55,7 @@ private:
     uint8_t* frameBuffer;   //!< A pointer to point to the current incoming frame.
     uint16_t receivedDataLength;    //!< Stores the length of the currently processed frame.
     USLPTransferFrame currentFrame;   //!< Stores a more convenient access to the current frame.
-    std::map<uint8_t, VirtualChannelReceptionIF*> virtualChannels;  //!< Map of all virtual channels assigned.
+    std::map<uint8_t, UslpVirtualChannelIF*> virtualChannels;  //!< Map of all virtual channels assigned.
     /**
      * Method that performs all possible frame validity checks (as specified).
      * @return  Various error codes or @c RETURN_OK on success.
