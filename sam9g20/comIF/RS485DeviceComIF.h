@@ -46,7 +46,7 @@ public:
     static constexpr char defaultMessage[] = { 'O', 'n', 'e', ' ', 'P', 'i', 'n', 'g', ' ', 'o',
             'n', 'l', 'y', ' ' };
 
-    RS485DeviceComIF(object_id_t objectId, object_id_t tmTcTargetId);
+    RS485DeviceComIF(object_id_t objectId, object_id_t tmTcTargetId, object_id_t UslpDataLinkLayerId);
     virtual ~RS485DeviceComIF();
 
     /**
@@ -120,6 +120,8 @@ private:
     // Used for handling the TM and TC Queue, this class is already big enough
     object_id_t tmTcTargetId = objects::NO_OBJECT;
     RS485TmTcTarget *tmTcTarget = nullptr;
+
+    object_id_t UslpDataLinkLayerId = objects::NO_OBJECT;
 
     /**
      * @brief  Initializes one TransferFrame class with buffer for each device

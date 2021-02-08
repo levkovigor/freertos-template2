@@ -83,7 +83,7 @@ ReturnValue_t UslpDataLinkLayer::addVirtualChannel(uint8_t virtualChannelId,
     }
 }
 
-ReturnValue_t UslpDataLinkLayer::initialize() {
+ReturnValue_t UslpDataLinkLayer::initialize(uint8_t* frameBuffer) {
     ReturnValue_t returnValue = RETURN_FAILED;
     //Set Virtual Channel ID to first virtual channel instance in this DataLinkLayer instance to avoid faulty information (e.g. 0) in the VCID.
     if (virtualChannels.begin() == virtualChannels.end()) {

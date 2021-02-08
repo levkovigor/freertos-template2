@@ -15,7 +15,8 @@ extern "C" {
 #include <hal/Drivers/UART.h>
 }
 
-RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t tmTcTargetId) :
+RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t tmTcTargetId,
+        object_id_t UslpDataLinkLayerId) :
         SystemObject(objectId), tmTcTargetId(tmTcTargetId) {
 
     for (int i = 0; i < RS485Devices::DEVICE_COUNT_RS485; i++) {
@@ -221,8 +222,8 @@ void RS485DeviceComIF::handleSend(RS485Devices device, RS485Cookie *rs485Cookie)
     // Check if messag is available
     if (rs485Cookie->getComStatus() == ComStatusRS485::TRANSFER_INIT_SUCCESS) {
         // Buffer is already filled, so just send it
-           retval = UART_write(bus2_uart, sendBuffer[device]->getFullFrame(),
-                   sendBuffer[device]->getFullFrameSize());
+        retval = UART_write(bus2_uart, sendBuffer[device]->getFullFrame(),
+                sendBuffer[device]->getFullFrameSize());
     }
 
     //TODO:  We  memset here but USLP wants encapsulation idle packet according to
