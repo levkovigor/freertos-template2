@@ -46,6 +46,12 @@ public:
      * @return
      */
     virtual ReturnValue_t initialize() = 0;
+
+    /**
+     * Getter.
+     * @return The MAP ID
+     */
+    virtual ReturnValue_t getMapId() const;
 };
 
 
