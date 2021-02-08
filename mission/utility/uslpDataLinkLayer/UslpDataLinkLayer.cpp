@@ -1,18 +1,19 @@
-#include "UslpReception.h"
+#include "UslpDataLinkLayer.h"
+
 #include <fsfw/globalfunctions/CRC.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include "USLPTransferFrame.h"
 
-UslpReception::UslpReception(uint8_t *set_frame_buffer, uint16_t set_scid) :
+UslpDataLinkLayer::UslpDataLinkLayer(uint8_t *set_frame_buffer, uint16_t set_scid) :
         spacecraftId(set_scid), frameBuffer(set_frame_buffer), receivedDataLength(0) {
     //Nothing to do except from setting the values above.
 }
 
-UslpReception::~UslpReception() {
+UslpDataLinkLayer::~UslpDataLinkLayer() {
 
 }
 
-ReturnValue_t UslpReception::frameValidationCheck() {
+ReturnValue_t UslpDataLinkLayer::frameValidationCheck() {
     //Check TF_version number
     if (this->currentFrame.getVersionNumber() != FRAME_VERSION_NUMBER_DEFAULT) {
         return WRONG_TF_VERSION;
@@ -32,7 +33,7 @@ ReturnValue_t UslpReception::frameValidationCheck() {
     return RETURN_OK;
 }
 
-ReturnValue_t UslpReception::frameCheckCRC() {
+ReturnValue_t UslpDataLinkLayer::frameCheckCRC() {
     uint16_t checkValue = CRC::crc16ccitt(this->currentFrame.getFullFrame(),
             this->currentFrame.getFullFrameSize());
     if (checkValue == 0) {
@@ -43,7 +44,7 @@ ReturnValue_t UslpReception::frameCheckCRC() {
 
 }
 
-ReturnValue_t UslpReception::virtualChannelDemultiplexing() {
+ReturnValue_t UslpDataLinkLayer::virtualChannelDemultiplexing() {
     uint8_t vcId = currentFrame.getVirtualChannelId();
     virtualChannelIterator iter = virtualChannels.find(vcId);
     if (iter == virtualChannels.end()) {
@@ -53,7 +54,7 @@ ReturnValue_t UslpReception::virtualChannelDemultiplexing() {
     }
 }
 
-ReturnValue_t UslpReception::processFrame(uint16_t length) {
+ReturnValue_t UslpDataLinkLayer::processFrame(uint16_t length) {
     receivedDataLength = length;
     USLPTransferFrame frame_candidate(frameBuffer, length - USLPTransferFrame::FRAME_OVERHEAD);
     this->currentFrame = frame_candidate;
@@ -70,7 +71,7 @@ ReturnValue_t UslpReception::processFrame(uint16_t length) {
     }
 }
 
-ReturnValue_t UslpReception::addVirtualChannel(uint8_t virtualChannelId,
+ReturnValue_t UslpDataLinkLayer::addVirtualChannel(uint8_t virtualChannelId,
         UslpVirtualChannelIF *object) {
     std::pair<virtualChannelIterator, bool> returnValue = virtualChannels.insert(
             std::pair<uint8_t, UslpVirtualChannelIF*>(virtualChannelId, object));
@@ -81,7 +82,7 @@ ReturnValue_t UslpReception::addVirtualChannel(uint8_t virtualChannelId,
     }
 }
 
-ReturnValue_t UslpReception::initialize() {
+ReturnValue_t UslpDataLinkLayer::initialize() {
     ReturnValue_t returnValue = RETURN_FAILED;
     //Set Virtual Channel ID to first virtual channel instance in this DataLinkLayer instance to avoid faulty information (e.g. 0) in the VCID.
     if (virtualChannels.begin() == virtualChannels.end()) {

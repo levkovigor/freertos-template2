@@ -1,5 +1,5 @@
-#ifndef MISSION_UTILITY_USLPDATALINKLAYER_USLPRECEPTION_H_
-#define MISSION_UTILITY_USLPDATALINKLAYER_USLPRECEPTION_H_
+#ifndef MISSION_UTILITY_USLPDATALINKLAYER_USLPDATALINKLAYER_H_
+#define MISSION_UTILITY_USLPDATALINKLAYER_USLPDATALINKLAYER_H_
 
 #include <map>
 #include "USLPTransferFrame.h"
@@ -12,7 +12,7 @@
  *          by B. Baetz without its FARM and CLCW parts.
  * @author  L. Rajer
  */
-class UslpReception : public CCSDSReturnValuesIF {
+class UslpDataLinkLayer : public CCSDSReturnValuesIF {
 public:
 
     /**
@@ -20,11 +20,11 @@ public:
      * @param set_frame_buffer The buffer in which incoming frame candidates are stored.
      * @param set_scid  The SCID to operate on.
      */
-    UslpReception( uint8_t* set_frame_buffer, uint16_t set_scid );
+    UslpDataLinkLayer( uint8_t* set_frame_buffer, uint16_t set_scid );
     /**
      * Empty virtual destructor.
      */
-    ~UslpReception();
+    ~UslpDataLinkLayer();
     /**
      * This method tries to process a frame that is placed in #frameBuffer.
      * The procedures described in the Standard are performed.
@@ -77,4 +77,4 @@ private:
     ReturnValue_t virtualChannelDemultiplexing();
 };
 
-#endif /* MISSION_UTILITY_USLPDATALINKLAYER_USLPRECEPTION_H_ */
+#endif /* MISSION_UTILITY_USLPDATALINKLAYER_USLPDATALINKLAYER_H_ */
