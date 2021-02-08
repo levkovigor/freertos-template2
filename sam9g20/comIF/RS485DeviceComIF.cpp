@@ -9,6 +9,11 @@
 #include <fsfw/tasks/TaskFactory.h>
 #include <sam9g20/comIF/cookies/RS485Cookie.h>
 #include <mission/utility/uslpDataLinkLayer/USLPTransferFrame.h>
+#include <mission/utility/uslpDataLinkLayer/UslpDataLinkLayer.h>
+#include <mission/utility/uslpDataLinkLayer/UslpVirtualChannelIF.h>
+#include <mission/utility/uslpDataLinkLayer/UslpVirtualChannel.h>
+#include <mission/utility/uslpDataLinkLayer/UslpMapIF.h>
+#include <mission/utility/uslpDataLinkLayer/UslpMapTmTc.h>
 #include "GpioDeviceComIF.h"
 
 extern "C" {
@@ -34,6 +39,20 @@ ReturnValue_t RS485DeviceComIF::initialize() {
     tmTcTarget = objectManager->get<RS485TmTcTarget>(tmTcTargetId);
     if (tmTcTarget == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    uslpDataLinkLayer = objectManager->get<UslpDataLinkLayer>(uslpDataLinkLayerId);
+    if (uslpDataLinkLayer == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    } else {
+        for (int device = 0; device < RS485Devices::DEVICE_COUNT_RS485; device++) {
+            RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(deviceCookies[device]);
+
+            UslpVirtualChannelIF *virtualChannel;
+            virtualChannel = new UslpVirtualChannel(rs485Cookie->getVcId(),
+                    rs485Cookie->getTfdzSize());
+            uslpDataLinkLayer->addVirtualChannel(rs485Cookie->getVcId(), virtualChannel);
+        }
     }
     ReturnValue_t result = tmTcTarget->setvirtualChannelFrameSizes(&virtualChannelFrameSizes);
     return result;

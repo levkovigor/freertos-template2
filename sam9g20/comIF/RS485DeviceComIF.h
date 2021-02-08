@@ -16,7 +16,8 @@
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 #include <fsfwconfig/OBSWConfig.h>
 #include <sam9g20/comIF/RS485TmTcTarget.h>
-#include "../../mission/utility/uslpDataLinkLayer/USLPTransferFrame.h"
+#include <mission/utility/uslpDataLinkLayer/USLPTransferFrame.h>
+#include <mission/utility/uslpDataLinkLayer/UslpDataLinkLayer.h>
 
 extern "C" {
 
@@ -121,7 +122,8 @@ private:
     object_id_t tmTcTargetId = objects::NO_OBJECT;
     RS485TmTcTarget *tmTcTarget = nullptr;
 
-    object_id_t UslpDataLinkLayerId = objects::NO_OBJECT;
+    object_id_t uslpDataLinkLayerId = objects::NO_OBJECT;
+    UslpDataLinkLayer *uslpDataLinkLayer = nullptr;
 
     /**
      * @brief  Initializes one TransferFrame class with buffer for each device
