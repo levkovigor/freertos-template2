@@ -5,8 +5,8 @@
 
 #include "USLPTransferFrame.h"
 
-UslpDataLinkLayer::UslpDataLinkLayer(object_id_t objectId, uint8_t *set_frame_buffer, uint16_t set_scid) :
-        SystemObject(objectId), spacecraftId(set_scid), frameBuffer(set_frame_buffer), receivedDataLength(0) {
+UslpDataLinkLayer::UslpDataLinkLayer(object_id_t objectId, uint16_t set_scid) :
+        SystemObject(objectId), spacecraftId(set_scid), frameBuffer(nullptr), receivedDataLength(0) {
     //Nothing to do except from setting the values above.
 }
 
@@ -100,7 +100,14 @@ ReturnValue_t UslpDataLinkLayer::initialize() {
         if (returnValue != RETURN_OK)
             break;
     }
+    if (frameBuffer == nullptr){
+        returnValue = RETURN_FAILED;
+    }
+    else{
+        this->frameBuffer = frameBuffer;
+    }
     return returnValue;
 
 }
+
 

@@ -19,10 +19,9 @@ public:
 
     /**
      * The Constructor sets the passed parameters and nothing else.
-     * @param set_frame_buffer The buffer in which incoming frame candidates are stored.
      * @param set_scid  The SCID to operate on.
      */
-    UslpDataLinkLayer(object_id_t objectId, uint8_t *set_frame_buffer, uint16_t set_scid);
+    UslpDataLinkLayer(object_id_t objectId, uint16_t set_scid);
     /**
      * Empty virtual destructor.
      */
