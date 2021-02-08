@@ -14,14 +14,14 @@
  * @author      L. Rajer
  */
 
-
 class UslpMapTmTc: public UslpMapIF {
 public:
     /**
      * @brief Default constructor
      * @param mapId  The MAP ID of the instance.
      */
-    UslpMapTmTc(uint8_t mapId, object_id_t tmSource, object_id_t tcDestination);
+    UslpMapTmTc(uint8_t mapId, object_id_t tcDestination, object_id_t tmStoreId,
+            object_id_t tcStoreId);
 
     ReturnValue_t initialize() override;
 
@@ -32,30 +32,34 @@ public:
      * @details This means privately formated SDUs
      * @return
      */
-    virtual ReturnValue_t packFrameMapa() override;
+    ReturnValue_t packFrameMapa() override;
 
     /**
      * @brief Packs a transfer frame with the Multiplexer Access Point Packket Service
      * @details This means space packets
      * @return
      */
-    virtual ReturnValue_t packFrameMapp() override;
+    ReturnValue_t packFrameMapp() override;
 
     /**
      * Getter.
      * @return The MAP ID of this instance.
      */
-    uint8_t getMapId() const;
+    uint8_t getMapId() const override;
 private:
     static const uint32_t MAX_PACKET_SIZE = 4096;
     uint8_t mapId;  //!< MAP ID of this MAP Channel.
     uint32_t packetLength = 0;  //!< Complete length of the current Space Packet.
     uint8_t *bufferPosition;    //!< Position to write to in the internal Packet buffer.
     uint8_t packetBuffer[MAX_PACKET_SIZE];  //!< The internal Space Packet Buffer.
-    object_id_t packetDestination;
-    //!< Pointer to the store where full TC packets are stored.
-    StorageManagerIF *packetStore = nullptr;
-    MessageQueueId_t tcQueueId;     //!< QueueId to send found packets to the distributor.
+
+    // TmTc Queues and stores
+    object_id_t tmStoreId = objects::NO_OBJECT;
+    object_id_t tcStoreId = objects::NO_OBJECT;
+    object_id_t tcDestination = objects::NO_OBJECT;
+    MessageQueueIF *tmTcReceptionQueue = nullptr;
+    StorageManagerIF *tmStore = nullptr;
+    StorageManagerIF *tcStore = nullptr;
 
     /**
      * Helper method to forward a complete packet to the OBSW.

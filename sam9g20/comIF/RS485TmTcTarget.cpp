@@ -51,7 +51,6 @@ ReturnValue_t RS485TmTcTarget::initialize() {
         return ObjectManagerIF::CHILD_INIT_FAILED;
     }
 
-    tmFifo = new DynamicFIFO<store_address_t>(maxNumberOfPacketsStored);
 
     // The ring buffer analyzer will run in performOperation
     SharedRingBuffer *ringBuffer = objectManager->get<SharedRingBuffer>(sharedRingBufferId);

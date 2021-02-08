@@ -51,7 +51,7 @@ public:
      * Getter.
      * @return The MAP ID
      */
-    virtual ReturnValue_t getMapId() const;
+    virtual uint8_t getMapId() const;
 };
 
 
