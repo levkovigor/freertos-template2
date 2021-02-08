@@ -2,10 +2,11 @@
 
 #include <fsfw/globalfunctions/CRC.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+
 #include "USLPTransferFrame.h"
 
-UslpDataLinkLayer::UslpDataLinkLayer(uint8_t *set_frame_buffer, uint16_t set_scid) :
-        spacecraftId(set_scid), frameBuffer(set_frame_buffer), receivedDataLength(0) {
+UslpDataLinkLayer::UslpDataLinkLayer(object_id_t objectId, uint8_t *set_frame_buffer, uint16_t set_scid) :
+        SystemObject(objectId), spacecraftId(set_scid), frameBuffer(set_frame_buffer), receivedDataLength(0) {
     //Nothing to do except from setting the values above.
 }
 
