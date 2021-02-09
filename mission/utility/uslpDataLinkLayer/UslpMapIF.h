@@ -32,7 +32,7 @@ public:
      * @return
      */
     // TODO: Best parameter for this
-    virtual ReturnValue_t packFrameMapa();
+    virtual ReturnValue_t packFrameMapa() = 0;
 
     /**
       * @brief Packs a transfer frame with the Multiplexer Access Point Packket Service
@@ -40,7 +40,7 @@ public:
       * @return
       */
     // TODO: Best parameter for this
-    virtual ReturnValue_t packFrameMapp();
+    virtual ReturnValue_t packFrameMapp() = 0;
     /**
      * Any post-instantiation initialization shall be done in this method.
      * @return
@@ -51,7 +51,7 @@ public:
      * Getter.
      * @return The MAP ID
      */
-    virtual uint8_t getMapId() const;
+    virtual uint8_t getMapId() const = 0;
 };
 
 

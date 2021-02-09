@@ -7,7 +7,7 @@
 
 enum class AnalyzerModes {
 	DLE_ENCODING, //!< DLE encoded packets.
-	USLP_FRAMES //!< USLP frames with !truncated! primary header
+	USLP_FRAMES //!< USLP frames with TRUNCATED primary header
 };
 
 /**
@@ -36,6 +36,7 @@ public:
      * @param virtualChannelFrameSizes Pointer to map with frame sizes for each VC
      * @param mode
      */
+	// TODO: Possibly Reference
     RingBufferAnalyzer(SharedRingBuffer* buffer, std::map<uint8_t, size_t>* virtualChannelFrameSizes,
             AnalyzerModes mode = AnalyzerModes::USLP_FRAMES);
 

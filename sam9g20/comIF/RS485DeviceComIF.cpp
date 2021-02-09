@@ -51,7 +51,11 @@ ReturnValue_t RS485DeviceComIF::initialize() {
             UslpVirtualChannelIF *virtualChannel;
             virtualChannel = new UslpVirtualChannel(rs485Cookie->getVcId(),
                     rs485Cookie->getTfdzSize());
+            UslpMapIF *map;
+//            map = new UslpMapTmTc(mapId, tcDestination, tmStoreId, tcStoreId);
+//            virtualChannel->addMapChannel(mapId, map);
             uslpDataLinkLayer->addVirtualChannel(rs485Cookie->getVcId(), virtualChannel);
+
         }
     }
     ReturnValue_t result = tmTcTarget->setvirtualChannelFrameSizes(&virtualChannelFrameSizes);

@@ -38,7 +38,7 @@ public:
      * @param object    Pointer to the UslpMap object itself.
      * @return  @c RETURN_OK if the channel was successfully inserted, @c RETURN_FAILED otherwise.
      */
-    ReturnValue_t addMapChannel( uint8_t mapId, UslpMapIF* object );
+    ReturnValue_t addMapChannel( uint8_t mapId, UslpMapIF* object ) override;
 private:
     uint8_t channelId;
     size_t tfdzSize;
