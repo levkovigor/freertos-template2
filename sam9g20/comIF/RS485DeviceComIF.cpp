@@ -24,7 +24,7 @@ RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t tmTcTargetI
         object_id_t UslpDataLinkLayerId, object_id_t tcDestination, object_id_t tmStoreId,
         object_id_t tcStoreId) :
         SystemObject(objectId), tmTcTargetId(tmTcTargetId), tcDestination(tcDestination), tmStoreId(
-                tmStoreId), tcStoreId(tcStoreId) {
+                tmStoreId), tcStoreId(tcStoreId), uslpDataLinkLayerId(UslpDataLinkLayerId) {
 
     for (int i = 0; i < RS485Timeslot::TIMESLOT_COUNT_RS485; i++) {
         deviceCookies[i] = nullptr;

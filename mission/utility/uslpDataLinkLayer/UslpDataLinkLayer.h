@@ -25,7 +25,9 @@ public:
     /**
      * Empty virtual destructor.
      */
-    ~UslpDataLinkLayer();
+    virtual ~UslpDataLinkLayer();
+
+    ReturnValue_t initialize() override;
     /**
      * This method tries to process a frame that is placed in #frameBuffer.
      * The procedures described in the Standard are performed.

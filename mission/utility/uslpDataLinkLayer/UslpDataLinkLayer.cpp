@@ -10,8 +10,9 @@ UslpDataLinkLayer::UslpDataLinkLayer(object_id_t objectId, uint16_t set_scid) :
     //Nothing to do except from setting the values above.
 }
 
-UslpDataLinkLayer::~UslpDataLinkLayer() {
-
+UslpDataLinkLayer::~UslpDataLinkLayer(){}
+ReturnValue_t UslpDataLinkLayer::initialize() {
+    return RETURN_OK;
 }
 
 
