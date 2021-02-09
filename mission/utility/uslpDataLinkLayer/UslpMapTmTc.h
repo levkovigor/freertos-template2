@@ -60,6 +60,7 @@ private:
     MessageQueueIF *tmTcReceptionQueue = nullptr;
     StorageManagerIF *tmStore = nullptr;
     StorageManagerIF *tcStore = nullptr;
+    MessageQueueId_t tcQueueId;     //!< QueueId to send found packets to the distributor.
 
     /**
      * Helper method to forward a complete packet to the OBSW.

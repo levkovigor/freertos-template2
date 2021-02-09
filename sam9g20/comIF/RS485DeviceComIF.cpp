@@ -47,7 +47,8 @@ ReturnValue_t RS485DeviceComIF::initialize() {
     if (uslpDataLinkLayer == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;
     } else {
-        for (int device = 0; device < RS485Timeslot::TIMESLOT_COUNT_RS485; device++) {
+        // TODO: Loop for devices, not timeslots
+        for (int device = 0; device < RS485Timeslot::TIMESLOT_COUNT_RS485-3; device++) {
             RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(deviceCookies[device]);
 
             UslpVirtualChannelIF *virtualChannel;

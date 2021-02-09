@@ -33,7 +33,7 @@ ReturnValue_t UslpMapTmTc::initialize() {
         return ObjectManagerIF::CHILD_INIT_FAILED;
     }
 
-    tmTcReceptionQueue->setDefaultDestination(tcDistributor->getRequestQueue());
+    tcQueueId = tcDistributor->getRequestQueue();
 
     tmStore = objectManager->get<StorageManagerIF>(tmStoreId);
     if (tmStore == nullptr) {
@@ -80,7 +80,12 @@ ReturnValue_t UslpMapTmTc::handleWholePackets(USLPTransferFrame *frame) {
     if (totalLength > MAX_PACKET_SIZE)
         return CONTENT_TOO_LARGE;
     uint8_t *position = frame->getFirstHeader();
-    while ((totalLength > SpacePacketBase::MINIMUM_SIZE)) {
+    while (totalLength > SpacePacketBase::MINIMUM_SIZE) {
+        // Check if idle filler packet
+        // TODO: Better idle condition
+        if (*position == 0) {
+            break;
+        }
         SpacePacketBase packet(position);
         uint32_t packetSize = packet.getFullSize();
         if (packetSize <= totalLength) {
@@ -96,7 +101,7 @@ ReturnValue_t UslpMapTmTc::handleWholePackets(USLPTransferFrame *frame) {
     if (totalLength > 0) {
         // Check if idle filler packet
         // TODO: Better idle condition
-        if (&position == 0) {
+        if (*position == 0) {
             return status;
         } else if (totalLength <= MAX_PACKET_SIZE) {
             memcpy(bufferPosition, position, totalLength);
@@ -120,8 +125,7 @@ ReturnValue_t UslpMapTmTc::sendCompletePacket(uint8_t *data, uint32_t size) {
     if (status == RETURN_OK) {
         TmTcMessage message(store_id);
         // Default implementation: Relay TC messages to TC distributor directly.
-        status = MessageQueueSenderIF::sendMessage(tmTcReceptionQueue->getDefaultDestination(),
-                &message);
+        status = MessageQueueSenderIF::sendMessage(tcQueueId, &message);
     }
     return status;
 }
