@@ -106,9 +106,6 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
         switch (device) {
         case (RS485Timeslot::COM_FPGA): {
             // TODO: Check which FPGA is active (should probably be set via DeviceHandler in Cookie)
-#ifdef DEBUG
-			sif::info << "Sending to FPGA" << std::endl;
-#endif
             GpioDeviceComIF::enableTransceiverFPGA1();
             // Normal device command to CCSDS board still need to be sent
             handleSend(device, rs485Cookie);
@@ -116,25 +113,16 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
             break;
         }
         case (RS485Timeslot::PCDU_VORAGO): {
-#ifdef DEBUG
-			sif::info << "Sending to PCDU" << std::endl;
-#endif
             GpioDeviceComIF::enableTransceiverPCDU();
             handleSend(device, rs485Cookie);
             break;
         }
         case (RS485Timeslot::PL_VORAGO): {
-#ifdef DEBUG
-			sif::info << "Sending to PL_VORAGO" << std::endl;
-#endif
             handleSend(device, rs485Cookie);
             GpioDeviceComIF::enableTransceiverVorago();
             break;
         }
         case (RS485Timeslot::PL_PIC24): {
-#ifdef DEBUG
-			sif::info << "Sending to PL_PIC24" << std::endl;
-#endif
             handleSend(device, rs485Cookie);
             GpioDeviceComIF::enableTransceiverPIC24();
             break;
@@ -150,7 +138,7 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
         }
 
     } else {
-        sif::error << "RS485 Device Cookies not initialized yet" << std::endl;
+        //sif::error << "RS485 Device Cookies not initialized yet" << std::endl;
     }
 
     if (retryCount > 0) {
