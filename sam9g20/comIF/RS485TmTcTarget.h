@@ -19,6 +19,7 @@
 #include <sam9g20/core/RingBufferAnalyzer.h>
 #include <fsfwconfig/OBSWConfig.h>
 #include "../../mission/utility/uslpDataLinkLayer/USLPTransferFrame.h"
+#include <mission/utility/uslpDataLinkLayer/UslpDataLinkLayer.h>
 
 /**
  * @brief       Is used by RS485DeviceComIF to send TM
@@ -42,7 +43,7 @@ public:
     static constexpr uint8_t MAX_TC_PACKETS_HANDLED = 5;
 
     RS485TmTcTarget(object_id_t objectId_, object_id_t tcDestination, object_id_t tmStoreId,
-            object_id_t tcStoreId, object_id_t sharedRingBufferId);
+            object_id_t tcStoreId, object_id_t sharedRingBufferId, object_id_t UslpDataLinkLayerId);
     virtual ~RS485TmTcTarget();
 
     /** SystemObject override */
@@ -64,7 +65,7 @@ public:
      * @returns -@c RETURN_OK If valid
      *          -@c RETURN_FAILED If nullpointer or empty
      */
-    ReturnValue_t setvirtualChannelFrameSizes(std::map<uint8_t, size_t>* virtualChannelFrameSizes);
+    ReturnValue_t setvirtualChannelFrameSizes(std::map<uint8_t, size_t> *virtualChannelFrameSizes);
 
     ReturnValue_t fillSendFrameBuffer(USLPTransferFrame *frame);
 
@@ -72,6 +73,9 @@ private:
     object_id_t tmStoreId = objects::NO_OBJECT;
     object_id_t tcStoreId = objects::NO_OBJECT;
     object_id_t tcDestination = objects::NO_OBJECT;
+
+    object_id_t UslpDataLinkLayerId = objects::NO_OBJECT;
+    UslpDataLinkLayer *linkLayer = nullptr;
 
     MessageQueueIF *tmTcReceptionQueue = nullptr;
     StorageManagerIF *tmStore = nullptr;
@@ -81,14 +85,13 @@ private:
     uint8_t overhangMessageSentBytes = 0;
 
     ReturnValue_t handleReceiveBuffer();
-    ReturnValue_t handlePacketReception(size_t foundLen);
 
     object_id_t sharedRingBufferId = objects::NO_OBJECT;
     RingBufferAnalyzer *analyzerTask = nullptr;
     std::array<uint8_t, TMTC_FRAME_MAX_LEN + 5> receiveArray;
 
     // Stores VC Length map
-    std::map<uint8_t, size_t>* virtualChannelFrameSizes = nullptr;
+    std::map<uint8_t, size_t> *virtualChannelFrameSizes = nullptr;
     /**
      * This fifo can be used to store downlink data
      * which can not be sent at the moment.

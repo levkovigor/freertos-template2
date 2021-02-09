@@ -43,11 +43,12 @@ public:
      */
     ReturnValue_t addVirtualChannel(uint8_t virtualChannelId, UslpVirtualChannelIF *object);
 
+
     /**
      * The initialization method calls the @c initialize routine of all virtual channels.
      * @return The return code of the first failed VC initialization or @c RETURN_OK.
      */
-    ReturnValue_t initialize(uint8_t* frameBuffer);
+    ReturnValue_t initializeBuffer(uint8_t* frameBuffer);
 private:
     typedef std::map<uint8_t, UslpVirtualChannelIF*>::iterator virtualChannelIterator; //!< Typedef to simplify handling the #virtualChannels map.
     static const uint8_t FRAME_VERSION_NUMBER_DEFAULT = 0x00; //!< Constant for the default value of Frame Version Numbers.

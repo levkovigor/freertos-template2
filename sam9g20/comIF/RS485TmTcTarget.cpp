@@ -8,11 +8,13 @@
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfwconfig/OBSWConfig.h>
 #include "../../mission/utility/uslpDataLinkLayer/USLPTransferFrame.h"
+#include <mission/utility/uslpDataLinkLayer/UslpDataLinkLayer.h>
 
 RS485TmTcTarget::RS485TmTcTarget(object_id_t objectId, object_id_t tcDestination,
-        object_id_t tmStoreId, object_id_t tcStoreId, object_id_t sharedRingBufferId) :
+        object_id_t tmStoreId, object_id_t tcStoreId, object_id_t sharedRingBufferId,
+        object_id_t UslpDataLinkLayerId) :
         SystemObject(objectId), tcDestination(tcDestination), tmStoreId(tmStoreId), tcStoreId(
-                tcStoreId), sharedRingBufferId(sharedRingBufferId) {
+                tcStoreId), sharedRingBufferId(sharedRingBufferId), UslpDataLinkLayerId(UslpDataLinkLayerId) {
     tmTcReceptionQueue = QueueFactory::instance()->createMessageQueue(TMTC_RECEPTION_QUEUE_DEPTH);
 }
 
@@ -51,6 +53,16 @@ ReturnValue_t RS485TmTcTarget::initialize() {
         return ObjectManagerIF::CHILD_INIT_FAILED;
     }
 
+    linkLayer = objectManager->get<UslpDataLinkLayer>(UslpDataLinkLayerId);
+    if (linkLayer == nullptr) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "RS485TmTcTarget::initialize: Data Link Layer invalid. Make sure"
+                "it is created and set up properly." << std::endl;
+#endif
+        return ObjectManagerIF::CHILD_INIT_FAILED;
+    }
+    // TODO: Check if this fails
+    linkLayer->initializeBuffer(receiveArray.data());
 
     // The ring buffer analyzer will run in performOperation
     SharedRingBuffer *ringBuffer = objectManager->get<SharedRingBuffer>(sharedRingBufferId);
@@ -148,7 +160,7 @@ ReturnValue_t RS485TmTcTarget::handleReceiveBuffer() {
         ReturnValue_t result = analyzerTask->checkForPackets(receiveArray.data(),
                 receiveArray.size(), &packetFoundLen);
         if (result == HasReturnvaluesIF::RETURN_OK) {
-            result = handlePacketReception(packetFoundLen);
+            result = linkLayer->processFrame(packetFoundLen);
             if (result != HasReturnvaluesIF::RETURN_OK) {
                 sif::debug << "RS485DeviceComIF::handleReceiveBuffer: Handling Buffer" << " failed!"
                         << std::endl;
@@ -166,16 +178,6 @@ ReturnValue_t RS485TmTcTarget::handleReceiveBuffer() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t RS485TmTcTarget::handlePacketReception(size_t foundLen) {
-    store_address_t storeId;
-    //TODO: Just for testing
-    ReturnValue_t result = tcStore->addData(&storeId, receiveArray.data()+7, foundLen-7);
-    if (result == HasReturnvaluesIF::RETURN_FAILED) {
-        return result;
-    }
-    TmTcMessage tcMessage(storeId);
-    return MessageQueueSenderIF::sendMessage(getRequestQueue(), &tcMessage);
-}
 
 uint16_t RS485TmTcTarget::getIdentifier() {
     // This is no PUS service, so we just return 0

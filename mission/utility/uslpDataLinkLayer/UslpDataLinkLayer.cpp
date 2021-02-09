@@ -14,6 +14,8 @@ UslpDataLinkLayer::~UslpDataLinkLayer() {
 
 }
 
+
+
 ReturnValue_t UslpDataLinkLayer::frameValidationCheck() {
     //Check TF_version number
     if (this->currentFrame.getVersionNumber() != FRAME_VERSION_NUMBER_DEFAULT) {
@@ -83,12 +85,12 @@ ReturnValue_t UslpDataLinkLayer::addVirtualChannel(uint8_t virtualChannelId,
     }
 }
 
-ReturnValue_t UslpDataLinkLayer::initialize(uint8_t* frameBuffer) {
+ReturnValue_t UslpDataLinkLayer::initializeBuffer(uint8_t* frameBuffer) {
     ReturnValue_t returnValue = RETURN_FAILED;
     //Set Virtual Channel ID to first virtual channel instance in this DataLinkLayer instance to avoid faulty information (e.g. 0) in the VCID.
     if (virtualChannels.begin() == virtualChannels.end()) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::error << "DataLinkLayer::initialize: No VC assigned to this DLL instance! "
+        sif::error << "DataLinkLayer::initializeBuffer: No VC assigned to this DLL instance! "
                 << std::endl;
 #endif
         return RETURN_FAILED;

@@ -231,12 +231,14 @@ void Factory::produce(void) {
 
     new SharedRingBuffer(objects::RS485_RING_BUFFER, 6144, true, 30);
     new RS485PollingTask(objects::RS485_POLLING_TASK, objects::RS485_RING_BUFFER);
-    new RS485TmTcTarget(objects::RS485_TM_TC_TARGET, objects::CCSDS_PACKET_DISTRIBUTOR,
-            objects::TM_STORE, objects::TC_STORE, objects::RS485_RING_BUFFER);
-    new UslpDataLinkLayer(objects::USLP_DATA_LINK_LAYER, config::RS485_USLP_SCID);
     new RS485DeviceComIF(objects::RS485_DEVICE_COM_IF, objects::RS485_TM_TC_TARGET,
-            objects::USLP_DATA_LINK_LAYER, objects::CCSDS_PACKET_DISTRIBUTOR,
-            objects::TM_STORE, objects::TC_STORE);
+            objects::USLP_DATA_LINK_LAYER, objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
+            objects::TC_STORE);
+    new RS485TmTcTarget(objects::RS485_TM_TC_TARGET, objects::CCSDS_PACKET_DISTRIBUTOR,
+            objects::TM_STORE, objects::TC_STORE, objects::RS485_RING_BUFFER,
+            objects::USLP_DATA_LINK_LAYER);
+    new UslpDataLinkLayer(objects::USLP_DATA_LINK_LAYER, config::RS485_USLP_SCID);
+
 
     // RS485 Test devices
     CookieIF *rs485CookieFPGA = nullptr;
