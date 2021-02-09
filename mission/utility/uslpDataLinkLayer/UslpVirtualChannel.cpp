@@ -20,7 +20,14 @@ ReturnValue_t UslpVirtualChannel::initialize() {
 }
 
 ReturnValue_t UslpVirtualChannel::frameAcceptanceAndReportingMechanism(USLPTransferFrame *frame) {
-    // TODO: Check if lengths of given frame and assigned length match
+    // Check if VC datazone length matches datazone lenght of frame
+    if (frame->getDataZoneSize() != tfdzSize) {
+        return DATA_CORRUPTED;
+    }
+    // Check if First Header Offset is too large, if larger than tfdz size it should be 0xFFFF
+    else if (frame->getFirstHeaderOffset() >= tfdzSize && frame->getFirstHeaderOffset() != 0xFFFF) {
+        return DATA_CORRUPTED;
+    }
     return mapDemultiplexing(frame);
 }
 
