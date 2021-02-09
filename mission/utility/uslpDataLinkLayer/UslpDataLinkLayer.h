@@ -53,7 +53,7 @@ public:
     ReturnValue_t initializeBuffer(uint8_t* frameBuffer);
 private:
     typedef std::map<uint8_t, UslpVirtualChannelIF*>::iterator virtualChannelIterator; //!< Typedef to simplify handling the #virtualChannels map.
-    static const uint8_t FRAME_VERSION_NUMBER_DEFAULT = 0x00; //!< Constant for the default value of Frame Version Numbers.
+    static const uint8_t FRAME_VERSION_NUMBER_DEFAULT = 0b1100; //!< Constant for the default value of Frame Version Numbers.
     static const uint8_t FRAME_PRIMARY_HEADER_LENGTH = 4; //!< Length of the frame's primary header.
     static const bool USE_CRC = true; //!< A global, so called "Managed Parameter" that identifies if incoming frames have CRC's or not.
     uint16_t spacecraftId;  //!< The Space Craft Identifier (SCID) configured.
