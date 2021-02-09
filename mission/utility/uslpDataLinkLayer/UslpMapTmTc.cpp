@@ -47,10 +47,65 @@ ReturnValue_t UslpMapTmTc::initialize() {
 }
 
 ReturnValue_t UslpMapTmTc::extractPackets(USLPTransferFrame *frame) {
-    ReturnValue_t status = TOO_SHORT_MAP_EXTRACTION;
+    ReturnValue_t status = RETURN_OK;
+    uint16_t headerOffset = frame->getFirstHeaderOffset();
+
+    // End of packet at start of frame
+    if (headerOffset > 0) {
+        // Make sure there is enough space in buffer
+        if (headerOffset <= MAX_PACKET_SIZE - (bufferPosition - packetBuffer)) {
+            memcpy(bufferPosition, frame->getDataZone(), headerOffset);
+            status = sendCompletePacket(packetBuffer, packetLength);
+        } else {
+            status = CONTENT_TOO_LARGE;
+        }
+        clearBuffers();
+        // Middle of packet with no header
+        if (headerOffset == 0xFFFF) {
+            // TODO: Write this or make sure it does not happen
+            return CONTENT_TOO_LARGE;
+        }
+    }
+    if (status != RETURN_OK) {
+        return status;
+    }
+    status = handleWholePackets(frame);
+
     return status;
 }
 
+ReturnValue_t UslpMapTmTc::handleWholePackets(USLPTransferFrame *frame) {
+    ReturnValue_t status = TOO_SHORT_BLOCKED_PACKET;
+    uint16_t totalLength = frame->getDataZoneSize() - frame->getFirstHeaderOffset();
+    if (totalLength > MAX_PACKET_SIZE)
+        return CONTENT_TOO_LARGE;
+    uint8_t *position = frame->getFirstHeader();
+    while ((totalLength > SpacePacketBase::MINIMUM_SIZE)) {
+        SpacePacketBase packet(position);
+        uint32_t packetSize = packet.getFullSize();
+        if (packetSize <= totalLength) {
+            status = sendCompletePacket(packet.getWholeData(), packet.getFullSize());
+            totalLength -= packet.getFullSize();
+            position += packet.getFullSize();
+            status = RETURN_OK;
+        } else {
+            break;
+        }
+    }
+    // Start of another packet left or idle frames
+    if (totalLength > 0) {
+        // Check if idle filler packet
+        // TODO: Better idle condition
+        if (&position == 0) {
+            return status;
+        } else if (totalLength <= MAX_PACKET_SIZE) {
+            memcpy(bufferPosition, position, totalLength);
+            bufferPosition = &packetBuffer[totalLength];
+        }
+    }
+
+    return status;
+}
 ReturnValue_t UslpMapTmTc::packFrameMapa() {
     return RETURN_OK;
 }

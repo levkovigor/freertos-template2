@@ -138,7 +138,7 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
         }
 
     } else {
-        //sif::error << "RS485 Device Cookies not initialized yet" << std::endl;
+        sif::error << "RS485 Device Cookies not initialized yet" << std::endl;
     }
 
     if (retryCount > 0) {

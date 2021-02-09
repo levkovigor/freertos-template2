@@ -70,6 +70,10 @@ private:
     ReturnValue_t sendCompletePacket(uint8_t *data, uint32_t size);
 
     /**
+      * Helper method to handle Packets until segmentation occurs
+      */
+    ReturnValue_t handleWholePackets(USLPTransferFrame *frame);
+    /**
      * Helper method to reset the internal buffer.
      */
     void clearBuffers();
