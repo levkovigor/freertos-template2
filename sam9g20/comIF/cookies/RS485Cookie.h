@@ -15,12 +15,12 @@
 
 
 
-enum RS485Devices : uint8_t {
+enum RS485Timeslot : uint8_t {
     COM_FPGA,	// Redundant FPGA not counted here, set in device handler
     PCDU_VORAGO,
     PL_VORAGO,
     PL_PIC24,
-    DEVICE_COUNT_RS485
+    TIMESLOT_COUNT_RS485
 };
 
 enum RS485BaudRates : uint32_t {
@@ -33,35 +33,41 @@ enum class ComStatusRS485 : uint8_t {
 
 class RS485Cookie: public CookieIF {
 public:
-    RS485Cookie(RS485Devices device, RS485BaudRates baudrate, uint8_t uslp_virtual_channel_id,
-            uint8_t uslp_multiplexer_access_point_id, size_t uslp_tfdz_size);
+    RS485Cookie(RS485Timeslot timeslot, RS485BaudRates baudrate, uint8_t uslp_virtual_channel_id, size_t uslp_tfdz_size,
+            uint8_t uslp_deviceCom_map_id, bool hasTmTc = false, uint8_t uslp_tmTc_map_id = 0xFF);
     virtual ~RS485Cookie();
 
-    void setDevice(RS485Devices device);
-    RS485Devices getDevice() const;
+    void setTimeslot(RS485Timeslot timeslot);
+    RS485Timeslot getTimeslot() const;
 
     ComStatusRS485 getComStatus();
     void setComStatus(ComStatusRS485 status);
 
-    int8_t getReturnValue();
+    int8_t getReturnValue() const;
     void setReturnValue(int8_t retval);
 
-    uint32_t getBaudrate();
+    uint32_t getBaudrate() const;
 
-    uint8_t getVcId();
+    uint8_t getVcId() const;
 
-    uint8_t getMapId();
+    uint8_t getDevicComMapId() const;
 
-    size_t getTfdzSize();
+    uint8_t getTmTcMapId() const;
+
+    size_t getTfdzSize() const;
 private:
     // Device that is communicated with
-    RS485Devices device = PCDU_VORAGO;
+    RS485Timeslot timeslot = PCDU_VORAGO;
     // Baudrate of device
     RS485BaudRates baudrate = NORMAL;
-    // VCID
+    // VCID for device
     uint8_t uslp_virtual_channel_id;
-    // MAP ID
-    uint8_t uslp_multiplexer_access_point_id;
+    // MAP ID for Device Communication
+    uint8_t uslp_deviceCom_map_id;
+    // If device can send and receive TmTc space packets
+    bool hasTmTc;
+    // Optional MAP ID for TmTc Communication
+    uint8_t uslp_tmTc_map_id;
     // Fixed frame data zone size
     size_t uslp_tfdz_size;
 

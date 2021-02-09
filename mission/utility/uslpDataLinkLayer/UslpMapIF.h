@@ -35,7 +35,7 @@ public:
     virtual ReturnValue_t packFrameMapa() = 0;
 
     /**
-      * @brief Packs a transfer frame with the Multiplexer Access Point Packket Service
+      * @brief Packs a transfer frame with the Multiplexer Access Point Packet Service
       * @details This means space packets
       * @return
       */
