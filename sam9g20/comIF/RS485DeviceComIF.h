@@ -104,7 +104,7 @@ private:
     uint8_t packetSentCounter = 0;
 
     // Stores one cookie for each device to communicate between ExecutableObjectIF overrides and DeviceComIF overrides
-    std::array<CookieIF*, RS485Devices::DEVICE_COUNT_RS485> deviceCookies;
+    std::array<CookieIF*, RS485Timeslot::TIMESLOT_COUNT_RS485> deviceCookies;
 
     // Every device has one virtual channel, the specific size is stored here for access by other tasks
     std::map<uint8_t, size_t> virtualChannelFrameSizes;
@@ -116,7 +116,7 @@ private:
     std::array<uint8_t, config::RS485_PAYLOAD_PIC24_TFDZ_SIZE + USLPTransferFrame::FRAME_OVERHEAD> transmitBufferPIC24;
 
     //Array with pointers to frame buffers
-    std::array<USLPTransferFrame*, RS485Devices::DEVICE_COUNT_RS485> sendBuffer;
+    std::array<USLPTransferFrame*, RS485Timeslot::TIMESLOT_COUNT_RS485> sendBuffer;
 
     // Used for handling the TM and TC Queue, this class is already big enough
     object_id_t tmTcTargetId = objects::NO_OBJECT;
@@ -135,12 +135,12 @@ private:
      * @brief   Performs UART Transfer of DeviceCommands
      * @details One Command in one frame is sent per cycle
      */
-    void handleSend(RS485Devices device, RS485Cookie *rs485Cookie);
+    void handleSend(RS485Timeslot device, RS485Cookie *rs485Cookie);
     /**
      * @brief   Performs UART Transfer of  TM
      * @details Calls RS485TmTcTarget fillFrameBuffer
      */
-    void handleTmSend(RS485Devices device, RS485Cookie *rs485Cookie);
+    void handleTmSend(RS485Timeslot device, RS485Cookie *rs485Cookie);
 
     ReturnValue_t checkDriverState(uint8_t *retryCount);
 

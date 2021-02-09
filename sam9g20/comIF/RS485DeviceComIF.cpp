@@ -24,7 +24,7 @@ RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t tmTcTargetI
         object_id_t UslpDataLinkLayerId) :
         SystemObject(objectId), tmTcTargetId(tmTcTargetId) {
 
-    for (int i = 0; i < RS485Devices::DEVICE_COUNT_RS485; i++) {
+    for (int i = 0; i < RS485Timeslot::TIMESLOT_COUNT_RS485; i++) {
         deviceCookies[i] = nullptr;
     }
 }
@@ -45,7 +45,7 @@ ReturnValue_t RS485DeviceComIF::initialize() {
     if (uslpDataLinkLayer == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;
     } else {
-        for (int device = 0; device < RS485Devices::DEVICE_COUNT_RS485; device++) {
+        for (int device = 0; device < RS485Timeslot::TIMESLOT_COUNT_RS485; device++) {
             RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(deviceCookies[device]);
 
             UslpVirtualChannelIF *virtualChannel;
@@ -65,7 +65,7 @@ ReturnValue_t RS485DeviceComIF::initialize() {
 ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {
     if (cookie != nullptr) {
         RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
-        RS485Devices device = rs485Cookie->getDevice();
+        RS485Timeslot device = rs485Cookie->getTimeslot();
         deviceCookies[device] = cookie;
         //TODO: Returnvalue for map insertion
         virtualChannelFrameSizes.insert(
@@ -82,14 +82,14 @@ ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {
 
 ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 
-    RS485Devices device = static_cast<RS485Devices>(opCode);
+    RS485Timeslot device = static_cast<RS485Timeslot>(opCode);
 
     if (deviceCookies[device] != nullptr) {
         // TODO: Make sure this does not turn into a bad cast as we have no exceptions
         RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(deviceCookies[device]);
         // This switch only handles the correct GPIO for Transceivers
         switch (device) {
-        case (RS485Devices::COM_FPGA): {
+        case (RS485Timeslot::COM_FPGA): {
             // TODO: Check which FPGA is active (should probably be set via DeviceHandler in Cookie)
 #ifdef DEBUG
 			sif::info << "Sending to FPGA" << std::endl;
@@ -100,7 +100,7 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
             handleTmSend(device, rs485Cookie);
             break;
         }
-        case (RS485Devices::PCDU_VORAGO): {
+        case (RS485Timeslot::PCDU_VORAGO): {
 #ifdef DEBUG
 			sif::info << "Sending to PCDU" << std::endl;
 #endif
@@ -108,7 +108,7 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
             handleSend(device, rs485Cookie);
             break;
         }
-        case (RS485Devices::PL_VORAGO): {
+        case (RS485Timeslot::PL_VORAGO): {
 #ifdef DEBUG
 			sif::info << "Sending to PL_VORAGO" << std::endl;
 #endif
@@ -116,7 +116,7 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
             GpioDeviceComIF::enableTransceiverVorago();
             break;
         }
-        case (RS485Devices::PL_PIC24): {
+        case (RS485Timeslot::PL_PIC24): {
 #ifdef DEBUG
 			sif::info << "Sending to PL_PIC24" << std::endl;
 #endif
@@ -153,7 +153,7 @@ ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie, const uint8_t *sen
         size_t sendLen) {
 
     RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
-    RS485Devices device = rs485Cookie->getDevice();
+    RS485Timeslot device = rs485Cookie->getTimeslot();
     // Check if there already is a message that has not been processed yet
     if (rs485Cookie->getComStatus() == ComStatusRS485::IDLE) {
         // Copy Message into corresponding sendFrameBuffer
@@ -201,17 +201,17 @@ std::map<uint8_t, size_t>* RS485DeviceComIF::getVcidSizeMap() {
 void RS485DeviceComIF::initTransferFrameSendBuffers() {
 
     // Buffer construction with different TFDZ sizes
-    sendBuffer[RS485Devices::COM_FPGA] = new USLPTransferFrame(transmitBufferFPGA.data(),
+    sendBuffer[RS485Timeslot::COM_FPGA] = new USLPTransferFrame(transmitBufferFPGA.data(),
             config::RS485_COM_FPGA_TFDZ_SIZE);
-    sendBuffer[RS485Devices::PCDU_VORAGO] = new USLPTransferFrame(transmitBufferPCDU.data(),
+    sendBuffer[RS485Timeslot::PCDU_VORAGO] = new USLPTransferFrame(transmitBufferPCDU.data(),
             config::RS485_PCDU_VORAGO_TFDZ_SIZE);
-    sendBuffer[RS485Devices::PL_VORAGO] = new USLPTransferFrame(transmitBufferVorago.data(),
+    sendBuffer[RS485Timeslot::PL_VORAGO] = new USLPTransferFrame(transmitBufferVorago.data(),
             config::RS485_PAYLOAD_VORAGO_TFDZ_SIZE);
-    sendBuffer[RS485Devices::PL_PIC24] = new USLPTransferFrame(transmitBufferPIC24.data(),
+    sendBuffer[RS485Timeslot::PL_PIC24] = new USLPTransferFrame(transmitBufferPIC24.data(),
             config::RS485_PAYLOAD_PIC24_TFDZ_SIZE);
 
     // Default values, most don't change
-    for (int i = 0; i < RS485Devices::DEVICE_COUNT_RS485; i++) {
+    for (int i = 0; i < RS485Timeslot::TIMESLOT_COUNT_RS485; i++) {
         sendBuffer[i]->setVersionNumber(config::RS485_USLP_TFVN);
         sendBuffer[i]->setSpacecraftId(config::RS485_USLP_SCID);
         sendBuffer[i]->setSourceFlag(true);
@@ -223,13 +223,13 @@ void RS485DeviceComIF::initTransferFrameSendBuffers() {
         sendBuffer[i]->setFirstHeaderOffset(0);
 
     }
-    sendBuffer[RS485Devices::PCDU_VORAGO]->setVirtualChannelId(1);
-    sendBuffer[RS485Devices::PL_PIC24]->setVirtualChannelId(2);
-    sendBuffer[RS485Devices::PL_VORAGO]->setVirtualChannelId(3);
+    sendBuffer[RS485Timeslot::PCDU_VORAGO]->setVirtualChannelId(1);
+    sendBuffer[RS485Timeslot::PL_PIC24]->setVirtualChannelId(2);
+    sendBuffer[RS485Timeslot::PL_VORAGO]->setVirtualChannelId(3);
     //TODO: Correct VCID and MAP ID for each buffer
 
 }
-void RS485DeviceComIF::handleSend(RS485Devices device, RS485Cookie *rs485Cookie) {
+void RS485DeviceComIF::handleSend(RS485Timeslot device, RS485Cookie *rs485Cookie) {
     int retval = 0;
     // This condition sets the buffer to default messages if there is no message
     // or if last communication was faulty
@@ -240,7 +240,7 @@ void RS485DeviceComIF::handleSend(RS485Devices device, RS485Cookie *rs485Cookie)
 
     // Set address just to be sure it was not changed
     sendBuffer[device]->setVirtualChannelId(rs485Cookie->getVcId());
-    sendBuffer[device]->setMapId(rs485Cookie->getMapId());
+    sendBuffer[device]->setMapId(rs485Cookie->getDevicComMapId());
 
     // Check if messag is available
     if (rs485Cookie->getComStatus() == ComStatusRS485::TRANSFER_INIT_SUCCESS) {
@@ -264,7 +264,7 @@ void RS485DeviceComIF::handleSend(RS485Devices device, RS485Cookie *rs485Cookie)
 
 }
 
-void RS485DeviceComIF::handleTmSend(RS485Devices device, RS485Cookie *rs485Cookie) {
+void RS485DeviceComIF::handleTmSend(RS485Timeslot device, RS485Cookie *rs485Cookie) {
 
     // TODO: Check if downlink available
     for (packetSentCounter = 0;
