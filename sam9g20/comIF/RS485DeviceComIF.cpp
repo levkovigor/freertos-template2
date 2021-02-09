@@ -21,8 +21,10 @@ extern "C" {
 }
 
 RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t tmTcTargetId,
-        object_id_t UslpDataLinkLayerId) :
-        SystemObject(objectId), tmTcTargetId(tmTcTargetId) {
+        object_id_t UslpDataLinkLayerId, object_id_t tcDestination, object_id_t tmStoreId,
+        object_id_t tcStoreId) :
+        SystemObject(objectId), tmTcTargetId(tmTcTargetId), tcDestination(tcDestination), tmStoreId(
+                tmStoreId), tcStoreId(tcStoreId) {
 
     for (int i = 0; i < RS485Timeslot::TIMESLOT_COUNT_RS485; i++) {
         deviceCookies[i] = nullptr;
@@ -51,11 +53,24 @@ ReturnValue_t RS485DeviceComIF::initialize() {
             UslpVirtualChannelIF *virtualChannel;
             virtualChannel = new UslpVirtualChannel(rs485Cookie->getVcId(),
                     rs485Cookie->getTfdzSize());
-            UslpMapIF *map;
-//            map = new UslpMapTmTc(mapId, tcDestination, tmStoreId, tcStoreId);
-//            virtualChannel->addMapChannel(mapId, map);
-            uslpDataLinkLayer->addVirtualChannel(rs485Cookie->getVcId(), virtualChannel);
 
+            // Add Map for normal device communication
+//            UslpMapIF *mapDeviceCom;
+//            mapDeviceCom = new UslpMapDeviceCom(rs485Cookie->getDevicComMapId(), tcDestination,
+//                    tmStoreId, tcStoreId);
+//            virtualChannel->addMapChannel(rs485Cookie->getDevicComMapId(), mapDeviceCom);
+//            uslpDataLinkLayer->addVirtualChannel(rs485Cookie->getVcId(), virtualChannel);
+
+            // Add Map for Tm and Tc
+            if (rs485Cookie->getHasTmTc()) {
+                UslpMapIF *mapTmTc;
+                mapTmTc = new UslpMapTmTc(rs485Cookie->getTmTcMapId(), tcDestination, tmStoreId,
+                        tcStoreId);
+                virtualChannel->addMapChannel(rs485Cookie->getTmTcMapId(), mapTmTc);
+
+            }
+
+            uslpDataLinkLayer->addVirtualChannel(rs485Cookie->getVcId(), virtualChannel);
         }
     }
     ReturnValue_t result = tmTcTarget->setvirtualChannelFrameSizes(&virtualChannelFrameSizes);

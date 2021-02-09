@@ -55,6 +55,8 @@ public:
     uint8_t getTmTcMapId() const;
 
     size_t getTfdzSize() const;
+
+    bool getHasTmTc() const;
 private:
     // Device that is communicated with
     RS485Timeslot timeslot = PCDU_VORAGO;

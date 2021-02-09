@@ -235,7 +235,8 @@ void Factory::produce(void) {
             objects::TM_STORE, objects::TC_STORE, objects::RS485_RING_BUFFER);
     new UslpDataLinkLayer(objects::USLP_DATA_LINK_LAYER, config::RS485_USLP_SCID);
     new RS485DeviceComIF(objects::RS485_DEVICE_COM_IF, objects::RS485_TM_TC_TARGET,
-            objects::USLP_DATA_LINK_LAYER);
+            objects::USLP_DATA_LINK_LAYER, objects::CCSDS_PACKET_DISTRIBUTOR,
+            objects::TM_STORE, objects::TC_STORE);
 
     // RS485 Test devices
     CookieIF *rs485CookieFPGA = nullptr;

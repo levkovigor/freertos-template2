@@ -52,3 +52,7 @@ uint8_t RS485Cookie::getTmTcMapId()const {
 size_t RS485Cookie::getTfdzSize()const {
     return uslp_tfdz_size;
 }
+
+bool RS485Cookie::getHasTmTc() const {
+    return hasTmTc;
+}

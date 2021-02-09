@@ -47,7 +47,9 @@ public:
     static constexpr char defaultMessage[] = { 'O', 'n', 'e', ' ', 'P', 'i', 'n', 'g', ' ', 'o',
             'n', 'l', 'y', ' ' };
 
-    RS485DeviceComIF(object_id_t objectId, object_id_t tmTcTargetId, object_id_t UslpDataLinkLayerId);
+    RS485DeviceComIF(object_id_t objectId, object_id_t tmTcTargetId,
+            object_id_t UslpDataLinkLayerId, object_id_t tcDestination, object_id_t tmStoreId,
+            object_id_t tcStoreId);
     virtual ~RS485DeviceComIF();
 
     /**
@@ -124,6 +126,11 @@ private:
 
     object_id_t uslpDataLinkLayerId = objects::NO_OBJECT;
     UslpDataLinkLayer *uslpDataLinkLayer = nullptr;
+
+    // Used for setting up the MAPs for TmTc
+    object_id_t tmStoreId = objects::NO_OBJECT;
+    object_id_t tcStoreId = objects::NO_OBJECT;
+    object_id_t tcDestination = objects::NO_OBJECT;
 
     /**
      * @brief  Initializes one TransferFrame class with buffer for each device
