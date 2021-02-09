@@ -239,14 +239,14 @@ void Factory::produce(void) {
 
     // RS485 Test devices
     CookieIF *rs485CookieFPGA = nullptr;
-    rs485CookieFPGA = new RS485Cookie(RS485Devices::COM_FPGA, RS485BaudRates::FAST,
-            config::RS485_USLP_VCID_COM_FPGA_1, config::RS485_USLP_MAPID_COM_FPGA_1_CTRL,
-            config::RS485_COM_FPGA_TFDZ_SIZE);
+    rs485CookieFPGA = new RS485Cookie(RS485Timeslot::COM_FPGA, RS485BaudRates::FAST,
+            config::RS485_USLP_VCID_COM_FPGA_1, config::RS485_COM_FPGA_TFDZ_SIZE,
+            config::RS485_USLP_MAPID_COM_FPGA_1_CTRL, true, config::RS485_USLP_MAPID_COM_FPGA_1_TM);
 
     CookieIF *rs485CookiePCDU = nullptr;
-    rs485CookiePCDU = new RS485Cookie(RS485Devices::PCDU_VORAGO, RS485BaudRates::NORMAL,
-            config::RS485_USLP_VCID_PCDU_VORAGO, config::RS485_USLP_MAPID_PCDU_VORAGO,
-            config::RS485_PAYLOAD_VORAGO_TFDZ_SIZE);
+    rs485CookiePCDU = new RS485Cookie(RS485Timeslot::PCDU_VORAGO, RS485BaudRates::NORMAL,
+            config::RS485_USLP_VCID_PCDU_VORAGO, config::RS485_PAYLOAD_VORAGO_TFDZ_SIZE,
+            config::RS485_USLP_MAPID_PCDU_VORAGO);
 
     new TestDevice(objects::DUMMY_HANDLER_RS485_1, objects::RS485_DEVICE_COM_IF, rs485CookieFPGA,
             true);
