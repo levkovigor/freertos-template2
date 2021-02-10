@@ -1,8 +1,10 @@
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include "RingBufferAnalyzer.h"
+
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/globalfunctions/DleEncoder.h>
 #include <fsfw/ipc/MutexHelper.h>
 #include <fsfwconfig/OBSWConfig.h>
-#include <sam9g20/core/RingBufferAnalyzer.h>
+
 #include <cstring>
 #include <sam9g20/comIF/RS485DeviceComIF.h>
 #include "../../mission/utility/uslpDataLinkLayer/USLPTransferFrame.h"

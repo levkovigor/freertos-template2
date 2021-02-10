@@ -1,6 +1,6 @@
 #include "GpioDeviceComIF.h"
 
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfwconfig/devices/logicalAddresses.h>
 
 extern "C" {
@@ -201,7 +201,11 @@ Pin GpioDeviceComIF::pinSelect(uint32_t address) {
 	case(addresses::GPIO25): pin = PIN_GPIO25; break;
 	case(addresses::GPIO26): pin = PIN_GPIO26; break;
 	default:
-		sif::error << "GPIO ComIF: Invalid GPIO Address!" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "GpioDeviceComIF: Invalid GPIO Address!" << std::endl;
+#else
+		sif::printError("GpioDeviceComIF: Invalid GPIO Address!\n");
+#endif
 		return pin;
 	}
 	return pin;

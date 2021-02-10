@@ -1,5 +1,7 @@
-#include <fsfw/tasks/TaskFactory.h>
 #include "RS485Controller.h"
+#include <OBSWConfig.h>
+#include <fsfw/tasks/TaskFactory.h>
+
 
 extern "C" {
 #include <hal/Drivers/UART.h>
@@ -53,10 +55,13 @@ ReturnValue_t RS485Controller::performOperation(uint8_t opCode) {
 
     // printout and event.
     if(retryCount > 0) {
-#ifdef DEBUG
+#if OBSW_VERBOSE_LEVEL >= 1
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "RS485Controller::performOperation: RS485Controller"
                 << " driver was busy for " << (uint16_t) retryCount
                 << " attempts!" << std::endl;
+#else
+#endif
 #endif
         retryCount = 0;
     }
@@ -93,9 +98,12 @@ ReturnValue_t RS485Controller::checkDriverState(uint8_t* retryCount) {
     if(readState != 0x00 or writeState != 0x00) {
         if(readState == 0x33 or writeState == 0x33) {
             // errorneous state!
-#ifdef DEBUG
-            sif::error << "RS485Controller::performOperation: RS485 driver"
-                    " in invalid state!" << std::endl;
+#if OBSW_VERBOSE_LEVEL >= 1
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+            sif::error << "RS485Controller::performOperation: RS485 driver "
+                    "in invalid state!" << std::endl;
+#else
+#endif
 #endif
         }
         // config error, wait 1 ms and try again up to 10 times.

@@ -1,3 +1,4 @@
+#include <fsfw/datapool/PoolReadHelper.h>
 #include "GyroHandler.h"
 #include "devicedefinitions/GyroPackets.h"
 
@@ -5,7 +6,7 @@
 #include <sam9g20/core/CoreController.h>
 #endif
 
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
 #include <fsfw/globalfunctions/PeriodicOperationDivider.h>
 #endif
 
@@ -16,7 +17,7 @@ GyroHandler::GyroHandler(object_id_t objectId, object_id_t comIF,
         DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId),
 		gyroData(this), gyroConfigSet(this),
 		selfTestDivider(5) {
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
     debugDivider = new PeriodicOperationDivider(20);
 #endif
     }
@@ -144,9 +145,8 @@ ReturnValue_t GyroHandler::buildTransitionDeviceCommand(DeviceCommandId_t *id) {
 	}
 	case(InternalStates::WRITE_POWER): {
 		*id = GyroDefinitions::WRITE_POWER;
-		commandBuffer[sizeof(commandBuffer)] = GyroDefinitions::POWER_CONFIG;
-		return buildCommandFromCommand(*id,
-				commandBuffer + sizeof(commandBuffer), 1);
+		uint8_t command = GyroDefinitions::POWER_CONFIG;
+		return buildCommandFromCommand(*id, &command, 1);
 	}
 	case(InternalStates::READ_PMU_STATUS): {
 		*id = GyroDefinitions::READ_PMU;
@@ -171,8 +171,13 @@ ReturnValue_t GyroHandler::buildTransitionDeviceCommand(DeviceCommandId_t *id) {
 	    return buildCommandFromCommand(*id, nullptr, 0);
 	}
 	default:
-		sif::error << "GyroHandler::buildTransitionDeviceCommand: Invalid"
-				" internal state!" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "GyroHandler::buildTransitionDeviceCommand: "
+		        "Invalid internal state!" << std::endl;
+#else
+		sif::printError("GyroHandler::buildTransitionDeviceCommand: "
+                "Invalid internal state!\n");
+#endif
 	}
 
 	return HasReturnvaluesIF::RETURN_OK;
@@ -485,33 +490,31 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 			float angularVelocityY = angularVelocityBinaryY * scaleFactor;
 			float angularVelocityZ = angularVelocityBinaryZ * scaleFactor;
 
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
 			if(debugDivider->checkAndIncrement()) {
-				sif::info << "GyroHandler: Angular velocities in degrees per "
-						"second:" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+				sif::info << "GyroHandler: Angular velocities in degrees per second: " << std::endl;
 				sif::info << "X: " << angularVelocityX << std::endl;
 				sif::info << "Y: " << angularVelocityY << std::endl;
 				sif::info << "Z: " << angularVelocityZ << std::endl;
-			}
+#else
+				sif::printInfo("GyroHandler: Angular velocities in degrees per second: \n");
+				sif::printInfo("X: %f\n", angularVelocityX);
+                sif::printInfo("Y: %f\n", angularVelocityY);
+                sif::printInfo("Z: %f\n", angularVelocityZ);
 #endif
-			ReturnValue_t result = gyroData.read();
-			if(result != HasReturnvaluesIF::RETURN_OK) {
-				// Configuration error.
-				return result;
-			}
+            }
+#endif
 
-			if(not gyroData.isValid()) {
-				gyroData.setValidity(true, true);
-			}
+			PoolReadHelper readHelper(&gyroData);
+			if(readHelper.getReadResult() == HasReturnvaluesIF::RETURN_OK) {
+	            if(not gyroData.isValid()) {
+	                gyroData.setValidity(true, true);
+	            }
 
-			gyroData.angVelocityX = angularVelocityX;
-			gyroData.angVelocityY = angularVelocityY;
-			gyroData.angVelocityZ = angularVelocityZ;
-
-			gyroData.commit();
-			if(result != HasReturnvaluesIF::RETURN_OK) {
-				// Configuration error.
-				return result;
+	            gyroData.angVelocityX = angularVelocityX;
+	            gyroData.angVelocityY = angularVelocityY;
+	            gyroData.angVelocityZ = angularVelocityZ;
 			}
 		}
 		break;

@@ -90,7 +90,7 @@
  * we don't know yet whether settings this to 1 has
  * an influence on ISIS drivers internal functions (no source code given)
  */
-#define configUSE_PREEMPTION			1
+#define configUSE_PREEMPTION			0
 /**
  * This parameter is only used if task pre-emption is on.
  * It specifies the scheduler to share processing time between
@@ -103,7 +103,7 @@
 // Do not change this value
 #define configTICK_RATE_HZ				( ( portTickType ) 1000 )
 #define configMAX_PRIORITIES			10
-#define configMINIMAL_STACK_SIZE		( ( unsigned short ) 128 )
+#define configMINIMAL_STACK_SIZE		( ( unsigned short ) 256 )
 #define configMAX_TASK_NAME_LEN			16
 #define configUSE_16_BIT_TICKS			0
 #define configIDLE_SHOULD_YIELD			0
@@ -112,8 +112,9 @@
 /* Memory allocation related definitions. */
 // added for heap_4 memory management
 #define configSUPPORT_DYNAMIC_ALLOCATION    1
+#define configSUPPORT_STATIC_ALLOCATION     1
 // maximum of heap freertos can use to allocate memory for tasks
-#define configTOTAL_HEAP_SIZE			( ( size_t ) ( 24000 ) )
+#define configTOTAL_HEAP_SIZE			( ( size_t ) ( 10000 ) )
 
 /* Hook function related definitions. */
 #define configUSE_IDLE_HOOK				1

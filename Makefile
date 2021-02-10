@@ -51,13 +51,18 @@ endif
 
 CHIP_NAME = sam9g20
 BOARD_FILE_ROOT = $(CHIP_NAME)
+
 ADD_USB_DRIVER = 1
+ADD_MMC_DRIVER = 1
+ADD_TINYFATFS = 1
 
 ifdef IOBC
 CHIP_PATH = iobc
 else
 CHIP_PATH = sam9g20ek
 endif
+
+ENABLE_FLTO = 0
 
 OS_FSFW = freeRTOS
 OS_APP = $(OS_FSFW)
@@ -86,6 +91,7 @@ BSP_PATH = $(BOARD_FILE_ROOT)
 # Private (non-public) libraries.
 # If programming for AT91 development board or iOBC, add the libraries manually.
 AT91_PATH = $(BOARD_FILE_ROOT)/at91
+SAM9G20_COMMON_PATH = $(BOARD_FILE_ROOT)/common
 HCC_PATH = $(PRIVLIB_PATH)/hcc
 HAL_PATH = $(PRIVLIB_PATH)/hal
 
@@ -205,7 +211,7 @@ INCLUDES :=
 # Source files and includes can be added in those submakefiles.
 SUBDIRS := $(CONFIG_PATH) $(FRAMEWORK_PATH) $(MISSION_PATH) $(BSP_PATH) \
 		$(AT91_PATH) $(TEST_PATH) $(TMTCBRIDGE_PATH) $(PRIVLIB_PATH) \
-		$(FREERTOS_PATH) $(UNITTEST_PATH)
+		$(FREERTOS_PATH) $(UNITTEST_PATH) $(SAM9G20_COMMON_PATH)
 		
 # $(info $${SUBDIRS} is [${SUBDIRS}])	
 # to include the lwip source files
@@ -421,9 +427,16 @@ mission: OPTIMIZATION += -fno-isolate-erroneous-paths-dereference
 
 # Link time optimization can lead to issues, so  if there is an issue with the
 # mission binary, try to disable it to see if that fixes the problem.
+ifeq ($(ENABLE_FLTO), 1)
 mission: LINK_TIME_OPTIMIZATION = -flto
+endif
+
 mission: TARGET = Mission binary
+ifeq ($(ENABLE_FLTO), 1)
 mission: OPTIMIZATION_MESSAGE = On with Link Time Optimization.
+else
+mission: OPTIMIZATION_MESSAGE = On without Link Time Optimization.
+endif
 mission: DEBUG_LEVEL = -g0
 
 debug: CXXDEFINES += -DDEBUG

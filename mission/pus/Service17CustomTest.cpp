@@ -1,6 +1,6 @@
 #include "Service17CustomTest.h"
 
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/tmtcpacket/pus/TmPacketStored.h>
 
@@ -40,7 +40,11 @@ ReturnValue_t Service17CustomTest::handleRequest(uint8_t subservice) {
 
 ReturnValue_t Service17CustomTest::performService() {
 	if(periodicPrintoutEnabled) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 	    sif::info << "Service17CustomTest::performService: Alive!" << std::endl;
+#else
+	    sif::printInfo("Service17CustomTest::performService: Alive!\n");
+#endif
 	}
 	return HasReturnvaluesIF::RETURN_OK;
 }

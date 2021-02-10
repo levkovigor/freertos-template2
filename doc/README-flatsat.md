@@ -93,31 +93,44 @@ tmux a -t 0*
 ```
 
 If these sessions don't show up (e.g. after flatsat reboot), here are the 
-commands to get everything working again:
+commands to get everything working again with the following command
 
+```py
+setup_flatsat_tmux.py
+```
+
+This will run a script located in the `$HOME/scripts` to set up all tmux sessions. 
+All scripts used here are located in `$HOME/scripts` as well.
+
+Alternatively, all steps can be performed manually.
 Initiate the iOBC GDB Server in a new tmux session
 ```sh
-tmux new -s 1_vor
-vor_iobc.sh
+tmux new -s 0_iobc
+gdb_iobc.sh
 ```
 
 `vor_iobc.sh` is a shell script which will run the GDB Server with the correct configuration. 
-All scripts can be found in `~/scripts`.
+It runs the following command:
+
+```sh
+JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=261002202 -nogui
+```
+
 Then type `CTRL` + `B` and `d` to detach from the tmux session.
 Set up the debug session with the following commands:
 
 ```sh
-tmux new -s 3_vor_iobc
+tmux new -s 2_iobc_dbg
 listen_iobc.sh
 ```
 
 You will be prompted for a USB serial port. Select the port named 
 `TTL232R-3V3` to listen to the iOBC serial output.
 
-The shell script will start the `minicom.py` utility to read the USB port 
+The shell script will start the `screen` utility to read the USB port 
 with the correct settings.
 Now the debug output can be read in this session.
-To exit the session, use `CTRL` + `Alt` + `9` .
+To exit the session, use `CTRL` + `B` and `d`.
 
 All scripts are located inside the scripts folder in the home folder.
 
@@ -183,19 +196,16 @@ and press c to start
 
 ### Loading binaries built locally to the non-volatile memory
 
-It is recommended to flash the software to the SDRAM directly for
-development purposes. To test the binary and the bootloader on 
-the non-volatile memories, the images need to be written
-to the 1MB NOR-Flash chip. This is either possible with SAM-BA
-when interfacing the iOBC with a Windows PC and the ISIS SAM-BA application
-installed or by uploading the binary via RS232 (same communication line
-used for TMTC commanding). For remote deployment, only the second
-way is currently possible. A recent software version needs to
-be running to perform this step as well.
-Following general steps need to be taken:
+It is recommended to flash the software to the SDRAM directly for development purposes. 
+To test the binary and the bootloader on  the non-volatile memories, the images need to be written
+to the 1MB NOR-Flash chip. This is either possible with SAM-BA when interfacing the iOBC with a 
+Windows PC and the ISIS SAM-BA application installed or by uploading the binary via RS232 
+(same communication line used for TMTC commanding). For remote deployment, only the second
+way is currently possible. A recent software version needs to 
+be running to perform this step as well. Following general steps need to be taken:
 
 1. Transfer the file with to the \_bin folder of
-the remote OBSW folder with SFTP. It is recommended to use Filezilla for this.
+the remote OBSW folder with SFTP. It is recommended to use FileZilla for this.
 It is possible to set common operations as favorites in Filezilla.
 
 2. Transfer the binary to the SD-Card first. The `tmtcclient` Python application
@@ -217,7 +227,8 @@ instead of rerunning these steps.
 
 1. The current IP address of the flatsat computer is 
 192.128.199.228 . That address could change, and it can be checked
-by logging into the flatsat like explained above and running:   
+by logging into the flatsat like explained above and running: 
+ 
 ```sh
 ifconfig    
 ```
