@@ -162,13 +162,17 @@ ReturnValue_t RS485TmTcTarget::handleReceiveBuffer() {
         if (result == HasReturnvaluesIF::RETURN_OK) {
             result = linkLayer->processFrame(packetFoundLen);
             if (result != HasReturnvaluesIF::RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
                 sif::debug << "RS485DeviceComIF::handleReceiveBuffer: Handling Buffer" << " failed!"
                         << std::endl;
+#endif
                 return result;
             }
         } else if (result == RingBufferAnalyzer::POSSIBLE_PACKET_LOSS) {
             // trigger event?
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::debug << "RS485DeviceComIF::handleReceiveBuffer: Possible data loss" << std::endl;
+#endif
             continue;
         } else if (result == RingBufferAnalyzer::NO_PACKET_FOUND) {
             return HasReturnvaluesIF::RETURN_OK;

@@ -12,11 +12,15 @@
 RingBufferAnalyzer::RingBufferAnalyzer(SharedRingBuffer *ringBuffer, AnalyzerModes mode) :
         mode(mode), ringBuffer(ringBuffer) {
     if (ringBuffer == nullptr) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
                 "Passed ring buffer invalid!" << std::endl;
+#endif
     } else if (mode != AnalyzerModes::DLE_ENCODING) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
                 "Wrong constructor for DLE mode!" << std::endl;
+#endif
     }
     analysisVector = std::vector<uint8_t>(ringBuffer->getMaxSize());
 
@@ -27,14 +31,20 @@ RingBufferAnalyzer::RingBufferAnalyzer(SharedRingBuffer *ringBuffer,
         mode(mode), ringBuffer(ringBuffer), virtualChannelFrameSizes(virtualChannelFrameSizes) {
 
     if (ringBuffer == nullptr) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
                 "Passed ring buffer invalid!" << std::endl;
+#endif
     } else if (mode != AnalyzerModes::USLP_FRAMES) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
                 "Wrong constructor for USLP mode!" << std::endl;
+#endif
     } else if (virtualChannelFrameSizes == nullptr || virtualChannelFrameSizes->empty()) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "SerialAnalyzerTask::SerialAnalyzerTask: "
                 "No VCID lengths provided!" << std::endl;
+#endif
     }
 
     analysisVector = std::vector<uint8_t>(ringBuffer->getMaxSize());

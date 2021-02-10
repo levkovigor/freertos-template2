@@ -363,7 +363,7 @@ void initTasks(void) {
                     genericMissedDeadlineFunc);
     result = pst::pollingSequenceInitRS485(PollingSequenceTableTaskRS485);
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "InitMission: Creating RS485 PST failed!" << std::endl;
+        InitMission::printAddObjectError("RS485 PST Task", objects::RS485_DEVICE_COM_IF);
     }
 
     /* RS485 TmTcTarget Task */

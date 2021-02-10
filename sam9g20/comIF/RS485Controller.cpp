@@ -22,16 +22,21 @@ ReturnValue_t RS485Controller::performOperation(uint8_t opCode) {
     switch(step) {
     case(SYRLINKS_ACTIVE): {
         // Activate transceiver via GPIO
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     	sif::info << "Sending to FPGA 1" << std::endl;
+#endif
     	uartSemaphoreFPGA1.acquire();
     	UART_queueTransfer(&uartTransferFPGA1);
+
     	// Aquire semaphore, write new message to send, release semaphore
         break;
     }
     case(PCDU_VORAGO_ACTIVE): {
         // Activate transceiver and notify RS485 polling task by releasing
         // a semaphore so it can start sending packets.
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     	sif::info << "Sending to PCDU" << std::endl;
+#endif
     	uartSemaphorePCDU.acquire();
     	UART_queueTransfer(&uartTransferPCDU);
 

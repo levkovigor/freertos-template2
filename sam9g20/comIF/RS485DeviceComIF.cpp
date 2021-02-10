@@ -89,8 +89,10 @@ ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {
                         rs485Cookie->getTfdzSize() + sendBuffer[device]->FRAME_OVERHEAD));
         return HasReturnvaluesIF::RETURN_OK;
     } else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "RS485DeviceComIF::initializeInterface failed: Cookie is null pointer"
                 << std::endl;
+#endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
@@ -129,7 +131,7 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
             break;
         }
         default: {
-#ifdef DEBUG
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 			// should not happen
 			// TODO: Is there anything special to do in this case
 			sif::error << "RS485 Device Number out of bounds" << std::endl;
@@ -139,11 +141,13 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
         }
 
     } else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "RS485 Device Cookies not initialized yet" << std::endl;
+#endif
     }
 
     if (retryCount > 0) {
-#ifdef DEBUG
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "RS485DeviceComIF::performOperation: RS485DeviceComIF"
                 << " driver was busy for " << (uint16_t) retryCount
                 << " attempts!" << std::endl;
@@ -168,8 +172,10 @@ ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie, const uint8_t *sen
 
         return HasReturnvaluesIF::RETURN_OK;
     } else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "RS485DeviceComIF::sendMessage: Device queue full" << std::endl;
         return HasReturnvaluesIF::RETURN_FAILED;
+#endif
     }
 }
 
@@ -298,7 +304,7 @@ ReturnValue_t RS485DeviceComIF::checkDriverState(uint8_t *retryCount) {
     if (readState != 0x00 or writeState != 0x00) {
         if (readState == 0x33 or writeState == 0x33) {
             // erroneous state!
-#ifdef DEBUG
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "RS485Controller::performOperation: RS485 driver"
                     " in invalid state!" << std::endl;
 #endif
