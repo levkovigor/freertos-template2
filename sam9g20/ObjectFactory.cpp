@@ -36,6 +36,7 @@
 #include <mission/pus/Service17CustomTest.h>
 #include <mission/pus/Service23FileManagement.h>
 #include <mission/utility/TmFunnel.h>
+#include <mission/utility/uslpDataLinkLayer/UslpDataLinkLayer.h>
 #include <mission/devices/PCDUHandler.h>
 #include <mission/devices/GPSHandler.h>
 #include <mission/devices/ThermalSensorHandler.h>
@@ -63,6 +64,9 @@
 #include <sam9g20/comIF/RS232DeviceComIF.h>
 #include <sam9g20/comIF/SpiDeviceComIF.h>
 #include <sam9g20/comIF/RS232PollingTask.h>
+#include <sam9g20/comIF/RS485PollingTask.h>
+#include <sam9g20/comIF/RS485DeviceComIF.h>
+#include <sam9g20/comIF/RS485TmTcTarget.h>
 #include <sam9g20/core/CoreController.h>
 #include <sam9g20/core/SoftwareImageHandler.h>
 #include <sam9g20/core/SystemStateTask.h>
@@ -75,7 +79,6 @@
 #include <sam9g20/tmtcbridge/EmacPollingTask.h>
 #include <sam9g20/tmtcbridge/TmTcUdpBridge.h>
 #endif
-
 
 #include <cstdint>
 
@@ -98,16 +101,14 @@ void Factory::produce(void) {
 
     /* Pool manager handles storage und mutexes */
     {
-        LocalPool::LocalPoolConfig poolConfig = {
-                {250, 32}, {120, 64}, {100, 128}, {50, 256},
-                {25, 512}, {10, config::STORE_LARGE_BUCKET_SIZE}, {10, 2048}
-        };
-        PoolManager* ipcStore = new PoolManager(objects::IPC_STORE, poolConfig);
+        LocalPool::LocalPoolConfig poolConfig = { { 250, 32 }, { 120, 64 }, { 100, 128 },
+                { 50, 256 }, { 25, 512 }, { 10, config::STORE_LARGE_BUCKET_SIZE }, { 10, 2048 } };
+        PoolManager *ipcStore = new PoolManager(objects::IPC_STORE, poolConfig);
         size_t additionalSize = 0;
         size_t storeSize = ipcStore->getTotalSize(&additionalSize);
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Allocating " << storeSize + additionalSize << " bytes "
-                <<"for the IPC Store.." << std::endl;
+                << "for the IPC Store.." << std::endl;
 #else
         sif::printInfo("Allocating %lu bytes for the IPC Store..\n",
                 static_cast<unsigned long>(storeSize + additionalSize));
@@ -115,16 +116,14 @@ void Factory::produce(void) {
     }
 
     {
-        LocalPool::LocalPoolConfig poolConfig = {
-                {500, 32}, {250, 64}, {120, 128}, {60, 256},
-                {30, 512}, {15, config::STORE_LARGE_BUCKET_SIZE}, {10, 2048}
-        };
-        PoolManager* tmStore = new PoolManager(objects::TM_STORE, poolConfig);
+        LocalPool::LocalPoolConfig poolConfig = { { 500, 32 }, { 250, 64 }, { 120, 128 },
+                { 60, 256 }, { 30, 512 }, { 15, config::STORE_LARGE_BUCKET_SIZE }, { 10, 2048 } };
+        PoolManager *tmStore = new PoolManager(objects::TM_STORE, poolConfig);
         size_t additionalSize = 0;
         size_t storeSize = tmStore->getTotalSize(&additionalSize);
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Allocating " << storeSize + additionalSize << " bytes "
-                <<"for the TM Store.." << std::endl;
+                << "for the TM Store.." << std::endl;
 #else
         sif::printInfo("Allocating %lu bytes for the TM Store..\n",
                 static_cast<unsigned long>(storeSize + additionalSize));
@@ -132,29 +131,26 @@ void Factory::produce(void) {
     }
 
     {
-        LocalPool::LocalPoolConfig poolConfig = {
-                {500, 32}, {250, 64}, {120, 128},
-                {60, 256}, {30, 512}, {15, config::STORE_LARGE_BUCKET_SIZE}, {10, 2048}
-        };
-        PoolManager* tcStore =new PoolManager(objects::TC_STORE, poolConfig);
+        LocalPool::LocalPoolConfig poolConfig = { { 500, 32 }, { 250, 64 }, { 120, 128 },
+                { 60, 256 }, { 30, 512 }, { 15, config::STORE_LARGE_BUCKET_SIZE }, { 10, 2048 } };
+        PoolManager *tcStore = new PoolManager(objects::TC_STORE, poolConfig);
         size_t additionalSize = 0;
         size_t storeSize = tcStore->getTotalSize(&additionalSize);
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Allocating " << storeSize + additionalSize << " bytes "
-                <<"for the TC Store.." << std::endl;
+                << "for the TC Store.." << std::endl;
 #else
         sif::printInfo("Allocating %lu bytes for the TC Store..\n",
                 static_cast<unsigned long>(storeSize + additionalSize));
 #endif
     }
 
-
     /* Utility */
     new TimeStamper(objects::TIME_STAMPER);
 
     /* Distributor Tasks */
-    new CCSDSDistributor(apid::SOURCE_OBSW,objects::CCSDS_PACKET_DISTRIBUTOR);
-    new PUSDistributor(apid::SOURCE_OBSW,objects::PUS_PACKET_DISTRIBUTOR,
+    new CCSDSDistributor(apid::SOURCE_OBSW, objects::CCSDS_PACKET_DISTRIBUTOR);
+    new PUSDistributor(apid::SOURCE_OBSW, objects::PUS_PACKET_DISTRIBUTOR,
             objects::CCSDS_PACKET_DISTRIBUTOR);
 
     /* UDP Server */
@@ -167,61 +163,54 @@ void Factory::produce(void) {
     // 6 kB for shared ring buffer now.
     // TODO: move size to OBSWConfig.
     new SharedRingBuffer(objects::SERIAL_RING_BUFFER, 6144, true, 30);
-    new TmTcSerialBridge(objects::SERIAL_TMTC_BRIDGE,
-            objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
-            objects::TC_STORE, objects::SERIAL_RING_BUFFER);
-    new RS232PollingTask(objects::SERIAL_POLLING_TASK,
-            objects::SERIAL_RING_BUFFER);
+    new TmTcSerialBridge(objects::SERIAL_TMTC_BRIDGE, objects::CCSDS_PACKET_DISTRIBUTOR,
+            objects::TM_STORE, objects::TC_STORE, objects::SERIAL_RING_BUFFER);
+    new RS232PollingTask(objects::SERIAL_POLLING_TASK, objects::SERIAL_RING_BUFFER);
 
     /* TM Destination */
     new TmFunnel(objects::TM_FUNNEL);
 
     /* PUS Standalone Services using PusServiceBase */
-    new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,
-            apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::TM_FUNNEL,
-            config::OBSW_SERVICE_1_MQ_DEPTH);
-    new Service3Housekeeping(objects::PUS_SERVICE_3_HOUSEKEEPING,
-            apid::SOURCE_OBSW, pus::PUS_SERVICE_3);
+    new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_1, objects::TM_FUNNEL, config::OBSW_SERVICE_1_MQ_DEPTH);
+    new Service3Housekeeping(objects::PUS_SERVICE_3_HOUSEKEEPING, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_3);
     // TODO: move 20 to OBSWConfig
-    new Service5EventReporting(objects::PUS_SERVICE_5_EVENT_REPORTING,
-            apid::SOURCE_OBSW, pus::PUS_SERVICE_5, 20);
-    new Service9CustomTimeManagement(objects::PUS_SERVICE_9_TIME_MGMT,
-            apid::SOURCE_OBSW, pus::PUS_SERVICE_9);
-    new Service17CustomTest(objects::PUS_SERVICE_17_TEST, apid::SOURCE_OBSW,
-            pus::PUS_SERVICE_17);
-
+    new Service5EventReporting(objects::PUS_SERVICE_5_EVENT_REPORTING, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_5, 20);
+    new Service9CustomTimeManagement(objects::PUS_SERVICE_9_TIME_MGMT, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_9);
+    new Service17CustomTest(objects::PUS_SERVICE_17_TEST, apid::SOURCE_OBSW, pus::PUS_SERVICE_17);
 
     /* PUS Gateway Services using CommandingServiceBase */
-    new Service2DeviceAccess(objects::PUS_SERVICE_2_DEVICE_ACCESS,
-            apid::SOURCE_OBSW, pus::PUS_SERVICE_2);
-    new Service6MemoryManagement(objects::PUS_SERVICE_6_MEM_MGMT,
-            apid::SOURCE_OBSW, pus::PUS_SERVICE_6);
-    new Service8FunctionManagement(objects::PUS_SERVICE_8_FUNCTION_MGMT,
-            apid::SOURCE_OBSW, pus::PUS_SERVICE_8);
+    new Service2DeviceAccess(objects::PUS_SERVICE_2_DEVICE_ACCESS, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_2);
+    new Service6MemoryManagement(objects::PUS_SERVICE_6_MEM_MGMT, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_6);
+    new Service8FunctionManagement(objects::PUS_SERVICE_8_FUNCTION_MGMT, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_8);
     new Service20ParameterManagement(objects::PUS_SERVICE_20_PARAM_MGMT, apid::SOURCE_OBSW,
             pus::PUS_SERVICE_20);
     new Service23FileManagement(objects::PUS_SERVICE_23_FILE_MGMT, apid::SOURCE_OBSW,
             pus::PUS_SERVICE_23);
-    new CService200ModeCommanding(objects::PUS_SERVICE_200_MODE_MGMT,
-            apid::SOURCE_OBSW, pus::PUS_SERVICE_200);
+    new CService200ModeCommanding(objects::PUS_SERVICE_200_MODE_MGMT, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_200);
     new CService201HealthCommanding(objects::PUS_SERVICE_201_HEALTH, apid::SOURCE_OBSW,
             pus::PUS_SERVICE_201);
 
     /* Device Handlers using DeviceHandlerBase.
-    These includes work without connected hardware via virtualized
-    devices and interfaces */
-    CookieIF * dummyCookie0 = new TestCookie(addresses::PCDU);
-    new PCDUHandler(objects::PCDU_HANDLER,objects::DUMMY_ECHO_COM_IF,
-            dummyCookie0);
-    CookieIF * dummyCookie1 = new TestCookie(addresses::DUMMY_ECHO);
-    new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_ECHO_COM_IF,
-            dummyCookie1, true);
+     These includes work without connected hardware via virtualized
+     devices and interfaces */
+    CookieIF *dummyCookie0 = new TestCookie(addresses::PCDU);
+    new PCDUHandler(objects::PCDU_HANDLER, objects::DUMMY_ECHO_COM_IF, dummyCookie0);
+    CookieIF *dummyCookie1 = new TestCookie(addresses::DUMMY_ECHO);
+    new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_ECHO_COM_IF, dummyCookie1, true);
 
     new CoreController(objects::CORE_CONTROLLER, objects::SYSTEM_STATE_TASK);
     new SystemStateTask(objects::SYSTEM_STATE_TASK, objects::CORE_CONTROLLER);
     new ThermalController(objects::THERMAL_CONTROLLER);
 
-    TestCookie * dummyCookie2 = new TestCookie(addresses::DUMMY_GPS0);
+    TestCookie *dummyCookie2 = new TestCookie(addresses::DUMMY_GPS0);
 #if defined(VIRTUAL_BUILD)
     new GPSHandler(objects::GPS0_HANDLER, objects::DUMMY_GPS_COM_IF,
             dummyCookie2, switches::GPS0);
@@ -229,10 +218,8 @@ void Factory::produce(void) {
     new GPSHandler(objects::GPS1_HANDLER, objects::DUMMY_GPS_COM_IF,
             dummyCookie3, switches::GPS1);
 #else
-    new GPSHandler(objects::GPS0_HANDLER,objects::DUMMY_GPS_COM_IF,
-            dummyCookie2, switches::GPS0);
-    new GPSHandler(objects::GPS1_HANDLER,objects::DUMMY_GPS_COM_IF,
-            dummyCookie2, switches::GPS1);
+    new GPSHandler(objects::GPS0_HANDLER, objects::DUMMY_GPS_COM_IF, dummyCookie2, switches::GPS0);
+    new GPSHandler(objects::GPS1_HANDLER, objects::DUMMY_GPS_COM_IF, dummyCookie2, switches::GPS1);
 #endif
 
     /* Dummy Communication Interfaces */
@@ -254,6 +241,32 @@ void Factory::produce(void) {
     new GpioDeviceComIF(objects::GPIO_DEVICE_COM_IF);
     new SpiDeviceComIF(objects::SPI_DEVICE_COM_IF);
 
+    /* RS485 Stuff */
+    new SharedRingBuffer(objects::RS485_RING_BUFFER, 6144, true, 30);
+    new RS485PollingTask(objects::RS485_POLLING_TASK, objects::RS485_RING_BUFFER);
+    new RS485DeviceComIF(objects::RS485_DEVICE_COM_IF, objects::RS485_TM_TC_TARGET,
+            objects::USLP_DATA_LINK_LAYER, objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
+            objects::TC_STORE);
+    new RS485TmTcTarget(objects::RS485_TM_TC_TARGET, objects::CCSDS_PACKET_DISTRIBUTOR,
+            objects::TM_STORE, objects::TC_STORE, objects::RS485_RING_BUFFER,
+            objects::USLP_DATA_LINK_LAYER);
+    new UslpDataLinkLayer(objects::USLP_DATA_LINK_LAYER, config::RS485_USLP_SCID);
+
+    // RS485 Test devices
+    CookieIF *rs485CookieFPGA = nullptr;
+    rs485CookieFPGA = new RS485Cookie(RS485Timeslot::COM_FPGA, RS485BaudRates::FAST,
+            config::RS485_USLP_VCID_COM_FPGA_1, config::RS485_COM_FPGA_TFDZ_SIZE,
+            config::RS485_USLP_MAPID_COM_FPGA_1_CTRL, true, config::RS485_USLP_MAPID_COM_FPGA_1_TM);
+
+    CookieIF *rs485CookiePCDU = nullptr;
+    rs485CookiePCDU = new RS485Cookie(RS485Timeslot::PCDU_VORAGO, RS485BaudRates::NORMAL,
+            config::RS485_USLP_VCID_PCDU_VORAGO, config::RS485_PAYLOAD_VORAGO_TFDZ_SIZE,
+            config::RS485_USLP_MAPID_PCDU_VORAGO);
+
+    new TestDevice(objects::DUMMY_HANDLER_RS485_1, objects::RS485_DEVICE_COM_IF, rs485CookieFPGA,
+            true);
+    new TestDevice(objects::DUMMY_HANDLER_RS485_2, objects::RS485_DEVICE_COM_IF, rs485CookiePCDU,
+            true);
 
     /* Test Tasks AT91 */
     //size_t I2C_MAX_REPLY_LEN = 256;
@@ -261,7 +274,7 @@ void Factory::produce(void) {
     uint8_t delayBetweenChars = 5;
     uint8_t delayBeforeSpck = 2;
 
-    CookieIF* spiCookie = nullptr;
+    CookieIF *spiCookie = nullptr;
     //    spiCookie = new SpiCookie(addresses::SPI_Test_PT1000 ,
     //            5, SlaveType::DEMULTIPLEXER_1, DemultiplexerOutput::OUTPUT_3,
     //            SPImode::mode1_spi, 5 , 3'900'000, 1);
@@ -279,24 +292,20 @@ void Factory::produce(void) {
 
     // I have no idea why we have to pick SPI mode 0 here (CPOL == 0 and
     // NCPHA == 1) instead of mode 3 (CPOL == 1 and NCPHA == 0) but we have to..
-    spiCookie = new SpiCookie(addresses::SPI_Test_MGM, 16,
-            SlaveType::SLAVE_SELECT_1,
-            DemultiplexerOutput::OWN_SLAVE_SELECT,
-            SPImode::mode0_spi, 0, 3'900'000, 0);
-    MGMHandlerLIS3MDL* mgmHandler = new MGMHandlerLIS3MDL(objects::SPI_Test_MGM,
+    spiCookie = new SpiCookie(addresses::SPI_Test_MGM, 16, SlaveType::SLAVE_SELECT_1,
+            DemultiplexerOutput::OWN_SLAVE_SELECT, SPImode::mode0_spi, 0, 3'900'000, 0);
+    MGMHandlerLIS3MDL *mgmHandler = new MGMHandlerLIS3MDL(objects::SPI_Test_MGM,
             objects::SPI_DEVICE_COM_IF, spiCookie);
     mgmHandler->setStartUpImmediately();
-
 
 #if OBSW_ADD_TEST_CODE == 1
     //CookieIF * i2cCookie_0 = new I2cCookie(addresses::I2C_ARDUINO_0,
     //        I2C_MAX_REPLY_LEN);
-    spiCookie = new SpiCookie(addresses::SPI_ARDUINO_0,
-            SPI_MAX_REPLY_LEN, SlaveType::SLAVE_SELECT_0,
-            DemultiplexerOutput::OWN_SLAVE_SELECT, SPImode::mode0_spi,
+    spiCookie = new SpiCookie(addresses::SPI_ARDUINO_0, SPI_MAX_REPLY_LEN,
+            SlaveType::SLAVE_SELECT_0, DemultiplexerOutput::OWN_SLAVE_SELECT, SPImode::mode0_spi,
             delayBetweenChars, SPI_MIN_BUS_SPEED, delayBeforeSpck);
-    new AtmelArduinoHandler(objects::ARDUINO_0, objects::SPI_DEVICE_COM_IF,
-            spiCookie, switches::DUMMY, std::string("Arduino 0"));
+    new AtmelArduinoHandler(objects::ARDUINO_0, objects::SPI_DEVICE_COM_IF, spiCookie,
+            switches::DUMMY, std::string("Arduino 0"));
 
 #ifdef ISIS_OBC_G20
     new LedTask(objects::LED_TASK, "IOBC_LED_TASK", LedTask::LedModes::WAVE_UP);
@@ -329,7 +338,7 @@ void Factory::setStaticFrameworkObjectIds() {
 #if defined(ETHERNET)
     TmFunnel::downlinkDestination = objects::UDP_TMTC_BRIDGE;
 #else
-    TmFunnel::downlinkDestination = objects::SERIAL_TMTC_BRIDGE;
+    TmFunnel::downlinkDestination = objects::RS485_TM_TC_TARGET;
 #endif
 }
 
