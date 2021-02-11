@@ -63,7 +63,7 @@ public:
      *          @c Return codes from CCSDSReturnValuesIF for other problems
      */
     ReturnValue_t sendDeviceCommandFrame(uint8_t *commandBuffer, size_t commandSize, uint8_t vcId,
-            uint8_t mapID);
+            uint8_t mapId);
     /**
      * Configuration method to add a new USLP Virtual Channel.
      * Shall only be called during initialization. As soon as the method was called, the layer can
@@ -108,6 +108,7 @@ private:
      * @return The higher method codes or @c VC_NOT_FOUND.
      */
     ReturnValue_t virtualChannelDemultiplexing();
+
 };
 
 #endif /* MISSION_UTILITY_USLPDATALINKLAYER_USLPDATALINKLAYER_H_ */
