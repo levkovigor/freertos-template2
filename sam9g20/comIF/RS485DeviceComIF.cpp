@@ -5,7 +5,6 @@
  * @author	L.Rajer
  */
 #include <sam9g20/comIF/RS485DeviceComIF.h>
-#include <sam9g20/comIF/RS485TmTcTarget.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <sam9g20/comIF/cookies/RS485Cookie.h>
 #include <mission/utility/uslpDataLinkLayer/USLPTransferFrame.h>
@@ -14,16 +13,17 @@
 #include <mission/utility/uslpDataLinkLayer/UslpVirtualChannel.h>
 #include <mission/utility/uslpDataLinkLayer/UslpMapIF.h>
 #include <mission/utility/uslpDataLinkLayer/UslpMapTmTc.h>
+#include <sam9g20/comIF/RS485BufferAnalyzerTask.h>
 #include "GpioDeviceComIF.h"
 
 extern "C" {
 #include <hal/Drivers/UART.h>
 }
 
-RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t tmTcTargetId,
+RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t bufferAnalyzerId,
         object_id_t UslpDataLinkLayerId, object_id_t tcDestination, object_id_t tmStoreId,
         object_id_t tcStoreId) :
-        SystemObject(objectId), tmTcTargetId(tmTcTargetId), tcDestination(tcDestination), tmStoreId(
+        SystemObject(objectId), bufferAnalyzerId(bufferAnalyzerId), tcDestination(tcDestination), tmStoreId(
                 tmStoreId), tcStoreId(tcStoreId), uslpDataLinkLayerId(UslpDataLinkLayerId) {
 
     for (int i = 0; i < RS485Timeslot::TIMESLOT_COUNT_RS485; i++) {
@@ -38,8 +38,8 @@ ReturnValue_t RS485DeviceComIF::initialize() {
     // Init of the default transfer frame buffers for each device
     initTransferFrameSendBuffers();
 
-    tmTcTarget = objectManager->get<RS485TmTcTarget>(tmTcTargetId);
-    if (tmTcTarget == nullptr) {
+    bufferAnalyzer = objectManager->get<RS485BufferAnalyzerTask>(bufferAnalyzerId);
+    if (bufferAnalyzer == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
@@ -74,7 +74,7 @@ ReturnValue_t RS485DeviceComIF::initialize() {
             uslpDataLinkLayer->addVirtualChannel(rs485Cookie->getVcId(), virtualChannel);
         }
     }
-    ReturnValue_t result = tmTcTarget->setvirtualChannelFrameSizes(&virtualChannelFrameSizes);
+    ReturnValue_t result = bufferAnalyzer->setvirtualChannelFrameSizes(&virtualChannelFrameSizes);
     return result;
 }
 
@@ -174,8 +174,9 @@ ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie, const uint8_t *sen
     } else {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "RS485DeviceComIF::sendMessage: Device queue full" << std::endl;
-        return HasReturnvaluesIF::RETURN_FAILED;
 #endif
+        return HasReturnvaluesIF::RETURN_FAILED;
+
     }
 }
 

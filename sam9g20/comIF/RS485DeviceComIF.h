@@ -15,9 +15,9 @@
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 #include <fsfwconfig/OBSWConfig.h>
-#include <sam9g20/comIF/RS485TmTcTarget.h>
 #include <mission/utility/uslpDataLinkLayer/USLPTransferFrame.h>
 #include <mission/utility/uslpDataLinkLayer/UslpDataLinkLayer.h>
+#include <sam9g20/comIF/RS485BufferAnalyzerTask.h>
 
 extern "C" {
 
@@ -121,8 +121,8 @@ private:
     std::array<USLPTransferFrame*, RS485Timeslot::TIMESLOT_COUNT_RS485> sendBuffer;
 
     // Used for handling the TM and TC Queue, this class is already big enough
-    object_id_t tmTcTargetId = objects::NO_OBJECT;
-    RS485TmTcTarget *tmTcTarget = nullptr;
+    object_id_t bufferAnalyzerId = objects::NO_OBJECT;
+    RS485BufferAnalyzerTask *bufferAnalyzer = nullptr;
 
     object_id_t uslpDataLinkLayerId = objects::NO_OBJECT;
     UslpDataLinkLayer *uslpDataLinkLayer = nullptr;

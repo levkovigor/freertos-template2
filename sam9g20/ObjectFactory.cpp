@@ -66,7 +66,7 @@
 #include <sam9g20/comIF/RS232PollingTask.h>
 #include <sam9g20/comIF/RS485PollingTask.h>
 #include <sam9g20/comIF/RS485DeviceComIF.h>
-#include <sam9g20/comIF/RS485TmTcTarget.h>
+#include <sam9g20/comIF/RS485BufferAnalyzerTask.h>
 #include <sam9g20/core/CoreController.h>
 #include <sam9g20/core/SoftwareImageHandler.h>
 #include <sam9g20/core/SystemStateTask.h>
@@ -244,11 +244,10 @@ void Factory::produce(void) {
     /* RS485 Stuff */
     new SharedRingBuffer(objects::RS485_RING_BUFFER, 6144, true, 30);
     new RS485PollingTask(objects::RS485_POLLING_TASK, objects::RS485_RING_BUFFER);
-    new RS485DeviceComIF(objects::RS485_DEVICE_COM_IF, objects::RS485_TM_TC_TARGET,
+    new RS485DeviceComIF(objects::RS485_DEVICE_COM_IF, objects::RS485_BUFFER_ANALYZER_TASK,
             objects::USLP_DATA_LINK_LAYER, objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
             objects::TC_STORE);
-    new RS485TmTcTarget(objects::RS485_TM_TC_TARGET, objects::CCSDS_PACKET_DISTRIBUTOR,
-            objects::TM_STORE, objects::TC_STORE, objects::RS485_RING_BUFFER,
+    new RS485BufferAnalyzerTask(objects::RS485_BUFFER_ANALYZER_TASK, objects::RS485_RING_BUFFER,
             objects::USLP_DATA_LINK_LAYER);
     new UslpDataLinkLayer(objects::USLP_DATA_LINK_LAYER, config::RS485_USLP_SCID);
 
