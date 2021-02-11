@@ -14,7 +14,8 @@ RS485TmTcTarget::RS485TmTcTarget(object_id_t objectId, object_id_t tcDestination
         object_id_t tmStoreId, object_id_t tcStoreId, object_id_t sharedRingBufferId,
         object_id_t UslpDataLinkLayerId) :
         SystemObject(objectId), tcDestination(tcDestination), tmStoreId(tmStoreId), tcStoreId(
-                tcStoreId), sharedRingBufferId(sharedRingBufferId), UslpDataLinkLayerId(UslpDataLinkLayerId) {
+                tcStoreId), sharedRingBufferId(sharedRingBufferId), UslpDataLinkLayerId(
+                UslpDataLinkLayerId) {
     tmTcReceptionQueue = QueueFactory::instance()->createMessageQueue(TMTC_RECEPTION_QUEUE_DEPTH);
 }
 
@@ -181,7 +182,6 @@ ReturnValue_t RS485TmTcTarget::handleReceiveBuffer() {
 
     return HasReturnvaluesIF::RETURN_OK;
 }
-
 
 uint16_t RS485TmTcTarget::getIdentifier() {
     // This is no PUS service, so we just return 0

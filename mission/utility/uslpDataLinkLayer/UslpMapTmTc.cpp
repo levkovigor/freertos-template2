@@ -111,11 +111,72 @@ ReturnValue_t UslpMapTmTc::handleWholePackets(USLPTransferFrame *frame) {
 
     return status;
 }
-ReturnValue_t UslpMapTmTc::packFrame(uint8_t *inputBuffer, size_t inputSize,
-        uint8_t *outputBuffer, size_t outputSize) {
-    return RETURN_OK;
-}
+ReturnValue_t UslpMapTmTc::packFrame(uint8_t *inputBuffer, size_t inputSize, uint8_t *outputBuffer,
+        size_t outputSize, size_t tfdzSize) {
+#if FSFW_VERBOSE_LEVEL >= 1
+    if (inputBuffer != nullptr) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::warning << "UslpMapTmTc::packFrame: Provided input buffer will be ignored"
+                << std::endl;
+#endif
+    }
+#endif
 
+    TmTcMessage message;
+    const uint8_t *data = nullptr;
+    size_t size = 0;
+    uint8_t bytesPackedCounter = 0;
+    ReturnValue_t result = HasReturnvaluesIF::RETURN_FAILED;
+    // TODO: Set up output frame correctly
+
+    // Handle Overhang first
+    if (overhangMessage != nullptr) {
+
+        result = tmStore->getData(overhangMessage->getStorageId(), &data, &size);
+
+        if (size - overhangMessageSentBytes <= tfdzSize) {
+            (void) std::memcpy(outputFrame->getDataZone(), data + overhangMessageSentBytes, size);
+            bytesPackedCounter += size;
+            overhangMessage = nullptr;
+            overhangMessageSentBytes = 0;
+            tmStore->deleteData(message.getStorageId());
+        } else {
+            (void) std::memcpy(outputFrame->getDataZone(), data + overhangMessageSentBytes,
+                    tfdzSize);
+            // Set first header pointer to 0xFFFF as no packet header is present
+            outputFrame->setFirstHeaderOffset(0xFFFF);
+            overhangMessageSentBytes += tfdzSize;
+            return HasReturnvaluesIF::RETURN_OK;
+        }
+    }
+
+    // Set first header pointer to position of first packet header
+    outputFrame->setFirstHeaderOffset(bytesPackedCounter);
+
+    while (tmTcReceptionQueue->receiveMessage(&message) == HasReturnvaluesIF::RETURN_OK) {
+
+        result = tmStore->getData(message.getStorageId(), &data, &size);
+        if (result != HasReturnvaluesIF::RETURN_OK) {
+            continue;
+        }
+
+        if (size + bytesPackedCounter <= tfdzSize) {
+            (void) std::memcpy(outputFrame->getDataZone() + bytesPackedCounter, data, size);
+            tmStore->deleteData(message.getStorageId());
+            bytesPackedCounter += size;
+        } else {
+            (void) std::memcpy(outputFrame->getDataZone() + bytesPackedCounter, data,
+                    tfdzSize - bytesPackedCounter);
+            // Storage for next frame
+            overhangMessage = &message;
+            overhangMessageSentBytes += tfdzSize - bytesPackedCounter;
+            return HasReturnvaluesIF::RETURN_OK;
+        }
+
+    }
+
+    return result;
+}
 
 ReturnValue_t UslpMapTmTc::sendCompletePacket(uint8_t *data, uint32_t size) {
     store_address_t store_id;

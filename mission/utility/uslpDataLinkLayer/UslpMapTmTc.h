@@ -4,6 +4,7 @@
 #include <fsfw/objectmanager/ObjectManagerIF.h>
 #include <fsfw/ipc/MessageQueueSenderIF.h>
 #include <fsfw/storagemanager/StorageManagerIF.h>
+#include <fsfw/tmtcservices/TmTcMessage.h>
 #include "UslpMapIF.h"
 #include "USLPTransferFrame.h"
 
@@ -33,12 +34,13 @@ public:
      * @param inputSize Not used, as data source is TM queue
      * @param outputBuffer Where the frame is placed
      * @param outputSize Maximum size of the  output buffer
+     * @param tfdzSize Size of the frame data zone
      * @return  @c RETURN_OK if a frame with data is written into the buffer
      *          @c RETURN_FAILED if no frame is written because of missing data (e.g. from a queue)
      *          @c Return codes from CCSDSReturnValuesIF for other problems
      */
     ReturnValue_t packFrame(uint8_t *inputBuffer, size_t inputSize, uint8_t *outputBuffer,
-            size_t outputSize) override;
+            size_t outputSize, size_t tfdzSize) override;
 
     /**
      * Getter.
@@ -60,6 +62,11 @@ private:
     StorageManagerIF *tmStore = nullptr;
     StorageManagerIF *tcStore = nullptr;
     MessageQueueId_t tcQueueId;     //!< QueueId to send found packets to the distributor.
+
+    USLPTransferFrame *outputFrame;
+    // Used to split packets into different frames
+    TmTcMessage *overhangMessage = nullptr;
+    uint8_t overhangMessageSentBytes = 0;
 
     /**
      * Helper method to forward a complete packet to the OBSW.
