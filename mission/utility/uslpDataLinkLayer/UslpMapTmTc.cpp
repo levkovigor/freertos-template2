@@ -13,6 +13,7 @@ UslpMapTmTc::UslpMapTmTc(uint8_t mapId, object_id_t tcDestination, object_id_t t
         mapId(mapId), bufferPosition(packetBuffer), tcDestination(tcDestination), tmStoreId(
                 tmStoreId), tcStoreId(tcStoreId) {
     std::memset(packetBuffer, 0, sizeof(packetBuffer));
+    outputFrame = new USLPTransferFrame();
 }
 
 ReturnValue_t UslpMapTmTc::initialize() {
@@ -121,13 +122,12 @@ ReturnValue_t UslpMapTmTc::packFrame(uint8_t *inputBuffer, size_t inputSize, uin
 #endif
     }
 #endif
-
+    outputFrame = USLPTransferFrame(outputBuffer, tfdzSize);
     TmTcMessage message;
     const uint8_t *data = nullptr;
     size_t size = 0;
     uint8_t bytesPackedCounter = 0;
     ReturnValue_t result = HasReturnvaluesIF::RETURN_FAILED;
-    // TODO: Set up output frame correctly
 
     // Handle Overhang first
     if (overhangMessage != nullptr) {

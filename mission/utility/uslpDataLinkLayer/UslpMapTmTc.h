@@ -61,7 +61,7 @@ private:
     MessageQueueIF *tmTcReceptionQueue = nullptr;
     StorageManagerIF *tmStore = nullptr;
     StorageManagerIF *tcStore = nullptr;
-    MessageQueueId_t tcQueueId;     //!< QueueId to send found packets to the distributor.
+    MessageQueueId_t tcQueueId = 0;     //!< QueueId to send found packets to the distributor.
 
     USLPTransferFrame *outputFrame;
     // Used to split packets into different frames
