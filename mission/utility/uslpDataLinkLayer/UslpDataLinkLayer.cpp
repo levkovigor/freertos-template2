@@ -57,7 +57,6 @@ ReturnValue_t UslpDataLinkLayer::virtualChannelDemultiplexing() {
     }
 }
 
-
 ReturnValue_t UslpDataLinkLayer::processFrame(uint16_t length) {
     receivedDataLength = length;
     USLPTransferFrame frame_candidate(frameBuffer, length - USLPTransferFrame::FRAME_OVERHEAD);
@@ -75,27 +74,18 @@ ReturnValue_t UslpDataLinkLayer::processFrame(uint16_t length) {
     }
 }
 
-ReturnValue_t UslpDataLinkLayer::packTmFrame(uint8_t *buffer, size_t bufferSize, uint8_t vcId,
-        uint8_t mapId) {
+ReturnValue_t UslpDataLinkLayer::packFrame(uint8_t *inputBuffer, size_t inputSize,
+        uint8_t *outputBuffer, size_t outputSize, uint8_t vcId, uint8_t mapId) {
     virtualChannelIterator iter = virtualChannels.find(vcId);
     if (iter == virtualChannels.end()) {
         return VC_NOT_FOUND;
     } else {
         //TODO : Method in VirtualChannelIF
-        return (iter->second);
+        return (iter->second)->multiplexFrameMap(inputBuffer, inputSize,
+                outputBuffer, outputSize, mapId);
     }
 }
 
-ReturnValue_t UslpDataLinkLayer::sendDeviceCommandFrame(uint8_t *commandBuffer, size_t commandSize, uint8_t vcId,
-        uint8_t mapId) {
-    virtualChannelIterator iter = virtualChannels.find(vcId);
-    if (iter == virtualChannels.end()) {
-        return VC_NOT_FOUND;
-    } else {
-        //TODO : Method in VirtualChannelIF
-        return (iter->second);
-    }
-}
 
 ReturnValue_t UslpDataLinkLayer::addVirtualChannel(uint8_t virtualChannelId,
         UslpVirtualChannelIF *object) {

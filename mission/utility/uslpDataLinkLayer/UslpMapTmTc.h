@@ -28,18 +28,17 @@ public:
     ReturnValue_t extractPackets(USLPTransferFrame *frame) override;
 
     /**
-     * @brief Packs a transfer frame with the Multiplexer Access Point Access Service
-     * @details This means privately formated SDUs
-     * @return
+     * @brief Packs a frame with tm from the supplied queue into the output Buffer
+     * @param inputBuffer Not used, as data source is TM queue
+     * @param inputSize Not used, as data source is TM queue
+     * @param outputBuffer Where the frame is placed
+     * @param outputSize Maximum size of the  output buffer
+     * @return  @c RETURN_OK if a frame with data is written into the buffer
+     *          @c RETURN_FAILED if no frame is written because of missing data (e.g. from a queue)
+     *          @c Return codes from CCSDSReturnValuesIF for other problems
      */
-    ReturnValue_t packFrameMapa() override;
-
-    /**
-     * @brief Packs a transfer frame with the Multiplexer Access Point Packket Service
-     * @details This means space packets
-     * @return
-     */
-    ReturnValue_t packFrameMapp() override;
+    ReturnValue_t packFrame(uint8_t *inputBuffer, size_t inputSize, uint8_t *outputBuffer,
+            size_t outputSize) override;
 
     /**
      * Getter.
@@ -71,8 +70,8 @@ private:
     ReturnValue_t sendCompletePacket(uint8_t *data, uint32_t size);
 
     /**
-      * Helper method to handle Packets until segmentation occurs
-      */
+     * Helper method to handle Packets until segmentation occurs
+     */
     ReturnValue_t handleWholePackets(USLPTransferFrame *frame);
     /**
      * Helper method to reset the internal buffer.

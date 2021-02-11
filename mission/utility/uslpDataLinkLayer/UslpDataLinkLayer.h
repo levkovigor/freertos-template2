@@ -37,33 +37,23 @@ public:
     ReturnValue_t processFrame(uint16_t length);
 
     /**
-     * @brief Packs a frame filled with PUS TM packets
-     * @details This method takes PUS TM packets from the telemetry queue supplied to the specified
-     *          MAP object at construction and fills the specified buffer with it.
-     * @param buffer to store the frame in
-     * @param bufferSize Maximum size of the buffer
+     * @brief Packs a frame according to the given VC ID and MAP ID specification
+     * @details Depending on VC and MAP implementation, input or output buffers may not be used and
+     *          the value given for them is ignored (e.g. when telemetry input is taken directly
+     *          from a queue specified at map input)
+     * @param inputBuffer where data is taken from (may be ignored in certain implementation cases)
+     * @param inputSize length of the data (cannot exceed data zone size for VC)
+     * @param outputBuffer Where the frame is placed
+     * @param outputSize Maximum size of the  output buffer
      * @param vcId The virtual channel ID for the telemetry device
-     * @ param mapId multiplexer access point ID, must implement the packMappFrame method
+     * @ param mapId multiplexer access point ID
      * @return  @c RETURN_OK if a frame with data is written into the buffer
-     *          @c RETURN_FAILED if there are no packets in queue
+     *          @c RETURN_FAILED If no frame is written because of missing data (e.g. from a queue)
      *          @c Return codes from CCSDSReturnValuesIF for other problems
      */
-    ReturnValue_t packTmFrame(uint8_t *buffer, size_t bufferSize, uint8_t vcId, uint8_t mapId);
+    ReturnValue_t packFrame(uint8_t *inputBuffer, size_t inputSize,
+            uint8_t *outputBuffer, size_t outputSize, uint8_t vcId, uint8_t mapId);
 
-    /**
-     * @brief Packs a frame with a device command and forwards it to the transmit buffer
-     * @details This method takes a supplied device command from the buffer, packs it into a Uslp
-     *          frame and then writes the  frame to mutex protected transmit buffer where it is sent
-     *          in the next communication slot for the vcid.
-     * @param buffer holds the device command
-     * @param bufferSize Size of the device command
-     * @param vcId The virtual channel ID for the device
-     * @ param mapId multiplexer access point ID, must implement the packMapaFrame method
-     * @return  @c RETURN_OK if a frame with data is written into the send buff
-     *          @c Return codes from CCSDSReturnValuesIF for other problems
-     */
-    ReturnValue_t sendDeviceCommandFrame(uint8_t *commandBuffer, size_t commandSize, uint8_t vcId,
-            uint8_t mapId);
     /**
      * Configuration method to add a new USLP Virtual Channel.
      * Shall only be called during initialization. As soon as the method was called, the layer can

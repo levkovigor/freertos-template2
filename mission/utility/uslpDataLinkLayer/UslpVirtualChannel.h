@@ -28,6 +28,20 @@ public:
 
     ReturnValue_t frameAcceptanceAndReportingMechanism(USLPTransferFrame* frame) override;
 
+    /**
+     * @brief Implements the Map Multiplexing
+     * @param inputBuffer where data is taken from (may be ignored in certain implementation cases)
+     * @param inputSize length of the data (cannot exceed data zone size for VC)
+     * @param outputBuffer Where the frame is placed
+     * @param outputSize Maximum size of the  output buffer
+     * @param mapId multiplexer access point ID
+     * @return  @c RETURN_OK if a frame with data is written into the buffer
+     *          @c RETURN_FAILED if no frame is written because of missing data (e.g. from a queue)
+     *          @c Return codes from CCSDSReturnValuesIF for other problems
+     */
+    ReturnValue_t multiplexFrameMap(uint8_t *inputBuffer, size_t inputSize,
+                uint8_t *outputBuffer, size_t outputSize, uint8_t mapId) override;
+
     ReturnValue_t initialize() override;
 
     uint8_t getChannelId () const override;

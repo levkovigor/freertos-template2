@@ -27,20 +27,21 @@ public:
     virtual ReturnValue_t extractPackets( USLPTransferFrame* frame ) = 0;
 
     /**
-     * @brief Packs a transfer frame with the Multiplexer Access Point Access Service
-     * @details This means privately formated SDUs
-     * @return
+     * @brief This method shall pack a frame with the given data into the output Buffer
+     * @details It is possible to only both input and output buffer or only one of the two.
+     *          This can be helpful if the data source or destination is provided at construction
+     *          (e.g. a TM queue). However, this has to be clearly specified in the implementation
+     * @param inputBuffer where data is taken from (may be ignored in certain implementation cases)
+     * @param inputSize length of the data (cannot exceed data zone size for VC)
+     * @param outputBuffer Where the frame is placed
+     * @param outputSize Maximum size of the  output buffer
+     * @return  @c RETURN_OK if a frame with data is written into the buffer
+     *          @c RETURN_FAILED if no frame is written because of missing data (e.g. from a queue)
+     *          @c Return codes from CCSDSReturnValuesIF for other problems
      */
-    // TODO: Best parameter for this
-    virtual ReturnValue_t packFrameMapa() = 0;
+    virtual ReturnValue_t packFrame(uint8_t *inputBuffer, size_t inputSize,
+            uint8_t *outputBuffer, size_t outputSize) = 0;
 
-    /**
-      * @brief Packs a transfer frame with the Multiplexer Access Point Packet Service
-      * @details This means space packets
-      * @return
-      */
-    // TODO: Best parameter for this
-    virtual ReturnValue_t packFrameMapp() = 0;
     /**
      * Any post-instantiation initialization shall be done in this method.
      * @return

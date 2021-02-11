@@ -111,13 +111,11 @@ ReturnValue_t UslpMapTmTc::handleWholePackets(USLPTransferFrame *frame) {
 
     return status;
 }
-ReturnValue_t UslpMapTmTc::packFrameMapa() {
+ReturnValue_t UslpMapTmTc::packFrame(uint8_t *inputBuffer, size_t inputSize,
+        uint8_t *outputBuffer, size_t outputSize) {
     return RETURN_OK;
 }
 
-ReturnValue_t UslpMapTmTc::packFrameMapp() {
-    return RETURN_OK;
-}
 
 ReturnValue_t UslpMapTmTc::sendCompletePacket(uint8_t *data, uint32_t size) {
     store_address_t store_id;
