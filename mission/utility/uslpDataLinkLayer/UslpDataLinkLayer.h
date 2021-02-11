@@ -35,6 +35,35 @@ public:
      * @return  @c RETURN_OK on successful handling, otherwise the return codes of the higher methods.
      */
     ReturnValue_t processFrame(uint16_t length);
+
+    /**
+     * @brief Packs a frame filled with PUS TM packets
+     * @details This method takes PUS TM packets from the telemetry queue supplied to the specified
+     *          MAP object at construction and fills the specified buffer with it.
+     * @param buffer to store the frame in
+     * @param bufferSize Maximum size of the buffer
+     * @param vcId The virtual channel ID for the telemetry device
+     * @ param mapId multiplexer access point ID, must implement the packMappFrame method
+     * @return  @c RETURN_OK if a frame with data is written into the buffer
+     *          @c RETURN_FAILED if there are no packets in queue
+     *          @c Return codes from CCSDSReturnValuesIF for other problems
+     */
+    ReturnValue_t packTmFrame(uint8_t *buffer, size_t bufferSize, uint8_t vcId, uint8_t mapId);
+
+    /**
+     * @brief Packs a frame with a device command and forwards it to the transmit buffer
+     * @details This method takes a supplied device command from the buffer, packs it into a Uslp
+     *          frame and then writes the  frame to mutex protected transmit buffer where it is sent
+     *          in the next communication slot for the vcid.
+     * @param buffer holds the device command
+     * @param bufferSize Size of the device command
+     * @param vcId The virtual channel ID for the device
+     * @ param mapId multiplexer access point ID, must implement the packMapaFrame method
+     * @return  @c RETURN_OK if a frame with data is written into the send buff
+     *          @c Return codes from CCSDSReturnValuesIF for other problems
+     */
+    ReturnValue_t sendDeviceCommandFrame(uint8_t *commandBuffer, size_t commandSize, uint8_t vcId,
+            uint8_t mapID);
     /**
      * Configuration method to add a new USLP Virtual Channel.
      * Shall only be called during initialization. As soon as the method was called, the layer can
@@ -45,12 +74,11 @@ public:
      */
     ReturnValue_t addVirtualChannel(uint8_t virtualChannelId, UslpVirtualChannelIF *object);
 
-
     /**
      * The initialization method calls the @c initialize routine of all virtual channels.
      * @return The return code of the first failed VC initialization or @c RETURN_OK.
      */
-    ReturnValue_t initializeBuffer(uint8_t* frameBuffer);
+    ReturnValue_t initializeBuffer(uint8_t *frameBuffer);
 private:
     typedef std::map<uint8_t, UslpVirtualChannelIF*>::iterator virtualChannelIterator; //!< Typedef to simplify handling the #virtualChannels map.
     static const uint8_t FRAME_VERSION_NUMBER_DEFAULT = 0b1100; //!< Constant for the default value of Frame Version Numbers.

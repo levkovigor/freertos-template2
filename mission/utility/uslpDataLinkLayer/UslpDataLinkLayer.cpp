@@ -10,12 +10,11 @@ UslpDataLinkLayer::UslpDataLinkLayer(object_id_t objectId, uint16_t set_scid) :
     //Nothing to do except from setting the values above.
 }
 
-UslpDataLinkLayer::~UslpDataLinkLayer(){}
+UslpDataLinkLayer::~UslpDataLinkLayer() {
+}
 ReturnValue_t UslpDataLinkLayer::initialize() {
     return RETURN_OK;
 }
-
-
 
 ReturnValue_t UslpDataLinkLayer::frameValidationCheck() {
     //Check TF_version number
@@ -75,6 +74,16 @@ ReturnValue_t UslpDataLinkLayer::processFrame(uint16_t length) {
     }
 }
 
+ReturnValue_t UslpDataLinkLayer::packTmFrame(uint8_t *buffer, size_t bufferSize, uint8_t vcId,
+        uint8_t mapId) {
+    return RETURN_OK;
+}
+
+ReturnValue_t UslpDataLinkLayer::sendDeviceCommandFrame(uint8_t *commandBuffer, size_t commandSize, uint8_t vcId,
+        uint8_t mapId) {
+    return RETURN_OK;
+}
+
 ReturnValue_t UslpDataLinkLayer::addVirtualChannel(uint8_t virtualChannelId,
         UslpVirtualChannelIF *object) {
     std::pair<virtualChannelIterator, bool> returnValue = virtualChannels.insert(
@@ -86,7 +95,7 @@ ReturnValue_t UslpDataLinkLayer::addVirtualChannel(uint8_t virtualChannelId,
     }
 }
 
-ReturnValue_t UslpDataLinkLayer::initializeBuffer(uint8_t* frameBuffer) {
+ReturnValue_t UslpDataLinkLayer::initializeBuffer(uint8_t *frameBuffer) {
     ReturnValue_t returnValue = RETURN_FAILED;
     //Set Virtual Channel ID to first virtual channel instance in this DataLinkLayer instance to avoid faulty information (e.g. 0) in the VCID.
     if (virtualChannels.begin() == virtualChannels.end()) {
@@ -103,14 +112,12 @@ ReturnValue_t UslpDataLinkLayer::initializeBuffer(uint8_t* frameBuffer) {
         if (returnValue != RETURN_OK)
             break;
     }
-    if (frameBuffer == nullptr){
+    if (frameBuffer == nullptr) {
         returnValue = RETURN_FAILED;
-    }
-    else{
+    } else {
         this->frameBuffer = frameBuffer;
     }
     return returnValue;
 
 }
-
 
