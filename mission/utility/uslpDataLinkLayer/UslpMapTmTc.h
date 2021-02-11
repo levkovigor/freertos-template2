@@ -3,6 +3,8 @@
 
 #include <fsfw/objectmanager/ObjectManagerIF.h>
 #include <fsfw/ipc/MessageQueueSenderIF.h>
+#include <fsfw/tmtcservices/AcceptsTelemetryIF.h>
+#include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/storagemanager/StorageManagerIF.h>
 #include <fsfw/tmtcservices/TmTcMessage.h>
 #include "UslpMapIF.h"
@@ -11,17 +13,20 @@
 /**
  * @brief       Implementation for a USLP MAP that handles Tm and Tc
  * @details     This is basically an implementation of the USLP MAP Packet service
+ *              It needs to be a system object as it basically handles reading from
+ *              the tm queue
  *
  * @author      L. Rajer
  */
 
-class UslpMapTmTc: public UslpMapIF {
+class UslpMapTmTc: public UslpMapIF,
+        public AcceptsTelemetryIF, public SystemObject{
 public:
     /**
      * @brief Default constructor
      * @param mapId  The MAP ID of the instance.
      */
-    UslpMapTmTc(uint8_t mapId, object_id_t tcDestination, object_id_t tmStoreId,
+    UslpMapTmTc(object_id_t objectId, uint8_t mapId, object_id_t tcDestination, object_id_t tmStoreId,
             object_id_t tcStoreId);
 
     ReturnValue_t initialize() override;
@@ -47,11 +52,17 @@ public:
      * @return The MAP ID of this instance.
      */
     uint8_t getMapId() const override;
+
+    /** AcceptsTelemetryIF override */
+    MessageQueueId_t getReportReceptionQueue(uint8_t virtualChannel = 0) override;
+
+
 private:
     static const uint32_t MAX_PACKET_SIZE = 4096;
+    static constexpr uint8_t TMTC_RECEPTION_QUEUE_DEPTH = 20;
     uint8_t mapId;  //!< MAP ID of this MAP Channel.
     uint32_t packetLength = 0;  //!< Complete length of the current Space Packet.
-    uint8_t *bufferPosition;    //!< Position to write to in the internal Packet buffer.
+    uint8_t *bufferPosition;  //!< Position to write to in the internal Packet buffer.
     uint8_t packetBuffer[MAX_PACKET_SIZE];  //!< The internal Space Packet Buffer.
 
     // TmTc Queues and stores
@@ -61,7 +72,7 @@ private:
     MessageQueueIF *tmTcReceptionQueue = nullptr;
     StorageManagerIF *tmStore = nullptr;
     StorageManagerIF *tcStore = nullptr;
-    MessageQueueId_t tcQueueId = 0;     //!< QueueId to send found packets to the distributor.
+    MessageQueueId_t tcQueueId = 0;  //!< QueueId to send found packets to the distributor.
 
     USLPTransferFrame *outputFrame;
     // Used to split packets into different frames

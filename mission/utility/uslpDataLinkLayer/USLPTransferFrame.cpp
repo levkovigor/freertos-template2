@@ -126,6 +126,10 @@ uint8_t* USLPTransferFrame::getFullFrame() {
     return (uint8_t*) this->frame;
 }
 
+void USLPTransferFrame::setFrameLocation(uint8_t *setData, uint16_t dataZoneSize) {
+    this->frame = (uslp_transfer_frame*) setData;
+    this->dataZoneSize = dataZoneSize;
+}
 //void USLPTransferFrame::print() {
 //	sif::debug << "Raw Frame: " << std::hex << std::endl;
 //	for (uint16_t count = 0; count < this->getFullSize(); count++ ) {

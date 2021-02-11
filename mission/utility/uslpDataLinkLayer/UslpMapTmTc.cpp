@@ -8,10 +8,11 @@
 #include <fsfw/tmtcservices/TmTcMessage.h>
 #include <cstring>
 
-UslpMapTmTc::UslpMapTmTc(uint8_t mapId, object_id_t tcDestination, object_id_t tmStoreId,
-        object_id_t tcStoreId) :
-        mapId(mapId), bufferPosition(packetBuffer), tcDestination(tcDestination), tmStoreId(
-                tmStoreId), tcStoreId(tcStoreId) {
+UslpMapTmTc::UslpMapTmTc(object_id_t objectId, uint8_t mapId, object_id_t tcDestination,
+        object_id_t tmStoreId, object_id_t tcStoreId) :
+        SystemObject(objectId), mapId(mapId), bufferPosition(packetBuffer), tcDestination(
+                tcDestination), tmStoreId(tmStoreId), tcStoreId(tcStoreId) {
+    tmTcReceptionQueue = QueueFactory::instance()->createMessageQueue(TMTC_RECEPTION_QUEUE_DEPTH);
     std::memset(packetBuffer, 0, sizeof(packetBuffer));
     outputFrame = new USLPTransferFrame();
 }
@@ -35,6 +36,7 @@ ReturnValue_t UslpMapTmTc::initialize() {
     }
 
     tcQueueId = tcDistributor->getRequestQueue();
+    tmTcReceptionQueue->setDefaultDestination(tcQueueId);
 
     tmStore = objectManager->get<StorageManagerIF>(tmStoreId);
     if (tmStore == nullptr) {
@@ -122,7 +124,7 @@ ReturnValue_t UslpMapTmTc::packFrame(uint8_t *inputBuffer, size_t inputSize, uin
 #endif
     }
 #endif
-    outputFrame = USLPTransferFrame(outputBuffer, tfdzSize);
+    outputFrame->setFrameLocation(outputBuffer, tfdzSize);
     TmTcMessage message;
     const uint8_t *data = nullptr;
     size_t size = 0;
@@ -209,5 +211,9 @@ void UslpMapTmTc::printPacketBuffer(void) {
 
 uint8_t UslpMapTmTc::getMapId() const {
     return mapId;
+}
+
+MessageQueueId_t UslpMapTmTc::getReportReceptionQueue(uint8_t virtualChannel) {
+    return tmTcReceptionQueue->getId();
 }
 

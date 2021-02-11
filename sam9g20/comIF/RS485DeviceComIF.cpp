@@ -65,7 +65,7 @@ ReturnValue_t RS485DeviceComIF::initialize() {
             // Add Map for Tm and Tc
             if (rs485Cookie->getHasTmTc()) {
                 UslpMapIF *mapTmTc;
-                mapTmTc = new UslpMapTmTc(rs485Cookie->getTmTcMapId(), tcDestination, tmStoreId,
+                mapTmTc = new UslpMapTmTc(objects::USLP_MAPP_SERVICE, rs485Cookie->getTmTcMapId(), tcDestination, tmStoreId,
                         tcStoreId);
                 virtualChannel->addMapChannel(rs485Cookie->getTmTcMapId(), mapTmTc);
 
@@ -278,7 +278,7 @@ void RS485DeviceComIF::handleTmSend(RS485Timeslot device, RS485Cookie *rs485Cook
 
     // TODO: Check if downlink available
     for (packetSentCounter = 0;
-            tmTcTarget->fillSendFrameBuffer(sendBuffer[device]) == HasReturnvaluesIF::RETURN_OK;
+            uslpDataLinkLayer->packFrame(nullptr, 0, transmitBufferFPGA.data(), config::RS485_COM_FPGA_TFDZ_SIZE, rs485Cookie->getVcId(), rs485Cookie->getTmTcMapId()) == HasReturnvaluesIF::RETURN_OK;
             packetSentCounter++) {
 
         // TODO: Integrate this into cookie
