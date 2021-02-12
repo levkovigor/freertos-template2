@@ -44,29 +44,26 @@ ReturnValue_t RS485DeviceComIF::initialize() {
     uslpDataLinkLayer = objectManager->get<UslpDataLinkLayer>(uslpDataLinkLayerId);
     if (uslpDataLinkLayer == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;
-    } else {
-        // TODO: Loop for devices, not timeslots
-        for (int device = 0; device < RS485Timeslot::TIMESLOT_COUNT_RS485 - 3; device++) {
-            RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(deviceCookies[device]);
+    }
+    // TODO: Loop for devices, not timeslots
+    for (int device = 0; device < RS485Timeslot::TIMESLOT_COUNT_RS485 - 3; device++) {
+        RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(deviceCookies[device]);
 
-            UslpVirtualChannelIF *virtualChannel;
-            virtualChannel = new UslpVirtualChannel(rs485Cookie->getVcId(),
-                    rs485Cookie->getTfdzSize());
+        UslpVirtualChannelIF *virtualChannel;
+        virtualChannel = new UslpVirtualChannel(rs485Cookie->getVcId(), rs485Cookie->getTfdzSize());
 
-            // Add Map for normal device communication
-            UslpMapIF *mapDeviceCom;
-            mapDeviceCom = new UslpMapDevice(rs485Cookie->getDevicComMapId(),
-                    receiveBufferDevice[device].data(), receiveBufferDevice[device].size());
-            virtualChannel->addMapChannel(rs485Cookie->getDevicComMapId(), mapDeviceCom);
+        // Add Map for normal device communication
+        UslpMapIF *mapDeviceCom;
+        mapDeviceCom = new UslpMapDevice(rs485Cookie->getDevicComMapId(),
+                receiveBufferDevice[device].data(), receiveBufferDevice[device].size());
+        virtualChannel->addMapChannel(rs485Cookie->getDevicComMapId(), mapDeviceCom);
 
-            // Add Map for Tm and Tc
-            if (rs485Cookie->getHasTmTc()) {
-                UslpMapIF *mapTmTc;
-                mapTmTc = new UslpMapTmTc(objects::USLP_MAPP_SERVICE, rs485Cookie->getTmTcMapId(),
-                        tcDestination, tmStoreId, tcStoreId);
-                virtualChannel->addMapChannel(rs485Cookie->getTmTcMapId(), mapTmTc);
-
-            }
+        // Add Map for Tm and Tc
+        if (rs485Cookie->getHasTmTc()) {
+            UslpMapIF *mapTmTc;
+            mapTmTc = new UslpMapTmTc(objects::USLP_MAPP_SERVICE, rs485Cookie->getTmTcMapId(),
+                    tcDestination, tmStoreId, tcStoreId);
+            virtualChannel->addMapChannel(rs485Cookie->getTmTcMapId(), mapTmTc);
 
             uslpDataLinkLayer->addVirtualChannel(rs485Cookie->getVcId(), virtualChannel);
         }

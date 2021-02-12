@@ -61,6 +61,13 @@ public:
      * @return  The #channelId.
      */
     virtual uint8_t getChannelId() const = 0;
+
+    /**
+     * @brief Getter for the frame size for this virtual channel
+     * @details Necessary because of fixed frames
+     * @return  Frame size
+     */
+    virtual size_t getFrameSize() const = 0;
 };
 
 #endif /* MISSION_UTILITY_USLPDATALINKLAYER_USLPVIRTUALCHANNELIF_H_ */

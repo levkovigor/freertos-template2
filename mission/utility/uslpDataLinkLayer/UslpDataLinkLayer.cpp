@@ -95,6 +95,9 @@ ReturnValue_t UslpDataLinkLayer::addVirtualChannel(uint8_t virtualChannelId,
         UslpVirtualChannelIF *object) {
     std::pair<virtualChannelIterator, bool> returnValue = virtualChannels.insert(
             std::pair<uint8_t, UslpVirtualChannelIF*>(virtualChannelId, object));
+
+    virtualChannelFrameSizes.insert(
+            std::pair<uint8_t, size_t>(virtualChannelId, object->getFrameSize()));
     if (returnValue.second == true) {
         return RETURN_OK;
     } else {
@@ -128,6 +131,10 @@ ReturnValue_t UslpDataLinkLayer::initializeBuffer(uint8_t *frameBuffer) {
 
 }
 
+std::map<uint8_t, size_t>* UslpDataLinkLayer::getVcidSizeMap() {
+    return &virtualChannelFrameSizes;
+}
+
 void UslpDataLinkLayer::finalizeFrame(USLPTransferFrame *frame) {
     frame->setVersionNumber(FRAME_VERSION_NUMBER_DEFAULT);
     frame->setSpacecraftId(spacecraftId);
@@ -140,6 +147,4 @@ void UslpDataLinkLayer::finalizeFrame(USLPTransferFrame *frame) {
     *(frame->getFullFrame() + frame->getFullFrameSize() - 2) = (crc & 0XFF00) >> 8; // CRCH
     *(frame->getFullFrame() + frame->getFullFrameSize() - 1) = (crc) & 0X00FF;      // CRCL
 }
-
-
 

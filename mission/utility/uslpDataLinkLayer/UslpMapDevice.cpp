@@ -48,10 +48,6 @@ ReturnValue_t UslpMapDevice::packFrame(const uint8_t *inputBuffer, size_t inputS
 }
 
 
-
-
-
-
 void UslpMapDevice::setFrameInfo(USLPTransferFrame *frame) {
     frame->setMapId(mapId);
     frame->setProtocolIdentifier(USLP_PROTOCOL_ID);

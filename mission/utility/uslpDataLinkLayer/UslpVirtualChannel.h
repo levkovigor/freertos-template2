@@ -46,6 +46,8 @@ public:
 
     uint8_t getChannelId() const override;
 
+    size_t getFrameSize() const override;
+
     /**
      * Helper method to simplify adding a mapChannel during construction.
      * @param mapId The mapId of the object to add.

@@ -71,6 +71,11 @@ public:
      * @return The return code of the first failed VC initialization or @c RETURN_OK.
      */
     ReturnValue_t initializeBuffer(uint8_t *frameBuffer);
+
+    /**
+     * Returns a map with VCIDs and corresponding frame sizes
+     */
+    std::map<uint8_t, size_t>* getVcidSizeMap();
 private:
     typedef std::map<uint8_t, UslpVirtualChannelIF*>::iterator virtualChannelIterator; //!< Typedef to simplify handling the #virtualChannels map.
     static const uint8_t FRAME_VERSION_NUMBER_DEFAULT = 0b1100; //!< Constant for the default value of Frame Version Numbers.
@@ -81,6 +86,7 @@ private:
     uint16_t receivedDataLength;    //!< Stores the length of the currently processed frame.
     USLPTransferFrame currentFrame;   //!< Stores a more convenient access to the current frame.
     std::map<uint8_t, UslpVirtualChannelIF*> virtualChannels; //!< Map of all virtual channels assigned.
+    std::map<uint8_t, size_t> virtualChannelFrameSizes; //!< Every device has one virtual channel, the specific size is stored here for access by other tasks
     /**
      * Method that performs all possible frame validity checks (as specified).
      * @return  Various error codes or @c RETURN_OK on success.
@@ -105,6 +111,8 @@ private:
      * Small helper method to fill out frame fields and calculate crc
      */
     void finalizeFrame(USLPTransferFrame *frame);
+
+
 
 };
 

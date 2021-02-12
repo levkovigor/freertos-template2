@@ -74,3 +74,6 @@ ReturnValue_t UslpVirtualChannel::multiplexFrameMap(const uint8_t *inputBuffer, 
     return result;
 }
 
+size_t UslpVirtualChannel::getFrameSize() const{
+    return tfdzSize + USLPTransferFrame::FRAME_OVERHEAD;
+}
