@@ -13,19 +13,8 @@
 #include <mission/utility/uslpDataLinkLayer/UslpVirtualChannel.h>
 #include <mission/utility/uslpDataLinkLayer/UslpMapIF.h>
 #include <mission/utility/uslpDataLinkLayer/UslpMapTmTc.h>
-#include <fsfwconfig/OBSWConfig.h>
 #include <sam9g20/comIF/RS485BufferAnalyzerTask.h>
 #include "GpioDeviceComIF.h"
-#include <fsfw/devicehandlers/DeviceCommunicationIF.h>
-#include <fsfw/objectmanager/SystemObject.h>
-#include <fsfw/tasks/ExecutableObjectIF.h>
-#include <sam9g20/comIF/cookies/RS485Cookie.h>
-#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
-#include <fsfw/osal/FreeRTOS/TaskManagement.h>
-#include <fsfwconfig/OBSWConfig.h>
-#include <mission/utility/uslpDataLinkLayer/USLPTransferFrame.h>
-#include <mission/utility/uslpDataLinkLayer/UslpDataLinkLayer.h>
-#include <sam9g20/comIF/RS485BufferAnalyzerTask.h>
 
 extern "C" {
 #include <hal/Drivers/UART.h>
@@ -172,7 +161,8 @@ ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie, const uint8_t *sen
     RS485Timeslot timeslot = rs485Cookie->getTimeslot();
 
     // Copy Message into corresponding sendFrameBuffer
-    ReturnValue_t result = uslpDataLinkLayer->packFrame(sendData, sendLen, sendBufferFrame[timeslot].data(),
+    ReturnValue_t result = uslpDataLinkLayer->packFrame(sendData, sendLen,
+            sendBufferFrame[timeslot].data(),
             rs485Cookie->getTfdzSize() + USLPTransferFrame::FRAME_OVERHEAD, rs485Cookie->getVcId(),
             rs485Cookie->getDevicComMapId());
 
@@ -241,9 +231,8 @@ void RS485DeviceComIF::handleTmSend(RS485Timeslot device, RS485Cookie *rs485Cook
     // TODO: Check if downlink available
     for (packetSentCounter = 0;
             uslpDataLinkLayer->packFrame(nullptr, 0, sendBufferFrame[device].data(),
-                    rs485Cookie->getTfdzSize(), rs485Cookie->getVcId(),
-                    rs485Cookie->getTmTcMapId()) == HasReturnvaluesIF::RETURN_OK;
-            packetSentCounter++) {
+                    rs485Cookie->getTfdzSize(), rs485Cookie->getVcId(), rs485Cookie->getTmTcMapId())
+                    == HasReturnvaluesIF::RETURN_OK; packetSentCounter++) {
 
         // TODO: do something with result
         UART_write(bus2_uart, sendBufferFrame[device].data(),

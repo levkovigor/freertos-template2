@@ -74,7 +74,7 @@ ReturnValue_t UslpDataLinkLayer::processFrame(uint16_t length) {
     }
 }
 
-ReturnValue_t UslpDataLinkLayer::packFrame(uint8_t *inputBuffer, size_t inputSize,
+ReturnValue_t UslpDataLinkLayer::packFrame(const uint8_t *inputBuffer, size_t inputSize,
         uint8_t *outputBuffer, size_t outputSize, uint8_t vcId, uint8_t mapId) {
     virtualChannelIterator iter = virtualChannels.find(vcId);
     ReturnValue_t result = RETURN_FAILED;

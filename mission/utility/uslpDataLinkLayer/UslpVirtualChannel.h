@@ -39,7 +39,7 @@ public:
      *          @c RETURN_FAILED if no frame is written because of missing data (e.g. from a queue)
      *          @c Return codes from CCSDSReturnValuesIF for other problems
      */
-    ReturnValue_t multiplexFrameMap(uint8_t *inputBuffer, size_t inputSize, uint8_t *outputBuffer,
+    ReturnValue_t multiplexFrameMap(const uint8_t *inputBuffer, size_t inputSize, uint8_t *outputBuffer,
             size_t outputSize, uint8_t mapId, USLPTransferFrame *&returnFrame) override;
 
     ReturnValue_t initialize() override;

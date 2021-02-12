@@ -50,7 +50,7 @@ public:
      *          @c RETURN_FAILED if no frame is written because of missing data (e.g. from a queue)
      *          @c Return codes from CCSDSReturnValuesIF for other problems
      */
-    ReturnValue_t packFrame(uint8_t *inputBuffer, size_t inputSize, uint8_t *outputBuffer,
+    ReturnValue_t packFrame(const uint8_t *inputBuffer, size_t inputSize, uint8_t *outputBuffer,
             size_t outputSize, size_t tfdzSize, USLPTransferFrame *&returnFrame) override;
 
     /**
