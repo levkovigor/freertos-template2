@@ -195,8 +195,8 @@ ReturnValue_t RS485DeviceComIF::requestReceiveMessage(CookieIF *cookie, size_t r
 ReturnValue_t RS485DeviceComIF::readReceivedMessage(CookieIF *cookie, uint8_t **buffer,
         size_t *size) {
     RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
-    buffer = receiveBufferDevice[rs485Cookie->getTimeslot()].data();
-    size = &rs485Cookie->getTfdzSize();
+    *buffer = receiveBufferDevice[rs485Cookie->getTimeslot()].data();
+    *size = rs485Cookie->getTfdzSize();
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -214,7 +214,7 @@ void RS485DeviceComIF::handleSend(RS485Timeslot device, RS485Cookie *rs485Cookie
                 rs485Cookie->getTfdzSize() + USLPTransferFrame::FRAME_OVERHEAD);
     }
 
-    memset(sendBufferFrame[device].data(), 0, sendBufferFrame[device].size);
+    sendBufferFrame[device].fill(0);
 
     //TODO: Mutex for ComStatus
     rs485Cookie->setReturnValue(retval);
@@ -239,7 +239,7 @@ void RS485DeviceComIF::handleTmSend(RS485Timeslot device, RS485Cookie *rs485Cook
                 rs485Cookie->getTfdzSize() + USLPTransferFrame::FRAME_OVERHEAD);
 
         // Reset the buffer to all 0
-        memset(sendBufferFrame[device].data(), 0, sendBufferFrame[device].size);
+        sendBufferFrame[device].fill(0);
 
         if (packetSentCounter >= MAX_TM_FRAMES_SENT_PER_CYCLE - 1) {
             break;
