@@ -20,14 +20,17 @@
  */
 
 class UslpMapTmTc: public UslpMapIF,
-        public AcceptsTelemetryIF, public SystemObject{
+        public AcceptsTelemetryIF,
+        public SystemObject {
 public:
+    static constexpr uint8_t USLP_PROTOCOL_ID = 0;
+    static constexpr uint8_t USLP_TFDZ_CONSTRUCTION_RULES = 0;
     /**
      * @brief Default constructor
      * @param mapId  The MAP ID of the instance.
      */
-    UslpMapTmTc(object_id_t objectId, uint8_t mapId, object_id_t tcDestination, object_id_t tmStoreId,
-            object_id_t tcStoreId);
+    UslpMapTmTc(object_id_t objectId, uint8_t mapId, object_id_t tcDestination,
+            object_id_t tmStoreId, object_id_t tcStoreId);
 
     ReturnValue_t initialize() override;
 
@@ -40,12 +43,13 @@ public:
      * @param outputBuffer Where the frame is placed
      * @param outputSize Maximum size of the  output buffer
      * @param tfdzSize Size of the frame data zone
+     * @param returnFrame [out] this pointer is passed back so that the frame can be filled further
      * @return  @c RETURN_OK if a frame with data is written into the buffer
      *          @c RETURN_FAILED if no frame is written because of missing data (e.g. from a queue)
      *          @c Return codes from CCSDSReturnValuesIF for other problems
      */
     ReturnValue_t packFrame(uint8_t *inputBuffer, size_t inputSize, uint8_t *outputBuffer,
-            size_t outputSize, size_t tfdzSize) override;
+            size_t outputSize, size_t tfdzSize, USLPTransferFrame *returnFrame) override;
 
     /**
      * Getter.
@@ -55,7 +59,6 @@ public:
 
     /** AcceptsTelemetryIF override */
     MessageQueueId_t getReportReceptionQueue(uint8_t virtualChannel = 0) override;
-
 
 private:
     static const uint32_t MAX_PACKET_SIZE = 4096;
@@ -91,6 +94,11 @@ private:
      * Helper method to handle Packets until segmentation occurs
      */
     ReturnValue_t handleWholePackets(USLPTransferFrame *frame);
+
+    /**
+     * Helper method to set the frame info relevant in this multiplexing stage
+     */
+    void setFrameInfo(USLPTransferFrame *frame);
     /**
      * Helper method to reset the internal buffer.
      */
@@ -101,6 +109,7 @@ private:
      */
     void printPacketBuffer();
 
-};
+}
+;
 
 #endif /* MISSION_UTILITY_USLPDATALINKLAYER_USLPMAPTMTC_H_ */

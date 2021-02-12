@@ -42,12 +42,13 @@ public:
      * @param outputBuffer Where the frame is placed
      * @param outputSize Maximum size of the  output buffer
      * @param mapId multiplexer access point ID
+     * @param returnFrame [out] this pointer is passed back so that the frame can be filled further
      * @return  @c RETURN_OK if a frame with data is written into the buffer
      *          @c RETURN_FAILED if no frame is written because of missing data (e.g. from a queue)
      *          @c Return codes from CCSDSReturnValuesIF for other problems
      */
     virtual ReturnValue_t multiplexFrameMap(uint8_t *inputBuffer, size_t inputSize,
-            uint8_t *outputBuffer, size_t outputSize, uint8_t mapId) = 0;
+            uint8_t *outputBuffer, size_t outputSize, uint8_t mapId, USLPTransferFrame *returnFrame) = 0;
 
     /**
      * If any other System Objects are required for operation they shall be initialized here.

@@ -40,7 +40,9 @@ public:
      * @brief Packs a frame according to the given VC ID and MAP ID specification
      * @details Depending on VC and MAP implementation, input or output buffers may not be used and
      *          the value given for them is ignored (e.g. when telemetry input is taken directly
-     *          from a queue specified at map input)
+     *          from a queue specified at map input).
+     *          WARNING: This implementation currently modifies the buffer even if no content
+     *          is placed in the data field
      * @param inputBuffer where data is taken from (may be ignored in certain implementation cases)
      * @param inputSize length of the data (cannot exceed data zone size for VC)
      * @param outputBuffer Where the frame is placed
@@ -51,8 +53,8 @@ public:
      *          @c RETURN_FAILED If no frame is written because of missing data (e.g. from a queue)
      *          @c Return codes from CCSDSReturnValuesIF for other problems
      */
-    ReturnValue_t packFrame(uint8_t *inputBuffer, size_t inputSize,
-            uint8_t *outputBuffer, size_t outputSize, uint8_t vcId, uint8_t mapId);
+    ReturnValue_t packFrame(uint8_t *inputBuffer, size_t inputSize, uint8_t *outputBuffer,
+            size_t outputSize, uint8_t vcId, uint8_t mapId);
 
     /**
      * Configuration method to add a new USLP Virtual Channel.
@@ -98,6 +100,11 @@ private:
      * @return The higher method codes or @c VC_NOT_FOUND.
      */
     ReturnValue_t virtualChannelDemultiplexing();
+
+    /**
+     * Small helper method to fill out frame fields and calculate crc
+     */
+    void finalizeFrame(USLPTransferFrame *frame);
 
 };
 

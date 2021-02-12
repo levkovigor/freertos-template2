@@ -115,7 +115,7 @@ ReturnValue_t UslpMapTmTc::handleWholePackets(USLPTransferFrame *frame) {
     return status;
 }
 ReturnValue_t UslpMapTmTc::packFrame(uint8_t *inputBuffer, size_t inputSize, uint8_t *outputBuffer,
-        size_t outputSize, size_t tfdzSize) {
+        size_t outputSize, size_t tfdzSize, USLPTransferFrame *returnFrame) {
 #if FSFW_VERBOSE_LEVEL >= 1
     if (inputBuffer != nullptr) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -125,6 +125,8 @@ ReturnValue_t UslpMapTmTc::packFrame(uint8_t *inputBuffer, size_t inputSize, uin
     }
 #endif
     outputFrame->setFrameLocation(outputBuffer, tfdzSize);
+    // The partially filled frame is passed back up
+    returnFrame = outputFrame;
     TmTcMessage message;
     const uint8_t *data = nullptr;
     size_t size = 0;
@@ -147,12 +149,13 @@ ReturnValue_t UslpMapTmTc::packFrame(uint8_t *inputBuffer, size_t inputSize, uin
                     tfdzSize);
             // Set first header pointer to 0xFFFF as no packet header is present
             outputFrame->setFirstHeaderOffset(0xFFFF);
+            setFrameInfo(outputFrame);
             overhangMessageSentBytes += tfdzSize;
             return HasReturnvaluesIF::RETURN_OK;
         }
     }
-
     // Set first header pointer to position of first packet header
+    // TODO: Move this where we dont modify the buffer it there is no packet
     outputFrame->setFirstHeaderOffset(bytesPackedCounter);
 
     while (tmTcReceptionQueue->receiveMessage(&message) == HasReturnvaluesIF::RETURN_OK) {
@@ -172,6 +175,7 @@ ReturnValue_t UslpMapTmTc::packFrame(uint8_t *inputBuffer, size_t inputSize, uin
             // Storage for next frame
             overhangMessage = &message;
             overhangMessageSentBytes += tfdzSize - bytesPackedCounter;
+            setFrameInfo(outputFrame);
             return HasReturnvaluesIF::RETURN_OK;
         }
 
@@ -209,6 +213,12 @@ void UslpMapTmTc::printPacketBuffer(void) {
     }
 }
 
+void UslpMapTmTc::setFrameInfo(USLPTransferFrame *frame) {
+    frame->setMapId(mapId);
+    frame->setProtocolIdentifier(USLP_PROTOCOL_ID);
+    frame->setTFDZConstructionRules(USLP_TFDZ_CONSTRUCTION_RULES);
+
+}
 uint8_t UslpMapTmTc::getMapId() const {
     return mapId;
 }

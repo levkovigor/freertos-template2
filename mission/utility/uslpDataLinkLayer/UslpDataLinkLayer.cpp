@@ -77,15 +77,19 @@ ReturnValue_t UslpDataLinkLayer::processFrame(uint16_t length) {
 ReturnValue_t UslpDataLinkLayer::packFrame(uint8_t *inputBuffer, size_t inputSize,
         uint8_t *outputBuffer, size_t outputSize, uint8_t vcId, uint8_t mapId) {
     virtualChannelIterator iter = virtualChannels.find(vcId);
+    ReturnValue_t result = RETURN_FAILED;
     if (iter == virtualChannels.end()) {
         return VC_NOT_FOUND;
-    } else {
-        //TODO : Method in VirtualChannelIF
-        return (iter->second)->multiplexFrameMap(inputBuffer, inputSize,
-                outputBuffer, outputSize, mapId);
     }
-}
+    USLPTransferFrame *returnFrame;
+    result = (iter->second)->multiplexFrameMap(inputBuffer, inputSize, outputBuffer, outputSize,
+            mapId, returnFrame);
+    if (result == RETURN_OK){
+        finalizeFrame(returnFrame);
+    }
 
+    return result;
+}
 
 ReturnValue_t UslpDataLinkLayer::addVirtualChannel(uint8_t virtualChannelId,
         UslpVirtualChannelIF *object) {
@@ -122,5 +126,13 @@ ReturnValue_t UslpDataLinkLayer::initializeBuffer(uint8_t *frameBuffer) {
     }
     return returnValue;
 
+}
+
+void UslpDataLinkLayer::finalizeFrame(USLPTransferFrame* frame){
+    frame->setVersionNumber(FRAME_VERSION_NUMBER_DEFAULT);
+    frame->setSpacecraftId(spacecraftId);
+    frame->setSourceFlag(true);
+    frame->setTruncatedFlag(true);
+    // TODO: CRC
 }
 
