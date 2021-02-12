@@ -13,6 +13,7 @@
 #include <mission/utility/uslpDataLinkLayer/UslpVirtualChannel.h>
 #include <mission/utility/uslpDataLinkLayer/UslpMapIF.h>
 #include <mission/utility/uslpDataLinkLayer/UslpMapTmTc.h>
+#include <mission/utility/uslpDataLinkLayer/UslpMapDevice.h>
 #include <sam9g20/comIF/RS485BufferAnalyzerTask.h>
 #include "GpioDeviceComIF.h"
 
@@ -25,7 +26,7 @@ RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t bufferAnaly
         object_id_t tcStoreId) :
         SystemObject(objectId), bufferAnalyzerId(bufferAnalyzerId), tcDestination(tcDestination), tmStoreId(
                 tmStoreId), tcStoreId(tcStoreId), uslpDataLinkLayerId(UslpDataLinkLayerId) {
-
+    // Necessary so we catch timeslots with no cookies
     for (int i = 0; i < RS485Timeslot::TIMESLOT_COUNT_RS485; i++) {
         deviceCookies[i] = nullptr;
     }
@@ -53,13 +54,12 @@ ReturnValue_t RS485DeviceComIF::initialize() {
                     rs485Cookie->getTfdzSize());
 
             // Add Map for normal device communication
-//            UslpMapIF *mapDeviceCom;
-//            mapDeviceCom = new UslpMapDeviceCom(rs485Cookie->getDevicComMapId(), tcDestination,
-//                    tmStoreId, tcStoreId);
-//            virtualChannel->addMapChannel(rs485Cookie->getDevicComMapId(), mapDeviceCom);
-//            uslpDataLinkLayer->addVirtualChannel(rs485Cookie->getVcId(), virtualChannel);
+            UslpMapIF *mapDeviceCom;
+            mapDeviceCom = new UslpMapDevice(rs485Cookie->getDevicComMapId(),
+                    receiveBufferDevice[device].data(), receiveBufferDevice[device].size());
+            virtualChannel->addMapChannel(rs485Cookie->getDevicComMapId(), mapDeviceCom);
 
-// Add Map for Tm and Tc
+            // Add Map for Tm and Tc
             if (rs485Cookie->getHasTmTc()) {
                 UslpMapIF *mapTmTc;
                 mapTmTc = new UslpMapTmTc(objects::USLP_MAPP_SERVICE, rs485Cookie->getTmTcMapId(),
@@ -98,33 +98,32 @@ ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {
 
 ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 
-    RS485Timeslot device = static_cast<RS485Timeslot>(opCode);
+    RS485Timeslot timeslot = static_cast<RS485Timeslot>(opCode);
 
-    if (deviceCookies[device] != nullptr) {
+    if (deviceCookies[timeslot] != nullptr) {
         // TODO: Make sure this does not turn into a bad cast as we have no exceptions
-        RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(deviceCookies[device]);
-        // This switch only handles the correct GPIO for Transceivers
-        switch (device) {
+        RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(deviceCookies[timeslot]);
+        switch (timeslot) {
         case (RS485Timeslot::COM_FPGA): {
             // TODO: Check which FPGA is active (should probably be set via DeviceHandler in Cookie)
             GpioDeviceComIF::enableTransceiverFPGA1();
             // Normal device command to CCSDS board still need to be sent
-            handleSend(device, rs485Cookie);
-            handleTmSend(device, rs485Cookie);
+            handleSend(timeslot, rs485Cookie);
+            handleTmSend(timeslot, rs485Cookie);
             break;
         }
         case (RS485Timeslot::PCDU_VORAGO): {
             GpioDeviceComIF::enableTransceiverPCDU();
-            handleSend(device, rs485Cookie);
+            handleSend(timeslot, rs485Cookie);
             break;
         }
         case (RS485Timeslot::PL_VORAGO): {
-            handleSend(device, rs485Cookie);
+            handleSend(timeslot, rs485Cookie);
             GpioDeviceComIF::enableTransceiverVorago();
             break;
         }
         case (RS485Timeslot::PL_PIC24): {
-            handleSend(device, rs485Cookie);
+            handleSend(timeslot, rs485Cookie);
             GpioDeviceComIF::enableTransceiverPIC24();
             break;
         }
@@ -160,6 +159,7 @@ ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie, const uint8_t *sen
     RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
     RS485Timeslot timeslot = rs485Cookie->getTimeslot();
 
+    // TODO: Mutex
     // Copy Message into corresponding sendFrameBuffer
     ReturnValue_t result = uslpDataLinkLayer->packFrame(sendData, sendLen,
             sendBufferFrame[timeslot].data(),
@@ -173,8 +173,6 @@ ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie, const uint8_t *sen
 ReturnValue_t RS485DeviceComIF::getSendSuccess(CookieIF *cookie) {
 
     RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
-    // Com Status is only reset here, so this always has to be called
-    // after sendMessage()
     if (rs485Cookie->getComStatus() == ComStatusRS485::TRANSFER_SUCCESS) {
         rs485Cookie->setComStatus(ComStatusRS485::IDLE);
         return HasReturnvaluesIF::RETURN_OK;
@@ -194,6 +192,7 @@ ReturnValue_t RS485DeviceComIF::requestReceiveMessage(CookieIF *cookie, size_t r
 
 ReturnValue_t RS485DeviceComIF::readReceivedMessage(CookieIF *cookie, uint8_t **buffer,
         size_t *size) {
+    // TODO: Check for available messages
     RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
     *buffer = receiveBufferDevice[rs485Cookie->getTimeslot()].data();
     *size = rs485Cookie->getTfdzSize();
