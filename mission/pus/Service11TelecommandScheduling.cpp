@@ -50,7 +50,6 @@ ReturnValue_t Service11TelecommandScheduling::performService() {
             }
 
             telecommandMap.erase(it);
-
         }
         else {
             break;  //save some time as multimap is sorted anyway
