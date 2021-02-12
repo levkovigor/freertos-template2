@@ -111,20 +111,18 @@ private:
     // Every device has one virtual channel, the specific size is stored here for access by other tasks
     std::map<uint8_t, size_t> virtualChannelFrameSizes;
 
-    // Frame buffers for each device
-    std::array<uint8_t, config::RS485_COM_FPGA_TFDZ_SIZE + USLPTransferFrame::FRAME_OVERHEAD> transmitBufferFPGA;
-    std::array<uint8_t, config::RS485_PCDU_VORAGO_TFDZ_SIZE + USLPTransferFrame::FRAME_OVERHEAD> transmitBufferPCDU;
-    std::array<uint8_t, config::RS485_PAYLOAD_VORAGO_TFDZ_SIZE + USLPTransferFrame::FRAME_OVERHEAD> transmitBufferVorago;
-    std::array<uint8_t, config::RS485_PAYLOAD_PIC24_TFDZ_SIZE + USLPTransferFrame::FRAME_OVERHEAD> transmitBufferPIC24;
-
-    //Array with pointers to frame buffers
-    std::array<USLPTransferFrame*, RS485Timeslot::TIMESLOT_COUNT_RS485> sendBuffer;
+    //Frame buffer arrays with largest frames as size
+    std::array<
+            std::array<uint8_t, config::RS485_COM_FPGA_TFDZ_SIZE + USLPTransferFrame::FRAME_OVERHEAD>,
+            RS485Timeslot::TIMESLOT_COUNT_RS485> sendBufferFrame;
+    std::array<std::array<uint8_t, config::RS485_COM_FPGA_TFDZ_SIZE>,
+            RS485Timeslot::TIMESLOT_COUNT_RS485> receiveBufferDevice;
 
     // Used for handling the TM and TC Queue, this class is already big enough
     object_id_t bufferAnalyzerId = objects::NO_OBJECT;
     RS485BufferAnalyzerTask *bufferAnalyzer = nullptr;
 
-    object_id_t uslpDataLinkLayerId = objects::NO_OBJECT;
+    object_id_t uslpDataLinkLayerId;
     UslpDataLinkLayer *uslpDataLinkLayer = nullptr;
 
     // Used for setting up the MAPs for TmTc
@@ -132,12 +130,6 @@ private:
     object_id_t tcStoreId = objects::NO_OBJECT;
     object_id_t tcDestination = objects::NO_OBJECT;
 
-    /**
-     * @brief  Initializes one TransferFrame class with buffer for each device
-     * @details Most of the values for a device like e.g. VCID, SCID, etc.
-     * 			stay the same, so they are set here and not changed later
-     */
-    void initTransferFrameSendBuffers();
     /**
      * @brief   Performs UART Transfer of DeviceCommands
      * @details One Command in one frame is sent per cycle

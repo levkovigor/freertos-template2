@@ -13,8 +13,19 @@
 #include <mission/utility/uslpDataLinkLayer/UslpVirtualChannel.h>
 #include <mission/utility/uslpDataLinkLayer/UslpMapIF.h>
 #include <mission/utility/uslpDataLinkLayer/UslpMapTmTc.h>
+#include <fsfwconfig/OBSWConfig.h>
 #include <sam9g20/comIF/RS485BufferAnalyzerTask.h>
 #include "GpioDeviceComIF.h"
+#include <fsfw/devicehandlers/DeviceCommunicationIF.h>
+#include <fsfw/objectmanager/SystemObject.h>
+#include <fsfw/tasks/ExecutableObjectIF.h>
+#include <sam9g20/comIF/cookies/RS485Cookie.h>
+#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
+#include <fsfw/osal/FreeRTOS/TaskManagement.h>
+#include <fsfwconfig/OBSWConfig.h>
+#include <mission/utility/uslpDataLinkLayer/USLPTransferFrame.h>
+#include <mission/utility/uslpDataLinkLayer/UslpDataLinkLayer.h>
+#include <sam9g20/comIF/RS485BufferAnalyzerTask.h>
 
 extern "C" {
 #include <hal/Drivers/UART.h>
@@ -34,9 +45,6 @@ RS485DeviceComIF::~RS485DeviceComIF() {
 }
 
 ReturnValue_t RS485DeviceComIF::initialize() {
-
-    // Init of the default transfer frame buffers for each device
-    initTransferFrameSendBuffers();
 
     bufferAnalyzer = objectManager->get<RS485BufferAnalyzerTask>(bufferAnalyzerId);
     if (bufferAnalyzer == nullptr) {
@@ -81,12 +89,13 @@ ReturnValue_t RS485DeviceComIF::initialize() {
 ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {
     if (cookie != nullptr) {
         RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
-        RS485Timeslot device = rs485Cookie->getTimeslot();
-        deviceCookies[device] = cookie;
+        RS485Timeslot timeslot = rs485Cookie->getTimeslot();
+        deviceCookies[timeslot] = cookie;
         //TODO: Returnvalue for map insertion
         virtualChannelFrameSizes.insert(
                 std::pair<uint8_t, size_t>(rs485Cookie->getVcId(),
-                        rs485Cookie->getTfdzSize() + sendBuffer[device]->FRAME_OVERHEAD));
+                        rs485Cookie->getTfdzSize() + USLPTransferFrame::FRAME_OVERHEAD));
+
         return HasReturnvaluesIF::RETURN_OK;
     } else {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -160,23 +169,15 @@ ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie, const uint8_t *sen
         size_t sendLen) {
 
     RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
-    RS485Timeslot device = rs485Cookie->getTimeslot();
-    // Check if there already is a message that has not been processed yet
-    if (rs485Cookie->getComStatus() == ComStatusRS485::IDLE) {
-        // Copy Message into corresponding sendFrameBuffer
-        (void) std::memcpy(sendBuffer[device]->getDataZone(), sendData, sendLen);
-        rs485Cookie->setComStatus(ComStatusRS485::TRANSFER_INIT_SUCCESS);
-        // Resets return value from last transfer
-        rs485Cookie->setReturnValue(0);
+    RS485Timeslot timeslot = rs485Cookie->getTimeslot();
 
-        return HasReturnvaluesIF::RETURN_OK;
-    } else {
-#if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::error << "RS485DeviceComIF::sendMessage: Device queue full" << std::endl;
-#endif
-        return HasReturnvaluesIF::RETURN_FAILED;
+    // Copy Message into corresponding sendFrameBuffer
+    ReturnValue_t result = uslpDataLinkLayer->packFrame(sendData, sendLen, sendBufferFrame[timeslot].data(),
+            rs485Cookie->getTfdzSize() + USLPTransferFrame::FRAME_OVERHEAD, rs485Cookie->getVcId(),
+            rs485Cookie->getDevicComMapId());
 
-    }
+    return result;
+
 }
 
 ReturnValue_t RS485DeviceComIF::getSendSuccess(CookieIF *cookie) {
@@ -196,11 +197,16 @@ ReturnValue_t RS485DeviceComIF::getSendSuccess(CookieIF *cookie) {
 }
 
 ReturnValue_t RS485DeviceComIF::requestReceiveMessage(CookieIF *cookie, size_t requestLen) {
+    RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
+    //TODO: set com status
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t RS485DeviceComIF::readReceivedMessage(CookieIF *cookie, uint8_t **buffer,
         size_t *size) {
+    RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
+    buffer = receiveBufferDevice[rs485Cookie->getTimeslot()].data();
+    size = &rs485Cookie->getTfdzSize();
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -208,31 +214,17 @@ std::map<uint8_t, size_t>* RS485DeviceComIF::getVcidSizeMap() {
     return &virtualChannelFrameSizes;
 }
 
-void RS485DeviceComIF::initTransferFrameSendBuffers() {
-
-    // Buffer construction with different TFDZ sizes
-    sendBuffer[RS485Timeslot::COM_FPGA] = new USLPTransferFrame(transmitBufferFPGA.data(),
-            config::RS485_COM_FPGA_TFDZ_SIZE);
-    sendBuffer[RS485Timeslot::PCDU_VORAGO] = new USLPTransferFrame(transmitBufferPCDU.data(),
-            config::RS485_PCDU_VORAGO_TFDZ_SIZE);
-    sendBuffer[RS485Timeslot::PL_VORAGO] = new USLPTransferFrame(transmitBufferVorago.data(),
-            config::RS485_PAYLOAD_VORAGO_TFDZ_SIZE);
-    sendBuffer[RS485Timeslot::PL_PIC24] = new USLPTransferFrame(transmitBufferPIC24.data(),
-            config::RS485_PAYLOAD_PIC24_TFDZ_SIZE);
-
-}
 void RS485DeviceComIF::handleSend(RS485Timeslot device, RS485Cookie *rs485Cookie) {
     int retval = 0;
-
 
     // Check if messag is available
     if (rs485Cookie->getComStatus() == ComStatusRS485::TRANSFER_INIT_SUCCESS) {
         // Buffer is already filled, so just send it
-        retval = UART_write(bus2_uart, sendBuffer[device]->getFullFrame(),
-                sendBuffer[device]->getFullFrameSize());
+        retval = UART_write(bus2_uart, sendBufferFrame[device].data(),
+                rs485Cookie->getTfdzSize() + USLPTransferFrame::FRAME_OVERHEAD);
     }
 
-    memset(sendBuffer[device]->getDataZone(), 0, sendBuffer[device]->getDataZoneSize());
+    memset(sendBufferFrame[device].data(), 0, sendBufferFrame[device].size);
 
     //TODO: Mutex for ComStatus
     rs485Cookie->setReturnValue(retval);
@@ -248,17 +240,17 @@ void RS485DeviceComIF::handleTmSend(RS485Timeslot device, RS485Cookie *rs485Cook
 
     // TODO: Check if downlink available
     for (packetSentCounter = 0;
-            uslpDataLinkLayer->packFrame(nullptr, 0, transmitBufferFPGA.data(),
-                    config::RS485_COM_FPGA_TFDZ_SIZE, rs485Cookie->getVcId(),
+            uslpDataLinkLayer->packFrame(nullptr, 0, sendBufferFrame[device].data(),
+                    rs485Cookie->getTfdzSize(), rs485Cookie->getVcId(),
                     rs485Cookie->getTmTcMapId()) == HasReturnvaluesIF::RETURN_OK;
             packetSentCounter++) {
 
         // TODO: do something with result
-        UART_write(bus2_uart, sendBuffer[device]->getFullFrame(),
-                sendBuffer[device]->getFullFrameSize());
+        UART_write(bus2_uart, sendBufferFrame[device].data(),
+                rs485Cookie->getTfdzSize() + USLPTransferFrame::FRAME_OVERHEAD);
 
         // Reset the buffer to all 0
-        memset(sendBuffer[device]->getDataZone(), 0, sendBuffer[device]->getDataZoneSize());
+        memset(sendBufferFrame[device].data(), 0, sendBufferFrame[device].size);
 
         if (packetSentCounter >= MAX_TM_FRAMES_SENT_PER_CYCLE - 1) {
             break;
