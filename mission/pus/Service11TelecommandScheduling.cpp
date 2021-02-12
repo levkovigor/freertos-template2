@@ -3,7 +3,7 @@
 //#include <fsfw/returnvalues/HasReturnvaluesIF.h>	// this is probably not needed
 #include <fsfw/serialize/SerializeAdapter.h>
 #include <fsfw/serviceinterface/ServiceInterfacePrinter.h>
-
+#include <ctime>
 
 
 Service11TelecommandScheduling::Service11TelecommandScheduling(
@@ -31,8 +31,18 @@ ReturnValue_t Service11TelecommandScheduling::performService() {
 
     //sif::info << "Service11TelecommandScheduling performing." << std::endl;
 
-    for (auto it = telecommandMap.begin(); it != telecommandMap.end(); ++it) {
-        // check if TC shall run
+    // get current time as UNIX timestamp
+    uint32_t tCurrent = static_cast<uint32_t>(std::time(nullptr));
+
+
+    for (auto it = telecommandMap.begin(); it != telecommandMap.end() && true; ++it) {
+
+        if (it->first <= tCurrent){
+            // release tc
+        }
+        else {
+            break;  //save some time as multimap is sorted anyway
+        }
     }
 
     return HasReturnvaluesIF::RETURN_OK;
@@ -100,6 +110,8 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
     if (it == telecommandMap.end()){
         return HasReturnvaluesIF::RETURN_FAILED;
     }
+
+
 
     return HasReturnvaluesIF::RETURN_OK;
 }

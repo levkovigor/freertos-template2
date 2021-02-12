@@ -59,6 +59,7 @@ private:
     TelecommandMap telecommandMap;
 
 
+
     ReturnValue_t handleRequest_InsertActivity();
 
 };
