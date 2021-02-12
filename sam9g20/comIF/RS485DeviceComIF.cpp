@@ -48,7 +48,7 @@ ReturnValue_t RS485DeviceComIF::initialize() {
         return HasReturnvaluesIF::RETURN_FAILED;
     } else {
         // TODO: Loop for devices, not timeslots
-        for (int device = 0; device < RS485Timeslot::TIMESLOT_COUNT_RS485-3; device++) {
+        for (int device = 0; device < RS485Timeslot::TIMESLOT_COUNT_RS485 - 3; device++) {
             RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(deviceCookies[device]);
 
             UslpVirtualChannelIF *virtualChannel;
@@ -62,11 +62,11 @@ ReturnValue_t RS485DeviceComIF::initialize() {
 //            virtualChannel->addMapChannel(rs485Cookie->getDevicComMapId(), mapDeviceCom);
 //            uslpDataLinkLayer->addVirtualChannel(rs485Cookie->getVcId(), virtualChannel);
 
-            // Add Map for Tm and Tc
+// Add Map for Tm and Tc
             if (rs485Cookie->getHasTmTc()) {
                 UslpMapIF *mapTmTc;
-                mapTmTc = new UslpMapTmTc(objects::USLP_MAPP_SERVICE, rs485Cookie->getTmTcMapId(), tcDestination, tmStoreId,
-                        tcStoreId);
+                mapTmTc = new UslpMapTmTc(objects::USLP_MAPP_SERVICE, rs485Cookie->getTmTcMapId(),
+                        tcDestination, tmStoreId, tcStoreId);
                 virtualChannel->addMapChannel(rs485Cookie->getTmTcMapId(), mapTmTc);
 
             }
@@ -132,9 +132,9 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
         }
         default: {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-			// should not happen
-			// TODO: Is there anything special to do in this case
-			sif::error << "RS485 Device Number out of bounds" << std::endl;
+            // should not happen
+            // TODO: Is there anything special to do in this case
+            sif::error << "RS485 Device Number out of bounds" << std::endl;
 #endif
             break;
         }
@@ -149,8 +149,7 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
     if (retryCount > 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "RS485DeviceComIF::performOperation: RS485DeviceComIF"
-                << " driver was busy for " << (uint16_t) retryCount
-                << " attempts!" << std::endl;
+                << " driver was busy for " << (uint16_t) retryCount << " attempts!" << std::endl;
 #endif
         retryCount = 0;
     }
@@ -221,37 +220,10 @@ void RS485DeviceComIF::initTransferFrameSendBuffers() {
     sendBuffer[RS485Timeslot::PL_PIC24] = new USLPTransferFrame(transmitBufferPIC24.data(),
             config::RS485_PAYLOAD_PIC24_TFDZ_SIZE);
 
-    // Default values, most don't change
-    for (int i = 0; i < RS485Timeslot::TIMESLOT_COUNT_RS485; i++) {
-        sendBuffer[i]->setVersionNumber(config::RS485_USLP_TFVN);
-        sendBuffer[i]->setSpacecraftId(config::RS485_USLP_SCID);
-        sendBuffer[i]->setSourceFlag(true);
-        sendBuffer[i]->setVirtualChannelId(0);
-        sendBuffer[i]->setMapId(1);
-        sendBuffer[i]->setTruncatedFlag(true);
-        sendBuffer[i]->setTFDZConstructionRules(0);
-        sendBuffer[i]->setProtocolIdentifier(0);
-        sendBuffer[i]->setFirstHeaderOffset(0);
-
-    }
-    sendBuffer[RS485Timeslot::PCDU_VORAGO]->setVirtualChannelId(1);
-    sendBuffer[RS485Timeslot::PL_PIC24]->setVirtualChannelId(2);
-    sendBuffer[RS485Timeslot::PL_VORAGO]->setVirtualChannelId(3);
-    //TODO: Correct VCID and MAP ID for each buffer
-
 }
 void RS485DeviceComIF::handleSend(RS485Timeslot device, RS485Cookie *rs485Cookie) {
     int retval = 0;
-    // This condition sets the buffer to default messages if there is no message
-    // or if last communication was faulty
-    if (rs485Cookie->getComStatus() != ComStatusRS485::TRANSFER_INIT_SUCCESS) {
-        (void) std::memcpy(sendBuffer[device]->getDataZone(), defaultMessage,
-                sizeof(defaultMessage));
-    }
 
-    // Set address just to be sure it was not changed
-    sendBuffer[device]->setVirtualChannelId(rs485Cookie->getVcId());
-    sendBuffer[device]->setMapId(rs485Cookie->getDevicComMapId());
 
     // Check if messag is available
     if (rs485Cookie->getComStatus() == ComStatusRS485::TRANSFER_INIT_SUCCESS) {
@@ -260,9 +232,6 @@ void RS485DeviceComIF::handleSend(RS485Timeslot device, RS485Cookie *rs485Cookie
                 sendBuffer[device]->getFullFrameSize());
     }
 
-    //TODO:  We  memset here but USLP wants encapsulation idle packet according to
-    // CCSDS 133.1-B-2, additionally there have been problems with non-randomized idle data
-    // so we will replace this later
     memset(sendBuffer[device]->getDataZone(), 0, sendBuffer[device]->getDataZoneSize());
 
     //TODO: Mutex for ComStatus
@@ -279,18 +248,16 @@ void RS485DeviceComIF::handleTmSend(RS485Timeslot device, RS485Cookie *rs485Cook
 
     // TODO: Check if downlink available
     for (packetSentCounter = 0;
-            uslpDataLinkLayer->packFrame(nullptr, 0, transmitBufferFPGA.data(), config::RS485_COM_FPGA_TFDZ_SIZE, rs485Cookie->getVcId(), rs485Cookie->getTmTcMapId()) == HasReturnvaluesIF::RETURN_OK;
+            uslpDataLinkLayer->packFrame(nullptr, 0, transmitBufferFPGA.data(),
+                    config::RS485_COM_FPGA_TFDZ_SIZE, rs485Cookie->getVcId(),
+                    rs485Cookie->getTmTcMapId()) == HasReturnvaluesIF::RETURN_OK;
             packetSentCounter++) {
 
-        // TODO: Integrate this into cookie
-        sendBuffer[device]->setMapId(config::RS485_USLP_MAPID_COM_FPGA_1_TM);
         // TODO: do something with result
         UART_write(bus2_uart, sendBuffer[device]->getFullFrame(),
                 sendBuffer[device]->getFullFrameSize());
 
-        //TODO:  We  memset here but USLP wants encapsulation idle packet according to
-        // CCSDS 133.1-B-2, additionally there have been problems with non-randomized idle data
-        // so we will replace this later
+        // Reset the buffer to all 0
         memset(sendBuffer[device]->getDataZone(), 0, sendBuffer[device]->getDataZoneSize());
 
         if (packetSentCounter >= MAX_TM_FRAMES_SENT_PER_CYCLE - 1) {

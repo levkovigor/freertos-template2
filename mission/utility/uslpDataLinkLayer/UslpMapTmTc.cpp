@@ -144,19 +144,21 @@ ReturnValue_t UslpMapTmTc::packFrame(uint8_t *inputBuffer, size_t inputSize, uin
             overhangMessage = nullptr;
             overhangMessageSentBytes = 0;
             tmStore->deleteData(message.getStorageId());
+            outputFrame->setFirstHeaderOffset(bytesPackedCounter);
         } else {
             (void) std::memcpy(outputFrame->getDataZone(), data + overhangMessageSentBytes,
                     tfdzSize);
             // Set first header pointer to 0xFFFF as no packet header is present
             outputFrame->setFirstHeaderOffset(0xFFFF);
-            setFrameInfo(outputFrame);
+            bytesPackedCounter += tfdzSize;
             overhangMessageSentBytes += tfdzSize;
-            return HasReturnvaluesIF::RETURN_OK;
+
         }
+        result =  HasReturnvaluesIF::RETURN_OK;
     }
-    // Set first header pointer to position of first packet header
-    // TODO: Move this where we dont modify the buffer it there is no packet
-    outputFrame->setFirstHeaderOffset(bytesPackedCounter);
+    else{
+        outputFrame->setFirstHeaderOffset(0);
+    }
 
     while (tmTcReceptionQueue->receiveMessage(&message) == HasReturnvaluesIF::RETURN_OK) {
 
@@ -175,12 +177,17 @@ ReturnValue_t UslpMapTmTc::packFrame(uint8_t *inputBuffer, size_t inputSize, uin
             // Storage for next frame
             overhangMessage = &message;
             overhangMessageSentBytes += tfdzSize - bytesPackedCounter;
-            setFrameInfo(outputFrame);
-            return HasReturnvaluesIF::RETURN_OK;
+
+            //TODO:  Idle packets
+            // CCSDS 133.1-B-2, additionally there have been problems with non-randomized idle data
+            // so we will replace this later
         }
+        result = HasReturnvaluesIF::RETURN_OK;
 
     }
-
+    if (result == HasReturnvaluesIF::RETURN_OK){
+        setFrameInfo(outputFrame);
+    }
     return result;
 }
 

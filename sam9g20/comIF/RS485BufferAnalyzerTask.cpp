@@ -60,7 +60,7 @@ ReturnValue_t RS485BufferAnalyzerTask::setvirtualChannelFrameSizes(
 ReturnValue_t RS485BufferAnalyzerTask::handleReceiveBuffer() {
     for (uint8_t tcPacketIdx = 0; tcPacketIdx < MAX_TC_PACKETS_HANDLED; tcPacketIdx++) {
         size_t packetFoundLen = 0;
-        ReturnValue_t result = analyzerTask->checkForPackets(receiveArray.data(),
+        ReturnValue_t result = bufferAnalyzer->checkForPackets(receiveArray.data(),
                 receiveArray.size(), &packetFoundLen);
         if (result == HasReturnvaluesIF::RETURN_OK) {
             result = linkLayer->processFrame(packetFoundLen);
