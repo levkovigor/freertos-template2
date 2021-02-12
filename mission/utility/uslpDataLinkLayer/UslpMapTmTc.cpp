@@ -115,7 +115,7 @@ ReturnValue_t UslpMapTmTc::handleWholePackets(USLPTransferFrame *frame) {
     return status;
 }
 ReturnValue_t UslpMapTmTc::packFrame(uint8_t *inputBuffer, size_t inputSize, uint8_t *outputBuffer,
-        size_t outputSize, size_t tfdzSize, USLPTransferFrame *returnFrame) {
+        size_t outputSize, size_t tfdzSize, USLPTransferFrame *&returnFrame) {
 #if FSFW_VERBOSE_LEVEL >= 1
     if (inputBuffer != nullptr) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1

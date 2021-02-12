@@ -57,7 +57,7 @@ ReturnValue_t UslpVirtualChannel::mapDemultiplexing(USLPTransferFrame *frame) {
 }
 
 ReturnValue_t UslpVirtualChannel::multiplexFrameMap(uint8_t *inputBuffer, size_t inputSize,
-        uint8_t *outputBuffer, size_t outputSize, uint8_t mapId, USLPTransferFrame *returnFrame) {
+        uint8_t *outputBuffer, size_t outputSize, uint8_t mapId, USLPTransferFrame *&returnFrame) {
     mapChannelIterator iter = mapChannels.find(mapId);
     if (iter == mapChannels.end()) {
         return VC_NOT_FOUND;
