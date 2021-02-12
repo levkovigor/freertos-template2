@@ -82,11 +82,10 @@ ReturnValue_t UslpDataLinkLayer::packFrame(uint8_t *inputBuffer, size_t inputSiz
         return VC_NOT_FOUND;
     }
     USLPTransferFrame *returnFrame = nullptr;
-    returnFrame = (iter->second)->multiplexFrameMap(inputBuffer, inputSize, outputBuffer, outputSize,
-            mapId);
-    if (returnFrame != nullptr) {
+    result = (iter->second)->multiplexFrameMap(inputBuffer, inputSize, outputBuffer, outputSize,
+            mapId, returnFrame);
+    if (result == RETURN_OK) {
         finalizeFrame(returnFrame);
-        result = RETURN_OK;
     }
 
     return result;
