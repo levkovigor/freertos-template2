@@ -81,10 +81,10 @@ ReturnValue_t UslpDataLinkLayer::packFrame(uint8_t *inputBuffer, size_t inputSiz
     if (iter == virtualChannels.end()) {
         return VC_NOT_FOUND;
     }
-    USLPTransferFrame *returnFrame;
+    USLPTransferFrame *returnFrame = nullptr;
     result = (iter->second)->multiplexFrameMap(inputBuffer, inputSize, outputBuffer, outputSize,
             mapId, returnFrame);
-    if (result == RETURN_OK){
+    if (result == RETURN_OK) {
         finalizeFrame(returnFrame);
     }
 
@@ -128,11 +128,16 @@ ReturnValue_t UslpDataLinkLayer::initializeBuffer(uint8_t *frameBuffer) {
 
 }
 
-void UslpDataLinkLayer::finalizeFrame(USLPTransferFrame* frame){
+void UslpDataLinkLayer::finalizeFrame(USLPTransferFrame *frame) {
     frame->setVersionNumber(FRAME_VERSION_NUMBER_DEFAULT);
     frame->setSpacecraftId(spacecraftId);
     frame->setSourceFlag(true);
     frame->setTruncatedFlag(true);
-    // TODO: CRC
+
+    // CRC
+    uint16_t crc = CRC::crc16ccitt(frame->getFullFrame(),
+            frame->getFullFrameSize() - frame->FRAME_CRC_SIZE);
+    *(frame->getFullFrame() + frame->getFullFrameSize() - 2) = (crc & 0XFF00) >> 8; // CRCH
+    *(frame->getFullFrame() + frame->getFullFrameSize() - 1) = (crc) & 0X00FF;      // CRCL
 }
 
