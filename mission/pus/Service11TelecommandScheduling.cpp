@@ -43,6 +43,13 @@ ReturnValue_t Service11TelecommandScheduling::performService() {
         if (it->first <= tCurrent){
             // release tc
             TmTcMessage releaseMsg(it->second.storeId);
+            auto sendRet = this->requestQueue->sendMessage(recipientMsgQueueId, &releaseMsg, false);
+
+            if (sendRet != HasReturnvaluesIF::RETURN_OK){
+                return sendRet;
+            }
+
+            telecommandMap.erase(it);
 
         }
         else {
@@ -71,8 +78,6 @@ ReturnValue_t Service11TelecommandScheduling::initialize() {
         return ObjectManagerIF::CHILD_INIT_FAILED;
     }
     recipientMsgQueueId = tcRecipient->getRequestQueue();
-
-
 
     return res;
 }
