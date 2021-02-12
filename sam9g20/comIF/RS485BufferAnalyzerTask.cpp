@@ -29,8 +29,9 @@ ReturnValue_t RS485BufferAnalyzerTask::initialize() {
     if (ringBuffer == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
-    analyzerTask = new RingBufferAnalyzer(ringBuffer, virtualChannelFrameSizes,
+    bufferAnalyzer = new RingBufferAnalyzer(ringBuffer, virtualChannelFrameSizes,
             AnalyzerModes::USLP_FRAMES);
+
 
     return HasReturnvaluesIF::RETURN_OK;
 }

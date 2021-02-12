@@ -45,7 +45,7 @@ private:
     ReturnValue_t handleReceiveBuffer();
 
     object_id_t sharedRingBufferId;
-    RingBufferAnalyzer *analyzerTask = nullptr;
+    RingBufferAnalyzer *bufferAnalyzer = nullptr;
     std::array<uint8_t, TMTC_FRAME_MAX_LEN + 5> receiveArray;
 
     // Stores VC Length map

@@ -141,3 +141,5 @@ void UslpDataLinkLayer::finalizeFrame(USLPTransferFrame *frame) {
     *(frame->getFullFrame() + frame->getFullFrameSize() - 1) = (crc) & 0X00FF;      // CRCL
 }
 
+
+
