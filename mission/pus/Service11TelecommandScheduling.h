@@ -48,6 +48,8 @@ private:
     };
 
     StorageManagerIF* tcStore = nullptr;
+    AcceptsTelecommandsIF* tcRecipient = nullptr;
+    MessageQueueId_t recipientMsgQueueId = 0;
 
     /**
      * The telecommand map uses the exectution time as a Unix time stamp as

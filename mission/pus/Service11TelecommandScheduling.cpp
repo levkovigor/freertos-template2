@@ -3,6 +3,10 @@
 //#include <fsfw/returnvalues/HasReturnvaluesIF.h>	// this is probably not needed
 #include <fsfw/serialize/SerializeAdapter.h>
 #include <fsfw/serviceinterface/ServiceInterfacePrinter.h>
+
+#include <objects/systemObjectList.h>
+#include <fsfw/tmtcservices/TmTcMessage.h>
+
 #include <ctime>
 
 
@@ -34,11 +38,12 @@ ReturnValue_t Service11TelecommandScheduling::performService() {
     // get current time as UNIX timestamp
     uint32_t tCurrent = static_cast<uint32_t>(std::time(nullptr));
 
-
     for (auto it = telecommandMap.begin(); it != telecommandMap.end() && true; ++it) {
 
         if (it->first <= tCurrent){
             // release tc
+            TmTcMessage releaseMsg(it->second.storeId);
+
         }
         else {
             break;  //save some time as multimap is sorted anyway
@@ -60,6 +65,14 @@ ReturnValue_t Service11TelecommandScheduling::initialize() {
     if (not tcStore) {
         return ObjectManagerIF::CHILD_INIT_FAILED;
     }
+
+    tcRecipient = objectManager->get<AcceptsTelecommandsIF>(objects::CCSDS_PACKET_DISTRIBUTOR);
+    if (not tcRecipient){
+        return ObjectManagerIF::CHILD_INIT_FAILED;
+    }
+    recipientMsgQueueId = tcRecipient->getRequestQueue();
+
+
 
     return res;
 }
