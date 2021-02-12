@@ -56,21 +56,22 @@ ReturnValue_t UslpVirtualChannel::mapDemultiplexing(USLPTransferFrame *frame) {
     }
 }
 
-ReturnValue_t UslpVirtualChannel::multiplexFrameMap(uint8_t *inputBuffer, size_t inputSize,
-        uint8_t *outputBuffer, size_t outputSize, uint8_t mapId, USLPTransferFrame *returnFrame) {
+USLPTransferFrame* UslpVirtualChannel::multiplexFrameMap(uint8_t *inputBuffer, size_t inputSize,
+        uint8_t *outputBuffer, size_t outputSize, uint8_t mapId) {
     mapChannelIterator iter = mapChannels.find(mapId);
     if (iter == mapChannels.end()) {
-        return VC_NOT_FOUND;
+        return nullptr;
     }
     if (inputSize > tfdzSize) {
-        return CONTENT_TOO_LARGE;
+        return nullptr;
     }
 
-    ReturnValue_t result = (iter->second)->packFrame(inputBuffer, inputSize, outputBuffer, outputSize, tfdzSize,
-            returnFrame);
-    if (result == RETURN_OK){
+    USLPTransferFrame*  returnFrame = (iter->second)->packFrame(inputBuffer, inputSize, outputBuffer, outputSize, tfdzSize);
+    if (returnFrame != nullptr){
         returnFrame->setVirtualChannelId(channelId);
     }
-    return result;
+        return returnFrame;
+
+
 }
 

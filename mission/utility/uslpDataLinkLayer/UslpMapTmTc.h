@@ -44,12 +44,11 @@ public:
      * @param outputSize Maximum size of the  output buffer
      * @param tfdzSize Size of the frame data zone
      * @param returnFrame [out] this pointer is passed back so that the frame can be filled further
-     * @return  @c RETURN_OK if a frame with data is written into the buffer
-     *          @c RETURN_FAILED if no frame is written because of missing data (e.g. from a queue)
-     *          @c Return codes from CCSDSReturnValuesIF for other problems
+     * @return  @c pointer to frame if a frame with data is written into the buffer
+     *          @c nullptr otherwise
      */
-    ReturnValue_t packFrame(uint8_t *inputBuffer, size_t inputSize, uint8_t *outputBuffer,
-            size_t outputSize, size_t tfdzSize, USLPTransferFrame *returnFrame) override;
+    USLPTransferFrame * packFrame(uint8_t *inputBuffer, size_t inputSize, uint8_t *outputBuffer,
+            size_t outputSize, size_t tfdzSize) override;
 
     /**
      * Getter.
@@ -77,7 +76,7 @@ private:
     StorageManagerIF *tcStore = nullptr;
     MessageQueueId_t tcQueueId = 0;  //!< QueueId to send found packets to the distributor.
 
-    USLPTransferFrame *outputFrame;
+    USLPTransferFrame * outputFrame;
     // Used to split packets into different frames
     TmTcMessage *overhangMessage = nullptr;
     uint8_t overhangMessageSentBytes = 0;

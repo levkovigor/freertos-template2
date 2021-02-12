@@ -114,8 +114,8 @@ ReturnValue_t UslpMapTmTc::handleWholePackets(USLPTransferFrame *frame) {
 
     return status;
 }
-ReturnValue_t UslpMapTmTc::packFrame(uint8_t *inputBuffer, size_t inputSize, uint8_t *outputBuffer,
-        size_t outputSize, size_t tfdzSize, USLPTransferFrame *returnFrame) {
+USLPTransferFrame* UslpMapTmTc::packFrame(uint8_t *inputBuffer, size_t inputSize,
+        uint8_t *outputBuffer, size_t outputSize, size_t tfdzSize) {
 #if FSFW_VERBOSE_LEVEL >= 1
     if (inputBuffer != nullptr) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -125,8 +125,6 @@ ReturnValue_t UslpMapTmTc::packFrame(uint8_t *inputBuffer, size_t inputSize, uin
     }
 #endif
     outputFrame->setFrameLocation(outputBuffer, tfdzSize);
-    // The partially filled frame is passed back up
-    returnFrame = outputFrame;
     TmTcMessage message;
     const uint8_t *data = nullptr;
     size_t size = 0;
@@ -151,7 +149,7 @@ ReturnValue_t UslpMapTmTc::packFrame(uint8_t *inputBuffer, size_t inputSize, uin
             outputFrame->setFirstHeaderOffset(0xFFFF);
             setFrameInfo(outputFrame);
             overhangMessageSentBytes += tfdzSize;
-            return HasReturnvaluesIF::RETURN_OK;
+            return outputFrame;
         }
     }
     // Set first header pointer to position of first packet header
@@ -176,12 +174,15 @@ ReturnValue_t UslpMapTmTc::packFrame(uint8_t *inputBuffer, size_t inputSize, uin
             overhangMessage = &message;
             overhangMessageSentBytes += tfdzSize - bytesPackedCounter;
             setFrameInfo(outputFrame);
-            return HasReturnvaluesIF::RETURN_OK;
+            return outputFrame;
         }
 
     }
-
-    return result;
+    if (result == HasReturnvaluesIF::RETURN_FAILED) {
+        return nullptr;
+    } else {
+        return outputFrame;
+    }
 }
 
 ReturnValue_t UslpMapTmTc::sendCompletePacket(uint8_t *data, uint32_t size) {
