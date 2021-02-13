@@ -203,7 +203,7 @@ ReturnValue_t RS485DeviceComIF::readReceivedMessage(CookieIF *cookie, uint8_t **
 
 void RS485DeviceComIF::handleSend(RS485Timeslot device, RS485Cookie *rs485Cookie) {
     int retval = 0;
-    // Com Status and send Buffer is protected by mutex
+    // Com Status, retval and send Buffer is protected by mutex
     MutexHelper mutexLock(rs485Cookie->getSendMutexHandle(), MutexIF::TimeoutType::WAITING,
             RS485_STANDARD_MUTEX_TIMEOUT);
     // Check if message is available
@@ -211,33 +211,38 @@ void RS485DeviceComIF::handleSend(RS485Timeslot device, RS485Cookie *rs485Cookie
         // Buffer is already filled, so just send it
         retval = UART_write(bus2_uart, sendBufferFrame[device].data(),
                 rs485Cookie->getTfdzSize() + USLPTransferFrame::FRAME_OVERHEAD);
-    }
+        rs485Cookie->setReturnValue(retval);
 
-    sendBufferFrame[device].fill(0);
-
-//TODO: Mutex for ComStatus
-    rs485Cookie->setReturnValue(retval);
-    if (retval != 0) {
-        rs485Cookie->setComStatusSend(ComStatusRS485::FAULTY);
-    } else {
-        rs485Cookie->setComStatusSend(ComStatusRS485::TRANSFER_SUCCESS);
+        sendBufferFrame[device].fill(0);
+        if (retval != 0) {
+            rs485Cookie->setComStatusSend(ComStatusRS485::FAULTY);
+        } else {
+            rs485Cookie->setComStatusSend(ComStatusRS485::TRANSFER_SUCCESS);
+        }
     }
 
 }
 
 void RS485DeviceComIF::handleTmSend(RS485Timeslot device, RS485Cookie *rs485Cookie) {
-
+    int retval = 0;
 // TODO: Check if downlink available
+    // Send Buffer is protected by mutex
+    MutexHelper mutexLock(rs485Cookie->getSendMutexHandle(), MutexIF::TimeoutType::WAITING,
+            RS485_STANDARD_MUTEX_TIMEOUT);
     for (packetSentCounter = 0;
-// We dont need to supply an input, as the packets come directly from the TmQueue
+    // We dont need to supply an input, as the packets come directly from the TmQueue
             uslpDataLinkLayer->packFrame(nullptr, 0, sendBufferFrame[device].data(),
                     rs485Cookie->getTfdzSize(), rs485Cookie->getVcId(), rs485Cookie->getTmTcMapId())
                     == HasReturnvaluesIF::RETURN_OK; packetSentCounter++) {
 
-        // TODO: do something with result
-        UART_write(bus2_uart, sendBufferFrame[device].data(),
+        retval = UART_write(bus2_uart, sendBufferFrame[device].data(),
                 rs485Cookie->getTfdzSize() + USLPTransferFrame::FRAME_OVERHEAD);
-
+        // Faulty Tm Communicaton will get caught by get Send Success, even if the previous device
+        // command message was successful (A fault here will likely lead to a fault there)
+        if (retval != 0) {
+                    rs485Cookie->setComStatusSend(ComStatusRS485::FAULTY);
+                    rs485Cookie->setReturnValue(retval);
+                }
         // Reset the buffer to all 0
         sendBufferFrame[device].fill(0);
 
