@@ -137,17 +137,15 @@ ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie, const uint8_t *sen
             RS485_STANDARD_MUTEX_TIMEOUT);
 
     // Copy Message into corresponding sendFrameBuffer
-   result = uslpDataLinkLayer->packFrame(sendData, sendLen,
-            sendBufferFrame[timeslot].data(),
+    result = uslpDataLinkLayer->packFrame(sendData, sendLen, sendBufferFrame[timeslot].data(),
             rs485Cookie->getTfdzSize() + USLPTransferFrame::FRAME_OVERHEAD, rs485Cookie->getVcId(),
             rs485Cookie->getDevicComMapId());
-   if(result != HasReturnvaluesIF::RETURN_OK){
-       rs485Cookie->setComStatusSend(ComStatusRS485::FAULTY);
-   }
-   else{
-       rs485Cookie->setComStatusSend(ComStatusRS485::TRANSFER_INIT);
-   }
-   return result;
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        rs485Cookie->setComStatusSend(ComStatusRS485::FAULTY);
+    } else {
+        rs485Cookie->setComStatusSend(ComStatusRS485::TRANSFER_INIT);
+    }
+    return result;
 }
 
 ReturnValue_t RS485DeviceComIF::getSendSuccess(CookieIF *cookie) {
@@ -160,10 +158,10 @@ ReturnValue_t RS485DeviceComIF::getSendSuccess(CookieIF *cookie) {
     if (rs485Cookie->getComStatusSend() == ComStatusRS485::TRANSFER_SUCCESS
             || rs485Cookie->getComStatusSend() == ComStatusRS485::TRANSFER_INIT) {
         result = HasReturnvaluesIF::RETURN_OK;
-    // If this happens, there is a bug somewhere
+        // If this happens, there is a bug somewhere
     } else if (rs485Cookie->getComStatusSend() == ComStatusRS485::TRANSFER_SUCCESS) {
         result = HasReturnvaluesIF::RETURN_FAILED;
-    // Faulty transfer
+        // Faulty transfer
     } else {
         result = rs485Cookie->getReturnValue();
     }
@@ -173,12 +171,12 @@ ReturnValue_t RS485DeviceComIF::getSendSuccess(CookieIF *cookie) {
 
 ReturnValue_t RS485DeviceComIF::requestReceiveMessage(CookieIF *cookie, size_t requestLen) {
     RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
-// Com Status and receive Buffer is protected by mutex
+    // Com Status and receive Buffer is protected by mutex
     MutexHelper mutexLock(rs485Cookie->getReceiveMutexHandle(), MutexIF::TimeoutType::WAITING,
             RS485_STANDARD_MUTEX_TIMEOUT);
-// Reset the receive buffer
+    // Reset the receive buffer
     receiveBufferDevice[rs485Cookie->getTimeslot()].fill(0);
-// This signals the DataLinkLayer that a message can be placed in the buffer
+    // This signals the DataLinkLayer that a message can be placed in the buffer
     rs485Cookie->setComStatusReceive(ComStatusRS485::TRANSFER_INIT);
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -187,7 +185,7 @@ ReturnValue_t RS485DeviceComIF::readReceivedMessage(CookieIF *cookie, uint8_t **
         size_t *size) {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_FAILED;
     RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
-// Com Status and receive Buffer is protected by mutex
+    // Com Status and receive Buffer is protected by mutex
     MutexHelper mutexLock(rs485Cookie->getReceiveMutexHandle(), MutexIF::TimeoutType::WAITING,
             RS485_STANDARD_MUTEX_TIMEOUT);
     if (rs485Cookie->getComStatusReceive() == ComStatusRS485::TRANSFER_SUCCESS) {
@@ -195,15 +193,20 @@ ReturnValue_t RS485DeviceComIF::readReceivedMessage(CookieIF *cookie, uint8_t **
         *size = rs485Cookie->getTfdzSize();
         rs485Cookie->setComStatusReceive(ComStatusRS485::IDLE);
         result = HasReturnvaluesIF::RETURN_OK;
+        rs485Cookie->setComStatusReceive(ComStatusRS485::IDLE);
+        // If a message has not been read yet, we do not change the status, only if there is a fault
+    } else if (rs485Cookie->getComStatusReceive() != ComStatusRS485::TRANSFER_INIT) {
+        rs485Cookie->setComStatusReceive(ComStatusRS485::IDLE);
     }
-    rs485Cookie->setComStatusReceive(ComStatusRS485::IDLE);
     return result;
 }
 
 void RS485DeviceComIF::handleSend(RS485Timeslot device, RS485Cookie *rs485Cookie) {
     int retval = 0;
-
-// Check if message is available
+    // Com Status and send Buffer is protected by mutex
+    MutexHelper mutexLock(rs485Cookie->getSendMutexHandle(), MutexIF::TimeoutType::WAITING,
+            RS485_STANDARD_MUTEX_TIMEOUT);
+    // Check if message is available
     if (rs485Cookie->getComStatusSend() == ComStatusRS485::TRANSFER_INIT) {
         // Buffer is already filled, so just send it
         retval = UART_write(bus2_uart, sendBufferFrame[device].data(),
@@ -271,7 +274,7 @@ ReturnValue_t RS485DeviceComIF::setupDeviceVC(UslpDataLinkLayer *dataLinkLayer,
     UslpMapIF *mapDeviceCom;
     mapDeviceCom = new UslpMapDevice(rs485Cookie->getDevicComMapId(),
             receiveBufferDevice[rs485Cookie->getTimeslot()].data(),
-            receiveBufferDevice[rs485Cookie->getTimeslot()].size());
+            receiveBufferDevice[rs485Cookie->getTimeslot()].size(), rs485Cookie);
     virtualChannel->addMapChannel(rs485Cookie->getDevicComMapId(), mapDeviceCom);
 
 // Add MAP for Tm and Tc

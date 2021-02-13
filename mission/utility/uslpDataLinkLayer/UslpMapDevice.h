@@ -3,6 +3,7 @@
 
 #include "UslpMapIF.h"
 #include "USLPTransferFrame.h"
+#include <sam9g20/comIF/cookies/RS485Cookie.h>
 
 /**
  * @brief       Implementation for a USLP MAP that handles Device Command
@@ -19,7 +20,8 @@ public:
      * @brief Default constructor
      * @param mapId  The MAP ID of the instance.
      */
-    UslpMapDevice(uint8_t mapId, uint8_t *receiveBuffer, size_t receiveBufferSize);
+    UslpMapDevice(uint8_t mapId, uint8_t *receiveBuffer, size_t receiveBufferSize,
+            RS485Cookie* rs485Cookie);
 
     ReturnValue_t initialize() override;
 
@@ -52,6 +54,7 @@ private:
     uint8_t mapId;  //!< MAP ID of this MAP Channel.
     uint8_t *receiveBuffer;  //!< Receive Buffer where received data is stored
     size_t receiveBufferSize; //!< Maximum receive buffer size
+    RS485Cookie *rs485Cookie; //!< Cookie of device corresponding to MAP for mutexes
 
     USLPTransferFrame *outputFrame;
 

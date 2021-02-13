@@ -1,10 +1,13 @@
 #include "UslpMapDevice.h"
 #include "USLPTransferFrame.h"
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
+#include <fsfw/ipc/MutexHelper.h>
+#include <sam9g20/comIF/cookies/RS485Cookie.h>
 #include <cstring>
 
-UslpMapDevice::UslpMapDevice(uint8_t mapId, uint8_t* receiveBuffer, size_t receiveBufferSize) :
-        mapId(mapId), receiveBuffer(receiveBuffer), receiveBufferSize(receiveBufferSize) {
+UslpMapDevice::UslpMapDevice(uint8_t mapId, uint8_t *receiveBuffer, size_t receiveBufferSize,
+        RS485Cookie* rs485Cookie) :
+        mapId(mapId), receiveBuffer(receiveBuffer), receiveBufferSize(receiveBufferSize), rs485Cookie(rs485Cookie) {
 
     outputFrame = new USLPTransferFrame();
 }
@@ -14,27 +17,37 @@ ReturnValue_t UslpMapDevice::initialize() {
 }
 
 ReturnValue_t UslpMapDevice::extractPackets(USLPTransferFrame *frame) {
-    // TODO: Mutex
-    if(frame->getDataZoneSize() <= receiveBufferSize){
-        (void) memcpy(receiveBuffer, frame->getDataZone(), frame->getDataZoneSize());
-        return HasReturnvaluesIF::RETURN_OK;
+    ReturnValue_t result = RETURN_FAILED;
+    // TODO: Better timeout value
+    MutexHelper mutexLock(rs485Cookie->getSendMutexHandle(), MutexIF::TimeoutType::WAITING, 20);
+    if (rs485Cookie->getComStatusReceive() == ComStatusRS485::TRANSFER_INIT){
+        if (frame->getDataZoneSize() <= receiveBufferSize) {
+              (void) memcpy(receiveBuffer, frame->getDataZone(), frame->getDataZoneSize());
+              rs485Cookie->setComStatusReceive(ComStatusRS485::TRANSFER_SUCCESS);
+              result = RETURN_OK;
+          }else{
+              rs485Cookie->setComStatusReceive(ComStatusRS485::FAULTY);
+          }
+    }else{
+        result = RETURN_OK;
     }
-    return HasReturnvaluesIF::RETURN_FAILED;
+
+
+    return result;
 
 }
-
 
 ReturnValue_t UslpMapDevice::packFrame(const uint8_t *inputBuffer, size_t inputSize,
         uint8_t *outputBuffer, size_t outputSize, size_t tfdzSize,
         USLPTransferFrame *&returnFrame) {
 
     // Output Checks
-    if (outputSize < tfdzSize + USLPTransferFrame::FRAME_OVERHEAD || outputBuffer == nullptr){
+    if (outputSize < tfdzSize + USLPTransferFrame::FRAME_OVERHEAD || outputBuffer == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
     // Input checks
-    if (inputSize > tfdzSize || inputBuffer == nullptr){
+    if (inputSize > tfdzSize || inputBuffer == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
@@ -47,7 +60,6 @@ ReturnValue_t UslpMapDevice::packFrame(const uint8_t *inputBuffer, size_t inputS
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-
 void UslpMapDevice::setFrameInfo(USLPTransferFrame *frame) {
     frame->setMapId(mapId);
     frame->setProtocolIdentifier(USLP_PROTOCOL_ID);
@@ -57,6 +69,4 @@ void UslpMapDevice::setFrameInfo(USLPTransferFrame *frame) {
 uint8_t UslpMapDevice::getMapId() const {
     return mapId;
 }
-
-
 
