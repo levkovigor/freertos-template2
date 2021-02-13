@@ -2,7 +2,7 @@
 
 RS485Cookie::RS485Cookie(RS485Timeslot timeslot, RS485BaudRates baudrate,
         uint8_t uslp_virtual_channel_id, size_t uslp_tfdz_size, uint8_t uslp_deviceCom_map_id,
-        bool hasTmTc, uint8_t uslp_tmTc_map_id, bool isActive = true) :
+        bool hasTmTc, uint8_t uslp_tmTc_map_id, bool isActive) :
         timeslot(timeslot), baudrate(baudrate), uslp_virtual_channel_id(uslp_virtual_channel_id), uslp_tfdz_size(
                 uslp_tfdz_size), uslp_deviceCom_map_id(uslp_deviceCom_map_id), hasTmTc(hasTmTc), uslp_tmTc_map_id(
                 uslp_tmTc_map_id), isActive(isActive) {

@@ -37,8 +37,11 @@ ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {
     if (cookie != nullptr) {
         RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
         RS485Timeslot timeslot = rs485Cookie->getTimeslot();
-        // TODO: There are more cookies than timeslots due to redundant devices
-        deviceCookies[timeslot] = rs485Cookie;
+        if (rs485Cookie->getIsActive()) {
+            deviceCookies[timeslot] = rs485Cookie;
+        } else {
+            deviceCookiesInactive[timeslot] = rs485Cookie;
+        }
         return HasReturnvaluesIF::RETURN_OK;
     } else {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -87,12 +90,18 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 
     RS485Timeslot timeslot = static_cast<RS485Timeslot>(opCode);
 
-    if (deviceCookies[timeslot] != nullptr) {
+    // Set current active device, also checks for nullpointers
+    if (setActive(timeslot) == HasReturnvaluesIF::RETURN_OK) {
         RS485Cookie *rs485Cookie = deviceCookies[timeslot];
         switch (timeslot) {
         case (RS485Timeslot::COM_FPGA): {
-            // TODO: Check which FPGA is active (should probably be set via DeviceHandler in Cookie)
-            GpioDeviceComIF::enableTransceiverFPGA1();
+            // Check which transceiver to enable
+            if (rs485Cookie->getVcId() == config::RS485_USLP_VCID_COM_FPGA_1) {
+                GpioDeviceComIF::enableTransceiverFPGA1();
+            } else {
+                GpioDeviceComIF::enableTransceiverFPGA2();
+            }
+
             // Normal device command to CCSDS board still need to be sent
             handleSend(timeslot, rs485Cookie);
             handleTmSend(timeslot, rs485Cookie);
@@ -227,6 +236,38 @@ void RS485DeviceComIF::handleTmSend(RS485Timeslot device, RS485Cookie *rs485Cook
             break;
         }
     }
+}
+
+ReturnValue_t RS485DeviceComIF::setActive(RS485Timeslot timeslot) {
+    ReturnValue_t result = HasReturnvaluesIF::RETURN_FAILED;
+    bool isValidActive = (deviceCookies[timeslot] != nullptr);
+    bool isValidInactive = (deviceCookiesInactive[timeslot] != nullptr);
+
+    if (isValidActive) {
+        if (isValidInactive) {
+            // Swap if both conditions match, otherwise leave it at its current state
+            if (!deviceCookies[timeslot]->getIsActive()
+                    && deviceCookiesInactive[timeslot]->getIsActive()) {
+                RS485Cookie *swap = deviceCookies[timeslot];
+                deviceCookies[timeslot] = deviceCookiesInactive[timeslot];
+                deviceCookiesInactive[timeslot] = swap;
+            }
+        }
+        result = HasReturnvaluesIF::RETURN_OK;
+    } else {
+        // Something went wrong with the active cookie, but luckily, we have a working inactive cookie
+        // and can replace it
+        if (isValidInactive) {
+            deviceCookies[timeslot] = deviceCookiesInactive[timeslot];
+            deviceCookiesInactive[timeslot] = nullptr;
+            result = HasReturnvaluesIF::RETURN_OK;
+            // Both cookies are nullpointers, so there is no hope
+        } else {
+            result = HasReturnvaluesIF::RETURN_FAILED;
+        }
+    }
+
+    return result;
 }
 
 ReturnValue_t RS485DeviceComIF::checkDriverState(uint8_t *retryCount) {

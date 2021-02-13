@@ -99,8 +99,11 @@ private:
     uint8_t retryCount = 0;
     uint8_t packetSentCounter = 0;
 
-    // Stores one cookie for each device to communicate between ExecutableObjectIF overrides and DeviceComIF overrides
+    // Stores the actvie device cookies for each timeslot
     std::array<RS485Cookie*, RS485Timeslot::TIMESLOT_COUNT_RS485> deviceCookies;
+
+    // Stores the inactive devices cookies, they are swapped in setActive should it be necessary
+        std::array<RS485Cookie*, RS485Timeslot::TIMESLOT_COUNT_RS485> deviceCookiesInactive;
 
     //Frame buffer arrays with largest frames as size
     std::array<
@@ -127,6 +130,15 @@ private:
      * @details Calls RS485TmTcTarget fillFrameBuffer
      */
     void handleTmSend(RS485Timeslot device, RS485Cookie *rs485Cookie);
+
+    /**
+     * @brief Checks if the current cookie is inactive and the other active, if true replaces it
+     * @details Make sure to set the inactive device to active, otherwise this function will not
+     *          switch the cookies.
+     * @returns @c RETURN_OK if we have a valid cookie
+     *          @c RETUNR FAILED if there is no possibility to get a non nullpointer cookie
+     */
+    ReturnValue_t setActive(RS485Timeslot timeslot);
 
     ReturnValue_t checkDriverState(uint8_t *retryCount);
 
