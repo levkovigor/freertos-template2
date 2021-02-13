@@ -101,8 +101,8 @@ ReturnValue_t RingBufferAnalyzer::handleParsing(uint8_t *receptionBuffer, size_t
     size_t readSize = 0;
     ReturnValue_t result = NO_PACKET_FOUND;
     if (mode == AnalyzerModes::DLE_ENCODING) {
-        result = parseForDleEncodedPackets(currentBytesRead, receptionBuffer, maxSize,
-                packetSize, &readSize);
+        result = parseForDleEncodedPackets(currentBytesRead, receptionBuffer, maxSize, packetSize,
+                &readSize);
     } else if (mode == AnalyzerModes::USLP_FRAMES) {
         result = parseForUslpFrames(currentBytesRead, receptionBuffer, maxSize, packetSize,
                 &readSize);
@@ -165,8 +165,6 @@ ReturnValue_t RingBufferAnalyzer::parseForDleEncodedPackets(size_t bytesToRead,
 ReturnValue_t RingBufferAnalyzer::parseForUslpFrames(size_t bytesToRead, uint8_t *receptionBuffer,
         size_t maxSize, size_t *packetSize, size_t *readSize) {
     std::map<uint8_t, size_t>::iterator iter = virtualChannelFrameSizes->end();
-    //TODO: Check against maxSize and bytesToRead
-    //TODO: Increment readPointer
     // This only works for byte aligned data
     for (size_t vectorIdx = 0; vectorIdx <= bytesToRead - config::RS485_MIN_SERIAL_FRAME_SIZE;
             vectorIdx++) {
@@ -188,14 +186,19 @@ ReturnValue_t RingBufferAnalyzer::parseForUslpFrames(size_t bytesToRead, uint8_t
                 // read pointer
                 *readSize = ++vectorIdx;
                 return POSSIBLE_PACKET_LOSS;
-            }
-            else{
-                *packetSize = iter->second;
-                // If we would decode the USLP Frame here this would be more relevant, here it is
-                // just to be compatible with the DLE encoding part
-                *readSize = iter->second;
-                (void) std::memcpy(receptionBuffer, &analysisVector[vectorIdx], *packetSize);
-                return HasReturnvaluesIF::RETURN_OK;
+            } else {
+                // Check if the buffer is larger enough for the packet
+                if (iter->second > maxSize) {
+                    return HasReturnvaluesIF::RETURN_FAILED;
+                } else {
+                    *packetSize = iter->second;
+                    // If we would decode the USLP Frame here this would be more relevant, here it
+                    // is just to be compatible with the DLE encoding part
+                    *readSize = iter->second;
+                    (void) std::memcpy(receptionBuffer, &analysisVector[vectorIdx], *packetSize);
+                    return HasReturnvaluesIF::RETURN_OK;
+                }
+
             }
 
         }
