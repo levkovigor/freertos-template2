@@ -21,11 +21,10 @@ extern "C" {
 #include <hal/Drivers/UART.h>
 }
 
-RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId,
-        object_id_t UslpDataLinkLayerId, object_id_t tcDestination, object_id_t tmStoreId,
-        object_id_t tcStoreId) :
-SystemObject(objectId), tcDestination(tcDestination), tmStoreId(
-        tmStoreId), tcStoreId(tcStoreId), uslpDataLinkLayerId(UslpDataLinkLayerId) {
+RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t UslpDataLinkLayerId,
+        object_id_t tcDestination, object_id_t tmStoreId, object_id_t tcStoreId) :
+        SystemObject(objectId), tcDestination(tcDestination), tmStoreId(tmStoreId), tcStoreId(
+                tcStoreId), uslpDataLinkLayerId(UslpDataLinkLayerId) {
     // Necessary so we catch timeslots with no cookies
     for (int i = 0; i < RS485Timeslot::TIMESLOT_COUNT_RS485; i++) {
         deviceCookies[i] = nullptr;
@@ -84,15 +83,12 @@ ReturnValue_t RS485DeviceComIF::initialize() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-
-
 ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 
     RS485Timeslot timeslot = static_cast<RS485Timeslot>(opCode);
 
     if (deviceCookies[timeslot] != nullptr) {
-        // TODO: Make sure this does not turn into a bad cast as we have no exceptions
-        RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(deviceCookies[timeslot]);
+        RS485Cookie *rs485Cookie = deviceCookies[timeslot];
         switch (timeslot) {
         case (RS485Timeslot::COM_FPGA): {
             // TODO: Check which FPGA is active (should probably be set via DeviceHandler in Cookie)
@@ -189,12 +185,10 @@ ReturnValue_t RS485DeviceComIF::readReceivedMessage(CookieIF *cookie, uint8_t **
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-
-
 void RS485DeviceComIF::handleSend(RS485Timeslot device, RS485Cookie *rs485Cookie) {
     int retval = 0;
 
-    // Check if messag is available
+    // Check if message is available
     if (rs485Cookie->getComStatus() == ComStatusRS485::TRANSFER_INIT_SUCCESS) {
         // Buffer is already filled, so just send it
         retval = UART_write(bus2_uart, sendBufferFrame[device].data(),
@@ -217,6 +211,7 @@ void RS485DeviceComIF::handleTmSend(RS485Timeslot device, RS485Cookie *rs485Cook
 
     // TODO: Check if downlink available
     for (packetSentCounter = 0;
+    // We dont need to supply an input, as the packets come directly from the TmQueue
             uslpDataLinkLayer->packFrame(nullptr, 0, sendBufferFrame[device].data(),
                     rs485Cookie->getTfdzSize(), rs485Cookie->getVcId(), rs485Cookie->getTmTcMapId())
                     == HasReturnvaluesIF::RETURN_OK; packetSentCounter++) {

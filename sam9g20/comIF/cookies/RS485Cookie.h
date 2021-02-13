@@ -34,7 +34,7 @@ enum class ComStatusRS485 : uint8_t {
 class RS485Cookie: public CookieIF {
 public:
     RS485Cookie(RS485Timeslot timeslot, RS485BaudRates baudrate, uint8_t uslp_virtual_channel_id, size_t uslp_tfdz_size,
-            uint8_t uslp_deviceCom_map_id, bool hasTmTc = false, uint8_t uslp_tmTc_map_id = 0xFF);
+            uint8_t uslp_deviceCom_map_id, bool hasTmTc = false, uint8_t uslp_tmTc_map_id = 0xFF, bool isActive = true);
     virtual ~RS485Cookie();
 
     void setTimeslot(RS485Timeslot timeslot);
@@ -57,6 +57,9 @@ public:
     size_t getTfdzSize() const;
 
     bool getHasTmTc() const;
+
+    void setIsActive(bool isActive);
+    bool getIsActive() const;
 private:
     // Device that is communicated with
     RS485Timeslot timeslot = PCDU_VORAGO;
@@ -67,11 +70,13 @@ private:
     // MAP ID for Device Communication
     uint8_t uslp_deviceCom_map_id;
     // If device can send and receive TmTc space packets
-    bool hasTmTc;
-    // Optional MAP ID for TmTc Communication
+    bool hasTmTc = false;
+    // [Optional] MAP ID for TmTc Communication
     uint8_t uslp_tmTc_map_id;
     // Fixed frame data zone size
     size_t uslp_tfdz_size;
+    // [Optional] If device is active, necessary for redundant devices which share the same timeslot
+    bool isActive = true;
 
 
     // Stores returnvalues from UART driver, can also be negative
