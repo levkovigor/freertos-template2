@@ -100,7 +100,7 @@ private:
     uint8_t packetSentCounter = 0;
 
     // Stores one cookie for each device to communicate between ExecutableObjectIF overrides and DeviceComIF overrides
-    std::array<CookieIF*, RS485Timeslot::TIMESLOT_COUNT_RS485> deviceCookies;
+    std::array<RS485Cookie*, RS485Timeslot::TIMESLOT_COUNT_RS485> deviceCookies;
 
     //Frame buffer arrays with largest frames as size
     std::array<

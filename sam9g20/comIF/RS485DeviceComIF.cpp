@@ -39,7 +39,7 @@ ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {
         RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
         RS485Timeslot timeslot = rs485Cookie->getTimeslot();
         // TODO: There are more cookies than timeslots due to redundant devices
-        deviceCookies[timeslot] = cookie;
+        deviceCookies[timeslot] = rs485Cookie;
         return HasReturnvaluesIF::RETURN_OK;
     } else {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -59,7 +59,7 @@ ReturnValue_t RS485DeviceComIF::initialize() {
     }
     // TODO: Loop for devices, not timeslots
     for (int device = 0; device < RS485Timeslot::TIMESLOT_COUNT_RS485 - 3; device++) {
-        RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(deviceCookies[device]);
+        RS485Cookie *rs485Cookie = deviceCookies[device];
 
         // VC Channel for device
         UslpVirtualChannelIF *virtualChannel;
