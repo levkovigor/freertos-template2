@@ -43,20 +43,6 @@ ReturnValue_t RS485BufferAnalyzerTask::performOperation(uint8_t opCode) {
 
 
 
-ReturnValue_t RS485BufferAnalyzerTask::setvirtualChannelFrameSizes(
-        std::map<uint8_t, size_t> *virtualChannelFrameSizes) {
-
-    if (virtualChannelFrameSizes == nullptr) {
-        return HasReturnvaluesIF::RETURN_FAILED;
-    } else if (virtualChannelFrameSizes->empty()) {
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-    this->virtualChannelFrameSizes = virtualChannelFrameSizes;
-    return HasReturnvaluesIF::RETURN_OK;
-
-}
-
 ReturnValue_t RS485BufferAnalyzerTask::handleReceiveBuffer() {
     for (uint8_t tcPacketIdx = 0; tcPacketIdx < MAX_TC_PACKETS_HANDLED; tcPacketIdx++) {
         size_t packetFoundLen = 0;

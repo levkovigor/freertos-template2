@@ -21,11 +21,11 @@ extern "C" {
 #include <hal/Drivers/UART.h>
 }
 
-RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t bufferAnalyzerId,
+RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId,
         object_id_t UslpDataLinkLayerId, object_id_t tcDestination, object_id_t tmStoreId,
         object_id_t tcStoreId) :
-        SystemObject(objectId), bufferAnalyzerId(bufferAnalyzerId), tcDestination(tcDestination), tmStoreId(
-                tmStoreId), tcStoreId(tcStoreId), uslpDataLinkLayerId(UslpDataLinkLayerId) {
+SystemObject(objectId), tcDestination(tcDestination), tmStoreId(
+        tmStoreId), tcStoreId(tcStoreId), uslpDataLinkLayerId(UslpDataLinkLayerId) {
     // Necessary so we catch timeslots with no cookies
     for (int i = 0; i < RS485Timeslot::TIMESLOT_COUNT_RS485; i++) {
         deviceCookies[i] = nullptr;
@@ -35,11 +35,6 @@ RS485DeviceComIF::~RS485DeviceComIF() {
 }
 
 ReturnValue_t RS485DeviceComIF::initialize() {
-
-    bufferAnalyzer = objectManager->get<RS485BufferAnalyzerTask>(bufferAnalyzerId);
-    if (bufferAnalyzer == nullptr) {
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
 
     uslpDataLinkLayer = objectManager->get<UslpDataLinkLayer>(uslpDataLinkLayerId);
     if (uslpDataLinkLayer == nullptr) {
@@ -68,20 +63,15 @@ ReturnValue_t RS485DeviceComIF::initialize() {
             uslpDataLinkLayer->addVirtualChannel(rs485Cookie->getVcId(), virtualChannel);
         }
     }
-    ReturnValue_t result = bufferAnalyzer->setvirtualChannelFrameSizes(&virtualChannelFrameSizes);
-    return result;
+    return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {
     if (cookie != nullptr) {
         RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
         RS485Timeslot timeslot = rs485Cookie->getTimeslot();
+        // TODO: There are more cookies than timeslots
         deviceCookies[timeslot] = cookie;
-        //TODO: Returnvalue for map insertion
-        virtualChannelFrameSizes.insert(
-                std::pair<uint8_t, size_t>(rs485Cookie->getVcId(),
-                        rs485Cookie->getTfdzSize() + USLPTransferFrame::FRAME_OVERHEAD));
-
         return HasReturnvaluesIF::RETURN_OK;
     } else {
 #if FSFW_CPP_OSTREAM_ENABLED == 1

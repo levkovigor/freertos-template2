@@ -28,15 +28,6 @@ public:
 
     ReturnValue_t performOperation(uint8_t opCode) override;
 
-    /**
-     * @brief   Provides this class with the VC/size map
-     * @details Needs to be called before any frames can be received
-     * @param virtualChannelFrameSizes  Pointer to Map of <VCID, Total Frame size>
-     * @returns -@c RETURN_OK If valid
-     *          -@c RETURN_FAILED If nullpointer or empty
-     */
-    ReturnValue_t setvirtualChannelFrameSizes(std::map<uint8_t, size_t> *virtualChannelFrameSizes);
-
 private:
 
     object_id_t UslpDataLinkLayerId;
@@ -47,9 +38,6 @@ private:
     object_id_t sharedRingBufferId;
     RingBufferAnalyzer *bufferAnalyzer = nullptr;
     std::array<uint8_t, TMTC_FRAME_MAX_LEN + 5> receiveArray;
-
-    // Stores VC Length map
-    std::map<uint8_t, size_t> *virtualChannelFrameSizes = nullptr;
 
 };
 

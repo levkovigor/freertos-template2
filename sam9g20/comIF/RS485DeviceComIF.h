@@ -47,9 +47,8 @@ public:
     static constexpr char defaultMessage[] = { 'O', 'n', 'e', ' ', 'P', 'i', 'n', 'g', ' ', 'o',
             'n', 'l', 'y', ' ' };
 
-    RS485DeviceComIF(object_id_t objectId, object_id_t tmTcTargetId,
-            object_id_t UslpDataLinkLayerId, object_id_t tcDestination, object_id_t tmStoreId,
-            object_id_t tcStoreId);
+    RS485DeviceComIF(object_id_t objectId, object_id_t UslpDataLinkLayerId,
+            object_id_t tcDestination, object_id_t tmStoreId, object_id_t tcStoreId);
     virtual ~RS485DeviceComIF();
 
     /**
@@ -117,10 +116,6 @@ private:
             RS485Timeslot::TIMESLOT_COUNT_RS485> sendBufferFrame;
     std::array<std::array<uint8_t, config::RS485_COM_FPGA_TFDZ_SIZE>,
             RS485Timeslot::TIMESLOT_COUNT_RS485> receiveBufferDevice;
-
-    // Used for handling the TM and TC Queue, this class is already big enough
-    object_id_t bufferAnalyzerId = objects::NO_OBJECT;
-    RS485BufferAnalyzerTask *bufferAnalyzer = nullptr;
 
     object_id_t uslpDataLinkLayerId;
     UslpDataLinkLayer *uslpDataLinkLayer = nullptr;
