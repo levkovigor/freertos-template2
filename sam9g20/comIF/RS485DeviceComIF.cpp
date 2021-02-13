@@ -17,6 +17,7 @@
 #include <mission/utility/uslpDataLinkLayer/UslpMapTmTc.h>
 #include <mission/utility/uslpDataLinkLayer/UslpMapDevice.h>
 #include <sam9g20/comIF/RS485BufferAnalyzerTask.h>
+#include <AT91SAM9G20.h>
 #include "GpioDeviceComIF.h"
 
 extern "C" {
@@ -81,6 +82,8 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
             } else {
                 GpioDeviceComIF::enableTransceiverFPGA2();
             }
+            // Set Baudrate
+            AT91C_BASE_US2->US_BRGR = int(BOARD_MCK / (16 * rs485Cookie->getBaudrate()));
 
             // Normal device command to CCSDS board still need to be sent
             handleSend(timeslot, rs485Cookie);
@@ -89,17 +92,23 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
         }
         case (RS485Timeslot::PCDU_VORAGO): {
             GpioDeviceComIF::enableTransceiverPCDU();
+            // Set Baudrate
+            AT91C_BASE_US2->US_BRGR = int(BOARD_MCK / (16 * rs485Cookie->getBaudrate()));
             handleSend(timeslot, rs485Cookie);
             break;
         }
         case (RS485Timeslot::PL_VORAGO): {
-            handleSend(timeslot, rs485Cookie);
             GpioDeviceComIF::enableTransceiverVorago();
+            // Set Baudrate
+            AT91C_BASE_US2->US_BRGR = int(BOARD_MCK / (16 * rs485Cookie->getBaudrate());
+            handleSend(timeslot, rs485Cookie);
             break;
         }
         case (RS485Timeslot::PL_PIC24): {
-            handleSend(timeslot, rs485Cookie);
             GpioDeviceComIF::enableTransceiverPIC24();
+            // Set Baudrate
+            AT91C_BASE_US2->US_BRGR = int(BOARD_MCK / (16 * rs485Cookie->getBaudrate()));
+            handleSend(timeslot, rs485Cookie);
             break;
         }
         default: {
@@ -240,9 +249,9 @@ void RS485DeviceComIF::handleTmSend(RS485Timeslot device, RS485Cookie *rs485Cook
         // Faulty Tm Communicaton will get caught by get Send Success, even if the previous device
         // command message was successful (A fault here will likely lead to a fault there)
         if (retval != 0) {
-                    rs485Cookie->setComStatusSend(ComStatusRS485::FAULTY);
-                    rs485Cookie->setReturnValue(retval);
-                }
+            rs485Cookie->setComStatusSend(ComStatusRS485::FAULTY);
+            rs485Cookie->setReturnValue(retval);
+        }
         // Reset the buffer to all 0
         sendBufferFrame[device].fill(0);
 
