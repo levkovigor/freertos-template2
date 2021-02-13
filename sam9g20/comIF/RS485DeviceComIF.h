@@ -44,7 +44,6 @@ public:
     static constexpr uint8_t MAX_TM_FRAMES_SENT_PER_CYCLE = 5;
     static constexpr uint8_t RETRY_COUNTER = 10;
 
-
     RS485DeviceComIF(object_id_t objectId, object_id_t UslpDataLinkLayerId,
             object_id_t tcDestination, object_id_t tmStoreId, object_id_t tcStoreId);
     virtual ~RS485DeviceComIF();
@@ -76,7 +75,6 @@ public:
      */
     ReturnValue_t performOperation(uint8_t opCode) override;
 
-
     /**
      * @brief  DeviceComIF override, fills frames sendBuffer
      * @details Only DeviceHandlers use this to send message, as only one message is sent
@@ -88,7 +86,6 @@ public:
     ReturnValue_t getSendSuccess(CookieIF *cookie) override;
     ReturnValue_t requestReceiveMessage(CookieIF *cookie, size_t requestLen) override;
     ReturnValue_t readReceivedMessage(CookieIF *cookie, uint8_t **buffer, size_t *size) override;
-
 
     static constexpr uint8_t INTERFACE_ID = CLASS_ID::RS485_COM_IF;
 
@@ -103,12 +100,10 @@ private:
     std::array<RS485Cookie*, RS485Timeslot::TIMESLOT_COUNT_RS485> deviceCookies;
 
     // Stores the inactive devices cookies, they are swapped in setActive should it be necessary
-        std::array<RS485Cookie*, RS485Timeslot::TIMESLOT_COUNT_RS485> deviceCookiesInactive;
+    std::array<RS485Cookie*, RS485Timeslot::TIMESLOT_COUNT_RS485> deviceCookiesInactive;
 
     //Frame buffer arrays with largest frames as size
-    std::array<
-            std::array<uint8_t, TMTC_FRAME_MAX_LEN>,
-            RS485Timeslot::TIMESLOT_COUNT_RS485> sendBufferFrame;
+    std::array<std::array<uint8_t, TMTC_FRAME_MAX_LEN>, RS485Timeslot::TIMESLOT_COUNT_RS485> sendBufferFrame;
     std::array<std::array<uint8_t, config::RS485_COM_FPGA_TFDZ_SIZE>,
             RS485Timeslot::TIMESLOT_COUNT_RS485> receiveBufferDevice;
 
@@ -131,6 +126,16 @@ private:
      */
     void handleTmSend(RS485Timeslot device, RS485Cookie *rs485Cookie);
 
+    /**
+     * @brief Adds all VCs and MAPs to the data link layer.
+     * @returns @c RETURN_OK if all goes well
+     */
+    ReturnValue_t setupDataLinkLayer(UslpDataLinkLayer *dataLinkLayer);
+    /**
+     * @brief Adds a VC from a device cookie to the Data Link Layer
+     * @returns @c RETURN_OK if all goes well
+     */
+    ReturnValue_t setupDeviceVC(UslpDataLinkLayer *dataLinkLayer, RS485Cookie *rs485Cookie);
     /**
      * @brief Checks if the current cookie is inactive and the other active, if true replaces it
      * @details Make sure to set the inactive device to active, otherwise this function will not

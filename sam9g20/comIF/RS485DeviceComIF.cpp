@@ -28,6 +28,7 @@ RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t UslpDataLin
     // Necessary so we catch timeslots with no cookies
     for (int i = 0; i < RS485Timeslot::TIMESLOT_COUNT_RS485; i++) {
         deviceCookies[i] = nullptr;
+        deviceCookiesInactive[i] = nullptr;
     }
 }
 RS485DeviceComIF::~RS485DeviceComIF() {
@@ -59,31 +60,8 @@ ReturnValue_t RS485DeviceComIF::initialize() {
     if (uslpDataLinkLayer == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
-    // TODO: Loop for devices, not timeslots
-    for (int device = 0; device < RS485Timeslot::TIMESLOT_COUNT_RS485 - 3; device++) {
-        RS485Cookie *rs485Cookie = deviceCookies[device];
 
-        // VC Channel for device
-        UslpVirtualChannelIF *virtualChannel;
-        virtualChannel = new UslpVirtualChannel(rs485Cookie->getVcId(), rs485Cookie->getTfdzSize());
-
-        // Add MAP for normal device communication
-        UslpMapIF *mapDeviceCom;
-        mapDeviceCom = new UslpMapDevice(rs485Cookie->getDevicComMapId(),
-                receiveBufferDevice[device].data(), receiveBufferDevice[device].size());
-        virtualChannel->addMapChannel(rs485Cookie->getDevicComMapId(), mapDeviceCom);
-
-        // Add MAP for Tm and Tc
-        if (rs485Cookie->getHasTmTc()) {
-            UslpMapIF *mapTmTc;
-            mapTmTc = new UslpMapTmTc(objects::USLP_MAPP_SERVICE, rs485Cookie->getTmTcMapId(),
-                    tcDestination, tmStoreId, tcStoreId);
-            virtualChannel->addMapChannel(rs485Cookie->getTmTcMapId(), mapTmTc);
-
-            uslpDataLinkLayer->addVirtualChannel(rs485Cookie->getVcId(), virtualChannel);
-        }
-    }
-    return HasReturnvaluesIF::RETURN_OK;
+    return setupDataLinkLayer(uslpDataLinkLayer);
 }
 
 ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
@@ -236,6 +214,48 @@ void RS485DeviceComIF::handleTmSend(RS485Timeslot device, RS485Cookie *rs485Cook
             break;
         }
     }
+}
+
+ReturnValue_t RS485DeviceComIF::setupDataLinkLayer(UslpDataLinkLayer *dataLinkLayer) {
+    ReturnValue_t result = HasReturnvaluesIF::RETURN_FAILED;
+    for (int timeslot = 0; timeslot < RS485Timeslot::TIMESLOT_COUNT_RS485; timeslot++) {
+        // Handle active devices
+        if (deviceCookies[timeslot] != nullptr) {
+            result = setupDeviceVC(dataLinkLayer, deviceCookies[timeslot]);
+        }
+        // Handle redundant inactive devices
+        if (deviceCookiesInactive[timeslot] != nullptr) {
+            result = setupDeviceVC(dataLinkLayer, deviceCookiesInactive[timeslot]);
+        }
+
+    }
+
+    return result;
+}
+
+ReturnValue_t RS485DeviceComIF::setupDeviceVC(UslpDataLinkLayer *dataLinkLayer, RS485Cookie *rs485Cookie) {
+    // VC Channel for device
+    UslpVirtualChannelIF *virtualChannel;
+    virtualChannel = new UslpVirtualChannel(rs485Cookie->getVcId(), rs485Cookie->getTfdzSize());
+
+    // Add MAP for normal device communication
+    UslpMapIF *mapDeviceCom;
+    mapDeviceCom = new UslpMapDevice(rs485Cookie->getDevicComMapId(),
+            receiveBufferDevice[rs485Cookie->getTimeslot()].data(), receiveBufferDevice[rs485Cookie->getTimeslot()].size());
+    virtualChannel->addMapChannel(rs485Cookie->getDevicComMapId(), mapDeviceCom);
+
+    // Add MAP for Tm and Tc
+    if (rs485Cookie->getHasTmTc()) {
+        UslpMapIF *mapTmTc;
+        mapTmTc = new UslpMapTmTc(objects::USLP_MAPP_SERVICE, rs485Cookie->getTmTcMapId(),
+                tcDestination, tmStoreId, tcStoreId);
+        virtualChannel->addMapChannel(rs485Cookie->getTmTcMapId(), mapTmTc);
+
+        dataLinkLayer->addVirtualChannel(rs485Cookie->getVcId(), virtualChannel);
+
+    }
+    // TODO : More checks
+    return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t RS485DeviceComIF::setActive(RS485Timeslot timeslot) {
