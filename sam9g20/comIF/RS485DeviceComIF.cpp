@@ -7,6 +7,8 @@
 #include <sam9g20/comIF/RS485DeviceComIF.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <sam9g20/comIF/cookies/RS485Cookie.h>
+#include <fsfw/ipc/MutexHelper.h>
+#include <fsfw/osal/FreeRTOS/Mutex.h>
 #include <mission/utility/uslpDataLinkLayer/USLPTransferFrame.h>
 #include <mission/utility/uslpDataLinkLayer/UslpDataLinkLayer.h>
 #include <mission/utility/uslpDataLinkLayer/UslpVirtualChannelIF.h>
@@ -128,55 +130,81 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 
 ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie, const uint8_t *sendData,
         size_t sendLen) {
-
     RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
+    ReturnValue_t result = HasReturnvaluesIF::RETURN_FAILED;
     RS485Timeslot timeslot = rs485Cookie->getTimeslot();
+    MutexHelper mutexLock(rs485Cookie->getSendMutexHandle(), MutexIF::TimeoutType::WAITING,
+            RS485_STANDARD_MUTEX_TIMEOUT);
 
-    // TODO: Mutex
     // Copy Message into corresponding sendFrameBuffer
-    ReturnValue_t result = uslpDataLinkLayer->packFrame(sendData, sendLen,
+   result = uslpDataLinkLayer->packFrame(sendData, sendLen,
             sendBufferFrame[timeslot].data(),
             rs485Cookie->getTfdzSize() + USLPTransferFrame::FRAME_OVERHEAD, rs485Cookie->getVcId(),
             rs485Cookie->getDevicComMapId());
-
-    return result;
-
+   if(result != HasReturnvaluesIF::RETURN_OK){
+       rs485Cookie->setComStatusSend(ComStatusRS485::FAULTY);
+   }
+   else{
+       rs485Cookie->setComStatusSend(ComStatusRS485::TRANSFER_INIT);
+   }
+   return result;
 }
 
 ReturnValue_t RS485DeviceComIF::getSendSuccess(CookieIF *cookie) {
-
     RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
-    if (rs485Cookie->getComStatus() == ComStatusRS485::TRANSFER_SUCCESS) {
-        rs485Cookie->setComStatus(ComStatusRS485::IDLE);
-        return HasReturnvaluesIF::RETURN_OK;
+    ReturnValue_t result = HasReturnvaluesIF::RETURN_FAILED;
+    MutexHelper mutexLock(rs485Cookie->getSendMutexHandle(), MutexIF::TimeoutType::WAITING,
+            RS485_STANDARD_MUTEX_TIMEOUT);
+    // The message could have already been sent, or not, cause the sending tasks timing
+    //is independent from this function. If sending has not occured yet, we hope for the best
+    if (rs485Cookie->getComStatusSend() == ComStatusRS485::TRANSFER_SUCCESS
+            || rs485Cookie->getComStatusSend() == ComStatusRS485::TRANSFER_INIT) {
+        result = HasReturnvaluesIF::RETURN_OK;
+    // If this happens, there is a bug somewhere
+    } else if (rs485Cookie->getComStatusSend() == ComStatusRS485::TRANSFER_SUCCESS) {
+        result = HasReturnvaluesIF::RETURN_FAILED;
+    // Faulty transfer
     } else {
-        // TODO: Generate event corresponding to error code stored in Cookie here
-        rs485Cookie->setComStatus(ComStatusRS485::IDLE);
-        return HasReturnvaluesIF::RETURN_FAILED;
+        result = rs485Cookie->getReturnValue();
     }
-
+    rs485Cookie->setComStatusSend(ComStatusRS485::IDLE);
+    return result;
 }
 
 ReturnValue_t RS485DeviceComIF::requestReceiveMessage(CookieIF *cookie, size_t requestLen) {
     RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
-    //TODO: set com status
+// Com Status and receive Buffer is protected by mutex
+    MutexHelper mutexLock(rs485Cookie->getReceiveMutexHandle(), MutexIF::TimeoutType::WAITING,
+            RS485_STANDARD_MUTEX_TIMEOUT);
+// Reset the receive buffer
+    receiveBufferDevice[rs485Cookie->getTimeslot()].fill(0);
+// This signals the DataLinkLayer that a message can be placed in the buffer
+    rs485Cookie->setComStatusReceive(ComStatusRS485::TRANSFER_INIT);
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t RS485DeviceComIF::readReceivedMessage(CookieIF *cookie, uint8_t **buffer,
         size_t *size) {
-    // TODO: Check for available messages
+    ReturnValue_t result = HasReturnvaluesIF::RETURN_FAILED;
     RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
-    *buffer = receiveBufferDevice[rs485Cookie->getTimeslot()].data();
-    *size = rs485Cookie->getTfdzSize();
-    return HasReturnvaluesIF::RETURN_OK;
+// Com Status and receive Buffer is protected by mutex
+    MutexHelper mutexLock(rs485Cookie->getReceiveMutexHandle(), MutexIF::TimeoutType::WAITING,
+            RS485_STANDARD_MUTEX_TIMEOUT);
+    if (rs485Cookie->getComStatusReceive() == ComStatusRS485::TRANSFER_SUCCESS) {
+        *buffer = receiveBufferDevice[rs485Cookie->getTimeslot()].data();
+        *size = rs485Cookie->getTfdzSize();
+        rs485Cookie->setComStatusReceive(ComStatusRS485::IDLE);
+        result = HasReturnvaluesIF::RETURN_OK;
+    }
+    rs485Cookie->setComStatusReceive(ComStatusRS485::IDLE);
+    return result;
 }
 
 void RS485DeviceComIF::handleSend(RS485Timeslot device, RS485Cookie *rs485Cookie) {
     int retval = 0;
 
-    // Check if message is available
-    if (rs485Cookie->getComStatus() == ComStatusRS485::TRANSFER_INIT_SUCCESS) {
+// Check if message is available
+    if (rs485Cookie->getComStatusSend() == ComStatusRS485::TRANSFER_INIT) {
         // Buffer is already filled, so just send it
         retval = UART_write(bus2_uart, sendBufferFrame[device].data(),
                 rs485Cookie->getTfdzSize() + USLPTransferFrame::FRAME_OVERHEAD);
@@ -184,21 +212,21 @@ void RS485DeviceComIF::handleSend(RS485Timeslot device, RS485Cookie *rs485Cookie
 
     sendBufferFrame[device].fill(0);
 
-    //TODO: Mutex for ComStatus
+//TODO: Mutex for ComStatus
     rs485Cookie->setReturnValue(retval);
     if (retval != 0) {
-        rs485Cookie->setComStatus(ComStatusRS485::FAULTY);
+        rs485Cookie->setComStatusSend(ComStatusRS485::FAULTY);
     } else {
-        rs485Cookie->setComStatus(ComStatusRS485::TRANSFER_SUCCESS);
+        rs485Cookie->setComStatusSend(ComStatusRS485::TRANSFER_SUCCESS);
     }
 
 }
 
 void RS485DeviceComIF::handleTmSend(RS485Timeslot device, RS485Cookie *rs485Cookie) {
 
-    // TODO: Check if downlink available
+// TODO: Check if downlink available
     for (packetSentCounter = 0;
-    // We dont need to supply an input, as the packets come directly from the TmQueue
+// We dont need to supply an input, as the packets come directly from the TmQueue
             uslpDataLinkLayer->packFrame(nullptr, 0, sendBufferFrame[device].data(),
                     rs485Cookie->getTfdzSize(), rs485Cookie->getVcId(), rs485Cookie->getTmTcMapId())
                     == HasReturnvaluesIF::RETURN_OK; packetSentCounter++) {
@@ -233,18 +261,20 @@ ReturnValue_t RS485DeviceComIF::setupDataLinkLayer(UslpDataLinkLayer *dataLinkLa
     return result;
 }
 
-ReturnValue_t RS485DeviceComIF::setupDeviceVC(UslpDataLinkLayer *dataLinkLayer, RS485Cookie *rs485Cookie) {
-    // VC Channel for device
+ReturnValue_t RS485DeviceComIF::setupDeviceVC(UslpDataLinkLayer *dataLinkLayer,
+        RS485Cookie *rs485Cookie) {
+// VC Channel for device
     UslpVirtualChannelIF *virtualChannel;
     virtualChannel = new UslpVirtualChannel(rs485Cookie->getVcId(), rs485Cookie->getTfdzSize());
 
-    // Add MAP for normal device communication
+// Add MAP for normal device communication
     UslpMapIF *mapDeviceCom;
     mapDeviceCom = new UslpMapDevice(rs485Cookie->getDevicComMapId(),
-            receiveBufferDevice[rs485Cookie->getTimeslot()].data(), receiveBufferDevice[rs485Cookie->getTimeslot()].size());
+            receiveBufferDevice[rs485Cookie->getTimeslot()].data(),
+            receiveBufferDevice[rs485Cookie->getTimeslot()].size());
     virtualChannel->addMapChannel(rs485Cookie->getDevicComMapId(), mapDeviceCom);
 
-    // Add MAP for Tm and Tc
+// Add MAP for Tm and Tc
     if (rs485Cookie->getHasTmTc()) {
         UslpMapIF *mapTmTc;
         mapTmTc = new UslpMapTmTc(objects::USLP_MAPP_SERVICE, rs485Cookie->getTmTcMapId(),
@@ -254,7 +284,7 @@ ReturnValue_t RS485DeviceComIF::setupDeviceVC(UslpDataLinkLayer *dataLinkLayer, 
         dataLinkLayer->addVirtualChannel(rs485Cookie->getVcId(), virtualChannel);
 
     }
-    // TODO : More checks
+// TODO : More checks
     return HasReturnvaluesIF::RETURN_OK;
 }
 

@@ -1,4 +1,5 @@
 #include "RS485Cookie.h"
+#include <fsfw/ipc/MutexFactory.h>
 
 RS485Cookie::RS485Cookie(RS485Timeslot timeslot, RS485BaudRates baudrate,
         uint8_t uslp_virtual_channel_id, size_t uslp_tfdz_size, uint8_t uslp_deviceCom_map_id,
@@ -6,9 +7,13 @@ RS485Cookie::RS485Cookie(RS485Timeslot timeslot, RS485BaudRates baudrate,
         timeslot(timeslot), baudrate(baudrate), uslp_virtual_channel_id(uslp_virtual_channel_id), uslp_tfdz_size(
                 uslp_tfdz_size), uslp_deviceCom_map_id(uslp_deviceCom_map_id), hasTmTc(hasTmTc), uslp_tmTc_map_id(
                 uslp_tmTc_map_id), isActive(isActive) {
+    sendMutex = MutexFactory::instance()->createMutex();
+    receiveMutex = MutexFactory::instance()->createMutex();
 }
 
 RS485Cookie::~RS485Cookie() {
+    MutexFactory::instance()->deleteMutex(sendMutex);
+    MutexFactory::instance()->deleteMutex(receiveMutex);
 }
 
 void RS485Cookie::setTimeslot(RS485Timeslot timeslot) {
@@ -19,11 +24,18 @@ RS485Timeslot RS485Cookie::getTimeslot() const {
     return timeslot;
 }
 
-ComStatusRS485 RS485Cookie::getComStatus() {
-    return comStatus;
+ComStatusRS485 RS485Cookie::getComStatusSend() {
+    return comStatusSend;
 }
-void RS485Cookie::setComStatus(ComStatusRS485 status) {
-    this->comStatus = status;
+void RS485Cookie::setComStatusSend(ComStatusRS485 status) {
+    this->comStatusSend = status;
+}
+
+ComStatusRS485 RS485Cookie::getComStatusReceive() {
+    return comStatusReceive;
+}
+void RS485Cookie::setComStatusReceive(ComStatusRS485 status) {
+    this->comStatusReceive = status;
 }
 
 int8_t RS485Cookie::getReturnValue() const {
@@ -63,4 +75,12 @@ void RS485Cookie::setIsActive(bool isActive){
 
 bool RS485Cookie::getIsActive() const{
     return isActive;
+}
+
+MutexIF* RS485Cookie::getSendMutexHandle() const{
+    return sendMutex;
+}
+
+MutexIF* RS485Cookie::getReceiveMutexHandle() const{
+    return receiveMutex;
 }
