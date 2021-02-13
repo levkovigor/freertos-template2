@@ -34,6 +34,23 @@ SystemObject(objectId), tcDestination(tcDestination), tmStoreId(
 RS485DeviceComIF::~RS485DeviceComIF() {
 }
 
+ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {
+    if (cookie != nullptr) {
+        RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
+        RS485Timeslot timeslot = rs485Cookie->getTimeslot();
+        // TODO: There are more cookies than timeslots due to redundant devices
+        deviceCookies[timeslot] = cookie;
+        return HasReturnvaluesIF::RETURN_OK;
+    } else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "RS485DeviceComIF::initializeInterface failed: Cookie is null pointer"
+                << std::endl;
+#endif
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+}
+
 ReturnValue_t RS485DeviceComIF::initialize() {
 
     uslpDataLinkLayer = objectManager->get<UslpDataLinkLayer>(uslpDataLinkLayerId);
@@ -44,16 +61,17 @@ ReturnValue_t RS485DeviceComIF::initialize() {
     for (int device = 0; device < RS485Timeslot::TIMESLOT_COUNT_RS485 - 3; device++) {
         RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(deviceCookies[device]);
 
+        // VC Channel for device
         UslpVirtualChannelIF *virtualChannel;
         virtualChannel = new UslpVirtualChannel(rs485Cookie->getVcId(), rs485Cookie->getTfdzSize());
 
-        // Add Map for normal device communication
+        // Add MAP for normal device communication
         UslpMapIF *mapDeviceCom;
         mapDeviceCom = new UslpMapDevice(rs485Cookie->getDevicComMapId(),
                 receiveBufferDevice[device].data(), receiveBufferDevice[device].size());
         virtualChannel->addMapChannel(rs485Cookie->getDevicComMapId(), mapDeviceCom);
 
-        // Add Map for Tm and Tc
+        // Add MAP for Tm and Tc
         if (rs485Cookie->getHasTmTc()) {
             UslpMapIF *mapTmTc;
             mapTmTc = new UslpMapTmTc(objects::USLP_MAPP_SERVICE, rs485Cookie->getTmTcMapId(),
@@ -66,22 +84,7 @@ ReturnValue_t RS485DeviceComIF::initialize() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t RS485DeviceComIF::initializeInterface(CookieIF *cookie) {
-    if (cookie != nullptr) {
-        RS485Cookie *rs485Cookie = dynamic_cast<RS485Cookie*>(cookie);
-        RS485Timeslot timeslot = rs485Cookie->getTimeslot();
-        // TODO: There are more cookies than timeslots
-        deviceCookies[timeslot] = cookie;
-        return HasReturnvaluesIF::RETURN_OK;
-    } else {
-#if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::error << "RS485DeviceComIF::initializeInterface failed: Cookie is null pointer"
-                << std::endl;
-#endif
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
 
-}
 
 ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 
@@ -186,9 +189,7 @@ ReturnValue_t RS485DeviceComIF::readReceivedMessage(CookieIF *cookie, uint8_t **
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-std::map<uint8_t, size_t>* RS485DeviceComIF::getVcidSizeMap() {
-    return &virtualChannelFrameSizes;
-}
+
 
 void RS485DeviceComIF::handleSend(RS485Timeslot device, RS485Cookie *rs485Cookie) {
     int retval = 0;

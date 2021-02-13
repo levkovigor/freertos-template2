@@ -17,7 +17,6 @@
 #include <fsfwconfig/OBSWConfig.h>
 #include <mission/utility/uslpDataLinkLayer/USLPTransferFrame.h>
 #include <mission/utility/uslpDataLinkLayer/UslpDataLinkLayer.h>
-#include <sam9g20/comIF/RS485BufferAnalyzerTask.h>
 
 extern "C" {
 
@@ -44,12 +43,29 @@ public:
     static constexpr size_t TMTC_FRAME_MAX_LEN = config::RS485_MAX_SERIAL_FRAME_SIZE;
     static constexpr uint8_t MAX_TM_FRAMES_SENT_PER_CYCLE = 5;
     static constexpr uint8_t RETRY_COUNTER = 10;
-    static constexpr char defaultMessage[] = { 'O', 'n', 'e', ' ', 'P', 'i', 'n', 'g', ' ', 'o',
-            'n', 'l', 'y', ' ' };
+
 
     RS485DeviceComIF(object_id_t objectId, object_id_t UslpDataLinkLayerId,
             object_id_t tcDestination, object_id_t tmStoreId, object_id_t tcStoreId);
     virtual ~RS485DeviceComIF();
+
+    /**
+     * @brief   DeviceComIF override, stores pointer to each device cookie in an array
+     * @details Pointer to each device needs to be accessible by performOperation
+     * @returns -@c RETURN_OK if all goes well
+     *          -@c RETURN_FAILED If the cookie pointer is a nullpointer
+     */
+    virtual ReturnValue_t initializeInterface(CookieIF *cookie) override;
+
+    /**
+     * @brief   ExecutableObjectIF override, performs init of the UslpDataLinkLayer
+     * @details Initializes:
+     *          One VC for each device
+     *          One Device MAP and an optional TmTC map for each VC
+     * @returns -@c RETURN_OK if all goes well
+     *          -@c RETURN_FAILED It there is an error with getting the LinkLayer Object
+     */
+    ReturnValue_t initialize() override;
 
     /**
      * @brief   ExecutableObjectIF override, performs send Operation in correct timeslot
@@ -59,22 +75,8 @@ public:
      * @returns -@c RETURN_OK always as Com errors are stored in the device cookies
      */
     ReturnValue_t performOperation(uint8_t opCode) override;
-    /**
-     * @brief   ExecutableObjectIF override, performs init of various buffers and queues
-     * @details Initializes:
-     * 			One Buffers for each device
-     * 			Shared Ring Buffer analyzer
-     * @param opCode Determines to which device messages are sent, enum in RS485Cookie
-     * @returns -@c RETURN_OK if ring buffer analyzer init goes well
-     * 			-@c RETURN_FALIED if ring buffer analyzer init fails
-     */
-    ReturnValue_t initialize() override;
 
-    /**
-     * @brief   DeviceComIF override, stores pointer to each device cookie
-     * @details Pointer to each device needs to be accessible by performOperation
-     */
-    virtual ReturnValue_t initializeInterface(CookieIF *cookie) override;
+
     /**
      * @brief  DeviceComIF override, fills frames sendBuffer
      * @details Only DeviceHandlers use this to send message, as only one message is sent
@@ -86,14 +88,7 @@ public:
     ReturnValue_t getSendSuccess(CookieIF *cookie) override;
     ReturnValue_t requestReceiveMessage(CookieIF *cookie, size_t requestLen) override;
     ReturnValue_t readReceivedMessage(CookieIF *cookie, uint8_t **buffer, size_t *size) override;
-    /**
-     * @brief  Getter for Vcid/frame_size map
-     * @details Each device has an own VCID with a fixed TFDZ size. Therefore, the size for the
-     * whole frame can differ between VC. This function is used if other tasks need to access
-     * the frame length for a specific VCID. (e.g. RingBufferAnalyzer)
-     * @returns std::map<uint8_t, size_t> with <vcid, frame_size>
-     */
-    std::map<uint8_t, size_t>* getVcidSizeMap();
+
 
     static constexpr uint8_t INTERFACE_ID = CLASS_ID::RS485_COM_IF;
 
@@ -107,12 +102,9 @@ private:
     // Stores one cookie for each device to communicate between ExecutableObjectIF overrides and DeviceComIF overrides
     std::array<CookieIF*, RS485Timeslot::TIMESLOT_COUNT_RS485> deviceCookies;
 
-    // Every device has one virtual channel, the specific size is stored here for access by other tasks
-    std::map<uint8_t, size_t> virtualChannelFrameSizes;
-
     //Frame buffer arrays with largest frames as size
     std::array<
-            std::array<uint8_t, config::RS485_COM_FPGA_TFDZ_SIZE + USLPTransferFrame::FRAME_OVERHEAD>,
+            std::array<uint8_t, TMTC_FRAME_MAX_LEN>,
             RS485Timeslot::TIMESLOT_COUNT_RS485> sendBufferFrame;
     std::array<std::array<uint8_t, config::RS485_COM_FPGA_TFDZ_SIZE>,
             RS485Timeslot::TIMESLOT_COUNT_RS485> receiveBufferDevice;
