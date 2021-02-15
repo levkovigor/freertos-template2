@@ -16,9 +16,9 @@ import re
 from enum import Enum
 from datetime import date
 
-from parserbase.mib_parser import FileParser
-from utility.mib_csv_writer import CsvWriter
-from utility.mib_printer import Printer
+from generatore_core.parserbase import FileParser
+from generatore_core.utility.mib_csv_writer import CsvWriter
+from generatore_core.utility.mib_printer import Printer
 from utility.mib_file_management import copy_file
 
 

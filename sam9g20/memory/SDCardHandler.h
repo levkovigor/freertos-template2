@@ -2,8 +2,6 @@
 #define SAM9G20_MEMORY_SDCARDHANDLER_H_
 
 #include "SDCardDefinitions.h"
-#include "SDCardApi.h"
-
 #include <fsfw/action/HasActionsIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
@@ -12,6 +10,7 @@
 #include <fsfw/memory/HasFileSystemIF.h>
 #include <fsfwconfig/events/subsystemIdRanges.h>
 #include <fsfwconfig/OBSWConfig.h>
+#include <sam9g20/common/SDCardApi.h>
 
 #include <vector>
 

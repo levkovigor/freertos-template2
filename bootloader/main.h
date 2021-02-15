@@ -7,10 +7,8 @@
 extern void jump_to_sdram_application(void);
 
 typedef enum {
-	BOOT_SD_CARD_0,
-	BOOT_SD_CARD_0_SLOT2,
-	BOOT_SD_CARD_1,
-	BOOT_SD_CARD_1_SLOT2,
+	BOOT_SD_CARD_0_UPDATE,
+	BOOT_SD_CARD_1_UPDATE,
 	BOOT_NOR_FLASH
 } BootSelect;
 

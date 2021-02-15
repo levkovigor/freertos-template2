@@ -1,6 +1,11 @@
 #include "Factory.h"
+#include <fsfwconfig/objects/systemObjectList.h>
+#include <fsfwconfig/OBSWConfig.h>
+#include <fsfwconfig/tmtc/apid.h>
+#include <fsfwconfig/tmtc/pusIds.h>
 
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+/* FSFW includes */
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/internalError/InternalErrorReporter.h>
 #include <fsfw/storagemanager/PoolManager.h>
 #include <fsfw/tcdistribution/CCSDSDistributor.h>
@@ -23,10 +28,7 @@
 #include <fsfwconfig/devices/logicalAddresses.h>
 #include <fsfwconfig/devices/powerSwitcherList.h>
 
-#include <fsfwconfig/objects/systemObjectList.h>
-#include <fsfwconfig/OBSWConfig.h>
-#include <fsfwconfig/tmtc/apid.h>
-#include <fsfwconfig/tmtc/pusIds.h>
+/* Mission includes */
 #include <mission/controller/ThermalController.h>
 #include <mission/controller/acs/AttitudeController.h>
 #include <mission/pus/Service6MemoryManagement.h>
@@ -46,6 +48,7 @@
 #include <test/testinterfaces/DummyGPSComIF.h>
 #include <test/testinterfaces/DummyCookie.h>
 #include <test/testdevices/ArduinoDeviceHandler.h>
+#include <test/testdevices/TestDeviceHandler.h>
 
 /* Board Support Package Files */
 #include <sam9g20/boardtest/AtmelArduinoHandler.h>
@@ -67,8 +70,6 @@
 #include <sam9g20/memory/SDCardHandler.h>
 #include <sam9g20/pus/Service9CustomTimeManagement.h>
 #include <sam9g20/boardtest/LedTask.h>
-
-#include <test/testdevices/TestDeviceHandler.h>
 
 #if defined(ETHERNET)
 #include <sam9g20/tmtcbridge/EmacPollingTask.h>

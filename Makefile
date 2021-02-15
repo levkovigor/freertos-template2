@@ -51,12 +51,15 @@ endif
 
 CHIP_NAME = sam9g20
 BOARD_FILE_ROOT = $(CHIP_NAME)
+ADD_USB_DRIVER = 1
 
 ifdef IOBC
 CHIP_PATH = iobc
 else
 CHIP_PATH = sam9g20ek
 endif
+
+ENABLE_FLTO = 0
 
 OS_FSFW = freeRTOS
 OS_APP = $(OS_FSFW)
@@ -357,7 +360,7 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPENDDIR)/$*.d
 CUSTOM_DEFINES += -DUSE_AT91LIB_STDIO_AND_STRING=$(USE_AT91LIB_STDIO_AND_STRING)
 CUSTOM_DEFINES += -DNEWLIB_NANO_NO_C99_IO
 WARNING_FLAGS = -Wall -Wshadow=local -Wextra -Wimplicit-fallthrough=1 \
-		-Wno-unused-parameter 
+		-Wno-unused-parameter -Wno-psabi
 		
 CXXDEFINES := -DTRACE_LEVEL=$(TRACE_LEVEL) -DDYN_TRACES=$(DYN_TRACES) \
 		$(CUSTOM_DEFINES) -D$(MEMORIES)
@@ -420,9 +423,16 @@ mission: OPTIMIZATION += -fno-isolate-erroneous-paths-dereference
 
 # Link time optimization can lead to issues, so  if there is an issue with the
 # mission binary, try to disable it to see if that fixes the problem.
+ifeq ($(ENABLE_FLTO), 1)
 mission: LINK_TIME_OPTIMIZATION = -flto
+endif
+
 mission: TARGET = Mission binary
+ifeq ($(ENABLE_FLTO), 1)
 mission: OPTIMIZATION_MESSAGE = On with Link Time Optimization.
+else
+mission: OPTIMIZATION_MESSAGE = On without Link Time Optimization.
+endif
 mission: DEBUG_LEVEL = -g0
 
 debug: CXXDEFINES += -DDEBUG
@@ -502,8 +512,16 @@ $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).bin: $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).e
 	@echo $(MSG_BINARY) $@
 	@mkdir -p $(@D)
 	@$(BINCOPY) $< $@ 
+	
 ifeq ($(OS),Windows_NT)
+# Check whether stat is available.
+# Otherwise, try to display size with busybox
+ifeq (, $(shell where stat))
 	@echo Binary Size: `busybox stat -c %s $@` bytes
+else
+	@stat --printf='Binary Size: %s bytes' $@
+endif
+
 else
 	@stat --printf='Binary Size: %s bytes' $@
 endif

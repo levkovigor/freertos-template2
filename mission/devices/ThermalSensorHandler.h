@@ -2,6 +2,8 @@
 #define MISSION_DEVICES_THERMALSENSORHANDLER_H_
 
 #include "devicedefinitions/ThermalSensorPacket.h"
+#include <OBSWConfig.h>
+
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
 #include <fsfw/globalfunctions/PeriodicOperationDivider.h>
 
@@ -59,22 +61,18 @@ protected:
 			DeviceCommandId_t *foundId, size_t *foundLen) override;
 	ReturnValue_t interpretDeviceReply(DeviceCommandId_t id,
 			const uint8_t *packet) override;
-	void setNormalDatapoolEntriesInvalid() override;
-
-	void debugInterface(uint8_t positionTracker = 0,
-			object_id_t objectId = 0, uint32_t parameter = 0) override;
 	uint32_t getTransitionDelayMs(Mode_t modeFrom, Mode_t modeTo) override;
 	ReturnValue_t getSwitches(const uint8_t **switches,
 			uint8_t *numberOfSwitches) override;
 
 	void doTransition(Mode_t modeFrom, Submode_t subModeFrom) override;
 
-	ReturnValue_t initializeLocalDataPool(LocalDataPool& localDataPoolMap,
+	void debugInterface(uint8_t positionTracker = 0,
+			object_id_t objectId = 0, uint32_t parameter = 0) override;
+	ReturnValue_t initializeLocalDataPool(localpool::DataPool& localDataPoolMap,
 	        LocalDataPoolManager& poolManager) override;
-	ReturnValue_t initialize() override;
-
 	void modeChanged() override;
-	//ReturnValue_t getDataSetHandle(sid_t sid) override;
+
 private:
 	const uint8_t switchId;
 
@@ -97,8 +95,8 @@ private:
 	TSensorDefinitions::ThermalSensorDataset sensorDataset;
 	sid_t sensorDatasetSid;
 
-#ifdef DEBUG
-	PeriodicOperationDivider debugDivider;
+#if OBSW_ENHANCED_PRINTOUT == 1
+	PeriodicOperationDivider* debugDivider;
 #endif
 };
 
