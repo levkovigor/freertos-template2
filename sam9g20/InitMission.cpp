@@ -334,6 +334,14 @@ void initTasks(void) {
         printAddError(objects::THERMAL_CONTROLLER);
     }
 
+    PeriodicTaskIF *AttitudeController =
+			TaskFactory::instance()->createPeriodicTask("ATTITUDE_CTRL", 6,
+					2048 * 4, 0.4, genericMissedDeadlineFunc);
+	result = AttitudeController->addComponent(objects::ATTITUDE_CONTROLLER);
+	if (result != HasReturnvaluesIF::RETURN_OK) {
+		printAddError(objects::ATTITUDE_CONTROLLER);
+	}
+
     /* SPI Communication Interface*/
     PeriodicTaskIF* SpiComTask = TaskFactory::instance()->
             createPeriodicTask("SPI_COM_IF", 8, 1024 * 4, 0.4,
@@ -379,6 +387,7 @@ void initTasks(void) {
     CoreController->startTask();
     SystemStateTask -> startTask();
     //ThermalController -> startTask();
+    AttitudeController -> startTask();
     SpiComTask->startTask();
 
     sif::info << "Remaining FreeRTOS heap size: " << std::dec
