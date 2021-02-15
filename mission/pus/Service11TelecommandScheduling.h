@@ -15,9 +15,9 @@ public:
                 DISABLE_SCHEDULING = 2,
                 RESET_SCHEDULING = 3,
                 INSERT_ACTIVITY = 4,    // basic
-                DELETE_ACTIVITY = 5,    // basic
+                DELETE_ACTIVITY = 5,    // ID erstellen dafür nötig, damit unique
                 FILTER_ACTIVITY = 6,
-                TIMESHIFT_ACTIVITY = 7,
+                TIMESHIFT_ACTIVITY = 7, // sollte noch rein: timestamp anpassen, neu eintragen.
                 DETAIL_REPORT = 9,
                 TIMEBASE_SCHEDULE_DETAIL_REPORT = 10,
                 TIMESHIFT_ALL_SCHEDULE_ACTIVITIES = 15
