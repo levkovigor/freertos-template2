@@ -228,7 +228,26 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
     case(COPY_OBSW_SDC_TO_SDC): {
         if(handlerState == HandlerState::COPYING) {
             actionHelper.finish(commandedBy, actionId, image::BUSY);
+        }if(size != 1) {
+            return HasActionsIF::INVALID_PARAMETERS;
         }
+
+        uint8_t targetBinary = data[0];
+
+        if(targetBinary == 0) {
+            imgCpHelper->startSdcToSdcOperation(image::ImageSlot::SDC_SLOT_0);
+        }
+        else if(targetBinary == 1) {
+            imgCpHelper->startSdcToSdcOperation(image::ImageSlot::SDC_SLOT_1);
+        }
+        else {
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+
+        currentAction = actionId;
+        recipient = commandedBy;
+        handlerState = HandlerState::COPYING;
+        actionHelper.step(1, commandedBy, actionId, result);
         break;
     }
     case(ENABLE_HAMMING_CODE_CHECK_FOR_COPYING): {

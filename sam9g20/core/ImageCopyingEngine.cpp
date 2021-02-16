@@ -1,6 +1,7 @@
 #include "ImageCopyingEngine.h"
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
+#include <sam9g20/memory/SDCardAccess.h>
 
 ImageCopyingEngine::ImageCopyingEngine(SoftwareImageHandler *owner,
         Countdown *countdown, image::ImageBuffer *imgBuffer):
@@ -23,6 +24,18 @@ ReturnValue_t ImageCopyingEngine::startSdcToFlashOperation(
 
     imageHandlerState = ImageHandlerStates::COPY_IMG_SDC_TO_FLASH;
     this->sourceSlot = sourceSlot;
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t ImageCopyingEngine::startSdcToSdcOperation(
+        image::ImageSlot sourceSlot) {
+    imageHandlerState = ImageHandlerStates::COPY_IMG_SDC_TO_SDC;
+    this->sourceSlot = sourceSlot;
+    if(sourceSlot == image::ImageSlot::SDC_SLOT_1){
+    	targetSlot = image::ImageSlot::SDC_SLOT_0;
+    }else{
+    	targetSlot = image::ImageSlot::SDC_SLOT_1;
+    }
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -235,6 +248,42 @@ ReturnValue_t ImageCopyingEngine::readFile(uint8_t *buffer, size_t sizeToRead,
 }
 
 ReturnValue_t ImageCopyingEngine::copySdcImgToSdc() {
+
+	SDCardAccess sdCardAccess;
+	F_FILE *binaryFile;
+	long size = 8;
+	long sizeToRead = 1;
+	if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
+		binaryFile = f_open(config::SW_SLOT_1_NAME, "w");
+	}
+	else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
+    	binaryFile = f_open(config::SW_SLOT_1_NAME, "w");
+	}
+	    // Get file information like binary size, open the file, seek correct
+	    // position etc.
+
+	ReturnValue_t result = prepareGenericFileInformation(
+			sdCardAccess.currentVolumeId, &binaryFile);
+	while(true){
+		if(currentFileSize-currentByteIdx>imgBuffer->size()){
+			sizeToRead=imgBuffer->size();
+		}else{
+			sizeToRead=currentFileSize-currentByteIdx;
+		}
+		f_seek(binaryFile, currentByteIdx, F_SEEK_SET);
+		size_t bytesRead = f_read(imgBuffer, size, sizeToRead, binaryFile);
+		currentByteIdx += bytesRead;
+
+		if(currentByteIdx>=currentFileSize){
+			reset();
+	        lastFinishedState = imageHandlerState;
+	        handleFinishPrintout();
+	        return image::OPERATION_FINISHED;
+		}
+		if(countdown->hasTimedOut()) {
+		        return  image::TASK_PERIOD_OVER_SOON;
+		}
+	}
     return HasReturnvaluesIF::RETURN_OK;
 }
 
