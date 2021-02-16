@@ -5,6 +5,11 @@
 #ifndef SAM9G20_AT91_COMMON_COMMONCONFIG_H_
 #define SAM9G20_AT91_COMMON_COMMONCONFIG_H_
 
+typedef enum {
+    SDC_SLOT_0,
+    SDC_SLOT_1
+} SdSlots;
+
 #ifdef __cplusplus
 namespace config {
 #endif

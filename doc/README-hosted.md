@@ -1,8 +1,37 @@
+# <a id="top"></a> <a name="host"></a> Host
+
+## Windows
+
+On Windows, it is necessary to install a GCC toolchain, and it is recommended to use MinGW64
+for this. If not already done so, install MinGW64 by using the
+[MSYS2 installer](https://www.msys2.org/).
+
+After that, open the MinGW64 shell and run the following commands to install
+the GCC toolchain.
+
+```sh
+pacman -S mingw-w64-x86_64-toolchain
+```
+
+Make sure that you have added the folder containing the MinGW64 binaries to the 
+Windows system environmental variables and test whether the toolchain can be called 
+from Windows with `gcc --version` and `mingw32-make --version`.
+
+After that, you should be able to build the binary with the following command
+
+```sh
+mingw32-make -f Makefile-Hosted
+```
+
+## Linux
+
+Follow the steps in the following Linux section but replace `Makefile-Linux` with `Makefile-Hosted`.
+
 # <a id="top"></a> <a name="linux"></a> Linux
+
 Please note that a full linux installation should be available,
 either inside a virtual machine or as dualboot or stand-alone installation to run
-the linux binary.<br>
-These steps were tested for Ubuntu 20.04.
+the linux binary. These steps were tested for Ubuntu 20.04.
 If not done yet, install the full C++ build chain:
 ```sh
 sudo apt-get install build-essential
@@ -72,14 +101,3 @@ echo <newMsgMax> | sudo tee /proc/sys/fs/mqueue/msg_max
 ```
 or running the `unlockRealtime` script.
 
-
-## <a name="unittest"></a> Unit Tests
-Refer to the [egit repostiory readme](https://egit.irs.uni-stuttgart.de/fsfw/fsfw_tests).<br>
-Leave out step 1, and run make with following command:
-```sh
-make -f  Makefile-Unittest all
-```
-
-Furthermore, the unlockRealtime script is located in the linux folder now.
-Right now, the Unittest does not make use of pthread yet, but consider the
-steps above to unlock real time functionalities if they are used.

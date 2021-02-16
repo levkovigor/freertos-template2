@@ -46,7 +46,7 @@ static const Pin nfRbPin = BOARD_NF_RB_PIN;
 #define BOOT_NAND_ERROR_NO_DEVICE    1 /// No nand devices has been detected
 #define BOOT_NAND_ERROR_GP           2
 
-int copy_nandflash_binary_to_sdram(const uint32_t source_offset, const size_t source_size,
+int copy_nandflash_image_to_sdram(const uint32_t source_offset, const size_t source_size,
         const size_t target_offset, bool configureNand) {
     /* Disable most traces because there is a lot of spam from the NAND drivers */
 #if BOOTLOADER_VERBOSE_LEVEL <= 1

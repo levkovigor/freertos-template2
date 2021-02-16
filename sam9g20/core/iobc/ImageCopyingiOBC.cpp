@@ -45,10 +45,10 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
 }
 
 
-ReturnValue_t ImageCopyingEngine::startBootloaderToFlashOperation(bool fromFRAM)
-{
-    sourceSlot == image::ImageSlot::BOOTLOADER_0;
-    if(fromFRAM) {
+ReturnValue_t ImageCopyingEngine::startBootloaderToFlashOperation(image::ImageSlot bootloaderType,
+        bool fromFram) {
+    sourceSlot = image::ImageSlot::BOOTLOADER_0;
+    if(fromFram) {
         imageHandlerState = ImageHandlerStates::COPY_BL_FRAM_TO_FLASH;
     }
     else {
@@ -115,9 +115,6 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
         internalState = GenericInternalState::STEP_1;
     }
     if(internalState == GenericInternalState::STEP_1) {
-        if(sourceSlot == image::ImageSlot::NORFLASH) {
-
-        }
         SDCardAccess access;
         F_FILE* file = nullptr;
         prepareGenericFileInformation(access.currentVolumeId, &file);
@@ -151,7 +148,7 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
         reset();
 #if OBSW_VERBOSE_LEVEL >= 1
         const char* message = nullptr;
-        if(sourceSlot == image::ImageSlot::NORFLASH) {
+        if(sourceSlot == image::ImageSlot::FLASH) {
             message = "NOR-Flash hamming code";
         }
         else if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
@@ -726,6 +723,36 @@ void ImageCopyingEngine::handleFinishPrintout() {
 #endif
     }
 #endif /* OBSW_VERBOSE_LEVEL >= 1 */
+}
 
+void ImageCopyingEngine::handleInfoPrintout(VolumeId currentVolume) {
+#if OBSW_VERBOSE_LEVEL >= 1
+    char sourcePrint[20];
+    char targetPrint[20];
+    char typePrint[20];
+    if(imageHandlerState == ImageHandlerStates::COPY_IMG_SDC_TO_FLASH) {
+        sprintf(typePrint, "primary image");
+        sprintf(targetPrint, "NOR-Flash");
+        sprintf(sourcePrint, "SD Card %u", static_cast<int>(currentVolume));
+    }
+    else if(imageHandlerState == ImageHandlerStates::COPY_BL_SDC_TO_FLASH) {
+        sprintf(typePrint, "bootloader");
+        sprintf(targetPrint, "NOR-Flash");
+        sprintf(sourcePrint, "SD Card %u", static_cast<int>(currentVolume));
+    }
+    else if(imageHandlerState == ImageHandlerStates::COPY_IMG_SDC_TO_SDC) {
+        if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
+            sprintf(targetPrint, "SD Card %d Slot 1", static_cast<int>(currentVolume));
+            sprintf(sourcePrint, "SD Card %d Slot 0 ", static_cast<int>(currentVolume));
+        }
+        else {
+            sprintf(sourcePrint, "SD Card %d Slot 1", static_cast<int>(currentVolume));
+            sprintf(targetPrint, "SD Card %d Slot 0 ", static_cast<int>(currentVolume));
+        }
+        sprintf(typePrint, "primary image");
+    }
+
+    handleGenericInfoPrintout("iOBC", typePrint, sourcePrint, targetPrint);
+#endif /* OBSW_VERBOSE_LEVEL >= 1 */
 }
 

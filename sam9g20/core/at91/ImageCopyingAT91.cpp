@@ -557,3 +557,44 @@ void ImageCopyingEngine::handleFinishPrintout() {
 
 #endif /* OBSW_VERBOSE_LEVEL >= 1 */
 }
+
+void ImageCopyingEngine::handleInfoPrintout(VolumeId currentVolume) {
+#if OBSW_VERBOSE_LEVEL >= 1
+    char sourcePrint[20];
+    char targetPrint[20];
+    char typePrint[25];
+    if(imageHandlerState == ImageHandlerStates::COPY_IMG_SDC_TO_FLASH) {
+        sprintf(typePrint, "primary image");
+        sprintf(targetPrint, "NAND-Flash");
+        sprintf(sourcePrint, "SD Card %u", static_cast<int>(currentVolume));
+    }
+
+    else if(imageHandlerState == ImageHandlerStates::COPY_BL_SDC_TO_FLASH) {
+        if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
+    #if BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE
+            sprintf(typePrint, "bootloader");
+    #else
+            sprintf(typePrint, "first-stage bootloader");
+    #endif
+        }
+        else if(sourceSlot == image::ImageSlot::BOOTLOADER_1) {
+            sprintf(typePrint, "second-stage bootloader");
+        }
+        sprintf(targetPrint, "NAND-Flash");
+        sprintf(sourcePrint, "SD Card %u", static_cast<int>(currentVolume));
+    }
+    else if(imageHandlerState == ImageHandlerStates::COPY_IMG_SDC_TO_SDC) {
+        if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
+            sprintf(targetPrint, "SD Card %d Slot 1", static_cast<int>(currentVolume));
+            sprintf(sourcePrint, "SD Card %d Slot 0 ", static_cast<int>(currentVolume));
+        }
+        else {
+            sprintf(sourcePrint, "SD Card %d Slot 1", static_cast<int>(currentVolume));
+            sprintf(targetPrint, "SD Card %d Slot 0 ", static_cast<int>(currentVolume));
+        }
+        sprintf(typePrint, "primary image");
+    }
+
+    handleGenericInfoPrintout("AT91", typePrint, sourcePrint, targetPrint);
+#endif /* OBSW_VERBOSE_LEVEL >= 1 */
+}

@@ -262,7 +262,7 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
 }
 
 ReturnValue_t SoftwareImageHandler::getParameter(uint8_t domainId,
-        uint16_t uniqueIdentifier, ParameterWrapper *parameterWrapper,
+        uint8_t uniqueIdentifier, ParameterWrapper *parameterWrapper,
         const ParameterWrapper *newValues, uint16_t startAtIndex) {
     switch(uniqueIdentifier) {
     case(ParameterIds::HAMMING_CODE_FROM_SDC): {

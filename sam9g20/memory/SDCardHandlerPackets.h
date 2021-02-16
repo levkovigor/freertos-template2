@@ -33,8 +33,8 @@ static ReturnValue_t deSerializeRepositories(const uint8_t **buffer,
 		RepositoryPath& dirname);
 
 static ReturnValue_t serializeRepositoryAndFilename(uint8_t **buffer,
-        size_t* size, size_t maxSize, RepositoryPath& repositoryPath,
-		FileName& filename);
+        size_t* size, size_t maxSize, const RepositoryPath& repositoryPath,
+		const FileName& filename);
 
 class ActivePreferedVolumeReport: public SerialLinkedListAdapter<SerializeIF> {
 public:
@@ -157,17 +157,37 @@ public:
         APPEND_TO_FILE
     };
 
-	WriteCommand(WriteType writeType): writeType(writeType){}
+    /**
+     * @brief This is the contructor for deserialization
+     *
+     * @param writeType
+     */
+    WriteCommand(WriteType writeType): writeType(writeType) {}
 
-	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
+    /**
+     * @brief This is the contructor for serialization
+     *
+     * @param repositoryPath
+     * @param fileName
+     * @param fileData
+     * @param fileDataSize
+     * @param writeType
+     * @param packetSequenceNumber
+     */
+    WriteCommand(RepositoryPath& repositoryPath, FileName& fileName, const uint8_t* fileData,
+            const size_t fileDataSize, WriteType writeType, uint16_t packetSequenceNumber = 0):
+                repositoryPath(repositoryPath), fileName(fileName), fileData(fileData),
+                 writeType(writeType), fileDataSize(fileDataSize) {}
+
+    ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
             Endianness streamEndianness) override {
-	    ReturnValue_t result = deSerializeRepositoryAndFilename(buffer, size,
-	            repositoryPath, filename);
-	    if(result != HasReturnvaluesIF::RETURN_OK) {
-	        return result;
-	    }
+        ReturnValue_t result = deSerializeRepositoryAndFilename(buffer, size,
+                repositoryPath, fileName);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            return result;
+        }
 
-		/* Deserialize packet number */
+        /* Deserialize packet number */
 	    if(writeType == WriteType::APPEND_TO_FILE) {
 	        result = SerializeAdapter::deSerialize(&packetSequenceNumber,
 	                buffer, size, streamEndianness);
@@ -178,7 +198,7 @@ public:
 
 
 		/* Just keep internal pointer of rest of data, no copying */
-		filesize = *size;
+		fileDataSize = *size;
 		fileData = *buffer;
 		return HasReturnvaluesIF::RETURN_OK;
 	}
@@ -188,8 +208,34 @@ public:
 	}
 
 	ReturnValue_t serialize(uint8_t **buffer, size_t *size,
-            size_t maxSize, Endianness streamEndianness) const override {
-	    return HasReturnvaluesIF::RETURN_FAILED;
+	        size_t maxSize, Endianness streamEndianness) const override {
+
+	    ReturnValue_t result = serializeRepositoryAndFilename(buffer, size, maxSize,
+	            repositoryPath, fileName);
+
+	    if(result != HasReturnvaluesIF::RETURN_OK) {
+	        return result;
+	    }
+
+	    /* Serialize packet number */
+	    if(writeType == WriteType::APPEND_TO_FILE) {
+	        result = SerializeAdapter::serialize(&packetSequenceNumber,
+	                buffer, size, maxSize, streamEndianness);
+
+	        if(result != HasReturnvaluesIF::RETURN_OK) {
+	            return result;
+	        }
+	    }
+	    size_t newSize = fileDataSize + *size;
+	    if (newSize > maxSize or newSize < *size) {
+	        return SerializeIF::BUFFER_TOO_SHORT;
+	    }
+
+	    std::memcpy(*buffer, fileData, fileDataSize);
+	    *size = newSize;
+	    *buffer += fileDataSize;
+
+	    return HasReturnvaluesIF::RETURN_OK;
 	}
 
 	const char* getRepositoryPath(){
@@ -197,7 +243,7 @@ public:
 	}
 
 	const char* getFilename(){
-		return filename.c_str();
+		return fileName.c_str();
 	}
 
 	const uint8_t* getFileData(){
@@ -205,7 +251,7 @@ public:
 	}
 
 	size_t getFileSize(){
-		return filesize;
+		return fileDataSize;
 	}
 
 	uint16_t getPacketNumber(){
@@ -214,12 +260,12 @@ public:
 
 private:
 	RepositoryPath repositoryPath;
-	FileName filename;
+	FileName fileName;
 	uint16_t packetSequenceNumber = 0;
 	const uint8_t* fileData = nullptr;
 
 	WriteType writeType; //! [EXPORT] : [IGNORE]
-	size_t filesize = 0; //! [EXPORT] : [IGNORE]
+	size_t fileDataSize = 0; //! [EXPORT] : [IGNORE]
 };
 
 
@@ -551,16 +597,17 @@ ReturnValue_t deSerializeRepositories(const uint8_t **buffer,
 }
 
 ReturnValue_t serializeRepositoryAndFilename(uint8_t **buffer,
-        size_t* size, size_t maxSize, RepositoryPath& repositoryPath,
-		FileName& filename) {
-
+        size_t* size, size_t maxSize, const RepositoryPath& repositoryPath,
+		const FileName& filename) {
+    /* You need to cast away the const for the ETL librairy */
+    auto nonConstPath = const_cast<RepositoryPath&>(repositoryPath);
+    auto nonConstFilename = const_cast<FileName&>(filename);
 	// Check remaining size is large enough and check integer
 	// overflow of *size
 	size_t nextSize = repositoryPath.size();
 	size_t newSize =  nextSize + 1 + *size;
 	if ((newSize <= maxSize) and (newSize > *size)) {
-		repositoryPath.copy(reinterpret_cast<char*>(*buffer),
-				nextSize);
+	    nonConstPath.copy(reinterpret_cast<char*>(*buffer), nextSize);
 		*size += nextSize + 1;
 		*buffer += nextSize;
 		**buffer = '\0';
@@ -573,8 +620,7 @@ ReturnValue_t serializeRepositoryAndFilename(uint8_t **buffer,
 	nextSize = filename.size();
 	newSize =  nextSize + *size;
 	if ((newSize <= maxSize) and (newSize > *size)) {
-		filename.copy(reinterpret_cast<char*>(*buffer),
-				nextSize);
+		nonConstFilename.copy(reinterpret_cast<char*>(*buffer), nextSize);
 		*size += nextSize + 1;
 		*buffer += nextSize;
 		**buffer = '\0';

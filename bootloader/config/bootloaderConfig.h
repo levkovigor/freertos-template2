@@ -11,7 +11,7 @@
 #endif
 
 #define BL_VERSION      1
-#define BL_SUBVERSION   2
+#define BL_SUBVERSION   3
 
 //! Can be used to enable or disable diagnostic printouts in the bootloader.
 #define BOOTLOADER_VERBOSE_LEVEL    1

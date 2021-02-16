@@ -15,6 +15,7 @@ const uint32_t SDC1_SLOT1_HAMMING_ADDR =  SDC1_SLOT0_HAMMING_ADDR - NOR_FLASH_HA
 
 /* Private functions */
 int get_generic_hamming_flag(uint32_t addr, bool* flag_set);
+int manipulate_sdc_hamming_flag(bool set, VolumeId volume, SdSlots slot);
 
 /* Implementation */
 
@@ -35,7 +36,7 @@ int write_software_version(uint8_t software_version,
 
 int read_software_version(uint8_t *software_version,
         uint8_t* software_subversion, uint8_t* sw_subsubversion) {
-    if(!software_subversion || ! software_subversion || !sw_subsubversion) {
+    if(!software_subversion || !software_subversion || !sw_subsubversion) {
         return -3;
     }
 
@@ -113,6 +114,28 @@ int write_nor_flash_hamming_code(uint8_t* hamming_code, size_t current_offset,
         size_t size_to_write) {
     return FRAM_writeAndVerify((unsigned char*) hamming_code + current_offset,
             NOR_FLASH_HAMMING_ADDR, size_to_write);
+}
+
+int set_flash_hamming_flag() {
+    uint32_t value = 1;
+    return FRAM_writeAndVerify((unsigned char*)&value, NOR_FLASH_HAMMING_FLAG_ADDR, 1);
+}
+
+int clear_flash_hamming_flag() {
+    uint32_t value = 0;
+    return FRAM_writeAndVerify((unsigned char*)&value, NOR_FLASH_HAMMING_FLAG_ADDR, 1);
+}
+
+int get_flash_hamming_flag(bool* flag_set) {
+    if(!flag_set) {
+        return -3;
+    }
+    bool flag;
+    int result = FRAM_read((unsigned char*)&flag, NOR_FLASH_HAMMING_FLAG_ADDR, 1);
+    if(result == 0) {
+        *flag_set = flag;
+    }
+    return result;
 }
 
 int read_nor_flash_hamming_code(uint8_t *buffer, const size_t max_buffer, size_t* size_read) {
@@ -206,6 +229,68 @@ int reset_sdc0_slot0_reboot_counter() {
     return FRAM_writeAndVerify((unsigned char*) &new_reboot_counter,
             SDC1_SL1_REBOOT_COUNTER_ADDR, sizeof(new_reboot_counter));
 }
+
+int set_sdc_hamming_flag(VolumeId volume, SdSlots slot) {
+    uint32_t value = 1;
+    return manipulate_sdc_hamming_flag(value, volume, slot);
+}
+
+int clear_sdc_hamming_flag(VolumeId volume, SdSlots slot) {
+    uint32_t value = 0;
+    return manipulate_sdc_hamming_flag(value, volume, slot);
+}
+
+int get_sdc_hamming_flag(bool* flag_set, VolumeId volume, SdSlots slot) {
+    if(!flag_set) {
+        return -3;
+    }
+    uint32_t flag = 0;
+    int result = 0;
+    if(volume == SD_CARD_0) {
+        if(slot == SDC_SLOT_0) {
+            result = FRAM_read((unsigned char*) &flag, SDC0_SL0_HAMMING_FLAG_ADDR, sizeof(flag));
+        }
+        else {
+            result = FRAM_read((unsigned char*) &flag, SDC0_SL1_HAMMING_FLAG_ADDR, sizeof(flag));
+        }
+    }
+    else {
+        if(slot == SDC_SLOT_0) {
+            result = FRAM_read((unsigned char*) &flag, SDC1_SL0_HAMMING_FLAG_ADDR, sizeof(flag));
+        }
+        else {
+            result = FRAM_read((unsigned char*) &flag, SDC1_SL1_HAMMING_FLAG_ADDR, sizeof(flag));
+        }
+    }
+    if(result == 0) {
+        *flag_set = flag;
+    }
+    return result;
+}
+
+int manipulate_sdc_hamming_flag(uint32_t val, VolumeId volume, SdSlots slot) {
+    if(volume == SD_CARD_0) {
+        if(slot == SDC_SLOT_0) {
+            return FRAM_writeAndVerify((unsigned char*) &val, SDC0_SL0_HAMMING_FLAG_ADDR,
+                    sizeof(val));
+        }
+        else {
+            return FRAM_writeAndVerify((unsigned char*) &val, SDC0_SL1_HAMMING_FLAG_ADDR,
+                    sizeof(val));
+        }
+    }
+    else {
+        if(slot == SDC_SLOT_0) {
+            return FRAM_writeAndVerify((unsigned char*) &val, SDC1_SL0_HAMMING_FLAG_ADDR,
+                    sizeof(val));
+        }
+        else {
+            return FRAM_writeAndVerify((unsigned char*) &val, SDC1_SL1_HAMMING_FLAG_ADDR,
+                    sizeof(val));
+        }
+    }
+}
+
 
 int update_seconds_since_epoch(uint32_t secondsSinceEpoch) {
     return FRAM_writeAndVerify((unsigned char*) &secondsSinceEpoch,
