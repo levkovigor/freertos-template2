@@ -26,8 +26,8 @@ extern "C" {
 
 RS485DeviceComIF::RS485DeviceComIF(object_id_t objectId, object_id_t UslpDataLinkLayerId,
         object_id_t tcDestination, object_id_t tmStoreId, object_id_t tcStoreId) :
-        SystemObject(objectId), tcDestination(tcDestination), tmStoreId(tmStoreId), tcStoreId(
-                tcStoreId), uslpDataLinkLayerId(UslpDataLinkLayerId) {
+        SystemObject(objectId), uslpDataLinkLayerId(UslpDataLinkLayerId), tcDestination(
+                tcDestination), tmStoreId(tmStoreId), tcStoreId(tcStoreId) {
     // Necessary so we catch timeslots with no cookies
     for (int i = 0; i < RS485Timeslot::TIMESLOT_COUNT_RS485; i++) {
         deviceCookies[i] = nullptr;
@@ -100,7 +100,7 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
         case (RS485Timeslot::PL_VORAGO): {
             GpioDeviceComIF::enableTransceiverVorago();
             // Set Baudrate
-            AT91C_BASE_US2->US_BRGR = int(BOARD_MCK / (16 * rs485Cookie->getBaudrate());
+            AT91C_BASE_US2->US_BRGR = int(BOARD_MCK / (16 * rs485Cookie->getBaudrate()));
             handleSend(timeslot, rs485Cookie);
             break;
         }
@@ -168,7 +168,7 @@ ReturnValue_t RS485DeviceComIF::getSendSuccess(CookieIF *cookie) {
             || rs485Cookie->getComStatusSend() == ComStatusRS485::TRANSFER_INIT) {
         result = HasReturnvaluesIF::RETURN_OK;
         // If this happens, there is a bug somewhere
-    } else if (rs485Cookie->getComStatusSend() == ComStatusRS485::TRANSFER_SUCCESS) {
+    } else if (rs485Cookie->getComStatusSend() == ComStatusRS485::IDLE) {
         result = HasReturnvaluesIF::RETURN_FAILED;
         // Faulty transfer
     } else {

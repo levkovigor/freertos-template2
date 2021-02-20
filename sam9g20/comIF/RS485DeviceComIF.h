@@ -109,13 +109,14 @@ private:
     std::array<std::array<uint8_t, config::RS485_COM_FPGA_TFDZ_SIZE>,
             RS485Timeslot::TIMESLOT_COUNT_RS485> receiveBufferDevice;
 
-    object_id_t uslpDataLinkLayerId;
+    object_id_t uslpDataLinkLayerId = objects::NO_OBJECT;
     UslpDataLinkLayer *uslpDataLinkLayer = nullptr;
 
     // Used for setting up the MAPs for TmTc
+    object_id_t tcDestination = objects::NO_OBJECT;
     object_id_t tmStoreId = objects::NO_OBJECT;
     object_id_t tcStoreId = objects::NO_OBJECT;
-    object_id_t tcDestination = objects::NO_OBJECT;
+
 
     /**
      * @brief   Performs UART Transfer of DeviceCommands

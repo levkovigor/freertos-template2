@@ -14,7 +14,8 @@
  * @brief       Implementation for a USLP MAP that handles Tm and Tc
  * @details     This is basically an implementation of the USLP MAP Packet service
  *              It needs to be a system object as it basically handles reading from
- *              the tm queue
+ *              the tm queue.
+ *              Not thread safe.
  *
  * @author      L. Rajer
  */
