@@ -183,7 +183,7 @@ private:
     variable bootloader small sectors numbers depending on these configuration constants!
     The algorithms assumes 8 small sectors are reserved for the bootloader! */
     static constexpr size_t NORFLASH_TOTAL_SMALL_SECTOR_MEM_OBSW =
-    		RESERVED_OBSW_SMALL_SECTORS * NORFLASH_SMALL_SECTOR_SIZE;
+            RESERVED_OBSW_SMALL_SECTORS * NORFLASH_SMALL_SECTOR_SIZE;
     static constexpr size_t COPYING_BUCKET_SIZE = NORFLASH_SMALL_SECTOR_SIZE;
     ReturnValue_t copyImgHammingSdcToFram();
     ReturnValue_t copySdCardImageToNorFlash();
