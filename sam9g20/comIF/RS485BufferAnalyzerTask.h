@@ -25,19 +25,19 @@ public:
 
     /** SystemObject override */
     ReturnValue_t initialize() override;
-
+    /** ExecutableObject override */
     ReturnValue_t performOperation(uint8_t opCode) override;
 
 private:
+
+    object_id_t sharedRingBufferId;
+    RingBufferAnalyzer *bufferAnalyzer = nullptr;
+    std::array<uint8_t, TMTC_FRAME_MAX_LEN + 5> receiveArray;
 
     object_id_t UslpDataLinkLayerId;
     UslpDataLinkLayer *linkLayer = nullptr;
 
     ReturnValue_t handleReceiveBuffer();
-
-    object_id_t sharedRingBufferId;
-    RingBufferAnalyzer *bufferAnalyzer = nullptr;
-    std::array<uint8_t, TMTC_FRAME_MAX_LEN + 5> receiveArray;
 
 };
 
