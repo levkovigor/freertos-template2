@@ -340,7 +340,7 @@ void initTasks(void) {
 					2048 * 4, 0.4, genericMissedDeadlineFunc);
 	result = AttitudeController->addComponent(objects::ATTITUDE_CONTROLLER);
 	if (result != HasReturnvaluesIF::RETURN_OK) {
-		printAddError(objects::ATTITUDE_CONTROLLER);
+		InitMission::printAddObjectError("Attitude Controller", objects::ATTITUDE_CONTROLLER);
 	}
 
     /* SPI Communication Interface*/

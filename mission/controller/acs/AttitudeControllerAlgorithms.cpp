@@ -18,18 +18,21 @@
 #include <string.h>
 #include <fsfw/coordinates/CoordinateTransformations.h>
 
-void AttitudeController::calcQuatAndRefRot(double multFactor[QUATERNION_SIZE], double timeJulianDateUT1,
-		double positionF[COORDINATES_SIZE], double velocityF[COORDINATES_SIZE],
+
+void AttitudeController::calcQuatAndRefRot(double multFactor[QUATERNION_SIZE],
+		timeval currentTime, double positionF[COORDINATES_SIZE],
+		double velocityF[COORDINATES_SIZE],
 		double quatRotPointingAxis[QUATERNION_SIZE],
 		double positionTargetF[COORDINATES_SIZE],
 		double quatCurrentAttitude[QUATERNION_SIZE],
-		double quatLastPointing[QUATERNION_SIZE], timeval timeLastPointing) {
+		double quatLastPointing[QUATERNION_SIZE],
+		double quatBX[QUATERNION_SIZE], double refRotRate[COORDINATES_SIZE]) {
 
 	/* Determining ECEF to ECI transformation matrix */
 	double positionI[COORDINATES_SIZE], velocityI[COORDINATES_SIZE], positionTargetI[COORDINATES_SIZE];
-	CoordinateTransformations::positionEcfToEci(positionF, positionI, &timeLastPointing);
-	CoordinateTransformations::velocityEcfToEci(velocityF, positionF, velocityI, &timeLastPointing);
-	CoordinateTransformations::positionEcfToEci(positionTargetF, positionTargetI, &timeLastPointing);
+	CoordinateTransformations::positionEcfToEci(positionF, positionI, &currentTime);
+	CoordinateTransformations::velocityEcfToEci(velocityF, positionF, velocityI, &currentTime);
+	CoordinateTransformations::positionEcfToEci(positionTargetF, positionTargetI, &currentTime);
 
 	double x[COORDINATES_SIZE];
 	VectorOperations<double>::subtract(positionTargetI, positionI, x, 3);
@@ -76,10 +79,10 @@ void AttitudeController::calcQuatAndRefRot(double multFactor[QUATERNION_SIZE], d
 
 	QuaternionOperations::multiply(quatLastPointing, quatRotPointingAxis, quatLastPointing);
 
-	double quatBX[QUATERNION_SIZE];
-
+	QuaternionOperations::inverse(quatCurrentAttitude, quatCurrentAttitude);
 	QuaternionOperations::multiply(quatCurrentAttitude, quatLastPointing, quatBX);
 	QuaternionOperations::normalize(quatBX);
+
 
 
 /*

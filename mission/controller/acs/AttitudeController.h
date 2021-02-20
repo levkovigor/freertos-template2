@@ -41,12 +41,15 @@ private:
 
     void handleChangedDataset(sid_t sid, store_address_t storeId) override;
 
-    void calcQuatAndRefRot(double multFactor[QUATERNION_SIZE], double timeJulianDateUT1,
-    		double positionF[COORDINATES_SIZE], double velocityF[COORDINATES_SIZE],
-    		double quatRotPointingAxis[QUATERNION_SIZE],
-    		double positionTargetF[COORDINATES_SIZE],
-    		double quatCurrentAttitude[QUATERNION_SIZE],
-    		double quatLastPointing[QUATERNION_SIZE], timeval timeLastPointing);
+	void calcQuatAndRefRot(double multFactor[QUATERNION_SIZE],
+			timeval currentTime, double positionF[COORDINATES_SIZE],
+			double velocityF[COORDINATES_SIZE],
+			double quatRotPointingAxis[QUATERNION_SIZE],
+			double positionTargetF[COORDINATES_SIZE],
+			double quatCurrentAttitude[QUATERNION_SIZE],
+			double quatLastPointing[QUATERNION_SIZE],
+			double quatBX[QUATERNION_SIZE],
+			double refRotRate[COORDINATES_SIZE]);
 
 };
 

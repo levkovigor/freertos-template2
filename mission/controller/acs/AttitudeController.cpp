@@ -7,6 +7,7 @@
 
 #include <mission/controller/acs/AttitudeController.h>
 
+#include <mission/controller/acs/helpfunctions/RotationCalc.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/coordinates/CoordinateTransformations.h>
 #include <fsfw/globalfunctions/constants.h>
