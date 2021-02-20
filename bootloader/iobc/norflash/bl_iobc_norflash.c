@@ -1,8 +1,8 @@
 #include "bl_iobc_norflash.h"
-
+#include "../common/boot_iobc.h"
 #include <bootloaderConfig.h>
 #include <commonIOBCConfig.h>
-#include <bootloader/iobc/common/boot_iobc.h>
+
 #include <bootloader/utility/CRC.h>
 
 #include <sam9g20/common/FRAMApi.h>
@@ -162,7 +162,7 @@ void perform_bootloader_check() {
 
     uint16_t written_crc16 = 0;
     size_t bootloader_size = 0;
-    // Bootloader size and CRC16 are written at the end of the reserved bootloader space.
+    /* Bootloader size and CRC16 are written at the end of the reserved bootloader space. */
     memcpy(&bootloader_size, (const void *) NORFLASH_BL_SIZE_START_READ, 4);
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
@@ -183,7 +183,7 @@ void perform_bootloader_check() {
                     PRIMARY_IMAGE_RESERVED_SIZE);
             set_sram0_status_field(SRAM_BOOTLOADER_INVALID);
             vTaskEndScheduler();
-            jump_to_sdram_application();
+            jump_to_sdram_application(0x30400, SDRAM_DESTINATION);
         }
     }
     else {
