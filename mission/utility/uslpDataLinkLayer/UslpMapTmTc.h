@@ -72,9 +72,9 @@ private:
     uint8_t packetBuffer[MAX_PACKET_SIZE];  //!< The internal Space Packet Buffer.
 
     // TmTc Queues and stores
+    object_id_t tcDestination = objects::NO_OBJECT;
     object_id_t tmStoreId = objects::NO_OBJECT;
     object_id_t tcStoreId = objects::NO_OBJECT;
-    object_id_t tcDestination = objects::NO_OBJECT;
     MessageQueueIF *tmTcReceptionQueue = nullptr;
     StorageManagerIF *tmStore = nullptr;
     StorageManagerIF *tcStore = nullptr;
