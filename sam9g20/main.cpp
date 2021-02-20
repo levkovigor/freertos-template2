@@ -33,7 +33,7 @@ extern struct netif *netif;
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
-// quick fix to bypass link error
+/* quick fix to bypass link error */
 extern "C" void __sync_synchronize() {}
 
 #if defined(AT91SAM9G20_EK)
@@ -44,7 +44,7 @@ unsigned int asm_get_cpsr(void);
 void asm_set_cpsr(unsigned int val);
 void printProcessorState(void);
 
-// This will be the entry to the mission specific code
+/* This will be the entry to the mission specific code */
 void initMission();
 void initTask(void * args);
 
@@ -57,10 +57,10 @@ int main(void)
 {
     BaseType_t retval = pdFALSE;
 
-    // DBGU output configuration
+    /* DBGU output configuration */
     TRACE_CONFIGURE(DBGU_STANDARD, 115200, BOARD_MCK);
 
-    // Enable Co-Processor instruction cache.
+    /* Enable Co-Processor instruction cache. */
     CP15_Enable_I_Cache();
 
 #ifdef ISIS_OBC_G20
@@ -92,7 +92,7 @@ int main(void)
 
     // printProcessorState();
     vTaskStartScheduler();
-    // This should never be reached.
+    /* This should never be reached. */
     for(;;) {}
 }
 
@@ -102,7 +102,7 @@ void initTask (void * args) {
 
     initMission();
 
-    // Delete self.
+    /* Delete self. */
     TaskFactory::instance()->deleteTask();
 }
 
