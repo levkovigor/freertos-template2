@@ -73,14 +73,14 @@ private:
     RS485BaudRates baudrate = NORMAL;
     //! VCID for device
     uint8_t uslp_virtual_channel_id;
+    //! Fixed frame data zone size
+    size_t uslp_tfdz_size;
     //! MAP ID for Device Communication
     uint8_t uslp_deviceCom_map_id;
     //! If device can send and receive TmTc space packets
     bool hasTmTc = false;
     //! [Optional] MAP ID for TmTc Communication
     uint8_t uslp_tmTc_map_id;
-    //! Fixed frame data zone size
-    size_t uslp_tfdz_size;
     //! [Optional] If device is active, necessary for redundant devices which share the same timeslot
     bool isActive = true;
 
