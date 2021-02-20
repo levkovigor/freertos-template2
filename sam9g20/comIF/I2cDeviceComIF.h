@@ -38,14 +38,14 @@ public:
 		I2C_QUEUE_CREATION_FAILURE = -3,
 		I2C_PERIPHERAL_INIT_FAILURE = -2,
 		I2C_TASK_CREATION_FAILURE = -1,
-		RETURN_OK = 0
+		I2C_RETURN_OK = 0
 	};
 
 	//! Returnvalues by ISIS driver queueTransfer initialization
 	enum class I2cQueueTransferInitResult: int {
 		I2C_INVALID_TRANSFER_PARAMETERS = -2,
 		I2C_QUEUE_TRANSFER_FAILED = -1,
-		RETURN_OK = 0
+		I2C_RETURN_OK = 0
 	};
 
 	static constexpr ReturnValue_t I2C_DRIVER_ERROR = MAKE_RETURN_CODE(0x01);

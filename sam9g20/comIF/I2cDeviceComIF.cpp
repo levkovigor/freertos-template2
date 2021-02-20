@@ -363,7 +363,7 @@ ReturnValue_t I2cDeviceComIF::handleI2cTransferInitResult(I2cCookie * comCookie,
 	else if(driverResult == I2cQueueTransferInitResult::I2C_QUEUE_TRANSFER_FAILED) {
 		return I2cDeviceComIF::I2C_QUEUE_TRANSFER_INIT_FAILURE;
 	}
-	else if (driverResult == I2cQueueTransferInitResult::RETURN_OK){
+	else if (driverResult == I2cQueueTransferInitResult::I2C_RETURN_OK){
 		comCookie->messageSent = isSendRequest ? true : false;
 		return RETURN_OK;
 	}
