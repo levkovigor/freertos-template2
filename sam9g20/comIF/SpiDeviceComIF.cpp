@@ -311,7 +311,7 @@ void SpiDeviceComIF::handleSpiTransferInitResult(SpiCookie * spiCookie,
         spiSemaphore.release();
         return;
     }
-    case(SpiTransferInitResult::RETURN_OK): {
+    case(SpiTransferInitResult::SPI_RETURN_OK): {
         spiCookie->setCurrentComStatus(ComStatus::TRANSFER_INIT_SUCCESS);
         return;
     }

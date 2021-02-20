@@ -63,7 +63,7 @@ public:
         INVALID_TRANSFER_STRUCT = -3,
         INVALID_DRIVER_PARAMS = -2,
         QUEUE_INIT_FAILURE = -1,
-        RETURN_OK = 0
+        SPI_RETURN_OK = 0
     };
 
     /** ExecutableObjectIF overrides */
