@@ -335,6 +335,8 @@ void Factory::setStaticFrameworkObjectIds() {
     TmPacketStored::timeStamperId = objects::TIME_STAMPER;
 #if defined(ETHERNET)
     TmFunnel::downlinkDestination = objects::UDP_TMTC_BRIDGE;
+#elif defined(SERIAL)
+    TmFunnel::downlinkDestination = objects::SERIAL_TMTC_BRIDGE;
 #else
     TmFunnel::downlinkDestination = objects::USLP_MAPP_SERVICE;
 #endif
