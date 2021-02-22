@@ -263,8 +263,8 @@ void Factory::produce(void) {
 
     new TestDevice(objects::DUMMY_HANDLER_RS485_1, objects::RS485_DEVICE_COM_IF, rs485CookieFPGA,
             true);
-    new TestDevice(objects::DUMMY_HANDLER_RS485_2, objects::RS485_DEVICE_COM_IF, rs485CookiePCDU,
-            true);
+    new ArduinoHandler(objects::DUMMY_HANDLER_RS485_2, objects::RS485_DEVICE_COM_IF, rs485CookiePCDU,
+            "PCDU_ARDUINO");
 
     /* Test Tasks AT91 */
     //size_t I2C_MAX_REPLY_LEN = 256;

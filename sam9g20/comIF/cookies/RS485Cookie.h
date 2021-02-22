@@ -21,8 +21,9 @@ enum RS485Timeslot : uint8_t {
     TIMESLOT_COUNT_RS485
 };
 
+//TODO: Change fast baudrate back to fast, this is for testing
 enum RS485BaudRates : uint32_t {
-    FAST = 2000000, NORMAL = 115000,
+    FAST = 115200, NORMAL = 115200,
 };
 
 enum class ComStatusRS485 : uint8_t {
