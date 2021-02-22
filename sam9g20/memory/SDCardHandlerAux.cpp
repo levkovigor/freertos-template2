@@ -1,6 +1,8 @@
 #include "SDCardHandler.h"
 #include "SDCardHandlerPackets.h"
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <mission/memory/FileSystemMessage.h>
+
 
 ReturnValue_t SDCardHandler::handleCreateFileCommand(CommandMessage *message) {
     store_address_t storeId = FileSystemMessage::getStoreId(message);
@@ -154,9 +156,13 @@ ReturnValue_t SDCardHandler::handleCreateDirectoryCommand(
     if (result != HasReturnvaluesIF::RETURN_OK) {
         // If the folder already exists, count that as success..
         if(result != HasFileSystemIF::DIRECTORY_ALREADY_EXISTS) {
-            sif::error << "SDCardHandler::handleCreateDirectoryCommand: "
-                    << "Creating directory " << command.getDirname()
-                    << " failed" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+            sif::error << "SDCardHandler::handleCreateDirectoryCommand: Creating directory " <<
+                    command.getDirname() << " failed." << std::endl;
+#else
+            sif::printError("SDCardHandler::handleCreateDirectoryCommand: Creating directory "
+                    "%s failed.\n", command.getDirname());
+#endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
             sendCompletionReply(false, result);
         }
     }
@@ -190,8 +196,11 @@ ReturnValue_t SDCardHandler::handleDeleteDirectoryCommand(
     result = deleteDirectory(command.getRepositoryPath(),
             command.getDirname());
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Deleting directory " << command.getDirname()
-                                    << " failed" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "Deleting directory " << command.getDirname() << " failed." << std::endl;
+#else
+        sif::printError("Deleting directory %s failed.\n", command.getDirname());
+#endif
         sendCompletionReply(false, result);
     }
     else {
@@ -272,10 +281,18 @@ ReturnValue_t SDCardHandler::printRepository(const char *repository) {
         // check whether file object is directory or file.
         if(change_directory(findResult.filename, false) == F_NO_ERROR) {
             change_directory("..", false);
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "D: " << findResult.filename << std::endl;
+#else
+            sif::printInfo("D: %s\n", findResult.filename);
+#endif
         }
         else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "F: " << findResult.filename << std::endl;
+#else
+            sif::printInfo("F: %s\n", findResult.filename);
+#endif
         }
     }
     return HasReturnvaluesIF::RETURN_OK;
@@ -296,6 +313,11 @@ ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
         fileFound = f_findnext(&findResult);
     }
 
+#if FSFW_CPP_OSTREAM_ENABLED == 0
+    char subdirDepth[10];
+    uint8_t subdirsLen = 0;
+#endif
+
     for(uint8_t idx = 0; idx < 255; idx ++) {
         if(idx > 0) {
             fileFound = f_findnext(&findResult);
@@ -308,17 +330,35 @@ ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
 
         if(change_directory(findResult.filename, false) == F_NO_ERROR) {
             for(uint8_t j = 0; j < recursionDepth; j++) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
                 sif::info << "-";
+#else
+                subdirsLen += sprintf(subdirDepth + subdirsLen , "-");
+#endif
             }
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "D: " << findResult.filename << std::endl;
+#else
+            sif::printInfo("%sD: %s\n", subdirDepth, findResult.filename);
+            subdirsLen = 0;
+#endif
             printHelper(recursionDepth + 1);
             change_directory("..", false);
         }
         else {
             for(uint8_t j = 0; j < recursionDepth; j++) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
                 sif::info << "-";
+#else
+                subdirsLen += sprintf(subdirDepth + subdirsLen , "-");
+#endif
             }
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "F: " << findResult.filename << std::endl;
+#else
+            sif::printInfo("%sF: %s\n", subdirDepth, findResult.filename);
+            subdirsLen = 0;
+#endif
         }
     }
     return HasReturnvaluesIF::RETURN_OK;
@@ -333,12 +373,21 @@ ReturnValue_t SDCardHandler::printSdCard() {
     fileFound = f_findfirst("*.*", &findResult);
     if(fileFound != F_NO_ERROR) {
         // might be empty.
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "SD Card empty." << std::endl;
+#else
+        sif::printInfo("SD Card empty.\n");
+#endif
         return HasReturnvaluesIF::RETURN_OK;
     }
 
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Printing SD Card: " << std::endl;
     sif::info << "F = File, D = Directory, - = Subdir Depth" << std::endl;
+#else
+    sif::printInfo("Printing SD Card: \n");
+    sif::printInfo("F = File, D = Directory, - = Subdir Depth\n");
+#endif
 
     for(int idx = 0; idx < 255; idx++) {
         if(idx > 0) {
@@ -351,14 +400,22 @@ ReturnValue_t SDCardHandler::printSdCard() {
 
         // check whether file object is directory or file.
         if(change_directory(findResult.filename, false) == F_NO_ERROR) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "D: " << findResult.filename << std::endl;
+#else
+            sif::printInfo("D: %s\n", findResult.filename);
+#endif
             printHelper(recursionDepth + 1);
             change_directory("..", false);
         }
         else {
             // Normally files should have a three letter extension, but
             // we always check whether there is a file without extension
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "F: " << findResult.filename << std::endl;
+#else
+            sif::printInfo("F: %s\n", findResult.filename);
+#endif
         }
 
     }
@@ -445,8 +502,11 @@ ReturnValue_t SDCardHandler::getStoreData(store_address_t& storeId,
     ReturnValue_t result = IPCStore->getData(storeId, accessor);
     if(result != HasReturnvaluesIF::RETURN_OK){
         // Should not happen!
-        sif::error << "SDCardHandler::getStoreData: "
-               <<  "Getting data failed!" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "SDCardHandler::getStoreData: Getting data failed!" << std::endl;
+#else
+        sif::printError("SDCardHandler::getStoreData: Getting data failed!\n");
+#endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     *size = accessor.size();
@@ -468,8 +528,13 @@ void SDCardHandler::sendCompletionReply(bool success, ReturnValue_t errorCode,
     if(result != HasReturnvaluesIF::RETURN_OK){
         if(result == MessageQueueIF::FULL) {
             // Configuration error.
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "SDCardHandler::sendCompletionReply: "
-                    <<" Queue of receiver is full!" << std::endl;
+                    " Queue of receiver is full!" << std::endl;
+#else
+            sif::printError("SDCardHandler::sendCompletionReply: "
+                    " Queue of receiver is full!\n");
+#endif
         }
     }
 }

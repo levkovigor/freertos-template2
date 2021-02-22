@@ -1,4 +1,5 @@
 #include "faultHandler.h"
+#include <OBSWConfig.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <at91/utility/exithandler.h>
 #include <at91/utility/trace.h>
@@ -11,7 +12,7 @@
  *        Constants
  *----------------------------------------------------------------------------*/
 
-#ifdef DEBUG
+#if OBSW_VERBOSE_LEVEL >= 1
 
 /* IFSR status */
 static const char* _prefetch_abort_status[32] = {
@@ -60,7 +61,7 @@ static const char* _data_abort_status[32] = {
 	"asynchronous external abort"
 };
 
-#endif /* DEBUG */
+#endif /* OBSW_VERBOSE_LEVEL >= 1 */
 
 //------------------------------------------------------------------------------
 /// Default spurious interrupt handler. Infinite loop.
@@ -98,7 +99,7 @@ void defaultIrqHandler( void )
  */
 void data_abort_irq_handler(void)
 {
-#ifdef DEBUG
+#if OBSW_VERBOSE_LEVEL >= 1
 	uint32_t v1, v2, dfsr = 0;
 
 	asm volatile ("mrc p15, 0, %0, c5, c0, 0" : "=r"(v1));
@@ -122,7 +123,7 @@ void data_abort_irq_handler(void)
 	TRACE_ERROR("####################\n\r");
 #else
 	TRACE_ERROR("\r\nDATA ABORT EXCEPTION OCCURED! HALTING! \n\r");
-#endif
+#endif /* OBSW_VERBOSE_LEVEL >= 1 */
 
 	// Call ISIS handler which also restarts the CPU
 	restartDataAbort();
@@ -135,7 +136,7 @@ void data_abort_irq_handler(void)
  */
 void prefetch_abort_irq_handler(void)
 {
-#ifdef DEBUG
+#if OBSW_VERBOSE_LEVEL >= 1
 	uint32_t v1, v2, ifsr = 0;
 
 	asm volatile ("mrc p15, 0, %0, c5, c0, 1" : "=r"(v1));
@@ -156,7 +157,7 @@ void prefetch_abort_irq_handler(void)
 	TRACE_ERROR("####################\n\r");
 #else
 	TRACE_ERROR("\r\nPREFETCH ABORT EXCEPTION OCCURED! HALTING! \n\r");
-#endif
+#endif /* OBSW_VERBOSE_LEVEL >= 1 */
 
 	// Call ISIS handler which also restarts the CPU
 	restartPrefetchAbort();

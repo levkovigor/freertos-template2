@@ -44,6 +44,26 @@ MEMORY
 
 SECTIONS
 {     
+    /* Will be copied to SRAM at startup, but loaded in SDRAM */
+    .prerelocate : AT (_efixed)
+    {
+        . = ALIGN(4);
+        _sprerelocate = .;
+        KEEP(*(.vectors));
+        *(.sramfunc*);
+        . = ALIGN(4);
+        _eprerelocate = .;
+    } >sram0
+    
+    /* Will also be copied to SRAM */
+    .postrelocate : AT (_efixed + SIZEOF(.prerelocate))
+    {
+        . = ALIGN(4);
+        _spostrelocate = .;
+        . = ALIGN(4);
+        _epostrelocate = .;
+    } >sram0 
+         
     .fixed :
 	{
         . = ALIGN(4);			/* tells the linker that these section ought to be word aligned */
@@ -90,14 +110,14 @@ SECTIONS
 	} >sdram
 
 	/* used for unwinding, can be useful for debugging  */  
-	.ARM.extab (NOLOAD) :
+	.ARM.extab :
     {  
 		*(.ARM.extab* .gnu.linkonce.armextab.*) 
 	} >sdram
    
     /* used for unwinding, can be useful for debugging  */  
 	__exidx_start = .;
-    .ARM.exidx (NOLOAD) : 
+    .ARM.exidx : 
     {
 		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
 	} >sdram
@@ -105,33 +125,12 @@ SECTIONS
     
     . = ALIGN(4);
     _efixed = .;
-    
-    /* Will be copied to SRAM at startup, but loaded in SDRAM */
 
-    .prerelocate : AT (_efixed)
-    {
-        . = ALIGN(4);
-        _sprerelocate = .;
-        . = ALIGN(4);
-        _eprerelocate = .;
-    } >sram0
-    
-    /* Will also be copied to SRAM */
-    .postrelocate : AT (_efixed + SIZEOF(.prerelocate))
-    {
-        . = ALIGN(4);
-        _spostrelocate = .;
-		KEEP(*(.vectors));
-		*(.sramfunc*);
-        . = ALIGN(4);
-        _epostrelocate = .;
-    } >sram0 
-         
     .sramdata : AT (_efixed + SIZEOF(.prerelocate) + SIZEOF(.postrelocate))
     {
         . = ALIGN(4);
         _ssramdata = .;
-        *(.sramdata)
+        *(.sramdata*)
         . = ALIGN(4);
         _esramdata = .;
     } >sram1
@@ -146,20 +145,20 @@ SECTIONS
     } >sram1
 
     /* this section holds uninitialized global and static data  */
-	.bss (NOLOAD) : 
-	{
-	 	. = ALIGN(4);
-	    /* This is used by the startup in order to initialize the .bss secion */
-	    _sbss = .;         /* define a global symbol at bss start */
-	    __bss_start__ = _sbss;
-	    *(.bss)
-	    *(.bss*)
-	    *(COMMON)
-		*(COMMON.*)
-	    . = ALIGN(4);
-	    _ebss = .;         /* define a global symbol at bss end */
-	    __bss_end__ = _ebss;
-  	} >sdram
+    .bss (NOLOAD) : 
+    {
+        . = ALIGN(4);
+        /* This is used by the startup in order to initialize the .bss secion */
+        _sbss = .;         /* define a global symbol at bss start */
+        __bss_start__ = _sbss;
+        *(COMMON)
+        *(COMMON.*)
+        *(.bss)
+        *(.bss*)
+        . = ALIGN(4);
+        _ebss = .;         /* define a global symbol at bss end */
+        __bss_end__ = _ebss;
+    } >sdram
 
     /* Heap section */
     . = ALIGN(4);

@@ -476,8 +476,8 @@ void USBDDriver_Initialize(
 
     // Initialize interfaces array if not null
     if (pInterfaces != 0) {
-    
-        memset(pInterfaces, sizeof(pInterfaces), 0);
+        // somethings wrong here.. why is the size of the array not passed? this does not work.
+        //memset(pInterfaces, 0, sizeof(pInterfaces));
     }
 }
 

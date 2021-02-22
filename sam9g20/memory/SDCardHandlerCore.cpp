@@ -3,12 +3,19 @@
 #include "SDCardHandlerPackets.h"
 #include <mission/memory/FileSystemMessage.h>
 
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/ipc/CommandMessage.h>
 #include <fsfw/timemanager/Countdown.h>
 #include <fsfw/tasks/PeriodicTaskIF.h>
 #include <fsfw/timemanager/Stopwatch.h>
+
+#ifdef ISIS_OBC_G20
+#include <sam9g20/common/FRAMApi.h>
+#else
+#include <sam9g20/common/VirtualFRAMApi.h>
+#endif
+
 
 SDCardHandler::SDCardHandler(object_id_t objectId): SystemObject(objectId),
     commandQueue(QueueFactory::instance()->
@@ -189,11 +196,19 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
     }
     case(FORMAT_SD_CARD): {
         // formats the currently active filesystem!
-        sif::info << "SDCardHandler::handleMessage: Formatting SD-Card "
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::warning << "SDCardHandler::handleMessage: Formatting SD-Card "
                 << activeVolume << "!" << std::endl;
+#else
+        sif::printWarning("SDCardHandler::handleMessage: Formatting SD-Card %d!\n", activeVolume);
+#endif
         int retval = f_format(0, F_FAT32_MEDIA);
         if(retval != F_NO_ERROR) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "SD-Card was formatted successfully!" << std::endl;
+#else
+            sif::printInfo("SD-Card was formatted successfully!\n");
+#endif
             result = retval;
         }
         actionHelper.finish(commandedBy, actionId, result);
@@ -209,6 +224,35 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
         ActivePreferedVolumeReport reply(preferedVolume);
         result = actionHelper.reportData(commandedBy, actionId, &reply);
         actionHelper.finish(commandedBy, actionId, result);
+        break;
+    }
+    case(SET_LOAD_OBSW_UPDATE): {
+        if (size < 1) {
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+        if (data[0] != 0 or data[0] != 1) {
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+        bool enable = data[0];
+        VolumeId volume = SD_CARD_0;
+        if (enable ) {
+            if (size < 2) {
+                return HasActionsIF::INVALID_PARAMETERS;
+            }
+            if ((data[1] != SD_CARD_0) or (data[1] != SD_CARD_1)) {
+                return HasActionsIF::INVALID_PARAMETERS;
+            }
+            volume = static_cast<VolumeId>(data[1]);
+        }
+        int retval = set_to_load_softwareupdate(enable, volume);
+        if (retval != 0) {
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+
+        break;
+    }
+    case(GET_LOAD_OBSW_UPDATE): {
+
         break;
     }
     default: {
@@ -264,8 +308,11 @@ ReturnValue_t SDCardHandler::handleFileMessage(CommandMessage* message) {
         break;
     }
     default: {
-        sif::debug << "SDCardHandler::handleFileMessage: "
-                << "Invalid filesystem command!" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::debug << "SDCardHandler::handleFileMessage: Invalid filesystem command!" << std::endl;
+#else
+        sif::printDebug("SDCardHandler::handleFileMessage: Invalid filesystem command!\n");
+#endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     }

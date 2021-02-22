@@ -37,24 +37,28 @@ MutexIF* CoreController::timeMutex = nullptr;
 
 CoreController::CoreController(object_id_t objectId,
         object_id_t systemStateTaskId):
-        ExtendedControllerBase(objectId, objects::NO_OBJECT),
-        systemStateTaskId(systemStateTaskId) {
-	timeMutex = MutexFactory::instance()->createMutex();
+                        ExtendedControllerBase(objectId, objects::NO_OBJECT),
+                        systemStateTaskId(systemStateTaskId) {
+    timeMutex = MutexFactory::instance()->createMutex();
 #ifdef ISIS_OBC_G20
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "CoreController: Starting Supervisor component." << std::endl;
+#else
+    sif::printInfo("CoreController: Starting Supervisor component.\n");
+#endif
     Supervisor_start(nullptr, 0);
 #endif
 }
 
 uint32_t CoreController::getUptimeSeconds() {
-	MutexHelper(timeMutex, MutexIF::TimeoutType::WAITING, 20);
-	return uptimeSeconds;
+    MutexHelper(timeMutex, MutexIF::TimeoutType::WAITING, 20);
+    return uptimeSeconds;
 }
 
 void CoreController::performControlOperation() {
     // First task: Supervisor handling.
-	performSupervisorHandling();
-	// Second task: All time related handling.
+    performSupervisorHandling();
+    // Second task: All time related handling.
     performPeriodicTimeHandling();
 }
 
@@ -86,8 +90,8 @@ void CoreController::performPeriodicTimeHandling() {
     /* Dynamic memory allocation is only allowed at software startup */
 #if OBSW_MONITOR_ALLOCATION == 1
     if(currentUptimeSeconds > 2 and not
-    		config::softwareInitializationComplete) {
-    	config::softwareInitializationComplete = true;
+            config::softwareInitializationComplete) {
+        config::softwareInitializationComplete = true;
     }
 #endif
 
@@ -125,13 +129,13 @@ uint32_t CoreController::updateSecondsCounter() {
     // I am just going to assume that the first uptime encountered is going
     // to be larger than 0 milliseconds.
     if(uptimeMs <= lastUptimeMs) {
-    	msOverflowCounter++;
+        msOverflowCounter++;
     }
     currentUptimeSeconds /= configTICK_RATE_HZ;
 
     lastUptimeMs = uptimeMs;
     uptimeSeconds = msOverflowCounter * SECONDS_ON_MS_OVERFLOW +
-    		currentUptimeSeconds;
+            currentUptimeSeconds;
 #endif
     return uptimeSeconds;
 }
@@ -144,12 +148,19 @@ ReturnValue_t CoreController::checkModeCommand(Mode_t mode, Submode_t submode,
 ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
     switch(actionId) {
-    case(REQUEST_CPU_STATS_CHECK_STACK): {
-        if(not systemStateTask->readAndGenerateStats()) {
+    case(REQUEST_CPU_STATS_CSV): {
+            if(not systemStateTask->generateStatsCsv()) {
+                return HasActionsIF::IS_BUSY;
+            }
+
+            actionHelper.finish(commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
+            return HasReturnvaluesIF::RETURN_OK;
+        }
+    case(REQUEST_CPU_STATS_PRINT): {
+        if(not systemStateTask->generateStatsPrint()) {
             return HasActionsIF::IS_BUSY;
         }
-        actionHelper.finish(commandedBy, actionId,
-                HasReturnvaluesIF::RETURN_OK);
+        actionHelper.finish(commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
         return HasReturnvaluesIF::RETURN_OK;
     }
     case(RESET_OBC): {
@@ -169,6 +180,25 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         Supervisor_powerCycleIobc(&reply, SUPERVISOR_INDEX);
 #endif
         return HasReturnvaluesIF::RETURN_OK;
+    }
+    case(CLEAR_STORE_PAGE): {
+        if (size > 2 or size < 1) {
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+        return handleClearStoreCommand(static_cast<Stores>(data[STORE_TYPE]), actionId,
+                data[PAGE_INDEX]);
+    }
+    case(CLEAR_WHOLE_STORE): {
+        if (size > 2 or size < 1) {
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+        return handleClearStoreCommand(static_cast<Stores>(data[STORE_TYPE]), actionId, 0);
+    }
+    case(GET_FILL_COUNT): {
+        if (size != 1) {
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+        return getFillCountCommand(static_cast<Stores>(data[STORE_TYPE]), commandedBy, actionId);
     }
     default:
         return HasActionsIF::INVALID_ACTION_ID;
@@ -226,11 +256,16 @@ ReturnValue_t CoreController::initializeAfterTaskCreation() {
     }
 
 #ifdef ISIS_OBC_G20
-     uint32_t new_reboot_counter = 0;
+    uint32_t new_reboot_counter = 0;
     int retval = increment_reboot_counter(&new_reboot_counter);
     if(retval != 0) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "CoreController::initialize: Error incrementing the boot"
                 << " counter!" << std::endl;
+#else
+        sif::printError("CoreController::initialize: Error incrementing the boot"
+                " counter!\n");
+#endif
     }
     triggerEvent(BOOT_EVENT, new_reboot_counter, 0);
 #else
@@ -244,8 +279,12 @@ ReturnValue_t CoreController::initialize() {
 #ifdef ISIS_OBC_G20
     framHandler = objectManager->get<FRAMHandler>(objects::FRAM_HANDLER);
     if(framHandler == nullptr) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "CoreController::initialize: No FRAM handler found!"
                 << std::endl;
+#else
+        sif::printError("CoreController::initialize: No FRAM handler found!\n");
+#endif
     }
 #endif
     return ExtendedControllerBase::initialize();
@@ -256,8 +295,13 @@ ReturnValue_t CoreController::setUpSystemStateTask() {
     systemStateTask = objectManager->
             get<SystemStateTask>(systemStateTaskId);
     if(systemStateTask == nullptr) {
-        sif::error << "CoreController::performControlOperation:"
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "CoreController::performControlOperation: "
                 "System state task invalid!" << std::endl;
+#else
+        sif::printError("CoreController::performControlOperation: "
+                "System state task invalid!\n");
+#endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     return HasReturnvaluesIF::RETURN_OK;
@@ -265,14 +309,23 @@ ReturnValue_t CoreController::setUpSystemStateTask() {
 
 ReturnValue_t CoreController::initializeIsisTimerDrivers() {
 #ifdef ISIS_OBC_G20
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "CoreController: Starting RTC and RTT." << std::endl;
+#else
+    sif::printInfo("CoreController: Starting RTC and RTT.\n");
+#endif
 
     // Time will be set later, this just starts the synchronization task
     // with a frequence of 0.5 seconds.
     int retval = Time_start(NULL, RTC_RTT_SYNC_INTERVAL);
     if(retval >> 8 == 0xFF) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "CoreController::initializeAfterTaskCreation:"
                 "ISIS RTC start failure!" << std::endl;
+#else
+        sif::printError("CoreController::initializeAfterTaskCreation:"
+                "ISIS RTC start failure!\n");
+#endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     retval = retval & 0xFF;
@@ -282,14 +335,24 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
     }
     else if(retval == 2) {
         // Should not happen, we did not specify time..
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "CoreController::initializeAfterTaskCreation: Config"
                 << " error!" << std::endl;
+#else
+        sif::printError("CoreController::initializeAfterTaskCreation: Config"
+                " error!\n");
+#endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     else if(retval == 3) {
         // Should not happen, the scheduler is already running
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "CoreController::initializeAfterTaskCreation: Config"
                 << " error, FreeRTOS scheduler not running!" << std::endl;
+#else
+        sif::printError("CoreController::initializeAfterTaskCreation: Config"
+                " error, FreeRTOS scheduler not running!\n");
+#endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
@@ -316,7 +379,12 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
     currentTime.tv_sec = secSinceEpoch;
     Clock::setClock(&currentTime);
 
+#if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "CoreController: Clock set." << std::endl;
+#else
+    sif::printInfo("CoreController: Clock set.\n");
+#endif
+
 #else
     RTT_start();
     timeval currentTime;
@@ -330,8 +398,82 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
+ReturnValue_t CoreController::storeSelect(StorageManagerIF** store, Stores storeType) {
+
+        if (store == nullptr) {
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+
+        switch(storeType) {
+        case(TM_STORE): {
+            *store = objectManager->get<StorageManagerIF>(objects::TM_STORE);
+            break;
+        }
+        case(TC_STORE): {
+            *store = objectManager->get<StorageManagerIF>(objects::TC_STORE);
+            break;
+        }
+        case(IPC_STORE): {
+            *store = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
+            break;
+        }
+        default: {
+            sif::printWarning("CoreController::storeSelect: Invalid Store!\n\r");
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+        }
+        return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t CoreController::getFillCountCommand(Stores storeType, MessageQueueId_t commandedBy,
+        ActionId_t replyId) {
+
+    StorageManagerIF* store = nullptr;
+    ReturnValue_t result = storeSelect(&store, storeType);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+    uint8_t numberOfPools = store->getNumberOfSubPools();
+    uint8_t buffer[numberOfPools + 2];
+    uint8_t bytesWritten;
+    buffer[0] = storeType;
+    store->getFillCount(&buffer[1], &bytesWritten);
+    result = actionHelper.reportData(commandedBy, replyId, buffer, bytesWritten);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    return HasActionsIF::EXECUTION_FINISHED;
+}
+
+ReturnValue_t CoreController::handleClearStoreCommand(Stores storeType, ActionId_t pageOrWholeStore,
+                StorageManagerIF::max_subpools_t poolIndex) {
+
+    StorageManagerIF* store = nullptr;
+    ReturnValue_t result = storeSelect(&store, storeType);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    if(store == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    if (pageOrWholeStore == CLEAR_STORE_PAGE) {
+        if(poolIndex >= store->getNumberOfSubPools()) {
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+        store->clearSubPool(poolIndex);
+    }
+    else if (pageOrWholeStore == CLEAR_WHOLE_STORE){
+        store->clearStore();
+    }
+
+    return HasActionsIF::EXECUTION_FINISHED;
+}
+
 ReturnValue_t CoreController::initializeLocalDataPool(localpool::DataPool &localDataPoolMap,
-		LocalDataPoolManager &poolManager) {
+        LocalDataPoolManager &poolManager) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 

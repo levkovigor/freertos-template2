@@ -7,6 +7,7 @@
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
 #include <fsfw/tmtcpacket/pus/TcPacketStored.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 PusTcInjector::PusTcInjector(object_id_t objectId, object_id_t destination,
 		object_id_t tcStore, uint16_t defaultApid): SystemObject(objectId),
@@ -38,7 +39,11 @@ ReturnValue_t PusTcInjector::injectPusTelecommand(uint8_t service,
 	TmTcMessage tcMessage(tcPacket.getStoreAddress());
 	ReturnValue_t result = injectionQueue->sendToDefault(&tcMessage);
 	if(result != HasReturnvaluesIF::RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::warning << "PusTcInjector: Sending TMTC message failed!" << std::endl;
+#else
+		sif::printWarning("PusTcInjector: Sending TMTC message failed!\n");
+#endif
 	}
 	return result;
 }
@@ -50,7 +55,11 @@ ReturnValue_t PusTcInjector::initialize() {
 	AcceptsTelecommandsIF* targetQueue = objectManager->
 			get<AcceptsTelecommandsIF>(destination);
 	if(targetQueue == nullptr) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "PusTcInjector: CCSDS distributor not initialized yet!" << std::endl;
+#else
+		sif::printError("PusTcInjector: CCSDS distributor not initialized yet!\n");
+#endif
 		return ObjectManagerIF::CHILD_INIT_FAILED;
 	}
 	else {
@@ -60,7 +69,11 @@ ReturnValue_t PusTcInjector::initialize() {
 	// Prepare store used to store TC messages
 	tcStore = objectManager->get<StorageManagerIF>(tcStoreId);
 	if(tcStore == nullptr) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "PusTcInjector: TC Store not initialized!" << std::endl;
+#else
+		sif::printError("PusTcInjector: TC Store not initialized!\n");
+#endif
 		return ObjectManagerIF::CHILD_INIT_FAILED;
 	}
 	return HasReturnvaluesIF::RETURN_OK;

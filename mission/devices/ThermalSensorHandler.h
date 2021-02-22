@@ -95,7 +95,7 @@ private:
 	TSensorDefinitions::ThermalSensorDataset sensorDataset;
 	sid_t sensorDatasetSid;
 
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
 	PeriodicOperationDivider* debugDivider;
 #endif
 };

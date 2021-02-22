@@ -5,9 +5,8 @@
  *      Author: Mikael Senger
  */
 
-#include <mission/controller/acs/AttitudeController.h>
+#include "AttitudeController.h"
 
-#include <mission/controller/acs/helpfunctions/RotationCalc.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/coordinates/CoordinateTransformations.h>
 #include <fsfw/globalfunctions/constants.h>
@@ -18,9 +17,13 @@
 #include <fsfw/subsystem/SubsystemBase.h>
 #include <string.h>
 #include <fsfw/coordinates/CoordinateTransformations.h>
+#include <OBSWConfig.h>
 
-AttitudeController::AttitudeController(object_id_t objectId):
+AttitudeController::AttitudeController(object_id_t objectId) :
 		ExtendedControllerBase(objectId, objects::NO_OBJECT) {
+}
+
+AttitudeController::~AttitudeController() {
 }
 
 ReturnValue_t AttitudeController::handleCommandMessage(
@@ -30,6 +33,9 @@ ReturnValue_t AttitudeController::handleCommandMessage(
 
 void AttitudeController::performControlOperation() {
 	//sif::info;
+#if OBSW_ACS_TEST == 1
+
+#endif
 }
 
 ReturnValue_t AttitudeController::checkModeCommand(Mode_t mode,

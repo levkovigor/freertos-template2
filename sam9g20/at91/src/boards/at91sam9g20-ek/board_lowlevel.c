@@ -43,13 +43,18 @@
 //------------------------------------------------------------------------------
 //         Headers
 //------------------------------------------------------------------------------
+// Added for SOURCE to specify SAM-BA boot.
+#include <OBSWConfig.h>
 
 #include <AT91SAM9G20.h>
 #include <board.h>
 #include <board_lowlevel.h>
 #include <board_memories.h>
 #include <at91/peripherals/pmc/pmc.h>
+#include <at91/peripherals/aic/aic.h>
+#include <at91/peripherals/pit/pit.h>
 #include <at91/utility/trace.h>
+#include <led_ek.h>
 
 #include <string.h>
 
@@ -73,7 +78,7 @@
 #define BOARD_PLLACOUNT         (0x3F << 8)
 #define BOARD_MULA              (AT91C_CKGR_MULA & (0x2A << 16))
 #define BOARD_DIVA              (AT91C_CKGR_DIVA & 1)
-#define BOARD_PRESCALER         (0x00001300) 
+#define BOARD_PRESCALER         ((BOARD_PRES<<2) | (BOARD_MDIV<<8) | (BOARD_PDIV<<12))
 
 #define BOARD_USBDIV            AT91C_CKGR_USBDIV_1
 #define BOARD_CKGR_PLLB         AT91C_CKGR_OUTB_0
@@ -108,15 +113,13 @@
 void LowLevelInit(void) __attribute__((optimize("O0")));
 void LowLevelInit(void)
 {
-    unsigned char i;
+    unsigned int i = 0;
 
-    // Sometimes we have do this when flashing the SDRAM with SAM-BA
-    // because the SAM-BA low level init
-    // does not configure the SDRAM correctly!
-
-    // For J-Link flashes or for the NAND-Flash boot (default),
-    // this is not be required and should not be done!
-#ifndef sdram
+    /* Sometimes we have do this when flashing the SDRAM with SAM-BA
+    because the SAM-BA low level init does not configure the SDRAM correctly! */
+//#if SAM_BA_BOOT == 0
+//#ifndef sdram
+//#endif
     /* Initialize main oscillator
      ****************************/
     AT91C_BASE_PMC->PMC_MOR = BOARD_OSCOUNT | AT91C_CKGR_MOSCEN;
@@ -151,7 +154,9 @@ void LowLevelInit(void)
     /* Switch to PLL + prescaler */
     AT91C_BASE_PMC->PMC_MCKR |= AT91C_PMC_CSS_PLLA_CLK;
     while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY));
-#endif
+//#if SAM_BA_BOOT == 0
+//#endif
+//#endif
 
     /* Initialize AIC
      ****************/
@@ -165,7 +170,6 @@ void LowLevelInit(void)
 
     // Unstack nested interrupts
     for (i = 0; i < 8 ; i++) {
-
         AT91C_BASE_AIC->AIC_EOICR = 0;
     }
 
@@ -183,6 +187,13 @@ void LowLevelInit(void)
     AT91C_BASE_RTTC->RTTC_RTMR &= ~(AT91C_RTTC_ALMIEN | AT91C_RTTC_RTTINCIEN);
     AT91C_BASE_PITC->PITC_PIMR &= ~AT91C_PITC_PITIEN;
     
+    // Clear AIC and PIT interrupts and disable them.
+    AT91C_BASE_AIC->AIC_ICCR = 1 << AT91C_ID_SYS;
+    AIC_DisableIT( AT91C_ID_SYS );
+    PIT_GetPIVR();
+    PIT_DisableIT();
+    PIT_Disable();
+
 #if defined(norflash)
     BOARD_ConfigureNorFlash(BOARD_NORFLASH_DFT_BUS_SIZE);
 #endif    

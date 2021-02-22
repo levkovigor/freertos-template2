@@ -1,7 +1,7 @@
 #include "SpiCookie.h"
 
 #include <fsfw/ipc/MutexFactory.h>
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 SpiCookie::SpiCookie(address_t logicalAddress, size_t maxReplyLen,
 		SlaveType slaveType, DemultiplexerOutput demuxOutput,
@@ -80,13 +80,24 @@ void SpiCookie::setupSpiParameters(SPImode spiMode, uint8_t delayBetweenChars,
 	spiParameters.bus = bus1_spi;
 	determineSpiSlave(slaveType);
 	if(busSpeedHz < SPI_MIN_BUS_SPEED) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::warning << "SPI Cookie: Specified bus speed to slow, setting to"
 				<< " default value " << SPI_DEFAULT_SPEED << std::endl;
+
+#else
+		sif::printWarning("SPI Cookie: Specified bus speed to slow, setting to default value %lu\n",
+		        SPI_DEFAULT_SPEED);
+#endif
 		spiParameters.busSpeed_Hz = SPI_DEFAULT_SPEED;
 	}
 	else if(busSpeedHz > SPI_MAX_BUS_SPEED) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::warning << "SPI Cookie: Specified bus speed to fast, setting to"
 				<< " default value " <<  SPI_DEFAULT_SPEED << std::endl;
+#else
+        sif::printWarning("SPI Cookie: Specified bus speed to fast, setting to default value %lu\n",
+                SPI_DEFAULT_SPEED);
+#endif
 		spiParameters.busSpeed_Hz = SPI_DEFAULT_SPEED;
 	}
 	else {
@@ -122,13 +133,19 @@ void SpiCookie::determineSpiSlave(SlaveType slaveType) {
 	    // Also see SpiDeviceComIF.h
 	    spiParameters.slave = SPIslave::slave0_spi;
 		return;
-	default:
-		// The device handler must check for the slave number, we can't / don't
-		// want to use exceptions.
-		slaveType = SlaveType::UNASSIGNED;
-		demuxOutput = DemultiplexerOutput::UNASSIGNED;
-		sif::error << "Spi Cookie: Config error, invalid slave "
-		        "select!" << std::endl;
+	default: {
+        // The device handler must check for the slave number, we can't / don't
+        // want to use exceptions.
+        slaveType = SlaveType::UNASSIGNED;
+        demuxOutput = DemultiplexerOutput::UNASSIGNED;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "SpiCookie::determineSpiSlave: Config error, "
+                "invalid slave select!" << std::endl;
+#else
+        sif::printError("SpiCookie::determineSpiSlave: Config error, invalid slave select!\n");
+#endif
+	}
+
 	}
 }
 

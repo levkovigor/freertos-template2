@@ -29,7 +29,7 @@ static void disableCaches() {
 
 void restart() {
     // Disable this for mission, this also allocated when using newlib
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
 	TRACE_ERROR_WP("\n\r____RESTARTING____\n\r");
 #endif
 	disableCaches();
@@ -37,13 +37,13 @@ void restart() {
 }
 
 void restartPrefetchAbort() {
-	//TRACE_WARNING_WP("\n\r\t\t ____PREFETCH ABORT! RESTARTING____\n\r");
+	TRACE_WARNING_WP("\n\r\t\t ____PREFETCH ABORT! RESTARTING____\n\r");
 	disableCaches();
 	gracefulReset();
 }
 
 void restartDataAbort() {
-	//TRACE_WARNING_WP("\n\r\t\t ____DATA ABORT! RESTARTING____\n\r");
+	TRACE_WARNING_WP("\n\r\t\t ____DATA ABORT! RESTARTING____\n\r");
 	disableCaches();
 	gracefulReset();
 }

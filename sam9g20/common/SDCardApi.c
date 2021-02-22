@@ -6,61 +6,72 @@
 
 #include <string.h>
 
-static int delete_file_system_object(const char* name);
+int delete_file_system_object(const char* name);
 
-int open_filesystem(VolumeId volume){
+int open_filesystem(){
 	/* Initialize the memory to be used by the filesystem */
 	hcc_mem_init();
 
 	/* Initialize the filesystem */
 	int result = fs_init();
 	if(result != F_NO_ERROR){
-		TRACE_ERROR("open_filesystem: fs_init failed with "
-				"code %d\n\r", result);
+		TRACE_ERROR("open_filesystem: fs_init failed with code %d\n\r", result);
 		return result;
 	}
 
 	return result;
 }
 
-int close_filesystem(VolumeId volumeId) {
+int select_sd_card(VolumeId volumeId, bool enterFs) {
+    int result = 0;
+    if(enterFs) {
+        result = f_enterFS();
+        if(result != F_NO_ERROR) {
+            TRACE_ERROR("open_filesystem: fs_enterFS failed with code %d\n\r", result);
+            return result;
+        }
+    }
+    /* Initialize volID as safe */
+    result = f_initvolume(0, atmel_mcipdc_initfunc, volumeId);
+
+    if((result != F_NO_ERROR) && (result != F_ERR_NOTFORMATTED)) {
+        TRACE_ERROR("select_sd_card: fs_initvolume failed with code %d\n\r", result);
+        return result;
+    }
+
+    if(result == F_ERR_NOTFORMATTED) {
+        TRACE_INFO("select_sd_card: Formatting SD-Card %d for Safe-FAT\r\n", volumeId);
+        /**
+         *  The file system has not been formatted to safeFat yet
+         *  Therefore format filesystem now
+         */
+        result = f_format( 0, F_FAT32_MEDIA);
+        if(result != F_NO_ERROR) {
+            TRACE_ERROR("select_sd_card: fs_format failed with code %d\n\r", result);
+            return result;
+        }
+    }
+    return 0;
+}
+
+int close_filesystem(bool releaseFs, bool delVolume, VolumeId volumeId) {
+    if(delVolume) {
+        f_delvolume(volumeId);
+    }
+
+    if(releaseFs) {
+        f_releaseFS();
+    }
+
 	int result = fs_delete();
 	if(result != F_NO_ERROR) {
-		TRACE_ERROR("close_filesystem: fs_delete failed with "
-				"code %d\n\r", result);
+		TRACE_ERROR("close_filesystem: fs_delete failed with code %d\n\r", result);
 		return result;
 	}
 
 	return hcc_mem_delete();
 }
 
-
-int select_sd_card(VolumeId volumeId){
-	/* Initialize volID as safe */
-	int result = f_initvolume(0, atmel_mcipdc_initfunc, volumeId);
-
-	if((result != F_NO_ERROR) && (result != F_ERR_NOTFORMATTED)) {
-		TRACE_ERROR("select_sd_card: fs_initvolume failed with "
-				"code %d\n\r", result);
-		return result;
-	}
-
-	if(result == F_ERR_NOTFORMATTED) {
-		TRACE_INFO("select_sd_card: Formatting SD-Card %d for Safe-FAT\r\n",
-				volumeId);
-		/**
-		 *  The file system has not been formatted to safeFat yet
-		 *  Therefore format filesystem now
-		 */
-		result = f_format( 0, F_FAT32_MEDIA);
-		if(result != F_NO_ERROR) {
-			TRACE_ERROR("select_sd_card: fs_format failed with "
-					"code %d\n\r", result);
-			return result;
-		}
-	}
-	return 0;
-}
 
 int switch_sd_card(VolumeId volumeId) {
 	VolumeId oldVolumeId;
@@ -72,11 +83,11 @@ int switch_sd_card(VolumeId volumeId) {
 	}
 	int result = f_delvolume(oldVolumeId);
 	if(result != 0) {
-		TRACE_WARNING("switch_sd_card: f_delvolume failed with code %d\n\r",
-				result);
+		TRACE_WARNING("switch_sd_card: f_delvolume failed with code %d\n\r", result);
 	}
 
-	return select_sd_card(volumeId);
+	// TODO: test whether we have to release the FS to switch the SD card.
+	return select_sd_card(volumeId, false);
 }
 
 int create_directory(const char *repository_path, const char *dirname) {
@@ -93,8 +104,7 @@ int create_directory(const char *repository_path, const char *dirname) {
         // folder already exists, no diagnostic output here for now.
     }
     else if(result != F_NO_ERROR) {
-        TRACE_ERROR("create_directory: f_mkdir failed with "
-                "code %d!\n\r", result);
+        TRACE_ERROR("create_directory: f_mkdir failed with code %d!\n\r", result);
     }
 
     if(repository_path != NULL) {
@@ -117,8 +127,7 @@ int delete_directory(const char* repository_path, const char* dirname) {
         // folder not empty, no diagnostic output here for now.
     }
     else if(result != F_NO_ERROR) {
-        TRACE_ERROR("remove_directory: f_rmdir failed with "
-                "code %d!\n\r", result);
+        TRACE_ERROR("delete_directory: f_rmdir failed with code %d!\n\r", result);
     }
 
     if(repository_path != NULL) {
@@ -138,8 +147,7 @@ int change_directory(const char* repository_path, bool from_root) {
         // directory does not exist, no diagnostic output here for now.
     }
     else if(result != F_NO_ERROR) {
-        TRACE_ERROR("change_directory: f_chdir failed with code %d!\n\r",
-                result);
+        TRACE_ERROR("change_directory: f_chdir failed with code %d!\n\r", result);
     }
     return result;
 }
@@ -157,8 +165,7 @@ int read_whole_file(const char* repository_path, const char* file_name,
 
     F_FILE* file = f_open(file_name, "r");
     if (f_getlasterror() != F_NO_ERROR) {
-        TRACE_ERROR("read_whole_file: f_open failed with code %d\n\r",
-                f_getlasterror());
+        TRACE_ERROR("read_whole_file: f_open failed with code %d\n\r", f_getlasterror());
         return 0;
     }
 
@@ -180,8 +187,7 @@ int read_whole_file(const char* repository_path, const char* file_name,
 
     result = f_close(file);
     if (result != F_NO_ERROR) {
-        TRACE_ERROR("read_whole_file: f_close failed with code %d\n\r",
-                f_getlasterror());
+        TRACE_ERROR("read_whole_file: f_close failed with code %d\n\r",  f_getlasterror());
     }
     return bytes_read;
 }

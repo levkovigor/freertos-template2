@@ -154,22 +154,22 @@ extern volatile unsigned portLONG ulCriticalNesting;					\
 																		\
 	/* Set the LR to the task stack. */									\
 	asm volatile (														\
-	"LDR		R1, =pxCurrentTCB								\n\t"	\
-	"LDR		R0, [R1]										\n\t"	\
+	"LDR		R0, =pxCurrentTCB								\n\t"	\
+	"LDR		R0, [R0]										\n\t"	\
 	"LDR		LR, [R0]										\n\t"	\
 																		\
 	/* The critical nesting depth is the first item on the stack. */	\
 	/* Load it into the ulCriticalNesting variable. */					\
 	"LDR		R0, =ulCriticalNesting							\n\t"	\
-	"LDMFD	LR!, {R1}											\n\t"	\
+	"LDMFD	    LR!, {R1}										\n\t"	\
 	"STR		R1, [R0]										\n\t"	\
 																		\
 	/* Get the SPSR from the stack. */									\
-	"LDMFD	LR!, {R0}											\n\t"	\
+	"LDMFD	    LR!, {R0}										\n\t"	\
 	"MSR		SPSR, R0										\n\t"	\
 																		\
 	/* Restore all system mode registers for the task. */				\
-	"LDMFD	LR, {R0-R14}^										\n\t"	\
+	"LDMFD	    LR, {R0-R14}^									\n\t"	\
 	"NOP														\n\t"	\
 																		\
 	/* Restore the return address. */									\
@@ -177,7 +177,7 @@ extern volatile unsigned portLONG ulCriticalNesting;					\
 																		\
 	/* And return - correcting the offset in the LR to obtain the */	\
 	/* correct address. */												\
-	"SUBS	PC, LR, #4											\n\t"	\
+	"SUBS	    PC, LR, #4										\n\t"	\
 	);																	\
 	( void ) ulCriticalNesting;											\
 	( void ) pxCurrentTCB;												\

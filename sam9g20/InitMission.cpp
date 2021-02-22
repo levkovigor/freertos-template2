@@ -1,4 +1,4 @@
-#include "Factory.h"
+#include "ObjectFactory.h"
 #include <fsfwconfig/OBSWVersion.h>
 #include <FSFWConfig.h>
 #include <fsfwconfig/pollingsequence/PollingSequenceFactory.h>
@@ -21,6 +21,9 @@ extern "C" {
 #include <board.h>
 #include <AT91SAM9G20.h>
 }
+
+#include <OBSWConfig.h>
+#include <cstring>
 
 #if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1 || OBSW_MONITOR_ALLOCATION == 1
 #include <new>
@@ -69,6 +72,7 @@ void genericMissedDeadlineFunc();
 void initTasks(void);
 void runMinimalTask(void);
 
+
 /**
  * @brief   Initializes mission specific implementation of FSFW,
  *          implements and starts all periodic tasks.
@@ -99,19 +103,19 @@ void runMinimalTask(void);
 void initMission(void) {
     printf("\n\r-- FreeRTOS task scheduler started --\n\r");
     printf("-- SOURCE On-Board Software --\n\r");
-    printf("-- %s --\n\r", BOARD_NAME);
+    printf("-- %s --\n\r", BOARD_NAME_PRINT);
     printf("-- Software version %s v%d.%d.%d --\n\r", SW_NAME, SW_VERSION, SW_SUBVERSION,
             SW_SUBSUBVERSION);
     printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
+
+#if FSFW_CPP_OSTREAM_ENABLED == 0
+    sif::setToAddCrAtEnd(true);
+#endif
 
 #if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Initiating mission specific code." << std::endl;
 #else
     sif::printInfo("Initiating mission specific code.\n");
-#endif
-
-#if FSFW_CPP_OSTREAM_ENABLED == 0
-    setToAddCrAtEnd(true);
 #endif
 
     // Allocate object manager here, as global constructors
@@ -295,9 +299,9 @@ void initTasks(void) {
 #ifdef AT91SAM9G20_EK
     float sdCardTaskPeriod = 0.6;
 #else
-    /* iOBC SD-Cards SLC are usually slower than modern SD-Card,
+    /* iOBC SD-Cards SLC are usually slower than modern SD-Cards,
     therefore a spearate task period can be set here */
-    float sdCardTaskPeriod = 0.6;
+    float sdCardTaskPeriod = 0.8;
 #endif
     PeriodicTaskIF* SDCardTask = TaskFactory::instance()->createPeriodicTask(
             "SD_CARD_TASK", 3, 2048 * 4, sdCardTaskPeriod, genericMissedDeadlineFunc);
@@ -354,7 +358,9 @@ void initTasks(void) {
 
 #if OBSW_ADD_TEST_CODE == 1
     InternalUnitTester unitTestClass;
-    result = unitTestClass.performTests();
+    InternalUnitTester::TestConfig testConfig;
+    testConfig.testArrayPrinter = false;
+    result = unitTestClass.performTests(testConfig);
     if(result != HasReturnvaluesIF::RETURN_OK) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "InitMission: Internal unit tests did not run "
@@ -403,8 +409,8 @@ void initTasks(void) {
     sif::info << "Remaining FreeRTOS heap size: " << std::dec
             << xPortGetFreeHeapSize() << " bytes." << std::endl;
 #else
-    sif::printInfo("Remaining FreeRTOS heap size: %zu bytes.\n",
-            xPortGetFreeHeapSize());
+    sif::printInfo("Remaining FreeRTOS heap size: %lu bytes.\n",
+            static_cast<unsigned long>(xPortGetFreeHeapSize()));
 #endif
     size_t remainingFactoryStack = TaskManagement::getTaskStackHighWatermark();
     if(remainingFactoryStack < 3000) {
@@ -412,8 +418,8 @@ void initTasks(void) {
         sif::warning << "Factory Task: Remaining stack size: "
                 << remainingFactoryStack << " bytes" << std::endl;
 #else
-        sif::printWarning("Factory Task: Remaining stack size: %zu bytes\n",
-                remainingFactoryStack);
+        sif::printWarning("Factory Task: Remaining stack size: %lu bytes\n",
+                static_cast<unsigned long>(remainingFactoryStack));
 #endif
     }
 #if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1
@@ -421,8 +427,8 @@ void initTasks(void) {
     sif::info << "Allocated size by new function: " << allocatedSize
             << " bytes." << std::endl;
 #else
-    sif::printInfo( "Allocated size by new function: %zu bytes.\n",
-            allocatedSize);
+    sif::printInfo( "Allocated size by new function: %lu bytes.\n",
+            static_cast<unsigned long>(allocatedSize));
 #endif
 #endif
 

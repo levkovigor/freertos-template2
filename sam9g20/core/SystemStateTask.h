@@ -8,10 +8,12 @@
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <fsfw/ipc/MessageQueueIF.h>
 
 #include <vector>
 #include <array>
 
+class StorageManagerIF;
 class CoreController;
 
 /**
@@ -31,10 +33,8 @@ public:
     ReturnValue_t performOperation(uint8_t opCode) override;
 
     // Read system state into the task status array.
-    bool readSystemState();
-    bool generateStatsAndCheckStack();
-    // Perform both operation at once
-    bool readAndGenerateStats();
+    bool generateStatsCsv();
+    bool generateStatsPrint();
 
     /**
      * Called manually.
@@ -44,15 +44,16 @@ public:
 
     uint16_t numberOfTasks = 0;
 private:
+    uint8_t csvCounter = 0;
     enum class InternalState {
     	IDLE,
-        READING_STATS,
-        GENERATING_STATS,
+        GENERATING_STATS_CSV,
+        GENERATING_STATS_PRINT
     };
     InternalState internalState;
-    bool readOnce = false;
-    bool doubleOperationRequested = false;
+    bool dataRead = false;
 
+    StorageManagerIF* ipcStore = nullptr;
     object_id_t coreControllerId;
     CoreController* coreController = nullptr;
 
@@ -62,8 +63,9 @@ private:
 
     TaskStatus_t* taskStatusWritePtr = nullptr;
 
+    MessageQueueId_t queueId = MessageQueueIF::NO_QUEUE;
 
-    void generateStatsCsvAndCheckStack();
+    void performStatsGeneration(InternalState csvOrPrint);
     void writePaddedName(uint8_t* buffer,
             const char *pcTaskName);
     void writeDebugStatLine(const TaskStatus_t& task,
