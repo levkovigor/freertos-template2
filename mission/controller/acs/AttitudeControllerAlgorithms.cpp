@@ -5,7 +5,7 @@
  *      Author: Mikael Senger
  */
 
-#include <mission/controller/acs/AttitudeController.h>
+#include "AttitudeController.h"
 
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <fsfw/coordinates/CoordinateTransformations.h>
@@ -19,17 +19,14 @@
 #include <fsfw/coordinates/CoordinateTransformations.h>
 
 
-void AttitudeController::calcQuatAndRefRot(double multFactor[QUATERNION_SIZE],
-		timeval currentTime, double positionF[COORDINATES_SIZE],
-		double velocityF[COORDINATES_SIZE],
-		double quatRotPointingAxis[QUATERNION_SIZE],
-		double positionTargetF[COORDINATES_SIZE],
-		double quatCurrentAttitude[QUATERNION_SIZE],
-		double quatLastPointing[QUATERNION_SIZE],
-		double quatBX[QUATERNION_SIZE], double refRotRate[COORDINATES_SIZE]) {
+void AttitudeController::calcQuatAndRefRot(double *multFactor,
+		timeval currentTime, const double *positionF, const double *velocityF,
+		double *quatRotPointingAxis, const double *positionTargetF,
+		double *quatCurrentAttitude, double *positionTargetI,
+		double *quatLastPointing, double *quatBX, double *refRotRate) {
 
 	/* Determining ECEF to ECI transformation matrix */
-	double positionI[COORDINATES_SIZE], velocityI[COORDINATES_SIZE], positionTargetI[COORDINATES_SIZE];
+	double positionI[COORDINATES_SIZE], velocityI[COORDINATES_SIZE];
 	CoordinateTransformations::positionEcfToEci(positionF, positionI, &currentTime);
 	CoordinateTransformations::velocityEcfToEci(velocityF, positionF, velocityI, &currentTime);
 	CoordinateTransformations::positionEcfToEci(positionTargetF, positionTargetI, &currentTime);
@@ -83,22 +80,14 @@ void AttitudeController::calcQuatAndRefRot(double multFactor[QUATERNION_SIZE],
 	QuaternionOperations::multiply(quatCurrentAttitude, quatLastPointing, quatBX);
 	QuaternionOperations::normalize(quatBX);
 
-
+	rotationCalc.calc(quatLastPointing, currentTime, refRotRate);
 
 /*
-
-	double quaternionInertialToTarget[4]; qXI
-
-	QuaternionOperations::inverse(quaternionTargetToInertial,
-			quaternionInertialToTarget);
-
-	rotationFromQuaternions.update(quaternionInertialToTarget, acsTime,
-			inertialRotationOfTarget);
-
 	for (uint8_t i = 0; i < 3; i++) {
-		inertialRotationOfTarget[i] = inertialRotationOfTarget[i] * alpha
-				+ lastInertialRotationOfTarget[i] * (1 - alpha);
-		lastInertialRotationOfTarget[i] = inertialRotationOfTarget[i];
+		refRotRate[i] = refRotRate[i] * alpha
+				+ lastRefRotRate[i] * (1 - alpha);
+		lastRefRotRate[i] = refRotRate[i];
 	}
 */
+
 }

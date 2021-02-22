@@ -15,14 +15,39 @@
 #include <fsfw/health/HealthTableIF.h>
 #include <fsfw/parameters/ParameterHelper.h>
 #include <fsfw/parameters/ReceivesParameterMessagesIF.h>
-
-#define COORDINATES_SIZE 3
-#define QUATERNION_SIZE 4
+#include <mission/controller/acs/helpfunctions/RotationCalc.h>
 
 
 class AttitudeController: public ExtendedControllerBase {
+
 public:
+
 	AttitudeController(object_id_t objectId);
+
+	virtual ~AttitudeController();
+
+	static constexpr uint8_t COORDINATES_SIZE = 3;
+
+	static constexpr uint8_t QUATERNION_SIZE = 4;
+
+
+protected:
+
+    void calcQuatAndRefRot(double *multFactor,
+    			timeval currentTime,const double *positionF,
+    			const double *velocityF,
+				double *quatRotPointingAxis,
+    			const double *positionTargetF,
+    			double *quatCurrentAttitude,
+				double *positionTargetI,
+    			double *quatLastPointing,
+    			double *quatBX,
+    			double *refRotRate);
+
+    int8_t multFactor[QUATERNION_SIZE] {1,1,1,1};
+
+	RotationCalc rotationCalc;
+
 private:
 
 	// TODO: Add stubs for thermal components. Each device / assembly with one
@@ -41,16 +66,7 @@ private:
 
     void handleChangedDataset(sid_t sid, store_address_t storeId) override;
 
-	void calcQuatAndRefRot(double multFactor[QUATERNION_SIZE],
-			timeval currentTime, double positionF[COORDINATES_SIZE],
-			double velocityF[COORDINATES_SIZE],
-			double quatRotPointingAxis[QUATERNION_SIZE],
-			double positionTargetF[COORDINATES_SIZE],
-			double quatCurrentAttitude[QUATERNION_SIZE],
-			double quatLastPointing[QUATERNION_SIZE],
-			double quatBX[QUATERNION_SIZE],
-			double refRotRate[COORDINATES_SIZE]);
-
+    double lastRefRotRate[COORDINATES_SIZE] {0,0,0};
 };
 
 /*

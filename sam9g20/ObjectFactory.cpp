@@ -203,31 +203,7 @@ void Factory::produce(void) {
             pus::PUS_SERVICE_20);
     new Service23FileManagement(objects::PUS_SERVICE_23_FILE_MGMT, apid::SOURCE_OBSW,
             pus::PUS_SERVICE_23);
-<<<<<<< HEAD:sam9g20/Factory.cpp
-	new CService200ModeCommanding(objects::PUS_SERVICE_200_MODE_MGMT,
-			apid::SOURCE_OBSW, pus::PUS_SERVICE_200);
-	new CService201HealthCommanding(objects::PUS_SERVICE_201_HEALTH, apid::SOURCE_OBSW,
-	        pus::PUS_SERVICE_201);
 
-	/*
-	 * Device Handlers using DeviceHandlerBase.
-	 * These includes work without connected hardware via virtualized
-	 * devices and interfaces
-	 */
-	CookieIF * dummyCookie0 = new TestCookie(addresses::PCDU);
-	new PCDUHandler(objects::PCDU_HANDLER,objects::DUMMY_ECHO_COM_IF,
-			dummyCookie0);
-	CookieIF * dummyCookie1 = new TestCookie(addresses::DUMMY_ECHO);
-	new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_ECHO_COM_IF,
-			dummyCookie1, true);
-
-	new CoreController(objects::CORE_CONTROLLER, objects::SYSTEM_STATE_TASK);
-	new SystemStateTask(objects::SYSTEM_STATE_TASK, objects::CORE_CONTROLLER);
-	new ThermalController(objects::THERMAL_CONTROLLER);
-	new AttitudeController(objects::ATTITUDE_CONTROLLER);
-
-	TestCookie * dummyCookie2 = new TestCookie(addresses::DUMMY_GPS0);
-=======
     new CService200ModeCommanding(objects::PUS_SERVICE_200_MODE_MGMT,
             apid::SOURCE_OBSW, pus::PUS_SERVICE_200);
     new CService201HealthCommanding(objects::PUS_SERVICE_201_HEALTH, apid::SOURCE_OBSW,
@@ -246,9 +222,10 @@ void Factory::produce(void) {
     new CoreController(objects::CORE_CONTROLLER, objects::SYSTEM_STATE_TASK);
     new SystemStateTask(objects::SYSTEM_STATE_TASK, objects::CORE_CONTROLLER);
     new ThermalController(objects::THERMAL_CONTROLLER);
+    new AttitudeController(objects::ATTITUDE_CONTROLLER);
 
     TestCookie * dummyCookie2 = new TestCookie(addresses::DUMMY_GPS0);
->>>>>>> development:sam9g20/ObjectFactory.cpp
+
 #if defined(VIRTUAL_BUILD)
     new GPSHandler(objects::GPS0_HANDLER, objects::DUMMY_GPS_COM_IF,
             dummyCookie2, switches::GPS0);

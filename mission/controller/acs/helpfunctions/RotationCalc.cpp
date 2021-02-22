@@ -5,13 +5,13 @@
  *      Author: user
  */
 
+#include "RotationCalc.h"
+
 #include <fsfw/globalfunctions/math/QuaternionOperations.h>
 #include <fsfw/globalfunctions/math/VectorOperations.h>
-#include "RotationCalc.h"
 
 RotationCalc::RotationCalc() :
 		timeOfLastQuaternion( { 0, 0 }), valid(false) {
-	lastQuaternion = {0,0,0,1};
 }
 
 RotationCalc::~RotationCalc() {
@@ -57,10 +57,6 @@ void RotationCalc::calc(const double* quaternion,
 	}
 
 	memcpy(lastQuaternion, quaternion, 4 * sizeof(*quaternion));
-	lastQuaternion[0] = quaternion[0];
-	lastQuaternion[1] = quaternion[1];
-	lastQuaternion[2] = quaternion[2];
-	lastQuaternion[3] = quaternion[3];
 	timeOfLastQuaternion = timeOfQuaternion;
 
 }
