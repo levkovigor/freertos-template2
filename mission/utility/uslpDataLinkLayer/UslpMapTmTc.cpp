@@ -127,7 +127,6 @@ ReturnValue_t UslpMapTmTc::packFrame(const uint8_t *inputBuffer, size_t inputSiz
     outputFrame->setFrameLocation(outputBuffer, tfdzSize);
     // The partially filled frame is passed back up
     returnFrame = outputFrame;
-    TmTcMessage message;
     const uint8_t *data = nullptr;
     size_t size = 0;
     uint8_t bytesPackedCounter = 0;
@@ -137,14 +136,18 @@ ReturnValue_t UslpMapTmTc::packFrame(const uint8_t *inputBuffer, size_t inputSiz
     if (overhangMessage != nullptr) {
 
         result = tmStore->getData(overhangMessage->getStorageId(), &data, &size);
+        if (result != HasReturnvaluesIF::RETURN_OK){
+            return result;
+        }
 
-        if (size - overhangMessageSentBytes <= tfdzSize) {
+        if ((size - overhangMessageSentBytes) <= tfdzSize) {
             (void) std::memcpy(outputFrame->getDataZone(), data + overhangMessageSentBytes, size);
             bytesPackedCounter += size;
             overhangMessage = nullptr;
             overhangMessageSentBytes = 0;
-            tmStore->deleteData(message.getStorageId());
+            tmStore->deleteData(latestTmMessage.getStorageId());
             outputFrame->setFirstHeaderOffset(bytesPackedCounter);
+            result =  HasReturnvaluesIF::RETURN_OK;
         } else {
             (void) std::memcpy(outputFrame->getDataZone(), data + overhangMessageSentBytes,
                     tfdzSize);
@@ -152,30 +155,31 @@ ReturnValue_t UslpMapTmTc::packFrame(const uint8_t *inputBuffer, size_t inputSiz
             outputFrame->setFirstHeaderOffset(0xFFFF);
             bytesPackedCounter += tfdzSize;
             overhangMessageSentBytes += tfdzSize;
+            result =  HasReturnvaluesIF::RETURN_OK;
 
         }
-        result =  HasReturnvaluesIF::RETURN_OK;
+
     }
     else{
         outputFrame->setFirstHeaderOffset(0);
     }
 
-    while (tmTcReceptionQueue->receiveMessage(&message) == HasReturnvaluesIF::RETURN_OK) {
+    while (tmTcReceptionQueue->receiveMessage(&latestTmMessage) == HasReturnvaluesIF::RETURN_OK) {
 
-        result = tmStore->getData(message.getStorageId(), &data, &size);
+        result = tmStore->getData(latestTmMessage.getStorageId(), &data, &size);
         if (result != HasReturnvaluesIF::RETURN_OK) {
             continue;
         }
 
         if (size + bytesPackedCounter <= tfdzSize) {
             (void) std::memcpy(outputFrame->getDataZone() + bytesPackedCounter, data, size);
-            tmStore->deleteData(message.getStorageId());
+            tmStore->deleteData(latestTmMessage.getStorageId());
             bytesPackedCounter += size;
         } else {
             (void) std::memcpy(outputFrame->getDataZone() + bytesPackedCounter, data,
                     tfdzSize - bytesPackedCounter);
             // Storage for next frame
-            overhangMessage = &message;
+            overhangMessage = &latestTmMessage;
             overhangMessageSentBytes += tfdzSize - bytesPackedCounter;
 
             //TODO:  Idle packets
