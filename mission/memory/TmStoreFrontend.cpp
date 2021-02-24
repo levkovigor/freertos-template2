@@ -21,8 +21,11 @@ public:
 		testBase->insert(2, 'a');
 		testBase->get(2);
 		testBase->erase(2);
+<<<<<<< HEAD
 		testBase->insert(2, 'a');
 		testBase->eraseByValue('a');
+=======
+>>>>>>> faae308d1b58209a7b8a7d56cf568e2b5d882997
 	}
 };
 
