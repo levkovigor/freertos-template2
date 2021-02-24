@@ -197,7 +197,11 @@ ReturnValue_t MGMHandlerLIS3MDL::scanForReply(const uint8_t *start,
                 start[3] != registers[2] or start[4] != registers[3] or
                 start[5] != registers[4]) {
 #if OBSW_VERBOSE_LEVEL >= 1
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::warning << "MGMHandlerLIS3MDL::scanForReply: Invalid registers!" << std::endl;
+#else
+            sif::printWarning("MGMHandlerLIS3MDL::scanForReply: Invalid registers!\n");
+#endif
 #endif
             return DeviceHandlerIF::INVALID_DATA;
         }
@@ -220,7 +224,11 @@ ReturnValue_t MGMHandlerLIS3MDL::scanForReply(const uint8_t *start,
         if(*foundId == MGMLIS3MDL::IDENTIFY_DEVICE) {
             if(start[1] != MGMLIS3MDL::DEVICE_ID) {
 #if OBSW_VERBOSE_LEVEL >= 1
+#if FSFW_CPP_OSTREAM_ENABLED == 1
                 sif::warning << "MGMHandlerLIS3MDL::scanForReply: Invalid registers!" << std::endl;
+#else
+                sif::printWarning("MGMHandlerLIS3MDL::scanForReply: Invalid registers!\n");
+#endif
 #endif
                 return DeviceHandlerIF::INVALID_DATA;
             }
@@ -276,12 +284,19 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 
 #if OBSW_VERBOSE_LEVEL >= 1
         if(debugDivider->checkAndIncrement()) {
+            /* Set terminal to utf-8 if there is an issue with micro printout. */
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "MGMHandlerLIS3: Magnetic field strength in"
                     " microtesla:" << std::endl;
-            /* Set terminal to utf-8 if there is an issue with micro printout. */
             sif::info << "X: " << mgmX << " \xC2\xB5T" << std::endl;
             sif::info << "Y: " << mgmY << " \xC2\xB5T" << std::endl;
             sif::info << "Z: " << mgmZ << " \xC2\xB5T" << std::endl;
+#else
+            sif::printInfo("MGMHandlerLIS3: Magnetic field strength in microtesla:\n");
+            sif::printInfo("X: %f " "\xC2\xB5" "T\n", mgmX);
+            sif::printInfo("Y: %f " "\xC2\xB5" "T\n", mgmY);
+            sif::printInfo("Z: %f " "\xC2\xB5" "T\n", mgmZ);
+#endif
         }
 #endif
         PoolReadHelper readHelper(&dataset);
@@ -300,8 +315,12 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 #if OBSW_VERBOSE_LEVEL >= 1
         if(debugDivider->check()) {
             /* Set terminal to utf-8 if there is an issue with micro printout. */
+#if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "MGMHandlerLIS3: Temperature: " << tempValue << " \xC2\xB0" << "C" <<
                     std::endl;
+#else
+            sif::printInfo("MGMHandlerLIS3: Temperature: %f" "\xC2\xB0" "C\n");
+#endif
         }
 #endif
         ReturnValue_t result = dataset.read();
