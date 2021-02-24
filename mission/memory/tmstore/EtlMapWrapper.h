@@ -5,10 +5,7 @@
  *      Author: Jan Gerhards
  */
 #include <mission/memory/tmstore/EtlMapWrapperBase.h>
-<<<<<<< HEAD
 #include <iterator>
-=======
->>>>>>> faae308d1b58209a7b8a7d56cf568e2b5d882997
 
 #ifndef MISSION_MEMORY_TMSTORE_ETLMAPWRAPPER_H_
 #define MISSION_MEMORY_TMSTORE_ETLMAPWRAPPER_H_
@@ -49,7 +46,6 @@ public:
 		}
 	}
 
-<<<<<<< HEAD
 	virtual int eraseByValue(TMapped value) override {
 		int numDeletedElements = 0;
 		for(typename etl::map<TKey, TMapped, SIZE>::iterator it = map.begin(); it != map.end();) {
@@ -63,8 +59,6 @@ public:
 		return numDeletedElements;
 	}
 
-=======
->>>>>>> faae308d1b58209a7b8a7d56cf568e2b5d882997
 	virtual std::pair<ReturnValue_t, TMapped*> get(TKey key) override {
 		std::pair<ReturnValue_t, TMapped*> errorPair =
 				std::pair<ReturnValue_t, TMapped*> (HasReturnvaluesIF::RETURN_FAILED, NULL); //todo: check not allocated on heap
