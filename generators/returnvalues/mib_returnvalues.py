@@ -31,8 +31,8 @@ FILE_SEPARATOR = ';'
 MAX_STRING_LENGTH = 32
 INTERFACE_DEFINITION_FILES = ["../../fsfw/returnvalues/FwClassIds.h",
                               "../../fsfwconfig/returnvalues/classIds.h"]
-# RETURNVALUE_DESTINATIONS = ["../../mission/", "../../fsfw/", "../../fsfwconfig/", "../../sam9g20/"]
-RETURNVALUE_DESTINATIONS = ["../../sam9g20/"]
+RETURNVALUE_DESTINATIONS = ["../../mission/", "../../fsfw/", "../../fsfwconfig/", "../../sam9g20/"]
+# RETURNVALUE_DESTINATIONS = ["../../sam9g20/"]
 
 SQL_DELETE_RETURNVALUES_CMD = """
     DROP TABLE IF EXISTS Returnvalues
@@ -74,6 +74,7 @@ def parse_returnvalues():
     header_parser = FileListParser(RETURNVALUE_DESTINATIONS)
     header_list = header_parser.parse_header_files(True, "Parsing header file list: ")
     returnvalue_parser = ReturnValueParser(interfaces, header_list, PRINT_TABLES)
+    returnvalue_parser.set_moving_window_mode(moving_window_size=7)
     returnvalue_table = returnvalue_parser.parse_files(True)
     if PRINT_TABLES:
         Printer.print_content(returnvalue_table, "Returnvalue Table: ")
