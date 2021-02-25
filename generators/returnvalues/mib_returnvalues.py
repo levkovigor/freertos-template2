@@ -31,7 +31,8 @@ FILE_SEPARATOR = ';'
 MAX_STRING_LENGTH = 32
 INTERFACE_DEFINITION_FILES = ["../../fsfw/returnvalues/FwClassIds.h",
                               "../../fsfwconfig/returnvalues/classIds.h"]
-RETURNVALUE_DESTINATIONS = ["../../mission/", "../../fsfw/", "../../fsfwconfig/", "../../sam9g20/"]
+# RETURNVALUE_DESTINATIONS = ["../../mission/", "../../fsfw/", "../../fsfwconfig/", "../../sam9g20/"]
+RETURNVALUE_DESTINATIONS = ["../../sam9g20/"]
 
 SQL_DELETE_RETURNVALUES_CMD = """
     DROP TABLE IF EXISTS Returnvalues
