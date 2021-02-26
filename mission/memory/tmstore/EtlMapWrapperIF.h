@@ -18,11 +18,15 @@
  * of the maps.
  */
 template<typename TKey, typename TMapped>
-class EtlMapWrapperBase {  //todo: Constructor and Destructor needed?
+class EtlMapWrapperIF {  //todo: Constructor and Destructor needed?
+    using EtlReturnPair = std::pair<ReturnValue_t, TMapped*>;
 
+    virtual ~EtlMapWrapperIF() {};
 public:
 	virtual ReturnValue_t insert(TKey key, TMapped value) = 0;
 	virtual ReturnValue_t erase(TKey key) = 0;
+	virtual int eraseByValue(TMapped value) = 0;
+
 	virtual std::pair<ReturnValue_t, TMapped*> get(TKey key) = 0;
 	virtual void clear() = 0;
 };

@@ -4,7 +4,7 @@
  *  Created on: Jan 1, 2021
  *      Author: Jan Gerhards
  */
-#include <mission/memory/tmstore/EtlMapWrapperBase.h>
+#include <mission/memory/tmstore/EtlMapWrapperIF.h>
 #include <iterator>
 
 #ifndef MISSION_MEMORY_TMSTORE_ETLMAPWRAPPER_H_
@@ -17,8 +17,12 @@
  * EtlMapWrapper objects in a collection, pointers to the base class EtlMapWrapperBase can be used.
  */
 template<typename TKey, typename TMapped, size_t SIZE>
-class EtlMapWrapper : public EtlMapWrapperBase<TKey, TMapped> {
-	etl::map<TKey, TMapped, SIZE> map;
+class EtlMapWrapper : public EtlMapWrapperIF<TKey, TMapped> {
+    using EtlMap = etl::map<TKey, TMapped, SIZE>;
+    using EtlMapIter = typename EtlMap::iterator;
+    using EtlMapConstIter = typename EtlMap::const_iterator;
+
+	EtlMap map;
 
 public:
 	EtlMapWrapper();
@@ -48,27 +52,27 @@ public:
 
 	virtual int eraseByValue(TMapped value) override {
 		int numDeletedElements = 0;
-		for(typename etl::map<TKey, TMapped, SIZE>::iterator it = map.begin(); it != map.end();) {
-			if((it->second) == value) {
-				it = (map.erase(it));  //todo: this shouldn't return void
+		for(EtlMapConstIter iter = map.begin(); iter != map.end();) {
+			if((iter->second) == value) {
+				iter = map.erase(iter);
 				numDeletedElements++;
 			} else {
-				it++;
+				iter++;
 			}
 		}
 		return numDeletedElements;
 	}
 
-	virtual std::pair<ReturnValue_t, TMapped*> get(TKey key) override {
-		std::pair<ReturnValue_t, TMapped*> errorPair =
-				std::pair<ReturnValue_t, TMapped*> (HasReturnvaluesIF::RETURN_FAILED, NULL); //todo: check not allocated on heap
+	virtual EtlReturnPair get(TKey key) override {
+		auto errorPair = std::pair<ReturnValue_t, TMapped*>(
+		        HasReturnvaluesIF::RETURN_FAILED, NULL); //todo: check not allocated on heap
 
 		if(map.count(key) == 0) {
 			return errorPair;
 		} else {
 			TMapped* valuePtr = &(map.at(key));
-			std::pair<ReturnValue_t, TMapped*> successPair =
-					std::pair<ReturnValue_t, TMapped*> (HasReturnvaluesIF::RETURN_OK, valuePtr); //todo: check not allocated on heap
+			auto successPair = std::pair<ReturnValue_t, TMapped*> (
+			        HasReturnvaluesIF::RETURN_OK, valuePtr); //todo: check not allocated on heap
 			return successPair;
 		}
 

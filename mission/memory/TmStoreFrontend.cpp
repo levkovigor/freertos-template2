@@ -21,6 +21,8 @@ public:
 		testBase->insert(2, 'a');
 		testBase->get(2);
 		testBase->erase(2);
+		testBase->insert(2, 'a');
+		testBase->eraseByValue('a');
 	}
 };
 
