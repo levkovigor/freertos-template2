@@ -6,10 +6,10 @@
 """
 import re
 
-from parserbase.mib_file_list_parser import FileListParser
-from parserbase.mib_parser import FileParser
-from utility.mib_csv_writer import CsvWriter
-from utility.mib_printer import Printer
+from genmib.parserbase.mib_file_list_parser import FileListParser
+from genmib.parserbase.mib_parser import FileParser
+from genmib.utility.mib_csv_writer import CsvWriter
+from genmib.utility.mib_printer import Printer
 
 PACKET_CONTENT_DEFINITION_DESTINATION = ["../../mission/pus/servicepackets/",
                                          "../../fsfw/pus/servicepackets/"]

@@ -6,8 +6,8 @@
 #include <fsfw/serialize/SerialLinkedListAdapter.h>
 #include <fsfw/serialize/SerialFixedArrayListAdapter.h>
 #include <fsfw/serialize/EndianConverter.h>
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
-#include <sam9g20/memory/SDCardApi.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
+#include <sam9g20/common/SDCardApi.h>
 
 
 /**
@@ -33,8 +33,8 @@ static ReturnValue_t deSerializeRepositories(const uint8_t **buffer,
 		RepositoryPath& dirname);
 
 static ReturnValue_t serializeRepositoryAndFilename(uint8_t **buffer,
-        size_t* size, size_t maxSize, RepositoryPath& repositoryPath,
-		FileName& filename);
+        size_t* size, size_t maxSize, const RepositoryPath& repositoryPath,
+		const FileName& filename);
 
 class ActivePreferedVolumeReport: public SerialLinkedListAdapter<SerializeIF> {
 public:
@@ -157,17 +157,37 @@ public:
         APPEND_TO_FILE
     };
 
-	WriteCommand(WriteType writeType): writeType(writeType){}
+    /**
+     * @brief This is the contructor for deserialization
+     *
+     * @param writeType
+     */
+    WriteCommand(WriteType writeType): writeType(writeType) {}
 
-	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
+    /**
+     * @brief This is the contructor for serialization
+     *
+     * @param repositoryPath
+     * @param fileName
+     * @param fileData
+     * @param fileDataSize
+     * @param writeType
+     * @param packetSequenceNumber
+     */
+    WriteCommand(RepositoryPath& repositoryPath, FileName& fileName, const uint8_t* fileData,
+            const size_t fileDataSize, WriteType writeType, uint16_t packetSequenceNumber = 0):
+                repositoryPath(repositoryPath), fileName(fileName), fileData(fileData),
+                 writeType(writeType), fileDataSize(fileDataSize) {}
+
+    ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
             Endianness streamEndianness) override {
-	    ReturnValue_t result = deSerializeRepositoryAndFilename(buffer, size,
-	            repositoryPath, filename);
-	    if(result != HasReturnvaluesIF::RETURN_OK) {
-	        return result;
-	    }
+        ReturnValue_t result = deSerializeRepositoryAndFilename(buffer, size,
+                repositoryPath, fileName);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            return result;
+        }
 
-		/* Deserialize packet number */
+        /* Deserialize packet number */
 	    if(writeType == WriteType::APPEND_TO_FILE) {
 	        result = SerializeAdapter::deSerialize(&packetSequenceNumber,
 	                buffer, size, streamEndianness);
@@ -178,7 +198,7 @@ public:
 
 
 		/* Just keep internal pointer of rest of data, no copying */
-		filesize = *size;
+		fileDataSize = *size;
 		fileData = *buffer;
 		return HasReturnvaluesIF::RETURN_OK;
 	}
@@ -188,8 +208,34 @@ public:
 	}
 
 	ReturnValue_t serialize(uint8_t **buffer, size_t *size,
-            size_t maxSize, Endianness streamEndianness) const override {
-	    return HasReturnvaluesIF::RETURN_FAILED;
+	        size_t maxSize, Endianness streamEndianness) const override {
+
+	    ReturnValue_t result = serializeRepositoryAndFilename(buffer, size, maxSize,
+	            repositoryPath, fileName);
+
+	    if(result != HasReturnvaluesIF::RETURN_OK) {
+	        return result;
+	    }
+
+	    /* Serialize packet number */
+	    if(writeType == WriteType::APPEND_TO_FILE) {
+	        result = SerializeAdapter::serialize(&packetSequenceNumber,
+	                buffer, size, maxSize, streamEndianness);
+
+	        if(result != HasReturnvaluesIF::RETURN_OK) {
+	            return result;
+	        }
+	    }
+	    size_t newSize = fileDataSize + *size;
+	    if (newSize > maxSize or newSize < *size) {
+	        return SerializeIF::BUFFER_TOO_SHORT;
+	    }
+
+	    std::memcpy(*buffer, fileData, fileDataSize);
+	    *size = newSize;
+	    *buffer += fileDataSize;
+
+	    return HasReturnvaluesIF::RETURN_OK;
 	}
 
 	const char* getRepositoryPath(){
@@ -197,7 +243,7 @@ public:
 	}
 
 	const char* getFilename(){
-		return filename.c_str();
+		return fileName.c_str();
 	}
 
 	const uint8_t* getFileData(){
@@ -205,7 +251,7 @@ public:
 	}
 
 	size_t getFileSize(){
-		return filesize;
+		return fileDataSize;
 	}
 
 	uint16_t getPacketNumber(){
@@ -214,12 +260,12 @@ public:
 
 private:
 	RepositoryPath repositoryPath;
-	FileName filename;
+	FileName fileName;
 	uint16_t packetSequenceNumber = 0;
 	const uint8_t* fileData = nullptr;
 
 	WriteType writeType; //! [EXPORT] : [IGNORE]
-	size_t filesize = 0; //! [EXPORT] : [IGNORE]
+	size_t fileDataSize = 0; //! [EXPORT] : [IGNORE]
 };
 
 
@@ -343,8 +389,13 @@ public:
 
 		if(*size + sizeToRead > maxSize) {
 			// Should not happen!
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 			sif::error << "SDCardHandlerPackets::ReadReply: Max Size specified "
-					<<"is not large enough" << std::endl;
+					<< "is not large enough" << std::endl;
+#else
+			sif::printError("SDCardHandlerPackets::ReadReply: Max Size specified "
+                    "is not large enough\n");
+#endif
 			return SerializeIF::BUFFER_TOO_SHORT;
 		}
 
@@ -352,8 +403,11 @@ public:
 				sizeToRead, fileHandle));
 		if(sizeRead != sizeToRead) {
 			// Should not happen!
-			sif::error << "SDCardHandlerPackets::ReadReply: Did not read"
-					<<"all bytes." << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+			sif::error << "SDCardHandlerPackets::ReadReply: Did not read all bytes." << std::endl;
+#else
+			sif::printError("SDCardHandlerPackets::ReadReply: Did not read all bytes.\n");
+#endif
 			return HasReturnvaluesIF::RETURN_FAILED;
 		}
 
@@ -431,9 +485,13 @@ ReturnValue_t deSerializeRepositoryAndFilename(const uint8_t **buffer,
             reinterpret_cast<const char*>(*buffer));
     if(repositoryLength > MAX_REPOSITORY_PATH_LENGTH) {
         // Packet too short or repository length to large.
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::warning << "WriteCommand: Repository path longer than "
-                << MAX_REPOSITORY_PATH_LENGTH << " or no '\0 terminator"
-                << std::endl;
+                << MAX_REPOSITORY_PATH_LENGTH << " or no '\0' terminator" << std::endl;
+#else
+        sif::printWarning("WriteCommand: Repository path longer than %d or no '\0' terminator\n",
+                MAX_REPOSITORY_PATH_LENGTH);
+#endif
     }
     if(*size < repositoryLength) {
         return SerializeIF::STREAM_TOO_SHORT;
@@ -453,9 +511,14 @@ ReturnValue_t deSerializeRepositoryAndFilename(const uint8_t **buffer,
     size_t filenameLength = std::strlen(
             reinterpret_cast<const char*>(*buffer));
     if(filenameLength > MAX_FILENAME_LENGTH) {
-        sif::warning << "WriteCommand: Repository path longer than "
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::warning << "WriteCommand: Filename longer than "
                 << MAX_FILENAME_LENGTH << " or no '\0 terminator"
                 << "detected!" << std::endl;
+#else
+        sif::printWarning("WriteCommand: Filename longer than %d or no '\0' terminator\n",
+                MAX_FILENAME_LENGTH);
+#endif
         return HasReturnvaluesIF::RETURN_OK;
     }
     if(*size < filenameLength) {
@@ -482,9 +545,13 @@ ReturnValue_t deSerializeRepositories(const uint8_t **buffer,
             reinterpret_cast<const char*>(*buffer));
     if(repositoryLength > MAX_REPOSITORY_PATH_LENGTH) {
         // Packet too short or repository length to large.
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::warning << "WriteCommand: Repository path longer than "
-                << MAX_REPOSITORY_PATH_LENGTH << " or no '\0 terminator"
-                << std::endl;
+                << MAX_REPOSITORY_PATH_LENGTH << " or no '\0 terminator" << std::endl;
+#else
+        sif::printWarning("WriteCommand: Repository path longer than %d or no '\0' terminator\n",
+                MAX_REPOSITORY_PATH_LENGTH);
+#endif
     }
     if(*size < repositoryLength) {
         return SerializeIF::STREAM_TOO_SHORT;
@@ -508,9 +575,13 @@ ReturnValue_t deSerializeRepositories(const uint8_t **buffer,
             reinterpret_cast<const char*>(*buffer));
     if(dirnameLength > allowedRemainingSize) {
         // Resulting path would be too long
-        sif::warning << "CreateDirectoryCommand::deSerialize: Directory "
-                << " would result in repository path length too large!"
-                << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::warning << "CreateDirectoryCommand::deSerialize: Directory would result in repository "
+                "path length too large!" << std::endl;
+#else
+        sif::printWarning("CreateDirectoryCommand::deSerialize: Directory would result in "
+                "repository path length too large!\n");
+#endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     if(*size < dirnameLength) {
@@ -526,16 +597,17 @@ ReturnValue_t deSerializeRepositories(const uint8_t **buffer,
 }
 
 ReturnValue_t serializeRepositoryAndFilename(uint8_t **buffer,
-        size_t* size, size_t maxSize, RepositoryPath& repositoryPath,
-		FileName& filename) {
-
+        size_t* size, size_t maxSize, const RepositoryPath& repositoryPath,
+		const FileName& filename) {
+    /* You need to cast away the const for the ETL librairy */
+    auto nonConstPath = const_cast<RepositoryPath&>(repositoryPath);
+    auto nonConstFilename = const_cast<FileName&>(filename);
 	// Check remaining size is large enough and check integer
 	// overflow of *size
 	size_t nextSize = repositoryPath.size();
 	size_t newSize =  nextSize + 1 + *size;
 	if ((newSize <= maxSize) and (newSize > *size)) {
-		repositoryPath.copy(reinterpret_cast<char*>(*buffer),
-				nextSize);
+	    nonConstPath.copy(reinterpret_cast<char*>(*buffer), nextSize);
 		*size += nextSize + 1;
 		*buffer += nextSize;
 		**buffer = '\0';
@@ -548,8 +620,7 @@ ReturnValue_t serializeRepositoryAndFilename(uint8_t **buffer,
 	nextSize = filename.size();
 	newSize =  nextSize + *size;
 	if ((newSize <= maxSize) and (newSize > *size)) {
-		filename.copy(reinterpret_cast<char*>(*buffer),
-				nextSize);
+		nonConstFilename.copy(reinterpret_cast<char*>(*buffer), nextSize);
 		*size += nextSize + 1;
 		*buffer += nextSize;
 		**buffer = '\0';

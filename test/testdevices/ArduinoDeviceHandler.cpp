@@ -1,12 +1,5 @@
-/**
- * @file ArduinoDeviceHandler.cpp
- *
- * @date 06.03.2020
- * @author R. Mueller
- */
-
-#include <test/testdevices/ArduinoDeviceHandler.h>
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include "ArduinoDeviceHandler.h"
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 
 ArduinoHandler::ArduinoHandler(object_id_t objectId, object_id_t comIF,
@@ -61,8 +54,11 @@ ReturnValue_t ArduinoHandler::buildNormalDeviceCommand(DeviceCommandId_t *id) {
 }
 
 void ArduinoHandler::printCommand(uint8_t* command, size_t command_size) {
-    sif::info << "Arduino Handler sent to " << idString << ": " << command
-         << "\r\n" << std::flush;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+    sif::info << "Arduino Handler sent to " << idString << ": " << command << std::endl;
+#else
+    sif::printInfo("Arduino Handler sent to %s: %s", idString, command);
+#endif
 }
 
 ReturnValue_t ArduinoHandler::buildTransitionDeviceCommand(
@@ -103,14 +99,22 @@ ReturnValue_t ArduinoHandler::scanForReply(const uint8_t *start,
 		*foundLen = remainingSize;
 	}
 	else {
-		sif::error << "Arduino Handler: Invalid Reply\r\n" << std::flush;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "Arduino Handler: Invalid Reply" << std::endl;
+#else
+		sif::printError("Arduino Handler: Invalid Reply\n");
+#endif
 	}
 	return RETURN_OK;
 }
 
 void ArduinoHandler::printReply(uint8_t * reply, size_t reply_size) {
-    sif::info  << "Arduino Handler received echo reply from "
-          << idString << ": " << reply << "\n" << std::flush;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+    sif::info  << "Arduino Handler received echo reply from " << idString << ": " << reply
+            << std::endl;
+#else
+    sif::printInfo("Arduino Handler received echo reply from %s: %s\n", idString, reply);
+#endif
 }
 
 ReturnValue_t ArduinoHandler::interpretDeviceReply(DeviceCommandId_t id,

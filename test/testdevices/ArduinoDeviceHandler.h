@@ -1,10 +1,3 @@
-/**
- * @file ArduinoDeviceHandler.h
- *
- * @date 06.03.2020
- * @author R. Mueller
- */
-
 #ifndef TEST_TESTDEVICES_ARDUINODEVICEHANDLER_H_
 #define TEST_TESTDEVICES_ARDUINODEVICEHANDLER_H_
 
@@ -21,8 +14,8 @@
  */
 class ArduinoHandler: public DeviceHandlerBase {
 public:
-	ArduinoHandler(object_id_t objectId_, object_id_t comIF_,
-			CookieIF * cookie_, std::string idString_);
+	ArduinoHandler(object_id_t objectId_, object_id_t comIF_, CookieIF* cookie_,
+	        std::string idString_);
 	virtual ~ArduinoHandler();
 protected:
 	virtual void performOperationHook();

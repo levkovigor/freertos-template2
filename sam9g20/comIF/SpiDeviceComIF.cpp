@@ -1,7 +1,7 @@
 #include "SpiDeviceComIF.h"
 #include "GpioDeviceComIF.h"
 
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/ipc/MutexHelper.h>
 #include <fsfw/osal/FreeRTOS/Mutex.h>
 #include <fsfw/timemanager/Stopwatch.h>
@@ -18,12 +18,12 @@ SpiDeviceComIF::SpiDeviceComIF(object_id_t objectId): SystemObject(objectId) {}
 SpiDeviceComIF::~SpiDeviceComIF() {}
 
 ReturnValue_t SpiDeviceComIF::initialize() {
-	ReturnValue_t result = SPI_start(spiBus,spiSlaves);
-	if(result != RETURN_OK) {
-		triggerEvent(SPI_START_FAILURE, 0, 0);
-		return SPI_INIT_FAILURE;
-	}
-	return RETURN_OK;
+    ReturnValue_t result = SPI_start(spiBus,spiSlaves);
+    if(result != RETURN_OK) {
+        triggerEvent(SPI_START_FAILURE, 0, 0);
+        return SPI_INIT_FAILURE;
+    }
+    return RETURN_OK;
 }
 
 ReturnValue_t SpiDeviceComIF::checkAddress(address_t spiAddress) {
@@ -37,76 +37,81 @@ ReturnValue_t SpiDeviceComIF::checkAddress(address_t spiAddress) {
     case(addresses::SPI_ARDUINO_2):
     case(addresses::SPI_ARDUINO_3):
     case(addresses::SPI_ARDUINO_4):
-        return RETURN_OK;
+    return RETURN_OK;
     default:
         return SPI_INVALID_ADDRESS;
     }
 }
 
 ReturnValue_t SpiDeviceComIF::initializeInterface(CookieIF *cookie)  {
-	if(cookie == nullptr) {
-		return NULLPOINTER;
-	}
+    if(cookie == nullptr) {
+        return NULLPOINTER;
+    }
 
-	SpiCookie * spiCookie = dynamic_cast<SpiCookie*>(cookie);
-	address_t spiAddress = spiCookie->getAddress();
-	if(ReturnValue_t result = checkAddress(spiAddress); result != RETURN_OK) {
-		return result;
-	}
+    SpiCookie * spiCookie = dynamic_cast<SpiCookie*>(cookie);
+    address_t spiAddress = spiCookie->getAddress();
+    if(ReturnValue_t result = checkAddress(spiAddress); result != RETURN_OK) {
+        return result;
+    }
 
-	// Add to reply and cookie map.
-	if(auto replyIter = spiMap.find(spiCookie->getAddress());
-			replyIter == spiMap.end())
-	{
-		spiMap.emplace(spiCookie->getAddress(),
-				SpiStruct(spiCookie, spiCookie->getMaxReplyLen()));
-	}
-	else {
-		// This should be avoided, we want to avoid dynamic memory allocation
-		// after all. This should not kill us if it happens though :-)
-		// Already in map. readjust size and reassign supplied cookie.
-		ReplyBuffer & existingReplyBuffer = replyIter->second.spiReplyBuffer;
-		existingReplyBuffer.resize(spiCookie->getMaxReplyLen());
-		existingReplyBuffer.shrink_to_fit();
-		replyIter->second.spiCookie = spiCookie;
-	}
+    // Add to reply and cookie map.
+    if(auto replyIter = spiMap.find(spiCookie->getAddress());
+    replyIter == spiMap.end())
+    {
+        spiMap.emplace(spiCookie->getAddress(),
+                SpiStruct(spiCookie, spiCookie->getMaxReplyLen()));
+    }
+    else {
+        // This should be avoided, we want to avoid dynamic memory allocation
+        // after all. This should not kill us if it happens though :-)
+        // Already in map. readjust size and reassign supplied cookie.
+        ReplyBuffer & existingReplyBuffer = replyIter->second.spiReplyBuffer;
+        existingReplyBuffer.resize(spiCookie->getMaxReplyLen());
+        existingReplyBuffer.shrink_to_fit();
+        replyIter->second.spiCookie = spiCookie;
+    }
 
-	return RETURN_OK;
+    return RETURN_OK;
 }
 
 ReturnValue_t SpiDeviceComIF::performOperation(uint8_t operationCode) {
-	// Could be used to check the bus health (and reset the bus if needed).
-	return RETURN_OK;
+    // Could be used to check the bus health (and reset the bus if needed).
+    return RETURN_OK;
 }
 
 
 ReturnValue_t SpiDeviceComIF::sendMessage(CookieIF *cookie,
-		const uint8_t * sendData, size_t sendLen) {
-	SpiCookie * spiCookie = dynamic_cast<SpiCookie *> (cookie);
-	address_t spiAddress = spiCookie->getAddress();
-	auto spiMapIter = spiMap.find(spiAddress);
-	if(spiMapIter == spiMap.end()) {
-	    return HasReturnvaluesIF::RETURN_FAILED;
-	}
+        const uint8_t * sendData, size_t sendLen) {
+    SpiCookie * spiCookie = dynamic_cast<SpiCookie *> (cookie);
+    address_t spiAddress = spiCookie->getAddress();
+    auto spiMapIter = spiMap.find(spiAddress);
+    if(spiMapIter == spiMap.end()) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
 
-	ReturnValue_t result = spiSemaphore.acquire(
-	        SemaphoreIF::TimeoutType::WAITING, SPI_STANDARD_SEMAPHORE_TIMEOUT);
-	if(result != HasReturnvaluesIF::RETURN_OK) {
-	    sif::warning << "SpiDeviceComIF::sendMessage: Semaphore unavailable "
-	            "for long time!" << std::endl;
-	}
+    ReturnValue_t result = spiSemaphore.acquire(
+            SemaphoreIF::TimeoutType::WAITING, SPI_STANDARD_SEMAPHORE_TIMEOUT);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::warning << "SpiDeviceComIF::sendMessage: Semaphore unavailable "
+                "for long time!" << std::endl;
+#else
+        sif::printWarning("SpiDeviceComIF::sendMessage: Semaphore unavailable "
+                "for long time!\n");
+#endif
+    }
 
-	SPItransfer spiTransfer;
-	prepareSpiTransfer(spiTransfer, spiMapIter, sendData, sendLen);
-	// now we have to execute the GPIO logic.
-	handleGpioDecoderSelect(spiCookie->getSlaveType());
-	handleGpioOutputSwitching(spiCookie->getDemuxOutput());
+    SPItransfer spiTransfer;
+    prepareSpiTransfer(spiTransfer, spiMapIter, sendData, sendLen);
+    // now we have to execute the GPIO logic.
+    handleGpioDecoderSelect(spiCookie->getSlaveType());
+    handleGpioOutputSwitching(spiCookie->getDemuxOutput());
 
-	int driverResult = SPI_queueTransfer(&spiTransfer);
-	handleSpiTransferInitResult(spiCookie,
-	        static_cast<SpiTransferInitResult>(driverResult));
+    int driverResult = SPI_queueTransfer(&spiTransfer);
+    handleSpiTransferInitResult(spiCookie,
+            static_cast<SpiTransferInitResult>(driverResult));
 
-	return RETURN_OK;
+    return RETURN_OK;
 }
 
 void SpiDeviceComIF::prepareSpiTransfer(SPItransfer& spiTransfer,
@@ -125,61 +130,72 @@ void SpiDeviceComIF::prepareSpiTransfer(SPItransfer& spiTransfer,
 }
 
 ReturnValue_t SpiDeviceComIF::getSendSuccess(CookieIF *cookie) {
-	SpiCookie * spiCookie = dynamic_cast<SpiCookie *> (cookie);
-	uint32_t spiAddress = spiCookie->getAddress();
-	auto spiIter = spiMap.find(spiAddress);
-	if(spiIter == spiMap.end()) {
-		sif::warning << "SPI ComIF: Invalid logical address " << std::hex
-				<< spiCookie->getAddress() << std::endl;
-		return RETURN_FAILED;
-	}
-	// Com Status has mutex protection
-	MutexHelper mutexLock(spiCookie->getMutexHandle(), MutexIF::WAITING,
-	        SPI_STANDARD_MUTEX_TIMEOUT);
-	if(spiCookie->getCurrentComStatus() == ComStatus::FAULTY) {
-		return spiCookie->getErrorReturnValue();
-	}
-	else {
-		return RETURN_OK;
-	}
+    SpiCookie * spiCookie = dynamic_cast<SpiCookie *> (cookie);
+    uint32_t spiAddress = spiCookie->getAddress();
+    auto spiIter = spiMap.find(spiAddress);
+    if(spiIter == spiMap.end()) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::warning << "SPI ComIF: Invalid logical address " << std::hex
+                << spiCookie->getAddress() << std::endl;
+#else
+        sif::printWarning( "SPI ComIF: Invalid logical address %lu\n", spiCookie->getAddress());
+#endif
+        return RETURN_FAILED;
+    }
+    // Com Status has mutex protection
+    MutexHelper mutexLock(spiCookie->getMutexHandle(),
+            MutexIF::TimeoutType::WAITING,
+            SPI_STANDARD_MUTEX_TIMEOUT);
+    if(spiCookie->getCurrentComStatus() == ComStatus::FAULTY) {
+        return spiCookie->getErrorReturnValue();
+    }
+    else {
+        return RETURN_OK;
+    }
 }
 
 ReturnValue_t SpiDeviceComIF::requestReceiveMessage(CookieIF *cookie,
-		size_t requestLen) {
-	// SPI is full duplex, so a send operation will always be a read operation
-	// too as bytes are transmitted in both directions.
-	return RETURN_OK;
+        size_t requestLen) {
+    // SPI is full duplex, so a send operation will always be a read operation
+    // too as bytes are transmitted in both directions.
+    return RETURN_OK;
 }
 
 ReturnValue_t SpiDeviceComIF::readReceivedMessage(CookieIF *cookie,
-		uint8_t** buffer, size_t* size) {
-	SpiCookie* spiCookie = dynamic_cast<SpiCookie*> (cookie);
-	uint32_t spiAddress = spiCookie->getAddress();
+        uint8_t** buffer, size_t* size) {
+    SpiCookie* spiCookie = dynamic_cast<SpiCookie*> (cookie);
+    uint32_t spiAddress = spiCookie->getAddress();
 
-	auto spiIter = spiMap.find(spiAddress);
-	if(spiIter == spiMap.end()) {
-		sif::warning << "SPI ComIF: Invalid logical address " << std::hex
-				<< spiCookie->getAddress() << std::endl;
-		return RETURN_FAILED;
-	}
+    auto spiIter = spiMap.find(spiAddress);
+    if(spiIter == spiMap.end()) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::warning << "SpiDeviceComIF::readReceivedMessage: Invalid logical address " << std::hex
+                << spiCookie->getAddress() << std::endl;
+#else
+        sif::printWarning("SpiDeviceComIF::readReceivedMessage: Invalid logical address %lu\n",
+                spiCookie->getAddress());
+#endif
+        return RETURN_FAILED;
+    }
 
-	checkTransferResult(spiCookie, spiSemaphore);
-	// Com Status has mutex protection
-	MutexHelper mutexLock(spiCookie->getMutexHandle(),MutexIF::WAITING,
-	        SPI_STANDARD_MUTEX_TIMEOUT);
-	if(spiCookie->getCurrentComStatus() == ComStatus::TRANSFER_SUCCESS) {
-		*buffer = spiIter->second.spiReplyBuffer.data();
-		*size = spiCookie->getTransferLen();
-		return RETURN_OK;
-	}
-	else if(spiCookie->getCurrentComStatus() ==
-	        ComStatus::TRANSFER_INIT_SUCCESS) {
-		*size = 0;
-		return NO_REPLY_RECEIVED;
-	}
-	else {
-		return spiCookie->getErrorReturnValue();
-	}
+    checkTransferResult(spiCookie, spiSemaphore);
+    // Com Status has mutex protection
+    MutexHelper mutexLock(spiCookie->getMutexHandle(),
+            MutexIF::TimeoutType::WAITING,
+            SPI_STANDARD_MUTEX_TIMEOUT);
+    if(spiCookie->getCurrentComStatus() == ComStatus::TRANSFER_SUCCESS) {
+        *buffer = spiIter->second.spiReplyBuffer.data();
+        *size = spiCookie->getTransferLen();
+        return RETURN_OK;
+    }
+    else if(spiCookie->getCurrentComStatus() ==
+            ComStatus::TRANSFER_INIT_SUCCESS) {
+        *size = 0;
+        return NO_REPLY_RECEIVED;
+    }
+    else {
+        return spiCookie->getErrorReturnValue();
+    }
 }
 
 
@@ -196,18 +212,29 @@ void SpiDeviceComIF::checkTransferResult(SpiCookie* spiCookie,
         // number higher or consider setting individual times in the cookies
         // We have to draw the line between devices that just take a long
         // time and faulty communication.
-        sif::warning << "Spi ComIF: After waiting for "
-                << SPI_STANDARD_SEMAPHORE_TIMEOUT << " ticks, the transfer "
-                << "was not completed!" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::warning << "Spi ComIF: After waiting for " << SPI_STANDARD_SEMAPHORE_TIMEOUT
+                << " ticks, the transfer was not completed!" << std::endl;
+#else
+        sif::printWarning("Spi ComIF: After waiting for %lu ticks, "
+                "the transfer was not completed!\n", SPI_STANDARD_SEMAPHORE_TIMEOUT);
+#endif
         result = SPI_COMMUNICATION_TIMEOUT;
     }
     else if(result != RETURN_OK) {
-        sif::error << "Spi ComIF: Configuration error when taking semaphore!"
-                << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "SpiDeviceComIF::checkTransferResult: "
+                "Configuration error when taking semaphore!" << std::endl;
+#else
+        sif::printError("SpiDeviceComIF::checkTransferResult: "
+                "Configuration error when taking semaphore!\n");
+#endif
+
     }
 
     // Com Status has mutex protection
-    MutexHelper mutexLock(spiCookie->getMutexHandle(), MutexIF::WAITING,
+    MutexHelper mutexLock(spiCookie->getMutexHandle(),
+            MutexIF::TimeoutType::WAITING,
             SPI_STANDARD_MUTEX_TIMEOUT);
     if(result != RETURN_OK) {
         spiCookie->setCurrentComStatus(ComStatus::FAULTY, result);
@@ -243,16 +270,16 @@ void SpiDeviceComIF::SPIcallback(SystemContext context,
                     "Semaph not owned!\r\n");
         }
         else {
-        	TRACE_ERROR("SPIDeviceComIF::SPIcallback: "
-        	        "Unknown error occured!\r\n");
+            TRACE_ERROR("SPIDeviceComIF::SPIcallback: "
+                    "Unknown error occured!\r\n");
         }
     }
 
     if(context == SystemContext::isr_context and
-    		higherPriorityTaskAwoken == pdPASS) {
-    	// Request context switch at exit of ISR like recommended by
+            higherPriorityTaskAwoken == pdPASS) {
+        // Request context switch at exit of ISR like recommended by
         // FreeRTOS.
-    	TaskManagement::requestContextSwitch(CallContext::ISR);
+        TaskManagement::requestContextSwitch(CallContext::ISR);
     }
 }
 
@@ -260,94 +287,127 @@ void SpiDeviceComIF::handleSpiTransferInitResult(SpiCookie * spiCookie,
         SpiTransferInitResult driverResult) {
     switch(driverResult) {
     case(SpiTransferInitResult::INVALID_TRANSFER_STRUCT): {
-    	spiCookie->setCurrentComStatus(ComStatus::FAULTY,
-    			SPI_TRANSFER_INVALID_TRANSFER_STRUCT);
-    	sif::error << "SpiDeviceComIF::handleSpiTransferInitResult: Invalid"
-    	        " transfer struct." << std::endl;
-    	spiSemaphore.release();
-    	return;
+        spiCookie->setCurrentComStatus(ComStatus::FAULTY,
+                SPI_TRANSFER_INVALID_TRANSFER_STRUCT);
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "SpiDeviceComIF::handleSpiTransferInitResult: Invalid"
+                " transfer struct." << std::endl;
+#else
+        sif::printError("SpiDeviceComIF::handleSpiTransferInitResult: Invalid"
+                " transfer struct.\n");
+#endif
+        spiSemaphore.release();
+        return;
     }
     case(SpiTransferInitResult::INVALID_DRIVER_PARAMS): {
-    	spiCookie->setCurrentComStatus(ComStatus::FAULTY,
-    			SPI_TRANSFER_INVALID_DRIVER_PARAMS);
-    	spiSemaphore.release();
-    	return;
+        spiCookie->setCurrentComStatus(ComStatus::FAULTY,
+                SPI_TRANSFER_INVALID_DRIVER_PARAMS);
+        spiSemaphore.release();
+        return;
     }
     case(SpiTransferInitResult::QUEUE_INIT_FAILURE): {
-    	spiCookie->setCurrentComStatus(ComStatus::FAULTY,
-    			SPI_TRANSFER_QUEUE_INIT_FAILURE);
-    	spiSemaphore.release();
-    	return;
+        spiCookie->setCurrentComStatus(ComStatus::FAULTY,
+                SPI_TRANSFER_QUEUE_INIT_FAILURE);
+        spiSemaphore.release();
+        return;
     }
-    case(SpiTransferInitResult::RETURN_OK):
-    	spiCookie->setCurrentComStatus(ComStatus::TRANSFER_INIT_SUCCESS);
-    	return;
-    default:
-    	sif::error << "Spi ComIF: Invalid transfer init return value "
-		      << static_cast<int>(driverResult) << std::endl;
-    	spiSemaphore.release();
-    	spiCookie->setCurrentComStatus(ComStatus::FAULTY, RETURN_FAILED);
-    	return;
+    case(SpiTransferInitResult::RETURN_OK): {
+        spiCookie->setCurrentComStatus(ComStatus::TRANSFER_INIT_SUCCESS);
+        return;
+    }
+
+    default: {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "Spi ComIF: Invalid transfer init return value "
+                << static_cast<int>(driverResult) << std::endl;
+#else
+        sif::printError("Spi ComIF: Invalid transfer init return value %d\n", driverResult);
+#endif
+        spiSemaphore.release();
+        spiCookie->setCurrentComStatus(ComStatus::FAULTY, RETURN_FAILED);
+        return;
+    }
+
     };
 }
 
 void SpiDeviceComIF::handleGpioOutputSwitching(DemultiplexerOutput demuxOutput) {
     switch(demuxOutput) {
-    case(DemultiplexerOutput::OUTPUT_1):
+    case(DemultiplexerOutput::OUTPUT_1): {
         GpioDeviceComIF::enableDecoderOutput1();
         return;
-    case(DemultiplexerOutput::OUTPUT_2):
+    }
+    case(DemultiplexerOutput::OUTPUT_2): {
         GpioDeviceComIF::enableDecoderOutput2();
         return;
-    case(DemultiplexerOutput::OUTPUT_3):
+    }
+    case(DemultiplexerOutput::OUTPUT_3): {
         GpioDeviceComIF::enableDecoderOutput3();
         return;
-    case(DemultiplexerOutput::OUTPUT_4):
+    }
+    case(DemultiplexerOutput::OUTPUT_4): {
         GpioDeviceComIF::enableDecoderOutput4();
         return;
-    case(DemultiplexerOutput::OUTPUT_5):
+    }
+    case(DemultiplexerOutput::OUTPUT_5): {
         GpioDeviceComIF::enableDecoderOutput5();
         return;
-    case(DemultiplexerOutput::OUTPUT_6):
+    }
+    case(DemultiplexerOutput::OUTPUT_6): {
         GpioDeviceComIF::enableDecoderOutput6();
         return;
-    case(DemultiplexerOutput::OUTPUT_7):
+    }
+    case(DemultiplexerOutput::OUTPUT_7): {
         GpioDeviceComIF::enableDecoderOutput7();
         return;
-    case(DemultiplexerOutput::OUTPUT_8):
+    }
+    case(DemultiplexerOutput::OUTPUT_8): {
         GpioDeviceComIF::enableDecoderOutput8();
         return;
-    case(DemultiplexerOutput::OWN_SLAVE_SELECT):
-
+    }
+    case(DemultiplexerOutput::OWN_SLAVE_SELECT): {
         return;
-    default:
+    }
+    default: {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "SPI ComIF: Invalid decoder output"
-                 " used for GPIO switching!" << std::endl;
+                " used for GPIO switching!" << std::endl;
+#else
+        sif::printError("SPI ComIF: Invalid decoder output"
+                " used for GPIO switching!\n");
+#endif
+    }
+
     }
 }
 
 void SpiDeviceComIF::handleGpioDecoderSelect(SlaveType slave) {
     switch(slave) {
-    case(SlaveType::DEMULTIPLEXER_1):
+    case(SlaveType::DEMULTIPLEXER_1): {
         GpioDeviceComIF::enableDecoder1();
         pullDummySlaveSelectLow = true;
         return;
-    case(SlaveType::DEMULTIPLEXER_2):
+    }
+    case(SlaveType::DEMULTIPLEXER_2): {
         GpioDeviceComIF::enableDecoder2();
         pullDummySlaveSelectLow = true;
         return;
-    case(SlaveType::DEMULTIPLEXER_3):
+    }
+    case(SlaveType::DEMULTIPLEXER_3): {
         GpioDeviceComIF::enableDecoder3();
         pullDummySlaveSelectLow = true;
         return;
-    case(SlaveType::DEMULTIPLEXER_4):
+    }
+    case(SlaveType::DEMULTIPLEXER_4): {
         GpioDeviceComIF::enableDecoder4();
         pullDummySlaveSelectLow = true;
-        return;
-    default:
+    }
+    return;
+    default: {
         GpioDeviceComIF::disableDecoders();
         pullDummySlaveSelectLow = false;
         return;
+    }
     }
 }
 

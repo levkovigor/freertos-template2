@@ -10,3 +10,6 @@
 [submodule "etl"]
 	path = etl
 	url = https://github.com/ETLCPP/etl.git
+[submodule "generators/generatore_core"]
+	path = generators/genmib
+	url = https://git.ksat-stuttgart.de/source/generatore_core.git

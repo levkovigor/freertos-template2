@@ -1,31 +1,74 @@
 #ifndef BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_
 #define BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_
 
-#define BL_VERSION      1
-#define BL_SUBVERSION   1
+#include <stddef.h>
+#include <stdint.h>
 
-//! Can be used to disable printouts to reduce code size (does not make much of
-//! a difference, most of the AT91 lib uses IO so it is difficult to remove it)
-#define DEBUG_IO_LIB            1
-
-#define DEBUG_VERBOSE           0
-//! 1 MB minus reserved size of bootloader.
-#ifdef AT91SAM9G20_EK
-// Can be set to actual binary size or a conservative upper bound.
-#define OBSW_BINARY_MAX_SIZE 1100000 // 1.007.616 bytes
+#ifdef ISIS_OBC_G20
+#include <commonIOBCConfig.h>
 #else
-// Limited by NOR-Flash size, but can also be set to actual binary size.
-#define OBSW_BINARY_MAX_SIZE 0x100000 - 0xA000 // 1.007.616 bytes
+#include <commonAt91Config.h>
 #endif
 
+#define BL_VERSION      1
+#define BL_SUBVERSION   3
+
+//! Can be used to enable or disable diagnostic printouts in the bootloader.
+#define BOOTLOADER_VERBOSE_LEVEL    1
+
+//! Use tiny FS instead of HCC FS.
+#define USE_TINY_FS 			0
+
+static const uint32_t SDRAM_DESTINATION = 0x20000000;
+
 #ifdef AT91SAM9G20_EK
+
+#if BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE
+
+//! This should translate to the third block of the NAND flash.
+static const size_t PRIMARY_IMAGE_NAND_OFFSET = 0x20000;
+static const size_t PRIMARY_IMAGE_SDRAM_OFFSET = 0x0;
+static const size_t PRIMARY_IMAGE_RESERVED_SIZE = 0x100000; /* 1.007.616 bytes */
+
+static const size_t SECOND_STAGE_BL_JUMP_ADDR = SDRAM_DESTINATION;
+
 //! This should translate to the second block of the NAND flash.
-#define NAND_FLASH_OFFSET 0x20000
+static const size_t SECOND_STAGE_BL_NAND_OFFSET = PRIMARY_IMAGE_NAND_OFFSET;
+static const size_t SECOND_STAGE_BL_RESERVED_SIZE = PRIMARY_IMAGE_RESERVED_SIZE;
+static const size_t SECOND_STAGE_SDRAM_OFFSET = PRIMARY_IMAGE_SDRAM_OFFSET;
+
+#else /* Two-stage bootloader */
+
+static const size_t FIRST_STAGE_BL_NAND_OFFSET = 0x0;
+
+//! This should translate to the second block of the NAND flash.
+static const size_t SECOND_STAGE_BL_NAND_OFFSET = 0x20000;
+//! First 1 MB of the SDRAM are reserved for the primary image.
+static const size_t SECOND_STAGE_SDRAM_OFFSET = 0x100000;
+static const size_t SECOND_STAGE_BL_RESERVED_SIZE = 0x20000;
+
+//! This should translate to the third block of the NAND flash.
+static const size_t PRIMARY_IMAGE_NAND_OFFSET = 0x40000;
+static const size_t PRIMARY_IMAGE_SDRAM_OFFSET = 0x0;
+static const size_t PRIMARY_IMAGE_RESERVED_SIZE = 0x100000; /* 1.007.616 bytes */
+
+static const size_t SECOND_STAGE_BL_JUMP_ADDR = SDRAM_DESTINATION + SECOND_STAGE_SDRAM_OFFSET;
+#endif /* BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE */
+
+#else
+
+typedef enum {
+    BOOT_SD_CARD_0_UPDATE,
+    BOOT_SD_CARD_1_UPDATE,
+    BOOT_NOR_FLASH
+} BootSelect;
+
 #endif
 
 //! If the bootloader is flashed with SAM-BA, certain operations like writing
 //! CRC of binary sizes and checks performed with them are not possible anymore
 //! This flag should be enabled if the software is flashed with SAM-BA.
-#define SAM_BA_BOOT 1
+#define SAM_BA_BOOT         0
 
 #endif /* BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_ */
+

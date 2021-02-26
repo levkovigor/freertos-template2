@@ -21,10 +21,10 @@ enum Subservice: uint8_t {
 import re
 from enum import Enum
 
-from parserbase.mib_file_list_parser import FileListParser
-from parserbase.mib_parser import FileParser
-from utility.mib_csv_writer import CsvWriter
-from utility.mib_printer import Printer
+from genmib.parserbase import FileListParser
+from genmib.parserbase import FileParser
+from genmib.utility.mib_csv_writer import CsvWriter
+from genmib.utility.mib_printer import Printer
 
 SUBSERVICE_DEFINITION_DESTINATION = "../../mission/pus/"
 SUBSERVICE_CSV_NAME = "mib_subservices.csv"

@@ -4,10 +4,21 @@
 #ifdef __cplusplus
 #include <cstdint>
 #include <cstddef>
+
+#include "returnvalues/classIds.h"
+#include "events/subsystemIdRanges.h"
+#include "objects/systemObjectList.h"
+
 #else
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#endif
+
+#ifdef AT91SAM9G20_EK
+#include <commonAt91Config.h>
+#else
+#include <commonIOBCConfig.h>
 #endif
 
 #include <portmacro.h>
@@ -20,7 +31,10 @@
 #define OBSW_MONITOR_ALLOCATION    				1
 #define OBSW_ADD_TEST_CODE                      1
 #define OBSW_PRINT_MISSED_DEADLINES             1
-#define OBSW_ENHANCED_PRINTOUT				    1
+#define OBSW_VERBOSE_LEVEL				        1
+
+//! Set to one for SAM-BA boot, necessary for proper low level initialization.
+#define SAM_BA_BOOT                             1
 
 #define MAX_REPOSITORY_PATH_LENGTH 			    64
 #define MAX_FILENAME_LENGTH 				    12
@@ -33,24 +47,9 @@ namespace config {
 extern bool softwareInitializationComplete;
 #endif
 
-/* Hardcoded file names */
-#ifdef AT91SAM9G20_EK
-const char* const BOOTLOADER_REPOSITORY =         "BIN/AT91/BL";
-const char* const SW_REPOSITORY =                 "BIN/AT91/OBSW";
-#else
-const char* const BOOTLOADER_REPOSITORY =         "BIN/IOBC/BL";
-const char* const SW_REPOSITORY =                 "BIN/IOBC/OBSW";
-#endif
-
-const char* const BOOTLOADER_NAME =               "bl.bin";
-const char* const SW_SLOT_0_NAME =                "obsw_sl1.bin";
-const char* const SW_SLOT_1_NAME =                "obsw_sl2.bin";
-const char* const SW_UPDATE_SLOT_NAME =           "obsw_up.bin";
-
-const char* const BL_HAMMING_NAME =               "bl_ham.bin";
-const char* const SW_SLOT_0_HAMMING_NAME =        "sl1_hamm.bin";
-const char* const SW_SLOT_1_HAMMING_NAME =        "sl2_hamm.bin";
-const char* const SW_UPDATE_HAMMING_NAME =        "up_hamm.bin";
+//! Reserved small sectors for the bootloader. Each of the small sectors has 8192 bytes
+//! and there are 8 small sectors on the iOBC NOR-Flash chip.
+static const uint8_t BOOTLOADER_RESERVED_SMALL_SECTORS = 8;
 
 static const uint32_t SD_CARD_ACCESS_MUTEX_TIMEOUT =    50;
 static const uint8_t SD_CARD_MQ_DEPTH =                 20;
@@ -60,8 +59,8 @@ static const uint32_t OBSW_SERVICE_1_MQ_DEPTH =         10;
 
 static const uint32_t RS232_BAUDRATE =                  230400;
 static const size_t RS232_MAX_SERIAL_FRAME_SIZE =       1500;
-// When performing timeout-based reading using DLE encoding, packet might
-// be larger than 1500 bytes because of the transport layer.
+//! When performing timeout-based reading using DLE encoding, packet might
+//! be larger than 1500 bytes because of the transport layer.
 static const size_t TRANSPORT_LAYER_ADDITION =          500;
 static const uint32_t RS232_SERIAL_TIMEOUT_BAUDTICKS =  5;
 static const uint16_t RS232_MUTEX_TIMEOUT =             20;
@@ -87,6 +86,8 @@ static const uint32_t SPI_DEFAULT_TIMEOUT_MS =          40;
 static const size_t USB_FRAME_SIZE =                    1500;
 static const uint32_t MAX_STORED_TELECOMMANDS =         2000;
 
+static const size_t STORE_LARGE_BUCKET_SIZE =           1024;
+static const size_t STORE_VERY_LARGE_BUCKET_SIZE =      2048;
 
 #ifdef __cplusplus
 }

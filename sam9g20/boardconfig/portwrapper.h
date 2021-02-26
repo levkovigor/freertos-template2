@@ -2,6 +2,7 @@
 #define SAM9G20_BOARDCONFIG_PORTWRAPPER_H_
 
 #include <sam9g20/utility/TCTimerHandler.h>
+
 #include <cstdint>
 
 extern volatile uint16_t timerOverflowCounter;
@@ -26,5 +27,7 @@ extern "C" uint32_t vGetCurrentTimerCounterValue();
  * This ISR is called when the TC peripheral counter overflows.
  */
 void timerOverflowISR(isr_args_t isrArgs);
+
+
 
 #endif /* SAM9G20_BOARDCONFIG_PORTWRAPPER_H_ */

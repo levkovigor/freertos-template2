@@ -32,6 +32,12 @@ SHELL = /bin/sh
 # (can be overriden by adding CHIP=chip and BOARD=board to the command-line)
 CHIP  = at91sam9g20
 CUSTOM_DEFINES += -D$(CHIP)
+
+BOOTLOADER = 1
+ADD_MMC_DRIVER = 1
+ADD_TINYFATFS = 1
+CUSTOM_DEFINES += -DBOOTLOADER
+
 # select the target platform. Add IOBC=1 to build the binary for the iOBC.
 ifdef IOBC
 BOARD = ISIS_OBC_G20
@@ -44,13 +50,31 @@ MEMORY_TYPE = norflash
 endif
 
 else 
+
 BOARD = AT91SAM9G20_EK
 BOARD_NAME = at91ek
+
+ifeq ($(TYPE), 2)
+BL_STAGE = 2
+else
+BL_STAGE = 1
+endif # ifeq ($(TYPE), 2)
+
+
 # AT91-SAM9G20-EK Configuration:
-# Code will be written to NAND-Flash.
-# ROM-Boot will copy it and execute it in SRAM.
-# This works as long as the binary size is smaller than 16kB.
+# First stage bootloader will be written to start of NAND-Flash. Sixth ARM vector has to contain
+# the size of the image and the image needs to be smaller than 16kB to fit into ther SRAM
+# ROM-Boot will copy it and execute the code there.
+
+# The first stage bootloader will load the second stage bootloader which will be executed
+# in SDRAM.
+
+ifeq ($(BL_STAGE), 2)
+MEMORY_TYPE = sdram
+else
 MEMORY_TYPE = sram
+endif
+
 CUSTOM_DEFINES += -DOP_BOOTSTRAP_on
 endif
 CUSTOM_DEFINES += -D$(MEMORY_TYPE)
@@ -78,8 +102,12 @@ IOBC_REMOTE_IP = 192.168.199.228
 ifdef IOBC
 OS_APP = freeRTOS
 else
+ifeq ($(BL_STAGE), 2)
+OS_APP = freeRTOS
+else
 OS_APP = None
-endif
+endif # ($(BL_STAGE), 2)
+endif # IOBC
 
 CUSTOM_DEFINES += -D$(OS_APP)
 
@@ -92,18 +120,26 @@ CORE_PATH = $(BOOTLOADER_PATH)/core
 AT91_PATH = $(BOARD_FILE_ROOT)/at91
 
 LINKER_SCRIPT_PATH = $(BOOTLOADER_PATH)
+
 ifdef IOBC
+
 ifeq ($(MEMORY_TYPE), norflash)
 # Link for iOBC
 LINKER_SCRIPT_NAME = norflash.lds
 else
 LINKER_SCRIPT_NAME = sram.lds
-endif
+endif # ($(MEMORY_TYPE), norflash)
 
 else
+
 # Link for AT91-EK
+ifeq ($(BL_STAGE), 1)
 LINKER_SCRIPT_NAME = sram.lds
+else ifeq ($(BL_STAGE), 2)
+LINKER_SCRIPT_NAME = sdram_second_stage_bl.lds
 endif
+
+endif # IOBC
 
 BSP_PATH = $(BOARD_FILE_ROOT)
 
@@ -112,9 +148,22 @@ BSP_PATH = $(BOARD_FILE_ROOT)
 HCC_PATH = $(PRIVLIB_PATH)/hcc
 HAL_PATH = $(PRIVLIB_PATH)/hal
 
+ifeq ($(BL_STAGE), 1)
+STAGE_NAME = firststage
+else
+
+ifdef IOBC
+STAGE_NAME = default
+else
+STAGE_NAME = secondstage
+endif
+
+OS_APP = freeRTOS
+endif
+
 # Output file basename
-BASENAME = sourceobsw-bootloader
-SECONDARY_NAME= $(BOARD_NAME)-$(MEMORY_TYPE)
+BASENAME = sourcebl-$(STAGE_NAME)
+SECONDARY_NAME= $(BOARD_NAME)-$(MEMORY_TYPE)-$(MAKECMDGOALS)
 BINARY_NAME = $(BASENAME)-$(SECONDARY_NAME)
 # Output files will be put in this directory inside
 OUTPUT_FOLDER = $(CHIP_PATH)/bootloader
@@ -145,15 +194,12 @@ OPTIMIZATION = -O0
 BUILDPATH = _bin
 DEPENDPATH = _dep
 OBJECTPATH = _obj
-ifeq ($(MEMORY_TYPE),norflash)
-BUILD_FOLDER = norflash
-else 
-BUILD_FOLDER = sram
-endif
 
-DEPENDDIR = $(DEPENDPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)
-OBJDIR = $(OBJECTPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)
-BINDIR = $(BUILDPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)
+BUILD_FOLDER = $(MEMORY_TYPE)
+
+DEPENDDIR = $(DEPENDPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)-$(MAKECMDGOALS)
+OBJDIR = $(OBJECTPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)-$(MAKECMDGOALS)
+BINDIR = $(BUILDPATH)/$(OUTPUT_FOLDER)/$(BUILD_FOLDER)-$(MAKECMDGOALS)
 
 CLEANDEP = $(DEPENDPATH)/$(OUTPUT_FOLDER)
 CLEANOBJ = $(OBJECTPATH)/$(OUTPUT_FOLDER)
@@ -207,13 +253,21 @@ INCLUDES :=
 
 # Directories where $(directoryname).mk files should be included from.
 # Source files and includes can be added in those submakefiles.
-SUBDIRS := $(BOOTLOADER_PATH) $(PRIVLIB_PATH) $(AT91_PATH) $(CORE_PATH) 
+SUBDIRS := $(BOOTLOADER_PATH) $(PRIVLIB_PATH) $(AT91_PATH) $(CORE_PATH) $(COMMON_PATH)
 
-ifdef IOBC
-# ifeq ($(MEMORY_TYPE), norflash) 
-SUBDIRS += $(FREERTOS_PATH) $(COMMON_PATH)
-# endif
+LOAD_FREERTOS = 0
+ifdef IOBC 
+LOAD_FREERTOS = 1
+else
+ifeq ($(BL_STAGE), 2)
+LOAD_FREERTOS = 1
 endif
+endif
+
+ifeq ($(LOAD_FREERTOS), 1)
+SUBDIRS += $(FREERTOS_PATH)
+endif
+
 
 # This is a hack from http://make.mad-scientist.net/the-eval-function/
 #
@@ -301,11 +355,23 @@ MSG_COMPILING = Compiling:
 MSG_ASSEMBLING = Assembling:
 MSG_DEPENDENCY = Collecting dependencies for:
 MSG_BINARY = Generate binary: 
+
 ifdef IOBC
+
 MSG_INFO = Software: Bootloader binary for iOBC
+
 else
-MSG_INFO = Software: Bootloader binary for AT91SAM9G20-EK
-endif
+
+ifeq ($(BL_STAGE), 2)
+MSG_BL_TYPE = second stage bootloader
+else
+MSG_BL_TYPE = first stage bootloader
+endif # ($(BL_STAGE), 2)
+
+MSG_INFO = Software: Bootloader binary for AT91SAM9G20-EK, $(MSG_BL_TYPE)
+
+endif # IOBC
+
 MSG_OPTIMIZATION = Optimization: $(OPTIMIZATION), $(OPTIMIZATION_MESSAGE)
 MSG_TARGET = Target Build: $(TARGET)
 MSG_DEBUG = Trace Level: $(TRACE_LEVEL), Dynamic Traces: $(DYN_TRACE_MESSAGE)
@@ -469,7 +535,7 @@ ALL_OBJECTS =  $(ASM_OBJECTS) $(C_OBJECTS) $(CXX_OBJECTS) $(FREERTOS_OBJECTS) $(
 # Generates binary and displays all build properties
 # -p with mkdir ignores error and creates directory when needed.
 
-SHOW_DETAILS = 1
+# SHOW_DETAILS = 1
 
 $(BINDIR)/$(BINARY_NAME).bin: $(BINDIR)/$(BINARY_NAME).elf
 	@echo

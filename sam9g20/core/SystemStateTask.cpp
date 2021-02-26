@@ -1,13 +1,23 @@
+#include <fsfw/memory/HasFileSystemIF.h>
 #include "SystemStateTask.h"
 
+#include "SystemStateTask.h"
+#include <OBSWConfig.h>
+#include <FreeRTOSConfig.h>
+#include <FSFWConfig.h>
+
+#include <fsfw/serviceinterface/ServiceInterfacePrinter.h>
+#include <fsfw/serviceinterface/serviceInterfaceDefintions.h>
 #include <fsfw/objectmanager/ObjectManagerIF.h>
 #include <fsfw/tasks/TaskFactory.h>
-#include <fsfwconfig/OBSWConfig.h>
 #include <sam9g20/core/CoreController.h>
+#include <fsfw/storagemanager/StorageManagerIF.h>
 
-#include <FreeRTOSConfig.h>
 
 #include <inttypes.h>
+#include <mission/memory/FileSystemMessage.h>
+#include <sam9g20/memory/SDCardDefinitions.h>
+#include <sam9g20/memory/SDCardHandlerPackets.h>
 
 
 SystemStateTask::SystemStateTask(object_id_t objectId,
@@ -25,9 +35,12 @@ ReturnValue_t SystemStateTask::performOperation(uint8_t opCode) {
             semaphore->acquire();
             break;
         }
-        case(InternalState::READING_STATS): {
+        case(InternalState::GENERATING_STATS_CSV):
+        case(InternalState::GENERATING_STATS_PRINT): {
+
             if(numberOfTasks > 0) {
 #if configGENERATE_RUN_TIME_STATS == 1
+                // liest Daten um Runtime Stats zu generieren
                 uxTaskGetSystemState(taskStatArray.data(),
                         numberOfTasks, nullptr);
 #else
@@ -35,25 +48,16 @@ ReturnValue_t SystemStateTask::performOperation(uint8_t opCode) {
                         << "disabled!" << std::endl;
                 internalState = InternalState::IDLE;
 #endif
-                if(not readOnce) {
-                    readOnce = true;
-                }
-            }
-
-            if(doubleOperationRequested) {
-                internalState = InternalState::GENERATING_STATS;
-                doubleOperationRequested = false;
             }
             else {
                 internalState = InternalState::IDLE;
+                sif::printWarning("SystemStateTask::performOperation: Number of tasks is 0!\n");
+                break;
             }
 
-            break;
-        }
-
-        case(InternalState::GENERATING_STATS): {
-            generateStatsCsvAndCheckStack();
+            performStatsGeneration(internalState);
             internalState = InternalState::IDLE;
+
             break;
         }
         }
@@ -62,60 +66,70 @@ ReturnValue_t SystemStateTask::performOperation(uint8_t opCode) {
 }
 
 
-bool SystemStateTask::readAndGenerateStats() {
-    doubleOperationRequested = true;
+bool SystemStateTask::generateStatsCsv() {
     if(internalState != InternalState::IDLE) {
         return false;
     }
 
-    internalState = InternalState::READING_STATS;
+    internalState = InternalState::GENERATING_STATS_CSV;
     semaphore->release();
     return true;
 }
 
-bool SystemStateTask::readSystemState() {
+bool SystemStateTask::generateStatsPrint() {
     if(internalState != InternalState::IDLE) {
         return false;
     }
 
-    internalState = InternalState::READING_STATS;
-    semaphore->release();
-    return true;
-}
-
-bool SystemStateTask::generateStatsAndCheckStack() {
-    if(not readOnce or internalState != InternalState::IDLE) {
-        return false;
-    }
-
+    internalState = InternalState::GENERATING_STATS_PRINT;
     semaphore->release();
     return true;
 }
 
 ReturnValue_t SystemStateTask::initializeAfterTaskCreation() {
+    ipcStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
+    if (ipcStore == nullptr) {
+        sif::printWarning("SystemStateTask::initializeAfterTaskCreation: No IPC store found\n");
+    }
     semaphore = new BinarySemaphoreUsingTask();
     numberOfTasks = uxTaskGetNumberOfTasks();
     taskStatArray.reserve(numberOfTasks + 3);
     taskStatArray.resize(numberOfTasks + 3);
 
+
     size_t sizeToReserve = (numberOfTasks + 3) * 75;
     statsVector.reserve(sizeToReserve);
     statsVector.resize(sizeToReserve);
 
-    coreController = objectManager->get<CoreController>(coreControllerId);
-    if(coreController == nullptr) {
+    HasFileSystemIF* sdCardHandler = objectManager->get<HasFileSystemIF>(objects::SD_CARD_HANDLER);
+    if (sdCardHandler == nullptr) {
+        sif::printError("SystemStateTask::initializeAfterTaskCreation: "
+                "SD Card Handler does not exist\n");
         return HasReturnvaluesIF::RETURN_FAILED;
     }
-    // to prevent garbage output.
+    queueId = sdCardHandler->getCommandQueue();
+
+    coreController = objectManager->get<CoreController>(coreControllerId);
+    if(coreController == nullptr) {
+        sif::printError("SystemStateTask::initializeAfterTaskCreation: "
+                "Core Controller does not exist\n");
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    /* To prevent mangled output */
     TaskFactory::delayTask(5);
-    sif::info << "SystemStateTask: " << numberOfTasks << " tasks counted."
-            << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+    sif::info << "SystemStateTask: " << numberOfTasks << " tasks counted." << std::endl;
+#else
+    sif::printInfo("SystemStateTask: %hu tasks counted.\n", numberOfTasks);
+#endif
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-void SystemStateTask::generateStatsCsvAndCheckStack() {
-    // TODO: write to file directly? or generate raw telemetry as service 8
-    // data reply, but data might become too big.
+void SystemStateTask::performStatsGeneration(InternalState csvOrPrint) {
+    if (statsVector.size() == 0) {
+        sif::printWarning("SystemStateTask::performStatsGeneration size of statsVector is 0");
+        return;
+    }
     uint64_t uptimeTicks = coreController->getTotalRunTimeCounter();
     uint64_t idleTicks = coreController->getTotalIdleRunTimeCounter();
 
@@ -131,15 +145,22 @@ void SystemStateTask::generateStatsCsvAndCheckStack() {
             loggerTime.hour,
             loggerTime.minute,
             loggerTime.second);
-    std::string infoColumn = "10 kHz time base used for CPU statistics\n\r";
-    std::string headerColumn = "Task Name\tAbsTime [Ticks]\tRelTime [%]\t"
+    const char* const infoColumn = "10 kHz time base used for CPU statistics\n\r";
+    size_t infoSize = strlen(infoColumn);
+    if(infoSize > 50) {
+        infoSize = 50;
+    }
+    const char* const headerColumn = "Task Name\tAbsTime [Ticks]\tRelTime [%]\t"
             "LstRemStack [bytes]\n\r";
-    std::memcpy(statsVector.data() + statsIdx, infoColumn.data(),
-            infoColumn.size());
-    statsIdx += infoColumn.size();
-    std::memcpy(statsVector.data() + statsIdx, headerColumn.data(),
-            headerColumn.size());
-    statsIdx += headerColumn.size();
+    size_t headerSize = strlen(headerColumn);
+    if(headerSize > 70) {
+        headerSize = 70;
+    }
+
+    std::memcpy(statsVector.data() + statsIdx, infoColumn, infoSize);
+    statsIdx += infoSize;
+    std::memcpy(statsVector.data() + statsIdx, headerColumn, headerSize);
+    statsIdx += headerSize;
 
     /* For percentage calculations. */
     uptimeTicks /= 100UL;
@@ -158,15 +179,15 @@ void SystemStateTask::generateStatsCsvAndCheckStack() {
                     sizeof(secondFourLetters));
             triggerEvent(LOW_REM_STACK, firstFourLetters, secondFourLetters);
         }
+
         if(task.pcTaskName != nullptr) {
 
-#ifdef DEBUG
-            // human readable format here, tab seperator
-            writeDebugStatLine(task, statsIdx, idleTicks, uptimeTicks);
-#else
-            // CSV format here, tab seperator
-            writeCsvStatLine(task, statsIdx, idleTicks, uptimeTicks);
-#endif
+            if (csvOrPrint == InternalState::GENERATING_STATS_CSV) {
+                writeCsvStatLine(task, statsIdx, idleTicks, uptimeTicks);
+            }
+            else {
+                writeDebugStatLine(task, statsIdx, idleTicks, uptimeTicks);
+            }
             statsVector[statsIdx] = '\n';
             statsIdx ++;
             statsVector[statsIdx] = '\r';
@@ -174,12 +195,85 @@ void SystemStateTask::generateStatsCsvAndCheckStack() {
         }
     }
     statsVector[statsIdx] = '\0';
-#if OBSW_ENHANCED_PRINTOUT == 1
-#ifdef DEBUG
-    printf("%s\r\n",statsVector.data());
-    printf("Number of bytes written: %d\r\n", statsIdx);
+    statsIdx ++;
+
+    if (csvOrPrint == InternalState::GENERATING_STATS_PRINT) {
+#if OBSW_VERBOSE_LEVEL >= 1
+        printf("%s%s\r\n", sif::ANSI_COLOR_RESET, statsVector.data());
+        printf("Number of bytes written: %d\r\n", statsIdx);
 #endif
-#endif
+        return;
+    }
+
+    /* It is assumed that the datasize doesnt exceed 4096 bytes */
+    if (ipcStore == nullptr) {
+        return;
+    }
+    size_t sizeToAddToStore = 0;
+    store_address_t storeId;
+    size_t placeholderStatsIdx = statsIdx;
+    size_t maxFileSizePerBucket = config::STORE_VERY_LARGE_BUCKET_SIZE - 40;
+    uint8_t* storeDestination = nullptr;
+    RepositoryPath repositoryPath = "MISC";
+    FileName fileName = "stats";
+    char str[4];
+    sprintf(str, "%d", csvCounter);
+
+    fileName.append(str, 3);
+    fileName += ".csv";
+    sif::printInfo("%s\n", fileName);
+    ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
+    bool breakOnFinish = false;
+    auto writeType = WriteCommand::WriteType::NEW_FILE;
+
+    for(uint8_t idx = 0; idx < 3; idx++) {
+        if (placeholderStatsIdx % maxFileSizePerBucket == placeholderStatsIdx) {
+            breakOnFinish = true;
+            sizeToAddToStore = placeholderStatsIdx;
+        }
+        else {
+            sizeToAddToStore = maxFileSizePerBucket;
+        }
+
+        if (idx > 0) {
+            writeType = WriteCommand::WriteType::APPEND_TO_FILE;
+        }
+        result = ipcStore->getFreeElement(&storeId, sizeToAddToStore,
+                &storeDestination);
+
+        if (result != HasReturnvaluesIF::RETURN_OK) {
+            sif::printWarning("SystemStateTask::performStatsGeneration: "
+                    "Could not get free element from store\n");
+            break;
+        }
+        WriteCommand writeCommand(repositoryPath, fileName,
+                statsVector.data() + idx * maxFileSizePerBucket, sizeToAddToStore, writeType);
+
+        size_t serializedSize = 0;
+        result = writeCommand.serialize(&storeDestination, &serializedSize,
+                config::STORE_VERY_LARGE_BUCKET_SIZE, SerializeIF::Endianness::MACHINE);
+
+        if (result != HasReturnvaluesIF::RETURN_OK) {
+            sif::printWarning("SystemStateTask::performStatsGeneration: "
+                    "Could not serialize\n");
+            ipcStore->deleteData(storeId);
+            break;
+        }
+        CommandMessage fileCommand;
+        FileSystemMessage::setCreateFileCommand(&fileCommand, storeId);
+        result = MessageQueueSenderIF::sendMessage(queueId, &fileCommand);
+        if (result != HasReturnvaluesIF::RETURN_OK) {
+            sif::printWarning("SystemStateTask::performStatsGeneration: "
+                    "Could not send CSV message\n");
+            ipcStore->deleteData(storeId);
+            break;
+        }
+
+        if (breakOnFinish) {
+            break;
+        }
+        placeholderStatsIdx = placeholderStatsIdx - sizeToAddToStore;
+    }
 
 }
 

@@ -4,11 +4,12 @@
 #include <fsfw/objectmanager/ObjectManagerIF.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 UartPollingBase::UartPollingBase(object_id_t objectId,
         object_id_t sharedRingBufferId, UARTbus uartBus,
         UARTconfig* uartConfiguration):
-        SystemObject(objectId),
+        SystemObject(objectId), uartBus(uartBus),
         sharedRingBufferId(sharedRingBufferId),
         uartConfiguration(uartConfiguration) {
 }
@@ -17,14 +18,21 @@ ReturnValue_t UartPollingBase::initialize() {
     ReturnValue_t result = UART_start(uartBus,*uartConfiguration);
 
     if (result != RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "Serial Polling: UART_start init error with code " <<
-                (int) result << std::endl;
+                static_cast<int>(result) << std::endl;
+#else
+        sif::printError("Serial Polling: UART_start init error with code %hu\n", result);
+#endif
     }
 
     sharedRingBuffer = objectManager->get<SharedRingBuffer>(sharedRingBufferId);
     if(sharedRingBuffer == nullptr) {
-        sif::error << "TcSerialPollingTask::initialize: Passed ring buffer"
-                " invalid !" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "TcSerialPollingTask::initialize: Passed ring buffer invalid!" << std::endl;
+#else
+        sif::printError("TcSerialPollingTask::initialize: Passed ring buffer invalid\n!");
+#endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     return result;
@@ -78,18 +86,25 @@ ReturnValue_t UartPollingBase::handleTransferResult(
         break;
     }
     case(UARTtransferStatus::overrunError_uart): {
-    	overrunErrorCount++;
-    	break;
+        overrunErrorCount++;
+        break;
     }
     case(UARTtransferStatus::error_uart): {
         otherErrorCount++;
         break;
     }
 
-    default:
-        sif::error << "RS232PollingTask::handleTransferResult: Unknown error"
-                << " with code " << status << " occured!" << std::endl;
+    default: {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "RS232PollingTask::handleTransferResult: Unknown error with code "
+                << status << " occured!" << std::endl;
+#else
+        sif::printError("RS232PollingTask::handleTransferResult: Unknown error with code "
+                "%d occured!\n", status);
+#endif
         break;
+    }
+
     }
     return result;
 }

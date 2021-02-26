@@ -42,6 +42,8 @@
 #include <intrinsics.h>
 #endif
 
+#define CP15_TRACE_INFO     0
+
 
 //-----------------------------------------------------------------------------
 //         Macros
@@ -113,8 +115,10 @@ void CP15_Enable_I_Cache(void)
     if ((control & (1 << CP15_I_BIT)) == 0) {
 
         control |= (1 << CP15_I_BIT);
-        _writeControlRegister(control);        
-        //TRACE_INFO("I cache enabled.\n\r");
+        _writeControlRegister(control);
+#if CP15_TRACE_INFO == 1
+        TRACE_INFO("I cache enabled.\n\r");
+#endif
     }
 }
 
@@ -131,8 +135,10 @@ void CP15_Disable_I_Cache(void)
     if ((control & (1 << CP15_I_BIT)) != 0) {
 
         control &= ~(1 << CP15_I_BIT);
-        _writeControlRegister(control);        
+        _writeControlRegister(control);
+#if CP15_TRACE_INFO == 1
         TRACE_INFO("I cache disabled.\n\r");
+#endif
     }
     else {
 

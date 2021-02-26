@@ -1,6 +1,6 @@
 #include "Service23FileManagement.h"
 
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/tmtcpacket/pus/TmPacketStored.h>
 #include <fsfw/memory/HasFileSystemIF.h>
 #include <fsfw/action/ActionMessage.h>
@@ -197,8 +197,14 @@ void Service23FileManagement::handleUnrequestedReply(
         break;
     }
     default:
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::debug << "Service23FileManagement::handleUnrequestedReply: "
                << "Unknown reply with reply ID " << replyId << std::endl;
+#else
+        sif::printDebug( "Service23FileManagement::handleUnrequestedReply: "
+               "Unknown reply with reply ID %hu\n",
+               static_cast<unsigned short>(replyId));
+#endif
     }
 }
 
@@ -211,8 +217,13 @@ ReturnValue_t Service23FileManagement::addDataToStore(
     ReturnValue_t result = IPCStore->addData(storeId,
             tcData + sizeof(object_id_t), tcDataLen - sizeof(object_id_t));
     if (result != HasReturnvaluesIF::RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "Service23FileManagement::addDataToStore: Failed to add "
                 << "data to IPC Store" << std::endl;
+#else
+        sif::printError("Service23FileManagement::addDataToStore: "
+                "Failed to add data to IPC Store\n");
+#endif
     }
     return result;
 }
@@ -224,17 +235,29 @@ ReturnValue_t Service23FileManagement::forwardFileSystemReply(
 	ConstStorageAccessor accessor(storeId);
 	ReturnValue_t result = IPCStore->getData(storeId, accessor);
 	if(result != RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "Service23FileManagement::forwardFileSystemReply: Could "
 				<<"not retrieve data for data reply for subservice"
 				<< subservice << "!";
+#else
+        sif::printError("Service23FileManagement::forwardFileSystemReply: "
+                "Could not retrieve data for data reply for subservice %d!",
+                static_cast<int>(subservice));
+#endif
 		return result;
 	}
 	result = sendTmPacket(subservice, objectId, accessor.data(),
 	        accessor.size());
 	if(result != HasReturnvaluesIF::RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "Service23FileManagement::handleReply: Could not "
 				<< "send TM packet for subservice"
 				<< subservice << "!";
+#else
+		sif::printError("Service23FileManagement::handleReply: Could not "
+		        "send TM packet for subservice %d",
+		        static_cast<int>(subservice));
+#endif
 	}
 	return HasReturnvaluesIF::RETURN_OK;
 }

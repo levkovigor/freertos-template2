@@ -10,11 +10,3 @@ CXXSRC += $(wildcard $(CURRENTPATH)/devices/*.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/*.cpp)
 
 INCLUDES += $(CURRENTPATH)
-INCLUDES += $(CURRENTPATH)/objects
-INCLUDES += $(CURRENTPATH)/returnvalues
-INCLUDES += $(CURRENTPATH)/tmtc
-INCLUDES += $(CURRENTPATH)/events
-INCLUDES += $(CURRENTPATH)/devices
-INCLUDES += $(CURRENTPATH)/pollingsequence
-INCLUDES += $(CURRENTPATH)/ipc
-INCLUDES += $(CURRENTPATH)/hk

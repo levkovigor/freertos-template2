@@ -35,11 +35,11 @@ TODO:
 import os
 import pprint
 
-from utility.mib_csv_writer import CsvWriter
-from utility.mib_printer import Printer, PrettyPrinter
-from utility.mib_sql_writer import SqlWriter
+from genmib.utility.mib_csv_writer import CsvWriter
+from genmib.utility.mib_printer import Printer
+from genmib.utility.mib_sql_writer import SqlWriter
 from utility import mib_globals as g
-from parserbase.mib_file_list_parser import FileListParser
+from genmib.parserbase import FileListParser
 from packetcontent.mib_packet_content_parser import (
     PacketContentParser,
     PACKET_CONTENT_DEFINITION_DESTINATION,

@@ -10,9 +10,9 @@
 #include <cp15/cp15.h>
 #include "../boot_iobc.h"
 
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
 #include <utility/trace.h>
-#endif
+#endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
 int iobc_sram() {
 	// Initiate ISIS watchdog
@@ -21,9 +21,9 @@ int iobc_sram() {
     //-------------------------------------------------------------------------
     // Configure traces
     //-------------------------------------------------------------------------
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_CONFIGURE(DBGU_STANDARD, 115200, BOARD_MCK);
-#endif
+#endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
     //-------------------------------------------------------------------------
     // Enable I-Cache
@@ -44,26 +44,22 @@ int iobc_sram() {
 
     feed_watchdog_if_necessary();
 
-#if DEBUG_IO_LIB == 1
-    TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
-    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME);
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+    TRACE_INFO_WP("-- SOURCE Bootloader (SRAM) --\n\r");
+    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME_PRINT);
     TRACE_INFO_WP("-- Software version v%d.%d --\n\r", BL_VERSION,
             BL_SUBVERSION);
     TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
     TRACE_INFO("Running initialization task..\n\r");
-#endif
+#endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
     feed_watchdog_if_necessary();
 
-    // Configure RTT for second time base.
+    /* Configure RTT for second time base. */
     RTT_start();
 
-    //-------------------------------------------------------------------------
-    // AT91 Bootloader
-    //-------------------------------------------------------------------------
+    /* AT91 Bootloader */
     perform_bootloader_core_operation();
-
-    //idle_loop();
     return 0;
 }
 

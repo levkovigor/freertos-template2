@@ -84,6 +84,10 @@ ReturnValue_t PCDUHandler::getSwitchState(uint8_t switchNr) const {
 	}
 }
 
+uint32_t PCDUHandler::getTransitionDelayMs(Mode_t modeFrom, Mode_t modeTo) {
+	return 2000;
+}
+
 ReturnValue_t PCDUHandler::getFuseState(uint8_t fuseNr) const {
 	return RETURN_OK;
 }
