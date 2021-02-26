@@ -5,6 +5,7 @@
  *      Author: Jan Gerhards
  */
 #include <mission/memory/tmstore/EtlMapWrapperBase.h>
+#include <iterator>
 
 #ifndef MISSION_MEMORY_TMSTORE_ETLMAPWRAPPER_H_
 #define MISSION_MEMORY_TMSTORE_ETLMAPWRAPPER_H_
@@ -43,6 +44,19 @@ public:
 			map.erase(key);
 			return HasReturnvaluesIF::RETURN_OK;
 		}
+	}
+
+	virtual int eraseByValue(TMapped value) override {
+		int numDeletedElements = 0;
+		for(typename etl::map<TKey, TMapped, SIZE>::iterator it = map.begin(); it != map.end();) {
+			if((it->second) == value) {
+				it = (map.erase(it));  //todo: this shouldn't return void
+				numDeletedElements++;
+			} else {
+				it++;
+			}
+		}
+		return numDeletedElements;
 	}
 
 	virtual std::pair<ReturnValue_t, TMapped*> get(TKey key) override {

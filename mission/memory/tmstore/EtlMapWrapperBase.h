@@ -22,7 +22,7 @@ class EtlMapWrapperBase {  //todo: Constructor and Destructor needed?
 
 public:
 	virtual ReturnValue_t insert(TKey key, TMapped value) = 0;
-	virtual ReturnValue_t erase(TKey key, TMapped value) = 0;
+	virtual ReturnValue_t erase(TKey key) = 0;
 	virtual std::pair<ReturnValue_t, TMapped*> get(TKey key) = 0;
 	virtual void clear() = 0;
 };
