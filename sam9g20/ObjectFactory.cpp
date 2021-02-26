@@ -258,7 +258,7 @@ void Factory::produce(void) {
 
     CookieIF *rs485CookiePCDU = nullptr;
     rs485CookiePCDU = new RS485Cookie(RS485Timeslot::PCDU_VORAGO, RS485BaudRates::NORMAL,
-            config::RS485_USLP_VCID_PCDU_VORAGO, config::RS485_PAYLOAD_VORAGO_TFDZ_SIZE,
+            config::RS485_USLP_VCID_PCDU_VORAGO, config::RS485_PCDU_VORAGO_TFDZ_SIZE,
             config::RS485_USLP_MAPID_PCDU_VORAGO);
 
     new TestDevice(objects::DUMMY_HANDLER_RS485_1, objects::RS485_DEVICE_COM_IF, rs485CookieFPGA,

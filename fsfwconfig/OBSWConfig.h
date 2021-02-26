@@ -82,10 +82,10 @@ static const size_t RS485_COM_FPGA_TFDZ_SIZE =       	119;
 
 static const uint8_t RS485_USLP_VCID_PCDU_VORAGO =      0b000000;
 static const uint8_t RS485_USLP_MAPID_PCDU_VORAGO =     0b0000;
-static const size_t RS485_PCDU_VORAGO_TFDZ_SIZE =       7;
+static const size_t RS485_PCDU_VORAGO_TFDZ_SIZE =       119;
 
-static const size_t RS485_PAYLOAD_VORAGO_TFDZ_SIZE =    7;
-static const size_t RS485_PAYLOAD_PIC24_TFDZ_SIZE =     7;
+static const size_t RS485_PAYLOAD_VORAGO_TFDZ_SIZE =    119;
+static const size_t RS485_PAYLOAD_PIC24_TFDZ_SIZE =     119;
 
 /**
  * Set timeout for I2C transfers, specified as 1/10th of ticks.

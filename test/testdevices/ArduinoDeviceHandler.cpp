@@ -13,7 +13,7 @@ ArduinoHandler::~ArduinoHandler() {}
 void ArduinoHandler::performOperationHook() {}
 
 void ArduinoHandler::doStartUp() {
-    setMode(MODE_ON);
+    setMode(MODE_NORMAL);
 }
 
 void ArduinoHandler::doShutDown() {

@@ -71,7 +71,17 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 
     RS485Timeslot timeslot = static_cast<RS485Timeslot>(opCode);
 
-    // Set current active device, also checks for nullpointers
+    //Testing
+//    AT91C_BASE_US2->US_BRGR = int(BOARD_MCK / (16 * 115200));
+//    GpioDeviceComIF::enableTransceiverFPGA1();
+//    ReturnValue_t test1 = UART_write(bus2_uart,
+//            const_cast<unsigned char*>(reinterpret_cast<const unsigned char*>("PCDU")), 4);
+//    AT91C_BASE_US2->US_BRGR = int(BOARD_MCK / (16 * 2000000));
+//    GpioDeviceComIF::enableTransceiverPCDU();
+//    ReturnValue_t test2 = UART_write(bus2_uart,
+//            const_cast<unsigned char*>(reinterpret_cast<const unsigned char*>("FPGA")), 40);
+
+// Set current active device, also checks for nullpointers
     if (setActive(timeslot) == HasReturnvaluesIF::RETURN_OK) {
         RS485Cookie *rs485Cookie = deviceCookies[timeslot];
         switch (timeslot) {
@@ -162,14 +172,15 @@ ReturnValue_t RS485DeviceComIF::getSendSuccess(CookieIF *cookie) {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_FAILED;
     MutexHelper mutexLock(rs485Cookie->getSendMutexHandle(), MutexIF::TimeoutType::WAITING,
             RS485_STANDARD_MUTEX_TIMEOUT);
-    // The message could have already been sent, or not, cause the sending tasks timing
-    //is independent from this function. If sending has not occured yet, we hope for the best
-    if (rs485Cookie->getComStatusSend() == ComStatusRS485::TRANSFER_SUCCESS
-            || rs485Cookie->getComStatusSend() == ComStatusRS485::TRANSFER_INIT) {
+    // Successful sending has occured
+    if (rs485Cookie->getComStatusSend() == ComStatusRS485::TRANSFER_SUCCESS) {
         result = HasReturnvaluesIF::RETURN_OK;
-        // If this happens, there is a bug somewhere
-    } else if (rs485Cookie->getComStatusSend() == ComStatusRS485::IDLE) {
+        /* If this happens, the time between sendMessage and getSendSuccess is not long enough
+         or there is a problem with the send order */
+    } else if (rs485Cookie->getComStatusSend() == ComStatusRS485::IDLE
+            || rs485Cookie->getComStatusSend() == ComStatusRS485::TRANSFER_INIT) {
         result = HasReturnvaluesIF::RETURN_FAILED;
+        return result;
         // Faulty transfer
     } else {
         result = rs485Cookie->getReturnValue();
@@ -280,28 +291,26 @@ ReturnValue_t RS485DeviceComIF::setupDataLinkLayer(UslpDataLinkLayer *dataLinkLa
 
 ReturnValue_t RS485DeviceComIF::setupDeviceVC(UslpDataLinkLayer *dataLinkLayer,
         RS485Cookie *rs485Cookie) {
-// VC Channel for device
+    // VC Channel for device
     UslpVirtualChannelIF *virtualChannel;
     virtualChannel = new UslpVirtualChannel(rs485Cookie->getVcId(), rs485Cookie->getTfdzSize());
 
-// Add MAP for normal device communication
+    // Add MAP for normal device communication
     UslpMapIF *mapDeviceCom;
     mapDeviceCom = new UslpMapDevice(rs485Cookie->getDevicComMapId(),
             receiveBufferDevice[rs485Cookie->getTimeslot()].data(),
             receiveBufferDevice[rs485Cookie->getTimeslot()].size(), rs485Cookie);
     virtualChannel->addMapChannel(rs485Cookie->getDevicComMapId(), mapDeviceCom);
 
-// Add MAP for Tm and Tc
+    // Add MAP for Tm and Tc
     if (rs485Cookie->getHasTmTc()) {
         UslpMapIF *mapTmTc;
         mapTmTc = new UslpMapTmTc(objects::USLP_MAPP_SERVICE, rs485Cookie->getTmTcMapId(),
                 tcDestination, tmStoreId, tcStoreId);
         virtualChannel->addMapChannel(rs485Cookie->getTmTcMapId(), mapTmTc);
-
-        dataLinkLayer->addVirtualChannel(rs485Cookie->getVcId(), virtualChannel);
-
     }
-// TODO : More checks
+    dataLinkLayer->addVirtualChannel(rs485Cookie->getVcId(), virtualChannel);
+    // TODO : More checks
     return HasReturnvaluesIF::RETURN_OK;
 }
 
