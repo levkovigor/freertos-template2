@@ -72,14 +72,15 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
     RS485Timeslot timeslot = static_cast<RS485Timeslot>(opCode);
 
     //Testing
-//    AT91C_BASE_US2->US_BRGR = int(BOARD_MCK / (16 * 115200));
-//    GpioDeviceComIF::enableTransceiverFPGA1();
-//    ReturnValue_t test1 = UART_write(bus2_uart,
-//            const_cast<unsigned char*>(reinterpret_cast<const unsigned char*>("PCDU")), 4);
-//    AT91C_BASE_US2->US_BRGR = int(BOARD_MCK / (16 * 2000000));
-//    GpioDeviceComIF::enableTransceiverPCDU();
-//    ReturnValue_t test2 = UART_write(bus2_uart,
-//            const_cast<unsigned char*>(reinterpret_cast<const unsigned char*>("FPGA")), 40);
+    AT91C_BASE_US2->US_BRGR = int(BOARD_MCK / (16 * 2000000));
+    GpioDeviceComIF::enableTransceiverPCDU();
+    ReturnValue_t test2 = UART_write(bus2_uart,
+            const_cast<unsigned char*>(reinterpret_cast<const unsigned char*>("FPGA")), 40);
+    AT91C_BASE_US2->US_BRGR = int(BOARD_MCK / (16 * 115200));
+    GpioDeviceComIF::enableTransceiverFPGA1();
+    ReturnValue_t test1 = UART_write(bus2_uart,
+            const_cast<unsigned char*>(reinterpret_cast<const unsigned char*>("PCDU")), 4);
+
 
 // Set current active device, also checks for nullpointers
     if (setActive(timeslot) == HasReturnvaluesIF::RETURN_OK) {
