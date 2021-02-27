@@ -18,13 +18,13 @@
  */
 template<typename TKey, typename TMapped, size_t SIZE>
 class EtlMapWrapper : public EtlMapWrapperIF<TKey, TMapped> {
+
+public:
+    using EtlReturnPair = typename EtlMapWrapperIF<TKey, TMapped>::EtlReturnPair;
     using EtlMap = etl::map<TKey, TMapped, SIZE>;
     using EtlMapIter = typename EtlMap::iterator;
     using EtlMapConstIter = typename EtlMap::const_iterator;
 
-	EtlMap map;
-
-public:
 	EtlMapWrapper();
 	virtual ~EtlMapWrapper();
 
@@ -81,6 +81,8 @@ public:
 	virtual void clear() override {
 		map.clear();
 	}
+private:
+    EtlMap map;
 };
 
 #endif /* MISSION_MEMORY_TMSTORE_ETLMAPWRAPPER_H_ */

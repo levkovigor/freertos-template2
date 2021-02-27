@@ -7,7 +7,7 @@
 
 
 //todo: remove code below, this is just used to test the EtlMapWrapper
-#include <mission/memory/tmstore/EtlMapWrapperBase.h>
+#include <mission/memory/tmstore/EtlMapWrapperIF.h>
 #include <mission/memory/tmstore/EtlMapWrapper.h>
 
 class TTT {
