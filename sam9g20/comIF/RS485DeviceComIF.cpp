@@ -71,7 +71,14 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 
     RS485Timeslot timeslot = static_cast<RS485Timeslot>(opCode);
 
-// Set current active device, also checks for nullpointers
+     /*check state of UART driver first, should be idle */
+    if(checkDriverState(&retryCount) == HasReturnvaluesIF::RETURN_FAILED){
+        /* performOperation return value is currently ignored by fsfw, but it cannot hurt either */
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+
+    /* Set current active device, also checks for nullpointers */
     if (setActive(timeslot) == HasReturnvaluesIF::RETURN_OK) {
         RS485Cookie *rs485Cookie = deviceCookies[timeslot];
         switch (timeslot) {
@@ -347,10 +354,9 @@ ReturnValue_t RS485DeviceComIF::setActive(RS485Timeslot timeslot) {
 }
 
 ReturnValue_t RS485DeviceComIF::checkDriverState(uint8_t *retryCount) {
-    UARTdriverState readState = UART_getDriverState(bus2_uart, read_uartDir);
     UARTdriverState writeState = UART_getDriverState(bus2_uart, write_uartDir);
-    if (readState != 0x00 or writeState != 0x00) {
-        if (readState == 0x33 or writeState == 0x33) {
+    if (writeState != 0x00) {
+        if ( writeState == 0x33) {
             // erroneous state!
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "RS485Controller::performOperation: RS485 driver"
@@ -360,9 +366,9 @@ ReturnValue_t RS485DeviceComIF::checkDriverState(uint8_t *retryCount) {
         // config error, wait 1 ms and try again up to 10 times.
         for (uint8_t idx = 0; idx < RETRY_COUNTER; idx++) {
             TaskFactory::delayTask(1);
-            readState = UART_getDriverState(bus2_uart, read_uartDir);
+
             writeState = UART_getDriverState(bus2_uart, write_uartDir);
-            if (readState == 0x00 and writeState == 0x00) {
+            if (writeState == 0x00) {
                 return HasReturnvaluesIF::RETURN_OK;
             }
         }
