@@ -37,8 +37,8 @@ MutexIF* CoreController::timeMutex = nullptr;
 
 CoreController::CoreController(object_id_t objectId,
         object_id_t systemStateTaskId):
-                ExtendedControllerBase(objectId, objects::NO_OBJECT),
-                systemStateTaskId(systemStateTaskId) {
+                        ExtendedControllerBase(objectId, objects::NO_OBJECT),
+                        systemStateTaskId(systemStateTaskId) {
     timeMutex = MutexFactory::instance()->createMutex();
 #ifdef ISIS_OBC_G20
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -148,12 +148,19 @@ ReturnValue_t CoreController::checkModeCommand(Mode_t mode, Submode_t submode,
 ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
     switch(actionId) {
-    case(REQUEST_CPU_STATS_CHECK_STACK): {
-        if(not systemStateTask->readAndGenerateStats()) {
+    case(REQUEST_CPU_STATS_CSV): {
+            if(not systemStateTask->generateStatsCsv()) {
+                return HasActionsIF::IS_BUSY;
+            }
+
+            actionHelper.finish(commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
+            return HasReturnvaluesIF::RETURN_OK;
+        }
+    case(REQUEST_CPU_STATS_PRINT): {
+        if(not systemStateTask->generateStatsPrint()) {
             return HasActionsIF::IS_BUSY;
         }
-        actionHelper.finish(commandedBy, actionId,
-                HasReturnvaluesIF::RETURN_OK);
+        actionHelper.finish(commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
         return HasReturnvaluesIF::RETURN_OK;
     }
     case(RESET_OBC): {
@@ -173,6 +180,25 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         Supervisor_powerCycleIobc(&reply, SUPERVISOR_INDEX);
 #endif
         return HasReturnvaluesIF::RETURN_OK;
+    }
+    case(CLEAR_STORE_PAGE): {
+        if (size > 2 or size < 1) {
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+        return handleClearStoreCommand(static_cast<Stores>(data[STORE_TYPE]), actionId,
+                data[PAGE_INDEX]);
+    }
+    case(CLEAR_WHOLE_STORE): {
+        if (size > 2 or size < 1) {
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+        return handleClearStoreCommand(static_cast<Stores>(data[STORE_TYPE]), actionId, 0);
+    }
+    case(GET_FILL_COUNT): {
+        if (size != 1) {
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+        return getFillCountCommand(static_cast<Stores>(data[STORE_TYPE]), commandedBy, actionId);
     }
     default:
         return HasActionsIF::INVALID_ACTION_ID;
@@ -370,6 +396,80 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
 
 
     return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t CoreController::storeSelect(StorageManagerIF** store, Stores storeType) {
+
+        if (store == nullptr) {
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+
+        switch(storeType) {
+        case(TM_STORE): {
+            *store = objectManager->get<StorageManagerIF>(objects::TM_STORE);
+            break;
+        }
+        case(TC_STORE): {
+            *store = objectManager->get<StorageManagerIF>(objects::TC_STORE);
+            break;
+        }
+        case(IPC_STORE): {
+            *store = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
+            break;
+        }
+        default: {
+            sif::printWarning("CoreController::storeSelect: Invalid Store!\n\r");
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+        }
+        return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t CoreController::getFillCountCommand(Stores storeType, MessageQueueId_t commandedBy,
+        ActionId_t replyId) {
+
+    StorageManagerIF* store = nullptr;
+    ReturnValue_t result = storeSelect(&store, storeType);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+    uint8_t numberOfPools = store->getNumberOfSubPools();
+    uint8_t buffer[numberOfPools + 2];
+    uint8_t bytesWritten;
+    buffer[0] = storeType;
+    store->getFillCount(&buffer[1], &bytesWritten);
+    result = actionHelper.reportData(commandedBy, replyId, buffer, bytesWritten);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    return HasActionsIF::EXECUTION_FINISHED;
+}
+
+ReturnValue_t CoreController::handleClearStoreCommand(Stores storeType, ActionId_t pageOrWholeStore,
+                StorageManagerIF::max_subpools_t poolIndex) {
+
+    StorageManagerIF* store = nullptr;
+    ReturnValue_t result = storeSelect(&store, storeType);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    if(store == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    if (pageOrWholeStore == CLEAR_STORE_PAGE) {
+        if(poolIndex >= store->getNumberOfSubPools()) {
+            return HasActionsIF::INVALID_PARAMETERS;
+        }
+        store->clearSubPool(poolIndex);
+    }
+    else if (pageOrWholeStore == CLEAR_WHOLE_STORE){
+        store->clearStore();
+    }
+
+    return HasActionsIF::EXECUTION_FINISHED;
 }
 
 ReturnValue_t CoreController::initializeLocalDataPool(localpool::DataPool &localDataPoolMap,

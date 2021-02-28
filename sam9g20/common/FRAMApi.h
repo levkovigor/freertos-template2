@@ -1,78 +1,58 @@
-#ifndef MISSION_MEMORY_FRAMAPI_H_
-#define MISSION_MEMORY_FRAMAPI_H_
-
-#include <sam9g20/common/SDCardApi.h>
-#include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
-
 /**
- * @brief	This common API can be used by both C++ and C code
- * 			to write data to FRAM.
+ * @brief   This common API can be used by both C++ and C code
+ *          to write data to FRAM.
  * @details
  * This header encapsulates the data stored on the FRAM and provides
  * funtions to read and write/overwrite them conveniently.
  * The functions use the HAL library provided by ISIS to write on the FRAM.
- * The FRAM needs to be started first! (see FRAM.h file)
+ * The FRAM needs to be started first before using any functions here! (see FRAM.h file)
  * @author R. Mueller
  */
+#ifndef MISSION_MEMORY_FRAMAPI_H_
+#define MISSION_MEMORY_FRAMAPI_H_
 
 /**
- * This struct will gather all critical data stored on FRAM.
+         ____________________________________________
+        |                                            |
+        |               CRITICAL BLOCK               |
+        |____________________________________________|
+        |                                            |
+        |                                            |
+        |____________________________________________|
+        |                                            |
+        |                                            |
+        |____________________________________________|
+        |                                            |
+        |              BOOTLOADER_HAMMING            |
+        |____________________________________________|
+
  */
-typedef struct __attribute__((__packed__))  _FRAMCriticalData {
-    /* Software information [4, 0-3] */
-    uint8_t software_version;
-    uint8_t software_subversion;
-    uint8_t software_subsubversion;
-    uint8_t filler_sw_version;
-
-    /* Reboot information [4, 4-7] */
-	uint32_t reboot_counter;
-
-	bool bootloader_faulty;
-	size_t bootloader_hamming_code_size;
-
-	/* Second counter [4, 8 - 11] */
-	uint32_t seconds_since_epoch;
-
-	/* NOR-Flash binary information [4, 12 - 15] */
-	size_t nor_flash_binary_size;
-	size_t nor_flash_hamming_code_size;
-	uint8_t filler_nor_flash[3];
-	uint8_t nor_flash_reboot_counter;
-
-	/* SD-Card */
-	// This value will be used on reboot to determine which SD card is the
-	// default SD card on reboot.
-	// 0: None, 1: SD Card 0, 2: SD Card 1
-	VolumeId preferedSdCard;
-	uint32_t sdc1sl1_reboot_counter;
-	uint32_t sdc1sl2_reboot_counter;
-	uint32_t sdc2sl1_reboot_counter;
-	uint32_t sdc2sl2_reboot_counter;
-
-	/*
-	 * Bootloader binary information. Bootloader itself could also be stored
-	 * in FRAM. Hamming code will be stored in FRAM in any case.
-	 */
-	char bootloader_binary_file_name[16];
-	char bootloader_hamming_code_file_name[16];
-
-	/* Software update information */
-    uint8_t filler_software_update[1];
-    bool software_update_available;
-	uint8_t software_update_in_slot_0;
-	uint8_t software_update_in_slot_1;
-
-	/* Task information */
-	uint8_t filler_tasks[2];
-    uint16_t number_of_active_tasks;
-} FRAMCriticalData;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <sam9g20/common/SDCardApi.h>
+#include <sam9g20/common/config/commonConfig.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
+
+//! Calculated required size: 0x20000 (bootloader) * 3 / 256
+//! (because 3 parity bits are generated per 256 byte block)
+static const size_t BOOTLOADER_HAMMING_RESERVED_SIZE = 0x600;
+
+//! Calculated required size for images: 0x100000 (NOR-Flash) - 0x20000 (bootloader) * 3 / 256
+static const uint32_t NOR_FLASH_HAMMING_RESERVED_SIZE = 0x2A00;
+
+/**
+ * Read the whole critical block. Size of buffer has to be provided in max_size.
+ * It is recommended to set max_size to sizeof(CriticalDataBlock)
+ * @param buffer
+ * @param max_size
+ * @return
+ */
+int read_critical_block(uint8_t* buffer, const size_t max_size);
 
 int write_software_version(uint8_t sw_version, uint8_t sw_subversion,
         uint8_t sw_subsubversion);
@@ -100,16 +80,78 @@ int reset_reboot_counter();
 int update_seconds_since_epoch(uint32_t secondsSinceEpoch);
 int read_seconds_since_epoch(uint32_t* secondsSinceEpoch);
 
-int write_nor_flash_binary_info(size_t binary_size, size_t hamming_code_offset);
-int read_nor_flash_binary_info(size_t* binary_size, size_t* hamming_code_offset);
+/**
+ * Shall be used to disable hamming code checks, e.g. if software was updated but hamming
+ * code has not been updated yet.
+ * @return
+ */
+int clear_hamming_check_flag();
+/**
+ * Shall be used to enable hamming code checks for the bootloader or the scrubbing engine.
+ * @return
+ */
+int set_hamming_check_flag();
+int get_hamming_check_flag();
+
+int write_nor_flash_binary_size(size_t binary_size);
+int read_nor_flash_binary_size(size_t* binary_size);
+
+/**
+ * Shall be used once when updating the NOR-Flash hamming code.
+ * @param hamming_size
+ * @param set_hamming_flag
+ * @return
+ */
+int write_nor_flash_hamming_size(size_t hamming_size, bool set_hamming_flag);;
+/**
+ * Shall be used to update the hamming code for the NOR-Flash binary.
+ * Can be performed in multiple steps by supplying the current offset and a pointer
+ * to the data to be written.
+ * @param current_offset
+ * @param size_to_write
+ * @return
+ */
+int write_nor_flash_hamming_code(uint8_t* hamming_code, size_t current_offset,
+        size_t size_to_write);
+/**
+ * Functions used to enable hamming flag checks for the NOR-Flash. Should be cleared
+ * when the NOR-Flash image is updated and set again when  the corresponding hamming code
+ * has been uploaded.
+ * @return
+ */
+int set_flash_hamming_flag();
+int clear_flash_hamming_flag();
+int get_flash_hamming_flag();
+/**
+ * Can be used to determine the size of the hamming code.
+ * @param hamming_size
+ * @param set_hamming_flag
+ * @return
+ */
+int read_nor_flash_hamming_size(size_t* hamming_size, bool* set_hamming_flag);
+/**
+ * Shall be used by the bootloader to read the hamming code. Its recommended to supply
+ * max_buffer = 0x2A00 (maximum possible size of hamming code)
+ * @param buffer
+ * @param max_buffer
+ * @param size_read Return actual size read (size of the hamming code)
+ * @return
+ */
+int read_nor_flash_hamming_code(uint8_t* buffer, const size_t max_buffer, size_t* size_read);
+
+
 int increment_nor_flash_reboot_counter();
 int read_nor_flash_reboot_counter(uint8_t* nor_flash_reboot_counter);
 int reset_nor_flash_reboot_counter();
 
 
-int increment_sdc1sl1_reboot_counter();
-int read_sdc1sl1_reboot_counter(uint8_t* sdc1sl1_reboot_counter);
-int reset_sdc1sl1_reboot_counter();
+int increment_sdc0_slot0_reboot_counter();
+int read_sdc0_slot0_reboot_counter(uint8_t* sdc1sl1_reboot_counter);
+int reset_sdc0_slot0_reboot_counter();
+
+int set_sdc_hamming_flag(VolumeId volume, SdSlots slot);
+int get_sdc_hamming_flag(bool* flag_set, VolumeId volume, SdSlots slot);
+int clear_sdc_hamming_flag(VolumeId volume, SdSlots slot);
 
 int set_bootloader_faulty(bool faulty);
 int is_bootloader_faulty(bool* faulty);

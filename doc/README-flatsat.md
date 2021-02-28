@@ -110,10 +110,12 @@ gdb_iobc.sh
 ```
 
 `vor_iobc.sh` is a shell script which will run the GDB Server with the correct configuration. 
-It runs the following command:
+It runs the following command. Please note that the USB S/N number can change depending on J-Link
+adapter used:
 
 ```sh
-JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=261002202 -nogui
+JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=20127716
+ -nogui
 ```
 
 Then type `CTRL` + `B` and `d` to detach from the tmux session.
@@ -150,7 +152,8 @@ use `k` instead of `d` instead. In some cases, it can becomes necessary to resta
 the J-Link GDB Server. The GDB Server should be run with the following command
 
 ```sh
-JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=261002202 -nogui
+JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=20127716
+ -nogui
 ```
 
 Background processes can be listed with `ps -aux` and killed with `kill <processId>`

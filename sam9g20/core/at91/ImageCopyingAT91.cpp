@@ -3,7 +3,6 @@
 #include <fsfw/serviceinterface/ServiceInterface.h>
 
 extern "C" {
-// include nand flash stuff here
 #include <at91/boards/at91sam9g20-ek/board.h>
 #include <at91/boards/at91sam9g20-ek/board_memories.h>
 #include <at91/peripherals/pio/pio.h>
@@ -11,6 +10,9 @@ extern "C" {
 #include <at91/utility/hamming.h>
 #include <at91/memories/nandflash/SkipBlockNandFlash.h>
 }
+
+#include <sam9g20/memory/SDCardAccess.h>
+
 #include <cinttypes>
 #include <cmath>
 #include <cstring>
@@ -20,7 +22,7 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
     case(ImageHandlerStates::IDLE): {
         return HasReturnvaluesIF::RETURN_OK;
     }
-    case(ImageHandlerStates::COPY_SDC_IMG_TO_FLASH): {
+    case(ImageHandlerStates::COPY_IMG_SDC_TO_FLASH): {
         if(not nandConfigured) {
             ReturnValue_t result = configureNand(true);
             if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -30,16 +32,16 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
         }
         return copySdCardImageToNandFlash();
     }
-    case(ImageHandlerStates::REPLACE_SDC_IMG): {
+    case(ImageHandlerStates::COPY_IMG_SDC_TO_SDC): {
         return copySdcImgToSdc();
     }
-    case(ImageHandlerStates::COPY_FLASH_IMG_TO_SDC): {
+    case(ImageHandlerStates::COPY_IMG_FLASH_TO_SDC): {
         break;
     }
-    case(ImageHandlerStates::COPY_FRAM_BL_TO_FLASH): {
+    case(ImageHandlerStates::COPY_BL_FRAM_TO_FLASH): {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
-    case(ImageHandlerStates::COPY_SDC_BL_TO_FLASH): {
+    case(ImageHandlerStates::COPY_BL_SDC_TO_FLASH): {
         if(not nandConfigured) {
             ReturnValue_t result = configureNand(true);
             if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -49,6 +51,15 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
         }
         return copySdCardImageToNandFlash();
         break;
+    }
+    case(ImageHandlerStates::COPY_BL_SDC_TO_FRAM): {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    case(ImageHandlerStates::COPY_BL_HAMMING_SDC_TO_FRAM): {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    case(ImageHandlerStates::COPY_IMG_HAMMING_SDC_TO_FRAM): {
+        return HasReturnvaluesIF::RETURN_FAILED;
     }
     }
     return HasReturnvaluesIF::RETURN_OK;
@@ -81,6 +92,30 @@ static unsigned int dataBytesAddr = BOARD_NF_DATA_ADDR;
 static const Pin nfCePin = BOARD_NF_CE_PIN;
 /// Nandflash ready/busy pin.
 static const Pin nfRbPin = BOARD_NF_RB_PIN;
+
+ReturnValue_t ImageCopyingEngine::startBootloaderToFlashOperation(image::ImageSlot bootloaderType,
+        bool fromFram) {
+#if BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE
+    if(bootloaderType != image::ImageSlot::BOOTLOADER_0) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+#else
+    if(bootloaderType != image::ImageSlot::BOOTLOADER_0 and
+            bootloaderType != image::ImageSlot::BOOTLOADER_1) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+#endif
+    sourceSlot = bootloaderType;
+
+    /* Not implemented yet */
+    if(fromFram) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    else {
+        imageHandlerState = ImageHandlerStates::COPY_BL_SDC_TO_FLASH;
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+}
 
 ReturnValue_t ImageCopyingEngine::copySdCardImageToNandFlash() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
@@ -134,11 +169,11 @@ ReturnValue_t ImageCopyingEngine::handleNandErasure(bool disableAt91Output) {
     }
 
     if(countdown->hasTimedOut()) {
-        return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+        return image::TASK_PERIOD_OVER_SOON;
     }
 
-    if(bootloader) {
-        // First block will be used for bootloader, so we erase it first.
+    if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
+        /* First block will be used for bootloader, so we erase it first. */
         int retval = SkipBlockNandFlash_EraseBlock(&skipBlockNf, 0,
                 NORMAL_ERASE);
         if(retval != 0) {
@@ -149,14 +184,32 @@ ReturnValue_t ImageCopyingEngine::handleNandErasure(bool disableAt91Output) {
             sif::printError("SoftwareImageHandler::copyBootloaderToNandFlash: "
                     "Error erasing first block.\n");
 #endif
-            // If this happens, this won't work anyway
+            /* If this happens, this won't work anyway */
             return HasReturnvaluesIF::RETURN_FAILED;
         }
     }
+#if BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE
+    else if(sourceSlot == image::ImageSlot::BOOTLOADER_1) {
+        /* First block will be used for bootloader, so we erase it first. */
+        int retval = SkipBlockNandFlash_EraseBlock(&skipBlockNf, 1,
+                NORMAL_ERASE);
+        if(retval != 0) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+            sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash: "
+                    << "Error erasing second block." << std::endl;
+#else
+            sif::printError("SoftwareImageHandler::copyBootloaderToNandFlash: "
+                    "Error erasing second block.\n");
+#endif
+            /* If this happens, this won't work anyway */
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+    }
+#endif
     else {
         ReturnValue_t result = handleErasingForObsw();
-        if(result == SoftwareImageHandler::TASK_PERIOD_OVER_SOON) {
-            return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+        if(result == image::TASK_PERIOD_OVER_SOON) {
+            return image::TASK_PERIOD_OVER_SOON;
         }
         else if(result != HasReturnvaluesIF::RETURN_OK) {
             return result;
@@ -170,7 +223,7 @@ ReturnValue_t ImageCopyingEngine::handleNandErasure(bool disableAt91Output) {
     internalState = GenericInternalState::STEP_2;
 
     if(countdown->hasTimedOut()) {
-        return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+        return image::TASK_PERIOD_OVER_SOON;
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -192,30 +245,36 @@ ReturnValue_t ImageCopyingEngine::handleErasingForObsw() {
 #endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
-        if(sourceSlot == ImageSlot::IMAGE_0) {
+        if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
             currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
         }
-        else if(sourceSlot == ImageSlot::IMAGE_1) {
+        else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
             currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
         }
-        else {
-            currentFileSize = f_filelength(config::SW_UPDATE_SLOT_NAME);
-        }
+
         helperFlag1 = true;
         helperCounter1 = 0;
         uint8_t requiredBlocks = std::ceil(
                 static_cast<float>(currentFileSize) /
                 (PAGES_PER_BLOCK * NAND_PAGE_SIZE));
-        // We start counting at one to skip the bootloader,
-        // so we need to add one here.
+        /* We start counting at one to skip the bootloader, so we need to add one here. */
+#if BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE
         helperCounter2 = requiredBlocks + 1;
+#else
+        helperCounter2 = requiredBlocks + 2;
+#endif /* BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE */
     }
 
     while(helperCounter1 < helperCounter2) {
         // erase multiple blocks for required binary size.
         // Don't erase first block, is reserved for bootloader.
+#if BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE
         int retval = SkipBlockNandFlash_EraseBlock(&skipBlockNf,
                 helperCounter1 + 1, NORMAL_ERASE);
+#else
+        int retval = SkipBlockNandFlash_EraseBlock(&skipBlockNf,
+                helperCounter1 + 2, NORMAL_ERASE);
+#endif /* BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE */
         if(retval != 0) {
             // skip the block.
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -228,7 +287,7 @@ ReturnValue_t ImageCopyingEngine::handleErasingForObsw() {
         }
         helperCounter1++;
         if(countdown->hasTimedOut()) {
-            return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+            return image::TASK_PERIOD_OVER_SOON;
         }
     }
     stepCounter = 0;
@@ -275,7 +334,7 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
     // to have multiple attempts, so we need to check for a timeout
     // at the start as well.
     if(countdown->hasTimedOut()) {
-        return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+        return image::TASK_PERIOD_OVER_SOON;
     }
 
     size_t sizeToRead = NAND_PAGE_SIZE;
@@ -314,7 +373,7 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
     helperFlag1 = true;
 
     if(stepCounter == 0) {
-        if(bootloader) {
+        if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
             // We will write the size of the binary to the
             // sixth ARM vector (see p.72 SAM9G20 datasheet)
             // Don't do this for anything else! Messing with the ARM
@@ -333,7 +392,7 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
         currentByteIdx = 0;
     }
 
-    if(stepCounter == 0 and extendedDebugOutput) {
+    if(stepCounter == 0) {
 #if OBSW_VERBOSE_LEVEL >= 2
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::debug << "ARM Vectors: " << std::endl;
@@ -374,29 +433,27 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
         if(errorCount >= 3) {
             // if writing to NAND failed 5 times, exit.
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-            sif::error << "SoftwareImageHandler::copyBootloaderToNand"
-                    << "Flash: Write error!" << std::endl;
+            sif::error << "SoftwareImageHandler::copyBootloaderToNandFlash: Write error!"
+                    << std::endl;
 #else
-            sif::printError("SoftwareImageHandler::copyBootloaderToNand"
-                    "Flash: Write error!\n");
+            sif::printError("SoftwareImageHandler::copyBootloaderToNandFlash: Write error!\n");
 #endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         // Try in next cycle..
-        return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+        return image::TASK_PERIOD_OVER_SOON;
     }
 
-    if(extendedDebugOutput) {
-#if OBSW_VERBOSE_LEVEL >= 1
+#if OBSW_VERBOSE_LEVEL >= 2
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::debug << "Written " << NAND_PAGE_SIZE << " bytes to NAND-Flash Block " <<
-                helperCounter1 << " & Page " << helperCounter2 << std::endl;
+    sif::debug << "Written " << NAND_PAGE_SIZE << " bytes to NAND-Flash Block " <<
+            helperCounter1 << " & Page " << helperCounter2 << std::endl;
 #else
-        sif::printDebug("Written %zu bytes to NAND-Flash block %hu & Page %hu\n", helperCounter1,
-                helperCounter2);
+    sif::printDebug("Written %lu bytes to NAND-Flash block %hu & Page %hu\n",
+            static_cast<unsigned long>(helperCounter1), helperCounter2);
 #endif
 #endif
-    }
+
 
     // Increment to write to next page.
     helperCounter2++;
@@ -412,34 +469,15 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
 
     if(currentByteIdx >= currentFileSize) {
         // operation finished.
-#if OBSW_VERBOSE_LEVEL >= 1
-        if(bootloader) {
-#if FSFW_CPP_OSTREAM_ENABLED == 1
-            sif::info << "Copying bootloader to NAND-Flash finished with "
-                    << stepCounter << " cycles!" << std::endl;
-#else
-            sif::printInfo("Copying bootloader to NAND-Flash finished with %hu cycles!\n",
-                    stepCounter);
-#endif
-        }
-        else {
-#if FSFW_CPP_OSTREAM_ENABLED == 1
-            sif::info << "Copying OBSW image to NAND-Flash finished with "
-                    << stepCounter << " cycles!" << std::endl;
-#else
-            sif::printInfo("Copying OBSW image to NAND-Flash finished with %hu cycles!\n",
-                    stepCounter);
-#endif
-        }
-#endif
+        handleFinishPrintout();
 
         // cache last finished state.
         lastFinishedState = imageHandlerState;
         reset();
-        return SoftwareImageHandler::OPERATION_FINISHED;
+        return image::OPERATION_FINISHED;
     }
     else if(countdown->hasTimedOut()) {
-        return  SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+        return  image::TASK_PERIOD_OVER_SOON;
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -475,7 +513,7 @@ ReturnValue_t ImageCopyingEngine::nandFlashInit()
     numPagesPerBlock = NandFlashModel_GetBlockSizeInPages(
             &skipBlockNf.ecc.raw.model);
 
-    if(extendedDebugOutput) {
+#if OBSW_VERBOSE_LEVEL >= 2
         TRACE_INFO("Size of the whole device in bytes : 0x%x \n\r",
                 memSize);
         TRACE_INFO("Size in bytes of one single block of a device : 0x%x \n\r",
@@ -487,31 +525,76 @@ ReturnValue_t ImageCopyingEngine::nandFlashInit()
         TRACE_INFO("Number of pages in the entire device : 0x%x \n\r",
                 numPagesPerBlock);
         TRACE_INFO("Bus width : %d \n\r",nfBusWidth);
-
-    }
+#endif
 
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 void ImageCopyingEngine::handleFinishPrintout() {
 #if OBSW_VERBOSE_LEVEL >= 1
-    if(bootloader) {
-#if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::info << "Copying bootloader to NAND-Flash finished with "
-                << stepCounter << " cycles!" << std::endl;
+    char const* printout = nullptr;
+    if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
+#if BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE
+        printout = "bootloader";
 #else
-        sif::printInfo("Copying bootloader to NAND-Flash finished with %hu cycles!\n",
-                stepCounter);
+        printout = "fist-stage bootloader";
 #endif
+    }
+    else if(sourceSlot == image::ImageSlot::BOOTLOADER_1) {
+        printout = "second-stage bootloader";
     }
     else {
-#if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::info << "Copying OBSW image to NAND-Flash finished with "
-                << stepCounter << " cycles!" << std::endl;
-#else
-        sif::printInfo("Copying OBSW image to NAND-Flash finished with %hu cycles!\n",
-                stepCounter);
-#endif
+        printout = "primary OBSW image";
     }
+
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+    sif::info << "Copying " << printout << " to NAND-Flash finished with " << stepCounter <<
+            " cycles!" << std::endl;
+#else
+    sif::printInfo("Copying %s to NAND-Flash finished with %hu cycles!\n",
+            printout, stepCounter);
 #endif
+
+#endif /* OBSW_VERBOSE_LEVEL >= 1 */
+}
+
+void ImageCopyingEngine::handleInfoPrintout(VolumeId currentVolume) {
+#if OBSW_VERBOSE_LEVEL >= 1
+    char sourcePrint[20];
+    char targetPrint[20];
+    char typePrint[25];
+    if(imageHandlerState == ImageHandlerStates::COPY_IMG_SDC_TO_FLASH) {
+        sprintf(typePrint, "primary image");
+        sprintf(targetPrint, "NAND-Flash");
+        sprintf(sourcePrint, "SD Card %u", static_cast<int>(currentVolume));
+    }
+
+    else if(imageHandlerState == ImageHandlerStates::COPY_BL_SDC_TO_FLASH) {
+        if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
+    #if BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE
+            sprintf(typePrint, "bootloader");
+    #else
+            sprintf(typePrint, "first-stage bootloader");
+    #endif
+        }
+        else if(sourceSlot == image::ImageSlot::BOOTLOADER_1) {
+            sprintf(typePrint, "second-stage bootloader");
+        }
+        sprintf(targetPrint, "NAND-Flash");
+        sprintf(sourcePrint, "SD Card %u", static_cast<int>(currentVolume));
+    }
+    else if(imageHandlerState == ImageHandlerStates::COPY_IMG_SDC_TO_SDC) {
+        if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
+            sprintf(targetPrint, "SD Card %d Slot 1", static_cast<int>(currentVolume));
+            sprintf(sourcePrint, "SD Card %d Slot 0 ", static_cast<int>(currentVolume));
+        }
+        else {
+            sprintf(sourcePrint, "SD Card %d Slot 1", static_cast<int>(currentVolume));
+            sprintf(targetPrint, "SD Card %d Slot 0 ", static_cast<int>(currentVolume));
+        }
+        sprintf(typePrint, "primary image");
+    }
+
+    handleGenericInfoPrintout("AT91", typePrint, sourcePrint, targetPrint);
+#endif /* OBSW_VERBOSE_LEVEL >= 1 */
 }

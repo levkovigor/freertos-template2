@@ -6,7 +6,9 @@
 extern "C" {
 #include <hcc/api_fs_err.h>
 #include <at91/utility/trace.h>
+#ifdef ISIS_OBC_G20
 #include <sam9g20/common/FRAMApi.h>
+#endif
 }
 
 #include <fsfwconfig/OBSWConfig.h>

@@ -85,8 +85,8 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
             result = f_seek(file, 0, F_SEEK_END);
             if(result != F_NO_ERROR) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-                sif::error << "SDCardHandler::appendToFile: f_seek failed with "
-                        << "error code" << result << "!" << std::endl;
+                sif::error << "SDCardHandler::appendToFile: f_seek failed with error code "
+                        << result << "!" << std::endl;
 #else
                 sif::printError("SDCardHandler::appendToFile: f_seek failed with "
                         "error code %d!\n", result);

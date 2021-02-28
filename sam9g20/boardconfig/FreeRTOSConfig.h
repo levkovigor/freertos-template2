@@ -103,7 +103,7 @@
 // Do not change this value
 #define configTICK_RATE_HZ				( ( portTickType ) 1000 )
 #define configMAX_PRIORITIES			10
-#define configMINIMAL_STACK_SIZE		( ( unsigned short ) 300 )
+#define configMINIMAL_STACK_SIZE		( ( unsigned short ) 400 )
 #define configMAX_TASK_NAME_LEN			24
 #define configUSE_16_BIT_TICKS			0
 #define configIDLE_SHOULD_YIELD			0
@@ -112,6 +112,7 @@
 /* Memory allocation related definitions. */
 // added for heap_4 memory management
 #define configSUPPORT_DYNAMIC_ALLOCATION    1
+#define configSUPPORT_STATIC_ALLOCATION     0
 // maximum of heap freertos can use to allocate memory for tasks
 // we have plenty of SDRAM, so feel free to increase this if the remaining
 // heap is getting low.
@@ -121,6 +122,7 @@
 #define configUSE_IDLE_HOOK				1
 #define configUSE_TICK_HOOK				0
 #define configCHECK_FOR_STACK_OVERFLOW	1
+
 
 #define configUSE_RECURSIVE_MUTEXES		1
 #define configSTACK_DEPTH_TYPE  		portSTACK_TYPE

@@ -13,7 +13,7 @@
 #include <fsfw/events/EventManager.h>
 #include <fsfw/fdir/FailureIsolationBase.h>
 #include <fsfw/health/HealthTable.h>
-#include <fsfw/pus/CService200ModeCommanding.h>
+
 #include <fsfw/tmtcpacket/pus/TmPacketStored.h>
 
 /* PUS Includes */
@@ -24,6 +24,8 @@
 #include <fsfw/pus/Service3Housekeeping.h>
 #include <fsfw/pus/Service5EventReporting.h>
 #include <fsfw/pus/Service8FunctionManagement.h>
+#include <fsfw/pus/CService200ModeCommanding.h>
+#include <fsfw/pus/Service20ParameterManagement.h>
 #include <fsfw/timemanager/TimeStamper.h>
 #include <fsfwconfig/devices/logicalAddresses.h>
 #include <fsfwconfig/devices/powerSwitcherList.h>
@@ -32,7 +34,6 @@
 #include <mission/controller/ThermalController.h>
 #include <mission/pus/Service6MemoryManagement.h>
 #include <mission/pus/Service17CustomTest.h>
-#include <mission/pus/Service20ParameterManagement.h>
 #include <mission/pus/Service23FileManagement.h>
 #include <mission/utility/TmFunnel.h>
 #include <mission/devices/PCDUHandler.h>
@@ -78,7 +79,6 @@
 
 #include <cstdint>
 
-
 /**
  * Build tasks by using SystemObject Interface (Interface).
  * Header files of all tasks must be included
@@ -100,7 +100,7 @@ void Factory::produce(void) {
     {
         LocalPool::LocalPoolConfig poolConfig = {
                 {250, 32}, {120, 64}, {100, 128}, {50, 256},
-                {25, 512}, {10, 1024}, {10, 2048}
+                {25, 512}, {10, config::STORE_LARGE_BUCKET_SIZE}, {10, 2048}
         };
         PoolManager* ipcStore = new PoolManager(objects::IPC_STORE, poolConfig);
         size_t additionalSize = 0;
@@ -117,7 +117,7 @@ void Factory::produce(void) {
     {
         LocalPool::LocalPoolConfig poolConfig = {
                 {500, 32}, {250, 64}, {120, 128}, {60, 256},
-                {30, 512}, {15, 1024}, {10, 2048}
+                {30, 512}, {15, config::STORE_LARGE_BUCKET_SIZE}, {10, 2048}
         };
         PoolManager* tmStore = new PoolManager(objects::TM_STORE, poolConfig);
         size_t additionalSize = 0;
@@ -134,7 +134,7 @@ void Factory::produce(void) {
     {
         LocalPool::LocalPoolConfig poolConfig = {
                 {500, 32}, {250, 64}, {120, 128},
-                {60, 256}, {30, 512}, {15, 1024}, {10, 2048}
+                {60, 256}, {30, 512}, {15, config::STORE_LARGE_BUCKET_SIZE}, {10, 2048}
         };
         PoolManager* tcStore =new PoolManager(objects::TC_STORE, poolConfig);
         size_t additionalSize = 0;
@@ -198,7 +198,8 @@ void Factory::produce(void) {
             apid::SOURCE_OBSW, pus::PUS_SERVICE_6);
     new Service8FunctionManagement(objects::PUS_SERVICE_8_FUNCTION_MGMT,
             apid::SOURCE_OBSW, pus::PUS_SERVICE_8);
-    new Service20ParameterManagement(objects::PUS_SERVICE_20_PARAM_MGMT);
+    new Service20ParameterManagement(objects::PUS_SERVICE_20_PARAM_MGMT, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_20);
     new Service23FileManagement(objects::PUS_SERVICE_23_FILE_MGMT, apid::SOURCE_OBSW,
             pus::PUS_SERVICE_23);
     new CService200ModeCommanding(objects::PUS_SERVICE_200_MODE_MGMT,
@@ -245,9 +246,7 @@ void Factory::produce(void) {
 
     new SoftwareImageHandler(objects::SOFTWARE_IMAGE_HANDLER);
     new SDCardHandler(objects::SD_CARD_HANDLER);
-#ifdef ISIS_OBC_G20
     new FRAMHandler(objects::FRAM_HANDLER);
-#endif
 
     /* Communication Interfaces */
     //	new RS232DeviceComIF(objects::RS232_DEVICE_COM_IF);

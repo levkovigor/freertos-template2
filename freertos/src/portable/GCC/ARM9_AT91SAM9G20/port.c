@@ -10,31 +10,31 @@
     the terms of the GNU General Public License (version 2) as published by the
     Free Software Foundation >>!AND MODIFIED BY!<< the FreeRTOS exception.
 
-    ***************************************************************************
+ ***************************************************************************
     >>!   NOTE: The modification to the GPL is included to allow you to     !<<
     >>!   distribute a combined work that includes FreeRTOS without being   !<<
     >>!   obliged to provide the source code for proprietary components     !<<
     >>!   outside of the FreeRTOS kernel.                                   !<<
-    ***************************************************************************
+ ***************************************************************************
 
     FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
     WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
     FOR A PARTICULAR PURPOSE.  Full license text is available on the following
     link: http://www.freertos.org/a00114.html
 
-    ***************************************************************************
-     *                                                                       *
-     *    FreeRTOS provides completely free yet professionally developed,    *
-     *    robust, strictly quality controlled, supported, and cross          *
-     *    platform software that is more than just the market leader, it     *
-     *    is the industry's de facto standard.                               *
-     *                                                                       *
-     *    Help yourself get started quickly while simultaneously helping     *
-     *    to support the FreeRTOS project by purchasing a FreeRTOS           *
-     *    tutorial book, reference manual, or both:                          *
-     *    http://www.FreeRTOS.org/Documentation                              *
-     *                                                                       *
-    ***************************************************************************
+ ***************************************************************************
+ *                                                                       *
+ *    FreeRTOS provides completely free yet professionally developed,    *
+ *    robust, strictly quality controlled, supported, and cross          *
+ *    platform software that is more than just the market leader, it     *
+ *    is the industry's de facto standard.                               *
+ *                                                                       *
+ *    Help yourself get started quickly while simultaneously helping     *
+ *    to support the FreeRTOS project by purchasing a FreeRTOS           *
+ *    tutorial book, reference manual, or both:                          *
+ *    http://www.FreeRTOS.org/Documentation                              *
+ *                                                                       *
+ ***************************************************************************
 
     http://www.FreeRTOS.org/FAQHelp.html - Having a problem?  Start by reading
     the FAQ page "My application does not run, what could be wrong?".  Have you
@@ -65,7 +65,7 @@
     mission critical applications that require provable dependability.
 
     1 tab == 4 spaces!
-*/
+ */
 
 
 /*-----------------------------------------------------------
@@ -84,8 +84,10 @@
 #include <board.h>
 #include <at91/peripherals/aic/aic.h>
 #include <at91/peripherals/pit/pit.h>
+#include <at91/utility/trace.h>
 
 /*-----------------------------------------------------------*/
+#define DEBUG_FIRST_TASK_START          0
 
 #define TICK_SYSTEM_PRIORITY			(AT91C_AIC_PRIOR_LOWEST)
 
@@ -109,6 +111,10 @@
 /* Setup the timer to generate the tick interrupts. */
 static void prvSetupTimerInterrupt( void );
 
+#if DEBUG_FIRST_TASK_START == 1
+static void debugFirstTaskStart(void);
+#endif
+
 /* 
  * The scheduler can only be started from ARM mode, so 
  * vPortISRStartFirstSTask() is defined in portISR.c. 
@@ -130,96 +136,104 @@ volatile unsigned long ulCriticalNesting = 9999UL;
  */
 portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
 {
-portSTACK_TYPE *pxOriginalTOS;
+    portSTACK_TYPE *pxOriginalTOS;
 
-	pxOriginalTOS = pxTopOfStack;
+    pxOriginalTOS = pxTopOfStack;
 
-	/* To ensure asserts in tasks.c don't fail, although in this case the assert
+    /* To ensure asserts in tasks.c don't fail, although in this case the assert
 	is not really required. */
-	pxTopOfStack--;
+    pxTopOfStack--;
 
-	/* Setup the initial stack of the task.  The stack is set exactly as 
+    /* Setup the initial stack of the task.  The stack is set exactly as
 	expected by the portRESTORE_CONTEXT() macro. */
 
-	/* First on the stack is the return address - which in this case is the
+    /* First on the stack is the return address - which in this case is the
 	start of the task.  The offset is added to make the return address appear
 	as it would within an IRQ ISR. */
-	*pxTopOfStack = ( portSTACK_TYPE ) pxCode + portINSTRUCTION_SIZE;		
-	pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) pxCode + portINSTRUCTION_SIZE;
+    pxTopOfStack--;
 
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x00000000;	/* R14 */
-	pxTopOfStack--;	
-	*pxTopOfStack = ( portSTACK_TYPE ) pxOriginalTOS; /* Stack used when task starts goes in R13. */
-	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x12121212;	/* R12 */
-	pxTopOfStack--;	
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x11111111;	/* R11 */
-	pxTopOfStack--;	
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x10101010;	/* R10 */
-	pxTopOfStack--;	
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x09090909;	/* R9 */
-	pxTopOfStack--;	
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x08080808;	/* R8 */
-	pxTopOfStack--;	
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x07070707;	/* R7 */
-	pxTopOfStack--;	
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x06060606;	/* R6 */
-	pxTopOfStack--;	
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x05050505;	/* R5 */
-	pxTopOfStack--;	
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x04040404;	/* R4 */
-	pxTopOfStack--;	
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x03030303;	/* R3 */
-	pxTopOfStack--;	
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x02020202;	/* R2 */
-	pxTopOfStack--;	
-	*pxTopOfStack = ( portSTACK_TYPE ) 0x01010101;	/* R1 */
-	pxTopOfStack--;	
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x00000000;	/* R14 */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) pxOriginalTOS; /* Stack used when task starts goes in R13. */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x12121212;	/* R12 */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x11111111;	/* R11 */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x10101010;	/* R10 */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x09090909;	/* R9 */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x08080808;	/* R8 */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x07070707;	/* R7 */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x06060606;	/* R6 */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x05050505;	/* R5 */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x04040404;	/* R4 */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x03030303;	/* R3 */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x02020202;	/* R2 */
+    pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) 0x01010101;	/* R1 */
+    pxTopOfStack--;
 
-	/* When the task starts is will expect to find the function parameter in
+    /* When the task starts is will expect to find the function parameter in
 	R0. */
-	*pxTopOfStack = ( portSTACK_TYPE ) pvParameters; /* R0 */
-	pxTopOfStack--;
+    *pxTopOfStack = ( portSTACK_TYPE ) pvParameters; /* R0 */
+    pxTopOfStack--;
 
-	/* The last thing onto the stack is the status register, which is set for
+    /* The last thing onto the stack is the status register, which is set for
 	system mode, with interrupts enabled. */
-	*pxTopOfStack = ( portSTACK_TYPE ) portINITIAL_SPSR;
+    *pxTopOfStack = ( portSTACK_TYPE ) portINITIAL_SPSR;
 
-	#ifdef THUMB_INTERWORK
-	{
-		/* We want the task to start in thumb mode. */
-		*pxTopOfStack |= portTHUMB_MODE_BIT;
-	}
-	#endif
+#ifdef THUMB_INTERWORK
+    {
+        /* We want the task to start in thumb mode. */
+        *pxTopOfStack |= portTHUMB_MODE_BIT;
+    }
+#endif
 
-	pxTopOfStack--;
+    pxTopOfStack--;
 
-	/* Some optimisation levels use the stack differently to others.  This 
+    /* Some optimisation levels use the stack differently to others.  This
 	means the interrupt flags cannot always be stored on the stack and will
 	instead be stored in a variable, which is then saved as part of the
 	tasks context. */
-	*pxTopOfStack = portNO_CRITICAL_NESTING;
+    *pxTopOfStack = portNO_CRITICAL_NESTING;
 
-	return pxTopOfStack;
+    return pxTopOfStack;
 }
 /*-----------------------------------------------------------*/
 portBASE_TYPE xPortStartScheduler( void )
 {
-	/* Start the timer that generates the tick ISR.  Interrupts are disabled
-	here already. */
-	prvSetupTimerInterrupt();
+    /* Start the timer that generates the tick ISR.  Interrupts are disabled
+    here already. */
+    prvSetupTimerInterrupt();
 
-	/* Start the first task. */
-	vPortISRStartFirstTask();	
+    // extern volatile void * volatile pxCurrentTCB;
+    // TRACE_INFO("Starting first FreeRTOS task..\n\r");
+    // TRACE_INFO("Current TCB Pointer: 0x%08x\n\r", (unsigned int) pxCurrentTCB);
 
-	/* Should not get here! */
-	return 0;
+#if DEBUG_FIRST_TASK_START == 1
+    debugFirstTaskStart();
+#endif
+
+    /* Start the first task. */
+    vPortISRStartFirstTask();
+
+    /* Should not get here! */
+    return 0;
 }
 /*-----------------------------------------------------------*/
 
 void vPortEndScheduler( void )
 {
-	/* It is unlikely that the ARM port will require this function as there
+    /* It is unlikely that the ARM port will require this function as there
 	is nothing to return to.  */
 }
 /*-----------------------------------------------------------*/
@@ -231,23 +245,23 @@ void vPortEndScheduler( void )
 void vPortTickISR( void ) __attribute__ ((section(".sramfunc"), weak, used));
 void vPortTickISR( void )
 {
-	volatile unsigned long ulDummy;
+    volatile unsigned long ulDummy;
 
-	/* Increment the tick count - which may wake some tasks but as the
+    /* Increment the tick count - which may wake some tasks but as the
 		preemptive scheduler is not being used any woken task is not given
 		processor time no matter what its priority. */
-	if( xTaskIncrementTick() != pdFALSE )
-	{
-		vTaskSwitchContext();
-	}
+    if( xTaskIncrementTick() != pdFALSE )
+    {
+        vTaskSwitchContext();
+    }
 
-	/* Clear the PIT interrupt. */
-	ulDummy = AT91C_BASE_PITC->PITC_PIVR;
+    /* Clear the PIT interrupt. */
+    ulDummy = AT91C_BASE_PITC->PITC_PIVR;
 
-	/* To remove compiler warning. */
-	( void ) ulDummy;
+    /* To remove compiler warning. */
+    ( void ) ulDummy;
 
-	/* The AIC is cleared in the asm wrapper, outside of this function. */
+    /* The AIC is cleared in the asm wrapper, outside of this function. */
 }
 /*-----------------------------------------------------------*/
 
@@ -256,17 +270,17 @@ void vPortTickISR( void )
  */
 static void prvSetupTimerInterrupt( void )
 {
-	const unsigned long ulPeriodIn_uS = ( 1.0 / ( double ) configTICK_RATE_HZ ) * port1SECOND_IN_uS; // each 1 ms the pit throws an interrupt
+    const unsigned long ulPeriodIn_uS = ( 1.0 / ( double ) configTICK_RATE_HZ ) * port1SECOND_IN_uS; // each 1 ms the pit throws an interrupt
 
-	/* Setup the PIT for the required frequency. */
-	PIT_Init( ulPeriodIn_uS, BOARD_MCK / port1MHz_IN_Hz );
+    /* Setup the PIT for the required frequency. */
+    PIT_Init( ulPeriodIn_uS, BOARD_MCK / port1MHz_IN_Hz );
 
-	/* Setup the PIT interrupt. */
-	AIC_DisableIT( AT91C_ID_SYS );
-	AIC_ConfigureIT( AT91C_ID_SYS, TICK_SYSTEM_PRIORITY, vPortTickISR );
-	AIC_EnableIT( AT91C_ID_SYS );
-	PIT_EnableIT();
-	PIT_Enable();
+    /* Setup the PIT interrupt. */
+    AIC_DisableIT( AT91C_ID_SYS );
+    AIC_ConfigureIT( AT91C_ID_SYS, TICK_SYSTEM_PRIORITY, vPortTickISR );
+    AIC_EnableIT( AT91C_ID_SYS );
+    PIT_EnableIT();
+    PIT_Enable();
 }
 /*-----------------------------------------------------------*/
 
@@ -277,7 +291,7 @@ static void prvSetupTimerInterrupt( void )
 static void vPortISRStartFirstTask( void ) __attribute__((naked));
 static void vPortISRStartFirstTask( void )
 {
-	/* Simply start the scheduler.  This is included here as it can only be
+    /* Simply start the scheduler.  This is included here as it can only be
 	called from ARM mode. */
     portRESTORE_CONTEXT();
 }
@@ -294,19 +308,19 @@ static void vPortISRStartFirstTask( void )
 void vPortYieldProcessor( void ) __attribute__((interrupt("SWI"), section(".sramfunc"), naked));
 void vPortYieldProcessor( void )
 {
-	/* Within an IRQ ISR the link register has an offset from the true return
+    /* Within an IRQ ISR the link register has an offset from the true return
 	address, but an SWI ISR does not.  Add the offset manually so the same
 	ISR return code can be used in both cases. */
-	asm volatile ( "ADD		LR, LR, #4" );
+    asm volatile ( "ADD		LR, LR, #4" );
 
-	/* Perform the context switch.  First save the context of the current task. */
-	portSAVE_CONTEXT();
+    /* Perform the context switch.  First save the context of the current task. */
+    portSAVE_CONTEXT();
 
-	/* Find the highest priority task that is ready to run. */
-	vTaskSwitchContext();
+    /* Find the highest priority task that is ready to run. */
+    vTaskSwitchContext();
 
-	/* Restore the context of the new task. */
-	portRESTORE_CONTEXT();
+    /* Restore the context of the new task. */
+    portRESTORE_CONTEXT();
 }
 /*-----------------------------------------------------------*/
 
@@ -319,25 +333,25 @@ void vPortYieldProcessor( void )
 void vPortDisableInterruptsFromThumb( void ) __attribute__ ((naked));
 void vPortDisableInterruptsFromThumb( void )
 {
-	asm volatile (
-		"STMDB	SP!, {R0}		\n\t"	/* Push R0.									*/
-		"MRS	R0, CPSR		\n\t"	/* Get CPSR.								*/
-		"ORR	R0, R0, #0xC0	\n\t"	/* Disable IRQ, FIQ.						*/
-		"MSR	CPSR, R0		\n\t"	/* Write back modified value.				*/
-		"LDMIA	SP!, {R0}		\n\t"	/* Pop R0.									*/
-		"BX		R14" );					/* Return back to thumb.					*/
+    asm volatile (
+            "STMDB	SP!, {R0}		\n\t"	/* Push R0.									*/
+            "MRS	R0, CPSR		\n\t"	/* Get CPSR.								*/
+            "ORR	R0, R0, #0xC0	\n\t"	/* Disable IRQ, FIQ.						*/
+            "MSR	CPSR, R0		\n\t"	/* Write back modified value.				*/
+            "LDMIA	SP!, {R0}		\n\t"	/* Pop R0.									*/
+            "BX		R14" );					/* Return back to thumb.					*/
 }
 
 void vPortEnableInterruptsFromThumb( void ) __attribute__ ((naked));
 void vPortEnableInterruptsFromThumb( void )
 {
-	asm volatile (
-		"STMDB	SP!, {R0}		\n\t"	/* Push R0.									*/
-		"MRS	R0, CPSR		\n\t"	/* Get CPSR.								*/
-		"BIC	R0, R0, #0xC0	\n\t"	/* Enable IRQ, FIQ.							*/
-		"MSR	CPSR, R0		\n\t"	/* Write back modified value.				*/
-		"LDMIA	SP!, {R0}		\n\t"	/* Pop R0.									*/
-		"BX		R14" );					/* Return back to thumb.					*/
+    asm volatile (
+            "STMDB	SP!, {R0}		\n\t"	/* Push R0.									*/
+            "MRS	R0, CPSR		\n\t"	/* Get CPSR.								*/
+            "BIC	R0, R0, #0xC0	\n\t"	/* Enable IRQ, FIQ.							*/
+            "MSR	CPSR, R0		\n\t"	/* Write back modified value.				*/
+            "LDMIA	SP!, {R0}		\n\t"	/* Pop R0.									*/
+            "BX		R14" );					/* Return back to thumb.					*/
 }
 
 
@@ -347,41 +361,85 @@ be saved to the stack.  Instead the critical section nesting level is stored
 in a variable, which is then saved as part of the stack context. */
 void vPortEnterCritical( void )
 {
-	/* Disable interrupts as per portDISABLE_INTERRUPTS(); 							*/
-	asm volatile (
-		"STMDB	SP!, {R0}			\n\t"	/* Push R0.								*/
-		"MRS	R0, CPSR			\n\t"	/* Get CPSR.							*/
-		"ORR	R0, R0, #0xC0		\n\t"	/* Disable IRQ, FIQ.					*/
-		"MSR	CPSR, R0			\n\t"	/* Write back modified value.			*/
-		"LDMIA	SP!, {R0}" );				/* Pop R0.								*/
+    /* Disable interrupts as per portDISABLE_INTERRUPTS(); 							*/
+    asm volatile (
+            "STMDB	SP!, {R0}			\n\t"	/* Push R0.								*/
+            "MRS	R0, CPSR			\n\t"	/* Get CPSR.							*/
+            "ORR	R0, R0, #0xC0		\n\t"	/* Disable IRQ, FIQ.					*/
+            "MSR	CPSR, R0			\n\t"	/* Write back modified value.			*/
+            "LDMIA	SP!, {R0}" );				/* Pop R0.								*/
 
-	/* Now interrupts are disabled ulCriticalNesting can be accessed
+    /* Now interrupts are disabled ulCriticalNesting can be accessed
 	directly.  Increment ulCriticalNesting to keep a count of how many times
 	portENTER_CRITICAL() has been called. */
-	ulCriticalNesting++;
+    ulCriticalNesting++;
 }
 
 void vPortExitCritical( void )
 {
-	if( ulCriticalNesting > portNO_CRITICAL_NESTING )
-	{
-		/* Decrement the nesting count as we are leaving a critical section. */
-		ulCriticalNesting--;
+    if( ulCriticalNesting > portNO_CRITICAL_NESTING )
+    {
+        /* Decrement the nesting count as we are leaving a critical section. */
+        ulCriticalNesting--;
 
-		/* If the nesting level has reached zero then interrupts should be
+        /* If the nesting level has reached zero then interrupts should be
 		re-enabled. */
-		if( ulCriticalNesting == portNO_CRITICAL_NESTING )
-		{
-			/* Enable interrupts as per portEXIT_CRITICAL().					*/
-			asm volatile (
-				"STMDB	SP!, {R0}		\n\t"	/* Push R0.						*/
-				"MRS	R0, CPSR		\n\t"	/* Get CPSR.					*/
-				"BIC	R0, R0, #0xC0	\n\t"	/* Enable IRQ, FIQ.				*/
-				"MSR	CPSR, R0		\n\t"	/* Write back modified value.	*/
-				"LDMIA	SP!, {R0}" );			/* Pop R0.						*/
-		}
-	}
+        if( ulCriticalNesting == portNO_CRITICAL_NESTING )
+        {
+            /* Enable interrupts as per portEXIT_CRITICAL().					*/
+            asm volatile (
+                    "STMDB	SP!, {R0}		\n\t"	/* Push R0.						*/
+                    "MRS	R0, CPSR		\n\t"	/* Get CPSR.					*/
+                    "BIC	R0, R0, #0xC0	\n\t"	/* Enable IRQ, FIQ.				*/
+                    "MSR	CPSR, R0		\n\t"	/* Write back modified value.	*/
+                    "LDMIA	SP!, {R0}" );			/* Pop R0.						*/
+        }
+    }
 }
 
+#if DEBUG_FIRST_TASK_START == 1
+static void debugFirstTaskStart(void) {
+    extern volatile void * volatile pxCurrentTCB;
+    TRACE_INFO("Starting first FreeRTOS task..\n\r");
+    TRACE_INFO("Current TCB Pointer: 0x%08x\n\r", (unsigned int) pxCurrentTCB);
+    uint32_t currentStackPtr = *((uint32_t*) pxCurrentTCB);
+    TRACE_INFO("Current Stack Pointer: 0x%08x\n\r", (unsigned int) *((uint32_t*) pxCurrentTCB));
+    TRACE_INFO("Current Critical Nesting: %d\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("Current SPSR: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("Current function parameter: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R1: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R2: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R3: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R4: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R5: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R6: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R7: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R8: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R9: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R10: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R11: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R12: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("Task stack: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("R14: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+    currentStackPtr += 4;
+    TRACE_INFO("Return address: 0x%08x\n\r", (unsigned int) *((uint32_t*) currentStackPtr));
+}
+#endif
 
 

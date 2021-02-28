@@ -1,7 +1,6 @@
-#include "main.h"
-#include "config/bootloaderConfig.h"
-#include "at91/boot_at91.h"
-#include "core/timer.h"
+#include "../common/at91_boot_from_nand.h"
+#include <bootloaderConfig.h>
+#include <core/timer.h>
 
 #include <board.h>
 #include <AT91SAM9G20.h>
@@ -10,21 +9,23 @@
 #include <peripherals/dbgu/dbgu.h>
 #include <peripherals/pio/pio.h>
 #include <peripherals/aic/aic.h>
-#include <peripherals/pio/pio.h>
+#include <peripherals/pit/pit.h>
 #include <cp15/cp15.h>
 
 #include <hal/Timing/RTT.h>
 
-#if DEBUG_IO_LIB == 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
 #include <utility/trace.h>
 #endif
 
 #include <stdbool.h>
 #include <string.h>
 
+void disablePitAic();
+extern void jump_to_sdram_application(uint32_t stack_ptr, uint32_t jump_address);
+
 int perform_bootloader_core_operation();
 
-//void idle_loop();
 
 /**
  * @brief   Bootloader which will copy the primary software to SDRAM and
@@ -41,31 +42,31 @@ int at91_main()
     //-------------------------------------------------------------------------
     // Configure traces
     //-------------------------------------------------------------------------
-#if DEBUG_IO_LIB == 1
     TRACE_CONFIGURE(DBGU_STANDARD, 115200, BOARD_MCK);
-#endif
+
     //-------------------------------------------------------------------------
     // Enable I-Cache
     //-------------------------------------------------------------------------
     CP15_Enable_I_Cache();
 
-#if DEBUG_IO_LIB == 1
-    TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+    TRACE_INFO_WP("-- SOURCE Bootloader (First Stage SRAM) --\n\r");
     TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME_PRINT);
     TRACE_INFO_WP("-- Software version v%d.%d --\n\r", BL_VERSION, BL_SUBVERSION);
     TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
-    TRACE_INFO("Running initialization task..\n\r");
 #endif
 
     //-------------------------------------------------------------------------
     // Initiate periodic MS interrupt
     //-------------------------------------------------------------------------
-    setup_timer_interrupt();
+    /* Issues if this is enabled.. Possible related to FreeRTOS issue in second-level bootloader */
+    //setup_timer_interrupt();
 
     //-------------------------------------------------------------------------
     // Configure SDRAM
     //-------------------------------------------------------------------------
-    BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
+    /* Was already done in LowLevelInit, so we don't need to do this again */
+    //BOARD_ConfigureSdram(BOARD_SDRAM_BUSWIDTH);
 
     //-------------------------------------------------------------------------
     // Configure LEDs and set both of them.
@@ -78,54 +79,45 @@ int at91_main()
     //-------------------------------------------------------------------------
     // AT91SAM9G20-EK Bootloader
     //-------------------------------------------------------------------------
-    // Configure RTT for second time base.
-    RTT_start();
+    /* Configure RTT for second time base. Not required for now. */
+    // RTT_start();
 
     //-------------------------------------------------------------------------
     // AT91 Bootloader
     //-------------------------------------------------------------------------
     perform_bootloader_core_operation();
-
-    // to see its alive, will not be reached later.
-    //idle_loop();
     return 0;
 }
 
-
-void idle_loop() {
-    uint32_t last_time = RTT_GetTime();
-    for(;;) {
-        uint32_t curr_time = RTT_GetTime();
-        if(curr_time - last_time >= 1) {
-#if DEBUG_IO_LIB == 1
-            TRACE_INFO("Bootloader idle..\n\r");
-#endif
-            last_time = curr_time;
-        }
-    }
-}
-
-void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType)
-{
-    typedef void (*fctType) (volatile unsigned int, volatile unsigned int);
-    void (*pFct) (volatile unsigned int r0_val, volatile unsigned int r1_val);
-
-    pFct = (fctType) jumpAddr;
-    pFct(0/*dummy value in r0*/, matchType/*matchType in r1*/);
-
-    while(1);//never reach
-}
 
 int perform_bootloader_core_operation() {
     LED_Clear(0);
     LED_Clear(1);
-    copy_nandflash_binary_to_sdram(false);
+
+    copy_nandflash_image_to_sdram(SECOND_STAGE_BL_NAND_OFFSET, SECOND_STAGE_BL_RESERVED_SIZE,
+            SECOND_STAGE_SDRAM_OFFSET, true);
+
     LED_Set(0);
-#if DEBUG_IO_LIB == 1
-    TRACE_INFO("Jumping to SDRAM application!\n\r");
+
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+    TRACE_INFO("Jumping to SDRAM application address 0x%08x!\n\r", SECOND_STAGE_BL_JUMP_ADDR);
 #endif
-    jump_to_sdram_application();
+
+    CP15_Disable_I_Cache();
+
+    /* Not required, PIT not used for now */
+    // disablePitAic();
+
+    jump_to_sdram_application(0x304000, SECOND_STAGE_BL_JUMP_ADDR);
+
+    /* Should never be reached */
     return 0;
+}
+
+void disablePitAic() {
+    AIC_DisableIT( AT91C_ID_SYS );
+    PIT_DisableIT();
+    PIT_Disable();
 }
 
 

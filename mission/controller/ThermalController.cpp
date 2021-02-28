@@ -53,7 +53,7 @@ ReturnValue_t ThermalController::initializeAfterTaskCreation() {
 #endif
     }
     // Test normal notifications without data packet first.
-    testHkbHandler->getSubscriptionInterface()->subscribeForSetUpdateMessages(
+    testHkbHandler->getSubscriptionInterface()->subscribeForSetUpdateMessage(
             TSensorDefinitions::THERMAL_SENSOR_SET_ID,
             this->getObjectId(), commandQueue->getId(), false);
 

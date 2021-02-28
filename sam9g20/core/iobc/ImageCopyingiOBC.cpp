@@ -1,40 +1,79 @@
 #include "../ImageCopyingEngine.h"
+
 #include <fsfw/timemanager/Countdown.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
+#include <fsfw/globalfunctions/CRC.h>
 
-extern "C" {
+#include <sam9g20/memory/SDCardAccess.h>
 #include <sam9g20/common/FRAMApi.h>
 #include <hal/Storage/NORflash.h>
-}
 
-#include <fsfw/globalfunctions/CRC.h>
-#include <sam9g20/at91/common/commonIOBCConfig.h>
-
+#include <array>
 
 ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
     switch(imageHandlerState) {
     case(ImageHandlerStates::IDLE): {
         return HasReturnvaluesIF::RETURN_OK;
     }
-    case(ImageHandlerStates::COPY_SDC_IMG_TO_FLASH): {
+    case(ImageHandlerStates::COPY_IMG_SDC_TO_FLASH): {
         return copySdCardImageToNorFlash();
     }
-    case(ImageHandlerStates::REPLACE_SDC_IMG): {
-        break;
+    case(ImageHandlerStates::COPY_IMG_SDC_TO_SDC): {
+        return HasReturnvaluesIF::RETURN_FAILED;
     }
-    case(ImageHandlerStates::COPY_FLASH_IMG_TO_SDC): {
-        break;
+    case(ImageHandlerStates::COPY_IMG_HAMMING_SDC_TO_FRAM): {
+        return copyImgHammingSdcToFram();
+        return HasReturnvaluesIF::RETURN_FAILED;
     }
-    case(ImageHandlerStates::COPY_FRAM_BL_TO_FLASH): {
-        break;
+    case(ImageHandlerStates::COPY_IMG_FLASH_TO_SDC): {
+        return HasReturnvaluesIF::RETURN_FAILED;
     }
-    case(ImageHandlerStates::COPY_SDC_BL_TO_FLASH): {
+    case(ImageHandlerStates::COPY_BL_FRAM_TO_FLASH): {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    case(ImageHandlerStates::COPY_BL_SDC_TO_FLASH): {
         return copySdCardImageToNorFlash();
+    }
+    case(ImageHandlerStates::COPY_BL_SDC_TO_FRAM): {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    case(ImageHandlerStates::COPY_BL_HAMMING_SDC_TO_FRAM): {
+        return HasReturnvaluesIF::RETURN_FAILED;
     }
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
 
+
+ReturnValue_t ImageCopyingEngine::startBootloaderToFlashOperation(image::ImageSlot bootloaderType,
+        bool fromFram) {
+    sourceSlot = image::ImageSlot::BOOTLOADER_0;
+    if(fromFram) {
+        imageHandlerState = ImageHandlerStates::COPY_BL_FRAM_TO_FLASH;
+    }
+    else {
+        imageHandlerState = ImageHandlerStates::COPY_BL_SDC_TO_FLASH;
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t ImageCopyingEngine::startHammingCodeToFramOperation(image::ImageSlot respectiveSlot) {
+    if(respectiveSlot == image::ImageSlot::NONE or
+            respectiveSlot == image::ImageSlot::BOOTLOADER_1) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    hammingCode = true;
+    sourceSlot = respectiveSlot;
+
+    if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
+        imageHandlerState = ImageHandlerStates::COPY_BL_HAMMING_SDC_TO_FRAM;
+    }
+    else {
+        imageHandlerState = ImageHandlerStates::COPY_IMG_HAMMING_SDC_TO_FRAM;
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+}
 
 
 ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
@@ -45,7 +84,7 @@ ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
 
     if(internalState == GenericInternalState::STEP_1) {
         result = handleNorflashErasure();
-        if(result == SoftwareImageHandler::TASK_PERIOD_OVER_SOON) {
+        if(result == image::TASK_PERIOD_OVER_SOON) {
             return result;
         }
         else if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -55,12 +94,12 @@ ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
 
     internalState = GenericInternalState::STEP_2;
     if(countdown->hasTimedOut()) {
-        return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+        return image::TASK_PERIOD_OVER_SOON;
     }
 
     if(internalState == GenericInternalState::STEP_2) {
         result = handleSdToNorCopyOperation();
-        if(result == SoftwareImageHandler::TASK_PERIOD_OVER_SOON) {
+        if(result == image::TASK_PERIOD_OVER_SOON) {
             return result;
         }
         else if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -71,9 +110,63 @@ ReturnValue_t ImageCopyingEngine::copySdCardImageToNorFlash() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
+ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
+    if(internalState == GenericInternalState::IDLE) {
+        internalState = GenericInternalState::STEP_1;
+    }
+    if(internalState == GenericInternalState::STEP_1) {
+        SDCardAccess access;
+        F_FILE* file = nullptr;
+        prepareGenericFileInformation(access.currentVolumeId, &file);
+
+        while(currentByteIdx < currentFileSize) {
+            size_t sizeToRead = 0;
+            if(currentFileSize > sizeToRead) {
+                sizeToRead = imgBuffer->size();
+            }
+            else {
+                currentFileSize = sizeToRead;
+            }
+            size_t sizeRead = f_read(imgBuffer->data(), 1, sizeToRead, file);
+            if(sizeRead != sizeToRead) {
+                // Should not happen!
+                sif::printWarning("ImageCopyingEngine::copyImgHammingSdcToFram: "
+                        "Not all bytes read!");
+                return HasReturnvaluesIF::RETURN_FAILED;
+            }
+
+            int result = write_nor_flash_hamming_code(imgBuffer->data(), currentByteIdx, sizeRead);
+            if(result != 0) {
+                return HasReturnvaluesIF::RETURN_FAILED;
+            }
+            currentByteIdx += sizeRead;
+
+            if(countdown->hasTimedOut()) {
+                return image::TASK_PERIOD_OVER_SOON;
+            }
+        }
+        reset();
+#if OBSW_VERBOSE_LEVEL >= 1
+        const char* message = nullptr;
+        if(sourceSlot == image::ImageSlot::FLASH) {
+            message = "NOR-Flash hamming code";
+        }
+        else if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
+            message = "SD Card slot 0 hamming code";
+        }
+        else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
+            message = "SD Card slot 1 hamming code";
+        }
+        sif::printInfo("Copied %s successfully to storage (FRAM)\n\r", message);
+#endif
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+
+}
+
 ReturnValue_t ImageCopyingEngine::handleNorflashErasure() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
-    if(bootloader) {
+    if(image::ImageSlot::BOOTLOADER_0) {
         // we only want to print this once.
         if(not helperFlag1) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -94,7 +187,7 @@ ReturnValue_t ImageCopyingEngine::handleNorflashErasure() {
             }
             stepCounter++;
             if(countdown->hasTimedOut()) {
-                return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+                return image::TASK_PERIOD_OVER_SOON;
             }
         }
         if(stepCounter == RESERVED_BL_SECTORS) {
@@ -129,14 +222,11 @@ ReturnValue_t ImageCopyingEngine::handleObswErasure() {
 #endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
-        if(sourceSlot == ImageSlot::IMAGE_0) {
+        if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
             currentFileSize = f_filelength(config::SW_SLOT_0_NAME);
         }
-        else if(sourceSlot == ImageSlot::IMAGE_1) {
+        else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
             currentFileSize = f_filelength(config::SW_SLOT_1_NAME);
-        }
-        else {
-            currentFileSize = f_filelength(config::SW_UPDATE_SLOT_NAME);
         }
 
         helperFlag1 = true;
@@ -152,7 +242,7 @@ ReturnValue_t ImageCopyingEngine::handleObswErasure() {
         }
         stepCounter++;
         if(countdown->hasTimedOut()) {
-            return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+            return image::TASK_PERIOD_OVER_SOON;
         }
     }
     if(stepCounter == helperCounter1) {
@@ -245,7 +335,7 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         // Maybe SD card is busy, so try in next cycle..
-        return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+        return image::TASK_PERIOD_OVER_SOON;
     }
     else {
         result = HasReturnvaluesIF::RETURN_OK;
@@ -264,17 +354,17 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
         // operation finished.
         handleFinishPrintout();
 
-        if(bootloader) {
+        if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
             writeBootloaderSizeAndCrc();
         }
 
         // cache last finished state.
         lastFinishedState = imageHandlerState;
         reset();
-        return SoftwareImageHandler::OPERATION_FINISHED;
+        return image::OPERATION_FINISHED;
     }
     if(countdown->hasTimedOut()) {
-        return SoftwareImageHandler::TASK_PERIOD_OVER_SOON;
+        return image::TASK_PERIOD_OVER_SOON;
     }
     return result;
 }
@@ -428,7 +518,7 @@ uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
 
 uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
         size_t* offset) {
-    if(bootloader) {
+    if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
         // deletion steps, performed per-sector
         if(internalState == GenericInternalState::STEP_1) {
             switch(stepCounter) {
@@ -556,7 +646,7 @@ uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
 
 void ImageCopyingEngine::handleFinishPrintout() {
 #if OBSW_VERBOSE_LEVEL >= 1
-    if(bootloader) {
+    if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
 
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Copying bootloader to NOR-Flash finished with " << stepCounter <<
@@ -633,6 +723,36 @@ void ImageCopyingEngine::handleFinishPrintout() {
 #endif
     }
 #endif /* OBSW_VERBOSE_LEVEL >= 1 */
+}
 
+void ImageCopyingEngine::handleInfoPrintout(VolumeId currentVolume) {
+#if OBSW_VERBOSE_LEVEL >= 1
+    char sourcePrint[20];
+    char targetPrint[20];
+    char typePrint[20];
+    if(imageHandlerState == ImageHandlerStates::COPY_IMG_SDC_TO_FLASH) {
+        sprintf(typePrint, "primary image");
+        sprintf(targetPrint, "NOR-Flash");
+        sprintf(sourcePrint, "SD Card %u", static_cast<int>(currentVolume));
+    }
+    else if(imageHandlerState == ImageHandlerStates::COPY_BL_SDC_TO_FLASH) {
+        sprintf(typePrint, "bootloader");
+        sprintf(targetPrint, "NOR-Flash");
+        sprintf(sourcePrint, "SD Card %u", static_cast<int>(currentVolume));
+    }
+    else if(imageHandlerState == ImageHandlerStates::COPY_IMG_SDC_TO_SDC) {
+        if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
+            sprintf(targetPrint, "SD Card %d Slot 1", static_cast<int>(currentVolume));
+            sprintf(sourcePrint, "SD Card %d Slot 0 ", static_cast<int>(currentVolume));
+        }
+        else {
+            sprintf(sourcePrint, "SD Card %d Slot 1", static_cast<int>(currentVolume));
+            sprintf(targetPrint, "SD Card %d Slot 0 ", static_cast<int>(currentVolume));
+        }
+        sprintf(typePrint, "primary image");
+    }
+
+    handleGenericInfoPrintout("iOBC", typePrint, sourcePrint, targetPrint);
+#endif /* OBSW_VERBOSE_LEVEL >= 1 */
 }
 

@@ -17,8 +17,9 @@ enum class AnalyzerModes {
 class RingBufferAnalyzer {
 public:
 	static constexpr uint8_t INTERFACE_ID = CLASS_ID::SERIAL_ANALYZER;
-	static constexpr ReturnValue_t NO_PACKET_FOUND = MAKE_RETURN_CODE(0x01);
-	static constexpr ReturnValue_t POSSIBLE_PACKET_LOSS = MAKE_RETURN_CODE(0x02);
+	static constexpr ReturnValue_t NO_PACKET_FOUND = MAKE_RETURN_CODE(1);
+	static constexpr ReturnValue_t POSSIBLE_PACKET_LOSS = HasReturnvaluesIF::
+	        makeReturnCode(INTERFACE_ID, 2);
 
 	/**
 	 * Initialize the serial analyzer with a supplied shared ring buffer.
