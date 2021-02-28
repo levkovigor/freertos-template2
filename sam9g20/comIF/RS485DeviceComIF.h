@@ -41,7 +41,7 @@ class RS485DeviceComIF: public DeviceCommunicationIF,
 public:
 
     static constexpr size_t TMTC_FRAME_MAX_LEN = config::RS485_MAX_SERIAL_FRAME_SIZE;
-    static constexpr uint8_t MAX_TM_FRAMES_SENT_PER_CYCLE = 3;
+    static constexpr uint8_t MAX_TM_FRAMES_SENT_PER_CYCLE = 6;
     static constexpr uint8_t RETRY_COUNTER = 10;
     //! Default mutex timeout in milliseconds
     static constexpr TickType_t RS485_STANDARD_MUTEX_TIMEOUT = 20;
