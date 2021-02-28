@@ -71,7 +71,6 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 
     RS485Timeslot timeslot = static_cast<RS485Timeslot>(opCode);
 
-
 // Set current active device, also checks for nullpointers
     if (setActive(timeslot) == HasReturnvaluesIF::RETURN_OK) {
         RS485Cookie *rs485Cookie = deviceCookies[timeslot];
@@ -147,7 +146,7 @@ ReturnValue_t RS485DeviceComIF::sendMessage(CookieIF *cookie, const uint8_t *sen
 
     // Copy Message into corresponding sendFrameBuffer
     result = uslpDataLinkLayer->packFrame(sendData, sendLen, sendBufferFrame[timeslot].data(),
-            rs485Cookie->getTfdzSize() + USLPTransferFrame::FRAME_OVERHEAD, rs485Cookie->getVcId(),
+            sendBufferFrame[timeslot].size(), rs485Cookie->getVcId(),
             rs485Cookie->getDevicComMapId());
     if (result != HasReturnvaluesIF::RETURN_OK) {
         rs485Cookie->setComStatusSend(ComStatusRS485::FAULTY);
@@ -240,10 +239,11 @@ void RS485DeviceComIF::handleTmSend(RS485Timeslot device, RS485Cookie *rs485Cook
     MutexHelper mutexLock(rs485Cookie->getSendMutexHandle(), MutexIF::TimeoutType::WAITING,
             RS485_STANDARD_MUTEX_TIMEOUT);
     for (packetSentCounter = 0;
-    // We dont need to supply an input, as the packets come directly from the TmQueue
+            // We dont need to supply an input, as the packets come directly from the TmQueue
             uslpDataLinkLayer->packFrame(nullptr, 0, sendBufferFrame[device].data(),
-                    rs485Cookie->getTfdzSize(), rs485Cookie->getVcId(), rs485Cookie->getTmTcMapId())
-                    == HasReturnvaluesIF::RETURN_OK; packetSentCounter++) {
+                    sendBufferFrame[device].size(), rs485Cookie->getVcId(),
+                    rs485Cookie->getTmTcMapId()) == HasReturnvaluesIF::RETURN_OK;
+            packetSentCounter++) {
 
         retval = UART_write(bus2_uart, sendBufferFrame[device].data(),
                 rs485Cookie->getTfdzSize() + USLPTransferFrame::FRAME_OVERHEAD);

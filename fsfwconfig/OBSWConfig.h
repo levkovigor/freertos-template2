@@ -78,7 +78,7 @@ static const uint16_t RS485_USLP_SCID =                 0xAB1E;
 static const uint8_t RS485_USLP_VCID_COM_FPGA_1 =       0b000011;
 static const uint8_t RS485_USLP_MAPID_COM_FPGA_1_TM =   0b0101;
 static const uint8_t RS485_USLP_MAPID_COM_FPGA_1_CTRL = 0b1010;
-static const size_t RS485_COM_FPGA_TFDZ_SIZE =       	119;
+static const size_t RS485_COM_FPGA_TFDZ_SIZE =       	1991;
 
 static const uint8_t RS485_USLP_VCID_PCDU_VORAGO =      0b000000;
 static const uint8_t RS485_USLP_MAPID_PCDU_VORAGO =     0b1010;

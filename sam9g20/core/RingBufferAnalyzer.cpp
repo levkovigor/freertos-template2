@@ -165,7 +165,12 @@ ReturnValue_t RingBufferAnalyzer::parseForDleEncodedPackets(size_t bytesToRead,
 ReturnValue_t RingBufferAnalyzer::parseForUslpFrames(size_t bytesToRead, uint8_t *receptionBuffer,
         size_t maxSize, size_t *packetSize, size_t *readSize) {
     std::map<uint8_t, size_t>::iterator iter = virtualChannelFrameSizes->end();
-    // This only works for byte aligned data
+
+    /* Prevents  a subtraction from size_t that results in a negative value (bad)   */
+    if(bytesToRead < config::RS485_MIN_SERIAL_FRAME_SIZE){
+        return NO_PACKET_FOUND;
+    }
+    // This only works for byte aligned data, but this is the case for RS485
     for (size_t vectorIdx = 0; vectorIdx <= bytesToRead - config::RS485_MIN_SERIAL_FRAME_SIZE;
             vectorIdx++) {
 
