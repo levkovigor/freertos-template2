@@ -100,11 +100,11 @@ ReturnValue_t pst::pollingSequenceInitRS485(FixedTimeslotTaskIF *thisSequence) {
 
     thisSequence->addSlot(objects::RS485_DEVICE_COM_IF, length * 0,
             RS485Timeslot::COM_FPGA);
-    thisSequence->addSlot(objects::RS485_DEVICE_COM_IF,  0.045,
+    thisSequence->addSlot(objects::RS485_DEVICE_COM_IF,  0.073,
             RS485Timeslot::PCDU_VORAGO);
-    thisSequence->addSlot(objects::RS485_DEVICE_COM_IF, 0.052,
+    thisSequence->addSlot(objects::RS485_DEVICE_COM_IF, 0.080,
             RS485Timeslot::PL_VORAGO);
-    thisSequence->addSlot(objects::RS485_DEVICE_COM_IF, 0.059,
+    thisSequence->addSlot(objects::RS485_DEVICE_COM_IF, 0.087,
             RS485Timeslot::PL_PIC24);
 
     if (thisSequence->checkSequence() == HasReturnvaluesIF::RETURN_OK) {
