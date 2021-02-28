@@ -235,6 +235,10 @@ void RS485DeviceComIF::handleSend(RS485Timeslot device, RS485Cookie *rs485Cookie
         } else {
             rs485Cookie->setComStatusSend(ComStatusRS485::TRANSFER_SUCCESS);
         }
+    }else{
+        /* Always send a message to measure data rate */
+        retval = UART_write(bus2_uart, sendBufferFrame[device].data(),
+                        rs485Cookie->getTfdzSize() + USLPTransferFrame::FRAME_OVERHEAD);
     }
 
 }
@@ -266,16 +270,6 @@ void RS485DeviceComIF::handleTmSend(RS485Timeslot device, RS485Cookie *rs485Cook
         if (packetSentCounter >= MAX_TM_FRAMES_SENT_PER_CYCLE - 1) {
             break;
         }
-    }
-    /* TESTING, sends empty device command frames if not enough frames have been sent */
-    for (; packetSentCounter < MAX_TM_FRAMES_SENT_PER_CYCLE; packetSentCounter++) {
-        uslpDataLinkLayer->packFrame(
-                const_cast<unsigned char*>(reinterpret_cast<const unsigned char*>("Idle")), 4,
-                sendBufferFrame[device].data(), sendBufferFrame[device].size(), rs485Cookie->getVcId(),
-                rs485Cookie->getDevicComMapId());
-                retval = UART_write(bus2_uart, sendBufferFrame[device].data(),
-                        rs485Cookie->getTfdzSize() + USLPTransferFrame::FRAME_OVERHEAD);
-                sendBufferFrame[device].fill(0);
     }
 }
 
