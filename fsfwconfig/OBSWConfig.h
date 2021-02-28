@@ -73,7 +73,7 @@ static const uint32_t RS485_SERIAL_TIMEOUT_BAUDTICKS =  5;
 static const uint16_t RS485_MUTEX_TIMEOUT =             20;
 /* RS485 USLP frame config  */
 static const uint8_t RS485_USLP_TFVN =                  0b1100;
-static const uint16_t RS485_USLP_SCID =                 0xAFFE;
+static const uint16_t RS485_USLP_SCID =                 0xAB1E;
 
 static const uint8_t RS485_USLP_VCID_COM_FPGA_1 =       0b000011;
 static const uint8_t RS485_USLP_MAPID_COM_FPGA_1_TM =   0b0101;
