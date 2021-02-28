@@ -15,7 +15,7 @@ const uint32_t SDC1_SLOT1_HAMMING_ADDR =  SDC1_SLOT0_HAMMING_ADDR - NOR_FLASH_HA
 
 /* Private functions */
 int get_generic_hamming_flag(uint32_t addr, bool* flag_set);
-int manipulate_sdc_hamming_flag(bool set, VolumeId volume, SdSlots slot);
+int manipulate_sdc_hamming_flag(uint32_t val, VolumeId volume, SdSlots slot);
 
 /* Implementation */
 

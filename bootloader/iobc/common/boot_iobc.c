@@ -38,7 +38,7 @@ void perform_bootloader_core_operation() {
 #endif
 
     vTaskEndScheduler();
-    jump_to_sdram_application();
+    jump_to_sdram_application(0x30400, SDRAM_DESTINATION);
 }
 
 int perform_iobc_copy_operation_to_sdram() {
