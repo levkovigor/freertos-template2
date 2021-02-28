@@ -41,7 +41,7 @@ class RS485DeviceComIF: public DeviceCommunicationIF,
 public:
 
     static constexpr size_t TMTC_FRAME_MAX_LEN = config::RS485_MAX_SERIAL_FRAME_SIZE;
-    static constexpr uint8_t MAX_TM_FRAMES_SENT_PER_CYCLE = 5;
+    static constexpr uint8_t MAX_TM_FRAMES_SENT_PER_CYCLE = 3;
     static constexpr uint8_t RETRY_COUNTER = 10;
     //! Default mutex timeout in milliseconds
     static constexpr TickType_t RS485_STANDARD_MUTEX_TIMEOUT = 20;
@@ -78,15 +78,37 @@ public:
     ReturnValue_t performOperation(uint8_t opCode) override;
 
     /**
-     * @brief  DeviceComIF override, fills frames sendBuffer
+     * @brief  DeviceComIF override, fills frames sendBuffer, sets transfer status to TRANSFER_INIT
      * @details Only DeviceHandlers use this to send message, as only one message is sent
-     *			from these at a time, one frame buffer for each device suffices
+     *			from these at a time, one frame buffer for each timeslot suffices
      * @returns -@c RETURN_OK if buffer is filled
-     * 			-@c RETURN_FALIED if there already is a message pending
+     * 			-@c CCSDSReturnValueIF return values if an error occured
      */
     ReturnValue_t sendMessage(CookieIF *cookie, const uint8_t *sendData, size_t sendLen) override;
+    /**
+     * @brief  DeviceComIF override, retrieves sending status
+     * @details Make sure to set the time between calling sendMessage and getSendSuccess to
+     *          one com cycle
+     * @returns -@c RETURN_OK if frame was sent successful
+     *          -@c RETURN_FAILED If the frame was not sent yet
+     *          -@c UART driver return values if an error in the driver occured
+     */
     ReturnValue_t getSendSuccess(CookieIF *cookie) override;
+    /**
+     * @brief  DeviceComIF override, sets cookie receive status to TRANSFER_INIT and resets buffer
+     * @details The cookie signals the data link layer to place a received message in the receive
+     *          buffer.
+     * @returns -@c RETURN_OK if alway
+     */
     ReturnValue_t requestReceiveMessage(CookieIF *cookie, size_t requestLen) override;
+    /**
+     * @brief  DeviceComIF override, checks for message in buffer and resets receive status to IDLE
+     * @details Make sure to set the time between calling requestReceiveMessage and
+     *          readReceivedMessage to one com cycle
+     *          one com cycle
+     * @returns -@c RETURN_OK if there is a message in the buffer
+     *          -@c RETURN_FAILED If no frame was received yet
+     */
     ReturnValue_t readReceivedMessage(CookieIF *cookie, uint8_t **buffer, size_t *size) override;
 
     static constexpr uint8_t INTERFACE_ID = CLASS_ID::RS485_COM_IF;
@@ -98,7 +120,7 @@ private:
     uint8_t retryCount = 0;
     uint8_t packetSentCounter = 0;
 
-    // Stores the actvie device cookies for each timeslot
+    /* Stores the act device cookies for each timeslot */
     std::array<RS485Cookie*, RS485Timeslot::TIMESLOT_COUNT_RS485> deviceCookies;
 
     // Stores the inactive devices cookies, they are swapped in setActive should it be necessary
