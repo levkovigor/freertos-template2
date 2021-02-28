@@ -29,7 +29,6 @@ namespace objects {
 		CORE_CONTROLLER = 0x40001000,
         SYSTEM_STATE_TASK = 0x40001005,
         THERMAL_CONTROLLER = 0x40002000,
-		RS485_CONTROLLER = 0x40005000,
 
         /* 0x44 ('D') for Device Handlers **/
         /* Second Byte: ComIF -> 0x00: UART,0x10 SPI,0x20: I2C,30: GPIO,40: PWM */
