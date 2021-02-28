@@ -71,12 +71,11 @@ ReturnValue_t RS485DeviceComIF::performOperation(uint8_t opCode) {
 
     RS485Timeslot timeslot = static_cast<RS485Timeslot>(opCode);
 
-     /*check state of UART driver first, should be idle */
-    if(checkDriverState(&retryCount) == HasReturnvaluesIF::RETURN_FAILED){
+    /*check state of UART driver first, should be idle */
+    if (checkDriverState(&retryCount) == HasReturnvaluesIF::RETURN_FAILED) {
         /* performOperation return value is currently ignored by fsfw, but it cannot hurt either */
         return HasReturnvaluesIF::RETURN_FAILED;
     }
-
 
     /* Set current active device, also checks for nullpointers */
     if (setActive(timeslot) == HasReturnvaluesIF::RETURN_OK) {
@@ -233,12 +232,17 @@ void RS485DeviceComIF::handleSend(RS485Timeslot device, RS485Cookie *rs485Cookie
         if (retval != 0) {
             rs485Cookie->setComStatusSend(ComStatusRS485::FAULTY);
         } else {
+
             rs485Cookie->setComStatusSend(ComStatusRS485::TRANSFER_SUCCESS);
         }
-    }else{
+    } else {
         /* Always send a message to measure data rate */
+        uslpDataLinkLayer->packFrame(
+                const_cast<unsigned char*>(reinterpret_cast<const unsigned char*>("Idle")), 4,
+                sendBufferFrame[device].data(), sendBufferFrame[device].size(),
+                rs485Cookie->getVcId(), rs485Cookie->getDevicComMapId());
         retval = UART_write(bus2_uart, sendBufferFrame[device].data(),
-                        rs485Cookie->getTfdzSize() + USLPTransferFrame::FRAME_OVERHEAD);
+                rs485Cookie->getTfdzSize() + USLPTransferFrame::FRAME_OVERHEAD);
     }
 
 }
@@ -350,7 +354,7 @@ ReturnValue_t RS485DeviceComIF::setActive(RS485Timeslot timeslot) {
 ReturnValue_t RS485DeviceComIF::checkDriverState(uint8_t *retryCount) {
     UARTdriverState writeState = UART_getDriverState(bus2_uart, write_uartDir);
     if (writeState != 0x00) {
-        if ( writeState == 0x33) {
+        if (writeState == 0x33) {
             // erroneous state!
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "RS485Controller::performOperation: RS485 driver"

@@ -353,7 +353,7 @@ void initTasks(void) {
 
     /* RS485 Sending Polling Sequence */
     FixedTimeslotTaskIF *PollingSequenceTableTaskRS485 = TaskFactory::instance()
-            ->createFixedTimeslotTask("PST_TASK_RS485", 5, 2048 * 4, 0.095,
+            ->createFixedTimeslotTask("PST_TASK_RS485", 5, 2048 * 4, 0.093,
             genericMissedDeadlineFunc);
     result = pst::pollingSequenceInitRS485(PollingSequenceTableTaskRS485);
     if (result != HasReturnvaluesIF::RETURN_OK) {
