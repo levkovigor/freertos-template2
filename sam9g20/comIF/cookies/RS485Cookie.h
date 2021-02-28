@@ -10,6 +10,7 @@
 #define SAM9G20_COMIF_COOKIES_RS485COOKIE_H_
 
 #include <fsfw/devicehandlers/CookieIF.h>
+#include <fsfwconfig/OBSWConfig.h>
 #include <fsfw/ipc/MutexIF.h>
 #include <cstddef>
 
@@ -23,7 +24,7 @@ enum RS485Timeslot : uint8_t {
 
 //TODO: Change fast baudrate back to fast, this is for testing
 enum RS485BaudRates : uint32_t {
-    FAST = 115200, NORMAL = 115200,
+    FAST = config::RS485_FAST_BAUD, NORMAL = config::RS485_REGULAR_BAUD,
 };
 
 enum class ComStatusRS485 : uint8_t {
