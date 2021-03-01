@@ -113,11 +113,19 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode) {
         /* If there is something to do, perform one step */
         if(stateMachine.getInternalState() != SDCHStateMachine::States::IDLE) {
             result = stateMachine.performStateMachineStep();
-            if(result != HasReturnvaluesIF::RETURN_OK) {
-                return result;
+            if(result == sdchandler::EXECUTION_COMPLETE) {
+                stateMachine.resetAndSetToIdle();
+                actionHelper.finish(actionRecipient, currentAction, HasReturnvaluesIF::RETURN_OK);
+                currentAction = -1;
+                actionRecipient = MessageQueueIF::NO_QUEUE;
             }
-            else if(result == HasReturnvaluesIF::RETURN_OK) {
-
+            else if(result != HasReturnvaluesIF::RETURN_OK) {
+                /* If the state machine did not fail because of a pending SD card change operation
+                we reset it */
+                if(stateMachine.getInternalState() != SDCHStateMachine::States::CHANGING_SD_CARD) {
+                    stateMachine.resetAndSetToIdle();
+                }
+                return result;
             }
         }
 
@@ -245,10 +253,6 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
     }
     case(REPORT_PREFERED_SD_CARD): {
         /* TODO: We need to use the FRAM variable here instead */
-//        VolumeId currentActiveVoume = SDCardAccessManager::instance()->getActiveSdCard();
-//        ActivePreferedVolumeReport reply(currentActiveVoume);
-//        result = actionHelper.reportData(commandedBy, actionId, &reply);
-//        actionHelper.finish(commandedBy, actionId, result);
         break;
     }
     case(SET_LOAD_OBSW_UPDATE): {

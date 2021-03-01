@@ -79,10 +79,10 @@ void SoftwareImageHandler::performStateMachine() {
                 handlerState = HandlerState::IDLE;
             }
             else {
-                actionHelper.finish(recipient, currentAction,
-                        HasReturnvaluesIF::RETURN_OK);
+                actionHelper.finish(recipient, currentAction, HasReturnvaluesIF::RETURN_OK);
                 currentAction = 0xffffffff;
                 recipient = MessageQueueIF::NO_QUEUE;
+                imgCpHelper->reset();
                 handlerState = HandlerState::IDLE;
             }
             break;
