@@ -110,9 +110,10 @@ public:
     /* This function will dump the current SD card format in ASCII format */
     static ReturnValue_t dumpSdCard();
 private:
+    /* Internal states of the state machine */
     enum InternalStates {
-        /* No special file operations going on */
-        NORMAL,
+        /* Nothing to do */
+        IDLE,
         /* The active SD card is being changed, so no operation possible */
         CHANGING_ACTIVE_SD_CARD,
         /* A file is being split into PUS packets */
@@ -121,7 +122,7 @@ private:
         COPYING_MOVING_FILE,
     };
 
-    InternalStates internalState = InternalStates::NORMAL;
+    InternalStates internalState = InternalStates::IDLE;
     /**
      * The MessageQueue used to receive commands, data and to send replies.
      */
@@ -145,9 +146,12 @@ private:
     VolumeId preferedVolume = SD_CARD_0;
     VolumeId activeVolume = SD_CARD_0;
 
+    ReturnValue_t handleNextMessage(CommandMessage* message);
+    void performStateMachineStep();
+
     VolumeId determineVolumeToOpen();
     ReturnValue_t handleAccessResult(ReturnValue_t accessResult);
-    ReturnValue_t handleMultipleMessages(CommandMessage* message);
+
 
     static ReturnValue_t printHelper(uint8_t recursionDepth);
 

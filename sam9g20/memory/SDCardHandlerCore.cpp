@@ -83,8 +83,28 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode) {
         return result;
     }
 
-	/* Handle rest of messages */
-	return handleMultipleMessages(&message);
+    bool allMessagesDone = false;
+    while(countdown->isBusy()) {
+        /* Handle messages and internal state machine in an alternating way */
+        if(not allMessagesDone) {
+            result = handleNextMessage(&message);
+        }
+
+        if(result == MessageQueueIF::EMPTY) {
+            allMessagesDone = true;
+        }
+
+        /* If there is something to do, perform one step */
+        if(internalState != InternalStates::IDLE) {
+            performStateMachineStep();
+        }
+
+        if(allMessagesDone and internalState == InternalStates::IDLE) {
+            /* Nothing to do, no reason to block the CPU anymore */
+            return HasReturnvaluesIF::RETURN_OK;
+        }
+    }
+    return HasReturnvaluesIF::RETURN_OK;
 }
 
 VolumeId SDCardHandler::determineVolumeToOpen() {
@@ -119,27 +139,19 @@ ReturnValue_t SDCardHandler::handleAccessResult(ReturnValue_t accessResult) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t SDCardHandler::handleMultipleMessages(CommandMessage *message) {
-	ReturnValue_t status = HasReturnvaluesIF::RETURN_OK;
-	while(true) {
- 		ReturnValue_t result = commandQueue->receiveMessage(message);
-		if(result == MessageQueueIF::EMPTY) {
-			return HasReturnvaluesIF::RETURN_OK;
-		}
-		else if(result != HasReturnvaluesIF::RETURN_OK) {
-			return result;
-		}
+ReturnValue_t SDCardHandler::handleNextMessage(CommandMessage *message) {
+    ReturnValue_t result = commandQueue->receiveMessage(message);
+    if(result == MessageQueueIF::EMPTY) {
+        return result;
+    }
+    else if(result != HasReturnvaluesIF::RETURN_OK) {
+#if OBSW_VERBOSE_LEVEL >= 1
+        sif::printWarning("SDCardHandler::handleNextMessage: Error receiving message!\n");
+#endif
+        return result;
+    }
 
-		result = handleMessage(message);
-		if(result != HasReturnvaluesIF::RETURN_OK) {
-			status = result;
-		}
-
-	    if(countdown->hasTimedOut()) {
-	    	return status;
-	    }
-	}
-	return status;
+    return handleMessage(message);
 }
 
 
@@ -149,7 +161,13 @@ ReturnValue_t SDCardHandler::handleMessage(CommandMessage* message) {
 	    return result;
 	}
 
-	return handleFileMessage(message);
+	result = handleFileMessage(message);
+	if(result != HasReturnvaluesIF::RETURN_OK) {
+#if OBSW_VERBOSE_LEVEL >= 1
+	    sif::printWarning("SDCardHandler::handleMessage: Invalid message type!\n");
+#endif
+	}
+    return result;
 }
 
 ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
@@ -268,6 +286,9 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
     return HasReturnvaluesIF::RETURN_OK;
 }
 
+void SDCardHandler::performStateMachineStep() {
+    return;
+}
 
 ReturnValue_t SDCardHandler::handleFileMessage(CommandMessage* message) {
     ReturnValue_t  result = HasReturnvaluesIF::RETURN_OK;
@@ -322,7 +343,7 @@ ReturnValue_t SDCardHandler::handleFileMessage(CommandMessage* message) {
 #else
         sif::printDebug("SDCardHandler::handleFileMessage: Invalid filesystem command!\n");
 #endif
-        return HasReturnvaluesIF::RETURN_FAILED;
+        return CommandMessageIF::UNKNOWN_COMMAND;
     }
     }
     return result;
