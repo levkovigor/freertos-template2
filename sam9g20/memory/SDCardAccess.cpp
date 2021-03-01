@@ -46,7 +46,7 @@ SDCardAccess::~SDCardAccess() {
     if(not accessSuccess) {
         return;
     }
-    int result = f_delvolume(currentVolumeId);
+    int result = f_delvolume(static_cast<uint8_t>(currentVolumeId));
     if(result != F_NO_ERROR) {
         sif::printWarning("SDCardAccess::~SDCardAccess: f_delvolume failed with code"
                 " %d.\n", result);

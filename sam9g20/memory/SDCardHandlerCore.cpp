@@ -72,6 +72,7 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode) {
     on function exit. */
     SDCardAccess sdCardAccess;
     result = handleAccessResult(sdCardAccess.getAccessResult());
+    sif::printInfo("Current volume: %d\n", static_cast<int>(sdCardAccess.getActiveVolume()));
     if(result == SDCardAccess::SD_CARD_CHANGE_ONGOING) {
         if(stateMachine.getInternalState() != SDCHStateMachine::States::CHANGING_SD_CARD) {
             /* This really should not happen anyway */
@@ -86,7 +87,7 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode) {
         wait for next cycle */
     	return result;
     }
-    else {
+    else if(result != HasReturnvaluesIF::RETURN_OK) {
 #if OBSW_VERBOSE_LEVEL >= 1
         sif::printWarning("SDCardHandler::performOperation: Can not access SD card!\n");
 #endif

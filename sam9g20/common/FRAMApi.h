@@ -156,8 +156,8 @@ int clear_sdc_hamming_flag(VolumeId volume, SdSlots slot);
 int set_bootloader_faulty(bool faulty);
 int is_bootloader_faulty(bool* faulty);
 
-int set_prefered_sd_card(VolumeId volumeId);
-int get_prefered_sd_card(VolumeId* volumeId);
+int set_preferred_sd_card(VolumeId volumeId);
+int get_preferred_sd_card(VolumeId* volumeId);
 
 int write_bootloader_hamming_code(const uint8_t* code, size_t size);
 int read_bootloader_hamming_code(uint8_t* code, size_t* size);
