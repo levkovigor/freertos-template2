@@ -11,7 +11,7 @@
  */
 class FileSystemMessage {
 public:
-    // Instantiation forbidden
+    /* Instantiation forbidden */
 	FileSystemMessage() = delete;
 
 	static const uint8_t MESSAGE_ID = messagetypes::FILE_SYSTEM_MESSAGE;
