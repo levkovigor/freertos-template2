@@ -95,7 +95,10 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode) {
 
         /* If there is something to do, perform one step */
         if(stateMachine.getInternalState() != SDCHStateMachine::States::IDLE) {
-            performStateMachineStep();
+            result = stateMachine.performStateMachineStep();
+            if(result != HasReturnvaluesIF::RETURN_OK) {
+                return result;
+            }
         }
 
         if(allMessagesDone and stateMachine.getInternalState() == SDCHStateMachine::States::IDLE) {
@@ -159,33 +162,14 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     switch(actionId) {
     case(SELECT_ACTIVE_SD_CARD): {
-        uint8_t volumeId;
-        result = SerializeAdapter::deSerialize(&volumeId, &data, &size,
-                SerializeIF::Endianness::BIG);
-        if(result != HasReturnvaluesIF::RETURN_OK) {
-            actionHelper.finish(commandedBy, actionId, result);
-            return HasReturnvaluesIF::RETURN_OK;
-        }
-
-        VolumeId enumeratedId;
-        if(volumeId == 0) {
-            enumeratedId = SD_CARD_0;
-        }
-        else {
-            enumeratedId = SD_CARD_1;
-        }
-        if((activeVolume == SD_CARD_0 and enumeratedId == SD_CARD_1)
-                or (activeVolume == SD_CARD_1 and enumeratedId == SD_CARD_0)) {
-            int retval = switch_sd_card(enumeratedId);
-            if(retval == F_NO_ERROR) {
-                activeVolume = enumeratedId;
-            }
-            else {
-                result = retval;
-            }
-        }
-
-        actionHelper.finish(commandedBy, actionId, result);
+        /* TODO: We need to do this differently now. The SD card manager must now attempt
+        to regularly change the active SD card via the SD card access manager. We should use
+        the state machine for this */
+        break;
+    }
+    case(SELECT_PREFERED_SD_CARD): {
+        /* TODO: Here, we should set the respective FRAM variable, which will be used by the
+        SD card access manager on startup to determine which SD card to use */
         break;
     }
     case(PRINT_SD_CARD): {
@@ -202,12 +186,14 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
         break;
     }
     case(FORMAT_SD_CARD): {
+        VolumeId currentVolumeId = SDCardAccessManager::instance()->getActiveSdCard();
         /* Formats the currently active filesystem! */
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::warning << "SDCardHandler::handleMessage: Formatting SD-Card " << activeVolume <<
+        sif::warning << "SDCardHandler::handleMessage: Formatting SD-Card " << currentVolumeId <<
                 "!" << std::endl;
 #else
-        sif::printWarning("SDCardHandler::handleMessage: Formatting SD-Card %d!\n", activeVolume);
+        sif::printWarning("SDCardHandler::handleMessage: Formatting SD-Card %d!\n",
+                currentVolumeId);
 #endif
         int retval = f_format(0, F_FAT32_MEDIA);
         if(retval != F_NO_ERROR) {
@@ -222,16 +208,17 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
         break;
     }
     case(REPORT_ACTIVE_SD_CARD): {
-        ActivePreferedVolumeReport reply(activeVolume);
+        ActivePreferedVolumeReport reply(SDCardAccessManager::instance()->getActiveSdCard());
         result = actionHelper.reportData(commandedBy, actionId, &reply);
         actionHelper.finish(commandedBy, actionId, result);
         break;
     }
     case(REPORT_PREFERED_SD_CARD): {
-        VolumeId currentActiveVoume = SDCardAccessManager::instance()->getActiveSdCard();
-        ActivePreferedVolumeReport reply(currentActiveVoume);
-        result = actionHelper.reportData(commandedBy, actionId, &reply);
-        actionHelper.finish(commandedBy, actionId, result);
+        /* TODO: We need to use the FRAM variable here instead */
+//        VolumeId currentActiveVoume = SDCardAccessManager::instance()->getActiveSdCard();
+//        ActivePreferedVolumeReport reply(currentActiveVoume);
+//        result = actionHelper.reportData(commandedBy, actionId, &reply);
+//        actionHelper.finish(commandedBy, actionId, result);
         break;
     }
     case(SET_LOAD_OBSW_UPDATE): {
@@ -269,10 +256,6 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
     }
 
     return HasReturnvaluesIF::RETURN_OK;
-}
-
-void SDCardHandler::performStateMachineStep() {
-    return;
 }
 
 ReturnValue_t SDCardHandler::handleFileMessage(CommandMessage* message) {

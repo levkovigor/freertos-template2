@@ -17,6 +17,7 @@ class MutexIF;
 class SDCardAccessManager {
     friend class SDCardHandler;
     friend class SDCardAccess;
+    friend class SDCHStateMachine;
 public:
     virtual ~SDCardAccessManager();
 

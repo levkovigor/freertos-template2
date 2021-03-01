@@ -130,7 +130,6 @@ private:
 
     /* Core functions called in performOperation */
     ReturnValue_t handleNextMessage(CommandMessage* message);
-    void performStateMachineStep();
 
     ReturnValue_t handleAccessResult(ReturnValue_t accessResult);
 
@@ -185,8 +184,6 @@ private:
 
     ReturnValue_t getStoreData(store_address_t& storeId, ConstStorageAccessor& accessor,
             const uint8_t** ptr, size_t* size);
-
-    VolumeId activeVolume = SD_CARD_0;
 
     /* Static helper function to print out the SD card */
     static ReturnValue_t printFilesystemHelper(uint8_t recursionDepth);

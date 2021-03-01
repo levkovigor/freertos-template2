@@ -15,11 +15,17 @@ public:
     enum class States {
         /* Nothing to do */
         IDLE,
-        /* A file is being split into PUS packets */
+        /* Attempt to change the active SD card */
+        CHANGING_SD_CARD,
+        /* A file is being split into PUS packets for downlinking */
         SPLITTING_FILE,
-        /* A file is copied or moved */
-        COPYING_MOVING_FILE,
+        COPY_FILE,
+        MOVE_FILE
     };
+
+    bool setToAttemptSdCardChange();
+
+    void resetAndSetToIdle();
 
     SDCHStateMachine();
 
@@ -36,6 +42,8 @@ private:
     for copy operations */
     RepositoryPath path2;
     FileName fileName2;
+
+    void reset();
 };
 
 
