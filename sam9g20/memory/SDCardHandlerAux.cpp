@@ -80,8 +80,7 @@ ReturnValue_t SDCardHandler::handleReportAttributesCommand(
     }
 
     FileAttributesCommand command;
-    /* Extract the repository path and the filename from the
-        application data field */
+    /* Extract the repository path and the filename from the application data field */
     result = command.deSerialize(&ipcStoreBuffer,
             &remainingSize, SerializeIF::Endianness::BIG);
     if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -142,8 +141,7 @@ ReturnValue_t SDCardHandler::handleCreateDirectoryCommand(
     }
 
     CreateDirectoryCommand command;
-    // Extract the repository path and the directory name
-    // from the application data field
+    /* Extract the repository path and the directory name from the application data field */
     result = command.deSerialize(&ipcStoreBuffer, &remainingSize,
             SerializeIF::Endianness::BIG);
     if(result != HasReturnvaluesIF::RETURN_OK){
@@ -154,7 +152,7 @@ ReturnValue_t SDCardHandler::handleCreateDirectoryCommand(
     result = createDirectory(command.getRepositoryPath(),
             command.getDirname());
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        // If the folder already exists, count that as success..
+        /* If the folder already exists, count that as success.. */
         if(result != HasFileSystemIF::DIRECTORY_ALREADY_EXISTS) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "SDCardHandler::handleCreateDirectoryCommand: Creating directory " <<
@@ -185,7 +183,7 @@ ReturnValue_t SDCardHandler::handleDeleteDirectoryCommand(
 
     DeleteDirectoryCommand command;
     /* Extract the repository path and the directory name from the
-        application data field */
+    application data field */
     result = command.deSerialize(&ipcStoreBuffer, &remainingSize,
             SerializeIF::Endianness::BIG);
     if(result != HasReturnvaluesIF::RETURN_OK){
@@ -262,9 +260,8 @@ ReturnValue_t SDCardHandler::printRepository(const char *repository) {
     }
 
     if(findResult.filename[0] == '.') {
-        // we are not in root, so the next search result is going
-        // to be the parent folder, and the third result is going to be
-        // the first file or directory.
+        /* we are not in root, so the next search result is going to be the parent folder, and
+        the third result is going to be the first file or directory. */
         f_findnext(&findResult);
         fileFound = f_findnext(&findResult);
     }
@@ -278,7 +275,7 @@ ReturnValue_t SDCardHandler::printRepository(const char *repository) {
             break;
         }
 
-        // check whether file object is directory or file.
+        /* Check whether file object is directory or file. */
         if(change_directory(findResult.filename, false) == F_NO_ERROR) {
             change_directory("..", false);
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -306,9 +303,8 @@ ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
     }
 
     if(findResult.filename[0] == '.') {
-        // we are not in root, so the next search result is going
-        // to be the parent folder, and the third result is going to be
-        // the first file or directory.
+        /* we are not in root, so the next search result is going to be the parent folder, and
+        the third result is going to be the first file or directory. */
         f_findnext(&findResult);
         fileFound = f_findnext(&findResult);
     }
@@ -369,10 +365,10 @@ ReturnValue_t SDCardHandler::printSdCard() {
     int fileFound = 0;
     uint8_t recursionDepth = 0;
     f_chdir("/");
-    // find directories first
+    /* find directories first */
     fileFound = f_findfirst("*.*", &findResult);
     if(fileFound != F_NO_ERROR) {
-        // might be empty.
+        /* might be empty. */
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "SD Card empty." << std::endl;
 #else
@@ -398,7 +394,7 @@ ReturnValue_t SDCardHandler::printSdCard() {
             break;
         }
 
-        // check whether file object is directory or file.
+        /* check whether file object is directory or file. */
         if(change_directory(findResult.filename, false) == F_NO_ERROR) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "D: " << findResult.filename << std::endl;
@@ -409,8 +405,8 @@ ReturnValue_t SDCardHandler::printSdCard() {
             change_directory("..", false);
         }
         else {
-            // Normally files should have a three letter extension, but
-            // we always check whether there is a file without extension
+            /* Normally files should have a three letter extension, but we always check whether
+            there is a file without extension */
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "F: " << findResult.filename << std::endl;
 #else

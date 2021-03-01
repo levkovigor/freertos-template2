@@ -107,11 +107,11 @@ public:
     void subscribeForSdCardNotifications(MessageQueueId_t queueId);
 #endif
 
-    // Useful functions for development
+    /* Useful functions for development */
     static ReturnValue_t printRepository(const char* repository);
     static ReturnValue_t printSdCard();
 
-    // This function will dump the current SD card format in ASCII format
+    /* This function will dump the current SD card format in ASCII format */
     static ReturnValue_t dumpSdCard();
 private:
     enum InternalStates {
@@ -149,13 +149,12 @@ private:
 
     static ReturnValue_t printHelper(uint8_t recursionDepth);
 
-    // Right now, only supports one manual file upload or read at a time.
+    /* Right now, only supports one manual file upload or read at a time. */
     static constexpr uint16_t UNSET_SEQUENCE = -1;
     uint16_t lastPacketWriteNumber = UNSET_SEQUENCE;
     uint16_t lastPacketReadNumber = UNSET_SEQUENCE;
-    // This will cache the offset of the current file. The offset can also
-    // be calculated manually by multiplying the read sequence number
-    // with MAX_READ_LENGTH.
+    /* This will cache the offset of the current file. The offset can also
+    be calculated manually by multiplying the read sequence number with MAX_READ_LENGTH. */
     size_t currentReadPos = 0;
 
     ReturnValue_t handleMessage(CommandMessage* message);
