@@ -23,7 +23,6 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
     }
     case(ImageHandlerStates::COPY_IMG_HAMMING_SDC_TO_FRAM): {
         return copyImgHammingSdcToFram();
-        return HasReturnvaluesIF::RETURN_FAILED;
     }
     case(ImageHandlerStates::COPY_IMG_FLASH_TO_SDC): {
         return HasReturnvaluesIF::RETURN_FAILED;
@@ -130,7 +129,7 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
             }
             size_t sizeRead = f_read(imgBuffer->data(), 1, sizeToRead, file);
             if(sizeRead != sizeToRead) {
-                // Should not happen!
+                /* Should not happen! */
                 sif::printWarning("ImageCopyingEngine::copyImgHammingSdcToFram: "
                         "Not all bytes read!");
                 return HasReturnvaluesIF::RETURN_FAILED;
@@ -138,6 +137,10 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
 
             int result = write_nor_flash_hamming_code(imgBuffer->data(), currentByteIdx, sizeRead);
             if(result != 0) {
+#if OBSW_VERBOSE_LEVEL >= 1
+                sif::printWarning("ImageCopyingEngine::copyImgHammingSdcToFram:"
+                        "FRAM error when copying hamming code!\n");
+#endif
                 return HasReturnvaluesIF::RETURN_FAILED;
             }
             currentByteIdx += sizeRead;
@@ -158,7 +161,7 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
         else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
             message = "SD Card slot 1 hamming code";
         }
-        sif::printInfo("Copied %s successfully to storage (FRAM)\n\r", message);
+        sif::printInfo("Copied %s successfully to storage (FRAM)\n", message);
 #endif
     }
     return HasReturnvaluesIF::RETURN_OK;
@@ -301,7 +304,7 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
             return result;
         }
         if(bytesRead < sizeToRead) {
-            // should not happen..
+            /* Should not happen.. */
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "SoftwareImageHandler::performNorCopyOperation:"
                     << " Bytes read smaller than size to read!" << std::endl;
@@ -335,14 +338,14 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
 #endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
-        // Maybe SD card is busy, so try in next cycle..
+        /* Maybe SD card is busy, so try in next cycle.. */
         return image::TASK_PERIOD_OVER_SOON;
     }
     else {
         result = HasReturnvaluesIF::RETURN_OK;
     }
 
-    // bucket write success
+    /* Bucket write success */
     currentByteIdx += sizeToRead;
     //sif::debug << "ImageCopyingEngine::performNorCopyOperation:
     //      << "Current Byte Index: " << currentByteIdx << std::endl;
@@ -352,14 +355,14 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
     helperFlag1 = false;
 
     if(currentByteIdx >= currentFileSize) {
-        // operation finished.
+        /* Operation finished. */
         handleFinishPrintout();
 
         if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
             writeBootloaderSizeAndCrc();
         }
 
-        // cache last finished state.
+        /* Cache last finished state. */
         lastFinishedState = imageHandlerState;
         reset();
         return image::OPERATION_FINISHED;
@@ -380,9 +383,8 @@ void ImageCopyingEngine::writeBootloaderSizeAndCrc() {
         sif::printError("Writing bootloader size failed!\n");
 #endif
     }
-    // calculate and write CRC to designated NOR-Flash address
-    // This will be used by the bootloader to determine SEUs in the
-    // bootloader.
+    /* calculate and write CRC to designated NOR-Flash address. This will be used by the
+    bootloader to determine SEUs in the bootloader. */
     uint16_t crc16 = CRC::crc16ccitt(reinterpret_cast<const uint8_t*>(NORFLASH_BASE_ADDRESS_READ),
             currentFileSize);
     retval = NORFLASH_WriteData(&NORFlash, NORFLASH_BL_CRC16_START,
