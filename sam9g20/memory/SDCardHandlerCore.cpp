@@ -79,7 +79,7 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode) {
         }
         /* Perform a state machine step */
         result = stateMachine.performStateMachineStep();
-        if(result == HasReturnvaluesIF::RETURN_OK) {
+        if(result == sdchandler::EXECUTION_COMPLETE) {
             actionHelper.finish(actionRecipient, currentAction, result);
         }
         /* We could call performOperation here again.. but I think its okay just to

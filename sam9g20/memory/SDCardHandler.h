@@ -32,7 +32,8 @@ class ReadCommand;
  * implemented. Right now, this is not enforced strictly, but the SD card access helper will deny
  * any requests to open the file system if a change of active SD card is ongoing.
  */
-class SDCardHandler : public SystemObject,
+class SDCardHandler :
+        public SystemObject,
         public ExecutableObjectIF,
         public HasFileSystemIF,
         public HasActionsIF {
@@ -80,8 +81,8 @@ public:
 
     /** HasActionIF */
     ReturnValue_t executeAction(ActionId_t actionId,
-        MessageQueueId_t commandedBy, const uint8_t* data,
-        size_t size) override;
+            MessageQueueId_t commandedBy, const uint8_t* data,
+            size_t size) override;
 
 #ifdef ISIS_OBC_G20
     /**
