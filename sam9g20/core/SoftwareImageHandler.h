@@ -134,12 +134,12 @@ private:
     static constexpr ActionId_t COPY_OBSW_FLASH_TO_SDC = 4;
     static constexpr ActionId_t COPY_OBSW_SDC_TO_SDC = 5;
     /**
-     * Copies the hamming code from SD card to storage. The storage can either be the
-     * NAND-Flash module or the NOR-Flash module. Two uint8_t fields should be supplied
-     * which have the following meaning:
+     * Copies the hamming code from SD card to storage. This only applies to the iOBC with
+     * a FRAM memory, but can also be done for the AT91 with virtualized FRAM.
+     * Two uint8_t fields should be supplied which have the following meaning:
      *
      * First byte:  Slot the hamming code belongs to. 1 for NOR-Flash, 2 for SD slot 0 and 3 for SD
-     *              slot 2.
+     *              slot 1.
      */
     static constexpr ActionId_t COPY_HAMMING_SDC_TO_STORAGE = 7;
     /**

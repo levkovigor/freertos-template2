@@ -56,15 +56,13 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
     while(countdown->isBusy()) {
         switch(handlerState) {
         case(HandlerState::IDLE): {
-            // check whether periodic scrubbing is necessary
-            // otherwise, return.
+            /* Check whether periodic scrubbing is necessary otherwise, return. */
             return HasReturnvaluesIF::RETURN_OK;
         }
         case(HandlerState::COPYING): {
-            // continue current copy operation.
-
+            /* Continue current copy operation. */
             result = imgCpHelper->continueCurrentOperation();
-            // timeout or failure.
+            /* Timeout or failure. */
             if(result == image::TASK_PERIOD_OVER_SOON) {
                 return HasReturnvaluesIF::RETURN_OK;
             }
@@ -82,7 +80,7 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
             break;
         }
         case(HandlerState::SCRUBBING): {
-            // continue current scrubbing operation.
+            /* Continue current scrubbing operation. */
             break;
         }
 
@@ -96,7 +94,7 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
 }
 
 ReturnValue_t SoftwareImageHandler::initialize() {
-    // set action helper queue here.
+    /* Set action helper queue here. */
     ReturnValue_t result = actionHelper.initialize(receptionQueue);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         return result;
@@ -111,7 +109,7 @@ ReturnValue_t SoftwareImageHandler::initialize() {
     int retval = NORflash_start();
 
     if(retval != 0) {
-        // should never happen ! we should power cycle if this happens.
+        /* Should never happen ! Maybe power cycle if this happens? In any case, trigger event */
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "SoftwareImageHandler::initialize: NOR-Flash start failed"
                 << std::endl;
