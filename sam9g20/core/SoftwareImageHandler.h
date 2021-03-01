@@ -228,6 +228,12 @@ private:
     ReturnValue_t checkNandFlashImage();
 #endif
 
+    ReturnValue_t handleCopyingSdcBlToFlash(ActionId_t actionId, MessageQueueId_t commandedBy,
+            const uint8_t *data, size_t size);
+    ReturnValue_t handleCopyingSdcImgToFlash(ActionId_t actionId, MessageQueueId_t commandedBy,
+            const uint8_t *data, size_t size);
+    ReturnValue_t handleCopyingHammingToStorage(ActionId_t actionId, MessageQueueId_t commandedBy,
+            const uint8_t *data, size_t size);
     void checkSdCardImage(SdCard sdCard, image::ImageSlot imageSlot);
 
 };

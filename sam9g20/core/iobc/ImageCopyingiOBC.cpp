@@ -58,6 +58,7 @@ ReturnValue_t ImageCopyingEngine::startBootloaderToFlashOperation(image::ImageSl
 }
 
 ReturnValue_t ImageCopyingEngine::startHammingCodeToFramOperation(image::ImageSlot respectiveSlot) {
+    /* Only one bootloader on iOBC */
     if(respectiveSlot == image::ImageSlot::NONE or
             respectiveSlot == image::ImageSlot::BOOTLOADER_1) {
         return HasReturnvaluesIF::RETURN_FAILED;

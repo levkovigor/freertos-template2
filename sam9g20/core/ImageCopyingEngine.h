@@ -112,7 +112,6 @@ public:
      */
     ReturnValue_t startFlashToSdcOperation(image::ImageSlot targetSlot);
 
-#ifdef ISIS_OBC_G20
     /**
      * Copy the hamming code belonging to a certain image to the FRAM.
      * @param respectiveSlot    Hamming code belongs to this image
@@ -120,7 +119,6 @@ public:
      * @return
      */
     ReturnValue_t startHammingCodeToFramOperation(image::ImageSlot respectiveSlot);
-#endif
 
     /**
      * Continue the current operation.
