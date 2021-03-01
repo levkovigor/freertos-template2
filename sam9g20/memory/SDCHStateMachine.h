@@ -43,6 +43,8 @@ public:
 
 private:
     SDCHStateMachine::States internalState = SDCHStateMachine::States::IDLE;
+    std::array<uint8_t, 8 * 1024> fileBuffer;
+
     /* Can be used for various purposes, e.g. as source path and source
     filename for copy operations */
     RepositoryPath path1;

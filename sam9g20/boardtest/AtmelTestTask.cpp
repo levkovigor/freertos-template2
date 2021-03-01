@@ -503,7 +503,7 @@ void AtmelTestTask::printFilesTest() {
 }
 
 void AtmelTestTask::moveFileTest() {
-    /* Used to verify that f_move can't be used to overwrite existing files */
+    /* Used to verify that f_move can't be used to overwrite existing files. */
     Stopwatch stopwatch;
     SDCardAccess access;
     f_chdir("/");
@@ -512,6 +512,8 @@ void AtmelTestTask::moveFileTest() {
     create_file(NULL, "F2", NULL, 0);
 
     int result = f_move("F1", "F2");
+    /* Was 6 (F_ERR_DUPLICATED) */
+    if(result) {}
     SDCardHandler::printSdCard();
 }
 

@@ -2,6 +2,7 @@
 #include "SDCardHandlerPackets.h"
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <mission/memory/FileSystemMessage.h>
+#include <sam9g20/memory/SDCardAccess.h>
 
 
 ReturnValue_t SDCardHandler::handleCreateFileCommand(CommandMessage *message) {
@@ -535,3 +536,5 @@ void SDCardHandler::sendCompletionReply(bool success, ReturnValue_t errorCode,
     }
 }
 
+void SDCardHandler::driveStateMachine() {
+}

@@ -27,6 +27,9 @@ ReturnValue_t SDCHStateMachine::performStateMachineStep() {
         break;
     }
     case(this->States::COPY_FILE): {
+        F_FILE* file;
+        prepareCopyFileInformation(&file);
+
         break;
     }
     case(this->States::MOVE_FILE): {

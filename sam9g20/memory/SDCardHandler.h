@@ -17,7 +17,7 @@
 
 #include <vector>
 
-
+class SDCardAccess;
 class PeriodicTaskIF;
 class Countdown;
 class ReadCommand;
@@ -128,8 +128,6 @@ private:
     /* Core functions called in performOperation */
     ReturnValue_t handleNextMessage(CommandMessage* message);
 
-    ReturnValue_t handleAccessResult(ReturnValue_t accessResult);
-
     /* Right now, only supports one manual file upload or read at a time. */
     static constexpr uint16_t UNSET_SEQUENCE = -1;
     uint16_t lastPacketWriteNumber = UNSET_SEQUENCE;
@@ -181,6 +179,9 @@ private:
 
     ReturnValue_t getStoreData(store_address_t& storeId, ConstStorageAccessor& accessor,
             const uint8_t** ptr, size_t* size);
+
+    ReturnValue_t handleSdCardAccessResult(SDCardAccess& sdCardAccess);
+    void driveStateMachine();
 
     /* Static helper function to print out the SD card */
     static ReturnValue_t printFilesystemHelper(uint8_t recursionDepth);
