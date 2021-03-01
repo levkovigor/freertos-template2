@@ -20,16 +20,14 @@ class Countdown;
 class ReadCommand;
 
 /**
- * @brief   This is the primary handler for access to the SD cards on the iOBC
- *          or the AT91 development board.
+ * @brief   This is the primary handler for access to the SD cards on the iOBC or the AT91
+ *          development board.
  * @details
- * It is capable of processing write and read requests from ground or from
- * other software components. Other software components can still use
- * the SD cards directly, but should register at the handler for
- * SD card notifications so that a clean change of the active SD card can be
- * implemented. Right now, this is not enforced strictly, but the SD card
- * access helper will deny any requests to open the file system if a
- * change of active SD card is ongoing.
+ * It is capable of processing write and read requests from ground or from other software
+ * components. Other software components can still use the SD cards directly, but should register
+ * at the handler for SD card notifications so that a clean change of the active SD card can be
+ * implemented. Right now, this is not enforced strictly, but the SD card access helper will deny
+ * any requests to open the file system if a change of active SD card is ongoing.
  */
 class SDCardHandler : public SystemObject,
         public ExecutableObjectIF,
@@ -93,15 +91,13 @@ public:
 
 #ifdef ISIS_OBC_G20
     /**
-     * Other software components can use the SD card as well without using
-     * the SD card handler as the HCC library can process the requests of
-     * multiple tasks.
-     * However, only one SD card can be active at a time.
-     * Therefore, all tasks which use the SD card directly should subscribe
-     * for notification messages. There is a notification to cease SD card
-     * operations so that the active SD card can be switched. If those tasks
-     * receive this notifications they should cease operations and only resume
-     * when the active SD card has switched.
+     * Other software components can use the SD card as well without using the SD card handler as
+     * the HCC library can process the requests of multiple tasks.
+     * However, only one SD card can be active at a time. Therefore, all tasks which use the
+     * SD card directly should subscribe for notification messages. There is a notification to
+     * cease SD card operations so that the active SD card can be switched. If those tasks receive
+     * this notifications they should cease operations and only resume when the active SD card has
+     * switched.
      * @param queueId
      */
     void subscribeForSdCardNotifications(MessageQueueId_t queueId);
@@ -115,8 +111,14 @@ public:
     static ReturnValue_t dumpSdCard();
 private:
     enum InternalStates {
+        /* No special file operations going on */
         NORMAL,
-        CHANGING_ACTIVE_SD_CARD
+        /* The active SD card is being changed, so no operation possible */
+        CHANGING_ACTIVE_SD_CARD,
+        /* A file is being split into PUS packets */
+        SPLITTING_FILE,
+        /* A file is copied or moved */
+        COPYING_MOVING_FILE,
     };
 
     InternalStates internalState = InternalStates::NORMAL;
@@ -139,7 +141,7 @@ private:
     bool fileSystemWasUsedOnce = false;
     bool fileSystemOpen = false;
 
-    // will also be moved to FRAM!
+    /* Might be moved to FRAM soon */
     VolumeId preferedVolume = SD_CARD_0;
     VolumeId activeVolume = SD_CARD_0;
 
@@ -161,21 +163,17 @@ private:
     ReturnValue_t handleFileMessage(CommandMessage* message);
 
     /** HasFilesystemIF overrides */
-    ReturnValue_t createFile(const char* repositoryPath, const char* filename,
-            const uint8_t* data, size_t size, void* args = nullptr) override;
+    ReturnValue_t createFile(const char* repositoryPath, const char* filename, const uint8_t* data,
+            size_t size, void* args = nullptr) override;
     ReturnValue_t appendToFile(const char* repositoryPath, const char* filename,
-            const uint8_t* data, size_t size, uint16_t packetNumber,
+            const uint8_t* data, size_t size, uint16_t packetNumber, void* args = nullptr) override;
+    ReturnValue_t handleSequenceNumberWrite(uint16_t sequenceNumber, uint16_t* packetSeqIfMissing);
+
+    ReturnValue_t deleteFile(const char* repositoryPath, const char* filename,
             void* args = nullptr) override;
-    ReturnValue_t handleSequenceNumberWrite(uint16_t sequenceNumber,
-            uint16_t* packetSeqIfMissing);
 
-    ReturnValue_t deleteFile(const char* repositoryPath,
-            const char* filename, void* args = nullptr) override;
-
-    ReturnValue_t createDirectory(const char* repositoryPath,
-            const char* dirname);
-    ReturnValue_t deleteDirectory(const char* repositoryPath,
-            const char* dirname);
+    ReturnValue_t createDirectory(const char* repositoryPath, const char* dirname);
+    ReturnValue_t deleteDirectory(const char* repositoryPath, const char* dirname);
     ReturnValue_t changeDirectory(const char* repositoryPath);
 
     ReturnValue_t handleCreateFileCommand(CommandMessage* message);
@@ -193,19 +191,16 @@ private:
 
     ReturnValue_t handleReadCommand(CommandMessage* message);
     ReturnValue_t handleSequenceNumberRead(uint16_t sequenceNumber);
-    ReturnValue_t openFileForReading(const char* repositoryPath,
-    		const char* filename, F_FILE** file,
-    		size_t readPosition, size_t* fileSize, size_t* sizeToRead);
+    ReturnValue_t openFileForReading(const char* repositoryPath, const char* filename,
+            F_FILE** file, size_t readPosition, size_t* fileSize, size_t* sizeToRead);
     ReturnValue_t handleReadReplies(ReadCommand& command);
 
     void sendCompletionReply(bool success = true,
-            ReturnValue_t errorCode = HasReturnvaluesIF::RETURN_OK,
-			uint32_t errorParam = 0);
-    ReturnValue_t generateFinishAppendReply(RepositoryPath* repoPath,
-    		FileName* fileName, size_t filesize, bool locked);
+            ReturnValue_t errorCode = HasReturnvaluesIF::RETURN_OK, uint32_t errorParam = 0);
+    ReturnValue_t generateFinishAppendReply(RepositoryPath* repoPath, FileName* fileName,
+            size_t filesize, bool locked);
 
-    ReturnValue_t getStoreData(store_address_t& storeId,
-            ConstStorageAccessor& accessor,
+    ReturnValue_t getStoreData(store_address_t& storeId, ConstStorageAccessor& accessor,
             const uint8_t** ptr, size_t* size);
 };
 

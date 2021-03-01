@@ -41,19 +41,21 @@ ReturnValue_t SDCardHandler::initialize() {
 
 
 ReturnValue_t SDCardHandler::initializeAfterTaskCreation() {
-    periodMs = executingTask->getPeriodMs();
     /* This sets up the access manager. On the iOBC this will also cache
     the currently prefered SD card from the FRAM. */
     SDCardAccessManager::create();
-    countdown->setTimeout(0.85 * periodMs);
+    periodMs = executingTask->getPeriodMs();
+    /* This prevents the task from blocking other low priority tasks (self-suspension) */
+    countdown->setTimeout(0.75 * periodMs);
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode) {
-    //Stopwatch stopwatch;
+    /* Can be used to measure the time this function takes */
+    // Stopwatch stopwatch;
 	CommandMessage message;
 	countdown->resetTimer();
-	// Check for first message
+	/* Check for first message */
 	ReturnValue_t result = commandQueue->receiveMessage(&message);
 	if(result == MessageQueueIF::EMPTY) {
 		return HasReturnvaluesIF::RETURN_OK;
@@ -63,22 +65,25 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode) {
 	}
 
     // VolumeId volumeToOpen = determineVolumeToOpen();
-    // File system message received, open access to SD Card which will
-    // be closed automatically on function exit.
+    /* File system message received, open access to SD Card which will be closed automatically
+    on function exit. */
     SDCardAccess sdCardAccess;
     result = handleAccessResult(sdCardAccess.accessResult);
     if(result == HasReturnvaluesIF::RETURN_FAILED) {
-    	// No SD card could be opened.
+    	/* No SD card could be opened. */
+#if OBSW_VERBOSE_LEVEL >= 1
+        sif::printWarning("SDCardHandler::performOperation: Opening SD card failed!\n");
+#endif
     	return result;
     }
 
-    // handle first message. Returnvalue ignored for now.
+    /* Handle first message. Returnvalue ignored for now. */
 	result = handleMessage(&message);
     if(countdown->hasTimedOut()) {
         return result;
     }
 
-	// Returnvalue ignored for now.
+	/* Handle rest of messages */
 	return handleMultipleMessages(&message);
 }
 

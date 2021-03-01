@@ -26,6 +26,13 @@ SystemObject(objectId), receptionQueue(QueueFactory::instance()->
 
 ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
     countdown->resetTimer();
+    handleMessages();
+    performStateMachine();
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+
+void SoftwareImageHandler::handleMessages() {
     CommandMessage message;
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     for(uint8_t idx = 0; idx < MAX_MESSAGES_HANDLED; idx ++) {
@@ -50,19 +57,22 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
 
         result = parameterHelper.handleParameterMessage(&message);
     }
+}
 
+void SoftwareImageHandler::performStateMachine() {
     while(countdown->isBusy()) {
         switch(handlerState) {
         case(HandlerState::IDLE): {
-            /* Check whether periodic scrubbing is necessary otherwise, return. */
-            return HasReturnvaluesIF::RETURN_OK;
+            /* Check whether periodic scrubbing is necessary otherwise, return.
+            Periodic scrubbing not implemented yet. */
+            return;
         }
         case(HandlerState::COPYING): {
             /* Continue current copy operation. */
-            result = imgCpHelper->continueCurrentOperation();
+            ReturnValue_t result = imgCpHelper->continueCurrentOperation();
             /* Timeout or failure. */
             if(result == image::TASK_PERIOD_OVER_SOON) {
-                return HasReturnvaluesIF::RETURN_OK;
+                return;
             }
             else if(result == HasReturnvaluesIF::RETURN_FAILED) {
                 imgCpHelper->reset();
@@ -88,8 +98,9 @@ ReturnValue_t SoftwareImageHandler::performOperation(uint8_t opCode) {
         }
 
     }
-    return HasReturnvaluesIF::RETURN_OK;
 }
+
+
 
 ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
         MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {

@@ -204,6 +204,9 @@ private:
             uint8_t uniqueIdentifier, ParameterWrapper *parameterWrapper,
             const ParameterWrapper *newValues, uint16_t startAtIndex) override;
 
+    void handleMessages();
+    void performStateMachine();
+
 #ifdef ISIS_OBC_G20
     /**
      * Special functions, use with care!
