@@ -112,9 +112,13 @@ private:
     ActionHelper actionHelper;
     Countdown* countdown;
     SDCHStateMachine stateMachine;
+
     /* Receiver for completed Actions */
-    MessageQueueId_t actionRecipient = MessageQueueIF::NO_QUEUE;
+    MessageQueueId_t actionSender = MessageQueueIF::NO_QUEUE;
     ActionId_t currentAction = -1;
+    bool sdCardChangeOngoing = false;
+
+    MessageQueueId_t fileSystemSender = MessageQueueIF::NO_QUEUE;
 
 #ifdef ISIS_OBC_G20
     std::vector<MessageQueueId_t> sdCardNotificationRecipients;

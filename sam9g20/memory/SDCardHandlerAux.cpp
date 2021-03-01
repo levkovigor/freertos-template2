@@ -536,5 +536,4 @@ void SDCardHandler::sendCompletionReply(bool success, ReturnValue_t errorCode,
     }
 }
 
-void SDCardHandler::driveStateMachine() {
-}
+

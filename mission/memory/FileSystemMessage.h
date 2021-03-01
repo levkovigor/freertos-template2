@@ -41,6 +41,7 @@ public:
     /** Repository dump reply */
     static const Command_t REPLY_DUMY_REPOSITORY = MAKE_COMMAND_ID(13);
     static constexpr Command_t CMD_COPY_FILE = MAKE_COMMAND_ID(14);
+    static constexpr Command_t CMD_MOVE_FILE = MAKE_COMMAND_ID(15);
 
     /** Append operation commands */
     static const Command_t CMD_APPEND_TO_FILE = MAKE_COMMAND_ID(130);

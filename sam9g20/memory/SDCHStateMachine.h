@@ -16,15 +16,13 @@ public:
     enum class States {
         /* Nothing to do */
         IDLE,
-        /* Attempt to change the active SD card */
-        CHANGING_SD_CARD,
         /* A file is being split into PUS packets for downlinking */
         SPLITTING_FILE,
         COPY_FILE,
         MOVE_FILE
     };
 
-    bool setToAttemptSdCardChange();
+    //bool setToAttemptSdCardChange();
     bool setCopyFileOperation(RepositoryPath& sourceRepo, FileName& sourceName,
             RepositoryPath& targetRepo, FileName& targetName);
 
