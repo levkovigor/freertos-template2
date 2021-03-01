@@ -95,11 +95,11 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode) {
         }
 
         /* If there is something to do, perform one step */
-        if(internalState != InternalStates::IDLE) {
+        if(stateMachine.getInternalState() != SDCHStateMachine::States::IDLE) {
             performStateMachineStep();
         }
 
-        if(allMessagesDone and internalState == InternalStates::IDLE) {
+        if(allMessagesDone and stateMachine.getInternalState() == SDCHStateMachine::States::IDLE) {
             /* Nothing to do, no reason to block the CPU anymore */
             return HasReturnvaluesIF::RETURN_OK;
         }

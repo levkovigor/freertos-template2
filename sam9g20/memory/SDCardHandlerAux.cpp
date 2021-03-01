@@ -295,7 +295,7 @@ ReturnValue_t SDCardHandler::printRepository(const char *repository) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
+ReturnValue_t SDCardHandler::printFilesystemHelper(uint8_t recursionDepth) {
     F_FIND findResult;
     int fileFound = f_findfirst("*.*", &findResult);
     if(fileFound != F_NO_ERROR) {
@@ -338,7 +338,7 @@ ReturnValue_t SDCardHandler::printHelper(uint8_t recursionDepth) {
             sif::printInfo("%sD: %s\n", subdirDepth, findResult.filename);
             subdirsLen = 0;
 #endif
-            printHelper(recursionDepth + 1);
+            printFilesystemHelper(recursionDepth + 1);
             change_directory("..", false);
         }
         else {
@@ -401,7 +401,7 @@ ReturnValue_t SDCardHandler::printSdCard() {
 #else
             sif::printInfo("D: %s\n", findResult.filename);
 #endif
-            printHelper(recursionDepth + 1);
+            printFilesystemHelper(recursionDepth + 1);
             change_directory("..", false);
         }
         else {

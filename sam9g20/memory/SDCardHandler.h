@@ -11,6 +11,7 @@
 #include <fsfwconfig/events/subsystemIdRanges.h>
 #include <fsfwconfig/OBSWConfig.h>
 #include <sam9g20/common/SDCardApi.h>
+#include <sam9g20/memory/SDCHStateMachine.h>
 
 #include <vector>
 
@@ -110,25 +111,13 @@ public:
     /* This function will dump the current SD card format in ASCII format */
     static ReturnValue_t dumpSdCard();
 private:
-    /* Internal states of the state machine */
-    enum InternalStates {
-        /* Nothing to do */
-        IDLE,
-        /* The active SD card is being changed, so no operation possible */
-        CHANGING_ACTIVE_SD_CARD,
-        /* A file is being split into PUS packets */
-        SPLITTING_FILE,
-        /* A file is copied or moved */
-        COPYING_MOVING_FILE,
-    };
-
-    InternalStates internalState = InternalStates::IDLE;
     /**
      * The MessageQueue used to receive commands, data and to send replies.
      */
     MessageQueueIF* commandQueue;
     ActionHelper actionHelper;
     Countdown* countdown;
+    SDCHStateMachine stateMachine;
 
 #ifdef ISIS_OBC_G20
     std::vector<MessageQueueId_t> sdCardNotificationRecipients;
@@ -142,18 +131,11 @@ private:
     bool fileSystemWasUsedOnce = false;
     bool fileSystemOpen = false;
 
-    /* Might be moved to FRAM soon */
-    VolumeId preferedVolume = SD_CARD_0;
-    VolumeId activeVolume = SD_CARD_0;
-
+    /* Core functions called in performOperation */
     ReturnValue_t handleNextMessage(CommandMessage* message);
     void performStateMachineStep();
 
-    VolumeId determineVolumeToOpen();
     ReturnValue_t handleAccessResult(ReturnValue_t accessResult);
-
-
-    static ReturnValue_t printHelper(uint8_t recursionDepth);
 
     /* Right now, only supports one manual file upload or read at a time. */
     static constexpr uint16_t UNSET_SEQUENCE = -1;
@@ -206,6 +188,15 @@ private:
 
     ReturnValue_t getStoreData(store_address_t& storeId, ConstStorageAccessor& accessor,
             const uint8_t** ptr, size_t* size);
+
+    /* Might be moved to FRAM soon */
+    VolumeId preferedVolume = SD_CARD_0;
+    VolumeId activeVolume = SD_CARD_0;
+    /* Not used, might be removed soon */
+    VolumeId determineVolumeToOpen();
+
+    /* Static helper function to print out the SD card */
+    static ReturnValue_t printFilesystemHelper(uint8_t recursionDepth);
 };
 
 #endif /* SAM9G20_MEMORY_SDCARDHANDLER_H_ */
