@@ -22,11 +22,9 @@
 
 
 SDCardHandler::SDCardHandler(object_id_t objectId): SystemObject(objectId),
-commandQueue(QueueFactory::instance()->
-        createMessageQueue(MAX_MESSAGE_QUEUE_DEPTH)),
-        actionHelper(this, commandQueue) {
+        commandQueue(QueueFactory::instance()->createMessageQueue(MAX_MESSAGE_QUEUE_DEPTH)),
+        actionHelper(this, commandQueue), countdown(0), stateMachine(&countdown) {
     IPCStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
-    countdown = new Countdown(0);
 }
 
 
@@ -50,7 +48,7 @@ ReturnValue_t SDCardHandler::initializeAfterTaskCreation() {
     SDCardAccessManager::create();
     periodMs = executingTask->getPeriodMs();
     /* This prevents the task from blocking other low priority tasks (self-suspension) */
-    countdown->setTimeout(0.75 * periodMs);
+    countdown.setTimeout(0.75 * periodMs);
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -58,7 +56,7 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode) {
     /* Can be used to measure the time this function takes */
     // Stopwatch stopwatch;
     CommandMessage message;
-    countdown->resetTimer();
+    countdown.resetTimer();
     /* Check for first message */
     ReturnValue_t result = commandQueue->receiveMessage(&message);
     if(result == MessageQueueIF::EMPTY) {
@@ -90,13 +88,13 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode) {
 
     /* Handle first message. Returnvalue ignored for now. */
     result = handleMessage(&message);
-    if(countdown->hasTimedOut()) {
+    if(countdown.hasTimedOut()) {
         return result;
     }
 
     /* Now we check if the state machine is busy. If it is, we drive it as long as possible
     for the rest of the task cycle. */
-    while(countdown->isBusy()) {
+    while(countdown.isBusy()) {
         if(stateMachine.getInternalState() != SDCHStateMachine::States::IDLE) {
             driveStateMachine();
         }
@@ -119,15 +117,14 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode) {
 }
 
 void SDCardHandler::driveStateMachine() {
-    ReturnValue_t result = stateMachine.performStateMachineStep();
-    if(result == sdchandler::EXECUTION_COMPLETE) {
+    ReturnValue_t result = stateMachine.continueCurrentOperation();
+    if(result == sdchandler::OPERATION_FINISHED) {
         stateMachine.resetAndSetToIdle();
     }
     else if(result != HasReturnvaluesIF::RETURN_OK) {
         /* If the state machine did not fail because of a pending SD card change operation
         we reset it */
         stateMachine.resetAndSetToIdle();
-        return;
     }
 }
 

@@ -5,6 +5,7 @@
 #include <privlib/hcc/include/hcc/api_fat.h>
 #include <sam9g20/memory/SDCardDefinitions.h>
 
+class Countdown;
 
 /**
  * @brief   Encapsulates the state machine used by the SD card handler, used to keep
@@ -22,26 +23,27 @@ public:
         MOVE_FILE
     };
 
-    //bool setToAttemptSdCardChange();
+    SDCHStateMachine(Countdown* ownerCountdown);
+
+    /**
+     * Continue current operation of state machine. Return HasActionIF::EXECUTION_COMPLETE is an
+     * operation was completed successfully, RETURN_FAILED if the algorithm should be cancelled
+     * and RETURN_OK if the step was completed but the algorithm is not finished yet.
+     * @return
+     */
+    ReturnValue_t continueCurrentOperation();
+
     bool setCopyFileOperation(RepositoryPath& sourceRepo, FileName& sourceName,
             RepositoryPath& targetRepo, FileName& targetName);
 
     void resetAndSetToIdle();
 
-    SDCHStateMachine();
-
-    /**
-     * Perform a step. Return HasActionIF::EXECUTION_COMPLETE is an operation was completed
-     * successfully, RETURN_FAILED if the algorithm should be cancelled and RETURN_OK
-     * if the step was completed but the algorithm is not finished yet.
-     * @return
-     */
-    ReturnValue_t performStateMachineStep();
     SDCHStateMachine::States getInternalState() const;
 
 private:
     SDCHStateMachine::States internalState = SDCHStateMachine::States::IDLE;
     std::array<uint8_t, 8 * 1024> fileBuffer;
+    Countdown* ownerCountdown = nullptr;
 
     /* Can be used for various purposes, e.g. as source path and source
     filename for copy operations */

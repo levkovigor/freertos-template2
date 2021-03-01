@@ -14,12 +14,12 @@
 #include <fsfw/memory/AcceptsMemoryMessagesIF.h>
 #include <fsfw/ipc/MessageQueueIF.h>
 #include <fsfw/memory/HasFileSystemIF.h>
+#include <fsfw/timemanager/Countdown.h>
 
 #include <vector>
 
 class SDCardAccess;
 class PeriodicTaskIF;
-class Countdown;
 class ReadCommand;
 
 /**
@@ -111,7 +111,7 @@ private:
      */
     MessageQueueIF* commandQueue;
     ActionHelper actionHelper;
-    Countdown* countdown;
+    Countdown countdown;
     SDCHStateMachine stateMachine;
 
     /* Receiver for completed Actions */

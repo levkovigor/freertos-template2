@@ -13,8 +13,9 @@ namespace sdchandler {
 static constexpr uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::SD_CARD_HANDLER;
 static constexpr uint8_t INTERFACE_ID = CLASS_ID::SD_CARD_HANDLER;
 
-static constexpr ReturnValue_t EXECUTION_COMPLETE =
-        HasReturnvaluesIF::makeReturnCode(INTERFACE_ID, 0);
+static constexpr ReturnValue_t OPERATION_FINISHED = MAKE_RETURN_CODE(0);
+static constexpr ReturnValue_t TASK_PERIOD_OVER_SOON = MAKE_RETURN_CODE(1);
+static constexpr ReturnValue_t BUSY = MAKE_RETURN_CODE(2);
 
 static constexpr Event SD_CARD_SWITCHED = MAKE_EVENT(0x00, severity::MEDIUM); //!< It was not possible to open the preferred SD card so the other was used. P1: Active volume
 static constexpr Event SD_CARD_ACCESS_FAILED = MAKE_EVENT(0x01, severity::HIGH); //!< Opening failed for both SD cards.

@@ -16,9 +16,9 @@ namespace image {
 
 static constexpr uint8_t INTERFACE_ID = CLASS_ID::SW_IMAGE_HANDLER;
 
-static constexpr ReturnValue_t OPERATION_FINISHED = MAKE_RETURN_CODE(0x00);
-static constexpr ReturnValue_t TASK_PERIOD_OVER_SOON = MAKE_RETURN_CODE(0x01);
-static constexpr ReturnValue_t BUSY = MAKE_RETURN_CODE(0x02);
+static constexpr ReturnValue_t OPERATION_FINISHED = MAKE_RETURN_CODE(0);
+static constexpr ReturnValue_t TASK_PERIOD_OVER_SOON = MAKE_RETURN_CODE(1);
+static constexpr ReturnValue_t BUSY = MAKE_RETURN_CODE(2);
 
 #ifdef AT91SAM9G20_EK
 using ImageBuffer = std::array<uint8_t, NandCommon_MAXPAGEDATASIZE>;

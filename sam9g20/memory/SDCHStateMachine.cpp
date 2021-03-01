@@ -7,10 +7,10 @@
 #include <sam9g20/memory/SDCAccessManager.h>
 
 
-SDCHStateMachine::SDCHStateMachine() {
+SDCHStateMachine::SDCHStateMachine(Countdown* ownerCountdown): ownerCountdown(ownerCountdown) {
 }
 
-ReturnValue_t SDCHStateMachine::performStateMachineStep() {
+ReturnValue_t SDCHStateMachine::continueCurrentOperation() {
     switch(internalState) {
     case(this->States::IDLE): {
         break;
