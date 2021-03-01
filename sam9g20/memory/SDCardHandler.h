@@ -186,6 +186,7 @@ private:
 
     ReturnValue_t handleCreateDirectoryCommand(CommandMessage* message);
     ReturnValue_t handleDeleteDirectoryCommand(CommandMessage* message);
+    ReturnValue_t handleCopyCommand(CommandMessage* message);
 
     ReturnValue_t handleAppendCommand(CommandMessage* message);
     ReturnValue_t handleFinishAppendCommand(CommandMessage* message);

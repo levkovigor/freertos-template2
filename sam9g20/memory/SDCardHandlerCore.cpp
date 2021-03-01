@@ -303,6 +303,10 @@ ReturnValue_t SDCardHandler::handleFileMessage(CommandMessage* message) {
     	result = handleFinishAppendCommand(message);
     	break;
     }
+    case FileSystemMessage::CMD_COPY_FILE: {
+        result = handleCopyCommand(message);
+        break;
+    }
     case FileSystemMessage::CMD_READ_FROM_FILE: {
         result = handleReadCommand(message);
         break;

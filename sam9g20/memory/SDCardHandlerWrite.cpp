@@ -318,3 +318,8 @@ ReturnValue_t SDCardHandler::handleSequenceNumberWrite(uint16_t sequenceNumber,
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
+
+
+ReturnValue_t SDCardHandler::handleCopyCommand(CommandMessage *message) {
+    return HasReturnvaluesIF::RETURN_OK;
+}
