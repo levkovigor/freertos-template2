@@ -1,5 +1,6 @@
 #include "SDCardHandler.h"
 #include "SDCardHandlerPackets.h"
+#include "SDCardHandlerDefinitions.h"
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <mission/memory/FileSystemMessage.h>
@@ -293,7 +294,7 @@ ReturnValue_t SDCardHandler::handleSequenceNumberWrite(uint16_t sequenceNumber,
         sif::printDebug("SDCardHandler::appendToFile: First sequence packet missed!\n");
 #endif
 #endif
-        triggerEvent(SEQUENCE_PACKET_MISSING_WRITE_EVENT, 0, 0);
+        triggerEvent(sdchandler::SEQUENCE_PACKET_MISSING_WRITE_EVENT, 0, 0);
         *packetSeqIfMissing = 0;
         return SEQUENCE_PACKET_MISSING_WRITE;
     }
@@ -308,7 +309,7 @@ ReturnValue_t SDCardHandler::handleSequenceNumberWrite(uint16_t sequenceNumber,
                 sequenceNumber ,lastPacketWriteNumber);
 #endif
 #endif
-        triggerEvent(SEQUENCE_PACKET_MISSING_WRITE_EVENT,
+        triggerEvent(sdchandler::SEQUENCE_PACKET_MISSING_WRITE_EVENT,
                 lastPacketWriteNumber + 1, 0);
         *packetSeqIfMissing = lastPacketWriteNumber + 1;
         return SEQUENCE_PACKET_MISSING_WRITE;

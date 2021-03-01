@@ -29,6 +29,12 @@ public:
 
     SDCHStateMachine();
 
+    /**
+     * Perform a step. Return HasActionIF::EXECUTION_COMPLETE is an operation was completed
+     * successfully, RETURN_FAILED if the algorithm should be cancelled and RETURN_OK
+     * if the step was completed but the algorithm is not finished yet.
+     * @return
+     */
     ReturnValue_t performStateMachineStep();
     SDCHStateMachine::States getInternalState() const;
 

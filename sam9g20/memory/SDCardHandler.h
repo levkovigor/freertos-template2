@@ -2,16 +2,18 @@
 #define SAM9G20_MEMORY_SDCARDHANDLER_H_
 
 #include "SDCardDefinitions.h"
+#include <events/subsystemIdRanges.h>
+#include <OBSWConfig.h>
+
+#include <sam9g20/common/SDCardApi.h>
+#include <sam9g20/memory/SDCHStateMachine.h>
+
 #include <fsfw/action/HasActionsIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/memory/AcceptsMemoryMessagesIF.h>
 #include <fsfw/ipc/MessageQueueIF.h>
 #include <fsfw/memory/HasFileSystemIF.h>
-#include <fsfwconfig/events/subsystemIdRanges.h>
-#include <fsfwconfig/OBSWConfig.h>
-#include <sam9g20/common/SDCardApi.h>
-#include <sam9g20/memory/SDCHStateMachine.h>
 
 #include <vector>
 
@@ -44,15 +46,6 @@ public:
             config::SD_CARD_MQ_DEPTH;
     static constexpr size_t MAX_READ_LENGTH = config::SD_CARD_MAX_READ_LENGTH;
 
-    static constexpr uint8_t INTERFACE_ID = CLASS_ID::SD_CARD_HANDLER;
-
-    static const uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::SD_CARD_HANDLER;
-
-
-    static constexpr Event SD_CARD_SWITCHED = MAKE_EVENT(0x00, severity::MEDIUM); //!< It was not possible to open the preferred SD card so the other was used. P1: Active volume
-    static constexpr Event SD_CARD_ACCESS_FAILED = MAKE_EVENT(0x01, severity::HIGH); //!< Opening failed for both SD cards.
-    static constexpr Event SEQUENCE_PACKET_MISSING_WRITE_EVENT = MAKE_EVENT(0x02, severity::LOW); //!< P1: Sequence packet missing.
-    static constexpr Event SEQUENCE_PACKET_MISSING_READ_EVENT = MAKE_EVENT(0x03, severity::LOW); //!< P1: Sequence packet missing.
 
     /** Service 8 Commands */
 
@@ -118,6 +111,9 @@ private:
     ActionHelper actionHelper;
     Countdown* countdown;
     SDCHStateMachine stateMachine;
+    /* Receiver for completed Actions */
+    MessageQueueId_t actionRecipient = MessageQueueIF::NO_QUEUE;
+    ActionId_t currentAction = -1;
 
 #ifdef ISIS_OBC_G20
     std::vector<MessageQueueId_t> sdCardNotificationRecipients;

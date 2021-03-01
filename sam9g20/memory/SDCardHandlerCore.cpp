@@ -2,6 +2,7 @@
 #include "SDCardAccess.h"
 #include "SDCAccessManager.h"
 #include "SDCardHandlerPackets.h"
+#include "SDCardHandlerDefinitions.h"
 
 #include <mission/memory/FileSystemMessage.h>
 
@@ -71,9 +72,25 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode) {
     on function exit. */
     SDCardAccess sdCardAccess;
     result = handleAccessResult(sdCardAccess.getAccessResult());
-    if(result != HasReturnvaluesIF::RETURN_OK) {
-    	/* No SD card could be opened. */
+    if(result == SDCardAccess::SD_CARD_CHANGE_ONGOING) {
+        if(stateMachine.getInternalState() != SDCHStateMachine::States::CHANGING_SD_CARD) {
+            /* This really should not happen anyway */
+            stateMachine.setToAttemptSdCardChange();
+        }
+        /* Perform a state machine step */
+        result = stateMachine.performStateMachineStep();
+        if(result == HasReturnvaluesIF::RETURN_OK) {
+            actionHelper.finish(actionRecipient, currentAction, result);
+        }
+        /* We could call performOperation here again.. but I think its okay just to
+        wait for next cycle */
     	return result;
+    }
+    else {
+#if OBSW_VERBOSE_LEVEL >= 1
+        sif::printWarning("SDCardHandler::performOperation: Can not access SD card!\n");
+#endif
+        return result;
     }
 
     /* Handle first message. Returnvalue ignored for now. */
@@ -99,6 +116,9 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode) {
             if(result != HasReturnvaluesIF::RETURN_OK) {
                 return result;
             }
+            else if(result == HasReturnvaluesIF::RETURN_OK) {
+
+            }
         }
 
         if(allMessagesDone and stateMachine.getInternalState() == SDCHStateMachine::States::IDLE) {
@@ -121,7 +141,7 @@ ReturnValue_t SDCardHandler::handleAccessResult(ReturnValue_t accessResult) {
 #if OBSW_VERBOSE_LEVEL >= 1
         sif::printWarning("SDCardHandler::handleAccessResult: SD-Card access error!\n");
 #endif
-    	triggerEvent(SD_CARD_ACCESS_FAILED, 0, 0);
+    	triggerEvent(sdchandler::SD_CARD_ACCESS_FAILED, 0, 0);
     	return HasReturnvaluesIF::RETURN_FAILED;
     }
 }
@@ -165,6 +185,16 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
         /* TODO: We need to do this differently now. The SD card manager must now attempt
         to regularly change the active SD card via the SD card access manager. We should use
         the state machine for this */
+        bool startSuccess = stateMachine.setToAttemptSdCardChange();
+        if(startSuccess) {
+            actionHelper.step(1, commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
+        }
+        else {
+            actionHelper.step(1, commandedBy, actionId, HasActionsIF::IS_BUSY);
+        }
+        /* Cache this to generate finish reply later */
+        actionRecipient = commandedBy;
+        currentAction = actionId;
         break;
     }
     case(SELECT_PREFERED_SD_CARD): {

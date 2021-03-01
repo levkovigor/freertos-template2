@@ -1,5 +1,9 @@
-#include <sam9g20/memory/SDCAccessManager.h>
 #include "SDCHStateMachine.h"
+#include "SDCardHandlerDefinitions.h"
+
+#include <fsfw/action/HasActionsIF.h>
+#include <sam9g20/memory/SDCAccessManager.h>
+
 
 SDCHStateMachine::SDCHStateMachine() {
 }
@@ -16,7 +20,7 @@ ReturnValue_t SDCHStateMachine::performStateMachineStep() {
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         this->resetAndSetToIdle();
-        break;
+        return sdchandler::EXECUTION_COMPLETE;
     }
     case(this->States::SPLITTING_FILE): {
         break;
