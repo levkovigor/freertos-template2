@@ -47,7 +47,6 @@ public:
             config::SD_CARD_MQ_DEPTH;
     static constexpr size_t MAX_READ_LENGTH = config::SD_CARD_MAX_READ_LENGTH;
 
-
     /** Service 8 Commands */
 
     //! [EXPORT] : [COMMAND] Dump structure of whole SD card as ASCII file.
@@ -58,8 +57,8 @@ public:
     //! [EXPORT] : [COMMAND] Swap the active SD card.
     static constexpr ActionId_t SELECT_ACTIVE_SD_CARD = 5;
     static constexpr ActionId_t REPORT_ACTIVE_SD_CARD = 6;
-    static constexpr ActionId_t SELECT_PREFERED_SD_CARD = 10;
-    static constexpr ActionId_t REPORT_PREFERED_SD_CARD = 11;
+    static constexpr ActionId_t SELECT_PREFERRED_SD_CARD = 10;
+    static constexpr ActionId_t REPORT_PREFERRED_SD_CARD = 11;
     static constexpr ActionId_t SET_LOAD_OBSW_UPDATE = 12;
     static constexpr ActionId_t GET_LOAD_OBSW_UPDATE = 13;
 
@@ -68,6 +67,8 @@ public:
     //! [EXPORT] : [COMMAND] Formats SD card which also deletes everything.
     //! Use with care!
     static constexpr ActionId_t FORMAT_SD_CARD = 21;
+
+    static constexpr ActionId_t CANCEL_SDCH_OPERATIONS = 30;
 
     MessageQueueId_t getCommandQueue() const override;
 

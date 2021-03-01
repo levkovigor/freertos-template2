@@ -170,12 +170,10 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
         if(stateMachine.getInternalState() != SDCHStateMachine::States::IDLE) {
             /* Some operation might be going on (file operation or SD card switching
             already happening), so we reject this command */
-            // TODO: command to cancel operation
             actionHelper.finish(commandedBy, actionId, HasActionsIF::IS_BUSY);
             return HasReturnvaluesIF::RETURN_OK;
         }
         sdCardChangeOngoing = true;
-        //bool startSuccess = stateMachine.setToAttemptSdCardChange();
         actionHelper.step(1, commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
 
         /* Cache this to generate finish reply later */
@@ -183,9 +181,19 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
         currentAction = actionId;
         break;
     }
-    case(SELECT_PREFERED_SD_CARD): {
+    case(REPORT_ACTIVE_SD_CARD): {
+        ActivePreferedVolumeReport reply(SDCardAccessManager::instance()->getActiveSdCard());
+        result = actionHelper.reportData(commandedBy, actionId, &reply);
+        actionHelper.finish(commandedBy, actionId, result);
+        break;
+    }
+    case(SELECT_PREFERRED_SD_CARD): {
         /* TODO: Here, we should set the respective FRAM variable, which will be used by the
         SD card access manager on startup to determine which SD card to use */
+        break;
+    }
+    case(REPORT_PREFERRED_SD_CARD): {
+        /* TODO: We need to use the FRAM variable here instead */
         break;
     }
     case(PRINT_SD_CARD): {
@@ -223,16 +231,6 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
         actionHelper.finish(commandedBy, actionId, result);
         break;
     }
-    case(REPORT_ACTIVE_SD_CARD): {
-        ActivePreferedVolumeReport reply(SDCardAccessManager::instance()->getActiveSdCard());
-        result = actionHelper.reportData(commandedBy, actionId, &reply);
-        actionHelper.finish(commandedBy, actionId, result);
-        break;
-    }
-    case(REPORT_PREFERED_SD_CARD): {
-        /* TODO: We need to use the FRAM variable here instead */
-        break;
-    }
     case(SET_LOAD_OBSW_UPDATE): {
         if (size < 1) {
             return HasActionsIF::INVALID_PARAMETERS;
@@ -260,6 +258,11 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
     }
     case(GET_LOAD_OBSW_UPDATE): {
 
+        break;
+    }
+    case(CANCEL_SDCH_OPERATIONS): {
+        stateMachine.resetAndSetToIdle();
+        actionHelper.finish(commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
         break;
     }
     default: {
