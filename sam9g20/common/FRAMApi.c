@@ -304,14 +304,13 @@ int read_seconds_since_epoch(uint32_t *secondsSinceEpoch) {
 }
 
 int set_preferred_sd_card(VolumeId volumeId) {
-    return FRAM_writeAndVerify((unsigned char*) &volumeId,
-            PREFERED_SD_CARD_ADDR, sizeof(VolumeId));
+    return FRAM_writeAndVerify((unsigned char*) &volumeId, PREFERRED_SD_CARD_ADDR,
+            sizeof(VolumeId));
 }
 
 int get_preferred_sd_card(VolumeId *volumeId) {
-    return FRAM_read((unsigned char*) volumeId,
-            PREFERED_SD_CARD_ADDR,
-            sizeof(((CriticalDataBlock*)0)->preferedSdCard));
+    return FRAM_read((unsigned char*) volumeId, PREFERRED_SD_CARD_ADDR,
+            sizeof(((CriticalDataBlock*)0)->preferredSdCard));
 }
 
 int write_bootloader_hamming_code(const uint8_t *code, size_t size) {

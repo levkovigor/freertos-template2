@@ -44,7 +44,7 @@ typedef struct __attribute__((__packed__))  _CriticalDataBlock {
 
     /* These value will be used on reboot to determine which SD card is the
     default SD card on reboot. 0: None, 1: SD Card 0, 2: SD Card 1 */
-    uint32_t preferedSdCard;
+    uint32_t preferredSdCard;
 
     /* Reboot counters SD Card 0 slot 0 */
     uint32_t sdc0_image_slot0_reboot_counter;
@@ -130,7 +130,7 @@ static const uint32_t NOR_FLASH_REBOOT_COUNTER_ADDRESS =
         offsetof(CriticalDataBlock, nor_flash_reboot_counter);
 
 
-static const uint32_t PREFERED_SD_CARD_ADDR = offsetof(CriticalDataBlock, preferedSdCard);
+static const uint32_t PREFERRED_SD_CARD_ADDR = offsetof(CriticalDataBlock, preferredSdCard);
 
 static const uint32_t SDC0_SL0_REBOOT_COUNTER_ADDR =
         offsetof(CriticalDataBlock, sdc0_image_slot0_reboot_counter);
