@@ -116,8 +116,15 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
     }
     if(internalState == GenericInternalState::STEP_1) {
         SDCardAccess access;
+        if(access.getAccessResult() == SDCardAccess::SD_CARD_CHANGE_ONGOING) {
+            /* Cancel algorithm for this case */
+#if OBSW_VERBOSE_LEVEL >= 1
+            sif::printWarning("ImageCopyingEngine::copyImgHammingSdcToFram: SDC change ongoing!\n");
+#endif
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
         F_FILE* file = nullptr;
-        prepareGenericFileInformation(access.currentVolumeId, &file);
+        prepareGenericFileInformation(access.getActiveVolume(), &file);
 
         while(currentByteIdx < currentFileSize) {
             size_t sizeToRead = 0;
@@ -260,10 +267,13 @@ ReturnValue_t ImageCopyingEngine::handleObswErasure() {
 
 ReturnValue_t ImageCopyingEngine::handleSdToNorCopyOperation() {
     SDCardAccess sdCardAccess;
+    if(sdCardAccess.getAccessResult() == SDCardAccess::SD_CARD_CHANGE_ONGOING) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
     F_FILE * binaryFile;
 
     ReturnValue_t result = prepareGenericFileInformation(
-            sdCardAccess.currentVolumeId, &binaryFile);
+            sdCardAccess.getActiveVolume(), &binaryFile);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         return result;
     }

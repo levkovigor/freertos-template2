@@ -1,87 +1,23 @@
 #include "SDCardAccess.h"
+#include "SDCAccessManager.h"
+#include <OBSWConfig.h>
 
 #include <fsfw/ipc/MutexFactory.h>
 #include <fsfw/ipc/MutexHelper.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
-extern "C" {
 #include <hcc/api_fs_err.h>
-#include <at91/utility/trace.h>
-#ifdef ISIS_OBC_G20
-#include <sam9g20/common/FRAMApi.h>
-#endif
-}
-
-#include <fsfwconfig/OBSWConfig.h>
-
-SDCardAccessManager* SDCardAccessManager::factoryInstance = nullptr;
-
-void SDCardAccessManager::create() {
-    if(factoryInstance == nullptr) {
-        factoryInstance = new SDCardAccessManager();
-    }
-}
-
-SDCardAccessManager* SDCardAccessManager::instance() {
-    SDCardAccessManager::create();
-    return SDCardAccessManager::factoryInstance;
-}
-
-SDCardAccessManager::SDCardAccessManager() {
-    // On the iOBC, the active SD card is derived from a value in FRAM so the
-    // SD card access manager should not be used before the FRAM is active!
-#ifdef ISIS_OBC_G20
-    // will be tested and allowed later.
-    //int result = get_prefered_sd_card(&activeSdCard);
-#endif
-    mutex = MutexFactory::instance()->createMutex();
-}
-
-SDCardAccessManager::~SDCardAccessManager() {
-    MutexFactory::instance()->deleteMutex(mutex);
-}
-
-
-#ifdef ISIS_OBC_G20
-bool SDCardAccessManager::getSdCardChangeOngoing() const {
-    MutexHelper(mutex, MutexIF::TimeoutType::WAITING,
-            config::SD_CARD_ACCESS_MUTEX_TIMEOUT);
-    return changingSdCard;
-}
-
-// Only one manager class is supposed to call this!
-bool SDCardAccessManager::tryActiveSdCardChange() {
-    if(this->changingSdCard == false) {
-        this->changingSdCard = true;
-    }
-    MutexHelper(mutex, MutexIF::TimeoutType::WAITING,
-            config::SD_CARD_ACCESS_MUTEX_TIMEOUT);
-    // No task is using the SD cards anymore, so we can safely switch the
-    // active SD card.
-    if(this->activeAccesses == 0) {
-        if(this->activeSdCard == SD_CARD_0) {
-            this->activeSdCard = SD_CARD_1;
-        }
-        else {
-            this->activeSdCard = SD_CARD_0;
-        }
-        this->changingSdCard = false;
-        return true;
-    }
-    return false;
-}
-#endif
 
 
 SDCardAccess::SDCardAccess() {
     int result = 0;
-    MutexHelper(SDCardAccessManager::instance()->mutex,
-            MutexIF::TimeoutType::WAITING,
+    MutexHelper(SDCardAccessManager::instance()->mutex, MutexIF::TimeoutType::WAITING,
             config::SD_CARD_ACCESS_MUTEX_TIMEOUT);
 #ifdef ISIS_OBC_G20
-    // we locked the mutex so we can access the internal states directly.
+    /* we locked the mutex so we can access the internal states directly. */
     if(SDCardAccessManager::instance()->changingSdCard == true) {
-        // deny the access, a SD card change is going on!
-        accessResult = HasReturnvaluesIF::RETURN_FAILED;
+        /* Deny the access, a SD card change is going on! */
+        accessResult = SD_CARD_CHANGE_ONGOING;
         return;
     }
 #endif
@@ -89,8 +25,7 @@ SDCardAccess::SDCardAccess() {
     if(SDCardAccessManager::instance()->activeAccesses == 0) {
         result = open_filesystem();
         if(result != F_NO_ERROR) {
-            // This could be major problem, maybe reboot or change of SD card
-            // necessary!
+            /* This could be major problem, maybe reboot or change of SD card necessary! */
             accessResult = HasReturnvaluesIF::RETURN_FAILED;
         }
     }
@@ -99,23 +34,36 @@ SDCardAccess::SDCardAccess() {
     /* Register this task with filesystem */
     result = select_sd_card(currentVolumeId, true);
     if(result != F_NO_ERROR){
-        TRACE_ERROR("open_filesystem: SD Card %d not present or "
-                "defect.\n\r", currentVolumeId);
+        sif::printWarning("open_filesystem: SD Card %d not present or defect.\n", currentVolumeId);
+        accessResult = HasReturnvaluesIF::RETURN_FAILED;
     }
+    /* Even for failed cases, we perform a full teardown of the file system, as long as
+    no SD-Card change is going on */
+    accessSuccess = true;
 }
 
 SDCardAccess::~SDCardAccess() {
+    if(not accessSuccess) {
+        return;
+    }
     int result = f_delvolume(currentVolumeId);
     if(result != F_NO_ERROR) {
-        TRACE_ERROR("SDCardAccess::~SDCardAccess: f_delvolume failed with code"
-                " %d.\n\r", result);
+        sif::printWarning("SDCardAccess::~SDCardAccess: f_delvolume failed with code"
+                " %d.\n", result);
     }
     f_releaseFS();
-    MutexHelper(SDCardAccessManager::instance()->mutex,
-            MutexIF::TimeoutType::WAITING,
+    MutexHelper(SDCardAccessManager::instance()->mutex, MutexIF::TimeoutType::WAITING,
             config::SD_CARD_ACCESS_MUTEX_TIMEOUT);
     SDCardAccessManager::instance()->activeAccesses--;
     if(SDCardAccessManager::instance()->activeAccesses == 0) {
         close_filesystem(false, false, VolumeId::SD_CARD_0);
     }
+}
+
+ReturnValue_t SDCardAccess::getAccessResult() const {
+    return accessResult;
+}
+
+VolumeId SDCardAccess::getActiveVolume() const {
+    return currentVolumeId;
 }

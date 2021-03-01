@@ -1,6 +1,8 @@
 #include "SDCardHandler.h"
 #include "SDCardAccess.h"
+#include "SDCAccessManager.h"
 #include "SDCardHandlerPackets.h"
+
 #include <mission/memory/FileSystemMessage.h>
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
@@ -9,6 +11,7 @@
 #include <fsfw/timemanager/Countdown.h>
 #include <fsfw/tasks/PeriodicTaskIF.h>
 #include <fsfw/timemanager/Stopwatch.h>
+
 
 #ifdef ISIS_OBC_G20
 #include <sam9g20/common/FRAMApi.h>
@@ -64,16 +67,12 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode) {
 		return result;
 	}
 
-    // VolumeId volumeToOpen = determineVolumeToOpen();
     /* File system message received, open access to SD Card which will be closed automatically
     on function exit. */
     SDCardAccess sdCardAccess;
-    result = handleAccessResult(sdCardAccess.accessResult);
-    if(result == HasReturnvaluesIF::RETURN_FAILED) {
+    result = handleAccessResult(sdCardAccess.getAccessResult());
+    if(result != HasReturnvaluesIF::RETURN_OK) {
     	/* No SD card could be opened. */
-#if OBSW_VERBOSE_LEVEL >= 1
-        sif::printWarning("SDCardHandler::performOperation: Opening SD card failed!\n");
-#endif
     	return result;
     }
 
@@ -107,36 +106,21 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode) {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-VolumeId SDCardHandler::determineVolumeToOpen() {
-    if(not fileSystemWasUsedOnce) {
-    	return preferedVolume;
-    }
-    else {
-    	return activeVolume;
-    }
-}
-
 ReturnValue_t SDCardHandler::handleAccessResult(ReturnValue_t accessResult) {
-    if(accessResult == HasReturnvaluesIF::RETURN_OK){
-    	fileSystemWasUsedOnce = true;
+    if(accessResult == HasReturnvaluesIF::RETURN_OK) {
+        return accessResult;
     }
-    else if(accessResult == SDCardAccess::OTHER_VOLUME_ACTIVE) {
-    	if(preferedVolume == SD_CARD_0) {
-    		activeVolume = SD_CARD_1;
-    	}
-    	else {
-    		activeVolume = SD_CARD_0;
-    	}
-    	fileSystemWasUsedOnce = true;
-    	/* What to do now? We lose old files? Maybe a reboot would help.. */
-    	triggerEvent(SD_CARD_SWITCHED, activeVolume, 0);
+    if(accessResult == SDCardAccess::SD_CARD_CHANGE_ONGOING) {
+        return SDCardAccess::SD_CARD_CHANGE_ONGOING;
     }
     else {
-    	/* Not good, reboot? */
+    	/* Not good. */
+#if OBSW_VERBOSE_LEVEL >= 1
+        sif::printWarning("SDCardHandler::handleAccessResult: SD-Card access error!\n");
+#endif
     	triggerEvent(SD_CARD_ACCESS_FAILED, 0, 0);
     	return HasReturnvaluesIF::RETURN_FAILED;
     }
-    return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t SDCardHandler::handleNextMessage(CommandMessage *message) {
@@ -244,7 +228,8 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
         break;
     }
     case(REPORT_PREFERED_SD_CARD): {
-        ActivePreferedVolumeReport reply(preferedVolume);
+        VolumeId currentActiveVoume = SDCardAccessManager::instance()->getActiveSdCard();
+        ActivePreferedVolumeReport reply(currentActiveVoume);
         result = actionHelper.reportData(commandedBy, actionId, &reply);
         actionHelper.finish(commandedBy, actionId, result);
         break;

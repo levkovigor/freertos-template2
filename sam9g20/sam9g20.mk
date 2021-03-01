@@ -28,6 +28,7 @@ CXXSRC += $(wildcard $(CURRENTPATH)/memory/SDCardHandlerCore.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/memory/SDCardHandlerRead.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/memory/SDCardHandlerWrite.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/memory/SDCHStateMachine.cpp)
+CXXSRC += $(wildcard $(CURRENTPATH)/memory/SDCAccessManager.cpp)
 
 CXXSRC += $(wildcard $(CURRENTPATH)/comIF/*.cpp)
 CXXSRC += $(wildcard $(CURRENTPATH)/comIF/cookies/*.cpp)

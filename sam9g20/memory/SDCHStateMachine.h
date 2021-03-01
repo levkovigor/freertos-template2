@@ -15,8 +15,6 @@ public:
     enum class States {
         /* Nothing to do */
         IDLE,
-        /* The active SD card is being changed, so no operation possible */
-        CHANGING_ACTIVE_SD_CARD,
         /* A file is being split into PUS packets */
         SPLITTING_FILE,
         /* A file is copied or moved */
