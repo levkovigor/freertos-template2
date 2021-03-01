@@ -1,7 +1,7 @@
 #ifndef SAM9G20_MEMORY_SDCARDHANDLER_H_
 #define SAM9G20_MEMORY_SDCARDHANDLER_H_
 
-#include "SDCardDefinitions.h"
+#include "sdcardDefinitions.h"
 #include <events/subsystemIdRanges.h>
 #include <OBSWConfig.h>
 

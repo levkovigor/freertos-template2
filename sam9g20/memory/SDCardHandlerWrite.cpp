@@ -1,6 +1,6 @@
 #include "SDCardHandler.h"
 #include "SDCardHandlerPackets.h"
-#include "SDCardHandlerDefinitions.h"
+#include "sdcardHandlerDefinitions.h"
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <mission/memory/FileSystemMessage.h>

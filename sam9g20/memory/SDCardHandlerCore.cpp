@@ -2,7 +2,7 @@
 #include "SDCardAccess.h"
 #include "SDCAccessManager.h"
 #include "SDCardHandlerPackets.h"
-#include "SDCardHandlerDefinitions.h"
+#include "sdcardHandlerDefinitions.h"
 
 #include <mission/memory/FileSystemMessage.h>
 
