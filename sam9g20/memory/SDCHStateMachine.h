@@ -2,6 +2,7 @@
 #define SAM9G20_MEMORY_SDCHSTATEMACHINE_H_
 
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
+#include <privlib/hcc/include/hcc/api_fat.h>
 #include <sam9g20/memory/SDCardDefinitions.h>
 
 
@@ -24,6 +25,8 @@ public:
     };
 
     bool setToAttemptSdCardChange();
+    bool setCopyFileOperation(RepositoryPath& sourceRepo, FileName& sourceName,
+            RepositoryPath& targetRepo, FileName& targetName);
 
     void resetAndSetToIdle();
 
@@ -49,7 +52,13 @@ private:
     RepositoryPath path2;
     FileName fileName2;
 
+    size_t currentByteIdx = 0;
+    size_t currentFileSize = 0;
+    uint32_t stepCounter = 0;
+
     void reset();
+
+    ReturnValue_t prepareCopyFileInformation(F_FILE** filePtr);
 };
 
 
