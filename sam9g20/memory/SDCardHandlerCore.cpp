@@ -128,11 +128,11 @@ ReturnValue_t SDCardHandler::handleAccessResult(ReturnValue_t accessResult) {
     		activeVolume = SD_CARD_0;
     	}
     	fileSystemWasUsedOnce = true;
-    	// what to do now? we lose old files? maybe a reboot would help..
+    	/* What to do now? We lose old files? Maybe a reboot would help.. */
     	triggerEvent(SD_CARD_SWITCHED, activeVolume, 0);
     }
     else {
-    	// not good, reboot?
+    	/* Not good, reboot? */
     	triggerEvent(SD_CARD_ACCESS_FAILED, 0, 0);
     	return HasReturnvaluesIF::RETURN_FAILED;
     }
@@ -218,10 +218,10 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
         break;
     }
     case(FORMAT_SD_CARD): {
-        // formats the currently active filesystem!
+        /* Formats the currently active filesystem! */
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::warning << "SDCardHandler::handleMessage: Formatting SD-Card "
-                << activeVolume << "!" << std::endl;
+        sif::warning << "SDCardHandler::handleMessage: Formatting SD-Card " << activeVolume <<
+                "!" << std::endl;
 #else
         sif::printWarning("SDCardHandler::handleMessage: Formatting SD-Card %d!\n", activeVolume);
 #endif
