@@ -97,7 +97,7 @@ int read_flash_reboot_counter(uint8_t* nor_flash_reboot_counter);
 int reset_flash_reboot_counter();
 /* Hamming utilities */
 int fram_write_flash_ham_size(size_t ham_size);
-int fram_read_flash_ham_size(size_t* ham_size);
+int fram_read_flash_ham_size(size_t* ham_size, bool* hamming_flag_set);
 /**
  * Functions used to enable hamming flag checks for the NOR-Flash. Should be cleared
  * when the NOR-Flash image is updated and set again when  the corresponding hamming code
@@ -144,14 +144,6 @@ int fram_write_sdc_1_sl_1_ham_size(size_t ham_size);
 int fram_read_sdc_1_sl_1_ham_size(size_t* ham_size);
 int fram_write_sdc_1_sl_1_ham_code(uint8_t* hamming_code, size_t current_offset,
         size_t size_to_write);
-
-/**
- * Can be used to determine the size of the hamming code.
- * @param hamming_size
- * @param set_hamming_flag
- * @return
- */
-int fram_read_flash_ham_size(size_t* hamming_size, bool* set_hamming_flag);
 
 int increment_sdc0_slot0_reboot_counter();
 int read_sdc0_slot0_reboot_counter(uint8_t* sdc1sl1_reboot_counter);

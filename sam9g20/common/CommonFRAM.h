@@ -18,6 +18,19 @@ static const size_t BOOTLOADER_HAMMING_RESERVED_SIZE = 0x600;
 //! Calculated required size for images: 0x100000 (NOR-Flash) - 0x20000 (bootloader) * 3 / 256
 static const uint32_t NOR_FLASH_HAMMING_RESERVED_SIZE = 0x2A00;
 
+static const uint32_t BOOTLOADER_HAMMING_ADDR = FRAM_END_ADDR - BOOTLOADER_HAMMING_RESERVED_SIZE;
+
+static const uint32_t NOR_FLASH_HAMMING_ADDR = BOOTLOADER_HAMMING_ADDR -
+        NOR_FLASH_HAMMING_RESERVED_SIZE;
+static const uint32_t SDC0_SLOT0_HAMMING_ADDR = NOR_FLASH_HAMMING_ADDR -
+        NOR_FLASH_HAMMING_RESERVED_SIZE;
+static const uint32_t SDC0_SLOT1_HAMMING_ADDR =  SDC0_SLOT0_HAMMING_ADDR -
+        NOR_FLASH_HAMMING_RESERVED_SIZE;
+static const uint32_t SDC1_SLOT0_HAMMING_ADDR = SDC0_SLOT1_HAMMING_ADDR -
+        NOR_FLASH_HAMMING_RESERVED_SIZE;
+static const uint32_t SDC1_SLOT1_HAMMING_ADDR =  SDC1_SLOT0_HAMMING_ADDR -
+        NOR_FLASH_HAMMING_RESERVED_SIZE;
+
 /**
  * This struct will gather all critical data stored on (virutalized) FRAM.
  */

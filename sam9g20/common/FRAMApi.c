@@ -4,14 +4,7 @@
 
 #include <string.h>
 
-/* Private constants */
-static const uint32_t BOOTLOADER_HAMMING_ADDR = FRAM_END_ADDR - BOOTLOADER_HAMMING_RESERVED_SIZE;
 
-const uint32_t NOR_FLASH_HAMMING_ADDR = BOOTLOADER_HAMMING_ADDR - NOR_FLASH_HAMMING_RESERVED_SIZE;
-const uint32_t SDC0_SLOT0_HAMMING_ADDR = NOR_FLASH_HAMMING_ADDR - NOR_FLASH_HAMMING_RESERVED_SIZE;
-const uint32_t SDC0_SLOT1_HAMMING_ADDR =  SDC0_SLOT0_HAMMING_ADDR - NOR_FLASH_HAMMING_RESERVED_SIZE;
-const uint32_t SDC1_SLOT0_HAMMING_ADDR = SDC0_SLOT1_HAMMING_ADDR - NOR_FLASH_HAMMING_RESERVED_SIZE;
-const uint32_t SDC1_SLOT1_HAMMING_ADDR =  SDC1_SLOT0_HAMMING_ADDR - NOR_FLASH_HAMMING_RESERVED_SIZE;
 
 /* Private functions */
 int get_generic_hamming_flag(uint32_t addr, bool* flag_set);
@@ -132,13 +125,13 @@ int fram_read_flash_ham_code(uint8_t *buffer, const size_t max_buffer, size_t* s
 
 
 int fram_read_flash_ham_size(size_t* hamming_size, bool* hamming_flag_set) {
-    if(hamming_size == NULL  ||  hamming_flag_set == NULL) {
+    if(hamming_size == NULL) {
         return -3;
     }
     int result = FRAM_read((unsigned char*) hamming_flag_set,
             NOR_FLASH_HAMMING_CODE_SIZE_ADDR,
             sizeof(((CriticalDataBlock*)0)->nor_flash_hamming_code_size));
-    if(result != 0) {
+    if(result != 0 || hamming_flag_set == NULL) {
         return result;
     }
 
@@ -453,14 +446,6 @@ int fram_write_sdc_1_sl_0_ham_size(size_t ham_size) {
 int fram_write_sdc_1_sl_1_ham_size(size_t ham_size) {
     return FRAM_writeAndVerify((unsigned char*) &ham_size,
             SDC0_SL1_HAMMING_SIZE_ADDR, sizeof(ham_size));
-}
-
-int fram_read_flash_ham_size(size_t *ham_size) {
-    if(ham_size == NULL) {
-        return -3;
-    }
-    return FRAM_read((unsigned char*) ham_size, NOR_FLASH_HAMMING_CODE_SIZE_ADDR,
-            sizeof(((CriticalDataBlock*)0)->nor_flash_hamming_code_size));
 }
 
 int fram_read_bootloader_ham_size(size_t *ham_size) {
