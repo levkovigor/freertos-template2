@@ -17,8 +17,15 @@ Write mail to zert@irs.uni-stuttgart.de to get OpenVPN configuration.
 3. Connect to the VPN
 4. Connect to Flatsat (password needed, ask Jonas Burgdorf on Mattermost):
    ```sh
-   ssh (-X) source@flatsat.source.absatvirt.lw
+   ssh -X source@flatsat.source.absatvirt.lw
    ```
+   
+   You can also use the IP address (this is required for PyCharm remote configurations)
+   
+   ```sh
+   ssh -X source@192.168.199.228
+   ```
+   
    
    It is recommended to set up SSH configuration either in Eclipse (cross-platform
    and convenient solution) via the terminal feature (terminal button at the top) or
@@ -229,12 +236,12 @@ It is recommended to use the supplied launch configurations and project files
 instead of rerunning these steps.
 
 1. The current IP address of the flatsat computer is 
-192.128.199.228 . That address could change, and it can be checked
-by logging into the flatsat like explained above and running: 
+   192.168.199.228 . That address could change, and it can be checked
+   by logging into the flatsat like explained above and running: 
  
-```sh
-ifconfig    
-```
+   ```sh
+   ifconfig
+   ```
   
 It is also assumed the the JLinkGDBServerCLExe application
 is already running on the interface computer (either directly
