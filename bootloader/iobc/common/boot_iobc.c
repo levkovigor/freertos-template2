@@ -122,7 +122,7 @@ int copy_norflash_binary_to_sdram(size_t copy_size)
     code check here in the future.
     Check whether a hamming code check is necessary first. */
     bool hamming_flag = false;
-    int result = get_hamming_check_flag(&hamming_flag);
+    int result = fram_get_ham_check_flag(&hamming_flag);
     if(result != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_WARNING("Could not read FRAM for hamming flag, error code %d!\n\r", result);
@@ -179,7 +179,7 @@ int handle_hamming_code_check() {
     SDRAM to store the hamming code, which is stored in the FRAM */
     uint8_t* hamming_code = malloc(NOR_FLASH_HAMMING_RESERVED_SIZE);
     size_t size_read = 0;
-    int result = read_nor_flash_hamming_code(hamming_code,
+    int result = fram_read_flash_ham_code(hamming_code,
             NOR_FLASH_HAMMING_RESERVED_SIZE, &size_read);
     if(result != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
@@ -189,7 +189,7 @@ int handle_hamming_code_check() {
     }
 
     size_t image_size;
-    result = read_nor_flash_binary_size(&image_size);
+    result = fram_read_flash_binary_size(&image_size);
     if(result != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_WARNING("Could not read image size, error code %d!\n\r", result);

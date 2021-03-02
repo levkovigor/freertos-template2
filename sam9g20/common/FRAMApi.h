@@ -45,11 +45,10 @@ extern "C" {
  * @param max_size
  * @return
  */
-int read_critical_block(uint8_t* buffer, const size_t max_size);
-
-int write_software_version(uint8_t sw_version, uint8_t sw_subversion,
+int fram_read_critical_block(uint8_t* buffer, const size_t max_size);
+int fram_write_software_version(uint8_t sw_version, uint8_t sw_subversion,
         uint8_t sw_subsubversion);
-int read_software_version(uint8_t* sw_version, uint8_t* sw_subversion,
+int fram_read_software_version(uint8_t* sw_version, uint8_t* sw_subversion,
         uint8_t* sw_subsubversion);
 
 /**
@@ -61,67 +60,53 @@ int read_software_version(uint8_t* sw_version, uint8_t* sw_subversion,
  * The flag is used to be able to track restarts from exceptions.
  * @return
  */
-int increment_reboot_counter(uint32_t* new_reboot_counter);
-int read_reboot_counter(uint32_t* reboot_counter);
-
+int fram_increment_reboot_counter(uint32_t* new_reboot_counter);
+int fram_read_reboot_counter(uint32_t* reboot_counter);
 /**
- * Should only be used during development!
+ * Should only be used during development! Part of the Execute Before Flight sequence
  * @return
  */
-int reset_reboot_counter();
+int fram_reset_reboot_counter();
 
-int update_seconds_since_epoch(uint32_t secondsSinceEpoch);
-int read_seconds_since_epoch(uint32_t* secondsSinceEpoch);
+int fram_update_seconds_since_epoch(uint32_t secondsSinceEpoch);
+int fram_read_seconds_since_epoch(uint32_t* secondsSinceEpoch);
 
+/**
+ * Shall be used to enable hamming code checks for the bootloader or the scrubbing engine.
+ * @return
+ */
+int fram_set_ham_check_flag();
 /**
  * Shall be used to disable hamming code checks, e.g. if software was updated but hamming
  * code has not been updated yet.
  * @return
  */
-int clear_hamming_check_flag();
-/**
- * Shall be used to enable hamming code checks for the bootloader or the scrubbing engine.
- * @return
- */
-int set_hamming_check_flag();
-int get_hamming_check_flag();
+int fram_clear_ham_check_flag();
+int fram_get_ham_check_flag();
 
-int write_nor_flash_binary_size(size_t binary_size);
-int read_nor_flash_binary_size(size_t* binary_size);
-
-/**
- * Shall be used once when updating the NOR-Flash hamming code.
- * @param hamming_size
- * @param set_hamming_flag
- * @return
+/*
+ * Collections of functions used to update the binaries, size of binary fields, the hamming codes
+ * of the binaries and their respective size fields. The hamming codes can be used to perform
+ * ECC on the images.
  */
-int write_nor_flash_hamming_size(size_t hamming_size);
-/**
- * Shall be used to update the hamming code for the NOR-Flash binary.
- * Can be performed in multiple steps by supplying the current offset and a pointer
- * to the data to be written.
- * @param current_offset
- * @param size_to_write
- * @return
- */
-int write_nor_flash_hamming_code(uint8_t* hamming_code, size_t current_offset,
-        size_t size_to_write);
+int fram_write_flash_binary_size(size_t binary_size);
+int fram_read_flash_binary_size(size_t* binary_size);
+/* Reboot counter flash */
+int increment_flash_reboot_counter();
+int read_flash_reboot_counter(uint8_t* nor_flash_reboot_counter);
+int reset_flash_reboot_counter();
+/* Hamming utilities */
+int fram_write_flash_ham_size(size_t ham_size);
+int fram_read_flash_ham_size(size_t* ham_size);
 /**
  * Functions used to enable hamming flag checks for the NOR-Flash. Should be cleared
  * when the NOR-Flash image is updated and set again when  the corresponding hamming code
  * has been uploaded.
  * @return
  */
-int set_flash_hamming_flag();
-int clear_flash_hamming_flag();
-int get_flash_hamming_flag();
-/**
- * Can be used to determine the size of the hamming code.
- * @param hamming_size
- * @param set_hamming_flag
- * @return
- */
-int read_nor_flash_hamming_size(size_t* hamming_size, bool* set_hamming_flag);
+int fram_set_flash_ham_flag();
+int fram_clear_flash_ham_flag();
+int fram_get_flash_ham_flag(bool* flag_set);
 /**
  * Shall be used by the bootloader to read the hamming code. Its recommended to supply
  * max_buffer = 0x2A00 (maximum possible size of hamming code)
@@ -130,13 +115,43 @@ int read_nor_flash_hamming_size(size_t* hamming_size, bool* set_hamming_flag);
  * @param size_read Return actual size read (size of the hamming code)
  * @return
  */
-int read_nor_flash_hamming_code(uint8_t* buffer, const size_t max_buffer, size_t* size_read);
+int fram_read_flash_ham_code(uint8_t* buffer, const size_t max_buffer, size_t* size_read);
+int fram_write_flash_ham_code(uint8_t* hamming_code, size_t current_offset,
+        size_t size_to_write);
 
+int fram_write_bootloader_ham_size(size_t ham_size);
+int fram_read_bootloader_ham_size(size_t* ham_size);
 
-int increment_nor_flash_reboot_counter();
-int read_nor_flash_reboot_counter(uint8_t* nor_flash_reboot_counter);
-int reset_nor_flash_reboot_counter();
+int fram_write_bootloader_ham_code(uint8_t* ham_code, size_t size_to_write);
+int fram_read_bootloader_ham_code(uint8_t* ham_code, size_t* size);
 
+int fram_write_sdc_0_sl_0_ham_size(size_t ham_size);
+int fram_read_sdc_0_sl_0_ham_size(size_t* ham_size);
+int fram_write_sdc_0_sl_0_ham_code(uint8_t* hamming_code, size_t current_offset,
+        size_t size_to_write);
+
+int fram_write_sdc_0_sl_1_ham_size(size_t ham_size);
+int fram_read_sdc_0_sl_1_ham_size(size_t* ham_size);
+int fram_write_sdc_0_sl_1_ham_code(uint8_t* hamming_code, size_t current_offset,
+        size_t size_to_write);
+
+int fram_write_sdc_1_sl_0_ham_size(size_t ham_size);
+int fram_read_sdc_1_sl_0_ham_size(size_t* ham_size);
+int fram_write_sdc_1_sl_0_ham_code(uint8_t* hamming_code, size_t current_offset,
+        size_t size_to_write);
+
+int fram_write_sdc_1_sl_1_ham_size(size_t ham_size);
+int fram_read_sdc_1_sl_1_ham_size(size_t* ham_size);
+int fram_write_sdc_1_sl_1_ham_code(uint8_t* hamming_code, size_t current_offset,
+        size_t size_to_write);
+
+/**
+ * Can be used to determine the size of the hamming code.
+ * @param hamming_size
+ * @param set_hamming_flag
+ * @return
+ */
+int fram_read_flash_ham_size(size_t* hamming_size, bool* set_hamming_flag);
 
 int increment_sdc0_slot0_reboot_counter();
 int read_sdc0_slot0_reboot_counter(uint8_t* sdc1sl1_reboot_counter);
@@ -151,9 +166,6 @@ int is_bootloader_faulty(bool* faulty);
 
 int set_preferred_sd_card(VolumeId volumeId);
 int get_preferred_sd_card(VolumeId* volumeId);
-
-int write_bootloader_hamming_code(const uint8_t* code, size_t size);
-int read_bootloader_hamming_code(uint8_t* code, size_t* size);
 
 int set_to_load_softwareupdate(bool enable, VolumeId volume);
 

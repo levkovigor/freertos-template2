@@ -119,7 +119,7 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
     }
     case(ENABLE_HAMMING_CODE_CHECK_FOR_COPYING): {
         SDCardAccess access;
-        result = set_hamming_check_flag();
+        result = fram_set_ham_check_flag();
         if(result != 0) {
             return HasReturnvaluesIF::RETURN_FAILED;
         }

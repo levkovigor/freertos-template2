@@ -62,7 +62,6 @@ class SoftwareImageHandler:
         public HasActionsIF,
         public ReceivesParameterMessagesIF {
 public:
-    //static constexpr uint8_t SUBSYSTEM_ID = CLASS_ID::SW_IMAGE_HANDLER;
 
     static constexpr uint8_t SW_IMG_HANDLER_MQ_DEPTH = 5;
     static constexpr uint8_t MAX_MESSAGES_HANDLED  = 5;

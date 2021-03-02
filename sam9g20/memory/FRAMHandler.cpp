@@ -36,7 +36,7 @@ ReturnValue_t FRAMHandler::setAddress(uint32_t *startAddress) {
 
 void FRAMHandler::printCriticalBlock() {
     /* Read the critical block */
-    int result = read_critical_block(criticalBlock.data(), sizeof(CriticalDataBlock));
+    int result = fram_read_critical_block(criticalBlock.data(), sizeof(CriticalDataBlock));
     if(result != 0) {
         return;
     }
@@ -86,7 +86,7 @@ ReturnValue_t FRAMHandler::initialize() {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     /* Write software version and subversion to FRAM */
-    result = write_software_version(SW_VERSION, SW_SUBVERSION,
+    result = fram_write_software_version(SW_VERSION, SW_SUBVERSION,
             SW_SUBSUBVERSION);
     if(result != 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1

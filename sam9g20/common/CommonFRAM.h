@@ -155,14 +155,14 @@ static const uint32_t SDC0_SL1_HAMMING_FLAG_ADDR =
 
 static const uint32_t SDC1_SL0_REBOOT_COUNTER_ADDR =
         offsetof(CriticalDataBlock, sdc1_image_slot0_reboot_counter);
-static const uint32_t SDC1_SL0_HAMMING_SIZ_ADDR =
+static const uint32_t SDC1_SL0_HAMMING_SIZE_ADDR =
         offsetof(CriticalDataBlock, sdc1_image_slot0_hamming_size);
 static const uint32_t SDC1_SL0_HAMMING_FLAG_ADDR =
         offsetof(CriticalDataBlock, sdc1_image_slot0_hamming_flag);
 
 static const uint32_t SDC1_SL1_REBOOT_COUNTER_ADDR =
         offsetof(CriticalDataBlock, sdc1_image_slot1_reboot_counter);
-static const uint32_t SDC1_SL1_HAMMING_SIZ_ADDR =
+static const uint32_t SDC1_SL1_HAMMING_SIZE_ADDR =
         offsetof(CriticalDataBlock, sdc1_image_slot1_hamming_size);
 static const uint32_t SDC1_SL1_HAMMING_FLAG_ADDR =
         offsetof(CriticalDataBlock, sdc1_image_slot1_hamming_flag);

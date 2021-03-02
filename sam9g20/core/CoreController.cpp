@@ -103,7 +103,7 @@ void CoreController::performPeriodicTimeHandling() {
     }
 #ifdef ISIS_OBC_G20
     /* Store current uptime in seconds in FRAM, using the FRAM handler. */
-    int result = update_seconds_since_epoch(currentUptimeSeconds);
+    int result = fram_update_seconds_since_epoch(currentUptimeSeconds);
     if(result != 0) {
         /* Should not happen! */
         triggerEvent(FRAM_FAILURE, result);
@@ -261,7 +261,7 @@ ReturnValue_t CoreController::initializeAfterTaskCreation() {
 
 #ifdef ISIS_OBC_G20
     uint32_t new_reboot_counter = 0;
-    int retval = increment_reboot_counter(&new_reboot_counter);
+    int retval = fram_increment_reboot_counter(&new_reboot_counter);
     if(retval != 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "CoreController::initialize: Error incrementing the boot"
@@ -361,7 +361,7 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
     }
 
     uint32_t secSinceEpoch = 0;
-    retval = read_seconds_since_epoch(&secSinceEpoch);
+    retval = fram_read_seconds_since_epoch(&secSinceEpoch);
     if(retval != 0) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
@@ -369,7 +369,7 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
     /* If stored time is 0 or all ones, set the compile time of the binary */
     if(secSinceEpoch == 0 or secSinceEpoch == 0xff) {
         secSinceEpoch = UNIX_TIMESTAMP;
-        retval = update_seconds_since_epoch(secSinceEpoch);
+        retval = fram_update_seconds_since_epoch(secSinceEpoch);
     }
 
     timeval currentTime;
