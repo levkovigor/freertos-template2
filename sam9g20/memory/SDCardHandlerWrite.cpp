@@ -1,9 +1,11 @@
 #include "SDCardHandler.h"
+#include "SDCardAccess.h"
 #include "SDCardHandlerPackets.h"
 #include "sdcardHandlerDefinitions.h"
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <mission/memory/FileSystemMessage.h>
+
 
 ReturnValue_t SDCardHandler::handleAppendCommand(CommandMessage* message){
     store_address_t storeId = FileSystemMessage::getStoreId(message);
@@ -99,8 +101,8 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
     }
 
     /* File does not exist */
-    result = f_getlasterror();
-    if(result != F_NO_ERROR){
+    if(file == nullptr) {
+        result = f_getlasterror();
         if(result == F_ERR_NOTFOUND) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "SDCardHandler::appendToFile: File to append to does not exist, "
@@ -114,7 +116,7 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
         else if(result == F_ERR_LOCKED) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "SDCardHandler::appendToFile: File to append to is "
-                    << "locked, error code" << result << std::endl;
+                    "locked, error code" << result << std::endl;
 #else
             sif::printError("SDCardHandler::appendToFile: File to append to is "
                     "locked, error code %d.", result);
@@ -124,7 +126,7 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
         else {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "SDCardHandler::appendToFile: Opening file failed "
-                    << "with error code" << result << std::endl;
+                    "with error code" << result << std::endl;
 #else
             sif::printError("SDCardHandler::appendToFile: Opening file failed "
                     "with error code %d.\n", result);
@@ -134,8 +136,8 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
-    uint8_t sizeOfItems = sizeof(uint8_t);
-    long numberOfItemsWritten = f_write(data, sizeOfItems, size, file);
+    FileHelper fileHelper(&file, nullptr, nullptr, true);
+    long numberOfItemsWritten = f_write(data, sizeof(uint8_t), size, file);
     /* If bytes written doesn't equal bytes to write, get the error */
     if (numberOfItemsWritten != (long) size) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -143,21 +145,7 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
                 << " f_write error code " << f_getlasterror() << std::endl;
 #else
         sif::printError("SDCardHandler::writeToFile: Not all bytes written,"
-                 " f_write error code %d\n", f_getlasterror());
-#endif
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-    /* Close file */
-    result = f_close(file);
-
-    if (result != F_NO_ERROR){
-#if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::error << "SDCardHandler::writeToFile: Closing failed, f_close error code: " <<
-                result << std::endl;
-#else
-        sif::printError( "SDCardHandler::writeToFile: Closing failed, f_close "
-                "error code: %d\n", result);
+                " f_write error code %d\n", f_getlasterror());
 #endif
         return HasReturnvaluesIF::RETURN_FAILED;
     }
@@ -186,7 +174,7 @@ ReturnValue_t SDCardHandler::handleFinishAppendCommand(
     /* The file can be locked via the finish command optionally */
     if(finishAppendCommand.getLockFile()) {
         int retval = lock_file(finishAppendCommand.getRepositoryPathRaw(),
-            finishAppendCommand.getFilenameRaw());
+                finishAppendCommand.getFilenameRaw());
         if(retval != HasReturnvaluesIF::RETURN_OK) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "SDCardHandler::handleFinishAppendCommand: Could"
@@ -222,8 +210,7 @@ ReturnValue_t SDCardHandler::handleFinishAppendCommand(
 ReturnValue_t SDCardHandler::generateFinishAppendReply(RepositoryPath *repoPath,
         FileName *fileName, size_t filesize, bool locked) {
     store_address_t storeId;
-    FinishAppendReply replyPacket(repoPath, fileName,
-            lastPacketWriteNumber + 1, filesize, locked);
+    FinishAppendReply replyPacket(repoPath, fileName, lastPacketWriteNumber + 1, filesize, locked);
 
     uint8_t* ptr = nullptr;
     size_t serializedSize = 0;

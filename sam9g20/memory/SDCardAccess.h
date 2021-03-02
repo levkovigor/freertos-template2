@@ -6,6 +6,7 @@
 #include <sam9g20/common/SDCardApi.h>
 
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 /**
  * @brief   This access class can be created locally to initiate access to the
@@ -52,21 +53,9 @@ private:
  */
 class FileHelper {
 public:
-    FileHelper(F_FILE** fileHandle, const char* fileName, const char* access, bool noOpen):
-            fileHandle(*fileHandle) {
-        if(fileName != nullptr and access != nullptr and fileHandle != nullptr and not noOpen) {
-            *fileHandle = f_open(fileName, access);
-        }
-        if(fileHandle != nullptr) {
-            this->fileHandle = *fileHandle;
-        }
-    }
+    FileHelper(F_FILE** fileHandle, const char* fileName, const char* access, bool noOpen);
 
-    ~FileHelper() {
-        if(fileHandle != nullptr) {
-            f_close(fileHandle);
-        }
-    }
+    ~FileHelper();
 private:
     F_FILE* fileHandle;
 };
