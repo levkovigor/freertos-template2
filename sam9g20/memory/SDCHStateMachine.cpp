@@ -1,5 +1,5 @@
 #include "SDCHStateMachine.h"
-#include "SDCardHandlerDefinitions.h"
+#include "sdcardHandlerDefinitions.h"
 #include "SDCardHandler.h"
 #include "SDCAccessManager.h"
 

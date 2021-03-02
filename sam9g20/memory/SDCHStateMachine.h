@@ -1,7 +1,7 @@
 #ifndef SAM9G20_MEMORY_SDCHSTATEMACHINE_H_
 #define SAM9G20_MEMORY_SDCHSTATEMACHINE_H_
 
-#include <sam9g20/memory/SDCardDefinitions.h>
+#include "sdcardDefinitions.h"
 
 #include <fsfw/ipc/messageQueueDefinitions.h>
 #include <fsfw/ipc/MessageQueueIF.h>

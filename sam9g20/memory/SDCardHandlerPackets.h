@@ -1,7 +1,7 @@
 #ifndef SAM9G20_MEMORY_SDCARDHANDLERPACKETS_H_
 #define SAM9G20_MEMORY_SDCARDHANDLERPACKETS_H_
 
-#include "SDCardDefinitions.h"
+#include "sdcardDefinitions.h"
 
 #include <fsfw/serialize/SerialLinkedListAdapter.h>
 #include <fsfw/serialize/SerialFixedArrayListAdapter.h>

@@ -1,7 +1,7 @@
 #ifndef SAM9G20_MEMORY_SDCARDACCESS_H_
 #define SAM9G20_MEMORY_SDCARDACCESS_H_
 
-#include "SDCardDefinitions.h"
+#include "sdcardDefinitions.h"
 
 #include <sam9g20/common/SDCardApi.h>
 
