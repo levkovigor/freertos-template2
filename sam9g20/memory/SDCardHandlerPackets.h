@@ -147,7 +147,25 @@ public:
 
     ReturnValue_t serialize(uint8_t **buffer, size_t *size,
             size_t maxSize, Endianness streamEndianness) const override {
-        return HasReturnvaluesIF::RETURN_FAILED;
+        if(sourceName.size() == 0 or sourcePath.size() == 0 or
+                targetPath.size() == 0 or targetName.size() == 0) {
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+
+        ReturnValue_t result = serializeRepositoryAndFilename(buffer, size, maxSize, sourcePath,
+                sourceName);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            return result;
+        }
+        return serializeRepositoryAndFilename(buffer, size, maxSize, targetPath, targetName);
+    }
+
+    void setForSerialization(RepositoryPath& sourcePath, FileName& sourceName,
+            RepositoryPath& targetPath, FileName& targetName) {
+        this->sourcePath = sourcePath;
+        this->sourceName = sourceName;
+        this->targetPath = targetPath;
+        this->targetName = targetName;
     }
 
     const char* getSourceRepositoryPathRaw() {
@@ -456,7 +474,7 @@ public:
         size_t sizeRead = static_cast<size_t>(f_read(*buffer, sizeof(uint8_t),
                 sizeToRead, fileHandle));
         if(sizeRead != sizeToRead) {
-            // Should not happen!
+            /* Should not happen! */
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "SDCardHandlerPackets::ReadReply: Did not read all bytes." << std::endl;
 #else
@@ -519,8 +537,8 @@ public:
 private:
     RepositoryPath* repoPath;
     FileName* fileName;
-    // In addition to the repository path and the directory name,
-    // this packet contains the file size and whether the file is locked.
+    /* In addition to the repository path and the directory name,
+    this packet contains the file size and whether the file is locked. */
     uint32_t fileSize;
     bool locked;
 
@@ -530,7 +548,7 @@ private:
 ReturnValue_t deSerializeRepositoryAndFilename(const uint8_t **buffer,
         size_t* size, RepositoryPath& repositoryPath, FileName& filename) {
     if(*buffer == nullptr) {
-        // This should not happen!
+        /* This should not happen! */
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
@@ -550,7 +568,7 @@ ReturnValue_t deSerializeRepositoryAndFilename(const uint8_t **buffer,
     if(*size < repositoryLength) {
         return SerializeIF::STREAM_TOO_SHORT;
     }
-    repositoryPath.append(reinterpret_cast<const char*>(*buffer));
+    repositoryPath.assign(reinterpret_cast<const char*>(*buffer));
     /* +1 because repositoryPath.size() is the size of the string
     without the string terminator */
     *buffer += repositoryPath.size() + 1;
@@ -578,7 +596,7 @@ ReturnValue_t deSerializeRepositoryAndFilename(const uint8_t **buffer,
     if(*size < filenameLength) {
         return SerializeIF::STREAM_TOO_SHORT;
     }
-    filename.append(reinterpret_cast<const char*>(*buffer));
+    filename.assign(reinterpret_cast<const char*>(*buffer));
     /* +1 because filename.size() is the size of the string without
     the string terminator */
     *buffer += filename.size() + 1;

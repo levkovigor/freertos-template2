@@ -81,10 +81,10 @@ public:
     static void setDeleteDirectoryCommand(CommandMessage* message,
             store_address_t storeId);
 
-    static void setLockFileCommand(CommandMessage* message,
-            store_address_t storeId);
-    static void setUnlockFileCommand(CommandMessage* message,
-            store_address_t storeId);
+    static void setLockFileCommand(CommandMessage* message, store_address_t storeId);
+    static void setUnlockFileCommand(CommandMessage* message, store_address_t storeId);
+
+    static void setCopyCommand(CommandMessage* message, store_address_t storeId);
 
     static void setWriteCommand(CommandMessage* message,
             store_address_t storeId);
