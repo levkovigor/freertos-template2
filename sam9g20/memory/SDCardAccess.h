@@ -44,5 +44,32 @@ private:
     VolumeId currentVolumeId;
 };
 
+/**
+ * @brief   Helper class to facilitate RAII conformance when working with file handles.
+ * @details
+ * It also possible to not open a file and simply bind the f_close call to the lifetime
+ * of the file helper.
+ */
+class FileHelper {
+public:
+    FileHelper(F_FILE** fileHandle, const char* fileName, const char* access, bool noOpen):
+            fileHandle(*fileHandle) {
+        if(fileName != nullptr and access != nullptr and fileHandle != nullptr and not noOpen) {
+            *fileHandle = f_open(fileName, access);
+        }
+        if(fileHandle != nullptr) {
+            this->fileHandle = *fileHandle;
+        }
+    }
+
+    ~FileHelper() {
+        if(fileHandle != nullptr) {
+            f_close(fileHandle);
+        }
+    }
+private:
+    F_FILE* fileHandle;
+};
+
 
 #endif /* SAM9G20_MEMORY_SDCARDACCESS_H_ */

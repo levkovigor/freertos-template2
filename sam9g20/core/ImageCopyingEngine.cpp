@@ -191,6 +191,7 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
     result = f_seek(*filePtr, currentByteIdx, F_SEEK_SET);
     if(result != F_NO_ERROR) {
         /* should not happen! */
+        f_close(*filePtr);
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     return HasReturnvaluesIF::RETURN_OK;

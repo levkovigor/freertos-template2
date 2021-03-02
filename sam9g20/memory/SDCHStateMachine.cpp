@@ -1,6 +1,7 @@
 #include "SDCHStateMachine.h"
 #include "sdcardHandlerDefinitions.h"
 #include "SDCardHandler.h"
+#include "SDCardAccess.h"
 #include "SDCAccessManager.h"
 
 #include <mission/memory/FileSystemMessage.h>
@@ -105,6 +106,7 @@ ReturnValue_t SDCHStateMachine::prepareCopyFileInformation(F_FILE** filePtr) {
     result = f_seek(*filePtr, currentByteIdx, F_SEEK_SET);
     if(result != F_NO_ERROR) {
         /* should not happen! */
+        f_close(*filePtr);
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     return HasReturnvaluesIF::RETURN_OK;
@@ -112,9 +114,13 @@ ReturnValue_t SDCHStateMachine::prepareCopyFileInformation(F_FILE** filePtr) {
 
 ReturnValue_t SDCHStateMachine::handleGenericCopyOperation() {
     F_FILE* readFile;
-    prepareCopyFileInformation(&readFile);
-    int result = change_directory(path2.c_str(), true);
-    if(result != F_NO_ERROR) {
+    ReturnValue_t result = prepareCopyFileInformation(&readFile);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    int retval = change_directory(path2.c_str(), true);
+    if(retval != F_NO_ERROR) {
         /* Target repository might not exist */
         owner->sendCompletionMessage(false, currentRecipient,
                 HasFileSystemIF::DIRECTORY_DOES_NOT_EXIST, 0);
@@ -140,6 +146,9 @@ ReturnValue_t SDCHStateMachine::handleGenericCopyOperation() {
         writeFile = f_open(fileName2.c_str(), "a");
     }
 
+    FileHelper readHelper(&readFile, nullptr, nullptr, true);
+    FileHelper writeHelper(&writeFile, nullptr, nullptr, true);
+
     if(writeFile == nullptr) {
         /* Something went wrong */
         owner->sendCompletionMessage(false, currentRecipient,
@@ -155,8 +164,20 @@ ReturnValue_t SDCHStateMachine::handleGenericCopyOperation() {
         else {
             sizeToCopy = fileBuffer.size();
         }
-        f_read(fileBuffer.data(), 1, sizeToCopy, readFile);
-        f_write(fileBuffer.data(), 1, sizeToCopy, writeFile);
+        long sizeReadOrWritten = f_read(fileBuffer.data(), sizeof(uint8_t), sizeToCopy, readFile);
+        if(sizeReadOrWritten != static_cast<long>(sizeToCopy)) {
+            /* Read error */
+            owner->sendCompletionMessage(false, currentRecipient,
+                    HasFileSystemIF::GENERIC_FILE_ERROR, f_getlasterror());
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+        sizeReadOrWritten = f_write(fileBuffer.data(), sizeof(uint8_t), sizeToCopy, writeFile);
+        if(sizeReadOrWritten != static_cast<long>(sizeToCopy)) {
+            /* Write error */
+            owner->sendCompletionMessage(false, currentRecipient,
+                    HasFileSystemIF::GENERIC_FILE_ERROR, f_getlasterror());
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
         currentByteIdx += sizeToCopy;
 
         if(ownerCountdown->hasTimedOut()) {
