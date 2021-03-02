@@ -159,15 +159,12 @@ ReturnValue_t SDCHStateMachine::handleGenericCopyOperation() {
         f_write(fileBuffer.data(), 1, sizeToCopy, writeFile);
         currentByteIdx += sizeToCopy;
 
-        if(currentByteIdx >= currentFileSize) {
-            this->resetAndSetToIdle();
-            owner->sendCompletionMessage(true, currentRecipient);
-            return sdchandler::OPERATION_FINISHED;
-        }
-
         if(ownerCountdown->hasTimedOut()) {
             return sdchandler::TASK_PERIOD_OVER_SOON;
         }
     }
-    return HasReturnvaluesIF::RETURN_OK;
+
+    this->resetAndSetToIdle();
+    owner->sendCompletionMessage(true, currentRecipient);
+    return sdchandler::OPERATION_FINISHED;
 }

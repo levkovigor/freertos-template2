@@ -322,11 +322,12 @@ ReturnValue_t SDCardHandler::handleSequenceNumberWrite(uint16_t sequenceNumber,
 ReturnValue_t SDCardHandler::handleCopyCommand(CommandMessage *message) {
     store_address_t storeId = FileSystemMessage::getStoreId(message);
     ConstStorageAccessor storeAccess(storeId);
-    ipcStore->getData(storeId, storeAccess);
-    RepositoryPath sourcePath;
-    FileName sourceName;
-    RepositoryPath targetPath;
-    FileName targetName;
+    ReturnValue_t result = ipcStore->getData(storeId, storeAccess);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        /* Problems with IPC store, reject */
+        sendCompletionReply(false, result);
+    }
+
     CopyFileCommand copyCommand;
     size_t sizeToDeserialize = storeAccess.size();
 
@@ -336,8 +337,7 @@ ReturnValue_t SDCardHandler::handleCopyCommand(CommandMessage *message) {
     }
 
     const uint8_t* dataPtr = storeAccess.data();
-    ReturnValue_t result = copyCommand.deSerialize(&dataPtr, &sizeToDeserialize,
-            SerializeIF::Endianness::BIG);
+    result = copyCommand.deSerialize(&dataPtr, &sizeToDeserialize, SerializeIF::Endianness::BIG);
 
     if(result != HasReturnvaluesIF::RETURN_OK) {
         /* Notify about failed serialization */
@@ -347,8 +347,9 @@ ReturnValue_t SDCardHandler::handleCopyCommand(CommandMessage *message) {
 
     /* Attempt to set state machine operation. The operation might take multiple cycles
     and the state machine will take core of reporting the operation success */
-    if(not stateMachine.setCopyFileOperation(sourcePath, sourceName, targetPath, targetName,
-            message->getSender())) {
+    if(not stateMachine.setCopyFileOperation(*copyCommand.getSourceRepoPath(),
+            *copyCommand.getSourceFilename(), *copyCommand.getTargetRepoPath(),
+            *copyCommand.getTargetFilename(), message->getSender())) {
         sendCompletionReply(false, HasFileSystemIF::IS_BUSY);
     }
 
