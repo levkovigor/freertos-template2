@@ -47,15 +47,29 @@ private:
 
 /**
  * @brief   Helper class to facilitate RAII conformance when working with file handles.
+ *          It will close a given file handle on destruction.
  * @details
- * It also possible to not open a file and simply bind the f_close call to the lifetime
- * of the file helper.
+ * Can be used by instantiating it on the stack. It also possible to not open a file and simply
+ * bind the f_close call to the lifetime of the file helper.
  */
-class FileHelper {
+class FileGuard {
 public:
-    FileHelper(F_FILE** fileHandle, const char* fileName, const char* access, bool noOpen);
-
-    ~FileHelper();
+    /**
+     * Constructor which will attempt to open given filename with given access parameter.
+     * See p.70 of HCC API documentation
+     * @param fileHandle
+     * @param fileName
+     * @param access
+     * @param noOpen
+     */
+    FileGuard(F_FILE** fileHandle, const char* fileName, const char* access);
+    /**
+     * This constructor can be used if the file was already opened to enable automatic
+     * file close on destruction.
+     * @param fileHandle
+     */
+    FileGuard(F_FILE** fileHandle);
+    ~FileGuard();
 private:
     F_FILE* fileHandle;
 };

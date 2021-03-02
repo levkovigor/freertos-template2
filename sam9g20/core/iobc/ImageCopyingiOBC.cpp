@@ -125,6 +125,8 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
         }
         F_FILE* file = nullptr;
         prepareGenericFileInformation(access.getActiveVolume(), &file);
+        /* Will take care of closing the file on destruction */
+        FileGuard fileHelper(&file);
 
         while(currentByteIdx < currentFileSize) {
             size_t sizeToRead = 0;
@@ -270,10 +272,12 @@ ReturnValue_t ImageCopyingEngine::handleSdToNorCopyOperation() {
     if(sdCardAccess.getAccessResult() == SDCardAccess::SD_CARD_CHANGE_ONGOING) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
-    F_FILE * binaryFile;
+    F_FILE* binaryFile;
 
     ReturnValue_t result = prepareGenericFileInformation(
             sdCardAccess.getActiveVolume(), &binaryFile);
+    FileGuard fileGuard(&binaryFile);
+
     if(result != HasReturnvaluesIF::RETURN_OK) {
         return result;
     }
@@ -360,8 +364,7 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
     //sif::debug << "ImageCopyingEngine::performNorCopyOperation:
     //      << "Current Byte Index: " << currentByteIdx << std::endl;
     stepCounter ++;
-    // Set this flag to false so that the next bucket can be read from the
-    // SD card.
+    /* Set this flag to false so that the next bucket can be read from the SD card.*/
     helperFlag1 = false;
 
     if(currentByteIdx >= currentFileSize) {

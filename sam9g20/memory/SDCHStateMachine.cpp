@@ -146,8 +146,8 @@ ReturnValue_t SDCHStateMachine::handleGenericCopyOperation() {
         writeFile = f_open(fileName2.c_str(), "a");
     }
 
-    FileHelper readHelper(&readFile, nullptr, nullptr, true);
-    FileHelper writeHelper(&writeFile, nullptr, nullptr, true);
+    FileGuard readHelper(&readFile);
+    FileGuard writeHelper(&writeFile);
 
     if(writeFile == nullptr) {
         /* Something went wrong */

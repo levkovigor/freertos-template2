@@ -68,9 +68,8 @@ VolumeId SDCardAccess::getActiveVolume() const {
     return currentVolumeId;
 }
 
-FileHelper::FileHelper(F_FILE **fileHandle, const char *fileName, const char *access, bool noOpen):
-        fileHandle(*fileHandle) {
-    if(fileName != nullptr and access != nullptr and fileHandle != nullptr and not noOpen) {
+FileGuard::FileGuard(F_FILE **fileHandle, const char *fileName, const char *access) {
+    if(fileName != nullptr and access != nullptr and fileHandle != nullptr) {
         *fileHandle = f_open(fileName, access);
     }
     if(fileHandle != nullptr) {
@@ -79,7 +78,7 @@ FileHelper::FileHelper(F_FILE **fileHandle, const char *fileName, const char *ac
 }
 
 
-FileHelper::~FileHelper() {
+FileGuard::~FileGuard() {
     if(fileHandle != nullptr) {
         int result = f_close(fileHandle);
         if(result != F_NO_ERROR) {
@@ -90,5 +89,11 @@ FileHelper::~FileHelper() {
             sif::printError("FileHelper: Closing failed, f_close error code: %d\n", result);
 #endif
         }
+    }
+}
+
+FileGuard::FileGuard(F_FILE **fileHandle) {
+    if(fileHandle != nullptr) {
+        this->fileHandle = * fileHandle;
     }
 }
