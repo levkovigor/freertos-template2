@@ -9,11 +9,15 @@ development and software deployment.
 
 1. Set up VPN, [IRS  mail account](https://cube18.irs.uni-stuttgart.de/) required: 
 Write mail to zert@irs.uni-stuttgart.de to get OpenVPN configuration.
-2. Download OpenVPN and configure it with the configuratioon files.
+2. Download OpenVPN and configure it with the configuration files.
  - Windows: Put configuration files into the OpenVPN config folder
    or add the configuration in the OpenVPN GUI
  - Ubuntu: Install the ubuntu gnome version of OpenVPN. Then go to 
-   Network &rarr VPN and press + to add the .ovpn file configuration
+   Network &rarr VPN and press + to add the .ovpn file configuration. Now you can activate
+   the VPN via the network button on the top right. Go to the VPN settings to the IPv4 settings 
+   and set a tick at "Use this connection only resources on its network" to allow
+   other services like Mattermost.
+   
 3. Connect to the VPN
 4. Connect to Flatsat (password needed, ask Jonas Burgdorf on Mattermost):
    ```sh
