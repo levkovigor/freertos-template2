@@ -166,7 +166,7 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
 
 ReturnValue_t ImageCopyingEngine::handleNorflashErasure() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
-    if(image::ImageSlot::BOOTLOADER_0) {
+    if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
         // we only want to print this once.
         if(not helperFlag1) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1

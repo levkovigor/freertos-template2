@@ -15,9 +15,9 @@ void FileSystemMessage::setDeleteFileCommand(
 }
 
 void FileSystemMessage::setCreateDirectoryCommand(
-		CommandMessage* message, store_address_t storeId) {
-	message->setCommand(CMD_CREATE_DIRECTORY);
-	message->setParameter2(storeId.raw);
+        CommandMessage* message, store_address_t storeId) {
+    message->setCommand(CMD_CREATE_DIRECTORY);
+    message->setParameter2(storeId.raw);
 }
 
 void FileSystemMessage::setReportFileAttributesCommand(CommandMessage *message,
@@ -51,28 +51,28 @@ void FileSystemMessage::setDeleteDirectoryCommand(
 }
 
 void FileSystemMessage::setWriteCommand(CommandMessage* message,
-		store_address_t storeId) {
-	message->setCommand(CMD_APPEND_TO_FILE);
-	message->setParameter2(storeId.raw);
+        store_address_t storeId) {
+    message->setCommand(CMD_APPEND_TO_FILE);
+    message->setParameter2(storeId.raw);
 }
 
 void FileSystemMessage::setReadCommand(CommandMessage* message,
-		store_address_t storeId) {
-	message->setCommand(CMD_READ_FROM_FILE);
-	message->setParameter2(storeId.raw);
+        store_address_t storeId) {
+    message->setCommand(CMD_READ_FROM_FILE);
+    message->setParameter2(storeId.raw);
 }
 
 void FileSystemMessage::setFinishAppendReply(CommandMessage* message,
-		store_address_t storageID) {
-	message->setCommand(REPLY_FINISH_APPEND);
-	message->setParameter2(storageID.raw);
+        store_address_t storageID) {
+    message->setCommand(REPLY_FINISH_APPEND);
+    message->setParameter2(storageID.raw);
 }
 
 void FileSystemMessage::setReadReply(CommandMessage* message,
-		bool readFinished, store_address_t storeId) {
-	message->setCommand(REPLY_READ_FROM_FILE);
-	message->setParameter(readFinished);
-	message->setParameter2(storeId.raw);
+        bool readFinished, store_address_t storeId) {
+    message->setCommand(REPLY_READ_FROM_FILE);
+    message->setParameter(readFinished);
+    message->setParameter2(storeId.raw);
 }
 
 void FileSystemMessage::setReadFinishedReply(CommandMessage *message,
@@ -94,24 +94,24 @@ void FileSystemMessage::setSuccessReply(CommandMessage *message) {
 }
 
 void FileSystemMessage::setClearSdCardCommand(CommandMessage *message) {
-	message->setCommand(CMD_CLEAR_SD_CARD);
+    message->setCommand(CMD_CLEAR_SD_CARD);
 }
 
 void FileSystemMessage::setFormatSdCardCommand(CommandMessage *message) {
-	message->setCommand(CMD_FORMAT_SD_CARD);
+    message->setCommand(CMD_FORMAT_SD_CARD);
 }
 
 
 void FileSystemMessage::setFinishStopWriteCommand(CommandMessage *message,
-		store_address_t storeId) {
-	message->setCommand(CMD_FINISH_APPEND_TO_FILE);
-	message->setParameter2(storeId.raw);
+        store_address_t storeId) {
+    message->setCommand(CMD_FINISH_APPEND_TO_FILE);
+    message->setParameter2(storeId.raw);
 }
 
 void FileSystemMessage::setFinishStopWriteReply(CommandMessage *message,
-		store_address_t storeId) {
-	message->setCommand(REPLY_FINISH_APPEND);
-	message->setParameter2(storeId.raw);
+        store_address_t storeId) {
+    message->setCommand(REPLY_FINISH_APPEND);
+    message->setParameter2(storeId.raw);
 }
 
 void FileSystemMessage::setFailureReply(CommandMessage *message,
@@ -122,17 +122,17 @@ void FileSystemMessage::setFailureReply(CommandMessage *message,
 }
 
 store_address_t FileSystemMessage::getStoreId(const CommandMessage* message) {
-	store_address_t temp;
-	temp.raw = message->getParameter2();
-	return temp;
+    store_address_t temp;
+    temp.raw = message->getParameter2();
+    return temp;
 }
 
 ReturnValue_t FileSystemMessage::getFailureReply(
-		const CommandMessage *message, uint32_t* errorParam) {
-	if(errorParam != nullptr) {
-		*errorParam = message->getParameter2();
-	}
-	return message->getParameter();
+        const CommandMessage *message, uint32_t* errorParam) {
+    if(errorParam != nullptr) {
+        *errorParam = message->getParameter2();
+    }
+    return message->getParameter();
 }
 
 void FileSystemMessage::setCeaseSdCardOperationNotification(

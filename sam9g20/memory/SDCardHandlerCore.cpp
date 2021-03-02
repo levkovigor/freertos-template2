@@ -42,8 +42,8 @@ ReturnValue_t SDCardHandler::initialize() {
 
 ReturnValue_t SDCardHandler::initializeAfterTaskCreation() {
     periodMs = executingTask->getPeriodMs();
-    // This sets up the access manager. On the iOBC this will also cache
-    // the currently prefered SD card from the FRAM.
+    /* This sets up the access manager. On the iOBC this will also cache
+    the currently prefered SD card from the FRAM. */
     SDCardAccessManager::create();
     countdown->setTimeout(0.85 * periodMs);
     return HasReturnvaluesIF::RETURN_OK;
