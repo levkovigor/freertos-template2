@@ -103,8 +103,8 @@ int get_hamming_check_flag(bool* flag_set) {
     return get_generic_hamming_flag(HAMMING_CHECK_FLAG_ADDR, flag_set);
 }
 
-int write_nor_flash_hamming_size(size_t hamming_size, bool set_hamming_flag) {
-    return FRAM_writeAndVerify((unsigned char*) set_hamming_flag,
+int write_nor_flash_hamming_size(size_t hamming_size) {
+    return FRAM_writeAndVerify((unsigned char*) &hamming_size,
             NOR_FLASH_HAMMING_CODE_SIZE_ADDR,
             sizeof(((CriticalDataBlock*)0)->nor_flash_hamming_code_size));
 }

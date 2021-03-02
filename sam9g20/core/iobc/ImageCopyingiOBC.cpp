@@ -138,7 +138,8 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
                 /* Invalid file size */
                 return HasReturnvaluesIF::RETURN_FAILED;
             }
-            int retval = write_nor_flash_hamming_size(currentFileSize, false);
+            /* We write the hamming code size to the designated slot */
+            int retval = write_nor_flash_hamming_size(currentFileSize);
             if(retval != 0) {
                 /* Problems writing to FRAM */
                 return image::FRAM_ISSUES;

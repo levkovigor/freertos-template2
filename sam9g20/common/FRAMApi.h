@@ -95,7 +95,7 @@ int read_nor_flash_binary_size(size_t* binary_size);
  * @param set_hamming_flag
  * @return
  */
-int write_nor_flash_hamming_size(size_t hamming_size, bool set_hamming_flag);;
+int write_nor_flash_hamming_size(size_t hamming_size);
 /**
  * Shall be used to update the hamming code for the NOR-Flash binary.
  * Can be performed in multiple steps by supplying the current offset and a pointer
