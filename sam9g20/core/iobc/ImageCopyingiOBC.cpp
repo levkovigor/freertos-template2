@@ -126,7 +126,7 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
         F_FILE* file = nullptr;
         prepareGenericFileInformation(access.getActiveVolume(), &file);
         /* Will take care of closing the file on destruction */
-        FileGuard fileHelper(&file);
+        HCCFileGuard fileHelper(&file);
 
         while(currentByteIdx < currentFileSize) {
             size_t sizeToRead = 0;
@@ -276,7 +276,7 @@ ReturnValue_t ImageCopyingEngine::handleSdToNorCopyOperation() {
 
     ReturnValue_t result = prepareGenericFileInformation(
             sdCardAccess.getActiveVolume(), &binaryFile);
-    FileGuard fileGuard(&binaryFile);
+    HCCFileGuard fileGuard(&binaryFile);
 
     if(result != HasReturnvaluesIF::RETURN_OK) {
         return result;

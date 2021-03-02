@@ -52,7 +52,7 @@ private:
  * Can be used by instantiating it on the stack. It also possible to not open a file and simply
  * bind the f_close call to the lifetime of the file helper.
  */
-class FileGuard {
+class HCCFileGuard {
 public:
     /**
      * Constructor which will attempt to open given filename with given access parameter.
@@ -62,14 +62,14 @@ public:
      * @param access
      * @param noOpen
      */
-    FileGuard(F_FILE** fileHandle, const char* fileName, const char* access);
+    HCCFileGuard(F_FILE** fileHandle, const char* fileName, const char* access);
     /**
      * This constructor can be used if the file was already opened to enable automatic
      * file close on destruction.
      * @param fileHandle
      */
-    FileGuard(F_FILE** fileHandle);
-    ~FileGuard();
+    HCCFileGuard(F_FILE** fileHandle);
+    ~HCCFileGuard();
 private:
     F_FILE* fileHandle;
 };

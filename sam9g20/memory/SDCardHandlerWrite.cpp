@@ -136,7 +136,7 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
-    FileGuard fileHelper(&file);
+    HCCFileGuard fileHelper(&file);
     long numberOfItemsWritten = f_write(data, sizeof(uint8_t), size, file);
     /* If bytes written doesn't equal bytes to write, get the error */
     if (numberOfItemsWritten != (long) size) {

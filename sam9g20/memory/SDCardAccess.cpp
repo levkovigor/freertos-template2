@@ -68,7 +68,7 @@ VolumeId SDCardAccess::getActiveVolume() const {
     return currentVolumeId;
 }
 
-FileGuard::FileGuard(F_FILE **fileHandle, const char *fileName, const char *access) {
+HCCFileGuard::HCCFileGuard(F_FILE **fileHandle, const char *fileName, const char *access) {
     if(fileName != nullptr and access != nullptr and fileHandle != nullptr) {
         *fileHandle = f_open(fileName, access);
     }
@@ -78,7 +78,7 @@ FileGuard::FileGuard(F_FILE **fileHandle, const char *fileName, const char *acce
 }
 
 
-FileGuard::~FileGuard() {
+HCCFileGuard::~HCCFileGuard() {
     if(fileHandle != nullptr) {
         int result = f_close(fileHandle);
         if(result != F_NO_ERROR) {
@@ -92,7 +92,7 @@ FileGuard::~FileGuard() {
     }
 }
 
-FileGuard::FileGuard(F_FILE **fileHandle) {
+HCCFileGuard::HCCFileGuard(F_FILE **fileHandle) {
     if(fileHandle != nullptr) {
         this->fileHandle = * fileHandle;
     }
