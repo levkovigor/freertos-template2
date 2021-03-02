@@ -102,7 +102,7 @@ ReturnValue_t SDCardHandler::handleReportAttributesCommand(
     FileAttributesReply replyPacket(command.getRepoPath(),
             command.getFilename(), filesize, locked);
     size_t sizeToSerialize = replyPacket.getSerializedSize();
-    result = IPCStore->getFreeElement(&storeId,
+    result = ipcStore->getFreeElement(&storeId,
             sizeToSerialize, &writePtr);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         sendCompletionReply(false, result);
@@ -495,7 +495,7 @@ ReturnValue_t SDCardHandler::changeDirectory(const char* repositoryPath) {
 ReturnValue_t SDCardHandler::getStoreData(store_address_t& storeId,
         ConstStorageAccessor& accessor,
         const uint8_t** ptr, size_t* size) {
-    ReturnValue_t result = IPCStore->getData(storeId, accessor);
+    ReturnValue_t result = ipcStore->getData(storeId, accessor);
     if(result != HasReturnvaluesIF::RETURN_OK){
         // Should not happen!
 #if FSFW_CPP_OSTREAM_ENABLED == 1

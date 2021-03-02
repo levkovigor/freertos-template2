@@ -102,7 +102,7 @@ ReturnValue_t SDCardHandler::handleReadReplies(ReadCommand& command) {
     // Get space in IPC store to serialize packet.
     uint8_t* writePtr = nullptr;
     store_address_t storeId;
-    result = IPCStore->getFreeElement(&storeId,
+    result = ipcStore->getFreeElement(&storeId,
             replyPacket.getSerializedSize(), &writePtr);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         int retval = f_close(file);

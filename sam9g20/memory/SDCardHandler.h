@@ -129,7 +129,7 @@ private:
     PeriodicTaskIF* executingTask = nullptr;
     dur_millis_t periodMs = 0;
 
-    StorageManagerIF *IPCStore;
+    StorageManagerIF *ipcStore;
 
     /* Core functions called in performOperation */
     ReturnValue_t handleNextMessage(CommandMessage* message);
