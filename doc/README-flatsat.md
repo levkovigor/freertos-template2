@@ -9,16 +9,27 @@ development and software deployment.
 
 1. Set up VPN, [IRS  mail account](https://cube18.irs.uni-stuttgart.de/) required: 
 Write mail to zert@irs.uni-stuttgart.de to get OpenVPN configuration.
-2. Download OpenVPN and configure it with the configuratioon files.
+2. Download OpenVPN and configure it with the configuration files.
  - Windows: Put configuration files into the OpenVPN config folder
    or add the configuration in the OpenVPN GUI
  - Ubuntu: Install the ubuntu gnome version of OpenVPN. Then go to 
-   Network &rarr VPN and press + to add the .ovpn file configuration
+   Network &rarr VPN and press + to add the .ovpn file configuration. Now you can activate
+   the VPN via the network button on the top right. Go to the VPN settings to the IPv4 settings 
+   and set a tick at "Use this connection only resources on its network" to allow
+   other services like Mattermost.
+   
 3. Connect to the VPN
 4. Connect to Flatsat (password needed, ask Jonas Burgdorf on Mattermost):
    ```sh
-   ssh (-X) source@flatsat.source.absatvirt.lw
+   ssh -X source@flatsat.source.absatvirt.lw
    ```
+   
+   You can also use the IP address (this is required for PyCharm remote configurations)
+   
+   ```sh
+   ssh -X source@192.168.199.228
+   ```
+   
    
    It is recommended to set up SSH configuration either in Eclipse (cross-platform
    and convenient solution) via the terminal feature (terminal button at the top) or
@@ -110,10 +121,12 @@ gdb_iobc.sh
 ```
 
 `vor_iobc.sh` is a shell script which will run the GDB Server with the correct configuration. 
-It runs the following command:
+It runs the following command. Please note that the USB S/N number can change depending on J-Link
+adapter used:
 
 ```sh
-JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=261002202 -nogui
+JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=20127716
+ -nogui
 ```
 
 Then type `CTRL` + `B` and `d` to detach from the tmux session.
@@ -150,7 +163,8 @@ use `k` instead of `d` instead. In some cases, it can becomes necessary to resta
 the J-Link GDB Server. The GDB Server should be run with the following command
 
 ```sh
-JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=261002202 -nogui
+JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=20127716
+ -nogui
 ```
 
 Background processes can be listed with `ps -aux` and killed with `kill <processId>`
@@ -226,12 +240,12 @@ It is recommended to use the supplied launch configurations and project files
 instead of rerunning these steps.
 
 1. The current IP address of the flatsat computer is 
-192.128.199.228 . That address could change, and it can be checked
-by logging into the flatsat like explained above and running: 
+   192.168.199.228 . That address could change, and it can be checked
+   by logging into the flatsat like explained above and running: 
  
-```sh
-ifconfig    
-```
+   ```sh
+   ifconfig
+   ```
   
 It is also assumed the the JLinkGDBServerCLExe application
 is already running on the interface computer (either directly

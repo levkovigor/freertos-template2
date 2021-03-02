@@ -1,7 +1,7 @@
 #ifndef SAM9G20_MEMORY_SDCARDHANDLERPACKETS_H_
 #define SAM9G20_MEMORY_SDCARDHANDLERPACKETS_H_
 
-#include "SDCardDefinitions.h"
+#include "sdcardDefinitions.h"
 
 #include <fsfw/serialize/SerialLinkedListAdapter.h>
 #include <fsfw/serialize/SerialFixedArrayListAdapter.h>
@@ -30,11 +30,11 @@ static ReturnValue_t deSerializeRepositoryAndFilename(const uint8_t **buffer,
  */
 static ReturnValue_t deSerializeRepositories(const uint8_t **buffer,
         size_t* size, RepositoryPath& repositoryPath,
-		RepositoryPath& dirname);
+        RepositoryPath& dirname);
 
 static ReturnValue_t serializeRepositoryAndFilename(uint8_t **buffer,
-        size_t* size, size_t maxSize, RepositoryPath& repositoryPath,
-		FileName& filename);
+        size_t* size, size_t maxSize, const RepositoryPath& repositoryPath,
+        const FileName& filename);
 
 class ActivePreferedVolumeReport: public SerialLinkedListAdapter<SerializeIF> {
 public:
@@ -56,40 +56,40 @@ private:
  */
 class GenericFilePacket: public SerializeIF {
 public:
-	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
+    ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
             Endianness streamEndianness) override {
         return deSerializeRepositoryAndFilename(buffer, size,
                 repositoryPath, filename);
-	}
+    }
 
-	size_t getSerializedSize() const override {
-	    return 0;
-	}
+    size_t getSerializedSize() const override {
+        return 0;
+    }
 
     ReturnValue_t serialize(uint8_t **buffer, size_t *size,
             size_t maxSize, Endianness streamEndianness) const override {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
-	const char* getRepositoryPathRaw() {
-		return repositoryPath.c_str();
-	}
+    const char* getRepositoryPathRaw() {
+        return repositoryPath.c_str();
+    }
 
-	const char* getFilenameRaw() {
-		return filename.c_str();
-	}
+    const char* getFilenameRaw() {
+        return filename.c_str();
+    }
 
-	RepositoryPath* getRepoPath() {
-		return &repositoryPath;
-	}
+    RepositoryPath* getRepoPath() {
+        return &repositoryPath;
+    }
 
-	FileName* getFilename() {
-		return &filename;
-	}
+    FileName* getFilename() {
+        return &filename;
+    }
 
 protected:
-	RepositoryPath repositoryPath;
-	FileName filename;
+    RepositoryPath repositoryPath;
+    FileName filename;
 };
 
 /**
@@ -102,37 +102,109 @@ protected:
  */
 class GenericDirectoryPacket: public SerializeIF {
 public:
-	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
+    ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
             Endianness streamEndianness) override {
         return deSerializeRepositories(buffer ,size, repositoryPath, dirname);
-	}
+    }
 
-	size_t getSerializedSize() const override {
-	    return 0;
-	}
+    size_t getSerializedSize() const override {
+        return 0;
+    }
 
     ReturnValue_t serialize(uint8_t **buffer, size_t *size,
             size_t maxSize, Endianness streamEndianness) const override {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
-	const char* getRepositoryPath() {
-		return repositoryPath.c_str();
-	}
+    const char* getRepositoryPath() {
+        return repositoryPath.c_str();
+    }
 
-	const char* getDirname() {
-		return dirname.c_str();
-	}
+    const char* getDirname() {
+        return dirname.c_str();
+    }
 
 protected:
-	RepositoryPath repositoryPath;
-	RepositoryPath dirname;
+    RepositoryPath repositoryPath;
+    RepositoryPath dirname;
 };
 
+class GenericSourceTargetCommand: public SerializeIF {
+public:
+    ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
+            Endianness streamEndianness) override {
+        ReturnValue_t result =  deSerializeRepositoryAndFilename(buffer, size,
+                sourcePath, sourceName);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            return result;
+        }
+        return deSerializeRepositoryAndFilename(buffer, size, targetPath, targetName);
+    }
+
+    size_t getSerializedSize() const override {
+        return 0;
+    }
+
+    ReturnValue_t serialize(uint8_t **buffer, size_t *size,
+            size_t maxSize, Endianness streamEndianness) const override {
+        if(sourceName.size() == 0 or sourcePath.size() == 0 or
+                targetPath.size() == 0 or targetName.size() == 0) {
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+
+        ReturnValue_t result = serializeRepositoryAndFilename(buffer, size, maxSize, sourcePath,
+                sourceName);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            return result;
+        }
+        return serializeRepositoryAndFilename(buffer, size, maxSize, targetPath, targetName);
+    }
+
+    void setForSerialization(RepositoryPath& sourcePath, FileName& sourceName,
+            RepositoryPath& targetPath, FileName& targetName) {
+        this->sourcePath = sourcePath;
+        this->sourceName = sourceName;
+        this->targetPath = targetPath;
+        this->targetName = targetName;
+    }
+
+    const char* getSourceRepositoryPathRaw() {
+        return sourcePath.c_str();
+    }
+    const char* getSourceFilenameRaw() {
+        return sourceName.c_str();
+    }
+    RepositoryPath* getSourceRepoPath() {
+        return &sourcePath;
+    }
+    FileName* getSourceFilename() {
+        return &sourceName;
+    }
+
+    const char* getTargetRepositoryPathRaw() {
+        return targetPath.c_str();
+    }
+    const char* getTargetFilenameRaw() {
+        return targetName.c_str();
+    }
+    RepositoryPath* getTargetRepoPath() {
+        return &targetPath;
+    }
+    FileName* getTargetFilename() {
+        return &targetName;
+    }
+protected:
+    RepositoryPath sourcePath;
+    FileName sourceName;
+    RepositoryPath targetPath;
+    FileName targetName;
+};
 
 class DeleteFileCommand: public GenericFilePacket {};
 class FileAttributesCommand: public GenericFilePacket {};
 class LockFileCommand: public GenericFilePacket {};
+class CopyFileCommand: public GenericSourceTargetCommand {};
+class MoveFileCommand: public GenericSourceTargetCommand {};
 
 class CreateDirectoryCommand: public GenericDirectoryPacket {};
 class DeleteDirectoryCommand: public GenericDirectoryPacket {};
@@ -157,69 +229,115 @@ public:
         APPEND_TO_FILE
     };
 
-	WriteCommand(WriteType writeType): writeType(writeType){}
+    /**
+     * @brief This is the contructor for deserialization
+     *
+     * @param writeType
+     */
+    WriteCommand(WriteType writeType): writeType(writeType) {}
 
-	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
+    /**
+     * @brief This is the contructor for serialization
+     *
+     * @param repositoryPath
+     * @param fileName
+     * @param fileData
+     * @param fileDataSize
+     * @param writeType
+     * @param packetSequenceNumber
+     */
+    WriteCommand(RepositoryPath& repositoryPath, FileName& fileName, const uint8_t* fileData,
+            const size_t fileDataSize, WriteType writeType, uint16_t packetSequenceNumber = 0):
+                repositoryPath(repositoryPath), fileName(fileName), fileData(fileData),
+                writeType(writeType), fileDataSize(fileDataSize) {}
+
+    ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
             Endianness streamEndianness) override {
-	    ReturnValue_t result = deSerializeRepositoryAndFilename(buffer, size,
-	            repositoryPath, filename);
-	    if(result != HasReturnvaluesIF::RETURN_OK) {
-	        return result;
-	    }
+        ReturnValue_t result = deSerializeRepositoryAndFilename(buffer, size,
+                repositoryPath, fileName);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            return result;
+        }
 
-		/* Deserialize packet number */
-	    if(writeType == WriteType::APPEND_TO_FILE) {
-	        result = SerializeAdapter::deSerialize(&packetSequenceNumber,
-	                buffer, size, streamEndianness);
-	        if(result != HasReturnvaluesIF::RETURN_OK) {
-	            return result;
-	        }
-	    }
+        /* Deserialize packet number */
+        if(writeType == WriteType::APPEND_TO_FILE) {
+            result = SerializeAdapter::deSerialize(&packetSequenceNumber,
+                    buffer, size, streamEndianness);
+            if(result != HasReturnvaluesIF::RETURN_OK) {
+                return result;
+            }
+        }
 
 
-		/* Just keep internal pointer of rest of data, no copying */
-		filesize = *size;
-		fileData = *buffer;
-		return HasReturnvaluesIF::RETURN_OK;
-	}
+        /* Just keep internal pointer of rest of data, no copying */
+        fileDataSize = *size;
+        fileData = *buffer;
+        return HasReturnvaluesIF::RETURN_OK;
+    }
 
-	size_t getSerializedSize() const override {
-	    return 0;
-	}
+    size_t getSerializedSize() const override {
+        return 0;
+    }
 
-	ReturnValue_t serialize(uint8_t **buffer, size_t *size,
+    ReturnValue_t serialize(uint8_t **buffer, size_t *size,
             size_t maxSize, Endianness streamEndianness) const override {
-	    return HasReturnvaluesIF::RETURN_FAILED;
-	}
 
-	const char* getRepositoryPath(){
-		return repositoryPath.c_str();
-	}
+        ReturnValue_t result = serializeRepositoryAndFilename(buffer, size, maxSize,
+                repositoryPath, fileName);
 
-	const char* getFilename(){
-		return filename.c_str();
-	}
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            return result;
+        }
 
-	const uint8_t* getFileData(){
-		return fileData;
-	}
+        /* Serialize packet number */
+        if(writeType == WriteType::APPEND_TO_FILE) {
+            result = SerializeAdapter::serialize(&packetSequenceNumber,
+                    buffer, size, maxSize, streamEndianness);
 
-	size_t getFileSize(){
-		return filesize;
-	}
+            if(result != HasReturnvaluesIF::RETURN_OK) {
+                return result;
+            }
+        }
+        size_t newSize = fileDataSize + *size;
+        if (newSize > maxSize or newSize < *size) {
+            return SerializeIF::BUFFER_TOO_SHORT;
+        }
 
-	uint16_t getPacketNumber(){
-		return packetSequenceNumber;
-	}
+        std::memcpy(*buffer, fileData, fileDataSize);
+        *size = newSize;
+        *buffer += fileDataSize;
+
+        return HasReturnvaluesIF::RETURN_OK;
+    }
+
+    const char* getRepositoryPath(){
+        return repositoryPath.c_str();
+    }
+
+    const char* getFilename(){
+        return fileName.c_str();
+    }
+
+    const uint8_t* getFileData(){
+        return fileData;
+    }
+
+    size_t getFileSize(){
+        return fileDataSize;
+    }
+
+    uint16_t getPacketNumber(){
+        return packetSequenceNumber;
+    }
 
 private:
-	RepositoryPath repositoryPath;
-	FileName filename;
-	uint16_t packetSequenceNumber = 0;
-	const uint8_t* fileData = nullptr;
+    RepositoryPath repositoryPath;
+    FileName fileName;
+    uint16_t packetSequenceNumber = 0;
+    const uint8_t* fileData = nullptr;
 
-	WriteType writeType; //! [EXPORT] : [IGNORE]
-	size_t filesize = 0; //! [EXPORT] : [IGNORE]
+    WriteType writeType; //! [EXPORT] : [IGNORE]
+    size_t fileDataSize = 0; //! [EXPORT] : [IGNORE]
 };
 
 
@@ -228,69 +346,69 @@ private:
  */
 class FinishAppendCommand: public GenericFilePacket {
 public:
-	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
+    ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
             Endianness streamEndianness) override {
-		ReturnValue_t result = GenericFilePacket::deSerialize(buffer ,size,
-				streamEndianness);
-		if(result != HasReturnvaluesIF::RETURN_OK) {
-			return result;
-		}
-		return SerializeAdapter::deSerialize(&lockFile, buffer ,size,
-				streamEndianness);
-	}
+        ReturnValue_t result = GenericFilePacket::deSerialize(buffer ,size,
+                streamEndianness);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            return result;
+        }
+        return SerializeAdapter::deSerialize(&lockFile, buffer ,size,
+                streamEndianness);
+    }
 
-	bool getLockFile() const {
-		return lockFile;
-	}
+    bool getLockFile() const {
+        return lockFile;
+    }
 
 private:
-	bool lockFile;
+    bool lockFile;
 };
 
 class FinishAppendReply: public SerialLinkedListAdapter<SerializeIF> {
 public:
-	FinishAppendReply(const RepositoryPath* repoPath, const FileName* fileName,
-			uint16_t lastValidSequenceNumber, size_t fileSize, bool fileLocked):
-		repoPath(repoPath), fileName(fileName),
-		lastValidSequenceNumber(lastValidSequenceNumber), fileSize(fileSize),
-		fileLocked(fileLocked) {
-		setStart(&this->lastValidSequenceNumber);
-		this->lastValidSequenceNumber.setNext(&this->fileSize);
-		this->fileSize.setNext(&this->fileLocked);
-		this->fileLocked.setEnd();
-	}
+    FinishAppendReply(const RepositoryPath* repoPath, const FileName* fileName,
+            uint16_t lastValidSequenceNumber, size_t fileSize, bool fileLocked):
+                repoPath(repoPath), fileName(fileName),
+                lastValidSequenceNumber(lastValidSequenceNumber), fileSize(fileSize),
+                fileLocked(fileLocked) {
+        setStart(&this->lastValidSequenceNumber);
+        this->lastValidSequenceNumber.setNext(&this->fileSize);
+        this->fileSize.setNext(&this->fileLocked);
+        this->fileLocked.setEnd();
+    }
 
     ReturnValue_t serialize(uint8_t **buffer, size_t *size,
             size_t maxSize, Endianness streamEndianness) const override {
-		ReturnValue_t result = serializeRepositoryAndFilename(buffer, size,
-				maxSize, const_cast<RepositoryPath&>(*repoPath),
-				const_cast<FileName&>(*fileName));
-		if(result != HasReturnvaluesIF::RETURN_OK) {
-			return result;
-		}
+        ReturnValue_t result = serializeRepositoryAndFilename(buffer, size,
+                maxSize, const_cast<RepositoryPath&>(*repoPath),
+                const_cast<FileName&>(*fileName));
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            return result;
+        }
 
-		return SerialLinkedListAdapter::serialize(buffer, size, maxSize,
-				streamEndianness);
-	}
-
-    size_t getSerializedSize() const override {
-	    return repoPath->size() + fileName->size() + 2 +
-	    		SerialLinkedListAdapter::getSerializedSize();
+        return SerialLinkedListAdapter::serialize(buffer, size, maxSize,
+                streamEndianness);
     }
 
-	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
-	            Endianness streamEndianness) override {
-		return HasReturnvaluesIF::RETURN_FAILED;
-	}
+    size_t getSerializedSize() const override {
+        return repoPath->size() + fileName->size() + 2 +
+                SerialLinkedListAdapter::getSerializedSize();
+    }
+
+    ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
+            Endianness streamEndianness) override {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
 
 
-	const RepositoryPath* repoPath;
-	const FileName* fileName;
+    const RepositoryPath* repoPath;
+    const FileName* fileName;
 private:
 
-	SerializeElement<uint16_t> lastValidSequenceNumber;
-	SerializeElement<size_t> fileSize;
-	SerializeElement<uint8_t> fileLocked;
+    SerializeElement<uint16_t> lastValidSequenceNumber;
+    SerializeElement<size_t> fileSize;
+    SerializeElement<uint8_t> fileLocked;
 
 };
 
@@ -327,102 +445,102 @@ private:
 class ReadReply: public SerializeIF {
 public:
 
-	ReadReply(RepositoryPath* repoPath, FileName* fileName,
-			F_FILE** fileHandle, size_t sizeToRead) :
-			repoPath(repoPath), fileName(fileName),
-			sizeToRead(sizeToRead), fileHandle(*fileHandle) {
-	}
+    ReadReply(RepositoryPath* repoPath, FileName* fileName,
+            F_FILE** fileHandle, size_t sizeToRead) :
+                repoPath(repoPath), fileName(fileName),
+                sizeToRead(sizeToRead), fileHandle(*fileHandle) {
+    }
 
     ReturnValue_t serialize(uint8_t **buffer, size_t *size,
             size_t maxSize, Endianness streamEndianness) const override {
-		ReturnValue_t result = serializeRepositoryAndFilename(buffer , size,
-				maxSize, *repoPath, *fileName);
-		if(result != HasReturnvaluesIF::RETURN_OK) {
-			return result;
-		}
+        ReturnValue_t result = serializeRepositoryAndFilename(buffer , size,
+                maxSize, *repoPath, *fileName);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            return result;
+        }
 
-		if(*size + sizeToRead > maxSize) {
-			// Should not happen!
+        if(*size + sizeToRead > maxSize) {
+            // Should not happen!
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-			sif::error << "SDCardHandlerPackets::ReadReply: Max Size specified "
-					<< "is not large enough" << std::endl;
+            sif::error << "SDCardHandlerPackets::ReadReply: Max Size specified "
+                    << "is not large enough" << std::endl;
 #else
-			sif::printError("SDCardHandlerPackets::ReadReply: Max Size specified "
+            sif::printError("SDCardHandlerPackets::ReadReply: Max Size specified "
                     "is not large enough\n");
 #endif
-			return SerializeIF::BUFFER_TOO_SHORT;
-		}
+            return SerializeIF::BUFFER_TOO_SHORT;
+        }
 
-		size_t sizeRead = static_cast<size_t>(f_read(*buffer, sizeof(uint8_t),
-				sizeToRead, fileHandle));
-		if(sizeRead != sizeToRead) {
-			// Should not happen!
+        size_t sizeRead = static_cast<size_t>(f_read(*buffer, sizeof(uint8_t),
+                sizeToRead, fileHandle));
+        if(sizeRead != sizeToRead) {
+            /* Should not happen! */
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-			sif::error << "SDCardHandlerPackets::ReadReply: Did not read all bytes." << std::endl;
+            sif::error << "SDCardHandlerPackets::ReadReply: Did not read all bytes." << std::endl;
 #else
-			sif::printError("SDCardHandlerPackets::ReadReply: Did not read all bytes.\n");
+            sif::printError("SDCardHandlerPackets::ReadReply: Did not read all bytes.\n");
 #endif
-			return HasReturnvaluesIF::RETURN_FAILED;
-		}
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
 
-		*buffer += sizeRead;
-		*size += sizeRead;
-		return HasReturnvaluesIF::RETURN_OK;
-	}
+        *buffer += sizeRead;
+        *size += sizeRead;
+        return HasReturnvaluesIF::RETURN_OK;
+    }
 
-	ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
-	            Endianness streamEndianness) override {
-		return HasReturnvaluesIF::RETURN_FAILED;
-	}
+    ReturnValue_t deSerialize(const uint8_t **buffer, size_t *size,
+            Endianness streamEndianness) override {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
 
     size_t getSerializedSize() const override {
-	    return repoPath->size() + fileName->size() + 2 + sizeToRead;
+        return repoPath->size() + fileName->size() + 2 + sizeToRead;
     }
 
 
 private:
 
-	RepositoryPath* repoPath;
-	FileName* fileName;
-	uint8_t* fileData = nullptr;
+    RepositoryPath* repoPath;
+    FileName* fileName;
+    uint8_t* fileData = nullptr;
 
-	size_t sizeToRead;
-	F_FILE* fileHandle;
+    size_t sizeToRead;
+    F_FILE* fileHandle;
 };
 
 class FileAttributesReply: public GenericFilePacket {
 public:
-	FileAttributesReply(RepositoryPath* repoPath, FileName* fileName,
-			size_t fileSize, bool locked): repoPath(repoPath),
-			fileName(fileName), fileSize(fileSize), locked(locked) {}
+    FileAttributesReply(RepositoryPath* repoPath, FileName* fileName,
+            size_t fileSize, bool locked): repoPath(repoPath),
+            fileName(fileName), fileSize(fileSize), locked(locked) {}
 
     ReturnValue_t serialize(uint8_t **buffer, size_t *size,
             size_t maxSize, Endianness streamEndianness) const override {
-    	ReturnValue_t result = serializeRepositoryAndFilename(buffer, size,
-    			maxSize, *repoPath, *fileName);
-    	if(result != HasReturnvaluesIF::RETURN_OK) {
-    		return result;
-    	}
-    	result = SerializeAdapter::serialize(&fileSize, buffer ,size ,
-    			maxSize, streamEndianness);
-    	if(result != HasReturnvaluesIF::RETURN_OK) {
-    		return result;
-    	}
-    	return SerializeAdapter::serialize(&locked, buffer ,size ,
-    			maxSize, streamEndianness);
+        ReturnValue_t result = serializeRepositoryAndFilename(buffer, size,
+                maxSize, *repoPath, *fileName);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            return result;
+        }
+        result = SerializeAdapter::serialize(&fileSize, buffer ,size ,
+                maxSize, streamEndianness);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            return result;
+        }
+        return SerializeAdapter::serialize(&locked, buffer ,size ,
+                maxSize, streamEndianness);
     }
 
-	size_t getSerializedSize() const override {
-	    return repoPath->size() + fileName->size() + 2 + sizeof(fileSize) +
-	    		sizeof(locked);
-	}
+    size_t getSerializedSize() const override {
+        return repoPath->size() + fileName->size() + 2 + sizeof(fileSize) +
+                sizeof(locked);
+    }
 private:
-	RepositoryPath* repoPath;
-	FileName* fileName;
-	// In addition to the repository path and the directory name,
-	// this packet contains the file size and whether the file is locked.
-	uint32_t fileSize;
-	bool locked;
+    RepositoryPath* repoPath;
+    FileName* fileName;
+    /* In addition to the repository path and the directory name,
+    this packet contains the file size and whether the file is locked. */
+    uint32_t fileSize;
+    bool locked;
 
 };
 
@@ -430,7 +548,7 @@ private:
 ReturnValue_t deSerializeRepositoryAndFilename(const uint8_t **buffer,
         size_t* size, RepositoryPath& repositoryPath, FileName& filename) {
     if(*buffer == nullptr) {
-        // This should not happen!
+        /* This should not happen! */
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
@@ -450,7 +568,7 @@ ReturnValue_t deSerializeRepositoryAndFilename(const uint8_t **buffer,
     if(*size < repositoryLength) {
         return SerializeIF::STREAM_TOO_SHORT;
     }
-    repositoryPath.append(reinterpret_cast<const char*>(*buffer));
+    repositoryPath.assign(reinterpret_cast<const char*>(*buffer));
     /* +1 because repositoryPath.size() is the size of the string
     without the string terminator */
     *buffer += repositoryPath.size() + 1;
@@ -478,7 +596,7 @@ ReturnValue_t deSerializeRepositoryAndFilename(const uint8_t **buffer,
     if(*size < filenameLength) {
         return SerializeIF::STREAM_TOO_SHORT;
     }
-    filename.append(reinterpret_cast<const char*>(*buffer));
+    filename.assign(reinterpret_cast<const char*>(*buffer));
     /* +1 because filename.size() is the size of the string without
     the string terminator */
     *buffer += filename.size() + 1;
@@ -488,7 +606,7 @@ ReturnValue_t deSerializeRepositoryAndFilename(const uint8_t **buffer,
 
 ReturnValue_t deSerializeRepositories(const uint8_t **buffer,
         size_t* size, RepositoryPath& repositoryPath,
-		RepositoryPath& dirname)  {
+        RepositoryPath& dirname)  {
     if(*buffer == nullptr) {
         // This should not happen!
         return HasReturnvaluesIF::RETURN_FAILED;
@@ -551,39 +669,39 @@ ReturnValue_t deSerializeRepositories(const uint8_t **buffer,
 }
 
 ReturnValue_t serializeRepositoryAndFilename(uint8_t **buffer,
-        size_t* size, size_t maxSize, RepositoryPath& repositoryPath,
-		FileName& filename) {
+        size_t* size, size_t maxSize, const RepositoryPath& repositoryPath,
+        const FileName& filename) {
+    /* You need to cast away the const for the ETL librairy */
+    auto nonConstPath = const_cast<RepositoryPath&>(repositoryPath);
+    auto nonConstFilename = const_cast<FileName&>(filename);
+    // Check remaining size is large enough and check integer
+    // overflow of *size
+    size_t nextSize = repositoryPath.size();
+    size_t newSize =  nextSize + 1 + *size;
+    if ((newSize <= maxSize) and (newSize > *size)) {
+        nonConstPath.copy(reinterpret_cast<char*>(*buffer), nextSize);
+        *size += nextSize + 1;
+        *buffer += nextSize;
+        **buffer = '\0';
+        *buffer += 1;
+    }
+    else {
+        return SerializeIF::BUFFER_TOO_SHORT;
+    }
 
-	// Check remaining size is large enough and check integer
-	// overflow of *size
-	size_t nextSize = repositoryPath.size();
-	size_t newSize =  nextSize + 1 + *size;
-	if ((newSize <= maxSize) and (newSize > *size)) {
-		repositoryPath.copy(reinterpret_cast<char*>(*buffer),
-				nextSize);
-		*size += nextSize + 1;
-		*buffer += nextSize;
-		**buffer = '\0';
-		*buffer += 1;
-	}
-	else {
-		return SerializeIF::BUFFER_TOO_SHORT;
-	}
-
-	nextSize = filename.size();
-	newSize =  nextSize + *size;
-	if ((newSize <= maxSize) and (newSize > *size)) {
-		filename.copy(reinterpret_cast<char*>(*buffer),
-				nextSize);
-		*size += nextSize + 1;
-		*buffer += nextSize;
-		**buffer = '\0';
-		*buffer += 1;
-	}
-	else {
-		return SerializeIF::BUFFER_TOO_SHORT;
-	}
-	return HasReturnvaluesIF::RETURN_OK;
+    nextSize = filename.size();
+    newSize =  nextSize + *size;
+    if ((newSize <= maxSize) and (newSize > *size)) {
+        nonConstFilename.copy(reinterpret_cast<char*>(*buffer), nextSize);
+        *size += nextSize + 1;
+        *buffer += nextSize;
+        **buffer = '\0';
+        *buffer += 1;
+    }
+    else {
+        return SerializeIF::BUFFER_TOO_SHORT;
+    }
+    return HasReturnvaluesIF::RETURN_OK;
 }
 
 

@@ -5,6 +5,7 @@
 
 #include <sam9g20/common/FRAMApi.h>
 #include <sam9g20/common/SRAMApi.h>
+#include <sam9g20/common/CommonFRAM.h>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -38,7 +39,7 @@ void perform_bootloader_core_operation() {
 #endif
 
     vTaskEndScheduler();
-    jump_to_sdram_application();
+    jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
 }
 
 int perform_iobc_copy_operation_to_sdram() {
@@ -114,7 +115,7 @@ int copy_norflash_binary_to_sdram(size_t copy_size)
 
     /* This operation takes 100-200 milliseconds if the whole NOR-Flash is
     copied. But the watchdog is running in a separate task with the highest priority
-    and we are using a pre-emtpive scheduler so this should not be an issue. */
+    and we are using a pre-emptive scheduler so this should not be an issue. */
     memcpy((void*) SDRAM_DESTINATION, (const void*) BINARY_BASE_ADDRESS_READ, copy_size);
 
     /* Verify that the binary was copied properly. Ideally, we will also run a hamming

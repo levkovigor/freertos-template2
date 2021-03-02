@@ -112,7 +112,6 @@ public:
      */
     ReturnValue_t startFlashToSdcOperation(image::ImageSlot targetSlot);
 
-#ifdef ISIS_OBC_G20
     /**
      * Copy the hamming code belonging to a certain image to the FRAM.
      * @param respectiveSlot    Hamming code belongs to this image
@@ -120,7 +119,6 @@ public:
      * @return
      */
     ReturnValue_t startHammingCodeToFramOperation(image::ImageSlot respectiveSlot);
-#endif
 
     /**
      * Continue the current operation.
@@ -183,7 +181,7 @@ private:
     variable bootloader small sectors numbers depending on these configuration constants!
     The algorithms assumes 8 small sectors are reserved for the bootloader! */
     static constexpr size_t NORFLASH_TOTAL_SMALL_SECTOR_MEM_OBSW =
-    		RESERVED_OBSW_SMALL_SECTORS * NORFLASH_SMALL_SECTOR_SIZE;
+            RESERVED_OBSW_SMALL_SECTORS * NORFLASH_SMALL_SECTOR_SIZE;
     static constexpr size_t COPYING_BUCKET_SIZE = NORFLASH_SMALL_SECTOR_SIZE;
     ReturnValue_t copyImgHammingSdcToFram();
     ReturnValue_t copySdCardImageToNorFlash();

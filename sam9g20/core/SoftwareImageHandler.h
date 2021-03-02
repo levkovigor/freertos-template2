@@ -134,12 +134,16 @@ private:
     static constexpr ActionId_t COPY_OBSW_FLASH_TO_SDC = 4;
     static constexpr ActionId_t COPY_OBSW_SDC_TO_SDC = 5;
     /**
-     * Copies the hamming code from SD card to storage. The storage can either be the
-     * NAND-Flash module or the NOR-Flash module. Two uint8_t fields should be supplied
-     * which have the following meaning:
+     * Copies the hamming code from SD card to storage. This only applies to the iOBC with
+     * a FRAM memory, but can also be done for the AT91 with virtualized FRAM.
+     * Two uint8_t fields should be supplied which have the following meaning:
      *
-     * First byte:  Slot the hamming code belongs to. 1 for NOR-Flash, 2 for SD slot 0 and 3 for SD
-     *              slot 2.
+     * First byte:  Slot the hamming code belongs to.
+     *  - 0 for NOR-Flash
+     *  - 1 for SD slot 0
+     *  - 2 for SD slot 1 (update slot)
+     *  - 3 for the bootloader
+     *  - 4 for bootloader 2 (AT91
      */
     static constexpr ActionId_t COPY_HAMMING_SDC_TO_STORAGE = 7;
     /**
@@ -201,8 +205,11 @@ private:
     bool oneShot = false;
 
     ReturnValue_t getParameter(uint8_t domainId,
-            uint16_t uniqueIdentifier, ParameterWrapper *parameterWrapper,
+            uint8_t uniqueIdentifier, ParameterWrapper *parameterWrapper,
             const ParameterWrapper *newValues, uint16_t startAtIndex) override;
+
+    void handleMessages();
+    void performStateMachine();
 
 #ifdef ISIS_OBC_G20
     /**
@@ -228,6 +235,12 @@ private:
     ReturnValue_t checkNandFlashImage();
 #endif
 
+    ReturnValue_t handleCopyingSdcBlToFlash(ActionId_t actionId, MessageQueueId_t commandedBy,
+            const uint8_t *data, size_t size);
+    ReturnValue_t handleCopyingSdcImgToFlash(ActionId_t actionId, MessageQueueId_t commandedBy,
+            const uint8_t *data, size_t size);
+    ReturnValue_t handleCopyingHammingToStorage(ActionId_t actionId, MessageQueueId_t commandedBy,
+            const uint8_t *data, size_t size);
     void checkSdCardImage(SdCard sdCard, image::ImageSlot imageSlot);
 
 };

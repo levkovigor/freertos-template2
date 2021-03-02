@@ -7,7 +7,7 @@
 #include <fsfw/serialize/SerialLinkedListAdapter.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <sam9g20/common/FRAMApi.h>
-#include <sam9g20/common/CriticalDataBlock.h>
+#include <sam9g20/common/CommonFRAM.h>
 
 #include <array>
 
