@@ -138,8 +138,12 @@ private:
      * a FRAM memory, but can also be done for the AT91 with virtualized FRAM.
      * Two uint8_t fields should be supplied which have the following meaning:
      *
-     * First byte:  Slot the hamming code belongs to. 1 for NOR-Flash, 2 for SD slot 0 and 3 for SD
-     *              slot 1.
+     * First byte:  Slot the hamming code belongs to.
+     *  - 0 for NOR-Flash
+     *  - 1 for SD slot 0
+     *  - 2 for SD slot 1 (update slot)
+     *  - 3 for the bootloader
+     *  - 4 for bootloader 2 (AT91
      */
     static constexpr ActionId_t COPY_HAMMING_SDC_TO_STORAGE = 7;
     /**

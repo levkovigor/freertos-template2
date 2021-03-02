@@ -99,7 +99,6 @@ void SoftwareImageHandler::performStateMachine() {
 }
 
 
-
 ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
         MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
@@ -348,6 +347,9 @@ ReturnValue_t SoftwareImageHandler::handleCopyingHammingToStorage(ActionId_t act
         respectiveSlot = image::ImageSlot::BOOTLOADER_0;
     }
     else if(rawParam == 4) {
+#if OBSW_VERBOSE_LEVEL >= 1
+        targetPrintout = "bootloader 2";
+#endif
         respectiveSlot = image::ImageSlot::BOOTLOADER_1;
     }
     else {
