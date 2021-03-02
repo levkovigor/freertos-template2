@@ -1,11 +1,17 @@
 #ifndef SAM9G20_MEMORY_SDCHSTATEMACHINE_H_
 #define SAM9G20_MEMORY_SDCHSTATEMACHINE_H_
 
-#include <fsfw/returnvalues/HasReturnvaluesIF.h>
-#include <privlib/hcc/include/hcc/api_fat.h>
 #include <sam9g20/memory/SDCardDefinitions.h>
 
+#include <fsfw/ipc/messageQueueDefinitions.h>
+#include <fsfw/ipc/MessageQueueIF.h>
+#include <fsfw/returnvalues/HasReturnvaluesIF.h>
+
+
+#include <hcc/api_fat.h>
+
 class Countdown;
+class SDCardHandler;
 
 /**
  * @brief   Encapsulates the state machine used by the SD card handler, used to keep
@@ -23,7 +29,7 @@ public:
         MOVE_FILE
     };
 
-    SDCHStateMachine(Countdown* ownerCountdown);
+    SDCHStateMachine(SDCardHandler* owner, Countdown* ownerCountdown);
 
     /**
      * Continue current operation of state machine. Return HasActionIF::EXECUTION_COMPLETE is an
@@ -34,7 +40,7 @@ public:
     ReturnValue_t continueCurrentOperation();
 
     bool setCopyFileOperation(RepositoryPath& sourceRepo, FileName& sourceName,
-            RepositoryPath& targetRepo, FileName& targetName);
+            RepositoryPath& targetRepo, FileName& targetName, MessageQueueId_t recipient);
 
     void resetAndSetToIdle();
 
@@ -43,7 +49,10 @@ public:
 private:
     SDCHStateMachine::States internalState = SDCHStateMachine::States::IDLE;
     std::array<uint8_t, 8 * 1024> fileBuffer;
+    SDCardHandler* owner;
     Countdown* ownerCountdown = nullptr;
+    /** Current recipient for success or failure messages */
+    MessageQueueId_t currentRecipient = MessageQueueIF::NO_QUEUE;
 
     /* Can be used for various purposes, e.g. as source path and source
     filename for copy operations */
@@ -60,6 +69,7 @@ private:
 
     void reset();
 
+    ReturnValue_t handleGenericCopyOperation();
     ReturnValue_t prepareCopyFileInformation(F_FILE** filePtr);
 };
 

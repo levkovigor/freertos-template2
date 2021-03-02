@@ -38,6 +38,7 @@ class SDCardHandler :
         public HasFileSystemIF,
         public HasActionsIF {
     friend class SDCardAccess;
+    friend class SDCHStateMachine;
 public:
     /** Constructor initializes the handler as a system object */
     SDCardHandler(object_id_t objectId);
@@ -179,6 +180,10 @@ private:
 
     void sendCompletionReply(bool success = true,
             ReturnValue_t errorCode = HasReturnvaluesIF::RETURN_OK, uint32_t errorParam = 0);
+    /** Specifying NO_QUEUE as queueId will cause a reply to the last sender */
+    void sendCompletionMessage(bool success, MessageQueueId_t queueId,
+            ReturnValue_t errorCode = HasReturnvaluesIF::RETURN_OK, uint32_t errorParam = 0);
+
     ReturnValue_t generateFinishAppendReply(RepositoryPath* repoPath, FileName* fileName,
             size_t filesize, bool locked);
 

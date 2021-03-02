@@ -23,7 +23,7 @@
 
 SDCardHandler::SDCardHandler(object_id_t objectId): SystemObject(objectId),
         commandQueue(QueueFactory::instance()->createMessageQueue(MAX_MESSAGE_QUEUE_DEPTH)),
-        actionHelper(this, commandQueue), countdown(0), stateMachine(&countdown) {
+        actionHelper(this, commandQueue), countdown(0), stateMachine(this, &countdown) {
     IPCStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
 }
 

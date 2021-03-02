@@ -48,8 +48,7 @@ ReturnValue_t SDCardHandler::handleDeleteFileCommand(CommandMessage* message){
     }
 
     DeleteFileCommand command;
-    /* Extract the repository path and the filename from the
-        application data field */
+    /* Extract the repository path and the filename from the application data field */
     result = command.deSerialize(&ipcStoreBuffer,
             &remainingSize, SerializeIF::Endianness::BIG);
     if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -513,6 +512,11 @@ ReturnValue_t SDCardHandler::getStoreData(store_address_t& storeId,
 
 void SDCardHandler::sendCompletionReply(bool success, ReturnValue_t errorCode,
         uint32_t errorParam) {
+    return sendCompletionMessage(success, MessageQueueIF::NO_QUEUE, errorCode, errorParam);
+}
+
+void SDCardHandler::sendCompletionMessage(bool success, MessageQueueId_t queueId,
+        ReturnValue_t errorCode, uint32_t errorParam) {
     CommandMessage reply;
     if(success) {
         FileSystemMessage::setSuccessReply(&reply);
@@ -521,16 +525,22 @@ void SDCardHandler::sendCompletionReply(bool success, ReturnValue_t errorCode,
         FileSystemMessage::setFailureReply(&reply, errorCode, errorParam);
     }
 
-    ReturnValue_t result = commandQueue->reply(&reply);
+    ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
+    if(queueId == MessageQueueIF::NO_QUEUE) {
+        result = commandQueue->reply(&reply);
+    }
+    else {
+        result = commandQueue->sendMessage(queueId, &reply);
+    }
+
     if(result != HasReturnvaluesIF::RETURN_OK){
         if(result == MessageQueueIF::FULL) {
-            // Configuration error.
+            /* Configuration error. */
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-            sif::error << "SDCardHandler::sendCompletionReply: "
-                    " Queue of receiver is full!" << std::endl;
+            sif::error << "SDCardHandler::sendCompletionReply: Queue of receiver is full!" <<
+                    std::endl;
 #else
-            sif::printError("SDCardHandler::sendCompletionReply: "
-                    " Queue of receiver is full!\n");
+            sif::printError("SDCardHandler::sendCompletionReply: Queue of receiver is full!\n");
 #endif
         }
     }
