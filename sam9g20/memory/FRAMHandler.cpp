@@ -12,6 +12,8 @@
 
 #include <fsfwconfig/OBSWVersion.h>
 
+std::array<uint8_t, sizeof(CriticalDataBlock)> FRAMHandler::criticalBlock;
+
 FRAMHandler::FRAMHandler(object_id_t objectId): SystemObject(objectId) {
 }
 
@@ -98,4 +100,7 @@ ReturnValue_t FRAMHandler::initialize() {
 
     // sif::printInfo("FRAM maximum address: %d\n\r", FRAM_getMaxAddress());
     return HasReturnvaluesIF::RETURN_OK;
+}
+
+void FRAMHandler::dumpCriticalBlock() {
 }

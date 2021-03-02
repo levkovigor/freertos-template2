@@ -35,6 +35,62 @@ Action ID
 - An op-code starting with `c` will pack command stacks with multiple commands
 - An op-code starting with `p` will pack PUS service 20 commands to change parameters.
 
+## Execute Before Flight Sequence
+
+Similar to a remove-before-flight pin for hardware, there is a sequence of commands and steps
+that should be performed on the integrated satellite before flight. These usually
+only need to be set once.
+
+### FRAM 
+
+1. Set seconds since epoch to current time
+2. Set reboot counter to 0
+3. Enable global hamming code check flag
+4. Enable indiviual hamming check flags
+5. Set preferred SD card to 0
+6. Zero out variables explicitely:
+    - All indiviual reboot counters
+	- Bootloader faulty flag
+	- Software Update available flag
+7. Transfer hamming codes to the FRAM from the SD-Card.
+   - Hamming code for NOR-Flash binary
+   - Hamming codes for SD-Card 0 and SD-Card 1
+   - Hamming code for bootloader
+8. Transfer the bootloader to the FRAM
+9. Dump the critical block and verify everything is set correctly. Check whether hamming codes
+   are set by checking size fields
+
+### SD-Card
+
+1. Each SD-Card should have the generic file structure which can be set with a telecommand stack.
+   The generic file structure looks like this (already includes images and hamming code files)
+   
+   ```sh
+   INFO: | 21:51:15.033 | Printing SD Card: 
+   INFO: | 21:51:15.038 | F = File, D = Directory, - = Subdir Depth
+   INFO: | 21:51:15.045 | D: TC
+   INFO: | 21:51:15.052 | -D: LARGE
+   INFO: | 21:51:15.064 | -D: SMALL
+   INFO: | 21:51:15.079 | D: TM
+   INFO: | 21:51:15.085 | -D: HK
+   INFO: | 21:51:15.097 | -D: SC
+   INFO: | 21:51:15.106 | --D: LARGE
+   INFO: | 21:51:15.120 | --D: SMALL
+   INFO: | 21:51:15.131 | D: BIN
+   INFO: | 21:51:15.136 | -D: IOBC
+   INFO: | 21:51:15.143 | --D: BL
+   INFO: | 21:51:15.150 | ---F: BL.BIN
+   INFO: | 21:51:15.155 | ---F: BL_HAM.BIN
+   INFO: | 21:51:15.163 | --D: OBSW
+   INFO: | 21:51:15.170 | ---F: OBSW_SL1.BIN
+   INFO: | 21:51:15.177 | ---F: SL1_HAM.BIN
+   INFO: | 21:51:15.177 | ---F: OBSW_SL0.BIN
+   INFO: | 21:51:15.177 | ---F: SL10_HAM.BIN
+   INFO: | 21:51:15.187 | D: MISC
+   ```
+
+2. Each SD-Card should have two images and one bootloader and corresponding hamming codes.
+
 ## General commands
 
 ### Display Help

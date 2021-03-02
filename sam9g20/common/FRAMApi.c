@@ -1,5 +1,5 @@
 #include "FRAMApi.h"
-#include "CriticalDataBlock.h"
+#include "CommonFRAM.h"
 #include <hal/Storage/FRAM.h>
 
 #include <string.h>
@@ -103,8 +103,8 @@ int get_hamming_check_flag(bool* flag_set) {
     return get_generic_hamming_flag(HAMMING_CHECK_FLAG_ADDR, flag_set);
 }
 
-int write_nor_flash_hamming_size(size_t hamming_size, bool set_hamming_flag) {
-    return FRAM_writeAndVerify((unsigned char*) set_hamming_flag,
+int write_nor_flash_hamming_size(size_t hamming_size) {
+    return FRAM_writeAndVerify((unsigned char*) &hamming_size,
             NOR_FLASH_HAMMING_CODE_SIZE_ADDR,
             sizeof(((CriticalDataBlock*)0)->nor_flash_hamming_code_size));
 }
@@ -303,15 +303,14 @@ int read_seconds_since_epoch(uint32_t *secondsSinceEpoch) {
             sizeof(((CriticalDataBlock*)0)->seconds_since_epoch));
 }
 
-int set_prefered_sd_card(VolumeId volumeId) {
-    return FRAM_writeAndVerify((unsigned char*) &volumeId,
-            PREFERED_SD_CARD_ADDR, sizeof(VolumeId));
+int set_preferred_sd_card(VolumeId volumeId) {
+    return FRAM_writeAndVerify((unsigned char*) &volumeId, PREFERRED_SD_CARD_ADDR,
+            sizeof(VolumeId));
 }
 
-int get_prefered_sd_card(VolumeId *volumeId) {
-    return FRAM_read((unsigned char*) volumeId,
-            PREFERED_SD_CARD_ADDR,
-            sizeof(((CriticalDataBlock*)0)->preferedSdCard));
+int get_preferred_sd_card(VolumeId *volumeId) {
+    return FRAM_read((unsigned char*) volumeId, PREFERRED_SD_CARD_ADDR,
+            sizeof(((CriticalDataBlock*)0)->preferredSdCard));
 }
 
 int write_bootloader_hamming_code(const uint8_t *code, size_t size) {

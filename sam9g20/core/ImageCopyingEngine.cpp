@@ -126,7 +126,15 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         /* Current file size only needs to be cached once.
         Info output should only be printed once. */
         if(stepCounter == 0) {
-            if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
+            if(sourceSlot == image::ImageSlot::FLASH) {
+                if(hammingCode) {
+                    currentFileSize = f_filelength(config::SW_FLASH_HAMMING_NAME);
+                }
+                else {
+                    /* TODO: This is cached in FRAM so we need to read it from there */                    //currentFileSize =
+                }
+            }
+            else if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
                 if(hammingCode) {
                     currentFileSize = f_filelength(config::SW_SLOT_0_HAMMING_NAME);
                 }
@@ -144,15 +152,41 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
             }
         }
 
-        if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
-            *filePtr = f_open(config::SW_SLOT_0_NAME, "r");
+        if(sourceSlot == image::ImageSlot::FLASH) {
+            if(hammingCode) {
+                *filePtr = f_open(config::SW_FLASH_HAMMING_NAME, "r");
+            }
+            else {
+                /* Invalid request. The flash image is not stored on the SD-Card */
+#if OBSW_VERBOSE_LEVEL >= 1
+                sif::printWarning("ImageCopyingEngine::prepareGenericFileInformation: Invalid"
+                        "request, no flash image on the SD-Card available\n");
+#endif
+                return HasReturnvaluesIF::RETURN_FAILED;
+            }
+        }
+        else if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
+            if(hammingCode) {
+                *filePtr = f_open(config::SW_SLOT_0_HAMMING_NAME, "r");
+            }
+            else {
+                *filePtr = f_open(config::SW_SLOT_0_NAME, "r");
+            }
+
         }
         else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
-            *filePtr = f_open(config::SW_SLOT_1_NAME, "r");
+            if(hammingCode) {
+                *filePtr = f_open(config::SW_SLOT_1_HAMMING_NAME, "r");
+            }
+            else {
+                *filePtr = f_open(config::SW_SLOT_1_NAME, "r");
+            }
         }
     }
 
-    if(f_getlasterror() != F_NO_ERROR) {
+    if(*filePtr == nullptr) {
+        int error = f_getlasterror();
+        (void) error;
         /* Opening file failed! */
         char const* missingFile = nullptr;
         if(bootloader) {
@@ -191,6 +225,7 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
     result = f_seek(*filePtr, currentByteIdx, F_SEEK_SET);
     if(result != F_NO_ERROR) {
         /* should not happen! */
+        f_close(*filePtr);
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     return HasReturnvaluesIF::RETURN_OK;
@@ -241,11 +276,12 @@ void ImageCopyingEngine::handleGenericInfoPrintout(const char * const board, cha
     }
 
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-    sif::info << "Copying " << board << " " << typePrint << " from " << sourcePrint << " to " <<
-            targetPrint << ".." << std::endl;
+    sif::info << "Copying " << typePrint << " on " << board << " "  << " from " << sourcePrint <<
+            " to " <<  targetPrint << ".." << std::endl;
     sif::info << "Binary size: " <<  currentFileSize << " bytes." << std::endl;
 #else
-    sif::printInfo("Copying %s %s from %s to %s..\n", board, typePrint, sourcePrint, targetPrint);
+    sif::printInfo("Copying %s on %s from %s to %s..\n", typePrint, board, sourcePrint,
+            targetPrint);
     sif::printInfo("Binary size: %lu bytes.\n", static_cast<unsigned long>(currentFileSize));
 #endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
 

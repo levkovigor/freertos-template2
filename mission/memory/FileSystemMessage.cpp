@@ -44,9 +44,15 @@ void FileSystemMessage::setUnlockFileCommand(CommandMessage *message,
     message->setParameter2(storeId.raw);
 }
 
-void FileSystemMessage::setDeleteDirectoryCommand(
-        CommandMessage* message, store_address_t storeId) {
+void FileSystemMessage::setDeleteDirectoryCommand(CommandMessage* message,
+        store_address_t storeId) {
     message->setCommand(CMD_DELETE_DIRECTORY);
+    message->setParameter2(storeId.raw);
+}
+
+void FileSystemMessage::setCopyCommand(CommandMessage* message,
+        store_address_t storeId) {
+    message->setCommand(CMD_COPY_FILE);
     message->setParameter2(storeId.raw);
 }
 

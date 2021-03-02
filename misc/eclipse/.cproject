@@ -91,7 +91,7 @@
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.other.1570004964" name="Other debugging flags" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.other"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.showDevicesTab.1416871829" name="showDevicesTab" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.showDevicesTab"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform.1635936066" isAbstract="false" osList="all" superClass="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform"/>
-							<builder arguments="WINDOWS=1" autoBuildTarget="all" buildPath="${workspace_loc:/sourceobsw}" cleanBuildTarget="clean" command="make" enableAutoBuild="false" enableCleanBuild="true" enabledIncrementalBuild="true" id="ilg.gnuarmeclipse.managedbuild.cross.builder.591533600" incrementalBuildTarget="debug" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="ilg.gnuarmeclipse.managedbuild.cross.builder"/>
+							<builder arguments="" autoBuildTarget="all" buildPath="${workspace_loc:/sourceobsw}" cleanBuildTarget="clean" command="make" enableAutoBuild="false" enableCleanBuild="true" enabledIncrementalBuild="true" id="ilg.gnuarmeclipse.managedbuild.cross.builder.591533600" incrementalBuildTarget="debug" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="ilg.gnuarmeclipse.managedbuild.cross.builder"/>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.533295870" name="GNU ARM Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.1645531482" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.1090272918" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" valueType="definedSymbols">
@@ -1252,10 +1252,10 @@
 		<configuration configurationName="bl-at91-second-stage-debug">
 			<resource resourceType="PROJECT" workspacePath="/sourceobsw"/>
 		</configuration>
-		<configuration configurationName="at91-virtual">
+		<configuration configurationName="bl-at91-first-stage">
 			<resource resourceType="PROJECT" workspacePath="/sourceobsw"/>
 		</configuration>
-		<configuration configurationName="bl-at91-first-stage">
+		<configuration configurationName="at91-virtual">
 			<resource resourceType="PROJECT" workspacePath="/sourceobsw"/>
 		</configuration>
 		<configuration configurationName="bl-iobc-mission"/>
@@ -1318,10 +1318,10 @@
 		<configuration configurationName="AT91_AUTO_SERIAL_MISSION">
 			<resource resourceType="PROJECT" workspacePath="/sourceobsw"/>
 		</configuration>
-		<configuration configurationName="obsw-unittest">
+		<configuration configurationName="obsw-host">
 			<resource resourceType="PROJECT" workspacePath="/sourceobsw"/>
 		</configuration>
-		<configuration configurationName="obsw-host">
+		<configuration configurationName="obsw-unittest">
 			<resource resourceType="PROJECT" workspacePath="/sourceobsw"/>
 		</configuration>
 		<configuration configurationName="obsw-stm32"/>

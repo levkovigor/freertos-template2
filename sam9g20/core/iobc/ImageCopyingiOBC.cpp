@@ -5,6 +5,7 @@
 #include <fsfw/globalfunctions/CRC.h>
 
 #include <sam9g20/memory/SDCardAccess.h>
+#include <sam9g20/common/CommonFRAM.h>
 #include <sam9g20/common/FRAMApi.h>
 #include <hal/Storage/NORflash.h>
 
@@ -23,7 +24,6 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
     }
     case(ImageHandlerStates::COPY_IMG_HAMMING_SDC_TO_FRAM): {
         return copyImgHammingSdcToFram();
-        return HasReturnvaluesIF::RETURN_FAILED;
     }
     case(ImageHandlerStates::COPY_IMG_FLASH_TO_SDC): {
         return HasReturnvaluesIF::RETURN_FAILED;
@@ -58,6 +58,7 @@ ReturnValue_t ImageCopyingEngine::startBootloaderToFlashOperation(image::ImageSl
 }
 
 ReturnValue_t ImageCopyingEngine::startHammingCodeToFramOperation(image::ImageSlot respectiveSlot) {
+    /* Only one bootloader on iOBC */
     if(respectiveSlot == image::ImageSlot::NONE or
             respectiveSlot == image::ImageSlot::BOOTLOADER_1) {
         return HasReturnvaluesIF::RETURN_FAILED;
@@ -116,36 +117,73 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
     }
     if(internalState == GenericInternalState::STEP_1) {
         SDCardAccess access;
+        if(access.getAccessResult() == SDCardAccess::SD_CARD_CHANGE_ONGOING) {
+            /* Cancel algorithm for this case */
+#if OBSW_VERBOSE_LEVEL >= 1
+            sif::printWarning("ImageCopyingEngine::copyImgHammingSdcToFram: SDC change ongoing!\n");
+#endif
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
         F_FILE* file = nullptr;
-        prepareGenericFileInformation(access.currentVolumeId, &file);
+        ReturnValue_t result = prepareGenericFileInformation(access.getActiveVolume(), &file);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            f_close(file);
+            return result;
+        }
+        /* Will take care of closing the file on destruction */
+        HCCFileGuard fileHelper(&file);
+
+        if(stepCounter == 0) {
+            if(currentFileSize > NOR_FLASH_HAMMING_RESERVED_SIZE) {
+                /* Invalid file size */
+                return HasReturnvaluesIF::RETURN_FAILED;
+            }
+            /* We write the hamming code size to the designated slot */
+            int retval = write_nor_flash_hamming_size(currentFileSize);
+            if(retval != 0) {
+                /* Problems writing to FRAM */
+                return image::FRAM_ISSUES;
+            }
+        }
 
         while(currentByteIdx < currentFileSize) {
             size_t sizeToRead = 0;
-            if(currentFileSize > sizeToRead) {
+            if(currentFileSize - currentByteIdx > imgBuffer->size()) {
                 sizeToRead = imgBuffer->size();
             }
             else {
-                currentFileSize = sizeToRead;
+                sizeToRead = currentFileSize - currentByteIdx;
             }
             size_t sizeRead = f_read(imgBuffer->data(), 1, sizeToRead, file);
             if(sizeRead != sizeToRead) {
-                // Should not happen!
+                /* Should not happen! */
                 sif::printWarning("ImageCopyingEngine::copyImgHammingSdcToFram: "
                         "Not all bytes read!");
                 return HasReturnvaluesIF::RETURN_FAILED;
             }
 
-            int result = write_nor_flash_hamming_code(imgBuffer->data(), currentByteIdx, sizeRead);
-            if(result != 0) {
+            int retval = 0;
+            if(sourceSlot == image::ImageSlot::FLASH) {
+                retval = write_nor_flash_hamming_code(imgBuffer->data(), currentByteIdx, sizeRead);
+            }
+
+            if(retval != 0) {
+#if OBSW_VERBOSE_LEVEL >= 1
+                sif::printWarning("ImageCopyingEngine::copyImgHammingSdcToFram:"
+                        "FRAM error when copying hamming code!\n");
+#endif
                 return HasReturnvaluesIF::RETURN_FAILED;
             }
             currentByteIdx += sizeRead;
+
+            if(currentByteIdx >= currentFileSize) {
+                break;
+            }
 
             if(countdown->hasTimedOut()) {
                 return image::TASK_PERIOD_OVER_SOON;
             }
         }
-        reset();
 #if OBSW_VERBOSE_LEVEL >= 1
         const char* message = nullptr;
         if(sourceSlot == image::ImageSlot::FLASH) {
@@ -157,8 +195,15 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
         else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
             message = "SD Card slot 1 hamming code";
         }
-        sif::printInfo("Copied %s successfully to storage (FRAM)\n\r", message);
+        else if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
+            message = "Bootloader 0 hamming code";
+        }
+        else {
+            message = "Unknown hamming code";
+        }
+        sif::printInfo("Copied %s successfully to storage (FRAM)\n", message);
 #endif
+        reset();
     }
     return HasReturnvaluesIF::RETURN_OK;
 
@@ -256,10 +301,15 @@ ReturnValue_t ImageCopyingEngine::handleObswErasure() {
 
 ReturnValue_t ImageCopyingEngine::handleSdToNorCopyOperation() {
     SDCardAccess sdCardAccess;
-    F_FILE * binaryFile;
+    if(sdCardAccess.getAccessResult() == SDCardAccess::SD_CARD_CHANGE_ONGOING) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    F_FILE* binaryFile;
 
     ReturnValue_t result = prepareGenericFileInformation(
-            sdCardAccess.currentVolumeId, &binaryFile);
+            sdCardAccess.getActiveVolume(), &binaryFile);
+    HCCFileGuard fileGuard(&binaryFile);
+
     if(result != HasReturnvaluesIF::RETURN_OK) {
         return result;
     }
@@ -300,7 +350,7 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
             return result;
         }
         if(bytesRead < sizeToRead) {
-            // should not happen..
+            /* Should not happen.. */
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "SoftwareImageHandler::performNorCopyOperation:"
                     << " Bytes read smaller than size to read!" << std::endl;
@@ -334,31 +384,30 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
 #endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
-        // Maybe SD card is busy, so try in next cycle..
+        /* Maybe SD card is busy, so try in next cycle.. */
         return image::TASK_PERIOD_OVER_SOON;
     }
     else {
         result = HasReturnvaluesIF::RETURN_OK;
     }
 
-    // bucket write success
+    /* Bucket write success */
     currentByteIdx += sizeToRead;
     //sif::debug << "ImageCopyingEngine::performNorCopyOperation:
     //      << "Current Byte Index: " << currentByteIdx << std::endl;
     stepCounter ++;
-    // Set this flag to false so that the next bucket can be read from the
-    // SD card.
+    /* Set this flag to false so that the next bucket can be read from the SD card.*/
     helperFlag1 = false;
 
     if(currentByteIdx >= currentFileSize) {
-        // operation finished.
+        /* Operation finished. */
         handleFinishPrintout();
 
         if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
             writeBootloaderSizeAndCrc();
         }
 
-        // cache last finished state.
+        /* Cache last finished state. */
         lastFinishedState = imageHandlerState;
         reset();
         return image::OPERATION_FINISHED;
@@ -379,9 +428,8 @@ void ImageCopyingEngine::writeBootloaderSizeAndCrc() {
         sif::printError("Writing bootloader size failed!\n");
 #endif
     }
-    // calculate and write CRC to designated NOR-Flash address
-    // This will be used by the bootloader to determine SEUs in the
-    // bootloader.
+    /* calculate and write CRC to designated NOR-Flash address. This will be used by the
+    bootloader to determine SEUs in the bootloader. */
     uint16_t crc16 = CRC::crc16ccitt(reinterpret_cast<const uint8_t*>(NORFLASH_BASE_ADDRESS_READ),
             currentFileSize);
     retval = NORFLASH_WriteData(&NORFlash, NORFLASH_BL_CRC16_START,
@@ -750,6 +798,33 @@ void ImageCopyingEngine::handleInfoPrintout(VolumeId currentVolume) {
             sprintf(targetPrint, "SD Card %d Slot 0 ", static_cast<int>(currentVolume));
         }
         sprintf(typePrint, "primary image");
+    }
+    else if(imageHandlerState == ImageHandlerStates::COPY_IMG_HAMMING_SDC_TO_FRAM) {
+        sprintf(typePrint, "hamming code");
+        sprintf(targetPrint, "FRAM");
+        if(sourceSlot == image::ImageSlot::FLASH) {
+            sprintf(sourcePrint, "NOR-Flash");
+        }
+        else if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
+            sprintf(sourcePrint, "SD Card %d slot 0", static_cast<int>(currentVolume));
+        }
+        else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
+            sprintf(sourcePrint, "SD Card %d slot 1", static_cast<int>(currentVolume));
+        }
+        else if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
+            sprintf(sourcePrint, "bootloader 0");
+        }
+        else if(sourceSlot == image::ImageSlot::BOOTLOADER_1) {
+            sprintf(sourcePrint, "bootloader 1");
+        }
+        else {
+            sprintf(sourcePrint, "unknown source");
+        }
+    }
+    else {
+        sprintf(sourcePrint, "unknown source");
+        sprintf(typePrint, "unknown type");
+        sprintf(targetPrint, "unknown target");
     }
 
     handleGenericInfoPrintout("iOBC", typePrint, sourcePrint, targetPrint);

@@ -38,13 +38,6 @@ extern "C" {
 #include <stddef.h>
 #include <stdbool.h>
 
-//! Calculated required size: 0x20000 (bootloader) * 3 / 256
-//! (because 3 parity bits are generated per 256 byte block)
-static const size_t BOOTLOADER_HAMMING_RESERVED_SIZE = 0x600;
-
-//! Calculated required size for images: 0x100000 (NOR-Flash) - 0x20000 (bootloader) * 3 / 256
-static const uint32_t NOR_FLASH_HAMMING_RESERVED_SIZE = 0x2A00;
-
 /**
  * Read the whole critical block. Size of buffer has to be provided in max_size.
  * It is recommended to set max_size to sizeof(CriticalDataBlock)
@@ -102,7 +95,7 @@ int read_nor_flash_binary_size(size_t* binary_size);
  * @param set_hamming_flag
  * @return
  */
-int write_nor_flash_hamming_size(size_t hamming_size, bool set_hamming_flag);;
+int write_nor_flash_hamming_size(size_t hamming_size);
 /**
  * Shall be used to update the hamming code for the NOR-Flash binary.
  * Can be performed in multiple steps by supplying the current offset and a pointer
@@ -156,8 +149,8 @@ int clear_sdc_hamming_flag(VolumeId volume, SdSlots slot);
 int set_bootloader_faulty(bool faulty);
 int is_bootloader_faulty(bool* faulty);
 
-int set_prefered_sd_card(VolumeId volumeId);
-int get_prefered_sd_card(VolumeId* volumeId);
+int set_preferred_sd_card(VolumeId volumeId);
+int get_preferred_sd_card(VolumeId* volumeId);
 
 int write_bootloader_hamming_code(const uint8_t* code, size_t size);
 int read_bootloader_hamming_code(uint8_t* code, size_t* size);

@@ -1,6 +1,6 @@
 #include "VirtualFRAMApi.h"
 #include "SDCardApi.h"
-#include "CriticalDataBlock.h"
+#include "CommonFRAM.h"
 
 #include <stdlib.h>
 #include <hcc/api_fat.h>

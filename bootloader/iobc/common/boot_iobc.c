@@ -5,6 +5,7 @@
 
 #include <sam9g20/common/FRAMApi.h>
 #include <sam9g20/common/SRAMApi.h>
+#include <sam9g20/common/CommonFRAM.h>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
