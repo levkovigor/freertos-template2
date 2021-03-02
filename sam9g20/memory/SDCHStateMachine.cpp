@@ -130,7 +130,7 @@ ReturnValue_t SDCHStateMachine::handleGenericCopyOperation() {
             writeFile = f_open(fileName2.c_str(), "a");
         }
         else {
-            /* File does exist, so we reopen it in write mode, which trucates it to 0 length */
+            /* File does exist, so we reopen it in write mode, which truncates it to 0 length */
             f_close(writeFile);
             writeFile = f_open(fileName2.c_str(), "w");
         }
