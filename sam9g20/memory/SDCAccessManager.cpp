@@ -46,14 +46,20 @@ SDCardAccessManager::~SDCardAccessManager() {
 }
 
 
-#ifdef ISIS_OBC_G20
 bool SDCardAccessManager::getSdCardChangeOngoing() const {
+#ifndef ISIS_OBC_G20
+    return false;
+#else
     MutexHelper(mutex, MutexIF::TimeoutType::WAITING, config::SD_CARD_ACCESS_MUTEX_TIMEOUT);
     return changingSdCard;
+#endif
 }
 
 /* Only one manager class is supposed to call this! */
 bool SDCardAccessManager::tryActiveSdCardChange() {
+#ifndef ISIS_OBC_G20
+    return true;
+#else
     MutexHelper(mutex, MutexIF::TimeoutType::WAITING, config::SD_CARD_ACCESS_MUTEX_TIMEOUT);
     if(this->changingSdCard == false) {
         this->changingSdCard = true;
@@ -70,10 +76,10 @@ bool SDCardAccessManager::tryActiveSdCardChange() {
         return true;
     }
     return false;
+#endif
 }
 
 VolumeId SDCardAccessManager::getActiveSdCard() const {
     return activeSdCard;
 }
 
-#endif

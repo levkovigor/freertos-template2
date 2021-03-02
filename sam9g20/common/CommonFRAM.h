@@ -11,6 +11,13 @@
  */
 static const uint32_t FRAM_END_ADDR = 0x3ffff;
 
+//! Calculated required size: 0x20000 (bootloader) * 3 / 256
+//! (because 3 parity bits are generated per 256 byte block)
+static const size_t BOOTLOADER_HAMMING_RESERVED_SIZE = 0x600;
+
+//! Calculated required size for images: 0x100000 (NOR-Flash) - 0x20000 (bootloader) * 3 / 256
+static const uint32_t NOR_FLASH_HAMMING_RESERVED_SIZE = 0x2A00;
+
 /**
  * This struct will gather all critical data stored on (virutalized) FRAM.
  */

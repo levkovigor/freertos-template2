@@ -1,5 +1,5 @@
 #include "FRAMApi.h"
-#include "CriticalDataBlock.h"
+#include "CommonFRAM.h"
 #include <hal/Storage/FRAM.h>
 
 #include <string.h>

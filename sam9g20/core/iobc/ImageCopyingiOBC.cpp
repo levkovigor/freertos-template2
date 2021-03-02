@@ -5,6 +5,7 @@
 #include <fsfw/globalfunctions/CRC.h>
 
 #include <sam9g20/memory/SDCardAccess.h>
+#include <sam9g20/common/CommonFRAM.h>
 #include <sam9g20/common/FRAMApi.h>
 #include <hal/Storage/NORflash.h>
 
@@ -124,17 +125,33 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         F_FILE* file = nullptr;
-        prepareGenericFileInformation(access.getActiveVolume(), &file);
+        ReturnValue_t result = prepareGenericFileInformation(access.getActiveVolume(), &file);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            f_close(file);
+            return result;
+        }
         /* Will take care of closing the file on destruction */
         HCCFileGuard fileHelper(&file);
 
+        if(stepCounter == 0) {
+            if(currentFileSize > NOR_FLASH_HAMMING_RESERVED_SIZE) {
+                /* Invalid file size */
+                return HasReturnvaluesIF::RETURN_FAILED;
+            }
+            int retval = write_nor_flash_hamming_size(currentFileSize, false);
+            if(retval != 0) {
+                /* Problems writing to FRAM */
+                return image::FRAM_ISSUES;
+            }
+        }
+
         while(currentByteIdx < currentFileSize) {
             size_t sizeToRead = 0;
-            if(currentFileSize > sizeToRead) {
+            if(currentFileSize - currentByteIdx > imgBuffer->size()) {
                 sizeToRead = imgBuffer->size();
             }
             else {
-                currentFileSize = sizeToRead;
+                sizeToRead = currentFileSize - currentByteIdx;
             }
             size_t sizeRead = f_read(imgBuffer->data(), 1, sizeToRead, file);
             if(sizeRead != sizeToRead) {
@@ -144,8 +161,12 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
                 return HasReturnvaluesIF::RETURN_FAILED;
             }
 
-            int result = write_nor_flash_hamming_code(imgBuffer->data(), currentByteIdx, sizeRead);
-            if(result != 0) {
+            int retval = 0;
+            if(sourceSlot == image::ImageSlot::FLASH) {
+                retval = write_nor_flash_hamming_code(imgBuffer->data(), currentByteIdx, sizeRead);
+            }
+
+            if(retval != 0) {
 #if OBSW_VERBOSE_LEVEL >= 1
                 sif::printWarning("ImageCopyingEngine::copyImgHammingSdcToFram:"
                         "FRAM error when copying hamming code!\n");
@@ -169,6 +190,12 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
         }
         else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
             message = "SD Card slot 1 hamming code";
+        }
+        else if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
+            message = "Bootloader 0 hamming code";
+        }
+        else {
+            message = "Unknown hamming code";
         }
         sif::printInfo("Copied %s successfully to storage (FRAM)\n", message);
 #endif
@@ -766,6 +793,33 @@ void ImageCopyingEngine::handleInfoPrintout(VolumeId currentVolume) {
             sprintf(targetPrint, "SD Card %d Slot 0 ", static_cast<int>(currentVolume));
         }
         sprintf(typePrint, "primary image");
+    }
+    else if(imageHandlerState == ImageHandlerStates::COPY_IMG_HAMMING_SDC_TO_FRAM) {
+        sprintf(typePrint, "hamming code");
+        sprintf(targetPrint, "FRAM");
+        if(sourceSlot == image::ImageSlot::FLASH) {
+            sprintf(sourcePrint, "NOR-Flash");
+        }
+        else if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
+            sprintf(sourcePrint, "SD Card %d slot 0", static_cast<int>(currentVolume));
+        }
+        else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
+            sprintf(sourcePrint, "SD Card %d slot 1", static_cast<int>(currentVolume));
+        }
+        else if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
+            sprintf(sourcePrint, "bootloader 0");
+        }
+        else if(sourceSlot == image::ImageSlot::BOOTLOADER_1) {
+            sprintf(sourcePrint, "bootloader 1");
+        }
+        else {
+            sprintf(sourcePrint, "unknown source");
+        }
+    }
+    else {
+        sprintf(sourcePrint, "unknown source");
+        sprintf(typePrint, "unknown type");
+        sprintf(targetPrint, "unknown target");
     }
 
     handleGenericInfoPrintout("iOBC", typePrint, sourcePrint, targetPrint);

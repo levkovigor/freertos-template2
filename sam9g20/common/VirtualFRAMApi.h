@@ -13,8 +13,8 @@
 extern "C" {
 #endif
 
-static const char* const VIRT_FRAM_NAME = "fram.bin";
-static const char* const VIRT_FRAM_PATH = "misc";
+static const char* const VIRT_FRAM_NAME = "FRAM.BIN";
+static const char* const VIRT_FRAM_PATH = "MISC";
 
 /**
  * Start the virtualized FRAM by creating a FRAM file on the SD-Card. This function will

@@ -28,7 +28,6 @@ public:
      */
     static SDCardAccessManager* instance();
 
-#ifdef ISIS_OBC_G20
     /**
      * Can be used by SD card users during a transition to check
      * whether SD card change is complete.
@@ -37,21 +36,17 @@ public:
     bool getSdCardChangeOngoing() const;
 
     VolumeId getActiveSdCard() const;
-#endif
-
 
 private:
     SDCardAccessManager();
     MutexIF* mutex;
 
-#ifdef ISIS_OBC_G20
     /**
      * Called by the SD card manager class to change the active SD card.
      * @return
      */
     bool tryActiveSdCardChange();
     bool changingSdCard = false;
-#endif
 
     uint8_t activeAccesses = 0;
     VolumeId activeSdCard = SD_CARD_0;

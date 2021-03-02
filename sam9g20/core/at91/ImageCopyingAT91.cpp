@@ -323,7 +323,7 @@ ReturnValue_t ImageCopyingEngine::handleSdToNandCopyOperation(
     // Get file information like binary size, open the file, seek correct
     // position etc.
     ReturnValue_t result = prepareGenericFileInformation(
-            sdCardAccess.currentVolumeId, &binaryFile);
+            sdCardAccess.getActiveVolume(), &binaryFile);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         return result;
     }
