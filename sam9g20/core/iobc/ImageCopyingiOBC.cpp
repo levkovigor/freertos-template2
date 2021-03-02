@@ -176,11 +176,14 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
             }
             currentByteIdx += sizeRead;
 
+            if(currentByteIdx >= currentFileSize) {
+                break;
+            }
+
             if(countdown->hasTimedOut()) {
                 return image::TASK_PERIOD_OVER_SOON;
             }
         }
-        reset();
 #if OBSW_VERBOSE_LEVEL >= 1
         const char* message = nullptr;
         if(sourceSlot == image::ImageSlot::FLASH) {
@@ -200,6 +203,7 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
         }
         sif::printInfo("Copied %s successfully to storage (FRAM)\n", message);
 #endif
+        reset();
     }
     return HasReturnvaluesIF::RETURN_OK;
 
