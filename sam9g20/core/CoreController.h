@@ -31,6 +31,10 @@ public:
 
     //! Triggered on startup. P1 Boot counter.
     static constexpr Event BOOT_EVENT = MAKE_EVENT(0, severity::INFO);
+    static constexpr Event FRAM_FAILURE = event::makeEvent(SUBSYSTEM_ID, 1, severity::MEDIUM);
+    static constexpr Event SUPERVISOR_FAILURE = event::makeEvent(SUBSYSTEM_ID, 2, severity::MEDIUM);
+    static constexpr Event RTT_RTC_FAILURE = event::makeEvent(SUBSYSTEM_ID, 3, severity::MEDIUM);
+
 
     static constexpr uint8_t SUPERVISOR_INDEX = -1;
     static constexpr float RTC_RTT_SYNC_INTERVAL = 0.5;
@@ -80,12 +84,15 @@ public:
 
 	static constexpr ActionId_t REQUEST_CPU_STATS_CSV = 0;
 	static constexpr ActionId_t REQUEST_CPU_STATS_PRINT = 1;
+
 	static constexpr ActionId_t RESET_OBC = 10;
 	static constexpr ActionId_t POWERCYCLE_OBC = 11;
 
 	static constexpr ActionId_t CLEAR_STORE_PAGE = 12;
 	static constexpr ActionId_t CLEAR_WHOLE_STORE = 13;
 	static constexpr ActionId_t GET_FILL_COUNT = 14;
+
+    static constexpr ActionId_t PRINT_FRAM_CRIT_BLOCK = 30;
 
 private:
 
