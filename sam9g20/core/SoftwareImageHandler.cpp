@@ -2,6 +2,8 @@
 #include "ImageCopyingEngine.h"
 #include "ScrubbingEngine.h"
 
+#include <sam9g20/memory/SDCardHandler.h>
+#include <sam9g20/memory/SDCardAccess.h>
 
 #include <fsfw/tasks/PeriodicTaskIF.h>
 #include <fsfw/timemanager/Countdown.h>
@@ -9,18 +11,14 @@
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 
-#include <sam9g20/memory/SDCardHandler.h>
-#include <sam9g20/memory/SDCardAccess.h>
-
 #ifdef ISIS_OBC_G20
 #include <sam9g20/common/FRAMApi.h>
 #else
 #include <sam9g20/common/VirtualFRAMApi.h>
 #endif
 
-SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId):
-SystemObject(objectId), receptionQueue(QueueFactory::instance()->
-        createMessageQueue(SW_IMG_HANDLER_MQ_DEPTH)),
+SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId): SystemObject(objectId),
+        receptionQueue(QueueFactory::instance()->createMessageQueue(SW_IMG_HANDLER_MQ_DEPTH)),
         actionHelper(this, receptionQueue), parameterHelper(this) {
 }
 
