@@ -6,6 +6,9 @@
  * funtions to read and write/overwrite them conveniently.
  * The functions use the HAL library provided by ISIS to write on the FRAM.
  * The FRAM needs to be started first before using any functions here! (see FRAM.h file)
+ * Please also note that unintialized FRAM fields will have the value 0xff, so check against
+ * this values to check for uninitialized values or simply check against 1 explicitely for
+ * flag values.
  * @author R. Mueller
  */
 #ifndef MISSION_MEMORY_FRAMAPI_H_
@@ -47,6 +50,8 @@ extern "C" {
  * @return
  */
 int fram_read_critical_block(uint8_t* buffer, const size_t max_size);
+int fram_read_bootloader_block(BootloaderGroup* bl_info);
+
 int fram_write_software_version(uint8_t sw_version, uint8_t sw_subversion,
         uint8_t sw_subsubversion);
 int fram_read_software_version(uint8_t* sw_version, uint8_t* sw_subversion,

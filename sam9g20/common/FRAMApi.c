@@ -179,7 +179,7 @@ int set_preferred_sd_card(VolumeId volumeId) {
 
 int get_preferred_sd_card(VolumeId *volumeId) {
     return FRAM_read((unsigned char*) volumeId, PREFERRED_SD_CARD_ADDR,
-            sizeof(((CriticalDataBlock*)0)->preferredSdCard));
+            sizeof(((CriticalDataBlock*)0)->bl_group.preferred_sd_card));
 }
 
 int set_to_load_softwareupdate(bool enable, VolumeId volume) {
@@ -374,14 +374,14 @@ int fram_read_img_reboot_counter(SlotType slotType, uint32_t *reboot_counter) {
     }
     uint32_t address = determine_ham_flag_address(slotType);
     return FRAM_read((unsigned char*) reboot_counter, address,
-            sizeof(((CriticalDataBlock*)0)->nor_flash_reboot_counter));
+            sizeof(((CriticalDataBlock*)0)->bl_group.nor_flash_reboot_counter));
 }
 
 int fram_reset_img_reboot_counter(SlotType slotType) {
     uint32_t new_reboot_counter = 0;
     uint32_t address = determine_ham_flag_address(slotType);
     return FRAM_writeAndVerify((unsigned char*) &new_reboot_counter,
-            address, sizeof(((CriticalDataBlock*)0)->nor_flash_reboot_counter));
+            address, sizeof(((CriticalDataBlock*)0)->bl_group.nor_flash_reboot_counter));
 }
 
 int fram_increment_img_reboot_counter(SlotType slotType, uint32_t* new_reboot_counter) {
@@ -394,7 +394,7 @@ int fram_increment_img_reboot_counter(SlotType slotType, uint32_t* new_reboot_co
 
     uint32_t address = determine_ham_flag_address(slotType);
     result = FRAM_writeAndVerify((unsigned char*) &new_counter_local,
-            address, sizeof(((CriticalDataBlock*)0)->nor_flash_reboot_counter));
+            address, sizeof(((CriticalDataBlock*)0)->bl_group.nor_flash_reboot_counter));
     if(result != 0) {
         return result;
     }
@@ -574,4 +574,8 @@ uint32_t determine_ham_code_address(SlotType slotType) {
         address = BOOTLOADER_HAMMING_ADDR;
     }
     return address;
+}
+
+int fram_read_bootloader_block(BootloaderGroup *bl_info) {
+    return FRAM_read((unsigned char*) bl_info, BL_GROUP_ADDR, sizeof(BootloaderGroup));
 }
