@@ -422,8 +422,15 @@ void CoreController::performPeriodicTimeHandling() {
 
     uint32_t epoch = 0;
     result = Time_getUnixEpoch(reinterpret_cast<unsigned int*>(&epoch));
-    /* todo: compare FSFW clock with RTT clock and sync FSFW clock to RTT
-    clock if drift is too high. */
+
+    /* Correct clock drift of FSFW clock (FreeRTOS/oscillator based) based on ISIS clock */
+    timeval currentFsfwTime;
+    Clock::getClock_timeval(&currentFsfwTime);
+    if(std::abs(currentFsfwTime.tv_sec - epochTime) > clockSecDiffSyncTrigger) {
+        currentFsfwTime.tv_sec = epochTime;
+        currentFsfwTime.tv_usec = 0;
+        Clock::setClock(&currentFsfwTime);
+    }
 #endif /* ISIS_OBC_G20 */
 }
 

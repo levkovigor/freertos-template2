@@ -34,9 +34,10 @@ public:
     static constexpr Event FRAM_FAILURE = event::makeEvent(SUBSYSTEM_ID, 1, severity::MEDIUM);
     static constexpr Event SUPERVISOR_FAILURE = event::makeEvent(SUBSYSTEM_ID, 2, severity::MEDIUM);
     static constexpr Event RTT_RTC_FAILURE = event::makeEvent(SUBSYSTEM_ID, 3, severity::MEDIUM);
-
+    static constexpr Event FSFW_CLOCK_SYNC = event::makeEvent(SUBSYSTEM_ID, 4, severity::INFO);
 
     static constexpr uint8_t SUPERVISOR_INDEX = -1;
+
     static constexpr float RTC_RTT_SYNC_INTERVAL = 0.5;
 	static constexpr uint32_t DAY_IN_SECONDS = 60 * 60 * 24;
 	static constexpr float SECONDS_ON_MS_OVERFLOW = 4294967.296;
@@ -106,6 +107,10 @@ private:
 
 	SystemStateTask* systemStateTask = nullptr;
 	static MutexIF* timeMutex;
+
+    /* If the FSFW clock seconds and the ISIS clock seconds difference is higher than this value,
+    synchronize the FSFW clock. Will be a tweakable parameter */
+    uint8_t clockSecDiffSyncTrigger = 2;
 
 #ifdef ISIS_OBC_G20
 	FRAMHandler* framHandler = nullptr;
