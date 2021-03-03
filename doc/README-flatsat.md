@@ -5,21 +5,34 @@ development and software deployment.
 
 ## Basic instructions for Flatsat
 
-### Connecting to the flatsat computer
+### Setting up the VPN
 
 1. Set up VPN, [IRS  mail account](https://cube18.irs.uni-stuttgart.de/) required: 
-Write mail to zert@irs.uni-stuttgart.de to get OpenVPN configuration.
-2. Download OpenVPN and configure it with the configuration files.
- - Windows: Put configuration files into the OpenVPN config folder
-   or add the configuration in the OpenVPN GUI
- - Ubuntu: Install the ubuntu gnome version of OpenVPN. Then go to 
-   Network &rarr VPN and press + to add the .ovpn file configuration. Now you can activate
-   the VPN via the network button on the top right. Go to the VPN settings to the IPv4 settings 
-   and set a tick at "Use this connection only resources on its network" to allow
-   other services like Mattermost.
+After that, write mail to zert@irs.uni-stuttgart.de to get OpenVPN configuration files.
+
+#### Windows
+
+1. Download [OpenVPN](https://openvpn.net/download-open-vpn/) and install it and configure it with 
+the configuration files.
+2. Put OVPN configuration files into the OpenVPN config folder or add the configuration in the 
+OpenVPN GUI
    
-3. Connect to the VPN
-4. Connect to Flatsat (password needed, ask Jonas Burgdorf on Mattermost):
+#### Ubuntu
+
+1. Install the ubuntu gnome version of OpenVPN
+2. Store the VPN files into some folder, for example a VPN folder in the DOocuments folder
+3. Go to Settings &rarr; Network &rarr; VPN and press + &rarr; Import From File.
+4. Select the .ovpn file previous stored somewhere
+5. Now you can activate the VPN via the network button on the top right. Go to the VPN settings to 
+the IPv4 settings and set a tick at "Use this connection only resources on its network" to allow
+other services like Mattermost.
+   
+
+### Connecting to the flatsat computer
+   
+1. Connect to the VPN
+2. Connect to Flatsat (password needed, ask Jonas Burgdorf on Mattermost):
+
    ```sh
    ssh -X source@flatsat.source.absatvirt.lw
    ```
@@ -30,12 +43,11 @@ Write mail to zert@irs.uni-stuttgart.de to get OpenVPN configuration.
    ssh -X source@192.168.199.228
    ```
    
-   
-   It is recommended to set up SSH configuration either in Eclipse (cross-platform
-   and convenient solution) via the terminal feature (terminal button at the top) or
-   via Putty or Unix Alias.
-   -X is optional for graphical applications
-   There is also another command for port forwarding
+3. It is recommended to set up SSH configuration either in Eclipse (cross-platform
+and convenient solution) via the terminal feature (terminal button at the top) or
+via Putty or Unix Alias. -X is optional for graphical applications.
+There is also another command for port forwarding:
+
    ```sh
    ssh -L <localPort>:localhost:<remotePort> source@flatsat.source.absatvirt.lw
    ```
