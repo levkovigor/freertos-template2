@@ -24,6 +24,7 @@
 
 int perform_iobc_copy_operation_to_sdram();
 int handle_hamming_code_check(SlotType slotType);
+int handle_hamming_code_result(int result);
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
 BootSelect determine_boot_select();
 
@@ -66,7 +67,7 @@ int perform_iobc_copy_operation_to_sdram() {
     boot of that image without a hamming code check.
     If a hamming code checks fails with ECC error or multibit errors, we increment the reboot
     counter in the FRAM and restart the OBC immediately.
-    */
+     */
     BootSelect boot_select = BOOT_NOR_FLASH;
     int result = 0;
     bool use_hamming = true;
@@ -248,29 +249,7 @@ int copy_norflash_binary_to_sdram(size_t copy_size, bool use_hamming)
         TRACE_INFO("Performing hamming code ECC check..\n\r");
 #endif
         int result = handle_hamming_code_check(FLASH_SLOT);
-        if(result != 0) {
-            if(result == -1) {
-                /* FRAM or other issues, we still jump to binary for now */
-                set_sram0_status_field(SRAM_FRAM_ISSUES);
-                return 0;
-            }
-            else if(result == Hamming_ERROR_SINGLEBIT) {
-                /* We set a flag in SRAM to notify primary OBSW of bit flip */
-                set_sram0_status_field(SRAM_HAMMING_ERROR_SINGLE_BIT);
-                return 0;
-            }
-            else if(result == Hamming_ERROR_ECC) {
-                /* We set a flag in SRAM to notify primary OBSW of bit flip in hamming code */
-                set_sram0_status_field(SRAM_HAMMING_ERROR_ECC);
-                return 0;
-            }
-            else if(result == Hamming_ERROR_MULTIPLEBITS) {
-                /* We set a flag in SRAM to notify primary OBSW of uncorrectable error
-                in hamming code and try to load image from SD Card instead */
-                set_sram0_status_field(SRAM_HAMMING_ERROR_MULTIBIT);
-                return -1;
-            }
-        }
+        result = handle_hamming_code_result(result);
     }
     return result;
 }
@@ -365,6 +344,35 @@ int handle_hamming_code_check(SlotType slotType) {
     }
     free(hamming_code);
     return result;
+}
+
+int handle_hamming_code_result(int result) {
+    if(result == 0) {
+        return result;
+    }
+
+    if(result == -1) {
+        /* FRAM or other issues, we still jump to binary for now */
+        set_sram0_status_field(SRAM_FRAM_ISSUES);
+        return 0;
+    }
+    else if(result == Hamming_ERROR_SINGLEBIT) {
+        /* We set a flag in SRAM to notify primary OBSW of bit flip */
+        set_sram0_status_field(SRAM_HAMMING_ERROR_SINGLE_BIT);
+        return 0;
+    }
+    else if(result == Hamming_ERROR_ECC) {
+        /* We set a flag in SRAM to notify primary OBSW of bit flip in hamming code */
+        set_sram0_status_field(SRAM_HAMMING_ERROR_ECC);
+        return 0;
+    }
+    else if(result == Hamming_ERROR_MULTIPLEBITS) {
+        /* We set a flag in SRAM to notify primary OBSW of uncorrectable error
+            in hamming code and try to load image from SD Card instead */
+        set_sram0_status_field(SRAM_HAMMING_ERROR_MULTIBIT);
+        return -1;
+    }
+    return 0;
 }
 
 
