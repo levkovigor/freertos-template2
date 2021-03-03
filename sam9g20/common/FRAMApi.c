@@ -9,8 +9,13 @@
 /* Private functions */
 int get_generic_hamming_flag(uint32_t addr, bool* flag_set);
 int manipulate_sdc_hamming_flag(uint32_t val, VolumeId volume, SdSlots slot);
-int write_hamming_code(uint32_t start_address, uint8_t* hamming_code, size_t current_offset,
+uint32_t determine_ham_flag_address(SlotType slotType);
+uint32_t determine_ham_size_address(SlotType slotType);
+uint32_t determine_img_reboot_counter_addr(SlotType slotType);
+int determine_ham_code_address_with_sizecheck(SlotType slotType, uint32_t* address,
         size_t size_to_write);
+uint32_t determine_ham_code_address(SlotType slotType);
+
 
 /* Implementation */
 
@@ -49,7 +54,7 @@ int fram_read_software_version(uint8_t *software_version,
 
 int fram_increment_reboot_counter(uint32_t* new_reboot_counter) {
     if(new_reboot_counter == NULL) {
-        return -1;
+        return -3;
     }
 
     FRAM_read((unsigned char*) new_reboot_counter,
@@ -71,28 +76,6 @@ int fram_reset_reboot_counter() {
             REBOOT_COUNTER_ADDR, sizeof(new_counter));
 }
 
-int fram_write_flash_binary_size(size_t binary_size) {
-    return FRAM_writeAndVerify((unsigned char*) &binary_size, NOR_FLASH_BINARY_SIZE_ADDR,
-            sizeof(binary_size));
-}
-
-int fram_read_flash_binary_size(size_t* binary_size) {
-    return FRAM_read((unsigned char*) binary_size, NOR_FLASH_BINARY_SIZE_ADDR,
-            sizeof(((CriticalDataBlock*)0)->nor_flash_binary_size));
-}
-
-
-
-int fram_set_flash_ham_flag() {
-    uint32_t value = 1;
-    return FRAM_writeAndVerify((unsigned char*)&value, NOR_FLASH_HAMMING_FLAG_ADDR, 1);
-}
-
-int fram_clear_flash_ham_flag() {
-    uint32_t value = 0;
-    return FRAM_writeAndVerify((unsigned char*)&value, NOR_FLASH_HAMMING_FLAG_ADDR, 1);
-}
-
 int fram_get_flash_ham_flag(bool* flag_set) {
     if(!flag_set) {
         return -3;
@@ -105,41 +88,6 @@ int fram_get_flash_ham_flag(bool* flag_set) {
     return result;
 }
 
-int fram_read_flash_ham_code(uint8_t *buffer, const size_t max_buffer, size_t* size_read) {
-    size_t hamming_code_size = 0;
-    int result = FRAM_read((unsigned char*) hamming_code_size,
-            NOR_FLASH_HAMMING_CODE_SIZE_ADDR, sizeof(size_t));
-    if(result != 0) {
-        return result;
-    }
-
-    if(hamming_code_size > max_buffer) {
-        return -3;
-    }
-
-    if(size_read != NULL) {
-        *size_read = hamming_code_size;
-    }
-    return FRAM_read((unsigned char*) buffer, NOR_FLASH_HAMMING_ADDR, hamming_code_size);
-}
-
-
-int fram_read_flash_ham_size(size_t* hamming_size, bool* hamming_flag_set) {
-    if(hamming_size == NULL) {
-        return -3;
-    }
-    int result = FRAM_read((unsigned char*) hamming_flag_set,
-            NOR_FLASH_HAMMING_CODE_SIZE_ADDR,
-            sizeof(((CriticalDataBlock*)0)->nor_flash_hamming_code_size));
-    if(result != 0 || hamming_flag_set == NULL) {
-        return result;
-    }
-
-    return FRAM_read((unsigned char*) hamming_flag_set,
-            HAMMING_CHECK_FLAG_ADDR,
-            sizeof(((CriticalDataBlock*)0)->use_hamming_flag));
-}
-
 int set_bootloader_faulty(bool faulty) {
     return FRAM_writeAndVerify((unsigned char*) &faulty,
             BOOTLOADER_FAULTY_ADDRESS,
@@ -149,52 +97,6 @@ int set_bootloader_faulty(bool faulty) {
 int is_bootloader_faulty(bool *faulty) {
     return FRAM_read((unsigned char*)faulty, BOOTLOADER_FAULTY_ADDRESS,
             sizeof(((CriticalDataBlock*)0)->bootloader_faulty));
-}
-
-int increment_flash_reboot_counter() {
-    uint8_t nor_flash_reboot_counter;
-    int result = read_flash_reboot_counter(&nor_flash_reboot_counter);
-    if(result != 0) {
-        return result;
-    }
-    nor_flash_reboot_counter ++;
-    return FRAM_writeAndVerify((unsigned char*) &nor_flash_reboot_counter,
-            NOR_FLASH_REBOOT_COUNTER_ADDRESS, sizeof(nor_flash_reboot_counter));
-}
-
-int read_flash_reboot_counter(uint8_t *nor_flash_reboot_counter) {
-    return FRAM_read((unsigned char*)nor_flash_reboot_counter,
-            NOR_FLASH_REBOOT_COUNTER_ADDRESS,
-            sizeof(((CriticalDataBlock*)0)->nor_flash_reboot_counter));
-}
-
-int reset_flash_reboot_counter() {
-    uint8_t new_reboot_counter = 0;
-    return FRAM_writeAndVerify((unsigned char*) &new_reboot_counter,
-            NOR_FLASH_REBOOT_COUNTER_ADDRESS, sizeof(new_reboot_counter));
-}
-
-int increment_sdc0_slot0_reboot_counter() {
-    uint8_t sdc1sl1_reboot_counter;
-    int result = read_sdc0_slot0_reboot_counter(&sdc1sl1_reboot_counter);
-    if(result != 0) {
-        return result;
-    }
-    sdc1sl1_reboot_counter ++;
-    return FRAM_writeAndVerify((unsigned char*) &sdc1sl1_reboot_counter,
-            SDC1_SL1_REBOOT_COUNTER_ADDR, sizeof(sdc1sl1_reboot_counter));
-}
-
-int read_sdc0_slot0_reboot_counter(uint8_t *sdc1sl1_reboot_counter) {
-    return FRAM_read((unsigned char*)sdc1sl1_reboot_counter,
-            SDC1_SL1_REBOOT_COUNTER_ADDR,
-            sizeof(((CriticalDataBlock*)0)->sdc0_image_slot0_reboot_counter));
-}
-
-int reset_sdc0_slot0_reboot_counter() {
-    uint8_t new_reboot_counter = 0;
-    return FRAM_writeAndVerify((unsigned char*) &new_reboot_counter,
-            SDC1_SL1_REBOOT_COUNTER_ADDR, sizeof(new_reboot_counter));
 }
 
 int set_sdc_hamming_flag(VolumeId volume, SdSlots slot) {
@@ -378,119 +280,298 @@ int fram_write_flash_ham_size(size_t hamming_size) {
             sizeof(((CriticalDataBlock*)0)->nor_flash_hamming_code_size));
 }
 
+int fram_write_binary_size(SlotType slotType, size_t binary_size) {
+    uint32_t address = 0;
+    if(slotType == FLASH_SLOT) {
+        address = NOR_FLASH_BINARY_SIZE_ADDR;
+    }
+    else if(slotType == BOOTLOADER_0) {
+        address = BOOTLOADER_SIZE_ADDR;
+    }
+    else {
+        return -3;
+    }
 
-int fram_write_flash_ham_code(uint8_t* hamming_code, size_t current_offset,
-        size_t size_to_write) {
-    return write_hamming_code(NOR_FLASH_HAMMING_ADDR, hamming_code, current_offset, size_to_write);
+    return FRAM_writeAndVerify((unsigned char*) &binary_size, address, sizeof(binary_size));
 }
 
-int fram_write_bootloader_ham_code(uint8_t* hamming_code, size_t size_to_write) {
-    return write_hamming_code(BOOTLOADER_HAMMING_ADDR, hamming_code, 0, size_to_write);
+int fram_read_binary_size(SlotType slotType, size_t *binary_size) {
+    if(binary_size == NULL) {
+        return -4;
+    }
+
+    uint32_t address = 0;
+    if(slotType == FLASH_SLOT) {
+        address = NOR_FLASH_BINARY_SIZE_ADDR;
+    }
+    else if(slotType == BOOTLOADER_0) {
+        address = BOOTLOADER_SIZE_ADDR;
+    }
+    else {
+        return -4;
+    }
+    return FRAM_read((unsigned char*) binary_size, address,
+            sizeof(((CriticalDataBlock*)0)->nor_flash_binary_size));
 }
 
-int fram_write_sdc_0_sl_0_ham_code(uint8_t* hamming_code, size_t current_offset,
-        size_t size_to_write) {
-    return write_hamming_code(SDC0_SLOT0_HAMMING_ADDR, hamming_code, current_offset, size_to_write);
+int fram_set_ham_flag(SlotType slotType) {
+    uint32_t address = determine_ham_flag_address(slotType);
+    if(address == 0) {
+        return -3;
+    }
+    uint32_t value = 1;
+    return FRAM_writeAndVerify((unsigned char*)&value, address, sizeof(uint32_t));
 }
 
-int fram_write_sdc_0_sl_1_ham_code(uint8_t* hamming_code, size_t current_offset,
-        size_t size_to_write) {
-    return write_hamming_code(SDC0_SLOT1_HAMMING_ADDR, hamming_code, current_offset, size_to_write);
+int fram_clear_ham_flag(SlotType slotType) {
+    uint32_t address = determine_ham_flag_address(slotType);
+    if(address == 0) {
+        return -3;
+    }
+    uint32_t value = 0;
+    return FRAM_writeAndVerify((unsigned char*)&value, NOR_FLASH_HAMMING_FLAG_ADDR, 1);
 }
 
-int fram_write_sdc_1_sl_0_ham_code(uint8_t* hamming_code, size_t current_offset,
-        size_t size_to_write) {
-    return write_hamming_code(SDC1_SLOT0_HAMMING_ADDR, hamming_code, current_offset, size_to_write);
-}
-int fram_write_sdc_1_sl_1_ham_code(uint8_t* hamming_code, size_t current_offset,
-        size_t size_to_write) {
-    return write_hamming_code(SDC1_SLOT1_HAMMING_ADDR, hamming_code, current_offset, size_to_write);
+int fram_get_ham_flag(SlotType slotType, bool *flag_set) {
+    if(flag_set == NULL) {
+        return -3;
+    }
+    uint32_t address = determine_ham_flag_address(slotType);
+    if(address == 0) {
+        return -4;
+    }
+    uint32_t flag;
+    int result = FRAM_read((unsigned char*)&flag, address, sizeof(flag));
+    if(result == 0) {
+        *flag_set = flag;
+    }
+    return result;
 }
 
-int fram_read_bootloader_ham_code(uint8_t *code, size_t *size) {
-    size_t size_to_read = 0;
-    int result = FRAM_read((unsigned char*) &size_to_read,
-            BOOTLOADER_HAMMING_SIZE_ADDR, sizeof(size_to_read));
-    if (result != 0) {
+uint32_t determine_ham_flag_address(SlotType slotType) {
+    uint32_t address = 0;
+    if(slotType == FLASH_SLOT) {
+        address = NOR_FLASH_HAMMING_FLAG_ADDR;
+    }
+    else if(slotType == SDC_0_SL_0) {
+        address = SDC0_SL0_HAMMING_FLAG_ADDR;
+    }
+    else if(slotType == SDC_0_SL_1) {
+        address = SDC0_SL1_HAMMING_FLAG_ADDR;
+    }
+    else if(slotType == SDC_1_SL_0) {
+        address = SDC1_SL0_HAMMING_FLAG_ADDR;
+    }
+    else if(slotType == SDC_1_SL_1) {
+        address = SDC1_SL1_HAMMING_FLAG_ADDR;
+    }
+    return address;
+}
+
+int fram_read_img_reboot_counter(SlotType slotType, uint32_t *reboot_counter) {
+    if(reboot_counter == NULL) {
+        return -3;
+    }
+    uint32_t address = determine_ham_flag_address(slotType);
+    return FRAM_read((unsigned char*) reboot_counter, address,
+            sizeof(((CriticalDataBlock*)0)->nor_flash_reboot_counter));
+}
+
+int fram_reset_img_reboot_counter(SlotType slotType) {
+    uint32_t new_reboot_counter = 0;
+    uint32_t address = determine_ham_flag_address(slotType);
+    return FRAM_writeAndVerify((unsigned char*) &new_reboot_counter,
+            address, sizeof(((CriticalDataBlock*)0)->nor_flash_reboot_counter));
+}
+
+int fram_increment_img_reboot_counter(SlotType slotType, uint32_t* new_reboot_counter) {
+    uint32_t new_counter_local = 0;
+    int result = fram_read_img_reboot_counter(slotType, &new_counter_local);
+    if(result != 0) {
         return result;
     }
-    if(size_to_read > 512) {
-        return -1;
+    new_counter_local++;
+
+    uint32_t address = determine_ham_flag_address(slotType);
+    result = FRAM_writeAndVerify((unsigned char*) &new_counter_local,
+            address, sizeof(((CriticalDataBlock*)0)->nor_flash_reboot_counter));
+    if(result != 0) {
+        return result;
     }
-    else if(size != NULL) {
-        *size = size_to_read;
+
+    if(new_reboot_counter != NULL) {
+        *new_reboot_counter = new_counter_local;
     }
-    return FRAM_read(code, BOOTLOADER_HAMMING_ADDR, size_to_read);
+    return result;
 }
 
-int fram_write_bootloader_ham_size(size_t ham_size) {
+uint32_t determine_img_reboot_counter_addr(SlotType slotType) {
+    uint32_t address = 0;
+    if(slotType == FLASH_SLOT) {
+        address = NOR_FLASH_REBOOT_COUNTER_ADDRESS;
+    }
+    else if(slotType == SDC_0_SL_0) {
+        address = SDC0_SL0_REBOOT_COUNTER_ADDR;
+    }
+    else if(slotType == SDC_0_SL_1) {
+        address = SDC0_SL1_REBOOT_COUNTER_ADDR;
+    }
+    else if(slotType == SDC_1_SL_0) {
+        address = SDC1_SL0_REBOOT_COUNTER_ADDR;
+    }
+    else if(slotType == SDC_1_SL_1) {
+        address = SDC1_SL1_REBOOT_COUNTER_ADDR;
+    }
+    return address;
+}
+
+int fram_write_ham_size(SlotType slotType, size_t ham_size) {
+    uint32_t address = determine_ham_size_address(slotType);
+    if(address == 0) {
+        return -3;
+    }
     return FRAM_writeAndVerify((unsigned char*) &ham_size,
-            BOOTLOADER_HAMMING_SIZE_ADDR, sizeof(ham_size));
+            address, sizeof(((CriticalDataBlock*)0)->nor_flash_hamming_code_size));
 }
 
-int fram_write_sdc_0_sl_0_ham_size(size_t ham_size) {
-    return FRAM_writeAndVerify((unsigned char*) &ham_size,
-            SDC0_SL0_HAMMING_SIZE_ADDR, sizeof(ham_size));
-}
-
-int fram_write_sdc_0_sl_1_ham_size(size_t ham_size) {
-    return FRAM_writeAndVerify((unsigned char*) &ham_size,
-            SDC0_SL1_HAMMING_SIZE_ADDR, sizeof(ham_size));
-}
-
-int fram_write_sdc_1_sl_0_ham_size(size_t ham_size) {
-    return FRAM_writeAndVerify((unsigned char*) &ham_size,
-            SDC1_SL0_HAMMING_SIZE_ADDR, sizeof(ham_size));
-}
-
-int fram_write_sdc_1_sl_1_ham_size(size_t ham_size) {
-    return FRAM_writeAndVerify((unsigned char*) &ham_size,
-            SDC0_SL1_HAMMING_SIZE_ADDR, sizeof(ham_size));
-}
-
-int fram_read_bootloader_ham_size(size_t *ham_size) {
+int fram_read_ham_size(SlotType slotType, size_t *ham_size, bool *ham_flag_set) {
     if(ham_size == NULL) {
         return -3;
     }
-    return FRAM_read((unsigned char*) ham_size, BOOTLOADER_HAMMING_SIZE_ADDR,
-            sizeof(((CriticalDataBlock*)0)->bootloader_hamming_code_size));
-}
 
-int fram_read_sdc_0_sl_0_ham_size(size_t *ham_size) {
-    if(ham_size == NULL) {
-        return -3;
+    if(ham_flag_set != NULL) {
+        bool flag_set = false;
+        int result = fram_get_ham_flag(slotType, &flag_set);
+        if(result != 0) {
+            return result;
+        }
+        *ham_flag_set = flag_set;
     }
-    return FRAM_read((unsigned char*) ham_size, SDC0_SL0_HAMMING_SIZE_ADDR,
-            sizeof(((CriticalDataBlock*)0)->sdc0_image_slot0_hamming_size));
-}
 
-int fram_read_sdc_0_sl_1_ham_size(size_t *ham_size) {
-    if(ham_size == NULL) {
-        return -3;
+    uint32_t ham_size_addr = determine_ham_flag_address(slotType);
+    if(ham_size_addr == 0) {
+        return -4;
     }
-    return FRAM_read((unsigned char*) ham_size, SDC0_SL1_HAMMING_SIZE_ADDR,
-            sizeof(((CriticalDataBlock*)0)->sdc0_image_slot1_hamming_size));
+    return FRAM_read((unsigned char*) ham_size, ham_size_addr,
+            sizeof(((CriticalDataBlock*)0)->nor_flash_hamming_code_size));
 }
 
-int fram_read_sdc_1_sl_0_ham_size(size_t *ham_size) {
-    if(ham_size == NULL) {
-        return -3;
+uint32_t determine_ham_size_address(SlotType slotType) {
+    uint32_t address = 0;
+    if(slotType == FLASH_SLOT) {
+        address = NOR_FLASH_HAMMING_CODE_SIZE_ADDR;
     }
-    return FRAM_read((unsigned char*) ham_size, SDC1_SL0_HAMMING_SIZE_ADDR,
-            sizeof(((CriticalDataBlock*)0)->sdc1_image_slot0_hamming_size));
-}
-
-int fram_read_sdc_1_sl_1_ham_size(size_t *ham_size) {
-    if(ham_size == NULL) {
-        return -3;
+    else if(slotType == SDC_0_SL_0) {
+        address = SDC0_SL0_HAMMING_SIZE_ADDR;
     }
-    return FRAM_read((unsigned char*) ham_size, SDC1_SL1_HAMMING_SIZE_ADDR,
-            sizeof(((CriticalDataBlock*)0)->sdc1_image_slot1_hamming_size));
+    else if(slotType == SDC_0_SL_1) {
+        address = SDC0_SL1_HAMMING_SIZE_ADDR;
+    }
+    else if(slotType == SDC_1_SL_0) {
+        address = SDC1_SL0_HAMMING_SIZE_ADDR;
+    }
+    else if(slotType == SDC_1_SL_1) {
+        address = SDC1_SL1_HAMMING_SIZE_ADDR;
+    }
+    else if(slotType == BOOTLOADER_0) {
+        address = BOOTLOADER_HAMMING_SIZE_ADDR;
+    }
+    return address;
 }
 
-int write_hamming_code(uint32_t start_address, uint8_t* hamming_code, size_t current_offset,
+int fram_write_ham_code(SlotType slotType, uint8_t *buffer, size_t current_offset,
         size_t size_to_write) {
-    return FRAM_writeAndVerify((unsigned char*) hamming_code + current_offset,
-            start_address, size_to_write);
+    uint32_t address = 0;
+    int result = determine_ham_code_address_with_sizecheck(slotType, &address, size_to_write);
+    if(result != 0) {
+        return result;
+    }
+    return FRAM_writeAndVerify((unsigned char*) address + current_offset,
+            address, size_to_write);
 }
 
+int fram_read_ham_code(SlotType slotType, uint8_t *buffer, const size_t max_buffer,
+        size_t current_offset, size_t size_to_read, size_t *size_read) {
+    uint32_t address = determine_ham_code_address(slotType);
+    if(address == 0) {
+        return -4;
+    }
+
+    /* Auto-determine size of hamming code */
+    if(size_to_read == 0) {
+        int result = fram_read_ham_size(slotType, &size_to_read, NULL);
+        if(result != 0) {
+            return result;
+        }
+    }
+
+    if(slotType == BOOTLOADER_0) {
+        if(size_to_read + current_offset > BOOTLOADER_HAMMING_RESERVED_SIZE) {
+            /* Set size to read to remaining size */
+            size_to_read = BOOTLOADER_HAMMING_RESERVED_SIZE - current_offset;
+        }
+    }
+    else {
+        if(size_to_read + current_offset > IMAGES_HAMMING_RESERVED_SIZE) {
+            size_to_read = IMAGES_HAMMING_RESERVED_SIZE - current_offset;
+        }
+    }
+
+    if(size_to_read > max_buffer) {
+        return -5;
+    }
+
+    int result = FRAM_read(buffer + current_offset, address, size_to_read);
+    if(result != 0) {
+        return result;
+    }
+
+    if(size_read != NULL) {
+        *size_read = size_to_read;
+    }
+    return result;
+}
+
+int determine_ham_code_address_with_sizecheck(SlotType slotType, uint32_t* address,
+        size_t size_to_write) {
+    uint32_t local_address = determine_ham_code_address(slotType);
+    if(local_address == 0) {
+        return -4;
+    }
+
+    if(slotType == BOOTLOADER_0) {
+        if(size_to_write > BOOTLOADER_HAMMING_RESERVED_SIZE) {
+            return -5;
+        }
+    }
+    else {
+        if(size_to_write > IMAGES_HAMMING_RESERVED_SIZE) {
+            return -5;
+        }
+    }
+    *address = local_address;
+    return 0;
+}
+
+uint32_t determine_ham_code_address(SlotType slotType) {
+    uint32_t address = 0;
+    if(slotType == FLASH_SLOT) {
+        address = NOR_FLASH_HAMMING_ADDR;
+    }
+    else if(slotType == SDC_0_SL_0) {
+        address = SDC0_SLOT0_HAMMING_ADDR;
+    }
+    else if(slotType == SDC_0_SL_1) {
+        address = SDC0_SLOT1_HAMMING_ADDR;
+    }
+    else if(slotType == SDC_1_SL_0) {
+        address = SDC1_SLOT0_HAMMING_ADDR;
+    }
+    else if(slotType == SDC_1_SL_1) {
+        address = SDC1_SLOT1_HAMMING_ADDR;
+    }
+    else if(slotType == BOOTLOADER_0) {
+        address = BOOTLOADER_HAMMING_ADDR;
+    }
+    return address;
+}

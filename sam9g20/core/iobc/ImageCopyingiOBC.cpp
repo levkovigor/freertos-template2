@@ -135,12 +135,12 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
         HCCFileGuard fileHelper(&file);
 
         if(stepCounter == 0) {
-            if(currentFileSize > NOR_FLASH_HAMMING_RESERVED_SIZE) {
+            if(currentFileSize > IMAGES_HAMMING_RESERVED_SIZE) {
                 /* Invalid file size */
                 return HasReturnvaluesIF::RETURN_FAILED;
             }
             /* We write the hamming code size to the designated slot */
-            int retval = fram_write_flash_ham_size(currentFileSize);
+            int retval = fram_write_ham_size(FLASH_SLOT, currentFileSize);
             if(retval != 0) {
                 /* Problems writing to FRAM */
                 return image::FRAM_ISSUE;
@@ -163,11 +163,19 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
                 return HasReturnvaluesIF::RETURN_FAILED;
             }
 
-            int retval = 0;
+            SlotType framSlot;
             if(sourceSlot == image::ImageSlot::FLASH) {
-                retval = fram_write_flash_ham_code(imgBuffer->data(), currentByteIdx, sizeRead);
+                framSlot = FLASH_SLOT;
+            }
+            else if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
+                framSlot = SDC_0_SL_0;
+            }
+            else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
+                framSlot = SDC_0_SL_1;
             }
 
+            int retval = fram_write_ham_code(framSlot, imgBuffer->data(),
+                    currentByteIdx, sizeRead);
             if(retval != 0) {
 #if OBSW_VERBOSE_LEVEL >= 1
                 sif::printWarning("ImageCopyingEngine::copyImgHammingSdcToFram:"
@@ -343,7 +351,7 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
 
     if(stepCounter == 0) {
         /* We store the size of the NOR-Flash image in the FRAM */
-        int retval = fram_write_flash_binary_size(currentFileSize);
+        int retval = fram_write_binary_size(FLASH_SLOT, currentFileSize);
         if(retval != 0) {
             /* FRAM issues */
             EventManagerIF::triggerEvent(objects::SOFTWARE_IMAGE_HANDLER,

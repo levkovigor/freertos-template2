@@ -20,7 +20,7 @@
 #include <stdlib.h>
 
 int perform_iobc_copy_operation_to_sdram();
-int handle_hamming_code_check();
+int handle_hamming_code_check(SlotType slotType);
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
 
 /**
@@ -136,10 +136,10 @@ int copy_norflash_binary_to_sdram(size_t copy_size)
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_INFO("Performing hamming code ECC check..\n\r");
 #endif
-        result = handle_hamming_code_check();
+        result = handle_hamming_code_check(FLASH_SLOT);
         if(result != 0) {
             if(result == -1) {
-                /* FRAM issues, we still jump to binary for now */
+                /* FRAM or other issues, we still jump to binary for now */
                 set_sram0_status_field(SRAM_FRAM_ISSUES);
                 return 0;
             }
@@ -172,28 +172,52 @@ int copy_norflash_binary_to_sdram(size_t copy_size)
  *  - Hamming_ERROR_SINGLEBIT(1) if a single bit was corrected
  *  - Hamming_ERROR_ECC(2) on ECC error
  *  - Hamming_ERROR_MULTIPLEBITS(3) on multibit error.
- *  - -1 for FRAM issues
+ *  - -1 for FRAM issues or other issues where we should still jump to the same binary
  */
-int handle_hamming_code_check() {
-    /* now we can perform the hamming code check here. We will allocate enough memory in the
-    SDRAM to store the hamming code, which is stored in the FRAM */
-    uint8_t* hamming_code = malloc(NOR_FLASH_HAMMING_RESERVED_SIZE);
+int handle_hamming_code_check(SlotType slotType) {
+    /* Now we can perform the hamming code check here. */
+    if(slotType == BOOTLOADER_0) {
+        /* Invalid slot type */
+        return -1;
+    }
+
     size_t size_read = 0;
-    int result = fram_read_flash_ham_code(hamming_code,
-            NOR_FLASH_HAMMING_RESERVED_SIZE, &size_read);
+    size_t ham_size = 0;
+    bool ham_flag = false;
+    int result = fram_read_ham_size(slotType, &ham_size, &ham_flag);
     if(result != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-        TRACE_WARNING("Could not read hamming code, error code %d!\n\r", result);
+        TRACE_WARNING("Could not read hamming size and  flag, error code %d!\n\r", result);
 #endif
         return -1;
     }
 
+    /* Hamming check disabled */
+    if(!ham_flag) {
+        return -1;
+    }
+
+    /* We will allocate enough memory in the SDRAM to store the hamming code, which is stored
+    in the FRAM */
+    uint8_t* hamming_code = malloc(IMAGES_HAMMING_RESERVED_SIZE);
+
+    result = fram_read_ham_code(slotType, hamming_code,
+            IMAGES_HAMMING_RESERVED_SIZE,0, ham_size, &size_read);
+    if(result != 0) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        TRACE_WARNING("Could not read hamming code, error code %d!\n\r", result);
+#endif
+        free(hamming_code);
+        return -1;
+    }
+
     size_t image_size;
-    result = fram_read_flash_binary_size(&image_size);
+    result = fram_read_binary_size(FLASH_SLOT, &image_size);
     if(result != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_WARNING("Could not read image size, error code %d!\n\r", result);
 #endif
+        free(hamming_code);
         return -1;
     }
 
@@ -218,15 +242,19 @@ int handle_hamming_code_check() {
     uint8_t hamming_result = Hamming_Verify256x((unsigned char*) SDRAM_DESTINATION,
             size_to_check, hamming_code);
     if(hamming_result == Hamming_ERROR_SINGLEBIT) {
-        return Hamming_ERROR_SINGLEBIT;
+        result = Hamming_ERROR_SINGLEBIT;
     }
     else if(hamming_result == Hamming_ERROR_ECC) {
-        return Hamming_ERROR_ECC;
+        result = Hamming_ERROR_ECC;
     }
     else if(hamming_result == Hamming_ERROR_MULTIPLEBITS) {
-        return Hamming_ERROR_MULTIPLEBITS;
+        result = Hamming_ERROR_MULTIPLEBITS;
     }
-    return 0;
+    else {
+        result = 0;
+    }
+    free(hamming_code);
+    return result;
 }
 
 

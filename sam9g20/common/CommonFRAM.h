@@ -16,20 +16,30 @@ static const uint32_t FRAM_END_ADDR = 0x3ffff;
 static const size_t BOOTLOADER_HAMMING_RESERVED_SIZE = 0x600;
 
 //! Calculated required size for images: 0x100000 (NOR-Flash) - 0x20000 (bootloader) * 3 / 256
-static const uint32_t NOR_FLASH_HAMMING_RESERVED_SIZE = 0x2A00;
+static const uint32_t IMAGES_HAMMING_RESERVED_SIZE = 0x2A00;
 
 static const uint32_t BOOTLOADER_HAMMING_ADDR = FRAM_END_ADDR - BOOTLOADER_HAMMING_RESERVED_SIZE;
 
 static const uint32_t NOR_FLASH_HAMMING_ADDR = BOOTLOADER_HAMMING_ADDR -
-        NOR_FLASH_HAMMING_RESERVED_SIZE;
+        IMAGES_HAMMING_RESERVED_SIZE;
 static const uint32_t SDC0_SLOT0_HAMMING_ADDR = NOR_FLASH_HAMMING_ADDR -
-        NOR_FLASH_HAMMING_RESERVED_SIZE;
+        IMAGES_HAMMING_RESERVED_SIZE;
 static const uint32_t SDC0_SLOT1_HAMMING_ADDR =  SDC0_SLOT0_HAMMING_ADDR -
-        NOR_FLASH_HAMMING_RESERVED_SIZE;
+        IMAGES_HAMMING_RESERVED_SIZE;
 static const uint32_t SDC1_SLOT0_HAMMING_ADDR = SDC0_SLOT1_HAMMING_ADDR -
-        NOR_FLASH_HAMMING_RESERVED_SIZE;
+        IMAGES_HAMMING_RESERVED_SIZE;
 static const uint32_t SDC1_SLOT1_HAMMING_ADDR =  SDC1_SLOT0_HAMMING_ADDR -
-        NOR_FLASH_HAMMING_RESERVED_SIZE;
+        IMAGES_HAMMING_RESERVED_SIZE;
+
+typedef enum {
+    FLASH_SLOT,
+    SDC_0_SL_0,
+    SDC_0_SL_1,
+    SDC_1_SL_0,
+    SDC_1_SL_1,
+    BOOTLOADER_0,
+    BOOTLOADER_1
+} SlotType;
 
 /**
  * This struct will gather all critical data stored on (virutalized) FRAM.
@@ -54,7 +64,7 @@ typedef struct __attribute__((__packed__))  _CriticalDataBlock {
     uint32_t use_hamming_flag;
 
     /* NOR-Flash binary information */
-    uint32_t nor_flash_binary_size;
+    size_t nor_flash_binary_size;
     /* NOR-Flash binary hamming code size */
     size_t nor_flash_hamming_code_size;
     uint32_t nor_flash_hamming_flag;
@@ -99,7 +109,8 @@ typedef struct __attribute__((__packed__))  _CriticalDataBlock {
      * in FRAM. Hamming code will be stored in FRAM in any case.
      */
     uint32_t bootloader_faulty;
-    uint32_t bootloader_hamming_code_size;
+    size_t bootloader_size;
+    size_t bootloader_hamming_code_size;
 
     /* Software update information */
     uint8_t filler_software_update[1];
@@ -126,6 +137,7 @@ static const uint8_t SOFTWARE_SUBSUBVERSION_ADDR =
 static const uint32_t REBOOT_COUNTER_ADDR =
         offsetof(CriticalDataBlock, reboot_counter);
 
+static const uint32_t BOOTLOADER_SIZE_ADDR = offsetof(CriticalDataBlock, bootloader_size);
 static const uint32_t BOOTLOADER_HAMMING_SIZE_ADDR =
         offsetof(CriticalDataBlock, bootloader_hamming_code_size);
 static const uint32_t BOOTLOADER_FAULTY_ADDRESS =
