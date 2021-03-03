@@ -120,8 +120,8 @@ int fram_get_img_ham_flag(SlotType slotType, bool* flag_set);
  * These are used to switch binary types in case booting multiple times with one type
  * did not work. They should be reset via telecommand after the image is deemed stable.
  */
-int fram_increment_img_reboot_counter(SlotType slotType, uint32_t* new_reboot_counter);
-int fram_read_img_reboot_counter(SlotType slotType, uint32_t* reboot_counter);
+int fram_increment_img_reboot_counter(SlotType slotType, uint16_t* new_reboot_counter);
+int fram_read_img_reboot_counter(SlotType slotType, uint16_t* reboot_counter);
 int fram_reset_img_reboot_counter(SlotType slotType);
 
 int fram_write_ham_code(SlotType slotType, uint8_t* buffer, size_t current_offset,
