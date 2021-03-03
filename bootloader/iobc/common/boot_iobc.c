@@ -43,34 +43,84 @@ void perform_bootloader_core_operation() {
 }
 
 int perform_iobc_copy_operation_to_sdram() {
-    /* Determine which binary should be copied to SDRAM first. */
+    /* The following bootloader sequence was designed by Jakob Meier and implemented by
+    Robin Mueller. A graph can be found in the OBSW DDJF document.
+
+    Determine which binary should be copied to SDRAM first.
+    First, we check whether a software update needs to be loaded by checking a FRAM flag.
+    The volume (SD card 0 or 1) is specified in the FRAM as well.
+    After that, we also check the local reboot counter of either the software update
+    (SD card slot 1) or the primary flash image.
+
+    If the reboot counter for the SW update is larger than 3, we go to the flash image.
+    If the flash image reboot counter is larger than 3, we try the default SD card image.
+    If the default SD card image reboot counter is larger than 3, we switch the SD card and
+    try to boot the image from the second SD card. If the fault counter is larger than 3 here too
+    we boot from NOR-Flash without ECC.
+
+    Hamming code checks can be disabled individually for image types, which will lead to a
+    boot of that image without a hamming code check.
+    If a hamming code checks fails with ECC error or multibit errors, we increment the reboot
+    counter in the FRAM and restart the OBC immediately.
+    */
     BootSelect boot_select = BOOT_NOR_FLASH;
     bool load_sw_update = false;
+    /* Get the update volume for a SW update as well */
     VolumeId volume = SD_CARD_0;
     int result = 0;
     if(!fram_faulty) {
         result = get_to_load_softwareupdate(&load_sw_update, &volume);
         if (result != 0) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
             TRACE_ERROR("FRAM could not be read!\n\r");
+#endif
         }
     }
 
     if (load_sw_update) {
+        /* Slot 1 will be the update slot */
         if (volume == SD_CARD_0) {
-            boot_select = BOOT_SD_CARD_0_UPDATE;
+            boot_select = BOOT_SD_CARD_0_SLOT_1;
+            uint32_t reboot_counter = 0;
+            if(!fram_faulty) {
+                result = fram_read_img_reboot_counter(SDC_0_SL_1, &reboot_counter);
+                if (result != 0) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+                    TRACE_ERROR("FRAM could not be read!\n\r");
+#endif
+                }
+                if(reboot_counter > 3) {
+                    /* Load flash image instead */
+                    boot_select = BOOT_NOR_FLASH;
+                }
+            }
         }
         else {
-            boot_select = BOOT_SD_CARD_1_UPDATE;
+            boot_select = BOOT_SD_CARD_1_SLOT_1;
+            uint32_t reboot_counter = 0;
+            if(!fram_faulty) {
+                result = fram_read_img_reboot_counter(SDC_1_SL_1, &reboot_counter);
+                if (result != 0) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+                    TRACE_ERROR("FRAM could not be read!\n\r");
+#endif
+                }
+                if(reboot_counter > 3) {
+                    /* Load flash image instead */
+                    boot_select = BOOT_NOR_FLASH;
+                }
+            }
         }
+
     }
 
     if(boot_select == BOOT_NOR_FLASH) {
         result = copy_norflash_binary_to_sdram(PRIMARY_IMAGE_RESERVED_SIZE);
 
         if(result != 0) {
-            result = copy_sdcard_binary_to_sdram(BOOT_SD_CARD_0_UPDATE);
+            result = copy_sdcard_binary_to_sdram(BOOT_SD_CARD_0_SLOT_1);
             if(result != 0) {
-                result = copy_sdcard_binary_to_sdram(BOOT_SD_CARD_1_UPDATE);
+                result = copy_sdcard_binary_to_sdram(BOOT_SD_CARD_1_SLOT_0);
             }
         }
     }

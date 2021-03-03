@@ -38,7 +38,7 @@ int copy_sdcard_binary_to_sdram(BootSelect boot_select) {
 #if USE_TINY_FS == 0
 int copy_with_hcc_lib(BootSelect boot_select) {
     VolumeId current_volume = SD_CARD_0;
-    if (boot_select == BOOT_SD_CARD_1_UPDATE) {
+    if (boot_select == BOOT_SD_CARD_1_SLOT_1) {
         current_volume = SD_CARD_1;
     }
 
