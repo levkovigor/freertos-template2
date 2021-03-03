@@ -50,11 +50,6 @@ CoreController::CoreController(object_id_t objectId,
 #endif
 }
 
-uint32_t CoreController::getUptimeSeconds() {
-    MutexHelper(timeMutex, MutexIF::TimeoutType::WAITING, 20);
-    return uptimeSeconds;
-}
-
 void CoreController::performControlOperation() {
     /* First task: Supervisor handling. */
     performSupervisorHandling();
@@ -80,64 +75,6 @@ void CoreController::performSupervisorHandling() {
     Supervisor_calculateAdcValues(&supervisorHk, adcValues);
     /* now store everything into a local pool. Also take action if any values are out of order. */
 #endif
-}
-
-void CoreController::performPeriodicTimeHandling() {
-    timeMutex->lockMutex(MutexIF::TimeoutType::WAITING, 20);
-    uint32_t currentUptimeSeconds = updateSecondsCounter();
-    timeMutex->unlockMutex();
-
-    /* Dynamic memory allocation is only allowed at software startup */
-#if OBSW_MONITOR_ALLOCATION == 1
-    if(currentUptimeSeconds > 2 and not
-            config::softwareInitializationComplete) {
-        config::softwareInitializationComplete = true;
-    }
-#endif
-
-    /* Check for overflows of 10kHz 32bit counter regularly
-    (currently every day). */
-    if(currentUptimeSeconds - lastFastCounterUpdateSeconds >= DAY_IN_SECONDS) {
-        update64bit10kHzCounter();
-        lastFastCounterUpdateSeconds = currentUptimeSeconds;
-    }
-#ifdef ISIS_OBC_G20
-    /* Store current uptime in seconds in FRAM, using the FRAM handler. */
-    int result = fram_update_seconds_since_epoch(currentUptimeSeconds);
-    if(result != 0) {
-        /* Should not happen! */
-        triggerEvent(FRAM_FAILURE, result);
-    }
-
-    uint32_t epoch = 0;
-    result = Time_getUnixEpoch(reinterpret_cast<unsigned int*>(&epoch));
-    /* todo: compare FSFW clock with RTT clock and sync FSFW clock to RTT
-    clock if drift is too high. */
-#endif
-}
-
-uint32_t CoreController::updateSecondsCounter() {
-#ifdef AT91SAM9G20_EK
-    /* We can only use RTT on the AT91, on the iOBC it will be reset constantly. */
-    uptimeSeconds = RTT_GetTime();
-#else
-    uint32_t currentUptimeSeconds = 0;
-    /* Millisecond count can overflow regularly (around every 50 days) */
-    uint32_t uptimeMs = 0;
-    Clock::getUptime(&uptimeMs);
-
-    /* I am just going to assume that the first uptime encountered is going
-    to be larger than 0 milliseconds. */
-    if(uptimeMs <= lastUptimeMs) {
-        msOverflowCounter++;
-    }
-    currentUptimeSeconds = uptimeMs / configTICK_RATE_HZ;
-
-    lastUptimeMs = uptimeMs;
-    uptimeSeconds = msOverflowCounter * SECONDS_ON_MS_OVERFLOW +
-            currentUptimeSeconds;
-#endif
-    return uptimeSeconds;
 }
 
 ReturnValue_t CoreController::checkModeCommand(Mode_t mode, Submode_t submode,
@@ -384,12 +321,12 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
     }
 
     timeval currentTime;
+    currentTime.tv_sec = secSinceEpoch;
 
     /* Setting ISIS clock. */
     Time_setUnixEpoch(secSinceEpoch);
 
     /* Setting FSFW clock. */
-    currentTime.tv_sec = secSinceEpoch;
     Clock::setClock(&currentTime);
 
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -491,4 +428,67 @@ ReturnValue_t CoreController::initializeLocalDataPool(localpool::DataPool &local
 
 LocalPoolDataSetBase* CoreController::getDataSetHandle(sid_t sid) {
     return nullptr;
+}
+
+
+void CoreController::performPeriodicTimeHandling() {
+    timeMutex->lockMutex(MutexIF::TimeoutType::WAITING, 20);
+    uint32_t currentUptimeSeconds = updateSecondsCounter();
+    timeMutex->unlockMutex();
+
+    /* Dynamic memory allocation is only allowed at software startup */
+#if OBSW_MONITOR_ALLOCATION == 1
+    if(currentUptimeSeconds > 2 and not
+            config::softwareInitializationComplete) {
+        config::softwareInitializationComplete = true;
+    }
+#endif
+
+    /* Check for overflows of 10kHz 32bit counter regularly
+    (currently every day). */
+    if(currentUptimeSeconds - lastFastCounterUpdateSeconds >= DAY_IN_SECONDS) {
+        update64bit10kHzCounter();
+        lastFastCounterUpdateSeconds = currentUptimeSeconds;
+    }
+#ifdef ISIS_OBC_G20
+    /* Store current uptime in seconds in FRAM, using the FRAM handler. */
+    int result = fram_update_seconds_since_epoch(currentUptimeSeconds);
+    if(result != 0) {
+        /* Should not happen! */
+        triggerEvent(FRAM_FAILURE, result);
+    }
+
+    uint32_t epoch = 0;
+    result = Time_getUnixEpoch(reinterpret_cast<unsigned int*>(&epoch));
+    /* todo: compare FSFW clock with RTT clock and sync FSFW clock to RTT
+    clock if drift is too high. */
+#endif
+}
+
+uint32_t CoreController::updateSecondsCounter() {
+#ifdef AT91SAM9G20_EK
+    /* We can only use RTT on the AT91, on the iOBC it will be reset constantly. */
+    uptimeSeconds = RTT_GetTime();
+#else
+    uint32_t currentUptimeSeconds = 0;
+    /* Millisecond count can overflow regularly (around every 50 days) */
+    uint32_t uptimeMs = 0;
+    Clock::getUptime(&uptimeMs);
+
+    /* I am just going to assume that the first uptime encountered is going
+    to be larger than 0 milliseconds. */
+    if(uptimeMs <= lastUptimeMs) {
+        msOverflowCounter++;
+    }
+    currentUptimeSeconds = uptimeMs / configTICK_RATE_HZ;
+
+    lastUptimeMs = uptimeMs;
+    uptimeSeconds = msOverflowCounter * SECONDS_ON_MS_OVERFLOW + currentUptimeSeconds;
+#endif
+    return uptimeSeconds;
+}
+
+uint32_t CoreController::getUptimeSeconds() {
+    MutexHelper(timeMutex, MutexIF::TimeoutType::WAITING, 20);
+    return uptimeSeconds;
 }
