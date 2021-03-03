@@ -131,7 +131,7 @@ uint32_t CoreController::updateSecondsCounter() {
     if(uptimeMs <= lastUptimeMs) {
         msOverflowCounter++;
     }
-    currentUptimeSeconds /= configTICK_RATE_HZ;
+    currentUptimeSeconds = uptimeMs / configTICK_RATE_HZ;
 
     lastUptimeMs = uptimeMs;
     uptimeSeconds = msOverflowCounter * SECONDS_ON_MS_OVERFLOW +
@@ -375,9 +375,12 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
     }
 
     /* If stored time is 0 or all ones, set the compile time of the binary */
-    if(secSinceEpoch == 0 or secSinceEpoch == 0xff) {
+    if(secSinceEpoch == 0 or secSinceEpoch == 0xffffffff) {
         secSinceEpoch = UNIX_TIMESTAMP;
         retval = fram_update_seconds_since_epoch(secSinceEpoch);
+        if(retval != 0) {
+            /* FRAM issues */
+        }
     }
 
     timeval currentTime;

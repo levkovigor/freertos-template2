@@ -33,7 +33,7 @@ int fram_zero_out_default_zero_fields() {
         return result;
     }
     if(reboot_counter == 0xffffffff) {
-        int result = fram_reset_reboot_counter();
+        result = fram_reset_reboot_counter();
         if(result != 0) {
             return result;
         }
