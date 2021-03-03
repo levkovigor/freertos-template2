@@ -52,6 +52,12 @@ extern "C" {
 int fram_read_critical_block(uint8_t* buffer, const size_t max_size);
 int fram_read_bootloader_block(BootloaderGroup* bl_info);
 
+/**
+ * Should be called once after a FRAM reset. Also called by the "Execute Before Flight" Sequence
+ * @return
+ */
+int fram_zero_out_default_zero_fields();
+
 int fram_write_software_version(uint8_t sw_version, uint8_t sw_subversion,
         uint8_t sw_subsubversion);
 int fram_read_software_version(uint8_t* sw_version, uint8_t* sw_subversion,
@@ -105,9 +111,9 @@ int fram_read_binary_size(SlotType slotType, size_t* binary_size);
  * has been uploaded. The flag will also be used to determine if a scrubbing operation
  * can be performed.
  */
-int fram_set_ham_flag(SlotType slotType);
-int fram_clear_ham_flag(SlotType slotType);
-int fram_get_ham_flag(SlotType slotType, bool* flag_set);
+int fram_set_img_ham_flag(SlotType slotType);
+int fram_clear_img_ham_flag(SlotType slotType);
+int fram_get_img_ham_flag(SlotType slotType, bool* flag_set);
 
 /*
  * Functions to manipulate local reboot counter belonging to an image type.
@@ -152,13 +158,17 @@ int set_sdc_hamming_flag(VolumeId volume, SdSlots slot);
 int get_sdc_hamming_flag(bool* flag_set, VolumeId volume, SdSlots slot);
 int clear_sdc_hamming_flag(VolumeId volume, SdSlots slot);
 
-int set_bootloader_faulty(bool faulty);
-int is_bootloader_faulty(bool* faulty);
+int fram_set_bootloader_faulty(bool faulty);
+int fram_is_bootloader_faulty(bool* faulty);
 
-int set_preferred_sd_card(VolumeId volumeId);
-int get_preferred_sd_card(VolumeId* volumeId);
+int fram_set_preferred_sd_card(VolumeId volumeId);
+/**
+ * @param volumeId
+ * @return 1 if volume ID has not been set yet and is all ones.
+ */
+int fram_get_preferred_sd_card(VolumeId* volumeId);
 
-int set_to_load_softwareupdate(bool enable, VolumeId volume);
+int fram_set_to_load_softwareupdate(bool enable, VolumeId volume);
 
 /**
  * Check whether the software should be loaded from the SD-Card or the NOR-Flash.
@@ -167,7 +177,7 @@ int set_to_load_softwareupdate(bool enable, VolumeId volume);
  * @return
  * 0 on success, -1 and -2 on FRAM failures, -3 on invalid input.
  */
-int get_to_load_softwareupdate(bool* enable, VolumeId* volume);
+int fram_get_to_load_softwareupdate(bool* enable, VolumeId* volume);
 
 #ifdef __cplusplus
 }

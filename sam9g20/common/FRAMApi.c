@@ -26,6 +26,123 @@ int fram_read_critical_block(uint8_t* buffer, const size_t max_size) {
     return FRAM_read((unsigned char*) buffer, CRITICAL_BLOCK_START_ADDR, sizeof(CriticalDataBlock));
 }
 
+int fram_zero_out_default_zero_fields() {
+    uint32_t reboot_counter = 0;
+    int result = fram_read_reboot_counter(&reboot_counter);
+    if(result != 0) {
+        return result;
+    }
+    if(reboot_counter == 0xffffffff) {
+        int result = fram_reset_reboot_counter();
+        if(result != 0) {
+            return result;
+        }
+    }
+
+    VolumeId volumeId;
+    result = fram_get_preferred_sd_card(&volumeId);
+    if(result != 0) {
+        return result;
+    }
+    if(result == 1) {
+        result = fram_set_preferred_sd_card(SD_CARD_0);
+        if(result != 0) {
+            return result;
+        }
+    }
+
+    result = fram_clear_ham_check_flag();
+    if(result != 0) {
+        return result;
+    }
+
+    result = fram_clear_img_ham_flag(FLASH_SLOT);
+    if(result != 0) {
+        return result;
+    }
+    result = fram_clear_img_ham_flag(SDC_0_SL_0);
+    if(result != 0) {
+        return result;
+    }
+    result = fram_clear_img_ham_flag(SDC_0_SL_1);
+    if(result != 0) {
+        return result;
+    }
+    result = fram_clear_img_ham_flag(SDC_1_SL_0);
+    if(result != 0) {
+        return result;
+    }
+    result = fram_clear_img_ham_flag(SDC_1_SL_1);
+    if(result != 0) {
+        return result;
+    }
+
+    result = fram_reset_img_reboot_counter(FLASH_SLOT);
+    if(result != 0) {
+        return result;
+    }
+    result = fram_reset_img_reboot_counter(SDC_0_SL_0);
+    if(result != 0) {
+        return result;
+    }
+    result = fram_reset_img_reboot_counter(SDC_0_SL_1);
+    if(result != 0) {
+        return result;
+    }
+    result = fram_reset_img_reboot_counter(SDC_1_SL_0);
+    if(result != 0) {
+        return result;
+    }
+    result = fram_reset_img_reboot_counter(SDC_1_SL_1);
+    if(result != 0) {
+        return result;
+    }
+
+    result = fram_write_binary_size(FLASH_SLOT, 0);
+    if(result != 0) {
+        return result;
+    }
+    result = fram_write_binary_size(BOOTLOADER_0, 0);
+    if(result != 0) {
+        return result;
+    }
+    result = fram_write_ham_size(FLASH_SLOT, 0);
+    if(result != 0) {
+        return result;
+    }
+    result = fram_write_ham_size(BOOTLOADER_0, 0);
+    if(result != 0) {
+        return result;
+    }
+    result = fram_write_ham_size(SDC_0_SL_0, 0);
+    if(result != 0) {
+        return result;
+    }
+    result = fram_write_ham_size(SDC_0_SL_1, 0);
+    if(result != 0) {
+        return result;
+    }
+    result = fram_write_ham_size(SDC_1_SL_0, 0);
+    if(result != 0) {
+        return result;
+    }
+    result = fram_write_ham_size(SDC_1_SL_1, 0);
+    if(result != 0) {
+        return result;
+    }
+
+    result = fram_set_bootloader_faulty(false);
+    if(result != 0) {
+        return result;
+    }
+
+    result = fram_set_to_load_softwareupdate(false, SD_CARD_0);
+    if(result != 0) {
+        return result;
+    }
+    return result;
+}
+
 int fram_write_software_version(uint8_t software_version,
         uint8_t software_subversion, uint8_t sw_subsubversion) {
     uint8_t write_buffer[3] = {software_version, software_subversion, sw_subsubversion};
@@ -88,13 +205,13 @@ int fram_get_flash_ham_flag(bool* flag_set) {
     return result;
 }
 
-int set_bootloader_faulty(bool faulty) {
-    return FRAM_writeAndVerify((unsigned char*) &faulty,
-            BOOTLOADER_FAULTY_ADDRESS,
-            sizeof(faulty));
+int fram_set_bootloader_faulty(bool faulty) {
+    uint32_t faultyField = faulty;
+    return FRAM_writeAndVerify((unsigned char*) &faultyField,
+            BOOTLOADER_FAULTY_ADDRESS, sizeof(faultyField));
 }
 
-int is_bootloader_faulty(bool *faulty) {
+int fram_is_bootloader_faulty(bool *faulty) {
     return FRAM_read((unsigned char*)faulty, BOOTLOADER_FAULTY_ADDRESS,
             sizeof(((CriticalDataBlock*)0)->bootloader_faulty));
 }
@@ -172,17 +289,29 @@ int fram_read_seconds_since_epoch(uint32_t *secondsSinceEpoch) {
             sizeof(((CriticalDataBlock*)0)->seconds_since_epoch));
 }
 
-int set_preferred_sd_card(VolumeId volumeId) {
-    return FRAM_writeAndVerify((unsigned char*) &volumeId, PREFERRED_SD_CARD_ADDR,
-            sizeof(VolumeId));
+int fram_set_preferred_sd_card(VolumeId volumeId) {
+    uint32_t volumeIdRaw = (uint32_t) volumeId;
+    return FRAM_writeAndVerify((unsigned char*) &volumeIdRaw, PREFERRED_SD_CARD_ADDR,
+            sizeof(volumeIdRaw));
 }
 
-int get_preferred_sd_card(VolumeId *volumeId) {
-    return FRAM_read((unsigned char*) volumeId, PREFERRED_SD_CARD_ADDR,
+int fram_get_preferred_sd_card(VolumeId *volumeId) {
+    uint32_t volumeIdRaw = 0;
+    int result = FRAM_read((unsigned char*) &volumeIdRaw, PREFERRED_SD_CARD_ADDR,
             sizeof(((CriticalDataBlock*)0)->bl_group.preferred_sd_card));
+    if(volumeIdRaw == 0xffffffff) {
+        /* Volume ID not set yet */
+        return 1;
+    }
+    else {
+        if(volumeId != NULL) {
+            *volumeId = volumeIdRaw;
+        }
+    }
+    return result;
 }
 
-int set_to_load_softwareupdate(bool enable, VolumeId volume) {
+int fram_set_to_load_softwareupdate(bool enable, VolumeId volume) {
     bool raw_data[3];
     raw_data[0] = enable;
     if (volume == SD_CARD_0){
@@ -197,7 +326,7 @@ int set_to_load_softwareupdate(bool enable, VolumeId volume) {
 
 
 // "enable" will tell you if a software update is required
-int get_to_load_softwareupdate(bool* enable, VolumeId* volume) {
+int fram_get_to_load_softwareupdate(bool* enable, VolumeId* volume) {
     if (enable == NULL) {
         return -3;
     }
@@ -250,7 +379,10 @@ int get_generic_hamming_flag(uint32_t addr, bool* flag_set) {
         return -3;
     }
 
-    if(flag_status > 0) {
+    if(flag_status == 0xffffffff) {
+        *flag_set = false;
+    }
+    else if(flag_status == 1) {
         *flag_set = true;
     }
     else {
@@ -273,11 +405,6 @@ int fram_set_ham_check_flag() {
 
 int fram_get_ham_check_flag(bool* flag_set) {
     return get_generic_hamming_flag(HAMMING_CHECK_FLAG_ADDR, flag_set);
-}
-
-int fram_write_flash_ham_size(size_t hamming_size) {
-    return FRAM_writeAndVerify((unsigned char*) &hamming_size, NOR_FLASH_HAMMING_CODE_SIZE_ADDR,
-            sizeof(((CriticalDataBlock*)0)->nor_flash_hamming_code_size));
 }
 
 int fram_write_binary_size(SlotType slotType, size_t binary_size) {
@@ -314,7 +441,7 @@ int fram_read_binary_size(SlotType slotType, size_t *binary_size) {
             sizeof(((CriticalDataBlock*)0)->nor_flash_binary_size));
 }
 
-int fram_set_ham_flag(SlotType slotType) {
+int fram_set_img_ham_flag(SlotType slotType) {
     uint32_t address = determine_ham_flag_address(slotType);
     if(address == 0) {
         return -3;
@@ -323,7 +450,7 @@ int fram_set_ham_flag(SlotType slotType) {
     return FRAM_writeAndVerify((unsigned char*)&value, address, sizeof(uint32_t));
 }
 
-int fram_clear_ham_flag(SlotType slotType) {
+int fram_clear_img_ham_flag(SlotType slotType) {
     uint32_t address = determine_ham_flag_address(slotType);
     if(address == 0) {
         return -3;
@@ -332,7 +459,7 @@ int fram_clear_ham_flag(SlotType slotType) {
     return FRAM_writeAndVerify((unsigned char*)&value, NOR_FLASH_HAMMING_FLAG_ADDR, 1);
 }
 
-int fram_get_ham_flag(SlotType slotType, bool *flag_set) {
+int fram_get_img_ham_flag(SlotType slotType, bool *flag_set) {
     if(flag_set == NULL) {
         return -3;
     }
@@ -441,7 +568,7 @@ int fram_read_ham_size(SlotType slotType, size_t *ham_size, bool *ham_flag_set) 
 
     if(ham_flag_set != NULL) {
         bool flag_set = false;
-        int result = fram_get_ham_flag(slotType, &flag_set);
+        int result = fram_get_img_ham_flag(slotType, &flag_set);
         if(result != 0) {
             return result;
         }

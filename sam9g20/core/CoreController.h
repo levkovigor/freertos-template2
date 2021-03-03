@@ -93,6 +93,9 @@ public:
 	static constexpr ActionId_t GET_FILL_COUNT = 14;
 
     static constexpr ActionId_t PRINT_FRAM_CRIT_BLOCK = 30;
+    /* Careful with this. Might be deactivated at a later project stage so it can not
+    be accidentely called during flight */
+    static constexpr ActionId_t ZERO_OUT_FRAM_DEFAULT_ZERO_FIELD = 35;
 
 private:
 

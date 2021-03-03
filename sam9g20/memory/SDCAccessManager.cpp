@@ -27,7 +27,7 @@ SDCardAccessManager::SDCardAccessManager() {
     /* On the iOBC, the active SD card is derived from a value in FRAM so the
     /SD card access manager should not be used before the FRAM is active! */
 #ifdef ISIS_OBC_G20
-    int result = get_preferred_sd_card(&activeSdCard);
+    int result = fram_get_preferred_sd_card(&activeSdCard);
     uint8_t activeSdCardRaw = static_cast<int>(activeSdCard);
     if(activeSdCardRaw != 0 and activeSdCardRaw != 1) {
         /* Invalid volume IDs in FRAM, use SD Card 0 */

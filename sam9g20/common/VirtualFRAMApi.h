@@ -38,7 +38,7 @@ int delete_generic_fram_file();
 
 int fram_set_ham_check_flag();
 
-int set_to_load_softwareupdate(bool enable, VolumeId volume);
+int fram_set_to_load_softwareupdate(bool enable, VolumeId volume);
 
 int fram_write_software_version(uint8_t software_version, uint8_t software_subversion,
         uint8_t sw_subsubversion);

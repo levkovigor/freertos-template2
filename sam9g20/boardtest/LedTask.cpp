@@ -151,13 +151,13 @@ ReturnValue_t LedTask::executeAction(ActionId_t actionId,
             ledMode = LedModes::WAVE_UP;
             resetLeds();
         }
-        actionHelper.finish(commandedBy, actionId);
+        actionHelper.finish(true, commandedBy, actionId);
         break;
     }
     case(DISABLE_LEDS): {
         ledMode = LedModes::OFF;
         resetLeds();
-        actionHelper.finish(commandedBy, actionId);
+        actionHelper.finish(true, commandedBy, actionId);
         break;
     }
     default: {

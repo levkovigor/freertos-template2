@@ -29,6 +29,13 @@ public:
 	 */
 	static void printCriticalBlock();
 
+	/**
+	 * Can be called if the FRAM has been reset or is uninitialized. Is this is the case,
+	 * all fields will have the value 0xff. This function takes care of zero initializing
+	 * all fields which have 0 as the default value.
+	 */
+	static ReturnValue_t zeroOutDefaultZeroFields(int* errorField);
+
 protected:
 	static std::array<uint8_t, sizeof(CriticalDataBlock)> criticalBlock;
 

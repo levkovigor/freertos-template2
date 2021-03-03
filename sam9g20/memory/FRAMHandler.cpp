@@ -104,3 +104,14 @@ ReturnValue_t FRAMHandler::initialize() {
 
 void FRAMHandler::dumpCriticalBlock() {
 }
+
+ReturnValue_t FRAMHandler::zeroOutDefaultZeroFields(int* errorField) {
+    int result = fram_zero_out_default_zero_fields();
+    if(result != 0) {
+        if(errorField != nullptr) {
+            *errorField = result;
+        }
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+}

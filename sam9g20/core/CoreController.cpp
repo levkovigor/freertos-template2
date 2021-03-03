@@ -153,14 +153,14 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
                 return HasActionsIF::IS_BUSY;
             }
 
-            actionHelper.finish(commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
+            actionHelper.finish(true, commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
             return HasReturnvaluesIF::RETURN_OK;
         }
     case(REQUEST_CPU_STATS_PRINT): {
         if(not systemStateTask->generateStatsPrint()) {
             return HasActionsIF::IS_BUSY;
         }
-        actionHelper.finish(commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
+        actionHelper.finish(true, commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
         return HasReturnvaluesIF::RETURN_OK;
     }
     case(RESET_OBC): {
@@ -202,6 +202,14 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
     }
     case(PRINT_FRAM_CRIT_BLOCK): {
         FRAMHandler::printCriticalBlock();
+        return HasActionsIF::EXECUTION_FINISHED;
+    }
+    case(ZERO_OUT_FRAM_DEFAULT_ZERO_FIELD): {
+        int errorVal = 0;
+        ReturnValue_t result = FRAMHandler::zeroOutDefaultZeroFields(&errorVal);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            actionHelper.finish(false, commandedBy, actionId, errorVal);
+        }
         return HasActionsIF::EXECUTION_FINISHED;
     }
     default:

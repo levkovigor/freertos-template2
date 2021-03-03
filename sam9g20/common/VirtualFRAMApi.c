@@ -110,7 +110,7 @@ int fram_set_ham_check_flag() {
     return close_fram_file(file);
 }
 
-int set_to_load_softwareupdate(bool enable, VolumeId volume) {
+int fram_set_to_load_softwareupdate(bool enable, VolumeId volume) {
     return 0;
 }
 
