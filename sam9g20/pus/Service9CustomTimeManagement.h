@@ -24,7 +24,7 @@ public:
 
 	ReturnValue_t setTime() override;
 private:
-	int setIsisClock(Clock::TimeOfDay_t& timeOfDay);
+	int setIsisClock(timeval& timeval);
 };
 
 

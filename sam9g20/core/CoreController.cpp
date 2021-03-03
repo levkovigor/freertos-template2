@@ -154,46 +154,6 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
     }
 }
 
-uint64_t CoreController::getTotalRunTimeCounter() {
-#if configGENERATE_RUN_TIME_STATS == 1
-    return static_cast<uint64_t>(counterOverflows) << 32 |
-            vGetCurrentTimerCounterValue();
-#else
-    // return 1 for safety (avoid division by zero)
-    return 1;
-#endif
-}
-
-uint64_t CoreController::getTotalIdleRunTimeCounter() {
-#if configGENERATE_RUN_TIME_STATS == 1
-    return static_cast<uint64_t>(idleCounterOverflows) << 32 |
-            ulTaskGetIdleRunTimeCounter();
-#else
-    // return 1 for safety (avoid division by zero)
-    return 1;
-#endif
-}
-
-void CoreController::update64bit10kHzCounter() {
-#if configGENERATE_RUN_TIME_STATS == 1
-    uint32_t currentCounter = vGetCurrentTimerCounterValue();
-    uint32_t currentIdleCounter = ulTaskGetIdleRunTimeCounter();
-    if(currentCounter < last32bitCounterValue) {
-        // overflow occured.
-        counterOverflows ++;
-    }
-
-    if(currentIdleCounter < last32bitIdleCounterValue) {
-        // overflow occured.
-        idleCounterOverflows ++;
-    }
-
-    last32bitCounterValue = currentCounter;
-    last32bitIdleCounterValue = currentIdleCounter;
-#endif
-}
-
-
 ReturnValue_t CoreController::initializeAfterTaskCreation() {
     ReturnValue_t result = ExtendedControllerBase::initializeAfterTaskCreation();
     if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -343,8 +303,6 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
     Clock::setClock(&currentTime);
 #endif
 
-
-
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -432,6 +390,7 @@ LocalPoolDataSetBase* CoreController::getDataSetHandle(sid_t sid) {
 
 
 void CoreController::performPeriodicTimeHandling() {
+    /* Update uptime second counter which is not subject to regular overflowing */
     timeMutex->lockMutex(MutexIF::TimeoutType::WAITING, 20);
     uint32_t currentUptimeSeconds = updateSecondsCounter();
     timeMutex->unlockMutex();
@@ -450,9 +409,12 @@ void CoreController::performPeriodicTimeHandling() {
         update64bit10kHzCounter();
         lastFastCounterUpdateSeconds = currentUptimeSeconds;
     }
+
 #ifdef ISIS_OBC_G20
-    /* Store current uptime in seconds in FRAM, using the FRAM handler. */
-    int result = fram_update_seconds_since_epoch(currentUptimeSeconds);
+    /* Store current time since epoch in seconds in FRAM, using the FRAM handler. */
+    unsigned int epochTime = 0;
+    Time_getUnixEpoch(&epochTime);
+    int result = fram_update_seconds_since_epoch(static_cast<uint32_t>(epochTime));
     if(result != 0) {
         /* Should not happen! */
         triggerEvent(FRAM_FAILURE, result);
@@ -462,7 +424,7 @@ void CoreController::performPeriodicTimeHandling() {
     result = Time_getUnixEpoch(reinterpret_cast<unsigned int*>(&epoch));
     /* todo: compare FSFW clock with RTT clock and sync FSFW clock to RTT
     clock if drift is too high. */
-#endif
+#endif /* ISIS_OBC_G20 */
 }
 
 uint32_t CoreController::updateSecondsCounter() {
@@ -492,3 +454,45 @@ uint32_t CoreController::getUptimeSeconds() {
     MutexHelper(timeMutex, MutexIF::TimeoutType::WAITING, 20);
     return uptimeSeconds;
 }
+
+
+uint64_t CoreController::getTotalRunTimeCounter() {
+#if configGENERATE_RUN_TIME_STATS == 1
+    return static_cast<uint64_t>(counterOverflows) << 32 |
+            vGetCurrentTimerCounterValue();
+#else
+    // return 1 for safety (avoid division by zero)
+    return 1;
+#endif
+}
+
+uint64_t CoreController::getTotalIdleRunTimeCounter() {
+#if configGENERATE_RUN_TIME_STATS == 1
+    return static_cast<uint64_t>(idleCounterOverflows) << 32 |
+            ulTaskGetIdleRunTimeCounter();
+#else
+    // return 1 for safety (avoid division by zero)
+    return 1;
+#endif
+}
+
+void CoreController::update64bit10kHzCounter() {
+#if configGENERATE_RUN_TIME_STATS == 1
+    uint32_t currentCounter = vGetCurrentTimerCounterValue();
+    uint32_t currentIdleCounter = ulTaskGetIdleRunTimeCounter();
+    if(currentCounter < last32bitCounterValue) {
+        // overflow occured.
+        counterOverflows ++;
+    }
+
+    if(currentIdleCounter < last32bitIdleCounterValue) {
+        // overflow occured.
+        idleCounterOverflows ++;
+    }
+
+    last32bitCounterValue = currentCounter;
+    last32bitIdleCounterValue = currentIdleCounter;
+#endif
+}
+
+
