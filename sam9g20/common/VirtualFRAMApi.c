@@ -193,4 +193,8 @@ int close_fram_file(F_FILE* file) {
     return f_close(file);
 }
 
+int fram_zero_out_default_zero_fields() {
+    return 0;
+}
+
 

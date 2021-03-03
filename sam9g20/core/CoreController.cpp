@@ -1,11 +1,13 @@
 #include "CoreController.h"
 #include "SystemStateTask.h"
-
 #include <OBSWConfig.h>
 #include <OBSWVersion.h>
 #include <objects/systemObjectList.h>
-
 #include <FreeRTOSConfig.h>
+
+#include <sam9g20/memory/FRAMHandler.h>
+#include <sam9g20/common/FRAMApi.h>
+
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
@@ -14,17 +16,16 @@
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/timemanager/Stopwatch.h>
 
+
 extern "C" {
 #ifdef ISIS_OBC_G20
-#include <sam9g20/memory/FRAMHandler.h>
-#include <sam9g20/common/FRAMApi.h>
 #include <hal/Timing/Time.h>
 #else
 #include <hal/Timing/RTT.h>
 #endif
 }
 
-#include <utility/exithandler.h>
+#include <at91/utility/exithandler.h>
 #include <portwrapper.h>
 #include <utility/compile_time.h>
 #include <cinttypes>
