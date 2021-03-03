@@ -430,6 +430,7 @@ void CoreController::performPeriodicTimeHandling() {
         currentFsfwTime.tv_sec = epochTime;
         currentFsfwTime.tv_usec = 0;
         Clock::setClock(&currentFsfwTime);
+        triggerEvent(FSFW_CLOCK_SYNC);
     }
 #endif /* ISIS_OBC_G20 */
 }
