@@ -1,4 +1,4 @@
-#include <fsfw/datapool/PoolReadHelper.h>
+#include <fsfw/datapool/PoolReadGuard.h>
 #include "MGMHandlerLIS3MDL.h"
 
 
