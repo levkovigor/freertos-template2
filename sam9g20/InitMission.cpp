@@ -5,6 +5,7 @@
 #include <fsfwconfig/pollingsequence/PollingSequenceFactory.h>
 #include <fsfwconfig/objects/systemObjectList.h>
 
+#include <mission/utility/InitMission.h>
 #include <utility/compile_time.h>
 
 #include <fsfw/objectmanager/ObjectManager.h>
@@ -14,8 +15,6 @@
 #include <fsfw/unittest/internal/InternalUnitTester.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 
-#include <mission/utility/InitMission.h>
-
 #include <freertos/FreeRTOS.h>
 
 extern "C" {
@@ -23,7 +22,6 @@ extern "C" {
 #include <AT91SAM9G20.h>
 }
 
-#include <OBSWConfig.h>
 #include <cstring>
 
 #if OBSW_TRACK_FACTORY_ALLOCATION_SIZE == 1 || OBSW_MONITOR_ALLOCATION == 1
