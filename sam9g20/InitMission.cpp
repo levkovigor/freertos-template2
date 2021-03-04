@@ -1,9 +1,10 @@
 #include "ObjectFactory.h"
-#include <fsfwconfig/OBSWVersion.h>
+#include <OBSWVersion.h>
 #include <FSFWConfig.h>
+#include <OBSWConfig.h>
 #include <fsfwconfig/pollingsequence/PollingSequenceFactory.h>
 #include <fsfwconfig/objects/systemObjectList.h>
-#include <fsfwconfig/OBSWConfig.h>
+
 #include <utility/compile_time.h>
 
 #include <fsfw/objectmanager/ObjectManager.h>
@@ -118,8 +119,8 @@ void initMission(void) {
     sif::printInfo("Initiating mission specific code.\n");
 #endif
 
-    // Allocate object manager here, as global constructors
-    // might not be executed, depending on buildchain
+    /* Allocate object manager here, as global constructors might not be executed,
+    depending on buildchain */
     bool performSimpleTask = false;
 
     if(not performSimpleTask) {
@@ -548,7 +549,6 @@ void genericMissedDeadlineFunc() {
 #endif
 #endif
 }
-
 
 void runMinimalTask(void) {
     while(1) {

@@ -427,6 +427,8 @@ void CoreController::performPeriodicTimeHandling() {
     /* Correct clock drift of FSFW clock (FreeRTOS/oscillator based) based on ISIS clock */
     timeval currentFsfwTime;
     Clock::getClock_timeval(&currentFsfwTime);
+    /* If we sync the ISIS clock and the FSFW clock with the GPS clock regularly, this should
+    never happen */
     if(std::abs(currentFsfwTime.tv_sec - epochTime) > clockSecDiffSyncTrigger) {
         currentFsfwTime.tv_sec = epochTime;
         currentFsfwTime.tv_usec = 0;
