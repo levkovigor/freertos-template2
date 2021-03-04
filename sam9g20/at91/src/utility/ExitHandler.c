@@ -49,7 +49,9 @@ void restartDataAbort() {
 }
 
 void gracefulReset() {
+#if OBSW_VERBOSE_LEVEL >= 1
 	TRACE_ERROR_WP("\n\rPerforming Graceful Reset\n\r");
+#endif
 	// Disable SDRAM else it may cause interference on the EBI
 	AT91C_BASE_SDRAMC->SDRAMC_TR = 1;
 	AT91C_BASE_SDRAMC->SDRAMC_LPR = AT91C_SDRAMC_LPCB_POWER_DOWN;

@@ -77,7 +77,7 @@ void SoftwareImageHandler::performStateMachine() {
                 handlerState = HandlerState::IDLE;
             }
             else {
-                actionHelper.finish(recipient, currentAction, HasReturnvaluesIF::RETURN_OK);
+                actionHelper.finish(true, recipient, currentAction, HasReturnvaluesIF::RETURN_OK);
                 currentAction = 0xffffffff;
                 recipient = MessageQueueIF::NO_QUEUE;
                 imgCpHelper->reset();
@@ -113,7 +113,7 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
     }
     case(COPY_OBSW_SDC_TO_SDC): {
         if(handlerState == HandlerState::COPYING) {
-            actionHelper.finish(commandedBy, actionId, image::BUSY);
+            actionHelper.finish(false, commandedBy, actionId, image::BUSY);
         }
         break;
     }
@@ -231,7 +231,7 @@ ReturnValue_t SoftwareImageHandler::handleCopyingSdcBlToFlash(ActionId_t actionI
 ReturnValue_t SoftwareImageHandler::handleCopyingSdcImgToFlash(ActionId_t actionId,
         MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
     if(handlerState == HandlerState::COPYING) {
-        actionHelper.finish(commandedBy, actionId, image::BUSY);
+        actionHelper.finish(false, commandedBy, actionId, image::BUSY);
     }
     if(size != 1) {
         return HasActionsIF::INVALID_PARAMETERS;
@@ -307,7 +307,7 @@ ReturnValue_t copySdBootloaderToNorFlash() {
 ReturnValue_t SoftwareImageHandler::handleCopyingHammingToStorage(ActionId_t actionId,
         MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
     if(handlerState == HandlerState::COPYING) {
-        actionHelper.finish(commandedBy, actionId, image::BUSY);
+        actionHelper.finish(false, commandedBy, actionId, image::BUSY);
     }
 
     if(size != 1) {

@@ -110,7 +110,7 @@ int fram_set_ham_check_flag() {
     return close_fram_file(file);
 }
 
-int set_to_load_softwareupdate(bool enable, VolumeId volume) {
+int fram_set_to_load_softwareupdate(bool enable, VolumeId volume) {
     return 0;
 }
 
@@ -191,6 +191,10 @@ int close_fram_file(F_FILE* file) {
     }
 
     return f_close(file);
+}
+
+int fram_zero_out_default_zero_fields() {
+    return 0;
 }
 
 
