@@ -506,7 +506,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
             }
 #endif
 
-			PoolReadHelper readHelper(&gyroData);
+			PoolReadGuard readHelper(&gyroData);
 			if(readHelper.getReadResult() == HasReturnvaluesIF::RETURN_OK) {
 	            if(not gyroData.isValid()) {
 	                gyroData.setValidity(true, true);

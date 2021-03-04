@@ -299,7 +299,7 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
 #endif
         }
 #endif
-        PoolReadHelper readHelper(&dataset);
+        PoolReadGuard readHelper(&dataset);
         if(readHelper.getReadResult() == HasReturnvaluesIF::RETURN_OK) {
             dataset.fieldStrengthX = mgmX;
             dataset.fieldStrengthY = mgmY;
