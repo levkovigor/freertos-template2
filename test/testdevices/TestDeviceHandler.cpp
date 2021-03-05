@@ -369,7 +369,7 @@ ReturnValue_t TestDevice::interpretingReply1() {
 	sif::printDebug("DummyDevice: Setting Completion Reply for TEST_COMMAND_1\n");
 #endif
 	ActionMessage::setCompletionReply(&directReplyMessage,
-			TEST_COMMAND_1, RETURN_OK);
+			TEST_COMMAND_1, true);
 	return RETURN_OK;
 }
 
@@ -424,7 +424,7 @@ ReturnValue_t TestDevice::interpretingReply3(DeviceCommandId_t id,
 	DeviceCommandMap::iterator commandIter = deviceCommandMap.find(id);
 	MessageQueueId_t commander = commandIter->second.sendReplyTo;
 	actionHelper.step(1,commander,id);
-	actionHelper.finish(commander,id);
+	actionHelper.finish(true, commander,id);
 
 	return RETURN_OK;
 }

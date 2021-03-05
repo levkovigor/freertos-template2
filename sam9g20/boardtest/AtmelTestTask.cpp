@@ -346,7 +346,7 @@ void AtmelTestTask::performFRAMTest() {
     uint8_t swVersion = 0;
     uint8_t swSubversion = 0;
     uint8_t swSubsubversion = 0;
-    int result = read_software_version(&swVersion, &swSubversion,
+    int result = fram_read_software_version(&swVersion, &swSubversion,
             &swSubsubversion);
     if(result == 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1

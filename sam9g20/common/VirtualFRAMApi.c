@@ -63,7 +63,7 @@ int create_generic_fram_file() {
 }
 
 
-int read_critical_block(uint8_t* buffer, const size_t max_size) {
+int fram_read_critical_block(uint8_t* buffer, const size_t max_size) {
     size_t size_to_read = sizeof(CriticalDataBlock);
     if(max_size < size_to_read) {
         return -3;
@@ -93,7 +93,7 @@ int delete_generic_fram_file() {
     return f_delete(VIRT_FRAM_NAME);
 }
 
-int set_hamming_check_flag() {
+int fram_set_ham_check_flag() {
     F_FILE* file = NULL;
     int result = open_fram_file(&file, HAMMING_CHECK_FLAG_ADDR, "r+");
     if(result != 0) {
@@ -110,11 +110,11 @@ int set_hamming_check_flag() {
     return close_fram_file(file);
 }
 
-int set_to_load_softwareupdate(bool enable, VolumeId volume) {
+int fram_set_to_load_softwareupdate(bool enable, VolumeId volume) {
     return 0;
 }
 
-int write_software_version(uint8_t software_version, uint8_t software_subversion,
+int fram_write_software_version(uint8_t software_version, uint8_t software_subversion,
         uint8_t sw_subsubversion) {
     F_FILE* file = NULL;
     int result = open_fram_file(&file, SOFTWARE_VERSION_ADDR, "r+");
@@ -132,7 +132,7 @@ int write_software_version(uint8_t software_version, uint8_t software_subversion
     return close_fram_file(file);
 }
 
-int read_software_version(uint8_t *software_version, uint8_t* software_subversion,
+int fram_read_software_version(uint8_t *software_version, uint8_t* software_subversion,
         uint8_t* sw_subsubversion) {
     if(!software_version || !software_subversion || !sw_subsubversion) {
         return -3;
@@ -191,6 +191,10 @@ int close_fram_file(F_FILE* file) {
     }
 
     return f_close(file);
+}
+
+int fram_zero_out_default_zero_fields() {
+    return 0;
 }
 
 

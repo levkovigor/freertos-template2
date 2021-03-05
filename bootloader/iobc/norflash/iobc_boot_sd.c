@@ -1,11 +1,16 @@
 #include "iobc_boot_sd.h"
 #include "bl_iobc_norflash.h"
+#include "../common/boot_iobc.h"
+
 #include <bootloaderConfig.h>
 #include <fatfs_config.h>
 
+#include <sam9g20/common/CommonFRAM.h>
+
 #include <hcc/api_hcc_mem.h>
-#include <memories/sdmmc/MEDSdcard.h>
-#include <utility/trace.h>
+#include <at91/memories/sdmmc/MEDSdcard.h>
+#include <at91/utility/trace.h>
+
 #if USE_TINY_FS == 0
 #include <sam9g20/common/SDCardApi.h>
 #else
@@ -27,8 +32,29 @@ int copy_with_tinyfatfs_lib(BootSelect boot_select);
 
 
 int copy_sdcard_binary_to_sdram(BootSelect boot_select) {
+    if(boot_select == BOOT_NOR_FLASH) {
+        return -1;
+    }
 #if USE_TINY_FS == 0
-    return copy_with_hcc_lib(boot_select);
+    int result = copy_with_hcc_lib(boot_select);
+    if(result != 0) {
+        /* Copy operation failed, we can not jump */
+        return result;
+    }
+    if(boot_select == BOOT_SD_CARD_0_SLOT_0) {
+        result = handle_hamming_code_check(SDC_0_SL_0);
+    }
+    else if(boot_select == BOOT_SD_CARD_0_SLOT_1) {
+        result = handle_hamming_code_check(SDC_0_SL_1);
+    }
+    else if(boot_select == BOOT_SD_CARD_1_SLOT_0) {
+        result = handle_hamming_code_check(SDC_1_SL_0);
+    }
+    else if(boot_select == BOOT_SD_CARD_1_SLOT_1) {
+        result = handle_hamming_code_check(SDC_1_SL_1);
+    }
+
+    return handle_hamming_code_result(result);
 #else
     return copy_with_tinyfatfs_lib(boot_select);
 #endif
@@ -38,7 +64,7 @@ int copy_sdcard_binary_to_sdram(BootSelect boot_select) {
 #if USE_TINY_FS == 0
 int copy_with_hcc_lib(BootSelect boot_select) {
     VolumeId current_volume = SD_CARD_0;
-    if (boot_select == BOOT_SD_CARD_1_UPDATE) {
+    if (boot_select == BOOT_SD_CARD_1_SLOT_1 || boot_select == BOOT_SD_CARD_1_SLOT_0) {
         current_volume = SD_CARD_1;
     }
 

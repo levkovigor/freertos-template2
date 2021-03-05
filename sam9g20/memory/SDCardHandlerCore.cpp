@@ -73,7 +73,7 @@ ReturnValue_t SDCardHandler::performOperation(uint8_t operationCode) {
             return HasReturnvaluesIF::RETURN_OK;
         }
         sdCardChangeOngoing = false;
-        actionHelper.finish(actionSender, currentAction, HasReturnvaluesIF::RETURN_OK);
+        actionHelper.finish(true, actionSender, currentAction, HasReturnvaluesIF::RETURN_OK);
         currentAction = -1;
         actionSender = MessageQueueIF::NO_QUEUE;
     }
@@ -167,7 +167,7 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
         if(stateMachine.getInternalState() != SDCHStateMachine::States::IDLE) {
             /* Some operation might be going on (file operation or SD card switching
             already happening), so we reject this command */
-            actionHelper.finish(commandedBy, actionId, HasActionsIF::IS_BUSY);
+            actionHelper.finish(false, commandedBy, actionId, HasActionsIF::IS_BUSY);
             return HasReturnvaluesIF::RETURN_OK;
         }
         sdCardChangeOngoing = true;
@@ -181,7 +181,12 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
     case(REPORT_ACTIVE_SD_CARD): {
         ActivePreferedVolumeReport reply(SDCardAccessManager::instance()->getActiveSdCard());
         result = actionHelper.reportData(commandedBy, actionId, &reply);
-        actionHelper.finish(commandedBy, actionId, result);
+        if(result == HasReturnvaluesIF::RETURN_OK) {
+            actionHelper.finish(true, commandedBy, actionId, result);
+        }
+        else {
+            actionHelper.finish(false, commandedBy, actionId, result);
+        }
         break;
     }
     case(SELECT_PREFERRED_SD_CARD): {
@@ -195,15 +200,17 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
     }
     case(PRINT_SD_CARD): {
         this->printSdCard();
-        actionHelper.finish(commandedBy, actionId);
+        actionHelper.finish(true, commandedBy, actionId);
         break;
     }
     case(CLEAR_SD_CARD): {
         int retval = clear_sd_card();
         if(retval != F_NO_ERROR) {
             result = retval;
+            actionHelper.finish(false, commandedBy, actionId, result);
+            return HasReturnvaluesIF::RETURN_OK;
         }
-        actionHelper.finish(commandedBy, actionId, result);
+        actionHelper.finish(true, commandedBy, actionId, result);
         break;
     }
     case(FORMAT_SD_CARD): {
@@ -225,7 +232,10 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
 #endif
             result = retval;
         }
-        actionHelper.finish(commandedBy, actionId, result);
+        else {
+            actionHelper.finish(false, commandedBy, actionId, retval);
+        }
+        actionHelper.finish(true, commandedBy, actionId, result);
         break;
     }
     case(SET_LOAD_OBSW_UPDATE): {
@@ -246,7 +256,7 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
             }
             volume = static_cast<VolumeId>(data[1]);
         }
-        int retval = set_to_load_softwareupdate(enable, volume);
+        int retval = fram_set_to_load_softwareupdate(enable, volume);
         if (retval != 0) {
             return HasReturnvaluesIF::RETURN_FAILED;
         }
@@ -259,7 +269,7 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
     }
     case(CANCEL_SDCH_OPERATIONS): {
         stateMachine.resetAndSetToIdle();
-        actionHelper.finish(commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
+        actionHelper.finish(true, commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
         break;
     }
     default: {

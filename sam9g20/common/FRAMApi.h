@@ -6,6 +6,9 @@
  * funtions to read and write/overwrite them conveniently.
  * The functions use the HAL library provided by ISIS to write on the FRAM.
  * The FRAM needs to be started first before using any functions here! (see FRAM.h file)
+ * Please also note that unintialized FRAM fields will have the value 0xff, so check against
+ * this values to check for uninitialized values or simply check against 1 explicitely for
+ * flag values.
  * @author R. Mueller
  */
 #ifndef MISSION_MEMORY_FRAMAPI_H_
@@ -32,6 +35,7 @@
 extern "C" {
 #endif
 
+#include <sam9g20/common/CommonFRAM.h>
 #include <sam9g20/common/SDCardApi.h>
 #include <sam9g20/common/config/commonConfig.h>
 #include <stdint.h>
@@ -45,15 +49,22 @@ extern "C" {
  * @param max_size
  * @return
  */
-int read_critical_block(uint8_t* buffer, const size_t max_size);
+int fram_read_critical_block(uint8_t* buffer, const size_t max_size);
+int fram_read_bootloader_block(BootloaderGroup* bl_info);
 
-int write_software_version(uint8_t sw_version, uint8_t sw_subversion,
+/**
+ * Should be called once after a FRAM reset. Also called by the "Execute Before Flight" Sequence
+ * @return
+ */
+int fram_zero_out_default_zero_fields();
+
+int fram_write_software_version(uint8_t sw_version, uint8_t sw_subversion,
         uint8_t sw_subsubversion);
-int read_software_version(uint8_t* sw_version, uint8_t* sw_subversion,
+int fram_read_software_version(uint8_t* sw_version, uint8_t* sw_subversion,
         uint8_t* sw_subsubversion);
 
 /**
- * Helper function to increment the reboot counter.
+ * Helper function to increment the global reboot counter.
  * @param verify_write  If this is set to true, the write operation will be
  * verified. This should be disabled when incrementing for exceptions.
  * @param set_reboot_flag
@@ -61,101 +72,103 @@ int read_software_version(uint8_t* sw_version, uint8_t* sw_subversion,
  * The flag is used to be able to track restarts from exceptions.
  * @return
  */
-int increment_reboot_counter(uint32_t* new_reboot_counter);
-int read_reboot_counter(uint32_t* reboot_counter);
-
+int fram_increment_reboot_counter(uint32_t* new_reboot_counter);
+int fram_read_reboot_counter(uint32_t* reboot_counter);
 /**
- * Should only be used during development!
+ * Should only be used during development! Part of the Execute Before Flight sequence
  * @return
  */
-int reset_reboot_counter();
+int fram_reset_reboot_counter();
 
-int update_seconds_since_epoch(uint32_t secondsSinceEpoch);
-int read_seconds_since_epoch(uint32_t* secondsSinceEpoch);
+int fram_update_seconds_since_epoch(uint32_t secondsSinceEpoch);
+int fram_read_seconds_since_epoch(uint32_t* secondsSinceEpoch);
 
 /**
- * Shall be used to disable hamming code checks, e.g. if software was updated but hamming
+ * Shall be used to enable hamming code checks globally for the bootloader or the scrubbing engine.
+ * @return
+ */
+int fram_set_ham_check_flag();
+/**
+ * Shall be used to disable hamming code checks globally, e.g. if software was updated but hamming
  * code has not been updated yet.
  * @return
  */
-int clear_hamming_check_flag();
-/**
- * Shall be used to enable hamming code checks for the bootloader or the scrubbing engine.
- * @return
- */
-int set_hamming_check_flag();
-int get_hamming_check_flag();
-
-int write_nor_flash_binary_size(size_t binary_size);
-int read_nor_flash_binary_size(size_t* binary_size);
+int fram_clear_ham_check_flag();
+int fram_get_ham_check_flag();
 
 /**
- * Shall be used once when updating the NOR-Flash hamming code.
- * @param hamming_size
- * @param set_hamming_flag
+ * Only valid for slot type FLASH and BOOTLOADER_0 for now.
+ * @param slotType
+ * @param binary_size
  * @return
  */
-int write_nor_flash_hamming_size(size_t hamming_size);
-/**
- * Shall be used to update the hamming code for the NOR-Flash binary.
- * Can be performed in multiple steps by supplying the current offset and a pointer
- * to the data to be written.
- * @param current_offset
- * @param size_to_write
- * @return
+int fram_write_binary_size(SlotType slotType, size_t binary_size);
+int fram_read_binary_size(SlotType slotType, size_t* binary_size);
+
+/*
+ * Functions used to enable image specific haming flags. Should be cleared
+ * when the flash image is updated and set again when  the corresponding hamming code
+ * has been uploaded. The flag will also be used to determine if a scrubbing operation
+ * can be performed.
  */
-int write_nor_flash_hamming_code(uint8_t* hamming_code, size_t current_offset,
+int fram_set_img_ham_flag(SlotType slotType);
+int fram_clear_img_ham_flag(SlotType slotType);
+int fram_get_img_ham_flag(SlotType slotType, bool* flag_set);
+
+/*
+ * Functions to manipulate local reboot counter belonging to an image type.
+ * These are used to switch binary types in case booting multiple times with one type
+ * did not work. They should be reset via telecommand after the image is deemed stable.
+ */
+int fram_increment_img_reboot_counter(SlotType slotType, uint16_t* new_reboot_counter);
+int fram_read_img_reboot_counter(SlotType slotType, uint16_t* reboot_counter);
+int fram_reset_img_reboot_counter(SlotType slotType);
+
+int fram_write_ham_code(SlotType slotType, uint8_t* buffer, size_t current_offset,
         size_t size_to_write);
 /**
- * Functions used to enable hamming flag checks for the NOR-Flash. Should be cleared
- * when the NOR-Flash image is updated and set again when  the corresponding hamming code
- * has been uploaded.
+ * Shall be used by the to read the hamming codes. Its recommended to supply
+ * the reserved size (0xA000 for images, 0x600 for bootloader) as max_buffer.
+ * @param slotType
+ * @param buffer            Hamming code will be written to this location.
+ * @param max_buffer        Maximum allowed size to store into buffer
+ * @param current_offset    Offset of start address to read from.
+ * @param size_to_read      Specify bytes to read from the specified offset. Set to 0 to determine
+ *                          size to read from designated hamming code size field.
+ * @param size_read         Return actual size read (size of the hamming code)
  * @return
  */
-int set_flash_hamming_flag();
-int clear_flash_hamming_flag();
-int get_flash_hamming_flag();
+int fram_read_ham_code(SlotType slotType, uint8_t* buffer, const size_t max_buffer,
+        size_t current_offset, size_t size_to_read, size_t* size_read);
+
+int fram_write_ham_size(SlotType slotType, size_t ham_size);
 /**
- * Can be used to determine the size of the hamming code.
- * @param hamming_size
- * @param set_hamming_flag
- * @return
+ * Hamming flag can be supplied optionally to determine whether the respective hamming flag is
+ * set
  */
-int read_nor_flash_hamming_size(size_t* hamming_size, bool* set_hamming_flag);
-/**
- * Shall be used by the bootloader to read the hamming code. Its recommended to supply
- * max_buffer = 0x2A00 (maximum possible size of hamming code)
- * @param buffer
- * @param max_buffer
- * @param size_read Return actual size read (size of the hamming code)
- * @return
+int fram_read_ham_size(SlotType slotType, size_t* ham_size, bool* ham_flag_set);
+
+/*
+ * Collections of functions used to update the binaries, size of binary fields, the hamming codes
+ * of the binaries and their respective size fields. The hamming codes can be used to perform
+ * ECC on the images.
  */
-int read_nor_flash_hamming_code(uint8_t* buffer, const size_t max_buffer, size_t* size_read);
-
-
-int increment_nor_flash_reboot_counter();
-int read_nor_flash_reboot_counter(uint8_t* nor_flash_reboot_counter);
-int reset_nor_flash_reboot_counter();
-
-
-int increment_sdc0_slot0_reboot_counter();
-int read_sdc0_slot0_reboot_counter(uint8_t* sdc1sl1_reboot_counter);
-int reset_sdc0_slot0_reboot_counter();
 
 int set_sdc_hamming_flag(VolumeId volume, SdSlots slot);
 int get_sdc_hamming_flag(bool* flag_set, VolumeId volume, SdSlots slot);
 int clear_sdc_hamming_flag(VolumeId volume, SdSlots slot);
 
-int set_bootloader_faulty(bool faulty);
-int is_bootloader_faulty(bool* faulty);
+int fram_set_bootloader_faulty(bool faulty);
+int fram_is_bootloader_faulty(bool* faulty);
 
-int set_preferred_sd_card(VolumeId volumeId);
-int get_preferred_sd_card(VolumeId* volumeId);
+int fram_set_preferred_sd_card(VolumeId volumeId);
+/**
+ * @param volumeId
+ * @return 1 if volume ID has not been set yet and is all ones.
+ */
+int fram_get_preferred_sd_card(VolumeId* volumeId);
 
-int write_bootloader_hamming_code(const uint8_t* code, size_t size);
-int read_bootloader_hamming_code(uint8_t* code, size_t* size);
-
-int set_to_load_softwareupdate(bool enable, VolumeId volume);
+int fram_set_to_load_softwareupdate(bool enable, VolumeId volume);
 
 /**
  * Check whether the software should be loaded from the SD-Card or the NOR-Flash.
@@ -164,7 +177,7 @@ int set_to_load_softwareupdate(bool enable, VolumeId volume);
  * @return
  * 0 on success, -1 and -2 on FRAM failures, -3 on invalid input.
  */
-int get_to_load_softwareupdate(bool* enable, VolumeId* volume);
+int fram_get_to_load_softwareupdate(bool* enable, VolumeId* volume);
 
 #ifdef __cplusplus
 }

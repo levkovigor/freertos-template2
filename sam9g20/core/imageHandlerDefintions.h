@@ -3,6 +3,8 @@
 
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
 #include <returnvalues/classIds.h>
+#include <events/subsystemIdRanges.h>
+#include <fsfw/events/Event.h>
 
 #ifdef ISIS_OBC_G20
 #include <hal/Storage/NORflash.h>
@@ -19,7 +21,11 @@ static constexpr uint8_t INTERFACE_ID = CLASS_ID::SW_IMAGE_HANDLER;
 static constexpr ReturnValue_t OPERATION_FINISHED = MAKE_RETURN_CODE(0);
 static constexpr ReturnValue_t TASK_PERIOD_OVER_SOON = MAKE_RETURN_CODE(1);
 static constexpr ReturnValue_t BUSY = MAKE_RETURN_CODE(2);
-static constexpr ReturnValue_t FRAM_ISSUES = MAKE_RETURN_CODE(3);
+static constexpr ReturnValue_t FRAM_ISSUE = MAKE_RETURN_CODE(3);
+
+static constexpr uint8_t subsystemId = SUBSYSTEM_ID::IMAGE_HANDLER;
+
+static constexpr Event FRAM_ISSUE_EVENT = event::makeEvent(subsystemId, 0, severity::MEDIUM);
 
 #ifdef AT91SAM9G20_EK
 using ImageBuffer = std::array<uint8_t, NandCommon_MAXPAGEDATASIZE>;

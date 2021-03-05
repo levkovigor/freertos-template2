@@ -3,6 +3,7 @@
 #include <fsfw/timemanager/Countdown.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/globalfunctions/CRC.h>
+#include <fsfw/events/EventManagerIF.h>
 
 #include <sam9g20/memory/SDCardAccess.h>
 #include <sam9g20/common/CommonFRAM.h>
@@ -134,15 +135,15 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
         HCCFileGuard fileHelper(&file);
 
         if(stepCounter == 0) {
-            if(currentFileSize > NOR_FLASH_HAMMING_RESERVED_SIZE) {
+            if(currentFileSize > IMAGES_HAMMING_RESERVED_SIZE) {
                 /* Invalid file size */
                 return HasReturnvaluesIF::RETURN_FAILED;
             }
             /* We write the hamming code size to the designated slot */
-            int retval = write_nor_flash_hamming_size(currentFileSize);
+            int retval = fram_write_ham_size(FLASH_SLOT, currentFileSize);
             if(retval != 0) {
                 /* Problems writing to FRAM */
-                return image::FRAM_ISSUES;
+                return image::FRAM_ISSUE;
             }
         }
 
@@ -162,11 +163,19 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
                 return HasReturnvaluesIF::RETURN_FAILED;
             }
 
-            int retval = 0;
+            SlotType framSlot;
             if(sourceSlot == image::ImageSlot::FLASH) {
-                retval = write_nor_flash_hamming_code(imgBuffer->data(), currentByteIdx, sizeRead);
+                framSlot = FLASH_SLOT;
+            }
+            else if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
+                framSlot = SDC_0_SL_0;
+            }
+            else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
+                framSlot = SDC_0_SL_1;
             }
 
+            int retval = fram_write_ham_code(framSlot, imgBuffer->data(),
+                    currentByteIdx, sizeRead);
             if(retval != 0) {
 #if OBSW_VERBOSE_LEVEL >= 1
                 sif::printWarning("ImageCopyingEngine::copyImgHammingSdcToFram:"
@@ -212,7 +221,7 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
 ReturnValue_t ImageCopyingEngine::handleNorflashErasure() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
-        // we only want to print this once.
+        /* We only want to print this once. */
         if(not helperFlag1) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::info << "ImageCopyingEngine::handleNorflashErasure: Deleting old "
@@ -257,7 +266,7 @@ ReturnValue_t ImageCopyingEngine::handleObswErasure() {
         SDCardAccess sdCardAccess;
         int result = change_directory(config::SW_REPOSITORY, true);
         if(result != F_NO_ERROR) {
-            // The hardcoded repository does not exist. Exit!
+            /* The hardcoded repository does not exist. Exit */
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "ImageCopyingHelper::handleErasingForObsw: Software repository does "
                     "not exist. Cancelling erase operation!" << std::endl;
@@ -291,7 +300,7 @@ ReturnValue_t ImageCopyingEngine::handleObswErasure() {
         }
     }
     if(stepCounter == helperCounter1) {
-        // Reset counter and helper member.
+        /* Reset counter and helper members. */
         stepCounter = 0;
         helperFlag1 = false;
         helperCounter1 = 0;
@@ -326,7 +335,7 @@ ReturnValue_t ImageCopyingEngine::handleSdToNorCopyOperation() {
 ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
 
-    // we will always copy in small buckets (8192 bytes)
+    /* We will always copy in small buckets (8192 bytes) */
     size_t sizeToRead = NORFLASH_SMALL_SECTOR_SIZE;
 
     if(currentFileSize == 0) {
@@ -340,10 +349,20 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
         sizeToRead = currentFileSize - currentByteIdx;
     }
 
-    // If data has been read but still needs to be copied, don't read.
+    if(stepCounter == 0) {
+        /* We store the size of the NOR-Flash image in the FRAM */
+        int retval = fram_write_binary_size(FLASH_SLOT, currentFileSize);
+        if(retval != 0) {
+            /* FRAM issues */
+            EventManagerIF::triggerEvent(objects::SOFTWARE_IMAGE_HANDLER,
+                    image::FRAM_ISSUE_EVENT, retval);
+        }
+    }
+
+    /* If data has been read but still needs to be copied, don't read. */
     if(not helperFlag1) {
         size_t bytesRead = 0;
-        // read length of NOR-Flash small section
+        /* Read length of NOR-Flash small section */
         result = readFile(imgBuffer->data(), sizeToRead, &bytesRead,
                 binaryFile);
         if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -374,7 +393,7 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
     if(retval != 0) {
         errorCount++;
         if(errorCount >= 3) {
-            // if writing to NAND failed 5 times, exit.
+            /* If writing to NAND failed 5 times, exit. */
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "SoftwareImageHandler::copyBootloaderToNor"
                     << "Flash: Write error!" << std::endl;
@@ -444,11 +463,10 @@ void ImageCopyingEngine::writeBootloaderSizeAndCrc() {
 #if OBSW_VERBOSE_LEVEL >= 1
     else {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::info << std::setfill('0') << std::setw(2) << std::hex
-                << "Bootloader CRC16: " << "0x" << (crc16 >> 8 & 0xff) << ", "
-                << "0x" << (crc16 & 0xff) << " written to address " << std::setw(8)
-                << "0x" << NORFLASH_BL_CRC16_START_READ << std::setfill(' ')
-                << std::dec << std::endl;
+        sif::info << std::setfill('0') << std::setw(2) << std::hex << "Bootloader CRC16: 0x" <<
+                (crc16 >> 8 & 0xff) << ", " << "0x" << (crc16 & 0xff) << " written to address " <<
+                std::setw(8) << "0x" << NORFLASH_BL_CRC16_START_READ << std::setfill(' ') <<
+                std::dec << std::endl;
 #else
         sif::printInfo("Bootloader CRC16: 0x%02x,0x%02x written to address 0x%08x\n",
                 (crc16 >> 8) & 0xff, crc16 & 0xff, NORFLASH_BL_CRC16_START_READ);
@@ -467,7 +485,7 @@ void ImageCopyingEngine::writeBootloaderSizeAndCrc() {
 uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
         size_t* offset) {
     if(bootloader) {
-        // deletion steps, performed per-sector
+        /* Deletion steps, performed per-sector */
         if(internalState == GenericInternalState::STEP_1) {
             switch(stepCounter) {
             case(0): return NORFLASH_SA0_ADDRESS;
@@ -480,7 +498,7 @@ uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
             case(7): return NORFLASH_SA7_ADDRESS;
             }
         }
-        // now we write in small sector buckets, so the offset is actually important.
+        /* Now we write in small sector buckets, so the offset is actually important. */
         else if(internalState == GenericInternalState::STEP_2) {
             uint8_t baseIdx = currentByteIdx / NORFLASH_SMALL_SECTOR_SIZE;
             if(offset != nullptr) {
@@ -567,7 +585,7 @@ uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
 uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
         size_t* offset) {
     if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
-        // deletion steps, performed per-sector
+        /* Deletion steps, performed per-sector */
         if(internalState == GenericInternalState::STEP_1) {
             switch(stepCounter) {
             case(0): return NORFLASH_SA0_ADDRESS;
@@ -581,7 +599,7 @@ uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
             case(8): return NORFLASH_SA8_ADDRESS;
             }
         }
-        // now we write in small sector buckets, so the offset is actually important.
+        /* Now we write in small sector buckets, so the offset is actually important. */
         else if(internalState == GenericInternalState::STEP_2) {
             uint8_t baseIdx = currentByteIdx / NORFLASH_SMALL_SECTOR_SIZE;
             if(offset != nullptr) {
@@ -597,7 +615,7 @@ uint32_t ImageCopyingEngine::getBaseAddress(uint8_t stepCounter,
             case(6): return NORFLASH_SA6_ADDRESS;
             case(7): return NORFLASH_SA7_ADDRESS;
             case(8): return NORFLASH_SA8_ADDRESS;
-            // This sector is a large sector, so we need to set the offset here.
+            /* This sector is a large sector, so we need to set the offset here. */
             case(9): {
                 *offset = NORFLASH_SMALL_SECTOR_SIZE;
                 return NORFLASH_SA8_ADDRESS;
@@ -703,7 +721,7 @@ void ImageCopyingEngine::handleFinishPrintout() {
         sif::printInfo("Copying bootloader to NOR-Flash finished with %hu steps!\n", stepCounter);
 #endif
 
-        // Print the ARM vectors for the bootloader.
+        /* Print the ARM vectors for the bootloader. */
 #if OBSW_VERBOSE_LEVEL >= 2
         std::array<uint8_t, 7 * 4> armVectors;
         uint32_t currentArmVector = 0;
