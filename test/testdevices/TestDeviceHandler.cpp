@@ -368,8 +368,8 @@ ReturnValue_t TestDevice::interpretingReply1() {
 #else
 	sif::printDebug("DummyDevice: Setting Completion Reply for TEST_COMMAND_1\n");
 #endif
-	ActionMessage::setCompletionReply(true, &directReplyMessage,
-			TEST_COMMAND_1, RETURN_OK);
+	ActionMessage::setCompletionReply(&directReplyMessage,
+			TEST_COMMAND_1, true);
 	return RETURN_OK;
 }
 
