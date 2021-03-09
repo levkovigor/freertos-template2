@@ -7,7 +7,7 @@
 #include <fsfw/ipc/MutexIF.h>
 #include <fsfw/ipc/MutexFactory.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
-#include <fsfw/ipc/MutexHelper.h>
+#include <fsfw/ipc/MutexGuard.h>
 
 
 SDCardAccessManager* SDCardAccessManager::factoryInstance = nullptr;
@@ -50,7 +50,7 @@ bool SDCardAccessManager::getSdCardChangeOngoing() const {
 #ifndef ISIS_OBC_G20
     return false;
 #else
-    MutexHelper(mutex, MutexIF::TimeoutType::WAITING, config::SD_CARD_ACCESS_MUTEX_TIMEOUT);
+    MutexGuard(mutex, MutexIF::TimeoutType::WAITING, config::SD_CARD_ACCESS_MUTEX_TIMEOUT);
     return changingSdCard;
 #endif
 }
@@ -60,7 +60,7 @@ bool SDCardAccessManager::tryActiveSdCardChange() {
 #ifndef ISIS_OBC_G20
     return true;
 #else
-    MutexHelper(mutex, MutexIF::TimeoutType::WAITING, config::SD_CARD_ACCESS_MUTEX_TIMEOUT);
+    MutexGuard(mutex, MutexIF::TimeoutType::WAITING, config::SD_CARD_ACCESS_MUTEX_TIMEOUT);
     if(this->changingSdCard == false) {
         this->changingSdCard = true;
     }

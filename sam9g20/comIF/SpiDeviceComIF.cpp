@@ -2,7 +2,7 @@
 #include "GpioDeviceComIF.h"
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
-#include <fsfw/ipc/MutexHelper.h>
+#include <fsfw/ipc/MutexGuard.h>
 #include <fsfw/osal/FreeRTOS/Mutex.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
@@ -143,7 +143,7 @@ ReturnValue_t SpiDeviceComIF::getSendSuccess(CookieIF *cookie) {
         return RETURN_FAILED;
     }
     // Com Status has mutex protection
-    MutexHelper mutexLock(spiCookie->getMutexHandle(),
+    MutexGuard mutexLock(spiCookie->getMutexHandle(),
             MutexIF::TimeoutType::WAITING,
             SPI_STANDARD_MUTEX_TIMEOUT);
     if(spiCookie->getCurrentComStatus() == ComStatus::FAULTY) {
@@ -180,7 +180,7 @@ ReturnValue_t SpiDeviceComIF::readReceivedMessage(CookieIF *cookie,
 
     checkTransferResult(spiCookie, spiSemaphore);
     // Com Status has mutex protection
-    MutexHelper mutexLock(spiCookie->getMutexHandle(),
+    MutexGuard mutexLock(spiCookie->getMutexHandle(),
             MutexIF::TimeoutType::WAITING,
             SPI_STANDARD_MUTEX_TIMEOUT);
     if(spiCookie->getCurrentComStatus() == ComStatus::TRANSFER_SUCCESS) {
@@ -233,7 +233,7 @@ void SpiDeviceComIF::checkTransferResult(SpiCookie* spiCookie,
     }
 
     // Com Status has mutex protection
-    MutexHelper mutexLock(spiCookie->getMutexHandle(),
+    MutexGuard mutexLock(spiCookie->getMutexHandle(),
             MutexIF::TimeoutType::WAITING,
             SPI_STANDARD_MUTEX_TIMEOUT);
     if(result != RETURN_OK) {

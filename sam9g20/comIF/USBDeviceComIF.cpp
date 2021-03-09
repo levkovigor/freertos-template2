@@ -1,6 +1,6 @@
 #include "USBDeviceComIF.h"
 
-#include <fsfw/ipc/MutexHelper.h>
+#include <fsfw/ipc/MutexGuard.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Countdown.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
@@ -129,7 +129,7 @@ ReturnValue_t USBDeviceComIF::getSendSuccess(CookieIF *cookie) {
 
 ReturnValue_t USBDeviceComIF::requestReceiveMessage(CookieIF *cookie,
         size_t requestLen) {
-    MutexHelper(usbRingBuffer->getMutexHandle(),
+    MutexGuard(usbRingBuffer->getMutexHandle(),
             MutexIF::TimeoutType::WAITING, 5);
     auto fifoHandle = usbRingBuffer->getReceiveSizesFIFO();
     if(fifoHandle->empty()) {

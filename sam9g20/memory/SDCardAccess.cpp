@@ -3,7 +3,7 @@
 #include <OBSWConfig.h>
 
 #include <fsfw/ipc/MutexFactory.h>
-#include <fsfw/ipc/MutexHelper.h>
+#include <fsfw/ipc/MutexGuard.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 
 #include <hcc/api_fs_err.h>
@@ -11,7 +11,7 @@
 
 SDCardAccess::SDCardAccess() {
     int result = 0;
-    MutexHelper(SDCardAccessManager::instance()->mutex, MutexIF::TimeoutType::WAITING,
+    MutexGuard(SDCardAccessManager::instance()->mutex, MutexIF::TimeoutType::WAITING,
             config::SD_CARD_ACCESS_MUTEX_TIMEOUT);
 #ifdef ISIS_OBC_G20
     /* we locked the mutex so we can access the internal states directly. */
@@ -52,7 +52,7 @@ SDCardAccess::~SDCardAccess() {
                 " %d.\n", result);
     }
     f_releaseFS();
-    MutexHelper(SDCardAccessManager::instance()->mutex, MutexIF::TimeoutType::WAITING,
+    MutexGuard(SDCardAccessManager::instance()->mutex, MutexIF::TimeoutType::WAITING,
             config::SD_CARD_ACCESS_MUTEX_TIMEOUT);
     SDCardAccessManager::instance()->activeAccesses--;
     if(SDCardAccessManager::instance()->activeAccesses == 0) {
