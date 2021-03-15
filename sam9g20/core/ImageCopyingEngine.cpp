@@ -1,7 +1,10 @@
 #include "ImageCopyingEngine.h"
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
+#include <fsfw/timemanager/Countdown.h>
 #include <sam9g20/core/SoftwareImageHandler.h>
+#include <sam9g20/memory/SDCardAccess.h>
+
 
 ImageCopyingEngine::ImageCopyingEngine(SoftwareImageHandler *owner,
         Countdown *countdown, image::ImageBuffer *imgBuffer):
@@ -231,30 +234,38 @@ ReturnValue_t ImageCopyingEngine::readFile(uint8_t *buffer, size_t sizeToRead,
 ReturnValue_t ImageCopyingEngine::copySdcImgToSdc() {
 
 	SDCardAccess sdCardAccess;
-	F_FILE *binaryFile;
-	long size = 8;
-	long sizeToRead = 1;
+	F_FILE *binaryFile = nullptr;
+	F_FILE *filePtr = nullptr;
+	long size = 0;
+	long sizeToRead = 0;
 	if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
-		binaryFile = f_open(config::SW_SLOT_1_NAME, "w");
+	    if(stepCounter==0){
+	        //remove previous file at targetSlot
+	        f_delete(config::SW_SLOT_1_NAME);
+	        stepCounter++;
+	    }
+	    // "appending" opens file or creates it if it doesn't exist
+	    binaryFile = f_open(config::SW_SLOT_1_NAME, "a");
 	}
 	else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
-    	binaryFile = f_open(config::SW_SLOT_1_NAME, "w");
+	    if(stepCounter==0){
+	        f_delete(config::SW_SLOT_0_NAME);
+	        stepCounter++;
+	    }
+	    binaryFile = f_open(config::SW_SLOT_0_NAME, "a");
 	}
-	    // Get file information like binary size, open the file, seek correct
-	    // position etc.
-
 	ReturnValue_t result = prepareGenericFileInformation(
-			sdCardAccess.currentVolumeId, &binaryFile);
+			sdCardAccess.currentVolumeId, &filePtr);
 	while(true){
 		if(currentFileSize-currentByteIdx>imgBuffer->size()){
 			sizeToRead=imgBuffer->size();
 		}else{
 			sizeToRead=currentFileSize-currentByteIdx;
 		}
-		f_seek(binaryFile, currentByteIdx, F_SEEK_SET);
-		size_t bytesRead = f_read(imgBuffer, size, sizeToRead, binaryFile);
+		f_seek(filePtr, currentByteIdx, F_SEEK_SET);
+		size_t bytesRead = f_read(imgBuffer->data(), size, sizeToRead, filePtr);
 		currentByteIdx += bytesRead;
-
+		f_write(imgBuffer->data(), size,sizeToRead, binaryFile);
 		if(currentByteIdx>=currentFileSize){
 			reset();
 	        lastFinishedState = imageHandlerState;
@@ -262,7 +273,7 @@ ReturnValue_t ImageCopyingEngine::copySdcImgToSdc() {
 	        return image::OPERATION_FINISHED;
 		}
 		if(countdown->hasTimedOut()) {
-		        return  image::TASK_PERIOD_OVER_SOON;
+		    return image::TASK_PERIOD_OVER_SOON;
 		}
 	}
     return HasReturnvaluesIF::RETURN_OK;
