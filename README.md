@@ -1,7 +1,8 @@
 SOURCE On-Board Software
 ======
 
-## General Information
+# General Information
+
 More general information of the project can be found
 on the [KSat website](https://www.ksat-stuttgart.de/en/our-missions/source/).
 
@@ -27,7 +28,8 @@ software to the boards as well. The Linux build can be run locally on the host c
 The QEMU image can be run on the host computer as well, but required QEMU installed as specified
 in the QEMU documentation.
 
-## Reference
+# Reference
+
 [Prerequisites](#prerequisites)<br>
 [Building the software](#building-the-software)<br>
 [Setting up prerequisites](#setting-up-prerequisites)<br>
@@ -43,7 +45,7 @@ in the QEMU documentation.
 [QEMU getting started](doc/README-qemu.md#top)<br>
 [Hosted build getting started](doc/README-hosted.md#top)<br>
 
-## Prerequisites
+# Prerequisites
 1. Make installed
 2. Development board binaries: [GNU ARM Toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/) 
    installed, hardware or QEMU set-up available. See the
@@ -52,9 +54,9 @@ in the QEMU documentation.
 4. For QEMU: QEMU repository cloned and set up in same folder in which
    this repository was cloned
 
-## Building the software
+# Building the software
 
-### Clone software and create OBSW binary for AT91 and iOBC
+## Clone software and create OBSW binary for AT91 and iOBC
 
 1. Create directory for OBSW (e.g. with mkdir Source_OBSW).
 Note that make and git are required (installation guide below)
@@ -104,12 +106,12 @@ Note that make and git are required (installation guide below)
    the `sdramCfg` make target needs to be run first once per AT91 power cycle before flashing the 
    SDRAM. Refer to respective instructions for more details.
 
-### Build Host Software
+## Build Host Software
 
-The build system to build the hosted binaries was changed to CMake
+The build system to build the hosted binaries was changed to CMake.
 Perform the following steps to build the hosted software
 
-#### Windows
+### Windows
 
 Install [MSYS2](https://www.msys2.org/) and run the following 
 command in MinGW64:
@@ -131,7 +133,7 @@ cmake .. -G "MinGW Makefiles"
 cmake --build . -j
 ```
 
-#### Linux
+### Linux
 
 Run the following command in the `sourceobsw` folder to build the software
 with the hosted OSAL. You can supply `-DOS_FSFW=linux` to the `cmake ..` command to build with the Linux OSAL instead
@@ -143,7 +145,7 @@ cmake ..
 cmake --build . -j
 ```
 
-### Build Configurations and testing of Flight Software
+# Build Configurations and testing of Flight Software
 
 Compilation can be sped up by providing the -j parameter.
 On windows, wsl must be added before make, if tools like MSYS2 or Windows Build
@@ -177,9 +179,9 @@ It is possible to chose between serial communication via RS232 and Ethernet
 communication with UDP datagrams. For the serial communication, a USB to female 
 RS232 cable can be used (or UART jumper wires..).
 
-## Setting up prerequisites
+# Setting up prerequisites
 
-### Windows: Installing and setting up the ARM Toolchain
+## Windows: Installing and setting up the ARM Toolchain
 The code needs to be compiled for the ARM target system and we will use the
 [GNU ARM Toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/).
 
@@ -210,7 +212,7 @@ The code needs to be compiled for the ARM target system and we will use the
 If you don't want to install nodejs you may go with the 
 [four-command manual installation](https://xpack.github.io/arm-none-eabi-gcc/install/#manual-install). 
 
-### Linux: Install C++ buildchain on Linux
+## Linux: Install C++ buildchain on Linux
 
 Install the [GNU ARM toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/)
 like explained above, but for Linux, windows build tools not required.
@@ -225,14 +227,14 @@ To install general buildtools for the linux binary, run:
 sudo apt-get install build-essential
 ```
 
-## Project Specific Information
+# Project Specific Information
 
 There are some important differences of this project compared to the project files and configuration 
 provided by ISIS. Some important differences will be documented and listed here. It should be noted 
 that memory allocation is only performed during start-up and was carefully avoided during run-time 
 to avoid associated problems like non-deterministic behaviour and memory fragmentation in the heap.
 
-#### C++
+### C++
 C++ is used in this project. To allow this, some important changes in the linkerscript files and 
 the start up files were necessary. The most important change includes specifying `.fini`, `.init`,
 `.preinit_array`, `.init_array` and `.fini_array` sections. In the startup 
@@ -246,7 +248,7 @@ components and modules to easy development. Examples include an object manager, 
 layer for FreeRTOS, a PUS stack for TMTC commanding using the ECSS PUS standard and a lot more. 
 More information can be found at the [FSFW](https://egit.irs.uni-stuttgart.de/fsfw/fsfw) website.
 
-#### FreeRTOS
+### FreeRTOS
 
 It is possible to use a newer version of FreeRTOS. The ISIS libraries still use the API of 
 FreeRTOS 7.5.3. A newer FreeRTOS can be used as long as the old API calls are still provided and 
@@ -258,13 +260,13 @@ ensure that newlib nano can be used in a thread-safe manner. Functon implementat
 `__malloc_lock` and `__malloc_unlock` were provided as well to ensure thread-safety when using 
 newlib nano with FreeRTOS. This project also uses the `heap4.c` FreeRTOS memory management scheme.
 
-#### Pre-emptive scheduling
+### Pre-emptive scheduling
 
 ISIS default FreeRTOS configuration uses a cooperative scheduler and their documents specify that 
 this is due "higher requirements to data contention management". It is not exactly known what 
 this means, but there have been no issues with using a pre-emptive scheduler so far.
 
-#### Newlib Nano
+### Newlib Nano
 
 Newlib Nano is used as the a library for embedded systems. This reduces the binary size as well
 
