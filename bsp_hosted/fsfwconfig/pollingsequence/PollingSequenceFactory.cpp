@@ -1,5 +1,5 @@
-#include <PollingSequenceFactory.h>
-#include <systemObjectList.h>
+#include "PollingSequenceFactory.h"
+#include <objects/systemObjectList.h>
 
 #include <fsfw/objectmanager/ObjectManagerIF.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>

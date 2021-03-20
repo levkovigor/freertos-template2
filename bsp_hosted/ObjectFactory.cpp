@@ -1,9 +1,8 @@
-#include "Factory.h"
+#include "bsp_hosted/ObjectFactory.h"
 #include "boardtest/TestTaskHost.h"
-
-#include <systemObjectList.h>
-#include <apid.h>
-#include <pusIds.h>
+#include "fsfwconfig/objects/systemObjectList.h"
+#include "fsfwconfig/tmtc/apid.h"
+#include "fsfwconfig/tmtc/pusIds.h"
 
 #include <test/testinterfaces/DummyEchoComIF.h>
 #include <test/testdevices/TestDeviceHandler.h>

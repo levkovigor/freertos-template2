@@ -8,4 +8,5 @@ add_subdirectory(devices)
 add_subdirectory(fdir)
 add_subdirectory(pus)
 add_subdirectory(utility)
+add_subdirectory(memory)
 

@@ -16,7 +16,7 @@ void ThermalController::performControlOperation() {
 }
 
 void ThermalController::handleChangedDataset(sid_t sid,
-        store_address_t storeId) {
+        store_address_t storeId, bool* clearMessage) {
     if(sid == sid_t(TSensorDefinitions::ObjIds::TEST_HKB_HANDLER,
             TSensorDefinitions::THERMAL_SENSOR_SET_ID)) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1

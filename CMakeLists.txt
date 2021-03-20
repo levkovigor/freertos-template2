@@ -16,6 +16,7 @@ cmake_minimum_required(VERSION 3.13)
 
 set(CMAKE_SCRIPT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+option(ADD_ETL_LIB "Add ETL library" ON)
 if(NOT OS_FSFW)
     set(OS_FSFW host CACHE STRING "OS for the FSFW.")
 endif()
@@ -30,18 +31,20 @@ project(sourceobsw ASM C CXX)
 ################################################################################
 
 # Specify the C++ standard
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Set names and variables
 set(TARGET_NAME ${CMAKE_PROJECT_NAME}) 
 set(LIB_FSFW_NAME fsfw)
+set(LIB_ETL_NAME etl)
 
 # Set path names
 set(FSFW_PATH fsfw)
 set(MISSION_PATH mission)
 set(BSP_PATH bsp_hosted)
 set(TEST_PATH test)
+set(ETL_PATH etl)
 
 # Analyse different OS and architecture/target options, determine BSP_PATH,
 # display information about compiler etc.
@@ -81,6 +84,9 @@ add_subdirectory(${BSP_PATH})
 add_subdirectory(${FSFW_PATH})
 add_subdirectory(${MISSION_PATH})
 add_subdirectory(${TEST_PATH})
+if(ADD_ETL_LIB)
+    add_subdirectory(${ETL_PATH})
+endif()
 
 ################################################################################
 # Post-Sources preparation
@@ -90,6 +96,12 @@ add_subdirectory(${TEST_PATH})
 target_link_libraries(${TARGET_NAME} PRIVATE
     ${LIB_FSFW_NAME} 
 )
+
+if(ADD_ETL_LIB)
+    target_link_libraries(${TARGET_NAME} PRIVATE
+        ${LIB_ETL_NAME}
+    )
+endif()
 
 # Add include paths for all sources.
 target_include_directories(${TARGET_NAME} PRIVATE

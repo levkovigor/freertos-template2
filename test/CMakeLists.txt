@@ -1,0 +1,3 @@
+add_subdirectory(testdevices)
+add_subdirectory(testinterfaces)
+add_subdirectory(testtasks)
