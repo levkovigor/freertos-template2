@@ -16,8 +16,8 @@
 #include <fsfw/globalfunctions/sign.h>
 #include <fsfw/subsystem/SubsystemBase.h>
 #include <string.h>
+
 #include <fsfw/coordinates/CoordinateTransformations.h>
-#include <OBSWConfig.h>
 
 AttitudeController::AttitudeController(object_id_t objectId) :
 		ExtendedControllerBase(objectId, objects::NO_OBJECT) {
@@ -34,7 +34,16 @@ ReturnValue_t AttitudeController::handleCommandMessage(
 void AttitudeController::performControlOperation() {
 	//sif::info;
 #if OBSW_ACS_TEST == 1
-
+	//sif::printInfo("%f; %f; %f; %f\n", multFactorTest[0][0],
+	//		multFactorTest[0][1], multFactorTest[0][2], multFactorTest[0][3]);
+	calcQuatAndRefRot(multFactorTest[2],
+			timevalOperations::toTimeval(currentTimeJDTest[2]),
+			positionFTest[2], velocityFTest[2], quatRotPointingAxisTest[2],
+			positionTargetFTest[2], quatCurrentAttitudeTest[2],
+			positionTargetITest, quatLastPointingTest[2], quatBXTest,
+			refRotRateTest);
+	sif::printInfo("%f; %f; %f\n", refRotRateTest[0], refRotRateTest[1],
+			refRotRateTest[2]);
 #endif
 }
 
