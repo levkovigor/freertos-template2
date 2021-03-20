@@ -56,7 +56,7 @@ in the QEMU documentation.
 
 # Building the software
 
-## Clone software and create OBSW binary for AT91 and iOBC
+## Clone software
 
 1. Create directory for OBSW (e.g. with mkdir Source_OBSW).
 Note that make and git are required (installation guide below)
@@ -72,6 +72,11 @@ Note that make and git are required (installation guide below)
    ```sh
    git submodule update --init --recursive
    ```
+
+You can now build the software for either the AT91 and iOBC targets
+or for a host system.
+
+##  Create OBSW binary for AT91 and iOBC
 
 5. Run Makefile to create binaries. If running on linux and .exe ending is
    problematic, supply WINDOWS=1 additionally. If running on windows and  
@@ -101,8 +106,7 @@ Note that make and git are required (installation guide below)
    ./StartQEMU.sh
    ``` 
    
-6. The Linux and Hosted binaries can be run directly via command line or by executing them on the 
-   host. The development board binaries have to be flashed with with J-Link/SAM-BA for the AT91 and 
+6. The Linux and Hosted binaries can be run directly via command line or by executing   them on the host. The development board binaries have to be flashed with with J-Link/SAM-BA for the AT91 and 
    the `sdramCfg` make target needs to be run first once per AT91 power cycle before flashing the 
    SDRAM. Refer to respective instructions for more details.
 
