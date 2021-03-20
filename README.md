@@ -109,7 +109,7 @@ repository was cloned and built inside the same folder the OBSW was cloned.
 ./StartQEMU.sh
 ``` 
    
-6. The development board binaries have to be flashed with with J-Link/SAM-BA for 
+2. The development board binaries have to be flashed with with J-Link/SAM-BA for 
 the AT91 and the `sdramCfg` make target needs to be run first once per AT91 power cycle before 
 flashing the SDRAM. Refer to respective instructions for more details.
 
