@@ -58,57 +58,60 @@ in the QEMU documentation.
 
 ## Clone software
 
-1. Create directory for OBSW (e.g. with mkdir Source_OBSW).
-Note that make and git are required (installation guide below)
+1. Create directory for OBSW.
+
 2. Clone OBSW into this directory
-   ```sh
-   git clone https://git.ksat-stuttgart.de/source/sourceobsw.git
-   ```
+   
+```sh
+git clone https://git.ksat-stuttgart.de/source/sourceobsw.git
+```
+
 3. Switch branch to desired branch (if not master branch)
-   ```sh
-   git checkout <branch>
-   ```
+
+```sh
+git checkout <branch>
+```
+
 4. Initialize and update all submodules
-   ```sh
-   git submodule update --init --recursive
-   ```
+
+```sh
+git submodule update --init --recursive
+```
 
 You can now build the software for either the AT91 and iOBC targets
 or for a host system.
 
 ##  Create OBSW binary for AT91 and iOBC
 
-5. Run Makefile to create binaries. If running on linux and .exe ending is
-   problematic, supply WINDOWS=1 additionally. If running on windows and  
-   build tools like MSYS2 or Windows Build Tools are not installed, add
-   wsl be fore make.
-   Please note that there are different build options and configuration parameters
-   for the make file available. An explanation and how to set up the Eclipse IDE
-   for these configurations will be provided in a separate chapter.
-   There are following targets available:
+1. Run Makefile to create binaries. You need to have make installed, either by installing
+the Windows Build Tools or using a tools like MinGW64. Please note that there are different build 
+options and configuration parameters for the Makefile available. An explanation and how to set up 
+the Eclipse IDE for these configurations will be provided in a separate chapter.
+There are following targets available:
    
-   1. all and debug to build the debug binaries
-   2. mission to build the release binary
+ - `all` and `debug` to build the debug binaries
+ - `mission` to build the release binary
 
-   General command for AT91:
-   ```sh
-   make all
-   ```
-   General command for the iOBC:
-   ```sh
-   make IOBC=1 all
-   ```
+General command for AT91:
+
+```sh
+make all
+```
    
-   Command to start QEMU (inside sourceobsw folder). Please note this
-   only works if the QEMU repository was cloned and built inside the same folder
-   the OBSW was cloned.
-   ```sh
-   ./StartQEMU.sh
-   ``` 
+General command for the iOBC:
+```sh
+make IOBC=1 all
+```
    
-6. The Linux and Hosted binaries can be run directly via command line or by executing   them on the host. The development board binaries have to be flashed with with J-Link/SAM-BA for the AT91 and 
-   the `sdramCfg` make target needs to be run first once per AT91 power cycle before flashing the 
-   SDRAM. Refer to respective instructions for more details.
+Command to start QEMU (inside sourceobsw folder). Please note this only works if the QEMU 
+repository was cloned and built inside the same folder the OBSW was cloned.
+```sh
+./StartQEMU.sh
+``` 
+   
+6. The development board binaries have to be flashed with with J-Link/SAM-BA for 
+the AT91 and the `sdramCfg` make target needs to be run first once per AT91 power cycle before 
+flashing the SDRAM. Refer to respective instructions for more details.
 
 ## Build Host Software
 
