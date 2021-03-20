@@ -54,7 +54,7 @@ in the QEMU documentation.
 
 ## Building the software
 
-### Clone software and create OBSW binary
+### Clone software and create OBSW binary for AT91 and iOBC
 
 1. Create directory for OBSW (e.g. with mkdir Source_OBSW).
 Note that make and git are required (installation guide below)
@@ -91,16 +91,6 @@ Note that make and git are required (installation guide below)
    ```sh
    make IOBC=1 all
    ```
-
-   General command for Host systems (Windows or Linux):
-   ```sh
-   make -f Makefile-Hosted all
-   ```
-   
-   General command for Linux:
-   ```sh
-   make -f Makefile-Linux all
-   ```
    
    Command to start QEMU (inside sourceobsw folder). Please note this
    only works if the QEMU repository was cloned and built inside the same folder
@@ -113,6 +103,45 @@ Note that make and git are required (installation guide below)
    host. The development board binaries have to be flashed with with J-Link/SAM-BA for the AT91 and 
    the `sdramCfg` make target needs to be run first once per AT91 power cycle before flashing the 
    SDRAM. Refer to respective instructions for more details.
+
+### Build Host Software
+
+The build system to build the hosted binaries was changed to CMake
+Perform the following steps to build the hosted software
+
+#### Windows
+
+Install [MSYS2](https://www.msys2.org/) and run the following 
+command in MinGW64:
+
+```sh
+pacman -Syuuu
+pacman -S gcc git mingw-w64-x86_64-gdb mingw-w64-x86_64-make mingw-w64-x86_64-cmake
+```
+
+It is recommended to set up `alias`es and use `git config --global core.autocrl`
+to have consistent line endings in MinGW64
+
+Now you can run the following commands in the `sourceobsw` folder to build the software
+
+```sh
+mkdir Debug-Host
+cd Debug-Host
+cmake .. -G "MinGW Makefiles"
+cmake --build . -j
+```
+
+#### Linux
+
+Run the following command in the `sourceobsw` folder to build the software
+with the hosted OSAL. You can supply `-DOS_FSFW=linux` to the `cmake ..` command to build with the Linux OSAL instead
+
+````sh
+mkdir Debug-Host
+cd Debug-Host
+cmake ..
+cmake --build . -j
+```
 
 ### Build Configurations and testing of Flight Software
 
