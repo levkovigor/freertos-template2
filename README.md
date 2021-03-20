@@ -145,7 +145,7 @@ cmake --build . -j
 Run the following command in the `sourceobsw` folder to build the software
 with the hosted OSAL. You can supply `-DOS_FSFW=linux` to the `cmake ..` command to build with the Linux OSAL instead
 
-````sh
+```sh
 mkdir Debug-Host
 cd Debug-Host
 cmake ..
