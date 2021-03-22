@@ -21,7 +21,19 @@ public:
 	FRAMHandler(object_id_t objectId);
 	virtual~ FRAMHandler();
 
+	/**
+	 * Read the bootloader block into the private array and assign a given pointer to that
+	 * array
+	 * @param ptr Address of a pointer which will be assigned.
+	 */
+	static ReturnValue_t readBootloaderBlock(uint8_t** ptr);
+
 	static void dumpCriticalBlock();
+
+	/**
+	 * Print the bootloader block, byte-wise, 4 bytes per line.
+	 */
+	static void printBootloaderBlock();
 	/**
 	 * Print the critical block, byte-wise, 4 bytes per line. For debugging purpose,
 	 * do not use in mission code. It will later be possible to also dump the critical block
@@ -46,6 +58,9 @@ protected:
 	virtual ReturnValue_t setAddress(uint32_t* startAddress);
 
 	virtual ReturnValue_t initialize() override;
+
+private:
+	static void genericBlockPrinter(size_t blockSize);
 };
 
 #endif /* SAM9G20_MEMORY_FRAMHANDLER_H_ */

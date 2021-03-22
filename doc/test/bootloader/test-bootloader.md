@@ -20,6 +20,21 @@
 3. Disable all hamming code checks.
 4. Reboot and verify software update is loaded
 
+## Regular Boot with Hamming Code Correction
+
+1. Enable all hamming code checks (global and local checks)
+2. Boot OBSW and verify through terminal that OBSW from NOR-Flash is booted
+3. Introduce SEUs in NOR-Flash image by using special command
+4. Reboot and verify that the SEU is corrected.
+
+## Regular Boot with Invalid Image
+
+1. Enable all hamming code checks (global and local checks)
+2. Load both software images (SW slot 0 and SW slot 1) with higher version number
+3. Boot OBSW and verify through terminal that OBSW from NOR-Flash is booted
+4. Introduce multiple SEUs in NOR-Flash image by using special command
+5. Reboot and verify that SW from SD card was used.
+
 # Advanced Tests - Hamming code checks disabled
 
 ## Restart counter cycling test 1

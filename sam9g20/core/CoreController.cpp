@@ -138,6 +138,32 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         }
         return getFillCountCommand(static_cast<Stores>(data[STORE_TYPE]), commandedBy, actionId);
     }
+    case(ENABLE_GLOBAL_HAMMING_CODE_CHECKS): {
+        return manipulateGlobalHammingFlag(true, actionId, commandedBy, data, size);
+    }
+    case(DISABLE_GLOBAL_HAMMING_CODE_CHECKS): {
+        return manipulateGlobalHammingFlag(false, actionId, commandedBy, data, size);
+    }
+    case(ENABLE_LOCAL_HAMMING_CODE_CHECKS): {
+        return manipulateLocalHammingFlag(true, actionId, commandedBy, data, size);
+    }
+    case(DISABLE_LOCAL_HAMMING_CODE_CHECKS): {
+        return manipulateLocalHammingFlag(false, actionId, commandedBy, data, size);
+    }
+    case(DUMP_BOOTLOADER_BLOCK): {
+        uint8_t* dataPtr = nullptr;
+        ReturnValue_t result = FRAMHandler::readBootloaderBlock(&dataPtr);
+        if(result != HasReturnvaluesIF::RETURN_OK) {
+            actionHelper.finish(false, commandedBy, actionId, result);
+            return result;
+        }
+        actionHelper.reportData(commandedBy, actionId, dataPtr, sizeof(BootloaderGroup));
+        return HasActionsIF::EXECUTION_FINISHED;
+    }
+    case(PRINT_FRAM_BL_BLOCK): {
+        FRAMHandler::printBootloaderBlock();
+        return HasActionsIF::EXECUTION_FINISHED;
+    }
     case(PRINT_FRAM_CRIT_BLOCK): {
         FRAMHandler::printCriticalBlock();
         return HasActionsIF::EXECUTION_FINISHED;
@@ -147,6 +173,7 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         ReturnValue_t result = FRAMHandler::zeroOutDefaultZeroFields(&errorVal);
         if(result != HasReturnvaluesIF::RETURN_OK) {
             actionHelper.finish(false, commandedBy, actionId, errorVal);
+            return result;
         }
         return HasActionsIF::EXECUTION_FINISHED;
     }
@@ -506,4 +533,46 @@ void CoreController::update64bit10kHzCounter() {
 #endif
 }
 
+ReturnValue_t CoreController::manipulateGlobalHammingFlag(bool set, ActionId_t actionId,
+        MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
+    int retval = fram_set_ham_check_flag();
+    if(retval != 0) {
+        actionHelper.finish(false, commandedBy, actionId, retval);
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    return HasActionsIF::EXECUTION_FINISHED;
+}
 
+ReturnValue_t CoreController::manipulateLocalHammingFlag(bool set, ActionId_t actionId,
+        MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
+    bool dataValid = true;
+    if(size < 1) {
+        dataValid = false;
+        actionHelper.finish(false, commandedBy, actionId, HasActionsIF::INVALID_PARAMETERS);
+        return HasActionsIF::INVALID_PARAMETERS;
+    }
+    else {
+        if(data[0] > 4) {
+            dataValid = false;
+        }
+    }
+
+    if(not dataValid) {
+        actionHelper.finish(false, commandedBy, actionId, HasActionsIF::INVALID_PARAMETERS);
+        return HasActionsIF::INVALID_PARAMETERS;
+    }
+
+    SlotType slotType = static_cast<SlotType>(data[0]);
+    int retval = 0;
+    if(set) {
+        retval = fram_set_img_ham_flag(slotType);
+    }
+    else {
+        retval = fram_clear_img_ham_flag(slotType);
+    }
+    if(retval != 0) {
+        actionHelper.finish(false, commandedBy, actionId, HasReturnvaluesIF::RETURN_FAILED);
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    return HasActionsIF::EXECUTION_FINISHED;
+}

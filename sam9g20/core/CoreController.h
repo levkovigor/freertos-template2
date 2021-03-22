@@ -92,7 +92,11 @@ public:
 	static constexpr ActionId_t ENABLE_LOCAL_HAMMING_CODE_CHECKS = 4;
 	static constexpr ActionId_t DISABLE_LOCAL_HAMMING_CODE_CHECKS = 5;
 
-	static constexpr ActionId_t GET_HAMMING_CODE_STATUS_FIELDS = 6;
+	/**
+	 * Dump the whole bootloader block which also contains information about the
+	 * hamming code checks
+	 */
+	static constexpr ActionId_t DUMP_BOOTLOADER_BLOCK = 6;
 
 	static constexpr ActionId_t RESET_OBC = 10;
 	static constexpr ActionId_t POWERCYCLE_OBC = 11;
@@ -101,6 +105,7 @@ public:
 	static constexpr ActionId_t CLEAR_WHOLE_STORE = 13;
 	static constexpr ActionId_t GET_FILL_COUNT = 14;
 
+	static constexpr ActionId_t PRINT_FRAM_BL_BLOCK = 29;
     static constexpr ActionId_t PRINT_FRAM_CRIT_BLOCK = 30;
     /* Careful with this. Might be deactivated at a later project stage so it can not
     be accidentely called during flight */
@@ -148,6 +153,11 @@ private:
         STORE_TYPE,
         PAGE_INDEX
     };
+
+    ReturnValue_t manipulateGlobalHammingFlag(bool set, ActionId_t actionId,
+            MessageQueueId_t commandedBy, const uint8_t *data, size_t size);
+    ReturnValue_t manipulateLocalHammingFlag(bool set, ActionId_t actionId,
+            MessageQueueId_t commandedBy, const uint8_t *data, size_t size);
 };
 
 

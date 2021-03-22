@@ -34,6 +34,28 @@ ReturnValue_t FRAMHandler::setAddress(uint32_t *startAddress) {
 	return RETURN_OK;
 }
 
+ReturnValue_t FRAMHandler::readBootloaderBlock(uint8_t** ptr) {
+    int result = fram_read_bootloader_block(criticalBlock.data(), sizeof(BootloaderGroup));
+    if(result != 0) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    if(ptr != nullptr) {
+        *ptr = criticalBlock.data();
+    }
+    return HasReturnvaluesIF::RETURN_FAILED;
+}
+
+void FRAMHandler::printBootloaderBlock() {
+    int result = fram_read_bootloader_block(criticalBlock.data(), sizeof(BootloaderGroup));
+    if(result != 0) {
+        return;
+    }
+
+    size_t blBlockSize = sizeof(BootloaderGroup);
+    sif::printInfo("Printing bootloader block:\n");
+    genericBlockPrinter(blBlockSize);
+}
+
 void FRAMHandler::printCriticalBlock() {
     /* Read the critical block */
     int result = fram_read_critical_block(criticalBlock.data(), sizeof(CriticalDataBlock));
@@ -42,13 +64,16 @@ void FRAMHandler::printCriticalBlock() {
     }
 
     size_t critBlockSize = sizeof(CriticalDataBlock);
-    uint16_t critBlockPages = critBlockSize / 4;
-    uint16_t lastPageBytes = critBlockSize % 4;
-    uint16_t currentPage = 0;
+    sif::printInfo("Printing critical block:\n");
+    genericBlockPrinter(critBlockSize);
+}
 
-    sif::printInfo("Printing critical block:\n\r");
-    for(currentPage = 0; currentPage < critBlockPages; currentPage++) {
-        sif::printInfo("Page %hu: 0x%02x, 0x%02x, 0x%02x, 0x%02x\n\r",
+void FRAMHandler::genericBlockPrinter(size_t blockSize) {
+    uint16_t blockPages = blockSize / 4;
+    uint16_t lastPageBytes = blockSize % 4;
+    uint16_t currentPage = 0;
+    for(currentPage = 0; currentPage < blockPages; currentPage++) {
+        sif::printInfo("Page %hu: 0x%02x, 0x%02x, 0x%02x, 0x%02x\n",
                 currentPage + 1, criticalBlock[currentPage * 4],
                 criticalBlock[currentPage * 4 + 1],
                 criticalBlock[currentPage * 4 + 2],
