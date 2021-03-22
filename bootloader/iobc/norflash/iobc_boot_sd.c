@@ -68,6 +68,14 @@ int copy_with_hcc_lib(BootSelect boot_select) {
         current_volume = SD_CARD_1;
     }
 
+    const char* slot_name = NULL;
+    if(boot_select == BOOT_SD_CARD_0_SLOT_1 || boot_select == BOOT_SD_CARD_0_SLOT_1) {
+        slot_name = SW_SLOT_1_NAME;
+    }
+    else {
+        slot_name = SW_SLOT_0_NAME;
+    }
+
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Setting up HCC filesystem.\n\r");
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
@@ -101,14 +109,23 @@ int copy_with_hcc_lib(BootSelect boot_select) {
     if (result != F_NO_ERROR) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_WARNING("f_open of file \"%s\" failed with code %d.\n\r",
-                SW_SLOT_1_NAME, result);
+                slot_name, result);
 #endif
         /* opening file failed! */
         close_filesystem(true, true, current_volume);
         return -1;
     }
 
-    size_t filelength = f_filelength(SW_SLOT_1_NAME);
+    size_t filelength = f_filelength(slot_name);
+    if(filelength <= 0) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        TRACE_ERROR("Copying image \"%s\" from SD-Card %u: File does not exist \n\r",
+                SW_SLOT_1_NAME, (unsigned int) current_volume);
+#endif
+        /* File does not exist or has an error */
+        close_filesystem(true, true, current_volume);
+        return -1;
+    }
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Copying image \"%s\" from SD-Card %u to SDRAM\n\r", SW_SLOT_1_NAME,

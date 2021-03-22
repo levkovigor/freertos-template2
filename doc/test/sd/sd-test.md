@@ -1,4 +1,4 @@
-# SD-Card Test
+# SD-Card Tests
 
 ## Telecommand Interface
 
