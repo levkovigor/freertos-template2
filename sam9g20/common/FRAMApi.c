@@ -5,7 +5,6 @@
 #include <string.h>
 
 
-
 /* Private functions */
 int manipulate_sdc_hamming_flag(uint16_t val, VolumeId volume, SdSlots slot);
 uint32_t determine_ham_flag_address(SlotType slotType);
