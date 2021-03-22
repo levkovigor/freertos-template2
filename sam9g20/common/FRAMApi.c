@@ -373,14 +373,14 @@ int fram_clear_ham_check_flag() {
     uint16_t cleared_flag = 0;
     return FRAM_writeAndVerify((unsigned char*) &cleared_flag,
             HAMMING_CHECK_FLAG_ADDR,
-            sizeof(((CriticalDataBlock*)0)->bl_group.use_hamming_flag));
+            sizeof(((CriticalDataBlock*)0)->bl_group.global_hamming_flag));
 }
 
 int fram_set_ham_check_flag() {
     uint16_t set_flag = 1;
     return FRAM_writeAndVerify((unsigned char*) &set_flag,
             HAMMING_CHECK_FLAG_ADDR,
-            sizeof(((CriticalDataBlock*)0)->bl_group.use_hamming_flag));
+            sizeof(((CriticalDataBlock*)0)->bl_group.global_hamming_flag));
 }
 
 int fram_get_ham_check_flag(bool* flag_set) {

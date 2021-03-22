@@ -31,7 +31,7 @@ int copy_with_tinyfatfs_lib(BootSelect boot_select);
 #endif
 
 
-int copy_sdcard_binary_to_sdram(BootSelect boot_select) {
+int copy_sdcard_binary_to_sdram(BootSelect boot_select, bool use_hamming) {
     if(boot_select == BOOT_NOR_FLASH) {
         return -1;
     }
@@ -41,6 +41,11 @@ int copy_sdcard_binary_to_sdram(BootSelect boot_select) {
         /* Copy operation failed, we can not jump */
         return result;
     }
+
+    if(!use_hamming) {
+        return 0;
+    }
+
     if(boot_select == BOOT_SD_CARD_0_SLOT_0) {
         result = handle_hamming_code_check(SDC_0_SL_0);
     }

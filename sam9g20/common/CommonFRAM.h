@@ -48,15 +48,14 @@ typedef enum {
 /* Can't forward declare this in a simple way. This is the struct used by the bootloader
 to read all required information at once */
 typedef struct __attribute__((__packed__)) _BootloaderGroup {
-    /* This flag determines whether hamming codes will be used to check the binary.
-    It is recommended to clear the flag when updating an image and setting the flag after
-    the hamming code for this image has been uploaded as well. Otherwise, a new image might
-    be checked with an invalid old hamming code. */
-    uint16_t use_hamming_flag;
+    /* This flag determines whether hamming codes will be used to check the binary. */
+    uint16_t global_hamming_flag;
     /* These value will be used on reboot to determine which SD card is the
     default SD card on reboot. 0 or 0xff: None (use SD-Card 0), 1: SD Card 0, 2: SD Card 1 */
     uint16_t preferred_sd_card;
-    /* Hamming code flag for individual binaries */
+    /* Hamming code flag for individual binaries.  It is recommended to clear the flags when
+    updating an image and setting the flag after the hamming code for this image has been uploaded
+    as well. Otherwise, a new image might be checked with an invalid old hamming code. */
     uint16_t nor_flash_hamming_flag;
     /* Reboot counters for individual binaries */
     uint16_t nor_flash_reboot_counter;
@@ -138,7 +137,7 @@ static const uint32_t SEC_SINCE_EPOCH_ADDR =
 static const uint32_t BL_GROUP_ADDR = offsetof(CriticalDataBlock, bl_group);
 
 static const uint32_t HAMMING_CHECK_FLAG_ADDR =
-        offsetof(CriticalDataBlock, bl_group.use_hamming_flag);
+        offsetof(CriticalDataBlock, bl_group.global_hamming_flag);
 static const uint32_t PREFERRED_SD_CARD_ADDR = offsetof(CriticalDataBlock,
         bl_group.preferred_sd_card);
 

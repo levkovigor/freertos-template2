@@ -78,6 +78,14 @@ int perform_iobc_copy_operation_to_sdram() {
     }
 
     if(boot_select == BOOT_NOR_FLASH) {
+#ifdef BOOTLOADER_VERBOSE_LEVEL >= 1
+        if(use_hamming) {
+            TRACE_INFO("Booting from NOR-Flash without hamming code check\n");
+        }
+        else {
+            TRACE_INFO("Booting from NOR-Flash with hamming code check\n");
+        }
+#endif
         result = copy_norflash_binary_to_sdram(PRIMARY_IMAGE_RESERVED_SIZE, use_hamming);
 
         if(result != 0) {
@@ -88,7 +96,7 @@ int perform_iobc_copy_operation_to_sdram() {
         }
     }
     else {
-        result = copy_sdcard_binary_to_sdram(boot_select);
+        result = copy_sdcard_binary_to_sdram(boot_select, use_hamming);
 
         if(result != 0) {
             if(boot_select == BOOT_SD_CARD_0_SLOT_0) {
@@ -124,9 +132,6 @@ BootSelect determine_boot_select(bool* use_hamming) {
     BootloaderGroup bl_info_struct;
     BootSelect curr_boot_select = BOOT_NOR_FLASH;
     int result = fram_read_bootloader_block(&bl_info_struct);
-    if(use_hamming != NULL) {
-        *use_hamming = true;
-    }
     if (result != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_ERROR("determine_boot_select: FRAM could not be read!\n\r");
@@ -134,6 +139,16 @@ BootSelect determine_boot_select(bool* use_hamming) {
         fram_faulty = true;
         *use_hamming = false;
         return BOOT_NOR_FLASH;
+    }
+    else {
+        if(use_hamming != NULL) {
+            if(bl_info_struct.global_hamming_flag) {
+                *use_hamming = true;
+            }
+            else {
+                *use_hamming = false;
+            }
+        }
     }
 
     if (bl_info_struct.software_update_available == FRAM_TRUE) {
@@ -197,7 +212,9 @@ BootSelect determine_boot_select(bool* use_hamming) {
     /* Check the other SD card. If this does not work, boot from NOR-Flash without ECC check */
     if(curr_boot_select == BOOT_SD_CARD_0_SLOT_0) {
         if(bl_info_struct.sdc0_image_slot0_reboot_counter > 3) {
-            *use_hamming = false;
+            if(use_hamming != NULL) {
+                *use_hamming = false;
+            }
             curr_boot_select = BOOT_NOR_FLASH;
         }
         else {
@@ -206,7 +223,9 @@ BootSelect determine_boot_select(bool* use_hamming) {
     }
     else {
         if(bl_info_struct.sdc1_image_slot0_reboot_counter > 3) {
-            *use_hamming = false;
+            if(use_hamming != NULL) {
+                *use_hamming = false;
+            }
             curr_boot_select = BOOT_NOR_FLASH;
         }
         else {
