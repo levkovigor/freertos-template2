@@ -25,7 +25,9 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest(uint8_t subservice) 
     if (subservice == Subservice::INSERT_ACTIVITY){
         return this->handleRequest_InsertActivity();
     }
-
+    else if (subservice == Subservice::DELETE_ACTIVITY){
+        return this->handleRequest_DeleteActivity();
+    }
 
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -129,6 +131,12 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
     }
 
 
+
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+
+ReturnValue_t Service11TelecommandScheduling::handleRequest_DeleteActivity(){
 
     return HasReturnvaluesIF::RETURN_OK;
 }

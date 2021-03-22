@@ -63,6 +63,7 @@ private:
 
 
     ReturnValue_t handleRequest_InsertActivity();
+    ReturnValue_t handleRequest_DeleteActivity();
 
 };
 
