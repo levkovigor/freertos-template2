@@ -367,6 +367,7 @@ int handle_hamming_code_check(SlotType slotType) {
 
 int handle_hamming_code_result(int result) {
     if(result == 0) {
+        set_sram0_status_field(SRAM_OK);
         return result;
     }
 

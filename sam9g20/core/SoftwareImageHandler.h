@@ -153,6 +153,19 @@ private:
      */
     static constexpr ActionId_t COPY_BOOTLOADER_SDC_TO_FLASH = 16;
 
+    /**
+     * Introduce single bit and multibit errors in SD card or flash image.
+     * Will be disabled for mission binary.
+     *
+     * First byte: Slot image to introduce errors for
+     *  - 0 for NOR-Flash
+     *  - 1 for SD slot 0
+     *  - 2 for SD slot 1 (update slot)
+     *  - 5 for bootloader (use with care, boot process might get broken, requiring a power cycle).
+     */
+    static constexpr ActionId_t INTRODUCE_SINGLE_BIT_ERROR = 20;
+    static constexpr ActionId_t INTRODUCE_MULTI_BIT_ERROR = 21;
+
     /* Scrubbing operation IDs */
 
     //! TODO: make manual scrubbing work first.

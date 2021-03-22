@@ -312,6 +312,9 @@ ReturnValue_t ImageCopyingEngine::copySdcImgToSdc() {
 		}
 		currentByteIdx += bytesRead;
 		bytesWritten = f_write(imgBuffer->data(),  sizeof(uint8_t) , bytesRead, targetFile);
+		if(bytesWritten <= 0) {
+
+		}
 		stepCounter++;
 		if(currentByteIdx>=currentFileSize){
 			reset();
