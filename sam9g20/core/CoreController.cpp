@@ -210,7 +210,8 @@ ReturnValue_t CoreController::initializeAfterTaskCreation() {
     triggerEvent(BOOT_EVENT, 0, 0);
 #endif
 
-    return initializeIsisTimerDrivers();
+    result = initializeIsisTimerDrivers();
+    return result;
 }
 
 ReturnValue_t CoreController::initialize() {

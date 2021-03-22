@@ -243,20 +243,20 @@ ReturnValue_t SDCardHandler::generateFinishAppendReply(RepositoryPath *repoPath,
             repoPath->c_str() << " finished." << std::endl;
     sif::info <<  "Filesize: " << filesize << ".";
     if(locked) {
-        sif::info << " File was locked." << std::endl;
+        sif::info << " File was locked" << std::endl;
     }
     else {
-        sif::info << " File was not locked." << std::endl;
+        sif::info << " File was not locked" << std::endl;
     }
 #else
-    sif::printInfo("Append operation on file %s in repository %s finished.", fileName->c_str(),
+    sif::printInfo("Append operation on file %s in repository %s finished\n", fileName->c_str(),
             repoPath->c_str());
-    sif::printInfo("Filesize: %lu. ", static_cast<unsigned long>(filesize));
+    sif::printInfo("Filesize: %lu\n", static_cast<unsigned long>(filesize));
     if(locked) {
         sif::printInfo("File was locked.\n");
     }
     else {
-        sif::printInfo("File was not locked.\n");
+        sif::printInfo("File was not locked\n");
     }
 #endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
 #endif /* OBSW_VERBOSE_LEVEL >= 1 */
