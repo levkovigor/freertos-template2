@@ -1,6 +1,5 @@
-#include "Factory.h"
-#include <PollingSequenceFactory.h>
-#include <systemObjectList.h>
+#include <pollingsequence/PollingSequenceFactory.h>
+#include <objects/systemObjectList.h>
 
 #include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/tasks/PeriodicTaskIF.h>
@@ -9,6 +8,7 @@
 #include <fsfw/timemanager/Stopwatch.h>
 
 #include <mission/utility/InitMission.h>
+#include <ObjectFactory.h>
 
 #include <ostream>
 

@@ -1,3 +1,14 @@
+# CMake
+Debug
+Debug*
+Release
+Release*
+MinSizeRel
+MinSizeRel*
+RelWithDeb
+RelWithDeb*
+
+# Make
 _build/*
 _dependencies/*
 _bin/*
@@ -6,24 +17,29 @@ _bin
 _obj
 _dependencies
 
+# Eclipse
 .settings/*
 .settings
 .metadata
-
 .project
 .cproject 
 *.launch
 !**/eclipse/.project
 !**/eclipse/.cproject
 !**/eclipse/*.launch
-.swp 
 
+
+# Python
 __pycache__
+.idea/
+!.idea/runConfigurations/
 
+# Misc
 *.lnk
 *.tmp
 *.open
 *.ini
+.swp 
 
 generators/*.csv
 /AT91/
@@ -31,9 +47,6 @@ generators/*.csv
 
 generators/.idea/*
 !generators/.idea/runConfigurations/
-
-.idea/
-!.idea/runConfigurations/
 
 *.db
 *.map

@@ -359,7 +359,7 @@ ALL_OBJECTS_PREFIXED = $(ASM_OBJECTS_PREFIXED) $(C_OBJECTS_PREFIXED) \
 # Generates binary and displays all build properties
 # -p with mkdir ignores error and creates directory when needed.
 
-# SHOW_DETAILS = 1
+SHOW_DETAILS = 1
 
 ifeq ($(OS),Windows_NT)
 $(BINDIR)/$(BINARY_NAME).exe: $(ALL_OBJECTS_PREFIXED)

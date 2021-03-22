@@ -94,6 +94,15 @@ public:
     ReturnValue_t startSdcToFlashOperation(image::ImageSlot sourceSlot);
 
     /**
+    * Start an operation to copy something from the SD card to the other
+    * slot on the SD card. Don't forget to configure the NAND-Flash once
+    * when calling this on the AT91 board.
+    * @param sourceSlot     Copy operation will be based on this slot.
+    * @return
+    */
+    ReturnValue_t startSdcToSdcOperation(image::ImageSlot sourceSlot);
+
+    /**
      * Starts to copy the bootloader to the flash. Use with care! Parts of this operation might
      * be performed in a special high priority task which can not be preempted and interrupted
      * to ensure nothing goes wrong.

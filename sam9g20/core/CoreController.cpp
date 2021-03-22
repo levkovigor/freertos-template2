@@ -462,7 +462,7 @@ uint32_t CoreController::updateSecondsCounter() {
 }
 
 uint32_t CoreController::getUptimeSeconds() {
-    MutexHelper(timeMutex, MutexIF::TimeoutType::WAITING, 20);
+    MutexGuard(timeMutex, MutexIF::TimeoutType::WAITING, 20);
     return uptimeSeconds;
 }
 

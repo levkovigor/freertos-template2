@@ -24,7 +24,12 @@ private:
 
     ReturnValue_t initializeAfterTaskCreation() override;
 
-    void handleChangedDataset(sid_t sid, store_address_t storeId) override;
+    ReturnValue_t initializeLocalDataPool(localpool::DataPool& localDataPoolMap,
+                LocalDataPoolManager& poolManager) override;
+
+    void handleChangedDataset(sid_t sid, store_address_t storeId, bool* clearMessage) override;
+
+    LocalPoolDataSetBase* getDataSetHandle(sid_t sid) override;
 
     ThermalCtrl::ThermalControllerTemperatureSet thermalControllerSet;
 };

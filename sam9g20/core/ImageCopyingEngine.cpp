@@ -1,7 +1,10 @@
 #include "ImageCopyingEngine.h"
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
+#include <fsfw/timemanager/Countdown.h>
 #include <sam9g20/core/SoftwareImageHandler.h>
+#include <sam9g20/memory/SDCardAccess.h>
+
 
 ImageCopyingEngine::ImageCopyingEngine(SoftwareImageHandler *owner,
         Countdown *countdown, image::ImageBuffer *imgBuffer):
@@ -25,6 +28,18 @@ ReturnValue_t ImageCopyingEngine::startSdcToFlashOperation(
     imageHandlerState = ImageHandlerStates::COPY_IMG_SDC_TO_FLASH;
     this->sourceSlot = sourceSlot;
     this->targetSlot = image::ImageSlot::FLASH;
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t ImageCopyingEngine::startSdcToSdcOperation(
+        image::ImageSlot sourceSlot) {
+    imageHandlerState = ImageHandlerStates::COPY_IMG_SDC_TO_SDC;
+    this->sourceSlot = sourceSlot;
+    if(sourceSlot == image::ImageSlot::SDC_SLOT_1){
+    	targetSlot = image::ImageSlot::SDC_SLOT_0;
+    }else{
+    	targetSlot = image::ImageSlot::SDC_SLOT_1;
+    }
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -234,7 +249,7 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
 ReturnValue_t ImageCopyingEngine::readFile(uint8_t *buffer, size_t sizeToRead,
         size_t *sizeRead, F_FILE** file) {
     ssize_t bytesRead = f_read(imgBuffer->data(), sizeof(uint8_t), sizeToRead, *file);
-    if(bytesRead < 0) {
+    if(bytesRead <= 0) {
         errorCount++;
         /* If reading a file failed 3 times, exit. */
         if(errorCount >= 3) {
@@ -255,6 +270,60 @@ ReturnValue_t ImageCopyingEngine::readFile(uint8_t *buffer, size_t sizeToRead,
 }
 
 ReturnValue_t ImageCopyingEngine::copySdcImgToSdc() {
+
+	SDCardAccess sdCardAccess;
+	F_FILE *targetFile = nullptr;
+	F_FILE *sourceFile = nullptr;
+	size_t bytesRead = 0;
+	size_t sizeToRead = 0;
+	ssize_t bytesWritten = 0;
+
+	ReturnValue_t result = prepareGenericFileInformation(
+	        sdCardAccess.getActiveVolume(), &sourceFile);
+	if (result!=HasReturnvaluesIF::RETURN_OK){
+	    return result;
+	}
+	const char* targetSlotName = nullptr;
+	if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
+	    targetSlotName = config::SW_SLOT_1_NAME;
+	}else{
+	    targetSlotName = config::SW_SLOT_0_NAME;
+	}
+	if(stepCounter==0){
+	    //remove previous file at targetSlot
+	    f_delete(targetSlotName);
+	}
+	// "appending" opens file or creates it if it doesn't exist
+	targetFile = f_open(targetSlotName, "a");
+
+	if(targetFile==nullptr){
+	    return HasReturnvaluesIF::RETURN_FAILED;
+	}
+
+	while(true){
+		if(currentFileSize-currentByteIdx>imgBuffer->size()){
+			sizeToRead=imgBuffer->size();
+		}else{
+			sizeToRead=currentFileSize-currentByteIdx;
+		}
+		result = readFile(imgBuffer->data(), sizeToRead, &bytesRead, &sourceFile);
+		if(result!=HasReturnvaluesIF::RETURN_OK){
+		    return result;
+		}
+		currentByteIdx += bytesRead;
+		bytesWritten = f_write(imgBuffer->data(),  sizeof(uint8_t) , bytesRead, targetFile);
+		stepCounter++;
+		if(currentByteIdx>=currentFileSize){
+			reset();
+	        lastFinishedState = imageHandlerState;
+	        handleFinishPrintout();
+	        return image::OPERATION_FINISHED;
+		}
+		if(countdown->hasTimedOut()) {
+		    return image::TASK_PERIOD_OVER_SOON;
+		}
+	}
+
     return HasReturnvaluesIF::RETURN_OK;
 }
 
