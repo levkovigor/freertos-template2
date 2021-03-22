@@ -211,7 +211,7 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
 ReturnValue_t ImageCopyingEngine::readFile(uint8_t *buffer, size_t sizeToRead,
         size_t *sizeRead, F_FILE** file) {
     ssize_t bytesRead = f_read(imgBuffer->data(), sizeof(uint8_t), sizeToRead, *file);
-    if(bytesRead < 0) {
+    if(bytesRead <= 0) {
         errorCount++;
         // if reading a file failed 3 times, exit.
         if(errorCount >= 3) {
@@ -234,38 +234,47 @@ ReturnValue_t ImageCopyingEngine::readFile(uint8_t *buffer, size_t sizeToRead,
 ReturnValue_t ImageCopyingEngine::copySdcImgToSdc() {
 
 	SDCardAccess sdCardAccess;
-	F_FILE *binaryFile = nullptr;
-	F_FILE *filePtr = nullptr;
-	long size = 0;
-	long sizeToRead = 0;
-	if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
-	    if(stepCounter==0){
-	        //remove previous file at targetSlot
-	        f_delete(config::SW_SLOT_1_NAME);
-	        stepCounter++;
-	    }
-	    // "appending" opens file or creates it if it doesn't exist
-	    binaryFile = f_open(config::SW_SLOT_1_NAME, "a");
-	}
-	else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
-	    if(stepCounter==0){
-	        f_delete(config::SW_SLOT_0_NAME);
-	        stepCounter++;
-	    }
-	    binaryFile = f_open(config::SW_SLOT_0_NAME, "a");
-	}
+	F_FILE *targetFile = nullptr;
+	F_FILE *sourceFile = nullptr;
+	size_t bytesRead = 0;
+	size_t sizeToRead = 0;
+	ssize_t bytesWritten = 0;
+
 	ReturnValue_t result = prepareGenericFileInformation(
-			sdCardAccess.currentVolumeId, &filePtr);
+	        sdCardAccess.currentVolumeId, &sourceFile);
+	if (result!=HasReturnvaluesIF::RETURN_OK){
+	    return result;
+	}
+	const char* targetSlotName = nullptr;
+	if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
+	    targetSlotName = config::SW_SLOT_1_NAME;
+	}else{
+	    targetSlotName = config::SW_SLOT_0_NAME;
+	}
+	if(stepCounter==0){
+	    //remove previous file at targetSlot
+	    f_delete(targetSlotName);
+	}
+	// "appending" opens file or creates it if it doesn't exist
+	targetFile = f_open(targetSlotName, "a");
+
+	if(targetFile==nullptr){
+	    return HasReturnvaluesIF::RETURN_FAILED;
+	}
+
 	while(true){
 		if(currentFileSize-currentByteIdx>imgBuffer->size()){
 			sizeToRead=imgBuffer->size();
 		}else{
 			sizeToRead=currentFileSize-currentByteIdx;
 		}
-		f_seek(filePtr, currentByteIdx, F_SEEK_SET);
-		size_t bytesRead = f_read(imgBuffer->data(), size, sizeToRead, filePtr);
+		result = readFile(imgBuffer->data(), sizeToRead, &bytesRead, &sourceFile);
+		if(result!=HasReturnvaluesIF::RETURN_OK){
+		    return result;
+		}
 		currentByteIdx += bytesRead;
-		f_write(imgBuffer->data(), size,sizeToRead, binaryFile);
+		bytesWritten = f_write(imgBuffer->data(),  sizeof(uint8_t) , bytesRead, targetFile);
+		stepCounter++;
 		if(currentByteIdx>=currentFileSize){
 			reset();
 	        lastFinishedState = imageHandlerState;
@@ -276,6 +285,7 @@ ReturnValue_t ImageCopyingEngine::copySdcImgToSdc() {
 		    return image::TASK_PERIOD_OVER_SOON;
 		}
 	}
+
     return HasReturnvaluesIF::RETURN_OK;
 }
 
