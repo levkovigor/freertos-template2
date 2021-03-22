@@ -13,8 +13,8 @@
 extern "C" {
 #endif
 
-static const char* const VIRT_FRAM_NAME = "fram.bin";
-static const char* const VIRT_FRAM_PATH = "misc";
+static const char* const VIRT_FRAM_NAME = "FRAM.BIN";
+static const char* const VIRT_FRAM_PATH = "MISC";
 
 /**
  * Start the virtualized FRAM by creating a FRAM file on the SD-Card. This function will
@@ -24,7 +24,7 @@ static const char* const VIRT_FRAM_PATH = "misc";
  */
 int FRAM_start();
 
-int read_critical_block(uint8_t* buffer, const size_t max_size);
+int fram_read_critical_block(uint8_t* buffer, const size_t max_size);
 
 /**
  * Call this to create the generic FRAM file if it does not exist yet.
@@ -36,13 +36,13 @@ int create_generic_fram_file();
 
 int delete_generic_fram_file();
 
-int set_hamming_check_flag();
+int fram_set_ham_check_flag();
 
-int set_to_load_softwareupdate(bool enable, VolumeId volume);
+int fram_set_to_load_softwareupdate(bool enable, VolumeId volume);
 
-int write_software_version(uint8_t software_version, uint8_t software_subversion,
+int fram_write_software_version(uint8_t software_version, uint8_t software_subversion,
         uint8_t sw_subsubversion);
-int read_software_version(uint8_t *software_version, uint8_t* software_subversion,
+int fram_read_software_version(uint8_t *software_version, uint8_t* software_subversion,
         uint8_t* sw_subsubversion);
 
 #ifdef __cplusplus

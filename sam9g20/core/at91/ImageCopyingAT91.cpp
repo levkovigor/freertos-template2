@@ -65,6 +65,47 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
+ReturnValue_t ImageCopyingEngine::startBootloaderToFlashOperation(image::ImageSlot bootloaderType,
+        bool fromFram) {
+#if BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE
+    if(bootloaderType != image::ImageSlot::BOOTLOADER_0) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+#else
+    if(bootloaderType != image::ImageSlot::BOOTLOADER_0 and
+            bootloaderType != image::ImageSlot::BOOTLOADER_1) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+#endif
+    sourceSlot = bootloaderType;
+
+    /* Not implemented yet */
+    if(fromFram) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    else {
+        imageHandlerState = ImageHandlerStates::COPY_BL_SDC_TO_FLASH;
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+ReturnValue_t ImageCopyingEngine::startHammingCodeToFramOperation(image::ImageSlot respectiveSlot) {
+    if(respectiveSlot == image::ImageSlot::NONE) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    hammingCode = true;
+    sourceSlot = respectiveSlot;
+
+    if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
+        imageHandlerState = ImageHandlerStates::COPY_BL_HAMMING_SDC_TO_FRAM;
+    }
+    else {
+        imageHandlerState = ImageHandlerStates::COPY_IMG_HAMMING_SDC_TO_FRAM;
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
 /// Nandflash memory size.
 static unsigned int memSize;
 /// Size of one block in the nandflash, in bytes.
@@ -93,29 +134,6 @@ static const Pin nfCePin = BOARD_NF_CE_PIN;
 /// Nandflash ready/busy pin.
 static const Pin nfRbPin = BOARD_NF_RB_PIN;
 
-ReturnValue_t ImageCopyingEngine::startBootloaderToFlashOperation(image::ImageSlot bootloaderType,
-        bool fromFram) {
-#if BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE
-    if(bootloaderType != image::ImageSlot::BOOTLOADER_0) {
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-#else
-    if(bootloaderType != image::ImageSlot::BOOTLOADER_0 and
-            bootloaderType != image::ImageSlot::BOOTLOADER_1) {
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-#endif
-    sourceSlot = bootloaderType;
-
-    /* Not implemented yet */
-    if(fromFram) {
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-    else {
-        imageHandlerState = ImageHandlerStates::COPY_BL_SDC_TO_FLASH;
-    }
-    return HasReturnvaluesIF::RETURN_OK;
-}
 
 ReturnValue_t ImageCopyingEngine::copySdCardImageToNandFlash() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
@@ -305,7 +323,7 @@ ReturnValue_t ImageCopyingEngine::handleSdToNandCopyOperation(
     // Get file information like binary size, open the file, seek correct
     // position etc.
     ReturnValue_t result = prepareGenericFileInformation(
-            sdCardAccess.currentVolumeId, &binaryFile);
+            sdCardAccess.getActiveVolume(), &binaryFile);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         return result;
     }
@@ -532,27 +550,11 @@ ReturnValue_t ImageCopyingEngine::nandFlashInit()
 
 void ImageCopyingEngine::handleFinishPrintout() {
 #if OBSW_VERBOSE_LEVEL >= 1
-    char const* printout = nullptr;
-    if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
-#if BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE
-        printout = "bootloader";
-#else
-        printout = "fist-stage bootloader";
-#endif
-    }
-    else if(sourceSlot == image::ImageSlot::BOOTLOADER_1) {
-        printout = "second-stage bootloader";
-    }
-    else {
-        printout = "primary OBSW image";
-    }
 
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-    sif::info << "Copying " << printout << " to NAND-Flash finished with " << stepCounter <<
-            " cycles!" << std::endl;
+    sif::info << "Copying finished with " << stepCounter << " cycles!" << std::endl;
 #else
-    sif::printInfo("Copying %s to NAND-Flash finished with %hu cycles!\n",
-            printout, stepCounter);
+    sif::printInfo("Copying finished with %hu cycles!\n", stepCounter);
 #endif
 
 #endif /* OBSW_VERBOSE_LEVEL >= 1 */

@@ -1,5 +1,5 @@
 #include "GpioDeviceComIF.h"
-
+#include <OBSWConfig.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfwconfig/devices/logicalAddresses.h>
 
@@ -9,8 +9,11 @@ extern "C" {
 
 GpioDeviceComIF::GpioDeviceComIF(object_id_t objectId_):
 		SystemObject(objectId_) {
-	// Configure all pins which were designated as GPIO pins by ISIS.
-    // The pins are configured to be output pins by default.
+    /* I think configuring these GPIO pins disables the ethernet capabilities. This
+    might be due to a multiplexed pin because the iOBC does not use have an ethernet port */
+#if OBSW_ENABLE_ETHERNET == 0
+	/* Configure all pins which were designated as GPIO pins by ISIS.
+    The pins are configured to be output pins by default. */
 	Pin pin[] = {PIN_GPIO00, PIN_GPIO01, PIN_GPIO02, PIN_GPIO03, PIN_GPIO04,
 			PIN_GPIO05, PIN_GPIO06, PIN_GPIO07, PIN_GPIO08, PIN_GPIO09,
 			PIN_GPIO10, PIN_GPIO11,PIN_GPIO12, PIN_GPIO13, PIN_GPIO14,
@@ -19,6 +22,7 @@ GpioDeviceComIF::GpioDeviceComIF(object_id_t objectId_):
 			PIN_GPIO25, PIN_GPIO26};
 	unsigned int pinSize = PIO_LISTSIZE(pin);
 	PIO_Configure(pin,pinSize);
+#endif /* OBSW_ENABLE_ETHERNET == 0 */
 }
 
 GpioDeviceComIF::~GpioDeviceComIF() {

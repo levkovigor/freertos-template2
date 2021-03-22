@@ -16,7 +16,7 @@
 
 #include <inttypes.h>
 #include <mission/memory/FileSystemMessage.h>
-#include <sam9g20/memory/SDCardDefinitions.h>
+#include <sam9g20/memory/sdcardDefinitions.h>
 #include <sam9g20/memory/SDCardHandlerPackets.h>
 
 

@@ -1,4 +1,3 @@
-#include <fsfw/datapool/PoolReadHelper.h>
 #include "GyroHandler.h"
 #include "devicedefinitions/GyroPackets.h"
 
@@ -9,6 +8,7 @@
 #if OBSW_VERBOSE_LEVEL >= 1
 #include <fsfw/globalfunctions/PeriodicOperationDivider.h>
 #endif
+#include <fsfw/datapool/PoolReadGuard.h>
 
 #include <cmath>
 
@@ -104,11 +104,11 @@ ReturnValue_t GyroHandler::buildNormalDeviceCommand(DeviceCommandId_t *id) {
 
         // Poll Gyro Device. Perform block read of 7 bytes to read register
         // 0x12-0x17
-        commandBuffer[0] = GyroDefinitions::GYRO_DATA_CMD;
+        commandBuffer[0] = gyrodefs::GYRO_DATA_CMD;
         std::memset(commandBuffer + 1, 0, 6);
         DeviceHandlerBase::rawPacket = commandBuffer;
         DeviceHandlerBase::rawPacketLen = 7;
-        *id = GyroDefinitions::GYRO_DATA;
+        *id = gyrodefs::GYRO_DATA;
         break;
     }
 	default:
@@ -126,8 +126,8 @@ ReturnValue_t GyroHandler::buildTransitionDeviceCommand(DeviceCommandId_t *id) {
 	if(internalState == InternalStates::MODE_SELECT) {
 		if(comInterface == CommInterface::SPI) {
 			// Switch to SPI communication by writing to the 0x7F register
-			*id = GyroDefinitions::SPI_SELECT;
-			commandBuffer[0] = GyroDefinitions::SPI_MODE_SELECT;
+			*id = gyrodefs::SPI_SELECT;
+			commandBuffer[0] = gyrodefs::SPI_MODE_SELECT;
 			commandBuffer[1] = 0x00;
 			DeviceHandlerBase::rawPacket = commandBuffer;
 			DeviceHandlerBase::rawPacketLen = 2;
@@ -144,30 +144,30 @@ ReturnValue_t GyroHandler::buildTransitionDeviceCommand(DeviceCommandId_t *id) {
 		break;
 	}
 	case(InternalStates::WRITE_POWER): {
-		*id = GyroDefinitions::WRITE_POWER;
-		uint8_t command = GyroDefinitions::POWER_CONFIG;
+		*id = gyrodefs::WRITE_POWER;
+		uint8_t command = gyrodefs::POWER_CONFIG;
 		return buildCommandFromCommand(*id, &command, 1);
 	}
 	case(InternalStates::READ_PMU_STATUS): {
-		*id = GyroDefinitions::READ_PMU;
+		*id = gyrodefs::READ_PMU;
 		return buildCommandFromCommand(*id, nullptr, 0);
 	}
 	case(InternalStates::WRITE_CONFIG): {
-	    *id = GyroDefinitions::WRITE_CONFIG;
-	    gyroConfiguration[0] = GyroDefinitions::GYRO_DEF_CONFIG;
-	    gyroConfiguration[1] = GyroDefinitions::RANGE_CONFIG;
+	    *id = gyrodefs::WRITE_CONFIG;
+	    gyroConfiguration[0] = gyrodefs::GYRO_DEF_CONFIG;
+	    gyroConfiguration[1] = gyrodefs::RANGE_CONFIG;
 	    return buildCommandFromCommand(*id, gyroConfiguration, 2);
 	}
 	case(InternalStates::READ_CONFIG): {
-	    *id = GyroDefinitions::READ_CONFIG;
+	    *id = gyrodefs::READ_CONFIG;
 	    return buildCommandFromCommand(*id, nullptr, 0);
 	}
 	case(InternalStates::PERFORM_SELFTEST): {
-	    *id = GyroDefinitions::PERFORM_SELFTEST;
+	    *id = gyrodefs::PERFORM_SELFTEST;
 	    return buildCommandFromCommand(*id, nullptr, 0);
 	}
 	case(InternalStates::READ_STATUS): {
-	    *id = GyroDefinitions::READ_STATUS;
+	    *id = gyrodefs::READ_STATUS;
 	    return buildCommandFromCommand(*id, nullptr, 0);
 	}
 	default:
@@ -187,8 +187,8 @@ ReturnValue_t GyroHandler::buildCommandFromCommand(
         DeviceCommandId_t deviceCommand, const uint8_t *commandData,
 		size_t commandDataLen) {
 	switch(deviceCommand) {
-	case(GyroDefinitions::WRITE_POWER): {
-		commandBuffer[0] = GyroDefinitions::POWER_REGISTER;
+	case(gyrodefs::WRITE_POWER): {
+		commandBuffer[0] = gyrodefs::POWER_REGISTER;
 		commandBuffer[1] = commandData[0];
 		DeviceHandlerBase::rawPacket = commandBuffer;
 		DeviceHandlerBase::rawPacketLen = 2;
@@ -198,8 +198,8 @@ ReturnValue_t GyroHandler::buildCommandFromCommand(
 		}
 		break;
 	}
-	case(GyroDefinitions::WRITE_CONFIG): {
-	    commandBuffer[0] = GyroDefinitions::CONFIG_REGISTER;
+	case(gyrodefs::WRITE_CONFIG): {
+	    commandBuffer[0] = gyrodefs::CONFIG_REGISTER;
 	    if(commandDataLen == 1) {
 	        // Configuration written to 0x42, see p.35 of datasheet.
 	        // Configuration is cached inside member.
@@ -227,8 +227,8 @@ ReturnValue_t GyroHandler::buildCommandFromCommand(
         DeviceHandlerBase::rawPacket = commandBuffer;
         break;
     }
-	case(GyroDefinitions::READ_CONFIG): {
-	    commandBuffer[0] = GyroDefinitions::READ_CONFIG_CMD;
+	case(gyrodefs::READ_CONFIG): {
+	    commandBuffer[0] = gyrodefs::READ_CONFIG_CMD;
 	    commandBuffer[1] = 0x00;
 	    commandBuffer[2] = 0x00;
 	    if(mode == MODE_NORMAL) {
@@ -239,8 +239,8 @@ ReturnValue_t GyroHandler::buildCommandFromCommand(
 	    DeviceHandlerBase::rawPacket = commandBuffer;
 	    break;
 	}
-	case(GyroDefinitions::WRITE_RANGE): {
-		commandBuffer[0] = GyroDefinitions::WRITE_RANGE;
+	case(gyrodefs::WRITE_RANGE): {
+		commandBuffer[0] = gyrodefs::WRITE_RANGE;
 		commandBuffer[1] = commandData[0];
 		gyroConfiguration[1] = commandData[0];
 		if(mode == MODE_NORMAL) {
@@ -251,23 +251,23 @@ ReturnValue_t GyroHandler::buildCommandFromCommand(
 		DeviceHandlerBase::rawPacketLen = 2;
 		break;
 	}
-	case(GyroDefinitions::READ_PMU): {
-		commandBuffer[0] = GyroDefinitions::READ_PMU;
+	case(gyrodefs::READ_PMU): {
+		commandBuffer[0] = gyrodefs::READ_PMU;
 		commandBuffer[1] = 0x00;
 		DeviceHandlerBase::rawPacket = commandBuffer;
 		DeviceHandlerBase::rawPacketLen = 2;
 		break;
 	}
 
-	case(GyroDefinitions::PERFORM_SELFTEST): {
-	    commandBuffer[0] = GyroDefinitions::SELFTEST_REGISTER;
-	    commandBuffer[1] = GyroDefinitions::PERFORM_SELFTEST_CMD;
+	case(gyrodefs::PERFORM_SELFTEST): {
+	    commandBuffer[0] = gyrodefs::SELFTEST_REGISTER;
+	    commandBuffer[1] = gyrodefs::PERFORM_SELFTEST_CMD;
 	    DeviceHandlerBase::rawPacket = commandBuffer;
 	    DeviceHandlerBase::rawPacketLen = 2;
 	    break;
 	}
-	case(GyroDefinitions::READ_STATUS): {
-	    commandBuffer[0] = GyroDefinitions::READ_STATUS_CMD;
+	case(gyrodefs::READ_STATUS): {
+	    commandBuffer[0] = gyrodefs::READ_STATUS_CMD;
 	    commandBuffer[1] = 0x00;
 	    if(mode == MODE_NORMAL) {
 	        // external command, mode change necessary to identify reply.
@@ -285,16 +285,16 @@ ReturnValue_t GyroHandler::buildCommandFromCommand(
 }
 
 void GyroHandler::fillCommandAndReplyMap() {
-	this->insertInCommandAndReplyMap(GyroDefinitions::WRITE_POWER, 2);
-	this->insertInCommandAndReplyMap(GyroDefinitions::READ_PMU, 8);
-	this->insertInCommandAndReplyMap(GyroDefinitions::WRITE_RANGE, 3);
-	this->insertInCommandAndReplyMap(GyroDefinitions::WRITE_CONFIG, 3);
-	this->insertInCommandAndReplyMap(GyroDefinitions::READ_CONFIG, 3,
+	this->insertInCommandAndReplyMap(gyrodefs::WRITE_POWER, 2);
+	this->insertInCommandAndReplyMap(gyrodefs::READ_PMU, 8);
+	this->insertInCommandAndReplyMap(gyrodefs::WRITE_RANGE, 3);
+	this->insertInCommandAndReplyMap(gyrodefs::WRITE_CONFIG, 3);
+	this->insertInCommandAndReplyMap(gyrodefs::READ_CONFIG, 3,
 	        &gyroConfigSet);
-	this->insertInCommandAndReplyMap(GyroDefinitions::SPI_SELECT, 3);
-	this->insertInCommandAndReplyMap(GyroDefinitions::GYRO_DATA, 3, &gyroData);
-	this->insertInCommandAndReplyMap(GyroDefinitions::PERFORM_SELFTEST, 3);
-	this->insertInCommandAndReplyMap(GyroDefinitions::READ_STATUS, 3);
+	this->insertInCommandAndReplyMap(gyrodefs::SPI_SELECT, 3);
+	this->insertInCommandAndReplyMap(gyrodefs::GYRO_DATA, 3, &gyroData);
+	this->insertInCommandAndReplyMap(gyrodefs::PERFORM_SELFTEST, 3);
+	this->insertInCommandAndReplyMap(gyrodefs::READ_STATUS, 3);
 }
 
 ReturnValue_t GyroHandler::scanForReply(const uint8_t *start,
@@ -304,7 +304,7 @@ ReturnValue_t GyroHandler::scanForReply(const uint8_t *start,
 	    if(mode == _MODE_START_UP) {
 	        commandExecuted = true;
 	    }
-		*foundId = GyroDefinitions::SPI_SELECT;
+		*foundId = gyrodefs::SPI_SELECT;
 		*foundLen = 2;
 		break;
 	}
@@ -316,12 +316,12 @@ ReturnValue_t GyroHandler::scanForReply(const uint8_t *start,
 	        // acknowledge reply and go back to normal mode immediately.
 	        internalState = InternalStates::RUNNING;
 	    }
-		*foundId = GyroDefinitions::WRITE_POWER;
+		*foundId = gyrodefs::WRITE_POWER;
 		*foundLen = 2;
 		break;
 	}
 	case(InternalStates::READ_PMU_STATUS): {
-		*foundId = GyroDefinitions::READ_PMU;
+		*foundId = gyrodefs::READ_PMU;
 		*foundLen = 2;
 		break;
 	}
@@ -333,18 +333,18 @@ ReturnValue_t GyroHandler::scanForReply(const uint8_t *start,
 	        // acknowledge reply and go back to normal mode immediately.
 	        internalState = InternalStates::RUNNING;
 	    }
-		*foundId = GyroDefinitions::WRITE_CONFIG;
+		*foundId = gyrodefs::WRITE_CONFIG;
 		*foundLen = 3;
 		break;
 	}
 	case(InternalStates::READ_CONFIG): {
-		*foundId = GyroDefinitions::READ_CONFIG;
+		*foundId = gyrodefs::READ_CONFIG;
 		*foundLen = 3;
 		break;
 	}
 	case(InternalStates::WRITE_RANGE): {
 	    internalState = InternalStates::RUNNING;
-	    *foundId = GyroDefinitions::WRITE_RANGE;
+	    *foundId = gyrodefs::WRITE_RANGE;
 	    *foundLen = 2;
 	    break;
 	}
@@ -355,17 +355,17 @@ ReturnValue_t GyroHandler::scanForReply(const uint8_t *start,
 	    else {
 	        internalState = InternalStates::RUNNING;
 	    }
-	    *foundId = GyroDefinitions::PERFORM_SELFTEST;
+	    *foundId = gyrodefs::PERFORM_SELFTEST;
 	    *foundLen = 2;
 	    break;
 	}
 	case(InternalStates::READ_STATUS): {
-	    *foundId = GyroDefinitions::READ_STATUS;
+	    *foundId = gyrodefs::READ_STATUS;
 	    *foundLen = 2;
 	    break;
 	}
 	case(InternalStates::RUNNING): {
-		*foundId = GyroDefinitions::GYRO_DATA;
+		*foundId = gyrodefs::GYRO_DATA;
 		*foundLen = 7;
 		break;
 	default:
@@ -383,7 +383,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 	    if(packet[1] == 0xff) {
 	        return HasReturnvaluesIF::RETURN_FAILED;
 	    }
-		if (id == GyroDefinitions::READ_PMU and packet[1] == 0b0000'0100) {
+		if (id == gyrodefs::READ_PMU and packet[1] == 0b0000'0100) {
 			// Bootup performed successfully.
 			// PMU value should be stored somewhere
 
@@ -450,7 +450,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 	    // store status to dataset.
 
 	    // it is assumed that only the self-test register is read for now!
-	    if((packet[1] & GyroDefinitions::SELFTEST_OK) == GyroDefinitions::SELFTEST_OK) {
+	    if((packet[1] & gyrodefs::SELFTEST_OK) == gyrodefs::SELFTEST_OK) {
 	        if(mode == _MODE_START_UP) {
 	            commandExecuted = true;
 	        }
@@ -480,7 +480,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
 
 	// Core method: Analyse received sensor data and store it into datapool.
 	case(InternalStates::RUNNING): {
-		if(id == GyroDefinitions::GYRO_DATA) {
+		if(id == gyrodefs::GYRO_DATA) {
 			int16_t angularVelocityBinaryX = packet[2] << 8 | packet[1];
 			int16_t angularVelocityBinaryY = packet[4] << 8 | packet[3];
 			int16_t angularVelocityBinaryZ = packet[6] << 8 | packet[5];
@@ -506,7 +506,7 @@ ReturnValue_t GyroHandler::interpretDeviceReply(DeviceCommandId_t id,
             }
 #endif
 
-			PoolReadHelper readHelper(&gyroData);
+			PoolReadGuard readHelper(&gyroData);
 			if(readHelper.getReadResult() == HasReturnvaluesIF::RETURN_OK) {
 	            if(not gyroData.isValid()) {
 	                gyroData.setValidity(true, true);
@@ -547,15 +547,15 @@ void GyroHandler::modeChanged() {
 
 ReturnValue_t GyroHandler::initializeLocalDataPool(localpool::DataPool &localDataPoolMap,
 		LocalDataPoolManager &poolManager) {
-	localDataPoolMap.emplace(GyroDefinitions::ANGULAR_VELOCITY_X,
+	localDataPoolMap.emplace(gyrodefs::ANGULAR_VELOCITY_X,
 			new PoolEntry<float>({0.0}));
-	localDataPoolMap.emplace(GyroDefinitions::ANGULAR_VELOCITY_Y,
+	localDataPoolMap.emplace(gyrodefs::ANGULAR_VELOCITY_Y,
 			new PoolEntry<float>({0.0}));
-	localDataPoolMap.emplace(GyroDefinitions::ANGULAR_VELOCITY_Z,
+	localDataPoolMap.emplace(gyrodefs::ANGULAR_VELOCITY_Z,
 			new PoolEntry<float>({0.0}));
-	localDataPoolMap.emplace(GyroDefinitions::GENERAL_CONFIG_REG42,
+	localDataPoolMap.emplace(gyrodefs::GENERAL_CONFIG_REG42,
 			new PoolEntry<uint8_t>({0}));
-	localDataPoolMap.emplace(GyroDefinitions::RANGE_CONFIG_REG43,
+	localDataPoolMap.emplace(gyrodefs::RANGE_CONFIG_REG43,
 			new PoolEntry<uint8_t>({0}));
 
 	poolManager.subscribeForPeriodicPacket(gyroData.getSid(), false, 4.0, false);
@@ -576,7 +576,7 @@ ReturnValue_t GyroHandler::checkSelfTest(DeviceCommandId_t* id) {
     // perform self-test every week
     if((currentSecondUptime - lastSelfTestSeconds) >=
             SELF_TEST_PERIOD_SECOND) {
-        *id = GyroDefinitions::PERFORM_SELFTEST;
+        *id = gyrodefs::PERFORM_SELFTEST;
         internalState = InternalStates::PERFORM_SELFTEST;
         checkSelfTestRegister = true;
         lastSelfTestSeconds = currentSecondUptime;
@@ -586,7 +586,7 @@ ReturnValue_t GyroHandler::checkSelfTest(DeviceCommandId_t* id) {
     // if a self-test check is pending, check every few cycles.
     if(checkSelfTestRegister) {
         if(selfTestDivider.checkAndIncrement()) {
-            *id = GyroDefinitions::READ_STATUS;
+            *id = gyrodefs::READ_STATUS;
             internalState = InternalStates::READ_STATUS;
             return buildCommandFromCommand(*id, nullptr, 0);
         }

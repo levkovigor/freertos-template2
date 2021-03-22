@@ -94,6 +94,15 @@ public:
     ReturnValue_t startSdcToFlashOperation(image::ImageSlot sourceSlot);
 
     /**
+    * Start an operation to copy something from the SD card to the other
+    * slot on the SD card. Don't forget to configure the NAND-Flash once
+    * when calling this on the AT91 board.
+    * @param sourceSlot     Copy operation will be based on this slot.
+    * @return
+    */
+    ReturnValue_t startSdcToSdcOperation(image::ImageSlot sourceSlot);
+
+    /**
      * Starts to copy the bootloader to the flash. Use with care! Parts of this operation might
      * be performed in a special high priority task which can not be preempted and interrupted
      * to ensure nothing goes wrong.
@@ -112,7 +121,6 @@ public:
      */
     ReturnValue_t startFlashToSdcOperation(image::ImageSlot targetSlot);
 
-#ifdef ISIS_OBC_G20
     /**
      * Copy the hamming code belonging to a certain image to the FRAM.
      * @param respectiveSlot    Hamming code belongs to this image
@@ -120,7 +128,6 @@ public:
      * @return
      */
     ReturnValue_t startHammingCodeToFramOperation(image::ImageSlot respectiveSlot);
-#endif
 
     /**
      * Continue the current operation.

@@ -1,4 +1,4 @@
-#include <fsfw/ipc/MutexHelper.h>
+#include <fsfw/ipc/MutexGuard.h>
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
 #include <mission/utility/TaskMonitor.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
@@ -18,14 +18,14 @@ TaskMonitor::~TaskMonitor() {
 }
 
 void TaskMonitor::setPeriodicOperation(float periodSeconds) {
-	MutexHelper(monitorMutex, MutexIF::TimeoutType::WAITING, 10);
+	MutexGuard(monitorMutex, MutexIF::TimeoutType::WAITING, 10);
 	performPeriodicOperation = true;
     this->periodicCounter = 0;
     this->periodicInterval = periodSeconds * 1000.0;
 }
 
 void TaskMonitor::clearPeriodicOperation() {
-    MutexHelper(monitorMutex, MutexIF::TimeoutType::WAITING, 10);
+    MutexGuard(monitorMutex, MutexIF::TimeoutType::WAITING, 10);
     performPeriodicOperation = false;
 }
 

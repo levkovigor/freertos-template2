@@ -36,6 +36,7 @@ private:
 #endif
     void performHammingTest();
     void printFilesTest();
+    void moveFileTest();
 
     void tinyfatFsTest();
     Countdown countdown;

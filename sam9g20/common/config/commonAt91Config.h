@@ -34,11 +34,12 @@
 namespace config {
 #endif
 
-static const char* const BOOTLOADER_REPOSITORY =         "BIN/AT91/BL";
-static const char* const SW_REPOSITORY =                 "BIN/AT91/OBSW";
+static const char* const BOOTLOADER_REPOSITORY =        "BIN/AT91/BL";
+static const char* const SW_REPOSITORY =                "BIN/AT91/OBSW";
 
 #if BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE
-static const char* const BOOTLOADER_2_NAME =        "bl2.bin";
+static const char* const BOOTLOADER_2_NAME =            "BL2.BIN";
+static const char* const BOOTLOADER_2_HAM =             "BL2_HAM.BIN";
 #endif
 
 #ifdef __cplusplus

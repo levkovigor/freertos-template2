@@ -1,8 +1,9 @@
 #include "TestTask.h"
 #include "PusTcInjector.h"
 
-#include <fsfwconfig/devices/logicalAddresses.h>
-#include <fsfwconfig/tmtc/apid.h>
+#include <objects/systemObjectList.h>
+#include <devices/logicalAddresses.h>
+#include <tmtc/apid.h>
 
 #include <fsfw/unittest/internal/InternalUnitTester.h>
 #include <fsfw/objectmanager/ObjectManagerIF.h>

@@ -86,8 +86,8 @@ private:
     uint8_t gyroConfiguration[2];
     uint8_t commandBuffer[12] = {};
 
-    GyroDefinitions::GyroPrimaryDataset gyroData;
-    GyroDefinitions::GyroAuxilliaryDataset gyroConfigSet;
+    GyroPrimaryDataset gyroData;
+    GyroAuxilliaryDataset gyroConfigSet;
 
     PeriodicOperationDivider selfTestDivider;
 #if OBSW_VERBOSE_LEVEL >= 1

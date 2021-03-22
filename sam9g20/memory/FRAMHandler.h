@@ -7,7 +7,7 @@
 #include <fsfw/serialize/SerialLinkedListAdapter.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <sam9g20/common/FRAMApi.h>
-#include <sam9g20/common/CriticalDataBlock.h>
+#include <sam9g20/common/CommonFRAM.h>
 
 #include <array>
 
@@ -21,15 +21,23 @@ public:
 	FRAMHandler(object_id_t objectId);
 	virtual~ FRAMHandler();
 
+	static void dumpCriticalBlock();
 	/**
 	 * Print the critical block, byte-wise, 4 bytes per line. For debugging purpose,
 	 * do not use in mission code. It will later be possible to also dump the critical block
 	 * as a binary file.
 	 */
-	void printCriticalBlock();
+	static void printCriticalBlock();
+
+	/**
+	 * Can be called if the FRAM has been reset or is uninitialized. Is this is the case,
+	 * all fields will have the value 0xff. This function takes care of zero initializing
+	 * all fields which have 0 as the default value.
+	 */
+	static ReturnValue_t zeroOutDefaultZeroFields(int* errorField);
 
 protected:
-	std::array<uint8_t, sizeof(CriticalDataBlock)> criticalBlock;
+	static std::array<uint8_t, sizeof(CriticalDataBlock)> criticalBlock;
 
 	virtual ReturnValue_t handleMemoryLoad(uint32_t address,
 			const uint8_t* data, uint32_t size, uint8_t** dataPointer);

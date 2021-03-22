@@ -14,14 +14,14 @@ typedef enum {
 namespace config {
 #endif
 
-static const char* const BOOTLOADER_NAME =               "bl.bin";
-static const char* const SW_SLOT_0_NAME =                "obsw_sl0.bin";
-static const char* const SW_SLOT_1_NAME =                "obsw_sl1.bin";
+static const char* const BOOTLOADER_NAME =              "BL.BIN";
+static const char* const SW_SLOT_0_NAME =               "OBSW_SL0.BIN";
+static const char* const SW_SLOT_1_NAME =               "OBSW_SL1.BIN";
 
-static const char* const BL_HAMMING_NAME =               "bl_ham.bin";
-static const char* const SW_NORFLASH_NAME =              "nor_ham.bin";
-static const char* const SW_SLOT_0_HAMMING_NAME =        "sl0_hamm.bin";
-static const char* const SW_SLOT_1_HAMMING_NAME =        "sl1_hamm.bin";
+static const char* const BL_HAMMING_NAME =              "BL_HAM.BIN";
+static const char* const SW_FLASH_HAMMING_NAME =        "NOR_HAM.BIN";
+static const char* const SW_SLOT_0_HAMMING_NAME =       "SL0_HAM.bin";
+static const char* const SW_SLOT_1_HAMMING_NAME =       "SL1_HAM.bin";
 
 #ifdef __cplusplus
 }

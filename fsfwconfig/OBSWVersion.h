@@ -4,7 +4,7 @@
 const char* const SW_NAME = "sputnik";
 
 #define SW_VERSION          2
-#define SW_SUBVERSION       4
+#define SW_SUBVERSION       5
 #define SW_SUBSUBVERSION    0
 
 #endif /* FSFWCONFIG_OBSWVERSION_H_ */

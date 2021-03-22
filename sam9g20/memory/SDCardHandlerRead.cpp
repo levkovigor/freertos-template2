@@ -1,5 +1,6 @@
 #include "SDCardHandler.h"
 #include "SDCardHandlerPackets.h"
+#include "sdcardHandlerDefinitions.h"
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <mission/memory/FileSystemMessage.h>
@@ -42,7 +43,7 @@ ReturnValue_t SDCardHandler::handleSequenceNumberRead(uint16_t sequenceNumber) {
         sif::printDebug("SDCardHandler::appendToFile: First sequence packet missed!\n");
 #endif
 #endif
-        triggerEvent(SEQUENCE_PACKET_MISSING_READ_EVENT, 0, 0);
+        triggerEvent(sdchandler::SEQUENCE_PACKET_MISSING_READ_EVENT, 0, 0);
         return SEQUENCE_PACKET_MISSING_READ;
     }
     else if((sequenceNumber - lastPacketReadNumber) > 1) {
@@ -55,7 +56,7 @@ ReturnValue_t SDCardHandler::handleSequenceNumberRead(uint16_t sequenceNumber) {
                 sequenceNumber, lastPacketReadNumber);
 #endif
 #endif
-        triggerEvent(SEQUENCE_PACKET_MISSING_READ_EVENT,
+        triggerEvent(sdchandler::SEQUENCE_PACKET_MISSING_READ_EVENT,
                 lastPacketReadNumber + 1, 0);
         return SEQUENCE_PACKET_MISSING_READ;
     }
@@ -101,7 +102,7 @@ ReturnValue_t SDCardHandler::handleReadReplies(ReadCommand& command) {
     // Get space in IPC store to serialize packet.
     uint8_t* writePtr = nullptr;
     store_address_t storeId;
-    result = IPCStore->getFreeElement(&storeId,
+    result = ipcStore->getFreeElement(&storeId,
             replyPacket.getSerializedSize(), &writePtr);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         int retval = f_close(file);
