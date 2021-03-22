@@ -48,25 +48,29 @@ typedef enum {
 /* Can't forward declare this in a simple way. This is the struct used by the bootloader
 to read all required information at once */
 typedef struct __attribute__((__packed__)) _BootloaderGroup {
-    /* This flag determines whether hamming codes will be used to check the binary. */
-    uint16_t global_hamming_flag;
     /* These value will be used on reboot to determine which SD card is the
     default SD card on reboot. 0 or 0xff: None (use SD-Card 0), 1: SD Card 0, 2: SD Card 1 */
     uint16_t preferred_sd_card;
+    /* This flag determines whether hamming codes will be used to check the binary. */
+    uint16_t global_hamming_flag;
+
     /* Hamming code flag for individual binaries.  It is recommended to clear the flags when
     updating an image and setting the flag after the hamming code for this image has been uploaded
     as well. Otherwise, a new image might be checked with an invalid old hamming code. */
     uint16_t nor_flash_hamming_flag;
+    uint16_t sdc0_image_slot0_hamming_flag;
+    uint16_t sdc0_image_slot1_hamming_flag;
+    uint16_t sdc1_image_slot0_hamming_flag;
+    uint16_t sdc1_image_slot1_hamming_flag;
+    uint16_t filler_hamming_flags[1];
+
     /* Reboot counters for individual binaries */
     uint16_t nor_flash_reboot_counter;
-    uint16_t sdc0_image_slot0_hamming_flag;
     uint16_t sdc0_image_slot0_reboot_counter;
-    uint16_t sdc0_image_slot1_hamming_flag;
     uint16_t sdc0_image_slot1_reboot_counter;
-    uint16_t sdc1_image_slot0_hamming_flag;
     uint16_t sdc1_image_slot0_reboot_counter;
-    uint16_t sdc1_image_slot1_hamming_flag;
     uint16_t sdc1_image_slot1_reboot_counter;
+    uint16_t filler_reboot_counter[1];
     /* Software update information */
     uint8_t software_update_available;
     uint8_t software_update_in_slot_0;

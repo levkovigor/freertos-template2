@@ -86,6 +86,14 @@ public:
 	static constexpr ActionId_t REQUEST_CPU_STATS_CSV = 0;
 	static constexpr ActionId_t REQUEST_CPU_STATS_PRINT = 1;
 
+	static constexpr ActionId_t ENABLE_GLOBAL_HAMMING_CODE_CHECKS = 2;
+	static constexpr ActionId_t DISABLE_GLOBAL_HAMMING_CODE_CHECKS = 3;
+
+	static constexpr ActionId_t ENABLE_LOCAL_HAMMING_CODE_CHECKS = 4;
+	static constexpr ActionId_t DISABLE_LOCAL_HAMMING_CODE_CHECKS = 5;
+
+	static constexpr ActionId_t GET_HAMMING_CODE_STATUS_FIELDS = 6;
+
 	static constexpr ActionId_t RESET_OBC = 10;
 	static constexpr ActionId_t POWERCYCLE_OBC = 11;
 
