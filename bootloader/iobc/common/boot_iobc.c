@@ -142,7 +142,7 @@ BootSelect determine_boot_select(bool* use_hamming) {
     }
     else {
         if(use_hamming != NULL) {
-            if(bl_info_struct.global_hamming_flag) {
+            if(bl_info_struct.global_hamming_flag == FRAM_TRUE) {
                 *use_hamming = true;
             }
             else {
