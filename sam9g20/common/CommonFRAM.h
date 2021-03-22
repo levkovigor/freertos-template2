@@ -10,8 +10,9 @@ static const uint32_t FRAM_UNINITIALIZED = 0xff;
 
 /**
  * Big blocks at the end of FRAM. This address was retrieved FRAM_getMaxAddress.
- * Actually the iOBC datasheet states that the FRAM has 256kB, but the functions returns
- * almost double the size... We still hardcode half of the returned value.
+ * Actually the iOBC datasheet states that the FRAM has 256kB, but the function provided by
+ * ISIS to determine the highest address returns almost double the size... We still hardcode
+ * half of the returned value.
  */
 static const uint32_t FRAM_END_ADDR = 0x3ffff;
 
@@ -71,6 +72,7 @@ typedef struct __attribute__((__packed__)) _BootloaderGroup {
     uint16_t sdc1_image_slot0_reboot_counter;
     uint16_t sdc1_image_slot1_reboot_counter;
     uint16_t filler_reboot_counter[1];
+
     /* Software update information */
     uint8_t software_update_available;
     uint8_t software_update_in_slot_0;

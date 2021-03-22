@@ -42,6 +42,8 @@ extern "C" {
 #include <stddef.h>
 #include <stdbool.h>
 
+
+
 /**
  * Read the whole critical block. Size of buffer has to be provided in max_size.
  * It is recommended to set max_size to sizeof(CriticalDataBlock)
@@ -57,6 +59,12 @@ int fram_read_bootloader_block(BootloaderGroup* bl_info);
  * @return
  */
 int fram_zero_out_default_zero_fields();
+/**
+ * This function will zero out all fields. Will propbably not be exposes and only
+ * used to development purposes, use with care!
+ * @return
+ */
+int fram_zero_out_all_fields();
 
 int fram_write_software_version(uint8_t sw_version, uint8_t sw_subversion,
         uint8_t sw_subsubversion);

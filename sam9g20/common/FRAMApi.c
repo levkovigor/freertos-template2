@@ -25,6 +25,12 @@ int fram_read_critical_block(uint8_t* buffer, const size_t max_size) {
     return FRAM_read((unsigned char*) buffer, CRITICAL_BLOCK_START_ADDR, sizeof(CriticalDataBlock));
 }
 
+int fram_zero_out_all_fields() {
+    uint8_t zeroArray[sizeof(CriticalDataBlock)] = { 0 };
+    return FRAM_writeAndVerify(zeroArray, CRITICAL_BLOCK_START_ADDR, sizeof(CriticalDataBlock));
+}
+
+
 int fram_zero_out_default_zero_fields() {
     uint32_t reboot_counter = 0;
     int result = fram_read_reboot_counter(&reboot_counter);
