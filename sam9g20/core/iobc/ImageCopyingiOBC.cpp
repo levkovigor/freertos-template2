@@ -163,7 +163,7 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
                 return HasReturnvaluesIF::RETURN_FAILED;
             }
 
-            SlotType framSlot;
+            SlotType framSlot = SDC_0_SL_0;
             if(sourceSlot == image::ImageSlot::FLASH) {
                 framSlot = FLASH_SLOT;
             }
