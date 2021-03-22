@@ -94,12 +94,10 @@ public:
     ReturnValue_t startSdcToFlashOperation(image::ImageSlot sourceSlot);
 
     /**
-<<<<<<< HEAD
-    * Start an operation to copy something from the SD card to the flash
-    * memory. Don't forget to configure the NAND-Flash once
+    * Start an operation to copy something from the SD card to the other
+    * slot on the SD card. Don't forget to configure the NAND-Flash once
     * when calling this on the AT91 board.
-    * @param sdCard        Select the SD card
-    * @param imageSlot     Select the image slot (if OBSW is copied)
+    * @param sourceSlot     Copy operation will be based on this slot.
     * @return
     */
     ReturnValue_t startSdcToSdcOperation(image::ImageSlot sourceSlot);
