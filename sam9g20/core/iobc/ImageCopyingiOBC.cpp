@@ -353,7 +353,7 @@ ReturnValue_t ImageCopyingEngine::performNorCopyOperation(F_FILE** binaryFile) {
         int retval = 0;
         /* We store the size of the image in the FRAM */
         if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
-           retval = fram_write_binary_size(BOOTLOADER_0, currentFileSize);
+            retval = fram_write_binary_size(BOOTLOADER_0, currentFileSize);
         }
         else {
             retval = fram_write_binary_size(FLASH_SLOT, currentFileSize);
