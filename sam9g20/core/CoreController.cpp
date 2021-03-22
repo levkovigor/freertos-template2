@@ -7,6 +7,7 @@
 
 #include <sam9g20/memory/FRAMHandler.h>
 #include <sam9g20/common/FRAMApi.h>
+#include <sam9g20/common/SRAMApi.h>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -224,6 +225,16 @@ ReturnValue_t CoreController::initialize() {
 #endif
     }
 #endif
+    int32_t statusField = get_sram0_status_field();
+    if(statusField == SRAM_HAMMING_ERROR_SINGLE_BIT) {
+        triggerEvent(BOOT_SINGLEBIT_ERROR_CORRECTED, 0 , 0);
+    }
+    else if(statusField == SRAM_HAMMING_ERROR_MULTIBIT) {
+        triggerEvent(BOOT_MULTIBIT_ERROR_DETECTED, 0 , 0);
+    }
+    else if(statusField == SRAM_HAMMING_ERROR_ECC) {
+        triggerEvent(BOOT_ECC_ERROR_DETECTED, 0 , 0);
+    }
     return ExtendedControllerBase::initialize();
 }
 

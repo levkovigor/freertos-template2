@@ -36,6 +36,13 @@ public:
     static constexpr Event RTT_RTC_FAILURE = event::makeEvent(SUBSYSTEM_ID, 3, severity::MEDIUM);
     static constexpr Event FSFW_CLOCK_SYNC = event::makeEvent(SUBSYSTEM_ID, 4, severity::INFO);
 
+    static constexpr Event BOOT_SINGLEBIT_ERROR_CORRECTED = event::makeEvent(SUBSYSTEM_ID, 5,
+            severity::MEDIUM);
+    static constexpr Event BOOT_MULTIBIT_ERROR_DETECTED = event::makeEvent(SUBSYSTEM_ID, 6,
+            severity::MEDIUM);
+    static constexpr Event BOOT_ECC_ERROR_DETECTED = event::makeEvent(SUBSYSTEM_ID, 7,
+            severity::MEDIUM);
+
     static constexpr uint8_t SUPERVISOR_INDEX = -1;
 
     static constexpr float RTC_RTT_SYNC_INTERVAL = 0.5;
