@@ -35,7 +35,7 @@ ReturnValue_t FRAMHandler::setAddress(uint32_t *startAddress) {
 }
 
 ReturnValue_t FRAMHandler::readBootloaderBlock(uint8_t** ptr) {
-    int result = fram_read_bootloader_block(criticalBlock.data(), sizeof(BootloaderGroup));
+    int result = fram_read_bootloader_block_raw(criticalBlock.data(), sizeof(BootloaderGroup));
     if(result != 0) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
@@ -46,7 +46,7 @@ ReturnValue_t FRAMHandler::readBootloaderBlock(uint8_t** ptr) {
 }
 
 void FRAMHandler::printBootloaderBlock() {
-    int result = fram_read_bootloader_block(criticalBlock.data(), sizeof(BootloaderGroup));
+    int result = fram_read_bootloader_block_raw(criticalBlock.data(), sizeof(BootloaderGroup));
     if(result != 0) {
         return;
     }

@@ -23,6 +23,13 @@ Media medias[MAX_LUNS];
 
 #include <string.h>
 
+/**
+ * Will be implemented in a common file because it is also used by NOR-Flash copy algorithm.
+ * @param slotType
+ * @return
+ */
+int handle_hamming_code_check(SlotType slotType);
+int handle_hamming_code_result(int result);
 
 #if USE_TINY_FS == 0
 int copy_with_hcc_lib(BootSelect boot_select);

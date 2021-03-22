@@ -712,6 +712,10 @@ uint32_t determine_ham_code_address(SlotType slotType) {
     return address;
 }
 
-int fram_read_bootloader_block(uint8_t* buff, size_t max_size) {
+int fram_read_bootloader_block_raw(uint8_t* buff, size_t max_size) {
     return FRAM_read((unsigned char*) buff, BL_GROUP_ADDR, sizeof(BootloaderGroup));
+}
+
+int fram_read_bootloader_block(BootloaderGroup* bl_info) {
+    return FRAM_read((unsigned char*) bl_info, BL_GROUP_ADDR, sizeof(BootloaderGroup));
 }

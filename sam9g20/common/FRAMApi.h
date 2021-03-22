@@ -52,7 +52,8 @@ extern "C" {
  * @return
  */
 int fram_read_critical_block(uint8_t* buffer, const size_t max_size);
-int fram_read_bootloader_block(uint8_t* buff, size_t max_size);
+int fram_read_bootloader_block(BootloaderGroup* bl_info);
+int fram_read_bootloader_block_raw(uint8_t* buff, size_t max_size);
 
 /**
  * Should be called once after a FRAM reset. Also called by the "Execute Before Flight" Sequence
