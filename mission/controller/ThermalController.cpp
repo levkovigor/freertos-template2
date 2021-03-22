@@ -15,6 +15,11 @@ void ThermalController::performControlOperation() {
 
 }
 
+ReturnValue_t ThermalController::initializeLocalDataPool(localpool::DataPool &localDataPoolMap,
+        LocalDataPoolManager &poolManager) {
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
 void ThermalController::handleChangedDataset(sid_t sid,
         store_address_t storeId, bool* clearMessage) {
     if(sid == sid_t(TSensorDefinitions::ObjIds::TEST_HKB_HANDLER,
@@ -63,4 +68,8 @@ ReturnValue_t ThermalController::initializeAfterTaskCreation() {
 ReturnValue_t ThermalController::checkModeCommand(Mode_t mode,
         Submode_t submode, uint32_t *msToReachTheMode) {
     return HasReturnvaluesIF::RETURN_OK;
+}
+
+LocalPoolDataSetBase* ThermalController::getDataSetHandle(sid_t sid) {
+    return nullptr;
 }
