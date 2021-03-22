@@ -279,7 +279,7 @@ ReturnValue_t ImageCopyingEngine::copySdcImgToSdc() {
 	ssize_t bytesWritten = 0;
 
 	ReturnValue_t result = prepareGenericFileInformation(
-	        sdCardAccess.currentVolumeId, &sourceFile);
+	        sdCardAccess.getActiveVolume(), &sourceFile);
 	if (result!=HasReturnvaluesIF::RETURN_OK){
 	    return result;
 	}
