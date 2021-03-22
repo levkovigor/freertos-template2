@@ -112,9 +112,7 @@ ReturnValue_t SoftwareImageHandler::executeAction(ActionId_t actionId,
         break;
     }
     case(COPY_OBSW_SDC_TO_SDC): {
-        if(handlerState == HandlerState::COPYING) {
-            actionHelper.finish(false, commandedBy, actionId, image::BUSY);
-        }
+        result = handleCopyingSdcToSdc(actionId, commandedBy, data, size);
         break;
     }
     case(ENABLE_HAMMING_CODE_CHECK_FOR_COPYING): {
@@ -367,5 +365,29 @@ ReturnValue_t SoftwareImageHandler::handleCopyingHammingToStorage(ActionId_t act
     return result;
 }
 
+ReturnValue_t SoftwareImageHandler::handleCopyingSdcToSdc(ActionId_t actionId,
+        MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
+    if(handlerState == HandlerState::COPYING) {
+        actionHelper.finish(commandedBy, actionId, image::BUSY);
+    }if(size != 1) {
+        return HasActionsIF::INVALID_PARAMETERS;
+    }
 
+    uint8_t targetBinary = data[0];
 
+    if(targetBinary == 0) {
+        imgCpHelper->startSdcToSdcOperation(image::ImageSlot::SDC_SLOT_0);
+    }
+    else if(targetBinary == 1) {
+        imgCpHelper->startSdcToSdcOperation(image::ImageSlot::SDC_SLOT_1);
+    }
+    else {
+        return HasActionsIF::INVALID_PARAMETERS;
+    }
+
+    currentAction = actionId;
+    recipient = commandedBy;
+    handlerState = HandlerState::COPYING;
+    actionHelper.step(1, commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
+    return HasReturnvaluesIF::RETURN_OK;
+}

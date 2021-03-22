@@ -234,6 +234,8 @@ private:
     ReturnValue_t checkNandFlashImage();
 #endif
 
+    ReturnValue_t handleCopyingSdcToSdc(ActionId_t actionId, MessageQueueId_t commandedBy,
+            const uint8_t *data, size_t size);
     ReturnValue_t handleCopyingSdcBlToFlash(ActionId_t actionId, MessageQueueId_t commandedBy,
             const uint8_t *data, size_t size);
     ReturnValue_t handleCopyingSdcImgToFlash(ActionId_t actionId, MessageQueueId_t commandedBy,
