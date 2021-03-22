@@ -174,8 +174,7 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
                 framSlot = SDC_0_SL_1;
             }
 
-            int retval = fram_write_ham_code(framSlot, imgBuffer->data(),
-                    currentByteIdx, sizeRead);
+            int retval = fram_write_ham_code(framSlot, imgBuffer->data(), currentByteIdx, sizeRead);
             if(retval != 0) {
 #if OBSW_VERBOSE_LEVEL >= 1
                 sif::printWarning("ImageCopyingEngine::copyImgHammingSdcToFram:"
