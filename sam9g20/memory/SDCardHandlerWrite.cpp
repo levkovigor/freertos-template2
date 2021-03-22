@@ -6,6 +6,42 @@
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <mission/memory/FileSystemMessage.h>
 
+#define SDC_FILE_WRITE_WIRETAPPING    0
+
+ReturnValue_t SDCardHandler::handleCreateFileCommand(CommandMessage *message) {
+    store_address_t storeId = FileSystemMessage::getStoreId(message);
+    ConstStorageAccessor accessor(storeId);
+    const uint8_t* readPtr = nullptr;
+    size_t sizeRemaining = 0;
+    ReturnValue_t result = getStoreData(storeId, accessor, &readPtr,
+            &sizeRemaining);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+
+    WriteCommand command(WriteCommand::WriteType::NEW_FILE);
+    result = command.deSerialize(&readPtr, &sizeRemaining,
+            SerializeIF::Endianness::BIG);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        sendCompletionReply(false, result);
+        return result;
+    }
+
+#if SDC_FILE_WRITE_WIRETAPPING == 1
+    sif::printInfo("SDCardHandler::handleCreateFileCommand | Create file %s/%s\n.",
+            command.getRepositoryPath(), command.getFilename()
+    );
+#endif
+    result = createFile(command.getRepositoryPath(), command.getFilename(),
+            command.getFileData(), command.getFileSize(), nullptr);
+    if(result == HasReturnvaluesIF::RETURN_OK) {
+        sendCompletionReply();
+    }
+    else {
+        sendCompletionReply(false, result);
+    }
+    return HasReturnvaluesIF::RETURN_OK;
+}
 
 ReturnValue_t SDCardHandler::handleAppendCommand(CommandMessage* message){
     store_address_t storeId = FileSystemMessage::getStoreId(message);
@@ -26,7 +62,12 @@ ReturnValue_t SDCardHandler::handleAppendCommand(CommandMessage* message){
         return result;
     }
 
-    uint16_t packetSequenceIfMissing;
+    uint16_t packetSequenceIfMissing = 0;
+#if SDC_FILE_WRITE_WIRETAPPING == 1
+    sif::printInfo("SDCardHandler::handleAppendCommand | Append to file %s/%s\n",
+            command.getRepositoryPath(), command.getFilename()
+    );
+#endif
     result = appendToFile(command.getRepositoryPath(), command.getFilename(), command.getFileData(),
             command.getFileSize(), command.getPacketNumber(),
             &packetSequenceIfMissing);
@@ -39,7 +80,7 @@ ReturnValue_t SDCardHandler::handleAppendCommand(CommandMessage* message){
             sif::error << "SDCardHandler::handleWriteCommand: Writing to file " <<
                     command.getFilename()  << " failed." << std::endl;
 #else
-            sif::printError("SDCardHandler::handleWriteCommand: Writing to file %s failed.\n",
+            sif::printError("SDCardHandler::handleWriteCommand: Writing to file %s failed\n",
                     command.getFilename());
 #endif
             sendCompletionReply(false, result);

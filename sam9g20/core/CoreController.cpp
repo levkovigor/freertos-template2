@@ -39,8 +39,8 @@ MutexIF* CoreController::timeMutex = nullptr;
 
 CoreController::CoreController(object_id_t objectId,
         object_id_t systemStateTaskId):
-                        ExtendedControllerBase(objectId, objects::NO_OBJECT),
-                        systemStateTaskId(systemStateTaskId) {
+                                ExtendedControllerBase(objectId, objects::NO_OBJECT),
+                                systemStateTaskId(systemStateTaskId) {
     timeMutex = MutexFactory::instance()->createMutex();
 #ifdef ISIS_OBC_G20
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -88,13 +88,13 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
     switch(actionId) {
     case(REQUEST_CPU_STATS_CSV): {
-            if(not systemStateTask->generateStatsCsv()) {
-                return HasActionsIF::IS_BUSY;
-            }
-
-            actionHelper.finish(true, commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
-            return HasReturnvaluesIF::RETURN_OK;
+        if(not systemStateTask->generateStatsCsv()) {
+            return HasActionsIF::IS_BUSY;
         }
+
+        actionHelper.finish(true, commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
+        return HasReturnvaluesIF::RETURN_OK;
+    }
     case(REQUEST_CPU_STATS_PRINT): {
         if(not systemStateTask->generateStatsPrint()) {
             return HasActionsIF::IS_BUSY;
@@ -348,29 +348,29 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
 
 ReturnValue_t CoreController::storeSelect(StorageManagerIF** store, Stores storeType) {
 
-        if (store == nullptr) {
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
+    if (store == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
 
-        switch(storeType) {
-        case(TM_STORE): {
-            *store = objectManager->get<StorageManagerIF>(objects::TM_STORE);
-            break;
-        }
-        case(TC_STORE): {
-            *store = objectManager->get<StorageManagerIF>(objects::TC_STORE);
-            break;
-        }
-        case(IPC_STORE): {
-            *store = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
-            break;
-        }
-        default: {
-            sif::printWarning("CoreController::storeSelect: Invalid Store!\n\r");
-            return HasReturnvaluesIF::RETURN_FAILED;
-        }
-        }
-        return HasReturnvaluesIF::RETURN_OK;
+    switch(storeType) {
+    case(TM_STORE): {
+        *store = objectManager->get<StorageManagerIF>(objects::TM_STORE);
+        break;
+    }
+    case(TC_STORE): {
+        *store = objectManager->get<StorageManagerIF>(objects::TC_STORE);
+        break;
+    }
+    case(IPC_STORE): {
+        *store = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
+        break;
+    }
+    default: {
+        sif::printWarning("CoreController::storeSelect: Invalid Store!\n\r");
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    }
+    return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t CoreController::getFillCountCommand(Stores storeType, MessageQueueId_t commandedBy,
@@ -394,7 +394,7 @@ ReturnValue_t CoreController::getFillCountCommand(Stores storeType, MessageQueue
 }
 
 ReturnValue_t CoreController::handleClearStoreCommand(Stores storeType, ActionId_t pageOrWholeStore,
-                StorageManagerIF::max_subpools_t poolIndex) {
+        StorageManagerIF::max_subpools_t poolIndex) {
 
     StorageManagerIF* store = nullptr;
     ReturnValue_t result = storeSelect(&store, storeType);

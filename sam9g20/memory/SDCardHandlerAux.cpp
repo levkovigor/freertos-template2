@@ -5,37 +5,6 @@
 #include <sam9g20/memory/SDCardAccess.h>
 
 
-ReturnValue_t SDCardHandler::handleCreateFileCommand(CommandMessage *message) {
-    store_address_t storeId = FileSystemMessage::getStoreId(message);
-    ConstStorageAccessor accessor(storeId);
-    const uint8_t* readPtr = nullptr;
-    size_t sizeRemaining = 0;
-    ReturnValue_t result = getStoreData(storeId, accessor, &readPtr,
-            &sizeRemaining);
-    if(result != HasReturnvaluesIF::RETURN_OK) {
-        return result;
-    }
-
-    WriteCommand command(WriteCommand::WriteType::NEW_FILE);
-    result = command.deSerialize(&readPtr, &sizeRemaining,
-            SerializeIF::Endianness::BIG);
-    if(result != HasReturnvaluesIF::RETURN_OK) {
-        sendCompletionReply(false, result);
-        return result;
-    }
-
-    result = createFile(command.getRepositoryPath(), command.getFilename(),
-            command.getFileData(), command.getFileSize(), nullptr);
-    if(result == HasReturnvaluesIF::RETURN_OK) {
-        sendCompletionReply();
-    }
-    else {
-        sendCompletionReply(false, result);
-    }
-    return HasReturnvaluesIF::RETURN_OK;
-}
-
-
 ReturnValue_t SDCardHandler::handleDeleteFileCommand(CommandMessage* message){
     store_address_t storeId = FileSystemMessage::getStoreId(message);
     ConstStorageAccessor accessor(storeId);
