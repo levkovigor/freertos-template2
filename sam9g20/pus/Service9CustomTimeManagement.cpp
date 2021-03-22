@@ -1,6 +1,10 @@
-#include <fsfw/pus/servicepackets/Service9Packets.h>
-#include <fsfw/timemanager/CCSDSTime.h>
+#include <OBSWConfig.h>
+
 #include <sam9g20/pus/Service9CustomTimeManagement.h>
+
+#include <fsfw/pus/servicepackets/Service9Packets.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
+#include <fsfw/timemanager/CCSDSTime.h>
 
 extern "C" {
 #include <hal/Timing/Time.h>
@@ -10,12 +14,10 @@ Service9CustomTimeManagement::Service9CustomTimeManagement(object_id_t objectId,
 		uint16_t apid, uint8_t serviceId):
 		Service9TimeManagement(objectId, apid, serviceId) {}
 
-int Service9CustomTimeManagement::setIsisClock(Clock::TimeOfDay_t& timeOfDay) {
-	// it is assumed the timer is already running here!
-	timeval timeval;
-	Clock::convertTimeOfDayToTimeval(&timeOfDay, &timeval);
-
+int Service9CustomTimeManagement::setIsisClock(timeval& timeval) {
 #ifdef USE_ISIS_TIME_TO_SET_RTT_RTC
+    Clock::TimeOfDay_t timeOfDayFsfw;
+    Clock::getDateAndTime(&timeOfDayFsfw);
 	// set the time of RTT / RTC as well
 	Time newTime;
 	newTime.seconds = timeOfDay.second;
@@ -34,32 +36,34 @@ int Service9CustomTimeManagement::setIsisClock(Clock::TimeOfDay_t& timeOfDay) {
 }
 
 ReturnValue_t Service9CustomTimeManagement::setTime() {
-	Clock::TimeOfDay_t timeToSet;
+    timeval newTime;
 	TimePacket timePacket(currentPacket.getApplicationData(),
 			currentPacket.getApplicationDataSize());
-	ReturnValue_t result = CCSDSTime::convertFromCcsds(&timeToSet,
-			timePacket.getTime(), timePacket.getTimeSize());
+	size_t foundLen = 0;
+	ReturnValue_t result = CCSDSTime::convertFromCcsds(&newTime,
+            timePacket.getTime(), &foundLen, timePacket.getTimeSize());
 	if(result != RETURN_OK) {
 		triggerEvent(CLOCK_SET_FAILURE, result, 0);
 		return result;
 	}
 
-	uint32_t formerUptime;
-	Clock::getUptime(&formerUptime);
+	timeval formerTime;
+	Clock::getClock_timeval(&formerTime);
 
-	result = Clock::setClock(&timeToSet);
-	uint32_t newUptime;
+	result = Clock::setClock(&newTime);
 	if(result == RETURN_OK) {
-		Clock::getUptime(&newUptime);
-		triggerEvent(CLOCK_SET, newUptime, formerUptime);
+#if OBSW_VERBOSE_LEVEL >= 1
+	    sif::printInfo("Clock set to new value!\n");
+#endif
+		triggerEvent(CLOCK_SET, formerTime.tv_sec, newTime.tv_sec);
 	}
 	else {
 		triggerEvent(CLOCK_SET_FAILURE, result, 0);
 	}
 
-	int retval = setIsisClock(timeToSet);
+	int retval = setIsisClock(newTime);
 	if(retval != 0) {
-		triggerEvent(ISIS_CLOCK_SET_FAILURE, newUptime, formerUptime);
+		triggerEvent(ISIS_CLOCK_SET_FAILURE, formerTime.tv_sec, newTime.tv_sec);
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
 

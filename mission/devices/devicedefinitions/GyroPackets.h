@@ -5,7 +5,7 @@
 #include <fsfw/datapoollocal/LocalPoolVariable.h>
 #include <fsfw/devicehandlers/DeviceHandlerIF.h>
 
-namespace GyroDefinitions {
+namespace gyrodefs {
 
 enum GyroPoolIds: lp_id_t {
     ANGULAR_VELOCITY_X,
@@ -59,43 +59,64 @@ static constexpr DeviceCommandId_t WRITE_POWER = POWER_REGISTER;
 static constexpr DeviceCommandId_t WRITE_RANGE = RANGE_REGISTER;
 static constexpr DeviceCommandId_t READ_PMU = PMU_REGISTER | GYRO_READ_MASK;
 
-static constexpr uint32_t GYRO_DATA_SET_ID = GyroDefinitions::GYRO_DATA;
-static constexpr uint32_t GYRO_AUX_SET_ID = GyroDefinitions::READ_CONFIG;
+static constexpr uint32_t GYRO_DATA_SET_ID = gyrodefs::GYRO_DATA;
+static constexpr uint32_t GYRO_AUX_SET_ID = gyrodefs::READ_CONFIG;
+
+}
 
 class GyroPrimaryDataset: public StaticLocalDataSet<3 * sizeof(float)> {
 public:
-
-    GyroPrimaryDataset(HasLocalDataPoolIF* hkOwner):
-        StaticLocalDataSet(hkOwner, GYRO_DATA_SET_ID) {}
-
+    /**
+     * Constructor for data users
+     * @param gyroId
+     */
     GyroPrimaryDataset(object_id_t gyroId):
-        StaticLocalDataSet(sid_t(gyroId, GYRO_DATA_SET_ID)) {}
+            StaticLocalDataSet(sid_t(gyroId, gyrodefs::GYRO_DATA_SET_ID)) {
+        setAllVariablesReadOnly();
+    }
 
     lp_var_t<float> angVelocityX = lp_var_t<float>(sid.objectId,
-            ANGULAR_VELOCITY_X, this);
+            gyrodefs::ANGULAR_VELOCITY_X, this);
     lp_var_t<float> angVelocityY = lp_var_t<float>(sid.objectId,
-            ANGULAR_VELOCITY_Y, this);
+            gyrodefs::ANGULAR_VELOCITY_Y, this);
     lp_var_t<float> angVelocityZ = lp_var_t<float>(sid.objectId,
-            ANGULAR_VELOCITY_Z, this);
+            gyrodefs::ANGULAR_VELOCITY_Z, this);
+private:
+
+    friend class GyroHandler;
+    /**
+     * Constructor for data creator
+     * @param hkOwner
+     */
+    GyroPrimaryDataset(HasLocalDataPoolIF* hkOwner):
+            StaticLocalDataSet(hkOwner, gyrodefs::GYRO_DATA_SET_ID) {}
 };
 
 class GyroAuxilliaryDataset: public StaticLocalDataSet<2 * sizeof(uint8_t)> {
 public:
-    GyroAuxilliaryDataset(HasLocalDataPoolIF* hkOwner):
-        StaticLocalDataSet(hkOwner, GYRO_AUX_SET_ID) {}
-
+    /**
+     * Constructor for data user.
+     * @param gyroId
+     */
     GyroAuxilliaryDataset(object_id_t gyroId):
-        StaticLocalDataSet(sid_t(gyroId, GYRO_AUX_SET_ID)) {}
+            StaticLocalDataSet(sid_t(gyroId, gyrodefs::GYRO_AUX_SET_ID)) {
+        setAllVariablesReadOnly();
+    }
 
     lp_var_t<uint8_t> gyroGeneralConfigReg42 = lp_var_t<uint8_t>(sid.objectId,
-            GENERAL_CONFIG_REG42, this);
+            gyrodefs::GENERAL_CONFIG_REG42, this);
     lp_var_t<uint8_t> gyroRangeConfigReg43 =  lp_var_t<uint8_t>(sid.objectId,
-            RANGE_CONFIG_REG43, this);
+            gyrodefs::RANGE_CONFIG_REG43, this);
+private:
+
+    friend class GyroHandler;
+    /**
+     * Constructor for data creator.
+     * @param hkOwner
+     */
+    GyroAuxilliaryDataset(HasLocalDataPoolIF* hkOwner):
+            StaticLocalDataSet(hkOwner, gyrodefs::GYRO_AUX_SET_ID) {}
 };
-
-
-}
-
 
 
 #endif /* MISSION_DEVICES_DEVICEPACKETS_GYROPACKETS_H_ */

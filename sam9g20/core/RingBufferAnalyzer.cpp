@@ -2,7 +2,7 @@
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/globalfunctions/DleEncoder.h>
-#include <fsfw/ipc/MutexHelper.h>
+#include <fsfw/ipc/MutexGuard.h>
 #include <fsfwconfig/OBSWConfig.h>
 
 #include <cstring>
@@ -45,7 +45,7 @@ ReturnValue_t RingBufferAnalyzer::checkForPackets(uint8_t* receptionBuffer,
 
 ReturnValue_t RingBufferAnalyzer::readRingBuffer() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
-    MutexHelper lock(ringBuffer->getMutexHandle(),
+    MutexGuard lock(ringBuffer->getMutexHandle(),
             MutexIF::TimeoutType::WAITING, config::RS232_MUTEX_TIMEOUT);
     size_t dataToRead = ringBuffer->getAvailableReadData();
     if(dataToRead == 0) {

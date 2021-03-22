@@ -60,6 +60,7 @@ ReturnValue_t AtmelTestTask::performOneShotAction() {
     //Stopwatch stopwatch;
     //performSDCardDemo();
     //printFilesTest();
+    //moveFileTest();
     //int32_t test = get_sram0_status_field();
     //TRACE_INFO("SRAM status field: %d\n\r", (int) test);
 
@@ -345,7 +346,7 @@ void AtmelTestTask::performFRAMTest() {
     uint8_t swVersion = 0;
     uint8_t swSubversion = 0;
     uint8_t swSubsubversion = 0;
-    int result = read_software_version(&swVersion, &swSubversion,
+    int result = fram_read_software_version(&swVersion, &swSubversion,
             &swSubsubversion);
     if(result == 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -499,6 +500,21 @@ void AtmelTestTask::printFilesTest() {
     stopwatch.start();
     SDCardHandler::printSdCard();
 
+}
+
+void AtmelTestTask::moveFileTest() {
+    /* Used to verify that f_move can't be used to overwrite existing files. */
+    Stopwatch stopwatch;
+    SDCardAccess access;
+    f_chdir("/");
+    // create 2 files
+    create_file(NULL, "F1", NULL, 0);
+    create_file(NULL, "F2", NULL, 0);
+
+    int result = f_move("F1", "F2");
+    /* Was 6 (F_ERR_DUPLICATED) */
+    if(result) {}
+    SDCardHandler::printSdCard();
 }
 
 // name-clash with HCC lib.

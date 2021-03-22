@@ -151,7 +151,13 @@ HAL_PATH = $(PRIVLIB_PATH)/hal
 ifeq ($(BL_STAGE), 1)
 STAGE_NAME = firststage
 else
+
+ifdef IOBC
+STAGE_NAME = default
+else
 STAGE_NAME = secondstage
+endif
+
 OS_APP = freeRTOS
 endif
 

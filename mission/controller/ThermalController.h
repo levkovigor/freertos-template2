@@ -24,7 +24,7 @@ private:
 
     ReturnValue_t initializeAfterTaskCreation() override;
 
-    void handleChangedDataset(sid_t sid, store_address_t storeId) override;
+    void handleChangedDataset(sid_t sid, store_address_t storeId, bool* clearMessage) override;
 
     ThermalCtrl::ThermalControllerTemperatureSet thermalControllerSet;
 };

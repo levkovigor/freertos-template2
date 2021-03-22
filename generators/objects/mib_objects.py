@@ -10,11 +10,11 @@ On Windows, Build Tools installation might be necessary
 """
 import re
 import datetime
-from generatore_core.utility.mib_csv_writer import CsvWriter
-from generatore_core.utility.mib_printer import PrettyPrinter
+from genmib.utility.mib_csv_writer import CsvWriter
+from genmib.utility.mib_printer import PrettyPrinter
 from utility.mib_file_management import copy_file
-from generatore_core.parserbase.mib_parser import FileParser
-from generatore_core.utility.mib_sql_writer import SqlWriter, SQL_DATABASE_NAME
+from genmib.parserbase.mib_parser import FileParser
+from genmib.utility.mib_sql_writer import SqlWriter, SQL_DATABASE_NAME
 
 DATE_TODAY = datetime.datetime.now()
 DATE_STRING_FULL = DATE_TODAY.strftime("%Y-%m-%d %H:%M:%S")

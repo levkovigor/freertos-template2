@@ -16,7 +16,7 @@ import re
 import os
 import shutil
 import pprint
-from generatore_core.utility.mib_csv_writer import CsvWriter
+from genmib.utility.mib_csv_writer import CsvWriter
 
 generateCpp = True
 generateCsv = True
