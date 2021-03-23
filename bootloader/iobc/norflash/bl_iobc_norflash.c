@@ -165,13 +165,13 @@ void perform_bootloader_check() {
     /* Bootloader size and CRC16 are written at the end of the reserved bootloader space. */
     memcpy(&bootloader_size, (const void *) NORFLASH_BL_SIZE_START_READ, 4);
 
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 2
     TRACE_INFO("Written bootloader size: %d bytes.\n\r", bootloader_size);
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
     memcpy(&written_crc16, (const void*) NORFLASH_BL_CRC16_START_READ, sizeof(written_crc16));
 
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 2
     TRACE_INFO("Written CRC16: 0x%4x.\n\r", written_crc16);
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 

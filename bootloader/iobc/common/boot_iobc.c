@@ -80,15 +80,19 @@ int perform_iobc_copy_operation_to_sdram() {
     if(boot_select == BOOT_NOR_FLASH) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         if(use_hamming) {
-            TRACE_INFO("Booting from NOR-Flash without hamming code check\n\r");
+            TRACE_INFO("Booting from NOR-Flash with hamming code check\n\r");
         }
         else {
-            TRACE_INFO("Booting from NOR-Flash with hamming code check\n\r");
+            TRACE_INFO("Booting from NOR-Flash without hamming code check\n\r");
         }
 #endif
         result = copy_norflash_binary_to_sdram(PRIMARY_IMAGE_RESERVED_SIZE, use_hamming);
 
         if(result != 0) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+            TRACE_WARNING("Copy operation or hamming code check on NOR-Flash image failed. "
+                    "Restarting\n\r");
+#endif
             /* Increment local reboot counter */
             result = fram_increment_img_reboot_counter(FLASH_SLOT, NULL);
             /* Restart */
@@ -99,6 +103,10 @@ int perform_iobc_copy_operation_to_sdram() {
         result = copy_sdcard_binary_to_sdram(boot_select, use_hamming);
 
         if(result != 0) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+            TRACE_WARNING("Copy operation or hamming code check on SD card image failed. "
+                    "Restarting\n\r");
+#endif
             if(boot_select == BOOT_SD_CARD_0_SLOT_0) {
                 result = fram_increment_img_reboot_counter(SDC_0_SL_0, NULL);
             }
@@ -117,12 +125,7 @@ int perform_iobc_copy_operation_to_sdram() {
     }
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-    if(result == 0) {
-        TRACE_INFO("Copied successfully!\n\r");
-    }
-    else {
-        TRACE_ERROR("Copy failed with code %d!\n\r", result);
-    }
+    TRACE_INFO("Copied successfully!\n\r");
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
     return result;
