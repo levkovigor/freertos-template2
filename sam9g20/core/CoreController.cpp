@@ -103,6 +103,10 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         return HasReturnvaluesIF::RETURN_OK;
     }
     case(RESET_OBC): {
+#if OBSW_VERBOSE_LEVEL >= 1
+        sif::printInfo("Restarting with a software restart..\n");
+#endif
+
 #ifdef AT91SAM9G20_EK
         restart();
 #else
@@ -112,6 +116,10 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         return HasReturnvaluesIF::RETURN_OK;
     }
     case(POWERCYCLE_OBC): {
+#if OBSW_VERBOSE_LEVEL >= 1
+        sif::printInfo("Restarting with a supervisor power cycle..\n");
+#endif
+
 #ifdef AT91SAM9G20_EK
         restart();
 #else
