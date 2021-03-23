@@ -28,7 +28,7 @@ ReturnValue_t SDCardHandler::handleCreateFileCommand(CommandMessage *message) {
     }
 
 #if SDC_FILE_WRITE_WIRETAPPING == 1
-    sif::printInfo("SDCardHandler::handleCreateFileCommand | Create file %s/%s\n.",
+    sif::printInfo("SDCardHandler::handleCreateFileCommand | Create file %s/%s\n",
             command.getRepositoryPath(), command.getFilename()
     );
 #endif
