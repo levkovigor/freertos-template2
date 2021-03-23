@@ -89,43 +89,53 @@ int perform_iobc_copy_operation_to_sdram() {
         result = copy_norflash_binary_to_sdram(PRIMARY_IMAGE_RESERVED_SIZE, use_hamming);
 
         if(result != 0) {
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
-            TRACE_WARNING("Copy operation or hamming code check on NOR-Flash image failed. "
-                    "Restarting\n\r");
-#endif
+            uint16_t curr_reboot_counter = 0;
             /* Increment local reboot counter */
-            result = fram_increment_img_reboot_counter(FLASH_SLOT, NULL);
+            result = fram_increment_img_reboot_counter(FLASH_SLOT, &curr_reboot_counter);
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+            TRACE_WARNING("Copy operation or hamming code check on NOR-Flash image failed\n\r");
+            TRACE_WARNING("Restarting, current reboot counter %d\n\r", curr_reboot_counter);
+#endif
             /* Restart */
             restart();
         }
     }
     else {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        if(use_hamming) {
+            TRACE_INFO("Booting from SD card with hamming code check\n\r");
+        }
+        else {
+            TRACE_INFO("Booting from SD card without hamming code check\n\r");
+        }
+#endif
         result = copy_sdcard_binary_to_sdram(boot_select, use_hamming);
 
         if(result != 0) {
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
-            TRACE_WARNING("Copy operation or hamming code check on SD card image failed. "
-                    "Restarting\n\r");
-#endif
+            uint16_t curr_reboot_counter = 0;
             if(boot_select == BOOT_SD_CARD_0_SLOT_0) {
-                result = fram_increment_img_reboot_counter(SDC_0_SL_0, NULL);
+                result = fram_increment_img_reboot_counter(SDC_0_SL_0, &curr_reboot_counter);
             }
             else if(boot_select == BOOT_SD_CARD_0_SLOT_1) {
-                result = fram_increment_img_reboot_counter(SDC_0_SL_1, NULL);
+                result = fram_increment_img_reboot_counter(SDC_0_SL_1, &curr_reboot_counter);
             }
             else if(boot_select == BOOT_SD_CARD_1_SLOT_0) {
-                result = fram_increment_img_reboot_counter(SDC_1_SL_0, NULL);
+                result = fram_increment_img_reboot_counter(SDC_1_SL_0, &curr_reboot_counter);
             }
             else if(boot_select == BOOT_SD_CARD_1_SLOT_1) {
-                result = fram_increment_img_reboot_counter(SDC_1_SL_1, NULL);
+                result = fram_increment_img_reboot_counter(SDC_1_SL_1, &curr_reboot_counter);
             }
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+            TRACE_WARNING("Copy operation or hamming code check on SD card image failed\n\r");
+            TRACE_WARNING("Restarting, current reboot counter %d\n\r", curr_reboot_counter);
+#endif
             /* Restart */
             restart();
         }
     }
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-    TRACE_INFO("Copied successfully!\n\r");
+    TRACE_INFO("Copied successfully\n\r");
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
     return result;

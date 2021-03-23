@@ -89,7 +89,7 @@ int copy_with_hcc_lib(BootSelect boot_select) {
     }
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-    TRACE_INFO("Setting up HCC filesystem.\n\r");
+    TRACE_INFO("Setting up HCC filesystem\n\r");
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
     int result = open_filesystem();
@@ -109,7 +109,7 @@ int copy_with_hcc_lib(BootSelect boot_select) {
     result = change_directory(SW_REPOSITORY, true);
     if(result != F_NO_ERROR) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-        TRACE_WARNING("Target SW repository \"%s\" does not exist.\n\r", SW_REPOSITORY);
+        TRACE_WARNING("Target SW repository \"%s\" does not exist\n\r", SW_REPOSITORY);
 #endif
         /* not good, should not happen. */
         close_filesystem(true, true, current_volume);
@@ -120,7 +120,7 @@ int copy_with_hcc_lib(BootSelect boot_select) {
     result = f_getlasterror();
     if (result != F_NO_ERROR) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-        TRACE_WARNING("f_open of file \"%s\" failed with code %d.\n\r",
+        TRACE_WARNING("f_open of file \"%s\" failed with code %d\n\r",
                 slot_name, result);
 #endif
         /* opening file failed! */
@@ -140,7 +140,7 @@ int copy_with_hcc_lib(BootSelect boot_select) {
     }
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-    TRACE_INFO("Copying image \"%s\" from SD-Card %u to SDRAM\n\r", SW_SLOT_1_NAME,
+    TRACE_INFO("Copying image \"%s\" from SD card %u to SDRAM\n\r", SW_SLOT_1_NAME,
             (unsigned int) current_volume);
 #endif
 
