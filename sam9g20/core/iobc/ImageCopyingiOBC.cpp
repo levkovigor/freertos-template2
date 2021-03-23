@@ -126,6 +126,29 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
             return HasReturnvaluesIF::RETURN_FAILED;
         }
         F_FILE* file = nullptr;
+        SlotType framSlot = SDC_0_SL_0;
+        if(sourceSlot == image::ImageSlot::FLASH) {
+            framSlot = FLASH_SLOT;
+        }
+        else {
+            if(access.getActiveVolume() == SD_CARD_0) {
+                if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
+                    framSlot = SDC_0_SL_0;
+                }
+                else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
+                    framSlot = SDC_0_SL_1;
+                }
+            }
+            else if(access.getActiveVolume() == SD_CARD_1) {
+                if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
+                    framSlot = SDC_1_SL_0;
+                }
+                else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
+                    framSlot = SDC_1_SL_1;
+                }
+            }
+        }
+
         ReturnValue_t result = prepareGenericFileInformation(access.getActiveVolume(), &file);
         if(result != HasReturnvaluesIF::RETURN_OK) {
             f_close(file);
@@ -140,7 +163,8 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
                 return HasReturnvaluesIF::RETURN_FAILED;
             }
             /* We write the hamming code size to the designated slot */
-            int retval = fram_write_ham_size(FLASH_SLOT, currentFileSize);
+
+            int retval = fram_write_ham_size(framSlot, currentFileSize);
             if(retval != 0) {
                 /* Problems writing to FRAM */
                 return image::FRAM_ISSUE;
@@ -161,17 +185,6 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
                 sif::printWarning("ImageCopyingEngine::copyImgHammingSdcToFram: "
                         "Not all bytes read!");
                 return HasReturnvaluesIF::RETURN_FAILED;
-            }
-
-            SlotType framSlot = SDC_0_SL_0;
-            if(sourceSlot == image::ImageSlot::FLASH) {
-                framSlot = FLASH_SLOT;
-            }
-            else if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
-                framSlot = SDC_0_SL_0;
-            }
-            else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
-                framSlot = SDC_0_SL_1;
             }
 
             int retval = fram_write_ham_code(framSlot, imgBuffer->data(), currentByteIdx, sizeRead);
@@ -198,10 +211,20 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
             message = "NOR-Flash hamming code";
         }
         else if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
-            message = "SD Card slot 0 hamming code";
+            if(access.getAccessResult() == SD_CARD_0) {
+                message = "SD card 0 slot 0 hamming code";
+            }
+            else {
+                message = "SD card 1 slot 0 hamming code";
+            }
         }
         else if(sourceSlot == image::ImageSlot::SDC_SLOT_1) {
-            message = "SD Card slot 1 hamming code";
+            if(access.getAccessResult() == SD_CARD_0) {
+                message = "SD card 0 slot 1 hamming code";
+            }
+            else {
+                message = "SD card 1 slot 1 hamming code";
+            }
         }
         else if(sourceSlot == image::ImageSlot::BOOTLOADER_0) {
             message = "Bootloader 0 hamming code";

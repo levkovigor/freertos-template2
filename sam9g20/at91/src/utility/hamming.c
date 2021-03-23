@@ -35,6 +35,8 @@
 #include <at91/utility/hamming.h>
 #include <at91/utility/trace.h>
 
+#define HAMMING_LIB_DEBUG_MODE 1
+
 //------------------------------------------------------------------------------
 //         Internal function
 //------------------------------------------------------------------------------
@@ -195,8 +197,10 @@ static void Compute256(const unsigned char *data, unsigned char *code)
     code[1] = ~code[1];
     code[2] = ~code[2];
 
+#if HAMMING_LIB_DEBUG_MODE == 1
     TRACE_DEBUG("Computed code = %02X %02X %02X\n\r",
               code[0], code[1], code[2]);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -220,8 +224,10 @@ static unsigned char Verify256(
     correctionCode[1] = computedCode[1] ^ originalCode[1];
     correctionCode[2] = computedCode[2] ^ originalCode[2];
 
+#if HAMMING_LIB_DEBUG_MODE == 1
     TRACE_DEBUG("Correction code = %02X %02X %02X\n\r",
               correctionCode[0], correctionCode[1], correctionCode[2]);
+#endif
 
     // If all bytes are 0, there is no error
     if ((correctionCode[0] == 0)
@@ -282,7 +288,9 @@ void Hamming_Compute256x(
     unsigned int size,
     unsigned char *code)
 {
+#if HAMMING_LIB_DEBUG_MODE == 1
     TRACE_DEBUG("Hamming_Compute256x()\n\r");
+#endif
 
     while (size > 0) {
 

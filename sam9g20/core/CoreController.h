@@ -3,6 +3,8 @@
 
 #include <fsfw/controller/ExtendedControllerBase.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
+#include <sam9g20/common/CommonFRAM.h>
+#include <OBSWConfig.h>
 
 #ifdef ISIS_OBC_G20
 extern "C" {
@@ -99,11 +101,7 @@ public:
 	static constexpr ActionId_t ENABLE_LOCAL_HAMMING_CODE_CHECKS = 4;
 	static constexpr ActionId_t DISABLE_LOCAL_HAMMING_CODE_CHECKS = 5;
 
-	/**
-	 * Dump the whole bootloader block which also contains information about the
-	 * hamming code checks
-	 */
-	static constexpr ActionId_t DUMP_BOOTLOADER_BLOCK = 6;
+	static constexpr ActionId_t RESET_REBOOT_COUNTER = 6;
 
 	static constexpr ActionId_t RESET_OBC = 10;
 	static constexpr ActionId_t POWERCYCLE_OBC = 11;
@@ -112,6 +110,11 @@ public:
 	static constexpr ActionId_t CLEAR_WHOLE_STORE = 13;
 	static constexpr ActionId_t GET_FILL_COUNT = 14;
 
+    /**
+     * Dump the whole bootloader block which also contains information about the
+     * hamming code checks
+     */
+    static constexpr ActionId_t DUMP_BOOTLOADER_BLOCK = 28;
 	static constexpr ActionId_t PRINT_FRAM_BL_BLOCK = 29;
     static constexpr ActionId_t PRINT_FRAM_CRIT_BLOCK = 30;
     /* Careful with this. Might be deactivated at a later project stage so it can not
@@ -165,6 +168,11 @@ private:
             MessageQueueId_t commandedBy, const uint8_t *data, size_t size);
     ReturnValue_t manipulateLocalHammingFlag(bool set, ActionId_t actionId,
             MessageQueueId_t commandedBy, const uint8_t *data, size_t size);
+    ReturnValue_t resetRebootCounter(ActionId_t actionId, MessageQueueId_t commandedBy,
+            const uint8_t *data, size_t size);
+#if OBSW_VERBOSE_LEVEL >= 1
+    void determinePrintoutType(SlotType slotType, char* printoutType, size_t printBuffLen);
+#endif
 };
 
 

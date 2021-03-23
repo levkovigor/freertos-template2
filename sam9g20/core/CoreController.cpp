@@ -1,6 +1,5 @@
 #include "CoreController.h"
 #include "SystemStateTask.h"
-#include <OBSWConfig.h>
 #include <OBSWVersion.h>
 #include <objects/systemObjectList.h>
 #include <FreeRTOSConfig.h>
@@ -147,6 +146,9 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         }
         return getFillCountCommand(static_cast<Stores>(data[STORE_TYPE]), commandedBy, actionId);
     }
+    case(RESET_REBOOT_COUNTER): {
+        return resetRebootCounter(actionId, commandedBy, data, size);
+    }
     case(ENABLE_GLOBAL_HAMMING_CODE_CHECKS): {
         return manipulateGlobalHammingFlag(true, actionId, commandedBy, data, size);
     }
@@ -219,6 +221,11 @@ ReturnValue_t CoreController::initializeAfterTaskCreation() {
 #endif
 
     result = initializeIsisTimerDrivers();
+//    size_t bin_size = 0;
+//    result = fram_read_binary_size(FLASH_SLOT, &bin_size);
+//    BootloaderGroup blBlock;
+//    result = fram_read_bootloader_block(&blBlock);
+//    uint16_t test = blBlock.global_hamming_flag;
     return result;
 }
 
@@ -555,11 +562,33 @@ void CoreController::update64bit10kHzCounter() {
 
 ReturnValue_t CoreController::manipulateGlobalHammingFlag(bool set, ActionId_t actionId,
         MessageQueueId_t commandedBy, const uint8_t *data, size_t size) {
-    int retval = fram_set_ham_check_flag();
-    if(retval != 0) {
-        actionHelper.finish(false, commandedBy, actionId, retval);
-        return HasReturnvaluesIF::RETURN_FAILED;
+    int retval = 0;
+    if(set) {
+        retval = fram_set_ham_check_flag();
+        if(retval != 0) {
+            actionHelper.finish(false, commandedBy, actionId, retval);
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
     }
+    else {
+        retval = fram_clear_ham_check_flag();
+        if(retval != 0) {
+            actionHelper.finish(false, commandedBy, actionId, retval);
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+    }
+
+#if OBSW_VERBOSE_LEVEL >= 1
+    const char* printout = nullptr;
+    if(set) {
+        printout = "Set";
+    }
+    else {
+        printout = "Cleared";
+    }
+    sif::printInfo("CoreController: %s global hamming code flag\n", printout);
+#endif
+    actionHelper.finish(true, commandedBy, actionId);
     return HasActionsIF::EXECUTION_FINISHED;
 }
 
@@ -568,13 +597,9 @@ ReturnValue_t CoreController::manipulateLocalHammingFlag(bool set, ActionId_t ac
     bool dataValid = true;
     if(size < 1) {
         dataValid = false;
-        actionHelper.finish(false, commandedBy, actionId, HasActionsIF::INVALID_PARAMETERS);
-        return HasActionsIF::INVALID_PARAMETERS;
     }
-    else {
-        if(data[0] > 4) {
-            dataValid = false;
-        }
+    else if(data[0] > 4) {
+        dataValid = false;
     }
 
     if(not dataValid) {
@@ -594,5 +619,72 @@ ReturnValue_t CoreController::manipulateLocalHammingFlag(bool set, ActionId_t ac
         actionHelper.finish(false, commandedBy, actionId, HasReturnvaluesIF::RETURN_FAILED);
         return HasReturnvaluesIF::RETURN_FAILED;
     }
+#if OBSW_VERBOSE_LEVEL >= 1
+    const char* printoutState = nullptr;
+    if(set) {
+        printoutState = "Set";
+    }
+    else {
+        printoutState = "Cleared";
+    }
+    char printoutType[20];
+    determinePrintoutType(slotType, printoutType, sizeof(printoutType));
+    sif::printInfo("CoreController: %s local hamming code flag for %s\n", printoutState,
+            printoutType);
+#endif
     return HasActionsIF::EXECUTION_FINISHED;
 }
+
+ReturnValue_t CoreController::resetRebootCounter(ActionId_t actionId, MessageQueueId_t commandedBy,
+        const uint8_t *data, size_t size) {
+    bool dataValid = true;
+    if(size < 1) {
+        dataValid = false;
+    }
+    else if(data[0] > 4) {
+        dataValid = false;
+    }
+
+    if(not dataValid) {
+        actionHelper.finish(false, commandedBy, actionId, HasActionsIF::INVALID_PARAMETERS);
+        return HasActionsIF::INVALID_PARAMETERS;
+    }
+
+    SlotType slotType = static_cast<SlotType>(data[0]);
+    int retval = fram_reset_img_reboot_counter(slotType);
+    if(retval != 0) {
+        actionHelper.finish(false, commandedBy, actionId, HasReturnvaluesIF::RETURN_FAILED);
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+#if OBSW_VERBOSE_LEVEL >= 1
+    char printoutType[20];
+    determinePrintoutType(slotType, printoutType, sizeof(printoutType));
+    sif::printInfo("CoreController: Resetting boot counter for %s\n", printoutType);
+#endif
+    actionHelper.finish(true, commandedBy, actionId, HasReturnvaluesIF::RETURN_OK);
+    return HasActionsIF::EXECUTION_FINISHED;
+}
+
+#if OBSW_VERBOSE_LEVEL >= 1
+void CoreController::determinePrintoutType(SlotType slotType, char *printoutType,
+        size_t printBuffLen) {
+    if(slotType == FLASH_SLOT) {
+        snprintf(printoutType, printBuffLen, "NOR-Flash");
+    }
+    else if(slotType == SlotType::SDC_0_SL_0) {
+        snprintf(printoutType, printBuffLen, "SD card 0 slot 0");
+    }
+    else if(slotType == SlotType::SDC_0_SL_1) {
+        snprintf(printoutType, printBuffLen, "SD card 0 slot 1");
+    }
+    else if(slotType == SlotType::SDC_1_SL_0) {
+        snprintf(printoutType, printBuffLen, "SD card 1 slot 0");
+    }
+    else if(slotType == SlotType::SDC_1_SL_1) {
+        snprintf(printoutType, printBuffLen, "SD card 1 slot 1");
+    }
+    else {
+        snprintf(printoutType, printBuffLen, "unknown slot");
+    }
+}
+#endif

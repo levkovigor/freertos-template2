@@ -140,6 +140,10 @@ ReturnValue_t SDCHStateMachine::handleGenericCopyOperation() {
             f_close(writeFile);
             writeFile = f_open(fileName2.c_str(), "w");
         }
+#if OBSW_VERBOSE_LEVEL >= 1
+        sif::printInfo("Copying file %s/%s to %s/%s\n", path1.c_str(), fileName1.c_str(),
+                path2.c_str(), fileName2.c_str());
+#endif
     }
     else {
         /* Higher step counter so target file should already exist, open with append */
@@ -158,11 +162,11 @@ ReturnValue_t SDCHStateMachine::handleGenericCopyOperation() {
 
     while(currentByteIdx < currentFileSize) {
         size_t sizeToCopy = 0;
-        if (currentFileSize < fileBuffer.size()) {
-            sizeToCopy = currentFileSize;
+        if(currentFileSize - currentByteIdx > fileBuffer.size()) {
+            sizeToCopy = fileBuffer.size();
         }
         else {
-            sizeToCopy = fileBuffer.size();
+            sizeToCopy = currentFileSize - currentByteIdx;
         }
         long sizeReadOrWritten = f_read(fileBuffer.data(), sizeof(uint8_t), sizeToCopy, readFile);
         if(sizeReadOrWritten != static_cast<long>(sizeToCopy)) {
@@ -185,6 +189,9 @@ ReturnValue_t SDCHStateMachine::handleGenericCopyOperation() {
         }
     }
 
+#if OBSW_VERBOSE_LEVEL >= 1
+    sif::printInfo("Copy operation completed\n");
+#endif
     this->resetAndSetToIdle();
     owner->sendCompletionMessage(true, currentRecipient);
     return sdchandler::OPERATION_FINISHED;
