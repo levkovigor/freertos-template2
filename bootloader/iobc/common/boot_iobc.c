@@ -78,12 +78,12 @@ int perform_iobc_copy_operation_to_sdram() {
     }
 
     if(boot_select == BOOT_NOR_FLASH) {
-#ifdef BOOTLOADER_VERBOSE_LEVEL >= 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
         if(use_hamming) {
-            TRACE_INFO("Booting from NOR-Flash without hamming code check\n");
+            TRACE_INFO("Booting from NOR-Flash without hamming code check\n\r");
         }
         else {
-            TRACE_INFO("Booting from NOR-Flash with hamming code check\n");
+            TRACE_INFO("Booting from NOR-Flash with hamming code check\n\r");
         }
 #endif
         result = copy_norflash_binary_to_sdram(PRIMARY_IMAGE_RESERVED_SIZE, use_hamming);
