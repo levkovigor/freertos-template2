@@ -235,6 +235,7 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
         sif::printInfo("Copied %s successfully to storage (FRAM)\n", message);
 #endif
         reset();
+        return image::OPERATION_FINISHED;
     }
     return HasReturnvaluesIF::RETURN_OK;
 
