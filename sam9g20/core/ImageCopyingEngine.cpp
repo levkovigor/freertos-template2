@@ -299,6 +299,7 @@ ReturnValue_t ImageCopyingEngine::copySdcImgToSdc() {
 	if(targetFile==nullptr){
 	    return HasReturnvaluesIF::RETURN_FAILED;
 	}
+	HCCFileGuard fg(&targetFile);
 
 	while(true){
 		if(currentFileSize-currentByteIdx>imgBuffer->size()){

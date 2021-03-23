@@ -28,11 +28,11 @@ Media medias[MAX_LUNS];
  * @param slotType
  * @return
  */
-int handle_hamming_code_check(SlotType slotType);
+extern int handle_hamming_code_check(SlotType slotType, size_t image_size);
 int handle_hamming_code_result(int result);
 
 #if USE_TINY_FS == 0
-int copy_with_hcc_lib(BootSelect boot_select);
+int copy_with_hcc_lib(BootSelect boot_select, size_t* image_size);
 #else
 int copy_with_tinyfatfs_lib(BootSelect boot_select);
 #endif
@@ -43,27 +43,28 @@ int copy_sdcard_binary_to_sdram(BootSelect boot_select, bool use_hamming) {
         return -1;
     }
 #if USE_TINY_FS == 0
-    int result = copy_with_hcc_lib(boot_select);
+    size_t image_size = 0;
+    int result = copy_with_hcc_lib(boot_select, &image_size);
     if(result != 0) {
         /* Copy operation failed, we can not jump */
         return result;
     }
 
     if(!use_hamming) {
-        return 0;
+        return result;
     }
 
     if(boot_select == BOOT_SD_CARD_0_SLOT_0) {
-        result = handle_hamming_code_check(SDC_0_SL_0);
+        result = handle_hamming_code_check(SDC_0_SL_0, image_size);
     }
     else if(boot_select == BOOT_SD_CARD_0_SLOT_1) {
-        result = handle_hamming_code_check(SDC_0_SL_1);
+        result = handle_hamming_code_check(SDC_0_SL_1, image_size);
     }
     else if(boot_select == BOOT_SD_CARD_1_SLOT_0) {
-        result = handle_hamming_code_check(SDC_1_SL_0);
+        result = handle_hamming_code_check(SDC_1_SL_0, image_size);
     }
     else if(boot_select == BOOT_SD_CARD_1_SLOT_1) {
-        result = handle_hamming_code_check(SDC_1_SL_1);
+        result = handle_hamming_code_check(SDC_1_SL_1, image_size);
     }
 
     return handle_hamming_code_result(result);
@@ -74,7 +75,7 @@ int copy_sdcard_binary_to_sdram(BootSelect boot_select, bool use_hamming) {
 
 
 #if USE_TINY_FS == 0
-int copy_with_hcc_lib(BootSelect boot_select) {
+int copy_with_hcc_lib(BootSelect boot_select, size_t* image_size) {
     VolumeId current_volume = SD_CARD_0;
     if (boot_select == BOOT_SD_CARD_1_SLOT_1 || boot_select == BOOT_SD_CARD_1_SLOT_0) {
         current_volume = SD_CARD_1;
@@ -116,19 +117,18 @@ int copy_with_hcc_lib(BootSelect boot_select) {
         return -1;
     }
 
-    F_FILE* file = f_open(SW_SLOT_1_NAME, "r");
+    F_FILE* file = f_open(slot_name, "r");
     result = f_getlasterror();
     if (result != F_NO_ERROR) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-        TRACE_WARNING("f_open of file \"%s\" failed with code %d\n\r",
-                slot_name, result);
+        TRACE_WARNING("f_open of file \"%s\" failed with code %d\n\r", slot_name, result);
 #endif
         /* opening file failed! */
         close_filesystem(true, true, current_volume);
         return -1;
     }
 
-    size_t filelength = f_filelength(slot_name);
+    ssize_t filelength = f_filelength(slot_name);
     if(filelength <= 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_ERROR("Copying image \"%s\" from SD-Card %u: File does not exist \n\r",
@@ -138,9 +138,12 @@ int copy_with_hcc_lib(BootSelect boot_select) {
         close_filesystem(true, true, current_volume);
         return -1;
     }
+    if(image_size != NULL) {
+        *image_size = filelength;
+    }
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-    TRACE_INFO("Copying image \"%s\" from SD card %u to SDRAM\n\r", SW_SLOT_1_NAME,
+    TRACE_INFO("Copying image \"%s\" from SD card %u to SDRAM\n\r", slot_name,
             (unsigned int) current_volume);
 #endif
 

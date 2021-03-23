@@ -24,11 +24,11 @@
 
 /* Forward declarations */
 int perform_iobc_copy_operation_to_sdram();
-int handle_hamming_code_check(SlotType slotType);
+int handle_hamming_code_check(SlotType slotType, size_t image_size);
 int handle_hamming_code_result(int result);
 int increment_sdc_loc_reboot_counter(BootSelect boot_select, uint16_t* curr_reboot_counter);
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
-BootSelect determine_boot_select();
+BootSelect determine_boot_select(bool* use_hamming);
 
 /**
  * This is the core function of the bootloader which handles the copy operation,
@@ -85,7 +85,7 @@ int perform_iobc_copy_operation_to_sdram() {
     if(boot_select == BOOT_NOR_FLASH) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         if(use_hamming) {
-            TRACE_INFO("Booting from NOR-Flash with hamming code check\n\r");
+            TRACE_INFO("Booting from NOR-Flash, global hamming code checks enabled\n\r");
         }
         else {
             TRACE_INFO("Booting from NOR-Flash without hamming code check\n\r");
@@ -110,7 +110,7 @@ int perform_iobc_copy_operation_to_sdram() {
     else {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         if(use_hamming) {
-            TRACE_INFO("Booting from SD card with hamming code check\n\r");
+            TRACE_INFO("Booting from SD card, global hamming code checks enabled\n\r");
         }
         else {
             TRACE_INFO("Booting from SD card without hamming code check\n\r");
@@ -277,8 +277,23 @@ int copy_norflash_binary_to_sdram(size_t copy_size, bool use_hamming)
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_INFO("Performing hamming code ECC check..\n\r");
 #endif
-        int check_result = handle_hamming_code_check(FLASH_SLOT);
-        result = handle_hamming_code_result(check_result);
+        size_t image_size = 0;
+        result = fram_read_binary_size(FLASH_SLOT, &image_size);
+        if(result != 0) {
+            /* Should really not happen, still jump to binary */
+            return 0;
+        }
+        else if (image_size == 0 || image_size == 0xffffffff) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+            TRACE_WARNING("Flash image size %d invalid\n\r", image_size);
+            /* Still jump to binary */
+            return 0;
+#endif
+        }
+        else {
+            int check_result = handle_hamming_code_check(FLASH_SLOT, image_size);
+            result = handle_hamming_code_result(check_result);
+        }
     }
     return result;
 }
@@ -309,7 +324,7 @@ int increment_sdc_loc_reboot_counter(BootSelect boot_select, uint16_t* curr_rebo
  *  - Hamming_ERROR_MULTIPLEBITS(3) on multibit error.
  *  - -1 for FRAM issues or other issues where we should still jump to the same binary
  */
-int handle_hamming_code_check(SlotType slotType) {
+int handle_hamming_code_check(SlotType slotType, size_t image_size) {
     /* Now we can perform the hamming code check here. */
     if(slotType == BOOTLOADER_0) {
         /* Invalid slot type */
@@ -322,13 +337,16 @@ int handle_hamming_code_check(SlotType slotType) {
     int result = fram_read_ham_size(slotType, &ham_size, &ham_flag);
     if(result != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-        TRACE_WARNING("Could not read hamming size and  flag, error code %d!\n\r", result);
+        TRACE_WARNING("Could not read hamming size and flag, error code %d!\n\r", result);
 #endif
         return -1;
     }
 
     /* Hamming check disabled */
     if(!ham_flag) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        TRACE_INFO("Hamming check disabled locally. Booting directly\n\r");
+#endif
         return -1;
     }
 
@@ -337,29 +355,12 @@ int handle_hamming_code_check(SlotType slotType) {
     uint8_t* hamming_code = malloc(IMAGES_HAMMING_RESERVED_SIZE);
 
     result = fram_read_ham_code(slotType, hamming_code,
-            IMAGES_HAMMING_RESERVED_SIZE,0, ham_size, &size_read);
+            IMAGES_HAMMING_RESERVED_SIZE, 0, ham_size, &size_read);
     if(result != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_WARNING("Could not read hamming code, error code %d!\n\r", result);
 #endif
         free(hamming_code);
-        return -1;
-    }
-
-    size_t image_size = 0;
-    result = fram_read_binary_size(FLASH_SLOT, &image_size);
-    if(result != 0) {
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
-        TRACE_WARNING("Could not read image size, error code %d!\n\r", result);
-#endif
-        free(hamming_code);
-        return -1;
-    }
-
-    if(image_size == 0 || image_size == 0xffffffff) {
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
-        TRACE_WARNING("Flash image size %d invalid\n\r", image_size);
-#endif
         return -1;
     }
 
