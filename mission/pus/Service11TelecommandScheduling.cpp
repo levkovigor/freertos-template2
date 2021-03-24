@@ -87,69 +87,35 @@ ReturnValue_t Service11TelecommandScheduling::initialize() {
 
 ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
 
-    /*
-    // storage for the raw data to be received
-    const uint8_t* pRawData = nullptr;  // "(non-const) pointer to const unsigned 8-bit int"
-
-    // get serialized data packet
-    pRawData = this->currentPacket.getApplicationData();
-    if (pRawData == nullptr) {
-        return RETURN_FAILED;
-    }
-
-    size_t appDataSize = this->currentPacket.getApplicationDataSize();
-    */
-
-
-    //DEBUG
-    //sif::printInfo("currentPacket size: %d\n", this->currentPacket.getApplicationDataSize());
-
-
+    // Get de-serialized Timestamp
     uint32_t deserializedTimestamp = 0;
-
     auto ret = GetDeserializedTimestamp(deserializedTimestamp);
     if (ret != RETURN_OK){
         return ret;
     }
 
+    // DEBUG
     sif::printInfo("Deserialized Timestamp: %d", deserializedTimestamp);
 
-    /*
-    // for better understanding:
-    // pRawData: raw data buffer to be de-serialized
-    // size: remaining size of buffer to de-serialize. Is decreased by function (until 0 I assume)
-    // I assume: Function de-serializes byte-wise until remaining size is 0
-    ReturnValue_t ret = SerializeAdapter::deSerialize<uint32_t>(&deserializedTimestamp,
-            &pRawData, &appDataSize, SerializeIF::Endianness::BIG);
-    if (ret != RETURN_OK){
-        return ret;
-    }
 
-    // deserializedTimestamp should now be the correct UNIX timestamp in sec,
-    // without any further bit-shifting etc.
-     *
-     */
-
-
-    // get store address
+    // Get store address
     store_address_t addr = this->currentPacket.getStoreAddress();
     if (addr.raw == storeId::INVALID_STORE_ADDRESS) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
+    // Insert
     TelecommandStruct tc(deserializedTimestamp, addr);
     auto it = telecommandMap.insert(std::pair<uint32_t, TelecommandStruct>(deserializedTimestamp, tc));
     if (it == telecommandMap.end()){
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
-
-
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 
-ReturnValue_t Service11TelecommandScheduling::handleRequest_DeleteActivity(){
+ReturnValue_t Service11TelecommandScheduling::handleRequest_DeleteActivity() {
 
     return HasReturnvaluesIF::RETURN_OK;
 }
