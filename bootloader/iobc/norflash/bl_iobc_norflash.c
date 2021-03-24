@@ -44,6 +44,10 @@ void handler_task(void * args);
 static TaskHandle_t handler_task_handle_glob = NULL;
 static const uint32_t WATCHDOG_KICK_INTERVAL_MS = 15;
 
+#else
+
+void simple_bootloader();
+
 #endif
 
 void perform_bootloader_check();
@@ -72,7 +76,7 @@ int boot_iobc_from_norflash() {
         TRACE_ERROR("Starting iOBC Watchdog Feed Task failed!\r\n");
 #endif
     }
-#endif
+#endif /* USE_FREERTOS == 1 */
 
     //-------------------------------------------------------------------------
     // Enable I-Cache
@@ -91,16 +95,8 @@ int boot_iobc_from_norflash() {
     xTaskCreate(init_task, "INIT_TASK", 1024, handler_task_handle_glob, 5, NULL);
     vTaskStartScheduler();
 #else
-    /* We don't need these */
-    // initialize_all_iobc_peripherals();
-    int result = copy_norflash_binary_to_sdram(PRIMARY_IMAGE_RESERVED_SIZE, false);
-    if(result != 0) {
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
-        TRACE_WARNING("Copy operation error\n\r");
-#endif
-    }
-    jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
-#endif
+    simple_bootloader();
+#endif /* !USE_FREERTOS == 1 */
 
     /* This should never be reached. */
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
@@ -157,7 +153,25 @@ void handler_task(void * args) {
     perform_bootloader_core_operation();
 }
 
-#endif /* USE_FREERTOS */
+#else /* USE_FREERTOS == 1 */
+
+void simple_bootloader() {
+    TRACE_INFO("SOURCE Bootloader\n\r");
+    /* We don't need these */
+    // initialize_all_iobc_peripherals();
+    int result = copy_norflash_binary_to_sdram(PRIMARY_IMAGE_RESERVED_SIZE, false);
+    if(result != 0) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        TRACE_WARNING("Copy operation error\n\r");
+#endif
+    }
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+    TRACE_INFO("Jumping to SDRAM application\n\r");
+#endif
+    jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
+}
+
+#endif /* !USE_FREERTOS == 1 */
 
 void print_bl_info() {
     TRACE_INFO_WP("\n\rStarting FreeRTOS task scheduler.\n\r");
