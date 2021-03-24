@@ -65,6 +65,13 @@ private:
     ReturnValue_t handleRequest_InsertActivity();
     ReturnValue_t handleRequest_DeleteActivity();
 
+
+    /**
+     * De-serializes currentPacket and retrieves its de-serialized timestamp
+     * @param timestamp     (out) de-serialized timestamp
+     */
+    ReturnValue_t GetDeserializedTimestamp(uint32_t& timestamp);
+
 };
 
 
