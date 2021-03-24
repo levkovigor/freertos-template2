@@ -13,6 +13,8 @@
 #define BL_VERSION      1
 #define BL_SUBVERSION   4
 
+#define USE_FREERTOS 0
+
 //! Can be used to enable or disable diagnostic printouts in the bootloader.
 #define BOOTLOADER_VERBOSE_LEVEL    1
 
