@@ -270,7 +270,6 @@ ReturnValue_t ImageCopyingEngine::readFile(uint8_t *buffer, size_t sizeToRead,
 }
 
 ReturnValue_t ImageCopyingEngine::copySdcImgToSdc() {
-
 	SDCardAccess sdCardAccess;
 	F_FILE *targetFile = nullptr;
 	F_FILE *sourceFile = nullptr;

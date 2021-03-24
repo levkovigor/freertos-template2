@@ -179,7 +179,7 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
             else {
                 sizeToRead = currentFileSize - currentByteIdx;
             }
-            size_t sizeRead = f_read(imgBuffer->data(), 1, sizeToRead, file);
+            size_t sizeRead = f_read(imgBuffer->data(), sizeof(uint8_t), sizeToRead, file);
             if(sizeRead != sizeToRead) {
                 /* Should not happen! */
                 sif::printWarning("ImageCopyingEngine::copyImgHammingSdcToFram: "
@@ -811,11 +811,9 @@ void ImageCopyingEngine::handleFinishPrintout() {
     }
     else {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::info << "Copying OBSW image to NOR-Flash finished with " << stepCounter <<
-                " steps!" << std::endl;
+        sif::info << "Copying finished with " << stepCounter << " cycles!" << std::endl;
 #else
-        sif::printInfo("Copying OBSW image to NOR-Flash finished with %hu steps!\n",
-                stepCounter);
+        sif::printInfo("Copying finished with %hu cycles!\n", stepCounter);
 #endif
     }
 #endif /* OBSW_VERBOSE_LEVEL >= 1 */
@@ -823,27 +821,31 @@ void ImageCopyingEngine::handleFinishPrintout() {
 
 void ImageCopyingEngine::handleInfoPrintout(VolumeId currentVolume) {
 #if OBSW_VERBOSE_LEVEL >= 1
-    char sourcePrint[20];
-    char targetPrint[20];
+    char sourcePrint[25];
+    char targetPrint[25];
     char typePrint[20];
     if(imageHandlerState == ImageHandlerStates::COPY_IMG_SDC_TO_FLASH) {
-        sprintf(typePrint, "primary image");
-        sprintf(targetPrint, "NOR-Flash");
-        sprintf(sourcePrint, "SD Card %u", static_cast<int>(currentVolume));
+        snprintf(typePrint, sizeof(typePrint), "primary image");
+        snprintf(targetPrint, sizeof(targetPrint), "NOR-Flash");
+        snprintf(sourcePrint, sizeof(sourcePrint), "SD Card %u", static_cast<int>(currentVolume));
     }
     else if(imageHandlerState == ImageHandlerStates::COPY_BL_SDC_TO_FLASH) {
         sprintf(typePrint, "bootloader");
         sprintf(targetPrint, "NOR-Flash");
-        sprintf(sourcePrint, "SD Card %u", static_cast<int>(currentVolume));
+        snprintf(sourcePrint, sizeof(sourcePrint), "SD Card %u", static_cast<int>(currentVolume));
     }
     else if(imageHandlerState == ImageHandlerStates::COPY_IMG_SDC_TO_SDC) {
         if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
-            sprintf(targetPrint, "SD Card %d Slot 1", static_cast<int>(currentVolume));
-            sprintf(sourcePrint, "SD Card %d Slot 0 ", static_cast<int>(currentVolume));
+            snprintf(targetPrint, sizeof(targetPrint), "SD Card %d Slot 1",
+                    static_cast<int>(currentVolume));
+            snprintf(sourcePrint, sizeof(sourcePrint), "SD Card %d Slot 0 ",
+                    static_cast<int>(currentVolume));
         }
         else {
-            sprintf(sourcePrint, "SD Card %d Slot 1", static_cast<int>(currentVolume));
-            sprintf(targetPrint, "SD Card %d Slot 0 ", static_cast<int>(currentVolume));
+            snprintf(sourcePrint, sizeof(sourcePrint), "SD Card %d Slot 1",
+                    static_cast<int>(currentVolume));
+            snprintf(targetPrint, sizeof(targetPrint), "SD Card %d Slot 0 ",
+                    static_cast<int>(currentVolume));
         }
         sprintf(typePrint, "primary image");
     }

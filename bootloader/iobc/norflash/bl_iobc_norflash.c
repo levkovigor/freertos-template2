@@ -78,10 +78,8 @@ int boot_iobc_from_norflash() {
     LED_glow(led_4);
 
     /* iOBC Bootloader */
-    xTaskCreate(handler_task, "HANDLER_TASK", 2048, NULL, 4,
-            &handler_task_handle_glob);
-    xTaskCreate(init_task, "INIT_TASK", 524, handler_task_handle_glob,
-            5, NULL);
+    xTaskCreate(handler_task, "HANDLER_TASK", 2048, NULL, 4, &handler_task_handle_glob);
+    xTaskCreate(init_task, "INIT_TASK", 524, handler_task_handle_glob, 5, NULL);
     vTaskStartScheduler();
 
     /* This should never be reached. */
