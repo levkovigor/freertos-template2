@@ -44,7 +44,7 @@ ReturnValue_t Service11TelecommandScheduling::performService() {
 
         if (it->first <= tCurrent){
             // release tc
-            TmTcMessage releaseMsg(it->second.storeId);
+            TmTcMessage releaseMsg(it->second.storeAddr);
             auto sendRet = this->requestQueue->sendMessage(recipientMsgQueueId, &releaseMsg, false);
 
             if (sendRet != HasReturnvaluesIF::RETURN_OK){
@@ -116,6 +116,29 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
 
 
 ReturnValue_t Service11TelecommandScheduling::handleRequest_DeleteActivity() {
+
+    // Strategy:
+    // get storeAddr + timestamp, if identical, then delete from map
+
+    // get timestamp
+    uint32_t deserializedTimestamp = 0;
+    auto ret = this->GetDeserializedTimestamp(deserializedTimestamp);
+    if (ret != RETURN_OK){
+        return ret;
+    }
+
+    // search for timestamp in map
+
+
+
+    // get store address
+    store_address_t addr = this->currentPacket.getStoreAddress();
+    if (addr.raw == storeId::INVALID_STORE_ADDRESS){
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+
+
 
     return HasReturnvaluesIF::RETURN_OK;
 }

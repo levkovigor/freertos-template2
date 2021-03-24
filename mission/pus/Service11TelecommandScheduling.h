@@ -36,14 +36,14 @@ public:
 private:
     struct TelecommandStruct {
         uint32_t seconds;
-        store_address_t storeId;
+        store_address_t storeAddr;
 
-        TelecommandStruct(uint32_t seconds, store_address_t storeId):
-        seconds(seconds), storeId(storeId) { }
+        TelecommandStruct(uint32_t seconds, store_address_t storeAddr):
+        seconds(seconds), storeAddr(storeAddr) { }
 
         void debugPrint(void) const {
         	sif::info << "TelecommandStruct{ seconds: " << this->seconds
-        			<< "  storeId (raw): " << this->storeId.raw << "}" << std::endl;
+        			<< "  storeAddr (raw): " << this->storeAddr.raw << "}" << std::endl;
         }
     };
 
