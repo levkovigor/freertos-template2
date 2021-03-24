@@ -15,6 +15,8 @@
 #include <at91/utility/trace.h>
 #include <at91/utility/hamming.h>
 #include <at91/utility/exithandler.h>
+#include <at91/peripherals/aic/aic.h>
+#include <at91/peripherals/pit/pit.h>
 
 #include <hal/Drivers/LED.h>
 #include <hal/Timing/RTT.h>
