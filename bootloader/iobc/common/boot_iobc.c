@@ -46,6 +46,10 @@ void perform_bootloader_core_operation() {
 #endif
 
     vTaskEndScheduler();
+    /* Disable all peripheral interrupts */
+    AIC_DisableIT(AT91C_ID_SYS);
+    PIT_DisableIT();
+    PIT_Disable();
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
 }
 
