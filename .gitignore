@@ -27,7 +27,7 @@ _dependencies
 !**/eclipse/.project
 !**/eclipse/.cproject
 !**/eclipse/*.launch
-
+.pydevproject
 
 # Python
 __pycache__
