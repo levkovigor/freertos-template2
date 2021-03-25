@@ -68,17 +68,39 @@ endif()
 # Analyse different OS and architecture/target options, determine BSP_PATH,
 # display information about compiler etc.
 set(COMMON_AT91_CONFIG_PATH "${CMAKE_SOURCE_DIR}/sam9g20/common/config")
+
 if(OS_FSFW MATCHES "freertos")
     set(FSFW_CONFIG_PATH "fsfwconfig")
     set(FSFW_ADDITIONAL_LINK_LIBS ${LIB_AT91_NAME})
-    set(FREERTOS_PORT_MACRO_PATH 
-        ${CMAKE_SOURCE_DIR}/freertos/include/freertos/portable/GCC/ARM9_AT91SAM9G20
+    
+    set(FREERTOS_PATH "${CMAKE_SOURCE_DIR}/freertos")
+    
+    set(FREERTOS_ADDITIONAL_INCLUDE_PATHS
+        "${FREERTOS_PATH}/include/freertos/portable/GCC/ARM9_AT91SAM9G20"
+        "${FREERTOS_PATH}/include/freertos/portable/GCC/MemMang"
+        "${CMAKE_SOURCE_DIR}/sam9g20/boardconfig"
+        "${CMAKE_SOURCE_DIR}/sam9g20/at91/include"
+        "${CMAKE_SOURCE_DIR}"
     )
+
+    set(FREERTOS_ADDITIONAL_SOURCES
+        "${FREERTOS_PATH}/src/portable/GCC/ARM9_AT91SAM9G20/port.c"
+        "${FREERTOS_PATH}/src/portable/MemMang/standardMemMang.c"
+        "${FREERTOS_PATH}/isisAdditions.c"
+    )
+    
+    set(FREERTOS_PORT_MACRO_PATH 
+        ${FREERTOS_PATH}/include/freertos/portable/GCC/ARM9_AT91SAM9G20
+    )
+    
+    set(FREERTOS_ADDITIONAL_LIBS ${LIB_AT91_NAME})
+    
     set(AT91_ADDITIONAL_INC_PATHS 
         "${CMAKE_SOURCE_DIR}/${FSFW_CONFIG_PATH}"
         "${COMMON_AT91_CONFIG_PATH}"
         "${FREERTOS_PORT_MACRO_PATH}"
     )
+
     set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/sam9g20/at91/linker-scripts/sdram.lds) 
 else()
     set(FSFW_CONFIG_PATH "${BSP_PATH}/fsfwconfig")
