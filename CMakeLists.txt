@@ -247,9 +247,15 @@ endif()
 
 if(OS_FSFW MATCHES "freertos")
     set(TARGET_STRING "Target board: ${BOARD_PRINTOUT}")
+    if(BOARD_IOBC)
+        set_target_properties(${TARGET_NAME} PROPERTIES OUTPUT_NAME "${TARGET_NAME}-iobc")
+    else()
+        set_target_properties(${TARGET_NAME} PROPERTIES OUTPUT_NAME "${TARGET_NAME}-at91")
+    endif()
 else()
     set(TARGET_STRING "Target BSP: Hosted")
 endif()
+
 
 string(CONCAT POST_BUILD_COMMENT
     "Build directory: ${CMAKE_BINARY_DIR}\n"
@@ -258,10 +264,12 @@ string(CONCAT POST_BUILD_COMMENT
     "${TARGET_STRING}"
 )
 
+get_target_property(OUTPUT_NAME_VAR ${TARGET_NAME} OUTPUT_NAME)
+
 add_custom_command(
    TARGET ${TARGET_NAME}
    POST_BUILD
-   COMMAND ${CMAKE_SIZE} ${TARGET_NAME}${FILE_SUFFIX}
+   COMMAND ${CMAKE_SIZE} ${OUTPUT_NAME_VAR}
    COMMENT ${POST_BUILD_COMMENT}
 )
 

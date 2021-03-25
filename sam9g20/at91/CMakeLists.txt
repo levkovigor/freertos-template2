@@ -13,7 +13,7 @@ endif()
 
 if(NOT AT91_MEMORY)
     message(WARNING "AT91_MEMORY type not set, setting sdram")
-    set(AT91_MEMORY sdram)
+    set(AT91_MEMORY sdram CACHE STRING "AT91 memory type")
 endif()
 
 set_property(CACHE AT91_MEMORY PROPERTY STRINGS sdram norflash sram)
