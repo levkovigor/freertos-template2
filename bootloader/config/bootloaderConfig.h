@@ -13,13 +13,15 @@
 #define BL_VERSION      1
 #define BL_SUBVERSION   4
 
-#define USE_FREERTOS                1
+//! Use FreeRTOS in bootloaders. Transfer of control can be problematic, crashes when first task is
+//! started, not recommended!
+#define USE_FREERTOS                0
 
 //! Can be used to enable or disable diagnostic printouts in the bootloader.
 #define BOOTLOADER_VERBOSE_LEVEL    1
 
 //! Use tiny FS instead of HCC FS.
-#define USE_TINY_FS 			    0
+#define USE_TINY_FS                 0
 
 static const uint32_t SDRAM_DESTINATION = 0x20000000;
 
