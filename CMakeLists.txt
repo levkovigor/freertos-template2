@@ -51,7 +51,8 @@ set(FSFW_PATH fsfw)
 set(MISSION_PATH mission)
 set(TEST_PATH test)
 set(ETL_PATH etl)
-set(FREERTOS_PATH freertos)
+
+set(LIB_FREERTOS_PATH freertos)
 
 if(OS_FSFW MATCHES "host")
     set(BSP_PATH bsp_hosted)
@@ -94,7 +95,6 @@ add_executable(${TARGET_NAME})
 
 # Add subdirectories
 add_subdirectory(${BSP_PATH})
-add_subdirectory(${FSFW_PATH})
 add_subdirectory(${MISSION_PATH})
 add_subdirectory(${TEST_PATH})
 if(ADD_ETL_LIB)
@@ -102,12 +102,20 @@ if(ADD_ETL_LIB)
 endif()
 
 if(OS_FSFW MATCHES "freertos")
-    add_subdirectory(${LIB_OS_NAME})
+    add_subdirectory(${LIB_FREERTOS_PATH})
 endif()
+
+add_subdirectory(${FSFW_PATH})
 
 ################################################################################
 # Post-Sources preparation
 ################################################################################
+
+if(OS_FSFW MATCHES "freertos")
+    target_link_libraries(${TARGET_NAME} PRIVATE
+        ${LIB_OS_NAME}
+    )
+endif()
 
 # Add libraries for all sources.
 target_link_libraries(${TARGET_NAME} PRIVATE
