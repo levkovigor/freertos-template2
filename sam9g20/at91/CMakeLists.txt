@@ -11,6 +11,13 @@ if(AT91_CREATE_GCC_SECTIONS)
     option(AT91_REMOVE_UNUSED_CODE "Remove unused code." ON)
 endif()
 
+if(NOT AT91_MEMORY)
+    message(WARNING "AT91_MEMORY type not set, setting sdram")
+    set(AT91_MEMORY sdram)
+endif()
+
+set_property(CACHE AT91_MEMORY PROPERTY STRINGS sdram norflash sram)
+
 set(LIB_AT91_NAME at91)
 add_library(${LIB_AT91_NAME})
 
@@ -54,6 +61,7 @@ endif()
 
 target_compile_definitions(${LIB_AT91_NAME} INTERFACE
     at91sam9g20
+    ${AT91_MEMORY}
 )
 
 target_compile_definitions(${LIB_AT91_NAME} PRIVATE
@@ -61,6 +69,7 @@ target_compile_definitions(${LIB_AT91_NAME} PRIVATE
     TRACE_LEVEL=${AT91_TRACE_LEVEL}
     DYN_TRACES=${DYN_TRACE_VALUE}
     USE_AT91LIB_STDIO_AND_STRING=${AT91_STDIO_VALUE}
+    ${AT91_MEMORY}
 )
 
 # Required include paths to compile AT91

@@ -25,6 +25,16 @@ endif()
 
 if(OS_FSFW MATCHES "freertos")
     set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SCRIPT_PATH}/Arm926ejsCrossCompile.cmake)
+    
+    option(BOARD_IOBC "iOBC target hardware instead of AT91SAM9G20-EK development board" OFF)
+endif()
+
+if(BOARD_IOBC)
+    add_definitions(-DIOBC)
+    set(BOARD_PRINTOUT "iOBC")
+else()
+    add_definitions(-DAT91SAM9G20_EK)
+    set(BOARD_PRINTOUT "AT91SAM9G20-EK")
 endif()
 
 # Perform steps like loading toolchain files where applicable.
@@ -187,8 +197,6 @@ if(OS_FSFW MATCHES "freertos")
     endif()
     
     target_compile_definitions(${TARGET_NAME} PRIVATE
-        sdram 
-        AT91SAM9G20_EK
         OP_BOOTSTRAP_on
         TRACE_LEVEL=5
         DYN_TRACES=1
@@ -237,8 +245,8 @@ if(NOT CMAKE_SIZE)
     endif()
 endif()
 
-if(TGT_BSP)
-    set(TARGET_STRING "Target BSP: ${TGT_BSP}")
+if(OS_FSFW MATCHES "freertos")
+    set(TARGET_STRING "Target board: ${BOARD_PRINTOUT}")
 else()
     set(TARGET_STRING "Target BSP: Hosted")
 endif()
