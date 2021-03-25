@@ -1,2 +1,5 @@
 add_subdirectory(peripherals)
 add_subdirectory(utility)
+add_subdirectory(startup)
+add_subdirectory(boards)
+add_subdirectory(memories)

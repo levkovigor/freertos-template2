@@ -27,7 +27,7 @@ extern "C" {
 
 #include <at91/utility/exithandler.h>
 #include <portwrapper.h>
-#include <utility/compile_time.h>
+#include <sam9g20/utility/compile_time.h>
 #include <cinttypes>
 
 

@@ -6,7 +6,7 @@
 #define SAM9G20_AT91_COMMON_COMMONIOBCCONFIG_H_
 
 #include "commonConfig.h"
-#include <hal/Storage/NORflash.h>
+#include <privlib/hal/include/hal/Storage/NORflash.h>
 #include <stdint.h>
 #include <stddef.h>
 

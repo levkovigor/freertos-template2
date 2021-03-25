@@ -1,4 +1,4 @@
-#include <boardtest/UART2TestTask.h>
+#include "UART2TestTask.h"
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 
 #include <fsfw/serviceinterface/ServiceInterface.h>

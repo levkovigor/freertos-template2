@@ -17,7 +17,7 @@
 #include <fsfwconfig/objects/systemObjectList.h>
 
 extern "C" {
-#include "UART.h"
+#include <hal/Drivers/UART.h>
 }
 
 #include <array>

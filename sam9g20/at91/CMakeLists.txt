@@ -25,6 +25,7 @@ target_include_directories(${LIB_AT91_NAME} INTERFACE
 
 target_include_directories(${LIB_AT91_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}
+    ${AT91_ADDITIONAL_INC_PATHS}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/at91
     ${CMAKE_CURRENT_SOURCE_DIR}/include/at91/boards/at91sam9g20-ek

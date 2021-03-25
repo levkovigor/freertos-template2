@@ -55,4 +55,8 @@ set(CMAKE_CXX_FLAGS
     CACHE STRING "C++ flags for the ARM926EJ-S processor with FreeRTOS"
 )
 
+set(CMAKE_ASM_FLAGS
+    "${CMAKE_C_FLAGS} -D__ASSEMBLY__" 
+)
+
 # No system root used for bare metal compilation

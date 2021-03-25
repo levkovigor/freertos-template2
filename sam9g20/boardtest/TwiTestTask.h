@@ -13,7 +13,7 @@
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 extern "C" {
-#include "I2C.h"
+#include <hal/Drivers/I2C.h>
 }
 
 #include <vector>

@@ -7,7 +7,7 @@ set(FREERTOS_PATH "${CMAKE_SOURCE_DIR}/freertos")
 
 set(FREERTOS_PORT_SOURCES
     "${FREERTOS_PATH}/src/portable/GCC/ARM9_AT91SAM9G20/port.c"
-    "${FREERTOS_PATH}/src/portable/GCC/MemMang/standardMemMang.c"
+    "${FREERTOS_PATH}/src/portable/MemMang/standardMemMang.c"
 )
 
 set(FREERTOS_CONFIG_AND_PORT_PATHS
@@ -16,6 +16,10 @@ set(FREERTOS_CONFIG_AND_PORT_PATHS
     "${CMAKE_SOURCE_DIR}/sam9g20/boardconfig"
     "${CMAKE_SOURCE_DIR}"
 )
+
+if(CMAKE_VERBOSE)
+message(STATUS "FreeRTOS port sources: ${FREERTOS_PORT_SOURCES}")
+endif()
 
 foreach(FREERTOS_PORT_SRC ${FREERTOS_PORT_SOURCES})
 	if(IS_ABSOLUTE ${FREERTOS_PORT_SRC})
@@ -38,7 +42,9 @@ target_sources(${LIB_FREERTOS_NAME}  PRIVATE
 	src/tasks.c
 	src/timers.c
 	isisAdditions.c
-	"${FREERTOS_PORT_SOURCES_ABS}"
+	#"${FREERTOS_PORT_SOURCES_ABS}"
+	${FREERTOS_PATH}/src/portable/GCC/ARM9_AT91SAM9G20/port.c
+    ${FREERTOS_PATH}/src/portable/MemMang/standardMemMang.c
 )
 
 if(NOT FREERTOS_CONFIG_AND_PORT_PATHS)

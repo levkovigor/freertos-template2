@@ -1,4 +1,4 @@
-#include <boardtest/UART0TestTask.h>
+#include "UART0TestTask.h"
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
 

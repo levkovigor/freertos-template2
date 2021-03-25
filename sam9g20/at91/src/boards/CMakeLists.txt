@@ -1,0 +1,1 @@
+add_subdirectory(at91sam9g20-ek)

@@ -46,32 +46,43 @@ set(LIB_FSFW_NAME fsfw)
 set(LIB_ETL_NAME etl)
 set(LIB_OS_NAME freertos)
 set(LIB_AT91_NAME at91)
+set(LIB_PRIVAT_LIB_NAME privlib)
 
 # Set path names
 set(FSFW_PATH fsfw)
 set(MISSION_PATH mission)
 set(TEST_PATH test)
 set(ETL_PATH etl)
+set(SAM9G20_PATH sam9g20)
 
-set(LIB_FREERTOS_PATH freertos)
+set(LIB_FREERTOS_PATH ${LIB_OS_NAME})
 set(LIB_AT91_PATH sam9g20/at91)
+set(LIB_PRIVLIB_PATH ${LIB_PRIVAT_LIB_NAME})
 
 if(OS_FSFW MATCHES "host")
     set(BSP_PATH bsp_hosted)
 elseif(OS_FSFW MATCHES "freertos")
-    set(BSP_PATH sampleapp)
+    set(BSP_PATH ${SAM9G20_PATH})
 endif()
 
 # Analyse different OS and architecture/target options, determine BSP_PATH,
 # display information about compiler etc.
+set(COMMON_AT91_CONFIG_PATH "${CMAKE_SOURCE_DIR}/sam9g20/common/config")
 if(OS_FSFW MATCHES "freertos")
     set(FSFW_CONFIG_PATH "fsfwconfig")
-    # set(FSFW_ADDITIONAL_INC_PATH "${LIB_AT91_PATH}/include")
     set(FSFW_ADDITIONAL_LINK_LIBS ${LIB_AT91_NAME})
+    set(FREERTOS_PORT_MACRO_PATH 
+        ${CMAKE_SOURCE_DIR}/freertos/include/freertos/portable/GCC/ARM9_AT91SAM9G20
+    )
+    set(AT91_ADDITIONAL_INC_PATHS 
+        "${CMAKE_SOURCE_DIR}/${FSFW_CONFIG_PATH}"
+        "${COMMON_AT91_CONFIG_PATH}"
+        "${FREERTOS_PORT_MACRO_PATH}"
+    )
+    set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/sam9g20/at91/linker-scripts/sdram.lds) 
 else()
     set(FSFW_CONFIG_PATH "${BSP_PATH}/fsfwconfig")
 endif()
-set(COMMON_AT91_CONFIG_PATH "${CMAKE_SOURCE_DIR}/sam9g20/common/config")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(WARNING_FLAGS
@@ -105,6 +116,7 @@ add_executable(${TARGET_NAME})
 add_subdirectory(${BSP_PATH})
 add_subdirectory(${MISSION_PATH})
 add_subdirectory(${TEST_PATH})
+add_subdirectory(${FSFW_CONFIG_PATH})
 if(ADD_ETL_LIB)
     add_subdirectory(${ETL_PATH})
 endif()
@@ -112,6 +124,7 @@ endif()
 if(OS_FSFW MATCHES "freertos")
     add_subdirectory(${LIB_FREERTOS_PATH})
     add_subdirectory(${LIB_AT91_PATH})
+    add_subdirectory(${LIB_PRIVLIB_PATH})
 endif()
 
 add_subdirectory(${FSFW_PATH})
@@ -139,6 +152,26 @@ if(OS_FSFW MATCHES "freertos")
     )
 endif()
 
+if(OS_FSFW MATCHES "freertos")
+message(STATUS ${LINKER_SCRIPT})
+    if(LINKER_SCRIPT)
+        target_link_options(${TARGET_NAME} PRIVATE
+            -T${LINKER_SCRIPT}
+        )
+    endif()
+    
+    target_compile_definitions(${TARGET_NAME} PRIVATE
+        sdram 
+        AT91SAM9G20_EK
+    )
+
+    # Remove unused sections.
+    target_compile_options(${TARGET_NAME} PRIVATE
+        "-ffunction-sections"
+        "-fdata-sections"
+    )
+endif()
+
 # Add include paths for all sources.
 target_include_directories(${TARGET_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -150,12 +183,6 @@ target_include_directories(${TARGET_NAME} PRIVATE
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_link_options(${TARGET_NAME} PRIVATE
         "-Wl,-Map=${TARGET_NAME}.map"
-    )
-
-    # Remove unused sections.
-    target_compile_options(${TARGET_NAME} PRIVATE
-        "-ffunction-sections"
-        "-fdata-sections"
     )
 
     # Removed unused sections.

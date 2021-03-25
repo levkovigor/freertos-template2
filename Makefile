@@ -504,7 +504,7 @@ ALL_OBJECTS =  $(ASM_OBJECTS) $(C_OBJECTS) $(CXX_OBJECTS) $(FREERTOS_OBJECTS) $(
 # Generates binary and displays all build properties
 # -p with mkdir ignores error and creates directory when needed.
 
-# SHOW_DETAILS = 1
+SHOW_DETAILS = 1
 
 $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).bin: $(BINDIR)/$(BINARY_NAME)-$(MEMORIES).elf
 	@echo

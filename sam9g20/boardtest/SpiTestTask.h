@@ -5,7 +5,7 @@
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
 
 extern "C" {
-#include "SPI.h"
+#include <hal/Drivers/SPI.h>
 }
 
 class SpiTestTask: public SystemObject,

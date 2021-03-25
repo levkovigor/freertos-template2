@@ -6,7 +6,7 @@
 #include <fsfwconfig/objects/systemObjectList.h>
 
 #include <mission/utility/InitMission.h>
-#include <utility/compile_time.h>
+#include <sam9g20/utility/compile_time.h>
 
 #include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/tasks/TaskFactory.h>
