@@ -153,7 +153,6 @@ if(OS_FSFW MATCHES "freertos")
 endif()
 
 if(OS_FSFW MATCHES "freertos")
-message(STATUS ${LINKER_SCRIPT})
     if(LINKER_SCRIPT)
         target_link_options(${TARGET_NAME} PRIVATE
             -T${LINKER_SCRIPT}
@@ -163,12 +162,14 @@ message(STATUS ${LINKER_SCRIPT})
     target_compile_definitions(${TARGET_NAME} PRIVATE
         sdram 
         AT91SAM9G20_EK
+        OP_BOOTSTRAP_on
     )
 
     # Remove unused sections.
     target_compile_options(${TARGET_NAME} PRIVATE
         "-ffunction-sections"
         "-fdata-sections"
+        "-fno-exceptions"
     )
 endif()
 
@@ -185,12 +186,9 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         "-Wl,-Map=${TARGET_NAME}.map"
     )
 
-    # Removed unused sections.
-    if(NOT ${OS_FSFW} MATCHES rtems)
-        target_link_options(${TARGET_NAME} PRIVATE
-            "-Wl,--gc-sections"
-        )
-    endif()
+    target_link_options(${TARGET_NAME} PRIVATE
+        "-Wl,--gc-sections"
+    )
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
 

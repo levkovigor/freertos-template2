@@ -40,8 +40,8 @@ set(CMAKE_ASM_FLAGS "-x assembler-with-cpp")
 
 set(ABI_FLAGS
     -mcpu=arm926ej-s
-    --specs=nosys.specs 
-    --specs=nano.specs
+    -specs=nosys.specs 
+    -specs=nano.specs
 )
 
 string (REPLACE ";" " " ABI_FLAGS "${ABI_FLAGS}")
