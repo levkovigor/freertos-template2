@@ -42,6 +42,7 @@ set(ABI_FLAGS
     -mcpu=arm926ej-s
     -specs=nosys.specs 
     -specs=nano.specs
+    -fno-exceptions
 )
 
 string (REPLACE ";" " " ABI_FLAGS "${ABI_FLAGS}")

@@ -51,9 +51,11 @@
     	}
     }
 #else
+    unsigned int traceLevel = 0;
+
     void setTrace(unsigned int traceLevel_) {
     	TRACE_INFO("Dynamic traces off ! Turn them on by supplying DYN_TRACE "
-    			   "define in Makefile");
+    			   "define in Makefile\n\r");
     }
 #endif
   

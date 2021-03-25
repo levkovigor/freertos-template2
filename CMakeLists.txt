@@ -155,7 +155,9 @@ endif()
 if(OS_FSFW MATCHES "freertos")
     if(LINKER_SCRIPT)
         target_link_options(${TARGET_NAME} PRIVATE
+            -Wl,--undefined,_printf_float -Wl,--undefined,_scanf_float
             -T${LINKER_SCRIPT}
+
         )
     endif()
     
@@ -163,13 +165,14 @@ if(OS_FSFW MATCHES "freertos")
         sdram 
         AT91SAM9G20_EK
         OP_BOOTSTRAP_on
+        TRACE_LEVEL=5
+        DYN_TRACES=1
     )
 
     # Remove unused sections.
     target_compile_options(${TARGET_NAME} PRIVATE
         "-ffunction-sections"
         "-fdata-sections"
-        "-fno-exceptions"
     )
 endif()
 

@@ -9,8 +9,34 @@ target_compile_definitions(${LIB_AT91_NAME} PRIVATE
     at91sam9g20
 )
 
+option(AT91_DYN_TRACES "Dynamic traces for AT91 library" ON)
+option(AT91_USE_AT91_STDIO "Use stdio provided by AT91" OFF)
+
+if(AT91_USE_AT91_STDIO)
+    set(AT91_STDIO_VALUE 1)
+else()
+    set(AT91_STDIO_VALUE 0)
+endif()
+
+if(NOT AT91_TRACE_LEVEL) 
+    set(AT91_TRACE_LEVEL 5)
+endif()
+
+if(AT91_DYN_TRACES)
+    set(DYN_TRACE_VALUE 1)
+else()
+    set(DYN_TRACE_VALUE 0)
+endif()
+
 target_compile_definitions(${LIB_AT91_NAME} INTERFACE
     at91sam9g20
+)
+
+target_compile_definitions(${LIB_AT91_NAME} PRIVATE
+    at91sam9g20
+    TRACE_LEVEL=${AT91_TRACE_LEVEL}
+    DYN_TRACES=${DYN_TRACE_VALUE}
+    USE_AT91LIB_STDIO_AND_STRING=${AT91_STDIO_VALUE}
 )
 
 # Required include paths to compile AT91
