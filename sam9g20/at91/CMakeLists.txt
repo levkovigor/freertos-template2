@@ -1,5 +1,16 @@
 cmake_minimum_required(VERSION 3.13)
 
+####################################################################################################
+# User configurable options
+####################################################################################################
+
+option(AT91_CREATE_GCC_SECTIONS 
+    "Generate sections for functions and data. Required to remove unused code" ON
+)
+if(AT91_CREATE_GCC_SECTIONS)
+    option(AT91_REMOVE_UNUSED_CODE "Remove unused code." ON)
+endif()
+
 set(LIB_AT91_NAME at91)
 add_library(${LIB_AT91_NAME})
 
@@ -11,6 +22,19 @@ target_compile_definitions(${LIB_AT91_NAME} PRIVATE
 
 option(AT91_DYN_TRACES "Dynamic traces for AT91 library" ON)
 option(AT91_USE_AT91_STDIO "Use stdio provided by AT91" OFF)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    if(NOT AT91_WARNING_FLAGS)
+        set(AT91_WARNING_FLAGS
+            -Wall
+            -Wextra
+            -Wimplicit-fallthrough=1
+            -Wno-unused-parameter
+            -Wshadow=local
+        )
+    endif()
+endif()
+
 
 if(AT91_USE_AT91_STDIO)
     set(AT91_STDIO_VALUE 1)
@@ -41,7 +65,6 @@ target_compile_definitions(${LIB_AT91_NAME} PRIVATE
 
 # Required include paths to compile AT91
 target_include_directories(${LIB_AT91_NAME} INTERFACE
-    ${CMAKE_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/at91
     ${CMAKE_CURRENT_SOURCE_DIR}/include/at91/boards/at91sam9g20-ek
@@ -50,7 +73,6 @@ target_include_directories(${LIB_AT91_NAME} INTERFACE
 )
 
 target_include_directories(${LIB_AT91_NAME} PRIVATE
-    ${CMAKE_SOURCE_DIR}
     ${AT91_ADDITIONAL_INC_PATHS}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/at91
@@ -58,3 +80,21 @@ target_include_directories(${LIB_AT91_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/at91/boards/at91sam9g20-ek/at91sam9g20
     ${CMAKE_CURRENT_SOURCE_DIR}/include/at91/boards/common
 )
+
+if(AT91_CREATE_GCC_SECTIONS)
+    target_compile_options(${LIB_AT91_NAME} PRIVATE
+        ${AT91_WARNING_FLAGS}
+    )
+        
+    # Create sections for a GCC compiler
+    target_compile_options(${LIB_AT91_NAME} PRIVATE
+        "-ffunction-sections"
+        "-fdata-sections"
+    )
+        
+    if(AT91_REMOVE_UNUSED_CODE)
+        target_link_options(${LIB_AT91_NAME} PRIVATE
+            "-Wl,--gc-sections"
+        )
+    endif()
+endif()
