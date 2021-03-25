@@ -16,7 +16,8 @@ fi
 
 build_generator=""
 os_fsfw="freertos"
-builddir="Debug-iOBC"
+builddir="MinSizeRel-iOBC"
+defines="BOARD_IOBC=ON"
 
 if [ "${OS}" = "Windows_NT" ]; then
 	build_generator="MinGW Makefiles"
@@ -27,6 +28,7 @@ fi
 
 echo "Running command (without the leading +):"
 set -x # Print command 
-python3 cmake_build_config.py -o "${os_fsfw}" -g "${build_generator}" -b "debug" \
-        -l "${builddir}"
+python3 cmake_build_config.py -o "${os_fsfw}" -g "${build_generator}" -b "size" \
+         -d "${defines}" -l "${builddir}"
+# Use this if commands are added which should not be printed
 # set +x

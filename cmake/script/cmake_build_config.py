@@ -28,6 +28,11 @@ def main():
                              "(Release with Debug Information)", default="debug")
     parser.add_argument("-l", "--builddir", type=str, help="Specify build directory.")
     parser.add_argument("-g", "--generator", type=str, help="CMake Generator")
+    parser.add_argument(
+        "-d", "--defines", 
+        help="Additional custom defines passed to CMake (supply without -D prefix!)",
+        nargs="*", type=str
+    )
     parser.add_argument("-t", "--target-bsp", type=str, help="Target BSP, combination of "
                                                              "architecture and machine")
 
@@ -60,6 +65,11 @@ def main():
         cmake_target_cfg_cmd = determine_tgt_bsp(cmake_fsfw_osal)
     """
     
+    define_string = ""
+    if args.defines is not None:
+        for define in args.defines:
+            define_string += f"-D{define} "
+    
     if args.builddir is None:
         cmake_build_folder = determine_build_folder(cmake_build_type)
     else:
@@ -88,7 +98,7 @@ def main():
     os.chdir(cmake_build_folder)
 
     cmake_command = f"cmake {generator_cmake_arg} -DOS_FSFW=\"{cmake_fsfw_osal}\" " \
-                    f"-DCMAKE_BUILD_TYPE=\"{cmake_build_type}\" {source_location}"
+                    f"-DCMAKE_BUILD_TYPE=\"{cmake_build_type}\" {define_string} {source_location}"
     # Remove redundant spaces
     cmake_command = ' '.join(cmake_command.split())
     print("Running CMake command (without +): ")

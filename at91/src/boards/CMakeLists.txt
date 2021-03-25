@@ -1,1 +1,5 @@
-add_subdirectory(at91sam9g20-ek)
+if(BOARD_IOBC)
+    add_subdirectory(ISIS_OBC_G20)
+else()
+    add_subdirectory(at91sam9g20-ek)
+endif()

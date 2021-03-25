@@ -31,7 +31,7 @@ if(OS_FSFW MATCHES "freertos")
 endif()
 
 if(BOARD_IOBC)
-    add_definitions(-DIOBC)
+    add_definitions(-DISIS_OBC_G20)
     set(BOARD_PRINTOUT "iOBC")
     set(AT91_MEMORY sdram)
 else()
@@ -85,14 +85,14 @@ set(COMMON_AT91_CONFIG_PATH "${CMAKE_SOURCE_DIR}/${SAM9G20_PATH}/common/config")
 if(OS_FSFW MATCHES "freertos")
     set(FSFW_CONFIG_PATH "fsfwconfig")
     set(FSFW_ADDITIONAL_LINK_LIBS ${LIB_AT91_NAME})
-    
+    set(BOARD_CONFIG_PATH "${CMAKE_SOURCE_DIR}/${SAM9G20_PATH}/boardconfig")
     set(FREERTOS_PATH "${CMAKE_SOURCE_DIR}/freertos")
     
     set(FREERTOS_ADDITIONAL_INCLUDE_PATHS
         "${CMAKE_SOURCE_DIR}"
         "${FREERTOS_PATH}/include/freertos/portable/GCC/ARM9_AT91SAM9G20"
         "${FREERTOS_PATH}/include/freertos/portable/GCC/MemMang"
-        "${CMAKE_SOURCE_DIR}/${SAM9G20_PATH}/boardconfig"
+        ${BOARD_CONFIG_PATH}
     )
 
     set(FREERTOS_ADDITIONAL_SOURCES
@@ -114,6 +114,7 @@ if(OS_FSFW MATCHES "freertos")
         ${COMMON_AT91_CONFIG_PATH}
         ${FREERTOS_PORT_MACRO_PATH}
         ${CMAKE_CURRENT_SOURCE_DIR}
+        ${BOARD_CONFIG_PATH}
     )
 
     set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/${LIB_AT91_PATH}/linker-scripts/sdram.lds) 
@@ -160,8 +161,8 @@ endif()
 
 if(OS_FSFW MATCHES "freertos")
     add_subdirectory(${LIB_FREERTOS_PATH})
-    add_subdirectory(${LIB_AT91_PATH})
     add_subdirectory(${LIB_PRIVLIB_PATH})
+    add_subdirectory(${LIB_AT91_PATH})
 endif()
 
 add_subdirectory(${FSFW_PATH})
@@ -276,6 +277,15 @@ add_custom_command(
    COMMAND ${CMAKE_SIZE} ${OUTPUT_NAME_VAR}
    COMMENT ${POST_BUILD_COMMENT}
 )
+
+if(OS_FSFW MATCHES "freertos")
+    add_custom_command(
+        TARGET ${TARGET_NAME}
+        POST_BUILD
+        COMMAND echo Generating binary file ${OUTPUT_NAME_VAR}.bin..
+        COMMAND ${CMAKE_OBJCOPY} -O binary ${OUTPUT_NAME_VAR} ${OUTPUT_NAME_VAR}.bin
+    )
+endif()
 
 include (${CMAKE_SCRIPT_PATH}/BuildType.cmake)
 set_build_type()

@@ -14,4 +14,5 @@ target_sources(${TARGET_NAME} PRIVATE
     SDCardApi.c
     SRAMApi.c
     watchdog.c
+    norflashHook.c
 )

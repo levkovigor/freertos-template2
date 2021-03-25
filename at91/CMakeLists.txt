@@ -75,22 +75,33 @@ target_compile_definitions(${LIB_AT91_NAME} PRIVATE
     ${AT91_MEMORY}
 )
 
+if(BOARD_IOBC)
+    set(BOARD_INCLUDE_PACKAGE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/at91/boards/ISIS_OBC_G20
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/at91/boards/ISIS_OBC_G20/at91sam9g20
+    )
+else()
+    set(BOARD_INCLUDE_PACKAGE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/at91/boards/at91sam9g20-ek
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/at91/boards/at91sam9g20-ek/at91sam9g20
+    )
+endif()
+
 # Required include paths to compile AT91
 target_include_directories(${LIB_AT91_NAME} INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/at91
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/at91/boards/at91sam9g20-ek
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/at91/boards/at91sam9g20-ek/at91sam9g20
     ${CMAKE_CURRENT_SOURCE_DIR}/include/at91/boards/common
+    ${BOARD_INCLUDE_PACKAGE}
 )
 
 target_include_directories(${LIB_AT91_NAME} PRIVATE
     ${AT91_ADDITIONAL_INC_PATHS}
+    ${CMAKE_SOURCE_DIR}/privlib/hal/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/at91
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/at91/boards/at91sam9g20-ek
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/at91/boards/at91sam9g20-ek/at91sam9g20
     ${CMAKE_CURRENT_SOURCE_DIR}/include/at91/boards/common
+    ${BOARD_INCLUDE_PACKAGE}
 )
 
 if(AT91_CREATE_GCC_SECTIONS)
