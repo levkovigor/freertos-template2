@@ -22,6 +22,10 @@ if(NOT OS_FSFW)
     set(OS_FSFW host CACHE STRING "OS for the FSFW.")
 endif()
 
+if(NOT OS_FSFW)
+    set(OS_FSFW freertos CACHE STRING "OS for the FSFW.")
+endif()
+
 # Perform steps like loading toolchain files where applicable.
 
 # Project Name
