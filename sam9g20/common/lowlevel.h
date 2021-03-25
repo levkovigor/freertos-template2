@@ -13,6 +13,8 @@ void print_processor_state(void);
 void asm_disable_irq();
 void asm_enable_irq();
 
+void disable_pit_aic();
+
 #ifdef __cplusplus
 }
 #endif

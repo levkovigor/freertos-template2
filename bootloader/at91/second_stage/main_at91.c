@@ -5,6 +5,7 @@
 
 #include <sam9g20/common/SRAMApi.h>
 #include <sam9g20/common/VirtualFRAMApi.h>
+#include <sam9g20/common/lowlevel.h>
 
 #include <at91/boards/at91sam9g20-ek/board.h>
 #include <at91/boards/at91sam9g20-ek/at91sam9g20/AT91SAM9G20.h>
@@ -159,15 +160,10 @@ int perform_bootloader_core_operation() {
 
 #if USE_FREERTOS == 1
     vTaskEndScheduler();
-    // Clear AIC and PIT interrupts and disable them.
-    AT91C_BASE_AIC->AIC_ICCR = 1 << AT91C_ID_SYS;
-    AIC_DisableIT( AT91C_ID_SYS );
-    PIT_GetPIVR();
-    PIT_DisableIT();
-    PIT_Disable();
 #endif
 
     CP15_Disable_I_Cache();
+    disable_pit_aic();
 
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
 

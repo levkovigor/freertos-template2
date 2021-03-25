@@ -12,6 +12,7 @@
 #include <peripherals/pit/pit.h>
 #include <cp15/cp15.h>
 
+#include <sam9g20/common/lowlevel.h>
 #include <hal/Timing/RTT.h>
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
@@ -21,7 +22,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-void disablePitAic();
 extern void jump_to_sdram_application(uint32_t stack_ptr, uint32_t jump_address);
 
 int perform_bootloader_core_operation();
@@ -106,18 +106,10 @@ int perform_bootloader_core_operation() {
     CP15_Disable_I_Cache();
 
     /* Not required, PIT not used for now */
-    // disablePitAic();
+    disable_pit_aic();
 
     jump_to_sdram_application(0x304000, SECOND_STAGE_BL_JUMP_ADDR);
 
     /* Should never be reached */
     return 0;
 }
-
-void disablePitAic() {
-    AIC_DisableIT( AT91C_ID_SYS );
-    PIT_DisableIT();
-    PIT_Disable();
-}
-
-
