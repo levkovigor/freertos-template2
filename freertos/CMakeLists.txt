@@ -11,10 +11,10 @@ set(FREERTOS_PORT_SOURCES
 )
 
 set(FREERTOS_CONFIG_AND_PORT_PATHS
-    "${FREERTOS_PATH}/include/freertos/portable/GCC/ARM9_AT91SAM9G20/portmacro.h"
-    "${FREERTOS_PATH}/include/freertos/portable/GCC/MemMang/standardMemMang.h"
+    "${FREERTOS_PATH}/include/freertos/portable/GCC/ARM9_AT91SAM9G20"
+    "${FREERTOS_PATH}/include/freertos/portable/GCC/MemMang"
     "${CMAKE_SOURCE_DIR}/sam9g20/boardconfig"
-    "${CMAKE_SOURCE_DIR}
+    "${CMAKE_SOURCE_DIR}"
 )
 
 foreach(FREERTOS_PORT_SRC ${FREERTOS_PORT_SOURCES})
@@ -64,6 +64,12 @@ foreach(FREERTOS_PATH ${FREERTOS_CONFIG_AND_PORT_PATHS})
 	list(APPEND FREERTOS_PATHS_ABSOLUTE ${CURR_ABS_FREERTOS_PATH})
 endforeach()
 
+message(STATUS ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(${LIB_FREERTOS_NAME} PRIVATE
+    ${LIB_AT91_NAME}
+)
+
 # Required include paths to compile FreeRTOS
 target_include_directories(${LIB_FREERTOS_NAME} INTERFACE
     ${CMAKE_SOURCE_DIR}
@@ -73,6 +79,7 @@ target_include_directories(${LIB_FREERTOS_NAME} INTERFACE
 )
 
 target_include_directories(${LIB_FREERTOS_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/freertos
     ${FREERTOS_PATHS_ABSOLUTE}
 )

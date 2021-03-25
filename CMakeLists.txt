@@ -45,6 +45,7 @@ set(TARGET_NAME ${CMAKE_PROJECT_NAME})
 set(LIB_FSFW_NAME fsfw)
 set(LIB_ETL_NAME etl)
 set(LIB_OS_NAME freertos)
+set(LIB_AT91_NAME at91)
 
 # Set path names
 set(FSFW_PATH fsfw)
@@ -53,6 +54,7 @@ set(TEST_PATH test)
 set(ETL_PATH etl)
 
 set(LIB_FREERTOS_PATH freertos)
+set(LIB_AT91_PATH sam9g20/at91)
 
 if(OS_FSFW MATCHES "host")
     set(BSP_PATH bsp_hosted)
@@ -62,8 +64,14 @@ endif()
 
 # Analyse different OS and architecture/target options, determine BSP_PATH,
 # display information about compiler etc.
-
-set(FSFW_CONFIG_PATH "${BSP_PATH}/fsfwconfig")
+if(OS_FSFW MATCHES "freertos")
+    set(FSFW_CONFIG_PATH "fsfwconfig")
+    # set(FSFW_ADDITIONAL_INC_PATH "${LIB_AT91_PATH}/include")
+    set(FSFW_ADDITIONAL_LINK_LIBS ${LIB_AT91_NAME})
+else()
+    set(FSFW_CONFIG_PATH "${BSP_PATH}/fsfwconfig")
+endif()
+set(COMMON_AT91_CONFIG_PATH "${CMAKE_SOURCE_DIR}/sam9g20/common/config")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(WARNING_FLAGS
@@ -103,6 +111,7 @@ endif()
 
 if(OS_FSFW MATCHES "freertos")
     add_subdirectory(${LIB_FREERTOS_PATH})
+    add_subdirectory(${LIB_AT91_PATH})
 endif()
 
 add_subdirectory(${FSFW_PATH})
@@ -110,12 +119,6 @@ add_subdirectory(${FSFW_PATH})
 ################################################################################
 # Post-Sources preparation
 ################################################################################
-
-if(OS_FSFW MATCHES "freertos")
-    target_link_libraries(${TARGET_NAME} PRIVATE
-        ${LIB_OS_NAME}
-    )
-endif()
 
 # Add libraries for all sources.
 target_link_libraries(${TARGET_NAME} PRIVATE
@@ -128,10 +131,19 @@ if(ADD_ETL_LIB)
     )
 endif()
 
+
+if(OS_FSFW MATCHES "freertos")
+    target_link_libraries(${TARGET_NAME} PRIVATE
+        ${LIB_OS_NAME}
+        ${LIB_AT91_NAME}
+    )
+endif()
+
 # Add include paths for all sources.
 target_include_directories(${TARGET_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${FSFW_CONFIG_PATH}
+    ${COMMON_AT91_CONFIG_PATH}
 )    
 
 
