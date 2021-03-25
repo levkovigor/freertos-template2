@@ -40,9 +40,6 @@ extern "C" void __sync_synchronize() {}
 void ConfigureLeds(void);
 void configureEk(void);
 #endif
-unsigned int asm_get_cpsr(void);
-void asm_set_cpsr(unsigned int val);
-void printProcessorState(void);
 
 /* This will be the entry to the mission specific code */
 void initMission();
@@ -90,7 +87,6 @@ int main(void)
         TRACE_ERROR("Creating Initialization Task failed!\n\r");
     }
 
-    // printProcessorState();
     vTaskStartScheduler();
     /* This should never be reached. */
     for(;;) {}
@@ -120,20 +116,4 @@ void configureEk(void) {
 }
 #endif
 
-unsigned int asm_get_cpsr(void) {
-  unsigned long retval;
-  asm volatile (" mrs  %0, cpsr" : "=r" (retval) : /* no inputs */  );
-  return retval;
-}
-
-void asm_set_cpsr(unsigned int val) {
-    asm volatile (" msr cpsr, %0" : /* no outputs */ : "r" (val) );
-}
-
-void printProcessorState(void) {
-    int cpsr = asm_get_cpsr();
-    TRACE_INFO("CPSR: 0x%08x\n\r", cpsr);
-    register int stack_ptr asm("sp");
-    TRACE_INFO("Stack pointer: 0x%08x\n\r", stack_ptr);
-}
 

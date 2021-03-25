@@ -197,4 +197,26 @@ int fram_zero_out_default_zero_fields() {
     return 0;
 }
 
+int fram_clear_ham_check_flag() {
+    return 0;
+}
 
+int fram_get_ham_check_flag() {
+    return 0;
+}
+
+int fram_set_img_ham_flag(SlotType slotType) {
+    return 0;
+}
+
+int fram_clear_img_ham_flag(SlotType slotType) {
+    return 0;
+}
+
+int fram_reset_img_reboot_counter(SlotType slotType) {
+    return 0;
+}
+
+int fram_read_bootloader_block_raw(uint8_t* buff, size_t max_size) {
+    return 0;
+}
