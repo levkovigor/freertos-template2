@@ -7,5 +7,6 @@ endif
 
 CSRC += $(wildcard $(CURRENTPATH)/SDCardApi.c)
 CSRC += $(wildcard $(CURRENTPATH)/SRAMApi.c)
+CSRC += $(wildcard $(CURRENTPATH)/lowlevel.c)
 
 INCLUDES += $(CURRENTPATH)/config

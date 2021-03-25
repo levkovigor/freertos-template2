@@ -1,4 +1,5 @@
 #include "lowlevel.h"
+#include <at91/utility/trace.h>
 
 #define I_BIT 0x80
 
