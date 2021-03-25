@@ -4,7 +4,7 @@
 #include <at91/utility/trace.h>
 
 #include <privlib/hcc/include/hcc/api_hcc_mem.h>
-#include <sam9g20/common/SDCardApi.h>
+#include <bsp_sam9g20/common/SDCardApi.h>
 
 int copy_sdc_image_to_sdram() {
     VolumeId current_volume = SD_CARD_0;

@@ -27,14 +27,17 @@ if(OS_FSFW MATCHES "freertos")
     set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SCRIPT_PATH}/Arm926ejsCrossCompile.cmake)
     
     option(BOARD_IOBC "iOBC target hardware instead of AT91SAM9G20-EK development board" OFF)
+    option(BOOTLOADER "Build bootloader" OFF)
 endif()
 
 if(BOARD_IOBC)
     add_definitions(-DIOBC)
     set(BOARD_PRINTOUT "iOBC")
+    set(AT91_MEMORY sdram)
 else()
     add_definitions(-DAT91SAM9G20_EK)
     set(BOARD_PRINTOUT "AT91SAM9G20-EK")
+    set(AT91_MEMORY sdram)
 endif()
 
 # Perform steps like loading toolchain files where applicable.
@@ -63,10 +66,10 @@ set(FSFW_PATH fsfw)
 set(MISSION_PATH mission)
 set(TEST_PATH test)
 set(ETL_PATH etl)
-set(SAM9G20_PATH sam9g20)
+set(SAM9G20_PATH bsp_sam9g20)
 
 set(LIB_FREERTOS_PATH ${LIB_OS_NAME})
-set(LIB_AT91_PATH sam9g20/at91)
+set(LIB_AT91_PATH ${LIB_AT91_NAME})
 set(LIB_PRIVLIB_PATH ${LIB_PRIVAT_LIB_NAME})
 
 if(OS_FSFW MATCHES "host")
@@ -77,7 +80,7 @@ endif()
 
 # Analyse different OS and architecture/target options, determine BSP_PATH,
 # display information about compiler etc.
-set(COMMON_AT91_CONFIG_PATH "${CMAKE_SOURCE_DIR}/sam9g20/common/config")
+set(COMMON_AT91_CONFIG_PATH "${CMAKE_SOURCE_DIR}/${SAM9G20_PATH}/common/config")
 
 if(OS_FSFW MATCHES "freertos")
     set(FSFW_CONFIG_PATH "fsfwconfig")
@@ -86,16 +89,15 @@ if(OS_FSFW MATCHES "freertos")
     set(FREERTOS_PATH "${CMAKE_SOURCE_DIR}/freertos")
     
     set(FREERTOS_ADDITIONAL_INCLUDE_PATHS
+        "${CMAKE_SOURCE_DIR}"
         "${FREERTOS_PATH}/include/freertos/portable/GCC/ARM9_AT91SAM9G20"
         "${FREERTOS_PATH}/include/freertos/portable/GCC/MemMang"
-        "${CMAKE_SOURCE_DIR}/sam9g20/boardconfig"
-        "${CMAKE_SOURCE_DIR}/sam9g20/at91/include"
-        "${CMAKE_SOURCE_DIR}"
+        "${CMAKE_SOURCE_DIR}/${SAM9G20_PATH}/boardconfig"
     )
 
     set(FREERTOS_ADDITIONAL_SOURCES
         "${FREERTOS_PATH}/src/portable/GCC/ARM9_AT91SAM9G20/port.c"
-        "${FREERTOS_PATH}/src/portable/MemMang/standardMemMang.c"
+        "${FREERTOS_PATH}/src/portable/MemMang/heap_4.c"
         "${FREERTOS_PATH}/isisAdditions.c"
     )
     
@@ -114,7 +116,7 @@ if(OS_FSFW MATCHES "freertos")
         ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
-    set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/sam9g20/at91/linker-scripts/sdram.lds) 
+    set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/${LIB_AT91_PATH}/linker-scripts/sdram.lds) 
 else()
     set(FSFW_CONFIG_PATH "${BSP_PATH}/fsfwconfig")
 endif()
@@ -196,12 +198,6 @@ if(OS_FSFW MATCHES "freertos")
         )
     endif()
     
-    target_compile_definitions(${TARGET_NAME} PRIVATE
-        OP_BOOTSTRAP_on
-        TRACE_LEVEL=5
-        DYN_TRACES=1
-    )
-
     # Remove unused sections.
     target_compile_options(${TARGET_NAME} PRIVATE
         "-ffunction-sections"
@@ -247,10 +243,18 @@ endif()
 
 if(OS_FSFW MATCHES "freertos")
     set(TARGET_STRING "Target board: ${BOARD_PRINTOUT}")
+    set(BUILD_TYPE_STR "debug")
+    if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel")
+        set(BUILD_TYPE_STR "release")
+    endif()
     if(BOARD_IOBC)
-        set_target_properties(${TARGET_NAME} PROPERTIES OUTPUT_NAME "${TARGET_NAME}-iobc")
+        set_target_properties(${TARGET_NAME} PROPERTIES 
+            OUTPUT_NAME "${TARGET_NAME}-iobc-${BUILD_TYPE_STR}"
+        )
     else()
-        set_target_properties(${TARGET_NAME} PROPERTIES OUTPUT_NAME "${TARGET_NAME}-at91")
+        set_target_properties(${TARGET_NAME} PROPERTIES 
+            OUTPUT_NAME "${TARGET_NAME}-at91-${BUILD_TYPE_STR}"
+        )
     endif()
 else()
     set(TARGET_STRING "Target BSP: Hosted")

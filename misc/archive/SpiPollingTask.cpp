@@ -9,8 +9,8 @@
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 #include <config/devices/logicalAddresses.h>
 #include <misc/archive/SpiPollingTask.h>
-#include <sam9g20/comIF/GpioDeviceComIF.h>
-#include <sam9g20/comIF/SpiDeviceComIF.h>
+#include <bsp_sam9g20/comIF/GpioDeviceComIF.h>
+#include <bsp_sam9g20/comIF/SpiDeviceComIF.h>
 
 
 SpiPollingTask::SpiPollingTask(object_id_t objectId_):

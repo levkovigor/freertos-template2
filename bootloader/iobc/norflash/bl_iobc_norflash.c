@@ -4,7 +4,7 @@
 #include <commonIOBCConfig.h>
 
 #include <bootloader/utility/CRC.h>
-#include <sam9g20/common/SRAMApi.h>
+#include <bsp_sam9g20/common/SRAMApi.h>
 
 #include <board.h>
 #include <AT91SAM9G20.h>
@@ -20,8 +20,8 @@
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
 #if USE_FREERTOS == 1
-#include <sam9g20/common/FRAMApi.h>
-#include <sam9g20/common/watchdog.h>
+#include <bsp_sam9g20/common/FRAMApi.h>
+#include <bsp_sam9g20/common/watchdog.h>
 
 #include <FreeRTOSConfig.h>
 #include <freertos/FreeRTOS.h>

@@ -12,7 +12,7 @@
 #include <peripherals/pit/pit.h>
 #include <cp15/cp15.h>
 
-#include <sam9g20/common/lowlevel.h>
+#include <bsp_sam9g20/common/lowlevel.h>
 #include <hal/Timing/RTT.h>
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1

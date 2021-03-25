@@ -1,7 +1,7 @@
 #include "at91_boot_from_nand.h"
 #include <bootloaderConfig.h>
 
-#include <sam9g20/common/SRAMApi.h>
+#include <bsp_sam9g20/common/SRAMApi.h>
 
 #include <at91/boards/at91sam9g20-ek/board.h>
 #include <at91/boards/at91sam9g20-ek/board_memories.h>

@@ -5,14 +5,14 @@
 #include <bootloaderConfig.h>
 #include <fatfs_config.h>
 
-#include <sam9g20/common/CommonFRAM.h>
+#include <bsp_sam9g20/common/CommonFRAM.h>
 
 #include <hcc/api_hcc_mem.h>
 #include <at91/memories/sdmmc/MEDSdcard.h>
 #include <at91/utility/trace.h>
 
 #if USE_TINY_FS == 0
-#include <sam9g20/common/SDCardApi.h>
+#include <bsp_sam9g20/common/SDCardApi.h>
 #else
 #include <tinyfatfs/tff.h>
 #include <peripherals/pio/pio.h>

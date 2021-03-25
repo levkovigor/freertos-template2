@@ -85,7 +85,7 @@
 #include <at91/peripherals/aic/aic.h>
 #include <at91/peripherals/pit/pit.h>
 #include <at91/utility/trace.h>
-#include <sam9g20/common/lowlevel.h>
+//#include <bsp_sam9g20/common/lowlevel.h>
 
 /*-----------------------------------------------------------*/
 #define DEBUG_FIRST_TASK_START          0
@@ -223,7 +223,6 @@ portBASE_TYPE xPortStartScheduler( void )
 #if DEBUG_FIRST_TASK_START == 1
     debugFirstTaskStart();
 #endif
-    asm_enable_irq();
 
     /* Start the first task. */
     vPortISRStartFirstTask();
