@@ -18,12 +18,13 @@ cmake_minimum_required(VERSION 3.13)
 set(CMAKE_SCRIPT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 option(ADD_ETL_LIB "Add ETL library" ON)
-if(NOT OS_FSFW)
-    set(OS_FSFW host CACHE STRING "OS for the FSFW.")
-endif()
 
 if(NOT OS_FSFW)
     set(OS_FSFW freertos CACHE STRING "OS for the FSFW.")
+endif()
+
+if(OS_FSFW MATCHES "freertos")
+    set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SCRIPT_PATH}/Arm926ejsCrossCompile.cmake)
 endif()
 
 # Perform steps like loading toolchain files where applicable.
@@ -43,13 +44,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(TARGET_NAME ${CMAKE_PROJECT_NAME}) 
 set(LIB_FSFW_NAME fsfw)
 set(LIB_ETL_NAME etl)
+set(LIB_OS_NAME freertos)
 
 # Set path names
 set(FSFW_PATH fsfw)
 set(MISSION_PATH mission)
-set(BSP_PATH bsp_hosted)
 set(TEST_PATH test)
 set(ETL_PATH etl)
+set(FREERTOS_PATH freertos)
+
+if(OS_FSFW MATCHES "host")
+    set(BSP_PATH bsp_hosted)
+elseif(OS_FSFW MATCHES "freertos")
+    set(BSP_PATH sampleapp)
+endif()
 
 # Analyse different OS and architecture/target options, determine BSP_PATH,
 # display information about compiler etc.
@@ -91,6 +99,10 @@ add_subdirectory(${MISSION_PATH})
 add_subdirectory(${TEST_PATH})
 if(ADD_ETL_LIB)
     add_subdirectory(${ETL_PATH})
+endif()
+
+if(OS_FSFW MATCHES "freertos")
+    add_subdirectory(${LIB_OS_NAME})
 endif()
 
 ################################################################################
