@@ -39,10 +39,12 @@ int perform_bootloader_core_operation();
  */
 int at91_main()
 {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
     //-------------------------------------------------------------------------
     // Configure traces
     //-------------------------------------------------------------------------
     TRACE_CONFIGURE(DBGU_STANDARD, 115200, BOARD_MCK);
+#endif
 
     //-------------------------------------------------------------------------
     // Enable I-Cache
@@ -106,7 +108,7 @@ int perform_bootloader_core_operation() {
     CP15_Disable_I_Cache();
 
     /* Not required, PIT not used for now */
-    disable_pit_aic();
+    //disable_pit_aic();
 
     jump_to_sdram_application(0x304000, SECOND_STAGE_BL_JUMP_ADDR);
 
