@@ -31,8 +31,6 @@ elseif(${CMAKE_BUILD_TYPE} MATCHES "RelWithDebInfo")
 		"flags: ${CMAKE_C_FLAGS_RELWITHDEBINFO}"
 	)
 elseif(${CMAKE_BUILD_TYPE} MATCHES "MinSizeRel")
-    set(CMAKE_C_FLAGS_MINSIZEREL "-Os -g0" PARENT_SCOPE)
-    set(CMAKE_C_FLAGS_MINSIZEREL "-Os -g0")
 	message(STATUS 
 		"Building Release (Size) application with "
 		"flags: ${CMAKE_C_FLAGS_MINSIZEREL}"
