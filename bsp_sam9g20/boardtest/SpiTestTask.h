@@ -18,7 +18,8 @@ public:
 		NON_BLOCKING,
 		PT1000,
 		GYRO,
-		MGM_LIS3
+		MGM_LIS3,
+		AT91_LIB
 	};
 
 	SpiTestTask(object_id_t objectId, SpiTestMode spiTestMode);
@@ -63,6 +64,7 @@ private:
 	void readGyroSensorsBlockRead(SPItransfer& spiTransfer);
 
 	void performBlockingMgmTest();
+	void performAt91LibTest();
 
 	SPIbus SPI_bus = bus1_spi; //!< SPI bus 0 can not be used on iOBC!
 };

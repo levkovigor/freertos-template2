@@ -59,6 +59,9 @@ ReturnValue_t SpiTestTask::performOperation(uint8_t operationCode) {
     else if(spiTestMode == SpiTestMode::MGM_LIS3) {
         performBlockingMgmTest();
     }
+    else if(spiTestMode == SpiTestMode::AT91_LIB) {
+        performAt91LibTest();
+    }
     return RETURN_OK;
 }
 
@@ -614,3 +617,34 @@ void SpiTestTask::SPIcallback(SystemContext context, xSemaphoreHandle semaphore)
     }
 }
 
+void SpiTestTask::performAt91LibTest() {
+    uint8_t chipSelect = 0;
+    uint32_t configuration = SPI_PCS(chipSelect) | AT91C_SPI_PS_VARIABLE | AT91C_SPI_MSTR;
+    SPI_Configure(AT91C_BASE_SPI1, AT91C_ID_SPI1, configuration);
+    SPI_Enable(AT91C_BASE_SPI1);
+    AT91C_BASE_SPI1->SPI_CSR[chipSelect] = SPI_SCBR(1'000'000, BOARD_MCK) | AT91C_SPI_NCPHA
+            | SPI_DLYBCT(100, BOARD_MCK);
+    SPI_Write(AT91C_BASE_SPI1, chipSelect, 'H');
+    SPI_Write(AT91C_BASE_SPI1, chipSelect, 'a');
+    SPI_Write(AT91C_BASE_SPI1, chipSelect, 'l');
+    SPI_Write(AT91C_BASE_SPI1, chipSelect, 'l');
+    SPI_Write(AT91C_BASE_SPI1, chipSelect, 'o');
+    SPI_Write(AT91C_BASE_SPI1, chipSelect, '\r');
+    SPI_Write(AT91C_BASE_SPI1, chipSelect, '\n');
+
+//
+//    std::string welt = "Hallo\r\n";
+//    int result = SPI_WriteBuffer(AT91C_BASE_SPI1, (void*) welt.c_str(), welt.size());
+//    if(result == 1) {
+//        uint32_t ticks = 0;
+//        while(SPI_IsFinished(AT91C_BASE_SPI1)) {
+//            ticks ++;
+//        }
+//        sif::printInfo("ticks: %d\n",ticks);
+//    }
+//    else {
+//        sif::printInfo("No free DMA bank!\n\r");
+//    }
+
+
+}

@@ -252,9 +252,13 @@ void Factory::produce(void) {
     //	new RS232DeviceComIF(objects::RS232_DEVICE_COM_IF);
     new I2cDeviceComIF(objects::I2C_DEVICE_COM_IF);
     new GpioDeviceComIF(objects::GPIO_DEVICE_COM_IF);
+#if OBSW_ADD_SPI_TEST_TASK == 0
     new SpiDeviceComIF(objects::SPI_DEVICE_COM_IF);
+#endif
 
+#if OBSW_ADD_TEST_CODE == 1
 
+#if OBSW_ADD_SPI_TEST_TASK == 0
     /* Test Tasks AT91 */
     //size_t I2C_MAX_REPLY_LEN = 256;
     size_t SPI_MAX_REPLY_LEN = 128;
@@ -287,8 +291,6 @@ void Factory::produce(void) {
             objects::SPI_DEVICE_COM_IF, spiCookie);
     mgmHandler->setStartUpImmediately();
 
-
-#if OBSW_ADD_TEST_CODE == 1
     //CookieIF * i2cCookie_0 = new I2cCookie(addresses::I2C_ARDUINO_0,
     //        I2C_MAX_REPLY_LEN);
     spiCookie = new SpiCookie(addresses::SPI_ARDUINO_0,
@@ -297,18 +299,34 @@ void Factory::produce(void) {
             delayBetweenChars, SPI_MIN_BUS_SPEED, delayBeforeSpck);
     new AtmelArduinoHandler(objects::ARDUINO_0, objects::SPI_DEVICE_COM_IF,
             spiCookie, switches::DUMMY, std::string("Arduino 0"));
+#endif
 
+#if OBSW_ADD_LED_TASK == 1
 #ifdef ISIS_OBC_G20
     new LedTask(objects::LED_TASK, "IOBC_LED_TASK", LedTask::LedModes::WAVE_UP);
 #else
     new LedTask(objects::LED_TASK, "AT91_LED_TASK", LedTask::LedModes::WAVE_UP);
 #endif
-    // Don't use UART0 test together with Serial Polling Task!!
-    //new UART0TestTask("UART0 Test Task", objects::AT91_UART0_TEST_TASK);
-    //new UART2TestTask("UART2 Test Task", objects::AT91_UART2_TEST_TASK);
-    //new TwiTestTask(objects::AT91_I2C_TEST_TASK, 16);
-    //new SpiTestTask(objects::AT91_SPI_TEST_TASK, SpiTestTask::SpiTestMode::MGM_LIS3);
 #endif
+
+    // Don't use UART0 test together with Serial Polling Task!!
+#if OBSW_ADD_UART_0_TEST_TASK == 1
+    new UART0TestTask("UART0 Test Task", objects::AT91_UART0_TEST_TASK);
+#endif
+
+#if OBSW_ADD_UART_2_TEST_TASK == 1
+    new UART2TestTask("UART2 Test Task", objects::AT91_UART2_TEST_TASK);
+#endif
+
+#if OBSW_ADD_I2C_TEST_TASK == 1
+    new TwiTestTask(objects::AT91_I2C_TEST_TASK, 16);
+#endif
+
+#if OBSW_ADD_SPI_TEST_TASK == 1
+    new SpiTestTask(objects::AT91_SPI_TEST_TASK, SpiTestTask::SpiTestMode::AT91_LIB);
+#endif
+
+#endif /* OBSW_ADD_TEST_CODE == 1 */
 }
 
 void Factory::setStaticFrameworkObjectIds() {

@@ -332,6 +332,7 @@ void initTasks(void) {
         initmission::printAddObjectError("Thermal Controller", objects::THERMAL_CONTROLLER);
     }
 
+#if OBSW_ADD_SPI_TEST_TASK == 0
     /* SPI Communication Interface*/
     PeriodicTaskIF* spiComTask = taskFactory->createPeriodicTask(
             "SPI_COM_IF", 8, 1024 * 4, 0.4,genericMissedDeadlineFunc);
@@ -339,7 +340,7 @@ void initTasks(void) {
     if(result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("SPI ComIF", objects::SPI_DEVICE_COM_IF);
     }
-
+#endif
 
 #if OBSW_PERFORM_INTERNAL_UNIT_TESTS == 1
     InternalUnitTester unitTestClass;
@@ -390,7 +391,9 @@ void initTasks(void) {
     coreController->startTask();
     systemStateTask -> startTask();
     //ThermalController -> startTask();
+#if OBSW_ADD_SPI_TEST_TASK == 0
     spiComTask->startTask();
+#endif
 
 #if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Remaining FreeRTOS heap size: " << std::dec
@@ -501,10 +504,10 @@ void boardTestTaskInit() {
     /* SPI Test Task */
 #if OBSW_ADD_SPI_TEST_TASK == 1
     PeriodicTaskIF* spiTestTask = taskFactory->createPeriodicTask(
-            "SPI_TASK",4, 2048, 1, nullptr);
+            "SPI_TASK", 4, 2048, 1, nullptr);
     result = spiTestTask->addComponent(objects::AT91_SPI_TEST_TASK);
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component SPI Task failed" << std::endl;
+        initmission::printAddObjectError("SPI test task", objects::AT91_SPI_TEST_TASK);
     }
 #endif
 
