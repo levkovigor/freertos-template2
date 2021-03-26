@@ -14,6 +14,7 @@ endif()
 option(AT91_USE_LINK_TIME_OPTIMIZATION "Enable link time optimization" ON)
 option(AT91_DYN_TRACES "Dynamic traces for AT91 library" ON)
 option(AT91_USE_AT91_STDIO "Use stdio provided by AT91" OFF)
+option(AT91_ISOLATE_ERRONEOUS_PATHS "Can be disabled to prevent trap of erroneous paths" ON)
 
 if(NOT AT91_MEMORY)
     message(WARNING "AT91_MEMORY type not set, setting sdram")
@@ -77,6 +78,12 @@ target_compile_definitions(${LIB_AT91_NAME} PRIVATE
     OP_BOOTSTRAP_on
     ${AT91_MEMORY}
 )
+
+if(NOT AT91_ISOLATE_ERRONEOUS_PATHS)
+target_compile_options(${LIB_AT91_NAME} PRIVATE
+    "-fno-isolate-erroneous-paths-dereference"
+)
+endif()
 
 if(BOARD_IOBC)
     set(BOARD_INCLUDE_PACKAGE

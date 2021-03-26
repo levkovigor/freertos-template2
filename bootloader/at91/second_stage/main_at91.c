@@ -31,8 +31,11 @@
 
 extern void jump_to_sdram_application(uint32_t stack_ptr, uint32_t jump_address);
 
+#if USE_FREERTOS == 1
 void init_task(void* args);
 void handler_task(void * args);
+#endif
+
 int perform_bootloader_core_operation();
 void initialize_all_peripherals();
 void print_bl_info();
@@ -69,8 +72,8 @@ int at91_main()
     LED_Set(1);
 
 #if USE_FREERTOS == 0
-    /* Activate MS interrupt for timer base */
-    setup_timer_interrupt();
+    /* Activate MS interrupt for timer base. Again, disable because of issues with FreeRTOS */
+    //setup_timer_interrupt();
 
     /* Info printout */
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
@@ -166,7 +169,7 @@ int perform_bootloader_core_operation() {
 #endif
 
     CP15_Disable_I_Cache();
-    disable_pit_aic();
+    //disable_pit_aic();
 
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
 

@@ -84,6 +84,7 @@ else()
             set(AT91_USE_LINK_TIME_OPTIMIZATION ON)
         endif()
         set(AT91_USE_AT91_STDIO ON)
+        set(AT91_ISOLATE_ERRONEOUS_PATHS OFF)
         if(NOT BL_STAGE_TWO)
             add_definitions(-DAT91_BL_ST1)
 
@@ -341,6 +342,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(${TARGET_NAME} PRIVATE
         "-ffunction-sections"
         "-fdata-sections"
+        "-fno-isolate-erroneous-paths-dereference"
     )
     target_link_options(${TARGET_NAME} PRIVATE
         "-Wl,--gc-sections"
