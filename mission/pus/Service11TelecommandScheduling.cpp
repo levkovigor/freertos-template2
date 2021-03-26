@@ -28,6 +28,7 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest(uint8_t subservice) 
     case Subservice::DELETE_ACTIVITY:
         return this->handleRequest_DeleteActivity();
     case Subservice::TIMESHIFT_ACTIVITY:
+        return this->handleRequest_TimeshiftActivity();
     default:
         break;
     }
