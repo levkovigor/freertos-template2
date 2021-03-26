@@ -26,9 +26,9 @@ _dependencies
 .project
 .cproject 
 *.launch
-!**/eclipse/.project
-!**/eclipse/.cproject
-!**/eclipse/*.launch
+!**/eclipse/**/.project
+!**/eclipse/**/.cproject
+!**/eclipse/**/.launch
 .pydevproject
 
 # Python
