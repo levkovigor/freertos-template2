@@ -446,7 +446,7 @@ signed int vsnprintf(char *pStr, size_t length, const char *pFormat, va_list ap)
     }
 
     // Phase string
-    while (*pFormat != 0 && size < length) {
+    while (*pFormat != 0 && size < (signed int) length) {
 
         // Normal character
         if (*pFormat != '%') {
@@ -483,7 +483,7 @@ signed int vsnprintf(char *pStr, size_t length, const char *pFormat, va_list ap)
             }
 
             // Check if there is enough space
-            if (size + width > length) {
+            if (size + width > (signed int) length) {
 
                 width = length - size;
             }
@@ -516,7 +516,7 @@ signed int vsnprintf(char *pStr, size_t length, const char *pFormat, va_list ap)
     }
 
     // NULL-terminated (final \0 is not counted)
-    if (size < length) {
+    if ( size < (signed int) length ) {
 
         *pStr = 0;
     }

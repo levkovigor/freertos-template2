@@ -12,6 +12,8 @@ if(AT91_CREATE_GCC_SECTIONS)
 endif()
 
 option(AT91_USE_LINK_TIME_OPTIMIZATION "Enable link time optimization" ON)
+option(AT91_DYN_TRACES "Dynamic traces for AT91 library" ON)
+option(AT91_USE_AT91_STDIO "Use stdio provided by AT91" OFF)
 
 if(NOT AT91_MEMORY)
     message(WARNING "AT91_MEMORY type not set, setting sdram")
@@ -31,8 +33,6 @@ target_compile_definitions(${LIB_AT91_NAME} PRIVATE
     at91sam9g20
 )
 
-option(AT91_DYN_TRACES "Dynamic traces for AT91 library" ON)
-option(AT91_USE_AT91_STDIO "Use stdio provided by AT91" OFF)
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     if(NOT AT91_WARNING_FLAGS)
@@ -65,6 +65,7 @@ endif()
 
 target_compile_definitions(${LIB_AT91_NAME} INTERFACE
     at91sam9g20
+    DYN_TRACES=${DYN_TRACE_VALUE}
     ${AT91_MEMORY}
 )
 
