@@ -29,7 +29,7 @@ fi
 
 echo "Running command (without the leading +):"
 set -x # Print command 
-python3 cmake_build_config.py -o "${os_fsfw}" -g "${build_generator}" -b "size" \
-        -l "${builddir}" -d "${defines}" -t "${build_type}"
+python3 cmake_build_config.py -o "${os_fsfw}" -g "${build_generator}" -b "${build_type}" \
+        -l "${builddir}" -d "${defines}"
 # Use this if commands are added which should not be printed
 # set +x
