@@ -49,11 +49,12 @@ if(NOT HOST_BUILD)
              )
         endif()
         option(BL_USE_FREERTOS
-            "Use FreeRTOS for iOBC or AT91 second-stage bootloader" OFF
+            "Use FreeRTOS for iOBC or AT91 second-stage bootloader" ON
         )
         
         if(NOT BOARD_IOBC AND NOT BL_STAGE_TWO)
              set(SIMPLE_AT91_BL ON CACHE INTERNAL "Simple flag to detect simple bootloader")
+             set(BL_USE_FREERTOS OFF)
         endif() 
     endif()
 endif()

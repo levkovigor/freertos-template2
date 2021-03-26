@@ -27,7 +27,14 @@ endif
 
 endif # ($(BOARD), AT91SAM9G20_EK)
 
-CSRC += $(wildcard $(CURRENTPATH)/utility/*.c)
+CSRC += $(wildcard $(CURRENTPATH)/utility/CRC.c)
+CSRC += $(wildcard $(CURRENTPATH)/utility/faultHandler.c)
+
+ifndef IOBC
+ifeq ($(BL_STAGE), 2)
+CSRC += $(wildcard $(CURRENTPATH)/utility/hooks.c)
+endif
+endif
 
 INCLUDES += $(CURRENTPATH)
 INCLUDES += $(CURRENTPATH)/tinyfatfs

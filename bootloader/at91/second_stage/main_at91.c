@@ -1,7 +1,7 @@
 #include "../common/at91_boot_from_nand.h"
 #include "at91_boot_from_sd.h"
 #include <bootloaderConfig.h>
-#include <core/timer.h>
+#include <bootloader/core/timer.h>
 
 #include <bsp_sam9g20/common/SRAMApi.h>
 #include <bsp_sam9g20/common/VirtualFRAMApi.h>
