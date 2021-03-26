@@ -60,11 +60,9 @@ private:
 
     TelecommandMap telecommandMap;
 
-
-
     ReturnValue_t handleRequest_InsertActivity();
     ReturnValue_t handleRequest_DeleteActivity();
-
+    ReturnValue_t handleRequest_TimeshiftActivity();
 
     /**
      * De-serializes currentPacket and retrieves its de-serialized timestamp

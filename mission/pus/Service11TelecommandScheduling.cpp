@@ -22,11 +22,14 @@ Service11TelecommandScheduling::~Service11TelecommandScheduling() { }
 
 ReturnValue_t Service11TelecommandScheduling::handleRequest(uint8_t subservice) {
 
-    if (subservice == Subservice::INSERT_ACTIVITY){
+    switch(subservice){
+    case Subservice::INSERT_ACTIVITY:
         return this->handleRequest_InsertActivity();
-    }
-    else if (subservice == Subservice::DELETE_ACTIVITY){
+    case Subservice::DELETE_ACTIVITY:
         return this->handleRequest_DeleteActivity();
+    case Subservice::TIMESHIFT_ACTIVITY:
+    default:
+        break;
     }
 
     return HasReturnvaluesIF::RETURN_OK;
@@ -117,28 +120,40 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
 
 ReturnValue_t Service11TelecommandScheduling::handleRequest_DeleteActivity() {
 
-    // Strategy:
-    // get storeAddr + timestamp, if identical, then delete from map
-
     // get timestamp
     uint32_t deserializedTimestamp = 0;
     auto ret = this->GetDeserializedTimestamp(deserializedTimestamp);
-    if (ret != RETURN_OK){
+    if (ret != RETURN_OK) {
         return ret;
     }
 
-    // search for timestamp in map
+    // retrieve all corresponding timestamps, if any
+    // multiple timestamp keys can be inside map
+    auto range = telecommandMap.equal_range(deserializedTimestamp);
 
-
+    if (range.first == range.second) {
+        // no corresponding timestamp keys found
+        return HasReturnvaluesIF::RETURN_OK;
+    }
 
     // get store address
     store_address_t addr = this->currentPacket.getStoreAddress();
-    if (addr.raw == storeId::INVALID_STORE_ADDRESS){
+    if (addr.raw == storeId::INVALID_STORE_ADDRESS) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
+    // erase position from multimap, if storeAddress is equal to currentPacket's storeAddress
+    for (auto& it = range.first; it != range.second; ++it) {
+        if (it->second.storeAddr == addr) {
+            telecommandMap.erase(it);
+        }
+    }
+
+    return HasReturnvaluesIF::RETURN_OK;
+}
 
 
+ReturnValue_t Service11TelecommandScheduling::handleRequest_TimeshiftActivity() {
 
     return HasReturnvaluesIF::RETURN_OK;
 }
