@@ -17,7 +17,7 @@ job:
         - cmake --build . -j
     
     artifacts:
-        files:
+        paths:
             - Debug-AT91EK/sourceobsw-at91-debug
             - Debug-iOBC/sourceobsw-iobc-debug.bin
             - Mission-AT91EK/sourceobsw-at91-mission
