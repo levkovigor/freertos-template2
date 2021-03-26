@@ -75,7 +75,8 @@ def main():
     
     define_string = ""
     if args.defines is not None:
-        for define in args.defines:
+        define_list = args.defines[0].split()
+        for define in define_list:
             define_string += f"-D{define} "
     
     if args.builddir is None:

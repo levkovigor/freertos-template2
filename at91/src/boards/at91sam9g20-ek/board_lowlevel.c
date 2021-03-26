@@ -203,7 +203,7 @@ void LowLevelInit(void)
 #endif
 }
 
-void clearBssSection(void) {
-    extern char _sbss, _ebss;
-    memset(&_sbss, 0, &_ebss - &_sbss);
-}
+//void clearBssSection(void) {
+//    extern char _sbss, _ebss;
+//    memset(&_sbss, 0, &_ebss - &_sbss);
+//}
