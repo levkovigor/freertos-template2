@@ -252,18 +252,15 @@ if(NOT HOST_BUILD)
 endif()
     
 if(BOOTLOADER)
-
     add_subdirectory(${BOOTLOADER_PATH})
-
 else()
     add_subdirectory(${MISSION_PATH})
     add_subdirectory(${TEST_PATH})
     add_subdirectory(${FSFW_CONFIG_PATH})
+    add_subdirectory(${FSFW_PATH})
     if(ADD_ETL_LIB)
         add_subdirectory(${ETL_PATH})
     endif()
-    
-    add_subdirectory(${FSFW_PATH})
 endif()
 
 ################################################################################
@@ -316,21 +313,30 @@ if(NOT HOST_BUILD)
         endif()
     endif()
     
+    
+    if(NOT HOST_BUILD)
+        target_include_directories(${TARGET_NAME} PRIVATE
+            ${COMMON_AT91_CONFIG_PATH}
+        )
+    endif()
 endif()
+    
+# Add include paths for all sources.
+target_include_directories(${TARGET_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${FSFW_CONFIG_PATH}
+)
+
+# Compile options for all sources.
+target_compile_options(${TARGET_NAME} PRIVATE
+    ${WARNING_FLAGS}
+)
 
 if(USE_LTO)
     set_property(TARGET ${TARGET_NAME} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 endif()
 
-# Add include paths for all sources.
-target_include_directories(${TARGET_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${FSFW_CONFIG_PATH}
-    ${COMMON_AT91_CONFIG_PATH}
-)    
-
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-
     # Remove unused sections.
     target_compile_options(${TARGET_NAME} PRIVATE
         "-ffunction-sections"
@@ -345,11 +351,6 @@ endif()
 if(CMAKE_VERBOSE)
     message(STATUS "Warning flags: ${WARNING_FLAGS}")
 endif()
-         
-# Compile options for all sources.
-target_compile_options(${TARGET_NAME} PRIVATE
-    ${WARNING_FLAGS}
-)
 
 if(NOT CMAKE_SIZE)
     set(CMAKE_SIZE size)
@@ -358,7 +359,7 @@ if(NOT CMAKE_SIZE)
     endif()
 endif()
 
-if(OS_FSFW MATCHES "freertos")
+if(NOT HOST_BUILD)
     if(BOOTLOADER)
         set(TYPE_PRINTOUT "Bootloader")
         if(NOT BOARD_IOBC)
@@ -371,7 +372,7 @@ if(OS_FSFW MATCHES "freertos")
     else()
         set(TYPE_PRINTOUT "OBSW")
     endif()
-    set(TARGET_STRING "Target Board: ${BOARD_PRINTOUT} ${TYPE_PRINTOUT}")
+    set(TARGET_STRING "${BOARD_PRINTOUT} ${TYPE_PRINTOUT}")
     set(BUILD_TYPE_STR "debug")
     if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel" OR CMAKE_BUILD_TYPE MATCHES "Release")
         set(BUILD_TYPE_STR "mission")
@@ -395,7 +396,7 @@ if(OS_FSFW MATCHES "freertos")
         )
     endif()
 else()
-    set(TARGET_STRING "Target BSP: Hosted")
+    set(TARGET_STRING "Hosted")
 endif()
 
 get_target_property(OUTPUT_NAME_VAR ${TARGET_NAME} OUTPUT_NAME)
@@ -410,7 +411,7 @@ string(CONCAT POST_BUILD_COMMENT
     "Build directory: ${CMAKE_BINARY_DIR}\n"
     "Target OSAL: ${OS_FSFW}\n"
     "Target Build Type: ${CMAKE_BUILD_TYPE}\n"
-    "${TARGET_STRING}"
+    "Target Build: ${TARGET_STRING}"
 )
 
 add_custom_command(
