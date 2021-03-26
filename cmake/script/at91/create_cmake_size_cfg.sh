@@ -16,7 +16,7 @@ fi
 
 build_generator=""
 os_fsfw="freertos"
-builddir="MinSizeRel-AT91EK"
+builddir="Mission-AT91EK"
 
 if [ "${OS}" = "Windows_NT" ]; then
 	build_generator="MinGW Makefiles"

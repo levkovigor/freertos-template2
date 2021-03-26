@@ -19,3 +19,9 @@ job:
         - cd MinSizeRel-iOBC
         - cmake -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD_IOBC=ON ..
         - cmake --build . -j
+    
+    artifacts:
+        - Debug-AT91EK/sourceobsw-at91-debug
+        - Debug-AT91EK/sourceobsw-at91-debug.bin
+        - MinSizeRel-AT91EK/sourceobsw-at91-mission
+        - MinSizeRel-AT91EK/sourceobsw-at91-mission.bin

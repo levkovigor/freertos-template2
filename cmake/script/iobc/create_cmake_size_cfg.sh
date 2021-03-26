@@ -16,7 +16,7 @@ fi
 
 build_generator=""
 os_fsfw="freertos"
-builddir="MinSizeRel-iOBC"
+builddir="Mission-iOBC"
 defines="BOARD_IOBC=ON"
 
 if [ "${OS}" = "Windows_NT" ]; then

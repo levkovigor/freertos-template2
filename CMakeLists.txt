@@ -252,7 +252,7 @@ if(OS_FSFW MATCHES "freertos")
     set(TARGET_STRING "Target board: ${BOARD_PRINTOUT}")
     set(BUILD_TYPE_STR "debug")
     if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel")
-        set(BUILD_TYPE_STR "release")
+        set(BUILD_TYPE_STR "mission")
     endif()
     if(BOARD_IOBC)
         set_target_properties(${TARGET_NAME} PROPERTIES 

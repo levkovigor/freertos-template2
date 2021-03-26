@@ -16,7 +16,7 @@ fi
 
 build_generator=""
 os_fsfw="host"
-builddir="MinSizeRel-Host"
+builddir="Mission-Host"
 
 if [ "${OS}" = "Windows_NT" ]; then
 	build_generator="MinGW Makefiles"

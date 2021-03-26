@@ -1,12 +1,14 @@
 # CMake
-Debug
-Debug*
-Release
-Release*
-MinSizeRel
-MinSizeRel*
-RelWithDeb
-RelWithDeb*
+/Debug
+/Debug*
+/Release
+/Release*
+/MinSizeRel
+/MinSizeRel*
+/RelWithDeb
+/RelWithDeb*
+/Mission
+/Mission*
 
 # Make
 _build/*
