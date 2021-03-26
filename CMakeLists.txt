@@ -28,6 +28,9 @@ if(OS_FSFW MATCHES "freertos")
     
     option(BOARD_IOBC "iOBC target hardware instead of AT91SAM9G20-EK development board" OFF)
     option(BOOTLOADER "Build bootloader" OFF)
+    option(SAT_BUILD
+        "Build for the flatsat or mission setup with all peripherals connected" OFF
+    )
 endif()
 
 if(BOARD_IOBC)
