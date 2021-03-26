@@ -1,6 +1,6 @@
 #include "../common/at91_boot_from_nand.h"
 #include <bootloaderConfig.h>
-#include <core/timer.h>
+#include <bootloader/core/timer.h>
 
 #include <board.h>
 #include <AT91SAM9G20.h>
@@ -10,7 +10,7 @@
 #include <peripherals/pio/pio.h>
 #include <peripherals/aic/aic.h>
 #include <peripherals/pit/pit.h>
-#include <cp15/cp15.h>
+#include <peripherals/cp15/cp15.h>
 
 #include <bsp_sam9g20/common/lowlevel.h>
 #include <hal/Timing/RTT.h>

@@ -89,7 +89,7 @@ CUSTOM_DEFINES += -DADD_CR
 endif
 
 CHIP_NAME = sam9g20
-BOARD_FILE_ROOT = $(CHIP_NAME)
+BOARD_FILE_ROOT = bsp_$(CHIP_NAME)
 
 ifdef IOBC
 CHIP_PATH = iobc
@@ -117,7 +117,7 @@ BOOTLOADER_PATH = bootloader
 FREERTOS_PATH = freertos
 COMMON_PATH = $(BOARD_FILE_ROOT)/common
 CORE_PATH = $(BOOTLOADER_PATH)/core
-AT91_PATH = $(BOARD_FILE_ROOT)/at91
+AT91_PATH = at91
 
 LINKER_SCRIPT_PATH = $(BOOTLOADER_PATH)
 
@@ -535,7 +535,7 @@ ALL_OBJECTS =  $(ASM_OBJECTS) $(C_OBJECTS) $(CXX_OBJECTS) $(FREERTOS_OBJECTS) $(
 # Generates binary and displays all build properties
 # -p with mkdir ignores error and creates directory when needed.
 
-# SHOW_DETAILS = 1
+SHOW_DETAILS = 1
 
 $(BINDIR)/$(BINARY_NAME).bin: $(BINDIR)/$(BINARY_NAME).elf
 	@echo

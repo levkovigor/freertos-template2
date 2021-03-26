@@ -31,25 +31,56 @@ if(OS_FSFW MATCHES "freertos")
     option(SAT_BUILD
         "If the iOBC is not connected to the flatsat or integrated into the satellite" ON
     )
+    
+    if(BOOTLOADER)
+        if(NOT BOARD_IOBC)
+            option(BL_STAGE_TWO 
+                "Build second stage bootloader instead of first stage bootloader" OFF
+             )
+        endif()
+        option(BL_USE_FREERTOS
+            "Use FreeRTOS for iOBC or AT91 second-stage bootloader" OFF
+        )
+    endif()
 endif()
 
 if(BOARD_IOBC)
     add_definitions(-DISIS_OBC_G20)
     set(BOARD_PRINTOUT "iOBC")
-    set(AT91_MEMORY sdram)
-    if(SAT_BUILD)
-        add_definitions(-DSAT_BUILD)
+    if(BOOTLOADER)
+        add_definitions(-DISIS_BL)
+        set(AT91_MEMORY norflash)
+    else()
+        set(AT91_MEMORY sdram)
+        if(SAT_BUILD)
+            add_definitions(-DSAT_BUILD)
+        endif()
     endif()
 else()
     add_definitions(-DAT91SAM9G20_EK)
     set(BOARD_PRINTOUT "AT91SAM9G20-EK")
-    set(AT91_MEMORY sdram)
+    if(BOOTLOADER)
+        if(NOT BL_STAGE_TWO)
+            add_definitions(-DAT91_BL_ST1)
+            set(SIMPLE_AT91_BL ON CACHE INTERNAL "Simple flag to detect simple bootloader")
+            set(AT91_MEMORY sram)
+        else()
+            add_definitions(-DAT91_BL_ST2)
+            set(AT91_MEMORY sdram)
+        endif()
+    else()
+        set(AT91_MEMORY sdram)
+    endif()
 endif()
 
 # Perform steps like loading toolchain files where applicable.
 
 # Project Name
-project(sourceobsw ASM C CXX)
+if(BOOTLOADER)
+    project(sourcebl ASM C)
+else()
+    project(sourceobsw ASM C CXX)
+endif()
 
 ################################################################################
 # Pre-Sources preparation
@@ -73,13 +104,15 @@ set(MISSION_PATH mission)
 set(TEST_PATH test)
 set(ETL_PATH etl)
 set(SAM9G20_PATH bsp_sam9g20)
+set(HOST_BSP_PATH bsp_hosted)
+set(BOOTLOADER_PATH bootloader)
 
 set(LIB_FREERTOS_PATH ${LIB_OS_NAME})
 set(LIB_AT91_PATH ${LIB_AT91_NAME})
 set(LIB_PRIVLIB_PATH ${LIB_PRIVAT_LIB_NAME})
 
 if(OS_FSFW MATCHES "host")
-    set(BSP_PATH bsp_hosted)
+    set(BSP_PATH ${HOST_BSP_PATH})
 elseif(OS_FSFW MATCHES "freertos")
     set(BSP_PATH ${SAM9G20_PATH})
 endif()
@@ -89,9 +122,18 @@ endif()
 set(COMMON_AT91_CONFIG_PATH "${CMAKE_SOURCE_DIR}/${SAM9G20_PATH}/common/config")
 
 if(OS_FSFW MATCHES "freertos")
-    set(FSFW_CONFIG_PATH "fsfwconfig")
+    if(BOOTLOADER)
+        # Only required because the AT91 library loads a specific header.
+        set(FSFW_CONFIG_PATH "${BOOTLOADER_PATH}/config")
+    else()
+        set(FSFW_CONFIG_PATH "fsfwconfig")
+    endif()
     set(FSFW_ADDITIONAL_LINK_LIBS ${LIB_AT91_NAME})
-    set(BOARD_CONFIG_PATH "${CMAKE_SOURCE_DIR}/${SAM9G20_PATH}/boardconfig")
+    if(BOOTLOADER)
+        set(BOARD_CONFIG_PATH "${CMAKE_SOURCE_DIR}/${BOOTLOADER_PATH}/config")
+    else()
+        set(BOARD_CONFIG_PATH "${CMAKE_SOURCE_DIR}/${SAM9G20_PATH}/boardconfig")
+    endif()
     set(FREERTOS_PATH "${CMAKE_SOURCE_DIR}/freertos")
     
     set(FREERTOS_ADDITIONAL_INCLUDE_PATHS
@@ -123,7 +165,21 @@ if(OS_FSFW MATCHES "freertos")
         ${BOARD_CONFIG_PATH}
     )
 
-    set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/${LIB_AT91_PATH}/linker-scripts/sdram.lds) 
+    if(NOT BOOTLOADER)
+        set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/${LIB_AT91_PATH}/linker-scripts/sdram.lds) 
+    else()
+        if(BOARD_IOBC)
+            set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/${BOOTLOADER_PATH}/norflash.lds)
+        else()
+            if(BL_STAGE_TWO)
+                set(LINKER_SCRIPT 
+                    ${CMAKE_CURRENT_SOURCE_DIR}/${BOOTLOADER_PATH}/sdram_second_stage_bl.lds
+                )
+            else()
+                set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/${BOOTLOADER_PATH}/sram.lds)
+            endif()
+        endif()
+    endif()
 else()
     set(FSFW_CONFIG_PATH "${BSP_PATH}/fsfwconfig")
 endif()
@@ -134,19 +190,22 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         -Wextra
         -Wimplicit-fallthrough=1
         -Wno-unused-parameter
+        -Wshadow=local
         -Wno-psabi
     )
-
-    if(NOT ${TGT_BSP} MATCHES "arm/raspberrypi")
-        # The RPi compiler is older and emitts odd warnings if this is used.
-        set(WARNING_FLAGS ${WARNING_FLAGS} -Wshadow=local)
-    endif()
 
     set(FSFW_WARNING_FLAGS ${WARNING_FLAGS})
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     add_compile_options(/permissive- /d2SSAOptimizer-)
     # To avoid nameclashes with min and max macro
     add_compile_definitions(NOMINMAX)
+endif()
+
+set(LINK_HCC ON)
+set(LINK_HAL ON)
+if(BOOTLOADER AND SIMPLE_AT91_BL)
+    set(LINK_HCC OFF)
+    set(LINK_HAL ON)
 endif()
 
 ################################################################################
@@ -158,51 +217,77 @@ add_executable(${TARGET_NAME})
 
 # Add subdirectories
 add_subdirectory(${BSP_PATH})
-add_subdirectory(${MISSION_PATH})
-add_subdirectory(${TEST_PATH})
-add_subdirectory(${FSFW_CONFIG_PATH})
-if(ADD_ETL_LIB)
-    add_subdirectory(${ETL_PATH})
-endif()
 
 if(OS_FSFW MATCHES "freertos")
     add_subdirectory(${LIB_FREERTOS_PATH})
-    add_subdirectory(${LIB_PRIVLIB_PATH})
     add_subdirectory(${LIB_AT91_PATH})
+    add_subdirectory(${LIB_PRIVLIB_PATH})
 endif()
+    
+if(BOOTLOADER)
 
-add_subdirectory(${FSFW_PATH})
+    add_subdirectory(${BOOTLOADER_PATH})
+
+else()
+    add_subdirectory(${MISSION_PATH})
+    add_subdirectory(${TEST_PATH})
+    add_subdirectory(${FSFW_CONFIG_PATH})
+    if(ADD_ETL_LIB)
+        add_subdirectory(${ETL_PATH})
+    endif()
+    
+    add_subdirectory(${FSFW_PATH})
+endif()
 
 ################################################################################
 # Post-Sources preparation
 ################################################################################
 
 # Add libraries for all sources.
-target_link_libraries(${TARGET_NAME} PRIVATE
-    ${LIB_FSFW_NAME} 
-)
-
-if(ADD_ETL_LIB)
+if(NOT BOOTLOADER)
     target_link_libraries(${TARGET_NAME} PRIVATE
-        ${LIB_ETL_NAME}
+        ${LIB_FSFW_NAME} 
     )
+    
+    if(ADD_ETL_LIB)
+        target_link_libraries(${TARGET_NAME} PRIVATE
+            ${LIB_ETL_NAME}
+        )
+    endif()
 endif()
 
+set(LINK_FREERTOS OFF)
 
 if(OS_FSFW MATCHES "freertos")
     target_link_libraries(${TARGET_NAME} PRIVATE
-        ${LIB_OS_NAME}
         ${LIB_AT91_NAME}
     )
-endif()
-
-if(OS_FSFW MATCHES "freertos")
+    
+    if(BOOTLOADER)
+        if(BL_USE_FREERTOS)
+            set(LINK_FREERTOS ON)
+        endif()
+    else()
+        set(LINK_FREERTOS ON)
+    endif()
+    
+    if(LINK_FREERTOS)
+        target_link_libraries(${TARGET_NAME} PRIVATE
+             ${LIB_OS_NAME}
+        )
+    else()
+        add_definitions(-DNO_RTOS)
+    endif()
+    
     if(LINKER_SCRIPT)
         target_link_options(${TARGET_NAME} PRIVATE
-            -Wl,--undefined,_printf_float -Wl,--undefined,_scanf_float
             -T${LINKER_SCRIPT}
-
         )
+        if(NOT BOOTLOADER)
+            target_link_options(${TARGET_NAME} PRIVATE
+                -Wl,--undefined,_printf_float -Wl,--undefined,_scanf_float
+            )
+        endif()
     endif()
     
     # Remove unused sections.

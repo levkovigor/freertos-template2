@@ -4,15 +4,29 @@ if(BOARD_IOBC)
         FRAMNoOs.c
     )
 else()
-    target_sources(${TARGET_NAME} PRIVATE
-        VirtualFRAMApi.c
-    )
+    if(BOOTLOADER AND BL_STAGE_TWO)
+        target_sources(${TARGET_NAME} PRIVATE
+            VirtualFRAMApi.c
+        )
+    endif()
 endif()
 
 target_sources(${TARGET_NAME} PRIVATE
     lowlevel.c
-    SDCardApi.c
-    SRAMApi.c
-    watchdog.c
-    norflashHook.c
 )
+
+if(NOT SIMPLE_AT91_BL)
+    target_sources(${TARGET_NAME} PRIVATE
+        SRAMApi.c
+        norflashHook.c
+        SDCardApi.c
+    )
+endif()
+
+if(LINK_FREERTOS)
+    target_sources(${TARGET_NAME} PRIVATE
+        watchdog.c
+    )
+endif()
+
+add_subdirectory(config)
