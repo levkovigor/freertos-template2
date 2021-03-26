@@ -11,7 +11,7 @@ if(AT91_CREATE_GCC_SECTIONS)
     option(AT91_REMOVE_UNUSED_CODE "Remove unused code." ON)
 endif()
 
-option(AT91_USE_LINK_TIME_OPTIMIZATION "Enable link time optimization" ON)
+option(AT91_USE_LINK_TIME_OPTIMIZATION "Enable link time optimization" OFF)
 option(AT91_DYN_TRACES "Dynamic traces for AT91 library" ON)
 option(AT91_USE_AT91_STDIO "Use stdio provided by AT91" OFF)
 option(AT91_ISOLATE_ERRONEOUS_PATHS "Can be disabled to prevent trap of erroneous paths" ON)
