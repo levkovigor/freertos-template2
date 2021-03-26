@@ -21,8 +21,10 @@
 
 #include <hal/Timing/RTT.h>
 
+#if USE_FREERTOS == 1
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#endif
 
 #include <stdbool.h>
 #include <string.h>
@@ -99,6 +101,7 @@ int at91_main()
     return 0;
 }
 
+#if USE_FREERTOS == 1
 void init_task(void * args) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     print_bl_info();
@@ -126,7 +129,6 @@ void init_task(void * args) {
     vTaskDelete(NULL);
 }
 
-
 void handler_task(void * args) {
     /* Wait for initialization to finish */
     vTaskSuspend(NULL);
@@ -136,6 +138,7 @@ void handler_task(void * args) {
 
     perform_bootloader_core_operation();
 }
+#endif
 
 void initialize_all_peripherals() {
 }
