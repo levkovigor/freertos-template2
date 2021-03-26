@@ -10,18 +10,18 @@ job:
         - cmake -DCMAKE_BUILD_TYPE=Debug -DBOARD_IOBC=ON ..
         - cmake --build . -j
 
-        - mkdir MinSizeRel-AT91EK
-        - cd MinSizeRel-AT91EK
+        - mkdir Mission-AT91EK
+        - cd Mission-AT91EK
         - cmake -DCMAKE_BUILD_TYPE=MinSizeRel ..
         - cmake --build . -j
 
-        - mkdir MinSizeRel-iOBC
-        - cd MinSizeRel-iOBC
+        - mkdir Mission-iOBC
+        - cd Mission-iOBC
         - cmake -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD_IOBC=ON ..
         - cmake --build . -j
     
     artifacts:
         - Debug-AT91EK/sourceobsw-at91-debug
-        - Debug-AT91EK/sourceobsw-at91-debug.bin
-        - MinSizeRel-AT91EK/sourceobsw-at91-mission
-        - MinSizeRel-AT91EK/sourceobsw-at91-mission.bin
+        - Debug-iOBC/sourceobsw-iobc-debug.bin
+        - Mission-AT91EK/sourceobsw-at91-mission
+        - Mission-iobc/sourceobsw-iobc-mission.bin
