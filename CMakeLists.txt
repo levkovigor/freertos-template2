@@ -25,6 +25,9 @@ option(ADD_ETL_LIB "Add ETL library" ON)
 option(BOOTLOADER "Build bootloader" OFF)
 option(HOST_BUILD "Build for host" OFF)
 option(USE_LTO "Enable link-time optimization" OFF)
+option(DISABLE_AGGRESSIVE_OPTIMIZATION 
+    "Enable to use O2 instead of O3 optimization for the release build" OFF
+)
 
 if(NOT OS_FSFW)
     if(HOST_BUILD)
