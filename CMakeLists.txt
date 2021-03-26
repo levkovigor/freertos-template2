@@ -330,9 +330,6 @@ target_include_directories(${TARGET_NAME} PRIVATE
 )    
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_link_options(${TARGET_NAME} PRIVATE
-        "-Wl,-Map=${TARGET_NAME}.map"
-    )
 
     # Remove unused sections.
     target_compile_options(${TARGET_NAME} PRIVATE
@@ -376,16 +373,11 @@ if(OS_FSFW MATCHES "freertos")
     endif()
     set(TARGET_STRING "Target Board: ${BOARD_PRINTOUT} ${TYPE_PRINTOUT}")
     set(BUILD_TYPE_STR "debug")
-    if(NOT BOOTLOADER)
-        if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel" OR "Release")
-            set(BUILD_TYPE_STR "mission")
-        endif()
-    else()
-        if(BOARD_IOBC)
-            if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel" OR "Release")
-                set(BUILD_TYPE_STR "mission")
-            endif()
-        else()
+    if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel" OR CMAKE_BUILD_TYPE MATCHES "Release")
+        set(BUILD_TYPE_STR "mission")
+    endif()
+    if(BOOTLOADER)
+        if(NOT BOARD_IOBC)
             if(SIMPLE_AT91_BL)
                 set(BUILD_TYPE_STR "stage1")
             else()
@@ -406,14 +398,20 @@ else()
     set(TARGET_STRING "Target BSP: Hosted")
 endif()
 
+get_target_property(OUTPUT_NAME_VAR ${TARGET_NAME} OUTPUT_NAME)
+
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_link_options(${TARGET_NAME} PRIVATE
+        "-Wl,-Map=${OUTPUT_NAME_VAR}.map"
+    )
+endif()
+
 string(CONCAT POST_BUILD_COMMENT
     "Build directory: ${CMAKE_BINARY_DIR}\n"
     "Target OSAL: ${OS_FSFW}\n"
     "Target Build Type: ${CMAKE_BUILD_TYPE}\n"
     "${TARGET_STRING}"
 )
-
-get_target_property(OUTPUT_NAME_VAR ${TARGET_NAME} OUTPUT_NAME)
 
 add_custom_command(
    TARGET ${TARGET_NAME}

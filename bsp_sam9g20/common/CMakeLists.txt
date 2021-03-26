@@ -4,7 +4,7 @@ if(BOARD_IOBC)
         FRAMNoOs.c
     )
 else()
-    if(BOOTLOADER AND BL_STAGE_TWO)
+    if(NOT SIMPLE_AT91_BL)
         target_sources(${TARGET_NAME} PRIVATE
             VirtualFRAMApi.c
         )
