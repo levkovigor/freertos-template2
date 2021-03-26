@@ -21,12 +21,18 @@ if(NOT SIMPLE_AT91_BL)
         norflashHook.c
         SDCardApi.c
     )
-endif()
 
-if(LINK_FREERTOS)
-    target_sources(${TARGET_NAME} PRIVATE
-        watchdog.c
-    )
+    if(BOOTLOADER)
+        if(BL_USE_FREERTOS)
+            target_sources(${TARGET_NAME} PRIVATE
+                watchdog.c
+            )
+        endif()
+    else()
+        target_sources(${TARGET_NAME} PRIVATE
+            watchdog.c
+        )
+    endif()
 endif()
 
 add_subdirectory(config)
