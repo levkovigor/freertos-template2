@@ -34,6 +34,8 @@ ifndef IOBC
 ifeq ($(BL_STAGE), 2)
 CSRC += $(wildcard $(CURRENTPATH)/utility/hooks.c)
 endif
+else
+CSRC += $(wildcard $(CURRENTPATH)/utility/hooks.c)
 endif
 
 INCLUDES += $(CURRENTPATH)
