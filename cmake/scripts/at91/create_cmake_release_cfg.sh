@@ -16,7 +16,7 @@ fi
 
 build_generator=""
 os_fsfw="freertos"
-build_type="size"
+build_type="release"
 builddir="Mission-AT91EK"
 
 if [ "${OS}" = "Windows_NT" ]; then

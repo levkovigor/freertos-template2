@@ -15,9 +15,10 @@ if [ "${counter}" -ge 5 ];then
 fi
 
 build_generator=""
-os_fsfw="freertos"
-build_type="size"
-builddir="Mission-AT91EK"
+os_fsfw="host"
+build_type="release"
+builddir="Mission-Host"
+defines="HOST_BUILD=ON"
 
 if [ "${OS}" = "Windows_NT" ]; then
 	build_generator="MinGW Makefiles"

@@ -16,7 +16,9 @@ fi
 
 build_generator=""
 os_fsfw="host"
+build_type="debug"
 builddir="Debug-Host"
+defines="HOST_BUILD=ON"
 
 if [ "${OS}" = "Windows_NT" ]; then
 	build_generator="MinGW Makefiles"
@@ -27,6 +29,6 @@ fi
 
 echo "Running command (without the leading +):"
 set -x # Print command 
-python3 cmake_build_config.py -o "${os_fsfw}" -g "${build_generator}" -b "debug" \
-        -l "${builddir}"
+python3 cmake_build_config.py -o "${os_fsfw}" -g "${build_generator}" -b "${build_type}" \
+        -l "${builddir}" -d "${defines}"
 # set +x

@@ -16,6 +16,7 @@ fi
 
 build_generator=""
 os_fsfw="freertos"
+build_type="debug"
 builddir="Debug-AT91EK"
 
 if [ "${OS}" = "Windows_NT" ]; then
@@ -27,6 +28,6 @@ fi
 
 echo "Running command (without the leading +):"
 set -x # Print command 
-python3 cmake_build_config.py -o "${os_fsfw}" -g "${build_generator}" -b "debug" \
+python3 cmake_build_config.py -o "${os_fsfw}" -g "${build_generator}" -b "${build_type}" \
         -l "${builddir}"
 # set +x
