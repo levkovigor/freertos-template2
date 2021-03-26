@@ -1,22 +1,18 @@
 job:
     script:
-        - mkdir Debug-AT91EK
-        - cd Debug-AT91EK
+        - mkdir Debug-AT91EK && cd Debug-AT91EK
         - cmake -DCMAKE_BUILD_TYPE=Debug ..
         - cmake --build . -j
 
-        - mkdir Debug-iOBC
-        - cd Debug-iOBC
+        - mkdir Debug-iOBC && cd Debug-iOBC
         - cmake -DCMAKE_BUILD_TYPE=Debug -DBOARD_IOBC=ON ..
         - cmake --build . -j
 
-        - mkdir Mission-AT91EK
-        - cd Mission-AT91EK
+        - mkdir Mission-AT91EK && cd Mission-AT91EK
         - cmake -DCMAKE_BUILD_TYPE=MinSizeRel ..
         - cmake --build . -j
 
-        - mkdir Mission-iOBC
-        - cd Mission-iOBC
+        - mkdir Mission-iOBC && cd Mission-iOBC
         - cmake -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD_IOBC=ON ..
         - cmake --build . -j
     
