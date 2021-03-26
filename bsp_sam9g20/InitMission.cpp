@@ -93,7 +93,7 @@ void runMinimalTask(void);
  * @ingroup init
  */
 void initMission(void) {
-    printf("\n\r-- FreeRTOS task scheduler started --\n\r");
+    printf("\r\n-- FreeRTOS task scheduler started --\n\r");
     printf("-- SOURCE On-Board Software --\n\r");
     printf("-- %s --\n\r", BOARD_NAME_PRINT);
     printf("-- Software version %s v%d.%d.%d --\n\r", SW_NAME, SW_VERSION, SW_SUBVERSION,
