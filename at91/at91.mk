@@ -2,7 +2,7 @@
 # Set up include paths first
 ####################################################################################################
 AT91_INC_PATH = $(CURRENTPATH)/include
-AT91_PATH = $(CURRENTPATH)
+# AT91_PATH = $(CURRENTPATH)
 AT91_LIB = $(AT91_INC_PATH)/at91
 
 INCLUDES += $(AT91_INC_PATH)

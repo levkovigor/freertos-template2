@@ -32,7 +32,7 @@ target_compile_definitions(${LIB_AT91_NAME} PRIVATE
 option(AT91_DYN_TRACES "Dynamic traces for AT91 library" ON)
 option(AT91_USE_AT91_STDIO "Use stdio provided by AT91" OFF)
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     if(NOT AT91_WARNING_FLAGS)
         set(AT91_WARNING_FLAGS
             -Wall

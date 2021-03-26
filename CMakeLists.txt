@@ -184,7 +184,7 @@ else()
     set(FSFW_CONFIG_PATH "${BSP_PATH}/fsfwconfig")
 endif()
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     set(WARNING_FLAGS
         -Wall
         -Wextra
@@ -195,7 +195,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     )
 
     set(FSFW_WARNING_FLAGS ${WARNING_FLAGS})
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+elseif(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
     add_compile_options(/permissive- /d2SSAOptimizer-)
     # To avoid nameclashes with min and max macro
     add_compile_definitions(NOMINMAX)
@@ -290,11 +290,6 @@ if(OS_FSFW MATCHES "freertos")
         endif()
     endif()
     
-    # Remove unused sections.
-    target_compile_options(${TARGET_NAME} PRIVATE
-        "-ffunction-sections"
-        "-fdata-sections"
-    )
 endif()
 
 # Add include paths for all sources.
@@ -304,8 +299,13 @@ target_include_directories(${TARGET_NAME} PRIVATE
     ${COMMON_AT91_CONFIG_PATH}
 )    
 
-
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    # Remove unused sections.
+    target_compile_options(${TARGET_NAME} PRIVATE
+        "-ffunction-sections"
+        "-fdata-sections"
+    )
+    
     target_link_options(${TARGET_NAME} PRIVATE
         "-Wl,-Map=${TARGET_NAME}.map"
     )
@@ -313,7 +313,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_link_options(${TARGET_NAME} PRIVATE
         "-Wl,--gc-sections"
     )
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+elseif(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
 endif()
 
 if(CMAKE_VERBOSE)
