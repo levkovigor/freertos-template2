@@ -17,8 +17,8 @@ fi
 build_generator=""
 os_fsfw="freertos"
 builddir="Mission-BL2-AT91EK"
-defines="BOOTLOADER=ON BL_STAGE_TWO=ON"
-build_type="size"
+defines="BOOTLOADER=ON BL_STAGE_TWO=ON DISABLE_AGGRESSIVE_OPTIMIZATION=ON"
+build_type="release"
 
 if [ "${OS}" = "Windows_NT" ]; then
 	build_generator="MinGW Makefiles"

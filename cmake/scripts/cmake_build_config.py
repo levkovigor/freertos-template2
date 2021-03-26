@@ -3,9 +3,9 @@
 """
 @brief  CMake configuration helper
 @details
-This script was written to have a portable way to perform the CMake configuration with various parameters on
-different OSes. It was first written for the FSFW Example, but could be adapted to be more generic
-in the future.
+This script was written to have a portable way to perform the CMake configuration with various
+parameters on different OSes. It was first written for the FSFW Example, but could be adapted to
+be more generic in the future.
 
 Run cmake_build_config.py --help to get more information.
 """
@@ -20,12 +20,18 @@ def main():
     print("-- Python CMake build configurator utility --")
 
     print("Parsing command line arguments..")
-    parser = argparse.ArgumentParser(description="Processing arguments for CMake build configuration.")
-    parser.add_argument("-o", "--osal", type=str, choices=["freertos", "linux", "rtems", "host"],
-                        help="FSFW OSAL. Valid arguments: host, linux, rtems, freertos")
-    parser.add_argument("-b", "--buildtype", type=str, choices=["debug", "release", "size", "reldeb"],
-                        help="CMake build type. Valid arguments: debug, release, size, reldeb "
-                             "(Release with Debug Information)", default="debug")
+    parser = argparse.ArgumentParser(
+        description="Processing arguments for CMake build configuration."
+    )
+    parser.add_argument(
+        "-o", "--osal", type=str, choices=["freertos", "linux", "rtems", "host"],
+        help="FSFW OSAL. Valid arguments: host, linux, rtems, freertos"
+    )
+    parser.add_argument(
+        "-b", "--buildtype", type=str, choices=["debug", "release", "size", "reldeb"],
+        help="CMake build type. Valid arguments: debug, release, size, reldeb "
+             "(Release with Debug Information)", default="debug"
+    )
     parser.add_argument("-l", "--builddir", type=str, help="Specify build directory.")
     parser.add_argument("-g", "--generator", type=str, help="CMake Generator")
     parser.add_argument(
@@ -33,8 +39,10 @@ def main():
         help="Additional custom defines passed to CMake (supply without -D prefix!)",
         nargs="*", type=str
     )
-    parser.add_argument("-t", "--target-bsp", type=str, help="Target BSP, combination of "
-                                                             "architecture and machine")
+    parser.add_argument(
+        "-t", "--target-bsp", type=str,
+        help="Target BSP, combination of architecture and machine"
+    )
 
     args = parser.parse_args()
 
