@@ -28,7 +28,7 @@ endif
 endif # ($(BOARD), AT91SAM9G20_EK)
 
 CSRC += $(wildcard $(CURRENTPATH)/utility/CRC.c)
-CSRC += $(wildcard $(CURRENTPATH)/utility/faultHandler.c)
+CSRC += $(wildcard $(CURRENTPATH)/config/faultHandler.c)
 
 ifndef IOBC
 ifeq ($(BL_STAGE), 2)

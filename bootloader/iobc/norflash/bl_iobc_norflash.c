@@ -9,11 +9,11 @@
 #include <board.h>
 #include <AT91SAM9G20.h>
 #include <board_memories.h>
-#include <peripherals/dbgu/dbgu.h>
-#include <peripherals/pio/pio.h>
-#include <peripherals/aic/aic.h>
-#include <peripherals/pio/pio.h>
-#include <cp15/cp15.h>
+#include <at91/peripherals/dbgu/dbgu.h>
+#include <at91/peripherals/pio/pio.h>
+#include <at91/peripherals/aic/aic.h>
+#include <at91/peripherals/pio/pio.h>
+#include <at91/peripherals/cp15/cp15.h>
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
 #include <utility/trace.h>

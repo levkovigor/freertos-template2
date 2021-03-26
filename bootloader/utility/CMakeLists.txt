@@ -5,6 +5,5 @@ if(BL_USE_FREERTOS)
 endif()
 
 target_sources(${TARGET_NAME} PRIVATE
-    faultHandler.c
     CRC.c
 )
