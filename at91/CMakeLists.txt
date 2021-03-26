@@ -11,6 +11,8 @@ if(AT91_CREATE_GCC_SECTIONS)
     option(AT91_REMOVE_UNUSED_CODE "Remove unused code." ON)
 endif()
 
+option(AT91_USE_LINK_TIME_OPTIMIZATION "Enable link time optimization" ON)
+
 if(NOT AT91_MEMORY)
     message(WARNING "AT91_MEMORY type not set, setting sdram")
     set(AT91_MEMORY sdram CACHE STRING "AT91 memory type")
@@ -119,5 +121,9 @@ if(AT91_CREATE_GCC_SECTIONS)
         target_link_options(${LIB_AT91_NAME} PRIVATE
             "-Wl,--gc-sections"
         )
+    endif()
+    
+    if(AT91_USE_LINK_TIME_OPTIMIZATION)
+        set_property(TARGET ${LIB_AT91_NAME} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
     endif()
 endif()
