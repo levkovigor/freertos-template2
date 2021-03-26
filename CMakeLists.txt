@@ -29,7 +29,7 @@ if(OS_FSFW MATCHES "freertos")
     option(BOARD_IOBC "iOBC target hardware instead of AT91SAM9G20-EK development board" OFF)
     option(BOOTLOADER "Build bootloader" OFF)
     option(SAT_BUILD
-        "Build for the flatsat or mission setup with all peripherals connected" OFF
+        "If the iOBC is not connected to the flatsat or integrated into the satellite" ON
     )
 endif()
 
@@ -37,6 +37,9 @@ if(BOARD_IOBC)
     add_definitions(-DISIS_OBC_G20)
     set(BOARD_PRINTOUT "iOBC")
     set(AT91_MEMORY sdram)
+    if(SAT_BUILD)
+        add_definitions(-DSAT_BUILD)
+    endif()
 else()
     add_definitions(-DAT91SAM9G20_EK)
     set(BOARD_PRINTOUT "AT91SAM9G20-EK")
