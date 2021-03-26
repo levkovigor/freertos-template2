@@ -110,7 +110,7 @@ int perform_bootloader_core_operation() {
     /* Not required, PIT not used for now */
     //disable_pit_aic();
 
-    jump_to_sdram_application(0x304000, SECOND_STAGE_BL_JUMP_ADDR);
+    jump_to_sdram_application(0x22000000 - 1024, SECOND_STAGE_BL_JUMP_ADDR);
 
     /* Should never be reached */
     return 0;
