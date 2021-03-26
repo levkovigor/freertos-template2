@@ -45,3 +45,7 @@ void ms_tick_isr(void)
     ( void ) ulDummy;
     /* The AIC is cleared in the asm wrapper, outside of this function. */
 }
+
+uint32_t get_ms_counter() {
+    return u32_ms_counter;
+}
