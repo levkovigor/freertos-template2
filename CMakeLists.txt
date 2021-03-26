@@ -17,17 +17,26 @@ cmake_minimum_required(VERSION 3.13)
 
 set(CMAKE_SCRIPT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+################################################################################
+# Options
+################################################################################
+
 option(ADD_ETL_LIB "Add ETL library" ON)
+option(BOOTLOADER "Build bootloader" OFF)
+option(HOST_BUILD "Build for host" OFF)
 
 if(NOT OS_FSFW)
-    set(OS_FSFW freertos CACHE STRING "OS for the FSFW.")
+    if(HOST_BUILD)
+        set(OS_FSFW host CACHE STRING "OS for the FSFW.")
+    else()
+        set(OS_FSFW freertos CACHE STRING "OS for the FSFW.")
+    endif()
 endif()
 
-if(OS_FSFW MATCHES "freertos")
+if(NOT HOST_BUILD)
     set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SCRIPT_PATH}/Arm926ejsCrossCompile.cmake)
     
     option(BOARD_IOBC "iOBC target hardware instead of AT91SAM9G20-EK development board" OFF)
-    option(BOOTLOADER "Build bootloader" OFF)
     option(SAT_BUILD
         "If the iOBC is not connected to the flatsat or integrated into the satellite" ON
     )
@@ -41,6 +50,10 @@ if(OS_FSFW MATCHES "freertos")
         option(BL_USE_FREERTOS
             "Use FreeRTOS for iOBC or AT91 second-stage bootloader" OFF
         )
+        
+        if(NOT BOARD_IOBC AND NOT BL_STAGE_TWO)
+             set(SIMPLE_AT91_BL ON CACHE INTERNAL "Simple flag to detect simple bootloader")
+        endif() 
     endif()
 endif()
 
@@ -62,7 +75,7 @@ else()
     if(BOOTLOADER)
         if(NOT BL_STAGE_TWO)
             add_definitions(-DAT91_BL_ST1)
-            set(SIMPLE_AT91_BL ON CACHE INTERNAL "Simple flag to detect simple bootloader")
+
             set(AT91_MEMORY sram)
         else()
             add_definitions(-DAT91_BL_ST2)
@@ -121,13 +134,15 @@ endif()
 # display information about compiler etc.
 set(COMMON_AT91_CONFIG_PATH "${CMAKE_SOURCE_DIR}/${SAM9G20_PATH}/common/config")
 
-if(OS_FSFW MATCHES "freertos")
+if(NOT HOST_BUILD)
     if(BOOTLOADER)
         # Only required because the AT91 library loads a specific header.
         set(FSFW_CONFIG_PATH "${BOOTLOADER_PATH}/config")
     else()
         set(FSFW_CONFIG_PATH "fsfwconfig")
     endif()
+    set(FSFW_CONFIG_PATH_FULL "${CMAKE_SOURCE_DIR}/${FSFW_CONFIG_PATH}")
+    
     set(FSFW_ADDITIONAL_LINK_LIBS ${LIB_AT91_NAME})
     if(BOOTLOADER)
         set(BOARD_CONFIG_PATH "${CMAKE_SOURCE_DIR}/${BOOTLOADER_PATH}/config")
@@ -158,13 +173,14 @@ if(OS_FSFW MATCHES "freertos")
     set(FREERTOS_KERNEL_SOURCE_FOLDER src)
 
     set(AT91_ADDITIONAL_INC_PATHS 
-        "${CMAKE_SOURCE_DIR}/${FSFW_CONFIG_PATH}"
+        ${FSFW_CONFIG_PATH_FULL}
         ${COMMON_AT91_CONFIG_PATH}
         ${FREERTOS_PORT_MACRO_PATH}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${BOARD_CONFIG_PATH}
     )
 
+    # Select correct linker script
     if(NOT BOOTLOADER)
         set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/${LIB_AT91_PATH}/linker-scripts/sdram.lds) 
     else()
@@ -203,10 +219,6 @@ endif()
 
 set(LINK_HCC ON)
 set(LINK_HAL ON)
-if(BOOTLOADER AND SIMPLE_AT91_BL)
-    set(LINK_HCC OFF)
-    set(LINK_HAL ON)
-endif()
 
 ################################################################################
 # Executable and Sources
@@ -218,7 +230,7 @@ add_executable(${TARGET_NAME})
 # Add subdirectories
 add_subdirectory(${BSP_PATH})
 
-if(OS_FSFW MATCHES "freertos")
+if(NOT HOST_BUILD)
     add_subdirectory(${LIB_FREERTOS_PATH})
     add_subdirectory(${LIB_AT91_PATH})
     add_subdirectory(${LIB_PRIVLIB_PATH})
@@ -256,13 +268,12 @@ if(NOT BOOTLOADER)
     endif()
 endif()
 
-set(LINK_FREERTOS OFF)
-
-if(OS_FSFW MATCHES "freertos")
+if(NOT HOST_BUILD)
     target_link_libraries(${TARGET_NAME} PRIVATE
         ${LIB_AT91_NAME}
     )
     
+    set(LINK_FREERTOS OFF)
     if(BOOTLOADER)
         if(BL_USE_FREERTOS)
             set(LINK_FREERTOS ON)
@@ -300,16 +311,15 @@ target_include_directories(${TARGET_NAME} PRIVATE
 )    
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_link_options(${TARGET_NAME} PRIVATE
+        "-Wl,-Map=${TARGET_NAME}.map"
+    )
+
     # Remove unused sections.
     target_compile_options(${TARGET_NAME} PRIVATE
         "-ffunction-sections"
         "-fdata-sections"
     )
-    
-    target_link_options(${TARGET_NAME} PRIVATE
-        "-Wl,-Map=${TARGET_NAME}.map"
-    )
-
     target_link_options(${TARGET_NAME} PRIVATE
         "-Wl,--gc-sections"
     )
@@ -320,7 +330,6 @@ if(CMAKE_VERBOSE)
     message(STATUS "Warning flags: ${WARNING_FLAGS}")
 endif()
          
-
 # Compile options for all sources.
 target_compile_options(${TARGET_NAME} PRIVATE
     ${WARNING_FLAGS}
@@ -336,8 +345,22 @@ endif()
 if(OS_FSFW MATCHES "freertos")
     set(TARGET_STRING "Target board: ${BOARD_PRINTOUT}")
     set(BUILD_TYPE_STR "debug")
-    if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel" OR "Release")
-        set(BUILD_TYPE_STR "mission")
+    if(NOT BOOTLOADER)
+        if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel" OR "Release")
+            set(BUILD_TYPE_STR "mission")
+        endif()
+    else()
+        if(BOARD_IOBC)
+            if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel" OR "Release")
+                set(BUILD_TYPE_STR "mission")
+            endif()
+        else()
+            if(SIMPLE_AT91_BL)
+                set(BUILD_TYPE_STR "stage1")
+            else()
+                set(BUILD_TYPE_STR "stage2")
+            endif()
+        endif()
     endif()
     if(BOARD_IOBC)
         set_target_properties(${TARGET_NAME} PROPERTIES 
@@ -351,7 +374,6 @@ if(OS_FSFW MATCHES "freertos")
 else()
     set(TARGET_STRING "Target BSP: Hosted")
 endif()
-
 
 string(CONCAT POST_BUILD_COMMENT
     "Build directory: ${CMAKE_BINARY_DIR}\n"
@@ -369,7 +391,7 @@ add_custom_command(
    COMMENT ${POST_BUILD_COMMENT}
 )
 
-if(OS_FSFW MATCHES "freertos")
+if(NOT HOST_BUILD)
     add_custom_command(
         TARGET ${TARGET_NAME}
         POST_BUILD
