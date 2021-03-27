@@ -72,7 +72,8 @@ int at91_main()
     LED_Set(1);
 
 #if USE_FREERTOS == 0
-    /* Activate MS interrupt for timer base. Again, disable because of issues with FreeRTOS */
+    /* Activate MS interrupt for timer base. Again, consider disabling
+    because of issues with FreeRTOS */
     //setup_timer_interrupt();
 
     /* Info printout */
