@@ -97,7 +97,7 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
     }
 
     // DEBUG
-    sif::printInfo("Deserialized Timestamp: %d", deserializedTimestamp);
+    sif::printInfo("Deserialized Timestamp: %d\n", deserializedTimestamp);
 
 
     // Get store address
