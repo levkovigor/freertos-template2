@@ -132,7 +132,7 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_DeleteActivity() {
 
     if (range.first == range.second) {
         // no corresponding timestamp keys found
-        return HasReturnvaluesIF::RETURN_OK;
+        return HasReturnvaluesIF::RETURN_FAILED;
     }
 
     // get store address
@@ -153,6 +153,33 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_DeleteActivity() {
 
 
 ReturnValue_t Service11TelecommandScheduling::handleRequest_TimeshiftActivity() {
+
+    // get timestamp
+    uint32_t deserializedTimestamp = 0;
+    auto ret = this->GetDeserializedTimestamp(deserializedTimestamp);
+    if (ret != RETURN_OK) {
+        return ret;
+    }
+
+    // get store address
+    store_address_t addr = this->currentPacket.getStoreAddress();
+    if (addr.raw == storeId::INVALID_STORE_ADDRESS) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+
+    // find store address as value in Map (this is inefficient)
+    for (auto it = telecommandMap.begin(); it != telecommandMap.end(); ++it) {
+        if (it->second.storeAddr == addr) {
+            telecommandMap.erase(it);
+
+            TelecommandStruct tc(deserializedTimestamp, addr);
+            auto insertIt = telecommandMap.insert(std::pair<uint32_t, TelecommandStruct>(deserializedTimestamp, tc));
+            if (insertIt == telecommandMap.end()){
+                return HasReturnvaluesIF::RETURN_FAILED;
+            }
+        }
+    }
 
     return HasReturnvaluesIF::RETURN_OK;
 }
