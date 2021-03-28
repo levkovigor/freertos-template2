@@ -46,11 +46,11 @@ in the QEMU documentation.
 [Hosted build getting started](doc/README-hosted.md#top)<br>
 
 # Prerequisites
-1. Make installed
+1. Make installed. Part of [MSYS2 MinGW64](https://www.msys2.org/) on Windows.
 2. Development board binaries: [GNU ARM Toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/) 
    installed, hardware or QEMU set-up available. See the
    [Setting up prerequisites](#setting-up-prerequisites) section
-3. For Host build: On Windows, GCC toolchain (MinGW64)
+3. For Host build: On Windows, GCC toolchain, e.g. [MSYS2 MinGW64](https://www.msys2.org/) on Windows.
 4. For QEMU: QEMU repository cloned and set up in same folder in which
    this repository was cloned
 
@@ -83,36 +83,70 @@ or for a host system.
 
 ##  Create OBSW binary for AT91 and iOBC
 
-1. Run Makefile to create binaries. You need to have make installed, either by installing
-the Windows Build Tools or using a tools like MinGW64. Please note that there are different build 
-options and configuration parameters for the Makefile available. An explanation and how to set up 
-the Eclipse IDE for these configurations will be provided in a separate chapter.
-There are following targets available:
-   
- - `all` and `debug` to build the debug binaries
- - `mission` to build the release binary
+1. CMake is used to generate Makefiles to build the images. Therefore, install
+CMake first. On Windows, Make needs to be installed. It is recommended to 
+install MinGW64 as part of [MSYS2](https://www.msys2.org/) for this, see more
+in prerequisites. Steps in Windows were performed in MinGW64 shell.
 
-General command for AT91:
+2. Create a build folder, run the `CMake` build generation command inside
+that folder and then run the build command. On Windows, add `-G "MinGW Makefiles"` 
+to the build command to avoid building for Visual Studio 2019.
+You can supply the build type specifically, `Debug` will be the default.
+To do this, supply the following arguments to the `CMake` build generation command:
+
+ - Release: `-DCMAKE_BUILD_TYPE=Release`
+ - Size: `-DCMAKE_BUILD_TYPE=MinSizeRel`
+ - Release with Debug Info: `-DCMAKE_BUILD_TYPE=RelWithDebInfo`
+ 
+A list of all important combinations will be shown for the Debug configuration. 
+
+### Build for the AT91-EK
 
 ```sh
-make all
+mkdir Debug-AT91EK && cd Debug-AT91EK
+cmake ..
+cmake --build . -j
 ```
-   
-General command for the iOBC:
+
+### Build for the iOBC-EK
+
 ```sh
-make IOBC=1 all
+mkdir Mission-iOBC && cd Mission-iOBC
+cmake -DBOARD_IOBC=ON ..
+cmake --build . -j
 ```
    
+### Build bootloaders for the AT91-EK
+
+First stage bootloader:
+
+```sh
+mkdir Mission-BL-AT91EK && cd Mission-BL-AT91EK
+cmake -DBOOTLOADER=ON -DCMAKE_BUILD_TYPE=MinSizeRel .. 
+cmake --build . -j
+```
+
+Second stage bootloader:
+
+```sh
+mkdir Debug-BL2-AT91EK && cd Debug-BL2-AT91EK
+cmake -DBOOTLOADER=ON -DBL_STAGE_TWO=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo .. 
+cmake --build . -j
+```
+
+### Build bootloader for the iOBC
+2. The development board binaries have to be flashed with with J-Link/SAM-BA for 
+the AT91 and the `sdramCfg` make target needs to be run first once per AT91 power cycle before 
+flashing the SDRAM. Refer to respective instructions for more details.
+
+## Starting QEMU
+
 Command to start QEMU (inside sourceobsw folder). Please note this only works if the QEMU 
 repository was cloned and built inside the same folder the OBSW was cloned.
 ```sh
 ./StartQEMU.sh
 ``` 
    
-2. The development board binaries have to be flashed with with J-Link/SAM-BA for 
-the AT91 and the `sdramCfg` make target needs to be run first once per AT91 power cycle before 
-flashing the SDRAM. Refer to respective instructions for more details.
-
 ## Build Host Software
 
 The build system to build the hosted binaries was changed to CMake.
@@ -187,6 +221,36 @@ communication with UDP datagrams. For the serial communication, a USB to female
 RS232 cable can be used (or UART jumper wires..).
 
 # Setting up prerequisites
+
+## Windows: Installing and setting up MinGW64
+
+1. Install [MSYS2](https://www.msys2.org/).
+2. Run the following commands in MinGW64
+
+```sh
+pacman -Syuuu
+pacman -S gcc git mingw-w64-x86_64-gdb mingw-w64-x86_64-make mingw-w64-x86_64-cmake
+```
+
+It is recommended to set up `alias`es in the `.bashrc` file to 
+nagivate to the working directory quickly.
+
+3. Run `git config --global core.autocrlf true` if you like to use MinGW64 `git` as well
+
+4. Open the `.bashrc` file
+
+```sh
+cd ~
+nano .bashrc
+```
+
+Add the following line at the end to add the ARM cross-compile toolchain to MinGW64.
+This is just an example, correct the path for your use-case with the correct
+version and user name!
+
+```sh
+export PATH=$PATH:"/c/Users/Robin/AppData/Roaming/xPacks/@xpack-dev-tools/arm-none-eabi-gcc/10.2.1-1.1.2/.content/bin"
+```
 
 ## Windows: Installing and setting up the ARM Toolchain
 The code needs to be compiled for the ARM target system and we will use the
