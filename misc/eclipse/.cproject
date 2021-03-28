@@ -3,6 +3,9 @@
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.268688893">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.268688893" moduleId="org.eclipse.cdt.core.settings" name="obsw-at91-debug">
+				<macros>
+					<stringMacro name="CROSS_COMPILE_PATH" type="VALUE_PATH_ANY" value="C:\Users\Robin\AppData\Roaming\xPacks\@xpack-dev-tools\arm-none-eabi-gcc\10.2.1-1.1.2\.content\bin"/>
+				</macros>
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -153,6 +156,9 @@
 		</cconfiguration>
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.1558396074.2044259226">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.1558396074.2044259226" moduleId="org.eclipse.cdt.core.settings" name="obsw-at91-mission">
+				<macros>
+					<stringMacro name="CROSS_COMPILE_PATH" type="VALUE_PATH_ANY" value="C:\Users\Robin\AppData\Roaming\xPacks\@xpack-dev-tools\arm-none-eabi-gcc\10.2.1-1.1.2\.content\bin"/>
+				</macros>
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -298,6 +304,9 @@
 		</cconfiguration>
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.459364997">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.459364997" moduleId="org.eclipse.cdt.core.settings" name="obsw-host-debug">
+				<macros>
+					<stringMacro name="CROSS_COMPILE_PATH" type="VALUE_PATH_ANY" value="C:\Users\Robin\AppData\Roaming\xPacks\@xpack-dev-tools\arm-none-eabi-gcc\10.2.1-1.1.2\.content\bin"/>
+				</macros>
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -351,6 +360,9 @@
 		</cconfiguration>
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.352525802">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.352525802" moduleId="org.eclipse.cdt.core.settings" name="obsw-iobc-debug">
+				<macros>
+					<stringMacro name="CROSS_COMPILE_PATH" type="VALUE_PATH_ANY" value="C:\Users\Robin\AppData\Roaming\xPacks\@xpack-dev-tools\arm-none-eabi-gcc\10.2.1-1.1.2\.content\bin"/>
+				</macros>
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -503,6 +515,9 @@
 		</cconfiguration>
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.1667046970">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.1667046970" moduleId="org.eclipse.cdt.core.settings" name="bl-iobc-mission">
+				<macros>
+					<stringMacro name="CROSS_COMPILE_PATH" type="VALUE_PATH_ANY" value="C:\Users\Robin\AppData\Roaming\xPacks\@xpack-dev-tools\arm-none-eabi-gcc\10.2.1-1.1.2\.content\bin"/>
+				</macros>
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -645,6 +660,9 @@
 		</cconfiguration>
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.1667046970.80339050">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.1667046970.80339050" moduleId="org.eclipse.cdt.core.settings" name="bl-at91-first-stage">
+				<macros>
+					<stringMacro name="CROSS_COMPILE_PATH" type="VALUE_PATH_ANY" value="C:\Users\Robin\AppData\Roaming\xPacks\@xpack-dev-tools\arm-none-eabi-gcc\10.2.1-1.1.2\.content\bin"/>
+				</macros>
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -795,6 +813,9 @@
 		</cconfiguration>
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.352525802.343819127">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.352525802.343819127" moduleId="org.eclipse.cdt.core.settings" name="obsw-iobc-mission">
+				<macros>
+					<stringMacro name="CROSS_COMPILE_PATH" type="VALUE_PATH_ANY" value="C:\Users\Robin\AppData\Roaming\xPacks\@xpack-dev-tools\arm-none-eabi-gcc\10.2.1-1.1.2\.content\bin"/>
+				</macros>
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -941,6 +962,9 @@
 		</cconfiguration>
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.1667046970.80339050.1948333335">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.1667046970.80339050.1948333335" moduleId="org.eclipse.cdt.core.settings" name="bl-at91-second-stage-mission">
+				<macros>
+					<stringMacro name="CROSS_COMPILE_PATH" type="VALUE_PATH_ANY" value="C:\Users\Robin\AppData\Roaming\xPacks\@xpack-dev-tools\arm-none-eabi-gcc\10.2.1-1.1.2\.content\bin"/>
+				</macros>
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -1088,6 +1112,9 @@
 		</cconfiguration>
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.1667046970.80339050.1948333335.171413460">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.1667046970.80339050.1948333335.171413460" moduleId="org.eclipse.cdt.core.settings" name="bl-at91-second-stage-debug">
+				<macros>
+					<stringMacro name="CROSS_COMPILE_PATH" type="VALUE_PATH_ANY" value="C:\Users\Robin\AppData\Roaming\xPacks\@xpack-dev-tools\arm-none-eabi-gcc\10.2.1-1.1.2\.content\bin"/>
+				</macros>
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -1235,6 +1262,9 @@
 		</cconfiguration>
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.268688893.1167010682">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.268688893.1167010682" moduleId="org.eclipse.cdt.core.settings" name="obsw-at91-debug-cmake">
+				<macros>
+					<stringMacro name="CROSS_COMPILE_PATH" type="VALUE_PATH_ANY" value="C:\Users\Robin\AppData\Roaming\xPacks\@xpack-dev-tools\arm-none-eabi-gcc\10.2.1-1.1.2\.content\bin"/>
+				</macros>
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -1385,6 +1415,9 @@
 		</cconfiguration>
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.268688893.1167010682.1065840084">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.268688893.1167010682.1065840084" moduleId="org.eclipse.cdt.core.settings" name="obsw-at91-mission-cmake">
+				<macros>
+					<stringMacro name="CROSS_COMPILE_PATH" type="VALUE_PATH_ANY" value="C:\Users\Robin\AppData\Roaming\xPacks\@xpack-dev-tools\arm-none-eabi-gcc\10.2.1-1.1.2\.content\bin"/>
+				</macros>
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -1535,6 +1568,9 @@
 		</cconfiguration>
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.352525802.586252832">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.352525802.586252832" moduleId="org.eclipse.cdt.core.settings" name="obsw-iobc-debug-cmake">
+				<macros>
+					<stringMacro name="CROSS_COMPILE_PATH" type="VALUE_PATH_ANY" value="C:\Users\Robin\AppData\Roaming\xPacks\@xpack-dev-tools\arm-none-eabi-gcc\10.2.1-1.1.2\.content\bin"/>
+				</macros>
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -1687,6 +1723,9 @@
 		</cconfiguration>
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.352525802.586252832.351917259">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.352525802.586252832.351917259" moduleId="org.eclipse.cdt.core.settings" name="obsw-iobc-mission-cmake">
+				<macros>
+					<stringMacro name="CROSS_COMPILE_PATH" type="VALUE_PATH_ANY" value="C:\Users\Robin\AppData\Roaming\xPacks\@xpack-dev-tools\arm-none-eabi-gcc\10.2.1-1.1.2\.content\bin"/>
+				</macros>
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -1932,6 +1971,7 @@
 		<configuration configurationName="bl-at91-mission-first-stage">
 			<resource resourceType="PROJECT" workspacePath="/sourceobsw"/>
 		</configuration>
+		<configuration configurationName="obsw-iobc-mission-cmake"/>
 		<configuration configurationName="AT91_AUTO_SERIAL_MISSION">
 			<resource resourceType="PROJECT" workspacePath="/sourceobsw"/>
 		</configuration>
