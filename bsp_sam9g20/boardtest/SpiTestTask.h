@@ -47,6 +47,7 @@ private:
 	SPIslaveParameters slaveParams;
 	SPItransfer spiTransfer;
 	bool initWait = true;
+    bool oneshot = true;
 
 	bool decoderSSused = false;
 	void configureSpiDummySSIfNeeded();

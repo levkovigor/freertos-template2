@@ -44,6 +44,8 @@ ReturnValue_t SpiTestTask::performOperation(uint8_t operationCode) {
         return HasReturnvaluesIF::RETURN_OK;
     }
 
+    //spiTestMode = SpiTestMode::BLOCKING;
+
     if(spiTestMode == SpiTestMode::BLOCKING) {
         performBlockingSpiTest(slave0_spi, 0);
     }
@@ -76,14 +78,16 @@ void SpiTestTask::performBlockingSpiTest(SPIslave slave, uint8_t bufferPosition)
         return;
     }
 
-    transferSize = sprintf((char*)writeData, "Hallo\n\r");
+    writeData[0] = 0b1000'1111;
+    writeData[1] = 0;
+    transferSize = 2;
 
     slaveParams.bus    = SPI_bus;
-    slaveParams.mode   = mode0_spi;
+    slaveParams.mode   = mode3_spi;
     slaveParams.slave  = slave0_spi;
     slaveParams.dlybs  = 6;
     slaveParams.dlybct = 100;
-    slaveParams.busSpeed_Hz = SPI_MIN_BUS_SPEED;
+    slaveParams.busSpeed_Hz = 3'900'000;
     slaveParams.postTransferDelay = 0;
 
     spiTransfer.slaveParams = &slaveParams;
@@ -103,6 +107,8 @@ void SpiTestTask::performBlockingSpiTest(SPIslave slave, uint8_t bufferPosition)
 #endif
         while(1);
     }
+    uint32_t reg = AT91C_BASE_SPI1->SPI_CSR[0];
+    uint32_t mr = AT91C_BASE_SPI1->SPI_MR;
 
     GpioDeviceComIF::disableDecoders();
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -627,30 +633,43 @@ void SpiTestTask::SPIcallback(SystemContext context, xSemaphoreHandle semaphore)
 void SpiTestTask::performAt91LibTest() {
     At91Npcs cs = At91Npcs::NPCS_0;
     At91SpiBuses bus = At91SpiBuses::SPI_BUS_1;
-    spiTestMode = SpiTestMode::AT91_LIB_DMA;
-    int retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, SPI_MIN_BUS_SPEED,
-            1000000000, 100);
+    spiTestMode = SpiTestMode::AT91_LIB_BLOCKING;
+    // This was for Arduino Nano Every
+//    int retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, SPI_MIN_BUS_SPEED,
+//            1000000000, 100);
+
+
+    // for L3GD20H board
+    int retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_3, 3'900'000,
+            100000000, 100);
+
+    uint8_t whoAmIReg = 0b0000'1111;
+    uint8_t readMask = 0b1000'0000;
+    uint8_t sendBuf[10] = {0};
+    sendBuf[0] = whoAmIReg | readMask;
+    size_t sendLen = 2;
     if(retval != 0) {
         sif::printInfo("SpiTestTask::performAt91LibTest: cfg failed with %d\n", retval);
     }
-    bool oneshot = true;
+
     std::string halloString = "Hallo\r\n ";
     char recvBuffer[32] = {0};
     if(spiTestMode == SpiTestMode::AT91_LIB_BLOCKING) {
         retval = at91_spi_blocking_transfer(bus, cs,
-                reinterpret_cast<const uint8_t*>(halloString.c_str()),
-                reinterpret_cast<uint8_t*>(recvBuffer), halloString.size());
-        sif::printInfo("Received reply: %s", recvBuffer);
+                reinterpret_cast<const uint8_t*>(sendBuf),
+                reinterpret_cast<uint8_t*>(recvBuffer), sendLen);
+        sif::printInfo("Register: %d\n\r", recvBuffer[1]);
         memset(recvBuffer, 0, sizeof(recvBuffer));
     }
     else if(spiTestMode == SpiTestMode::AT91_LIB_DMA) {
-        at91_spi_configure_non_blocking_driver(bus, AT91C_AIC_PRIOR_LOWEST);
-        at91_spi_non_blocking_transfer(bus, cs,
-                reinterpret_cast<const uint8_t*>(halloString.c_str()),
-                reinterpret_cast<uint8_t*>(recvBuffer),
-                halloString.size(), spiIrqHandler, nullptr);
-
-
+        if(oneshot) {
+            at91_spi_configure_non_blocking_driver(bus, AT91C_AIC_PRIOR_LOWEST + 2);
+            at91_spi_non_blocking_transfer(bus, cs,
+                    reinterpret_cast<const uint8_t*>(halloString.c_str()),
+                    reinterpret_cast<uint8_t*>(recvBuffer),
+                    halloString.size(), spiIrqHandler, nullptr);
+            oneshot = false;
+        }
     }
 }
 

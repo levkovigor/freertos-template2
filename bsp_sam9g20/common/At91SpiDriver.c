@@ -43,13 +43,13 @@ int at91_spi_configure_driver(At91SpiBuses spi_bus, At91Npcs npcs,
     if(retval != 0) {
         return retval;
     }
-    int32_t init_cfg = 0;
-    if(spi_bus == SPI_BUS_0 && !bus_0_active) {
+    uint32_t init_cfg = 0xff << 24 | SPI_PCS(npcs) | AT91C_SPI_MSTR;
+    if(spi_bus == SPI_BUS_0) {
         SPI_Configure(drv, id, init_cfg);
         SPI_Enable(drv);
         bus_0_active = true;
     }
-    else if(spi_bus == SPI_BUS_1 && !bus_1_active) {
+    else if(spi_bus == SPI_BUS_1) {
         SPI_Configure(drv, id, init_cfg);
         SPI_Enable(drv);
         bus_1_active = true;
@@ -67,6 +67,7 @@ int at91_spi_configure_driver(At91SpiBuses spi_bus, At91Npcs npcs,
     }
     drv->SPI_CSR[npcs] = SPI_SCBR(frequency, BOARD_MCK) | mode_val
             | SPI_DLYBCT(dlybct_ns, BOARD_MCK) |  SPI_DLYBS(dlybs_ns, BOARD_MCK);
+    //drv->SPI_CSR[npcs] = 1678123265;
     return 0;
 }
 
@@ -93,8 +94,10 @@ int at91_spi_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const uint8_
     for(size_t idx = 0; idx < transfer_len; idx ++) {
         SPI_Write(drv, npcs, *send_buf);
         send_buf++;
+        //for(int wait_idx = 0; wait_idx < 100; wait_idx ++) {};
         *recv_buf = SPI_Read(drv);
         recv_buf++;
+        //for(int wait_idx = 0; wait_idx < 100; wait_idx ++) {};
     }
     return 0;
 }
@@ -176,25 +179,31 @@ void spi_irq_handler_bus_1() {
 
 bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source) {
     uint32_t status = drv->SPI_SR;
+    uint32_t disable_mask = 0;
     //TRACE_INFO("Status Register: %u\n\r", (unsigned int) status);
     if((status & AT91C_SPI_OVRES) == AT91C_SPI_OVRES) {
         //TRACE_INFO("Overrun error on SPI bus 0\n\r");
         //AIC_DisableIT(source);
-        return true;
+        disable_mask |= AT91C_SPI_OVRES;
     }
     if((status & AT91C_SPI_MODF) == AT91C_SPI_MODF) {
         //TRACE_INFO("Mode fault on SPI bus 0\n\r");
+        disable_mask |= AT91C_SPI_MODF;
+    }
+    if((status & AT91C_SPI_ENDTX) == AT91C_SPI_ENDTX) {
+        disable_mask |= AT91C_SPI_ENDTX;
+    }
+    if((status & AT91C_SPI_ENDRX) == AT91C_SPI_ENDRX) {
+        disable_mask |= AT91C_SPI_ENDRX;
     }
     if((status & AT91C_SPI_TXBUFE) == AT91C_SPI_TXBUFE) {
-       // TRACE_INFO("Transmit buffer empty on SPI bus 0\n\r");
-        tx_finished = true;
-        drv->SPI_IDR = AT91C_SPI_TXBUFE;
+        disable_mask |= AT91C_SPI_TXBUFE;
     }
     if((status & AT91C_SPI_RXBUFF) == AT91C_SPI_RXBUFF) {
         //TRACE_INFO("Receive buffer full on SPI bus 0\n\r");
-        rx_finished = true;
-        drv->SPI_IDR = AT91C_SPI_RXBUFF;
+        disable_mask |= AT91C_SPI_RXBUFF;
     }
+    drv->SPI_IDR = disable_mask;
     if(rx_finished && tx_finished) {
         return true;
     }
@@ -205,11 +214,11 @@ int get_drv_handle(At91SpiBuses spi_bus, At91Npcs npcs, AT91PS_SPI* drv, unsigne
     if(drv == NULL || id == NULL) {
         return -1;
     }
-    if(spi_bus == 0) {
+    if(spi_bus == SPI_BUS_0) {
         *drv = AT91C_BASE_SPI0;
         *id = AT91C_ID_SPI0;
     }
-    else if(spi_bus == 1) {
+    else if(spi_bus == SPI_BUS_1) {
         *drv = AT91C_BASE_SPI1;
         *id = AT91C_ID_SPI1;
     }
@@ -224,6 +233,6 @@ int get_drv_handle(At91SpiBuses spi_bus, At91Npcs npcs, AT91PS_SPI* drv, unsigne
 }
 
 void select_npcs(AT91PS_SPI drv, unsigned int id, At91Npcs npcs) {
-    uint32_t configuration = SPI_PCS(npcs) | AT91C_SPI_PS_VARIABLE | AT91C_SPI_MSTR;
+    uint32_t configuration = SPI_PCS(npcs) | AT91C_SPI_MSTR;
     drv->SPI_MR = configuration;
 }
