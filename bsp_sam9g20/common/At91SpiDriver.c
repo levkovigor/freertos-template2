@@ -33,7 +33,7 @@ void* user_args_bus_1 = NULL;
 
 
 int at91_spi_configure_driver(At91SpiBuses spi_bus, At91Npcs npcs,
-        SpiModes spiMode, uint32_t frequency, uint32_t dlybct_ns, uint32_t dlybs_ns) {
+        SpiModes spiMode, uint32_t frequency, uint8_t dlybct, uint8_t dlybs, uint8_t dlybcs) {
     if(npcs > 3) {
         return -1;
     }
@@ -43,7 +43,7 @@ int at91_spi_configure_driver(At91SpiBuses spi_bus, At91Npcs npcs,
     if(retval != 0) {
         return retval;
     }
-    uint32_t init_cfg = 0xff << 24 | SPI_PCS(npcs) | AT91C_SPI_MSTR;
+    uint32_t init_cfg = dlybcs << 24 | SPI_PCS(npcs) | AT91C_SPI_MSTR;
     if(spi_bus == SPI_BUS_0) {
         SPI_Configure(drv, id, init_cfg);
         SPI_Enable(drv);
@@ -66,8 +66,7 @@ int at91_spi_configure_driver(At91SpiBuses spi_bus, At91Npcs npcs,
         mode_val = AT91C_SPI_CPOL;
     }
     drv->SPI_CSR[npcs] = SPI_SCBR(frequency, BOARD_MCK) | mode_val
-            | SPI_DLYBCT(dlybct_ns, BOARD_MCK) |  SPI_DLYBS(dlybs_ns, BOARD_MCK);
-    //drv->SPI_CSR[npcs] = 1678123265;
+            | dlybct << 24 |  dlybs << 16;
     return 0;
 }
 
@@ -91,13 +90,13 @@ int at91_spi_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const uint8_
     }
     select_npcs(drv, id, npcs);
 
+    while ((drv->SPI_SR & AT91C_SPI_TXEMPTY) == 0);
     for(size_t idx = 0; idx < transfer_len; idx ++) {
-        SPI_Write(drv, npcs, *send_buf);
+        drv->SPI_TDR = *send_buf;
+        while ((drv->SPI_SR & AT91C_SPI_RDRF) == 0);
+        *recv_buf = drv->SPI_RDR;
         send_buf++;
-        //for(int wait_idx = 0; wait_idx < 100; wait_idx ++) {};
-        *recv_buf = SPI_Read(drv);
         recv_buf++;
-        //for(int wait_idx = 0; wait_idx < 100; wait_idx ++) {};
     }
     return 0;
 }

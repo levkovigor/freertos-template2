@@ -107,8 +107,8 @@ void SpiTestTask::performBlockingSpiTest(SPIslave slave, uint8_t bufferPosition)
 #endif
         while(1);
     }
-    uint32_t reg = AT91C_BASE_SPI1->SPI_CSR[0];
-    uint32_t mr = AT91C_BASE_SPI1->SPI_MR;
+    //uint32_t reg = AT91C_BASE_SPI1->SPI_CSR[0];
+    //uint32_t mr = AT91C_BASE_SPI1->SPI_MR;
 
     GpioDeviceComIF::disableDecoders();
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -635,13 +635,12 @@ void SpiTestTask::performAt91LibTest() {
     At91SpiBuses bus = At91SpiBuses::SPI_BUS_1;
     spiTestMode = SpiTestMode::AT91_LIB_BLOCKING;
     // This was for Arduino Nano Every
-//    int retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, SPI_MIN_BUS_SPEED,
-//            1000000000, 100);
+    //    int retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, SPI_MIN_BUS_SPEED,
+    //            1000000000, 100);
 
 
     // for L3GD20H board
-    int retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_3, 3'900'000,
-            100000000, 100);
+    int retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_3, 3'900'000, 100, 6, 0);
 
     uint8_t whoAmIReg = 0b0000'1111;
     uint8_t readMask = 0b1000'0000;
