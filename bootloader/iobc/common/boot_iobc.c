@@ -8,9 +8,12 @@
 #include <bsp_sam9g20/common/FRAMApi.h>
 #include <bsp_sam9g20/common/SRAMApi.h>
 #include <bsp_sam9g20/common/CommonFRAM.h>
+#include <bsp_sam9g20/common/lowlevel.h>
 
+#if USE_FREERTOS == 1
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#endif
 
 #include <at91/utility/trace.h>
 #include <at91/utility/hamming.h>
@@ -47,11 +50,11 @@ void perform_bootloader_core_operation() {
     TRACE_INFO("Jumping to SDRAM application..\n\r");
 #endif
 
+#if USE_FREERTOS == 1
     vTaskEndScheduler();
-    /* Disable all peripheral interrupts */
-    AIC_DisableIT(AT91C_ID_SYS);
-    PIT_DisableIT();
-    PIT_Disable();
+#endif
+
+    disable_pit_aic();
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
 }
 

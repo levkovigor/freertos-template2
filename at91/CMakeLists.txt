@@ -15,6 +15,7 @@ option(AT91_USE_LINK_TIME_OPTIMIZATION "Enable link time optimization" OFF)
 option(AT91_DYN_TRACES "Dynamic traces for AT91 library" ON)
 option(AT91_USE_AT91_STDIO "Use stdio provided by AT91" OFF)
 option(AT91_ISOLATE_ERRONEOUS_PATHS "Can be disabled to prevent trap of erroneous paths" ON)
+option(AT91_NO_FREERTOS_STARTER_FILE "Use regular startup file even if FreeRTOS is linked" OFF)
 
 if(NOT AT91_MEMORY)
     message(WARNING "AT91_MEMORY type not set, setting sdram")

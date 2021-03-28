@@ -170,8 +170,8 @@ int perform_bootloader_core_operation() {
 #endif
 
     CP15_Disable_I_Cache();
-    /* This is a test section. Play around with the upper loop limit until
-    there are no issues with the boot process anymore :-) */
+    /* This is a test section. If there are issues with the boot process
+    play around with the upper loop limit :-) */
     for(int idx = 0; idx < 0; idx ++) {
         disable_pit_aic();
     }

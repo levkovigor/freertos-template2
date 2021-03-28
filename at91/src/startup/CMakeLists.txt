@@ -4,7 +4,7 @@ if(NOT BOOTLOADER)
     )
 else()
     if(BOARD_IOBC)
-        if(NOT BL_USE_FREERTOS)
+        if(NOT BL_USE_FREERTOS OR AT91_NO_FREERTOS_STARTER_FILE)
             target_sources(${LIB_AT91_NAME} PRIVATE
                 board_cstartup.S
             )
@@ -15,7 +15,7 @@ else()
         endif()   
     else()
         if(BL_STAGE_TWO)
-            if(NOT BL_USE_FREERTOS)
+            if(NOT BL_USE_FREERTOSOR OR AT91_NO_FREERTOS_STARTER_FILE)
                 target_sources(${LIB_AT91_NAME} PRIVATE
                     board_cstartup.S
                 )
