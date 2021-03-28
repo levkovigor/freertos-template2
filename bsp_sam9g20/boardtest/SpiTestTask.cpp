@@ -1,13 +1,16 @@
-#include <bsp_sam9g20/boardtest/SpiTestTask.h>
+
+#include "SpiTestTask.h"
+#include <bsp_sam9g20/comIF/GpioDeviceComIF.h>
+#include <bsp_sam9g20/common/At91SpiDriver.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/tasks/TaskFactory.h>
-#include <bsp_sam9g20/comIF/GpioDeviceComIF.h>
 
 extern "C" {
 #include <board.h>
 #include <at91/utility/trace.h>
 #include <at91/peripherals/spi/spi_at91.h>
+#include <at91/peripherals/aic/aic.h>
 }
 
 #include <bitset>
@@ -59,7 +62,8 @@ ReturnValue_t SpiTestTask::performOperation(uint8_t operationCode) {
     else if(spiTestMode == SpiTestMode::MGM_LIS3) {
         performBlockingMgmTest();
     }
-    else if(spiTestMode == SpiTestMode::AT91_LIB) {
+    else if(spiTestMode == SpiTestMode::AT91_LIB_BLOCKING or
+            spiTestMode == SpiTestMode::AT91_LIB_DMA) {
         performAt91LibTest();
     }
     return RETURN_OK;
@@ -618,19 +622,25 @@ void SpiTestTask::SPIcallback(SystemContext context, xSemaphoreHandle semaphore)
 }
 
 void SpiTestTask::performAt91LibTest() {
-    uint8_t chipSelect = 0;
-    uint32_t configuration = SPI_PCS(chipSelect) | AT91C_SPI_PS_VARIABLE | AT91C_SPI_MSTR;
-    SPI_Configure(AT91C_BASE_SPI1, AT91C_ID_SPI1, configuration);
-    SPI_Enable(AT91C_BASE_SPI1);
-    AT91C_BASE_SPI1->SPI_CSR[chipSelect] = SPI_SCBR(1'000'000, BOARD_MCK) | AT91C_SPI_NCPHA
-            | SPI_DLYBCT(100, BOARD_MCK);
-    SPI_Write(AT91C_BASE_SPI1, chipSelect, 'H');
-    SPI_Write(AT91C_BASE_SPI1, chipSelect, 'a');
-    SPI_Write(AT91C_BASE_SPI1, chipSelect, 'l');
-    SPI_Write(AT91C_BASE_SPI1, chipSelect, 'l');
-    SPI_Write(AT91C_BASE_SPI1, chipSelect, 'o');
-    SPI_Write(AT91C_BASE_SPI1, chipSelect, '\r');
-    SPI_Write(AT91C_BASE_SPI1, chipSelect, '\n');
+    At91Npcs cs = At91Npcs::NPCS_0;
+    At91SpiBuses bus = At91SpiBuses::SPI_BUS_1;
+    int retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, 1'000'000, 100);
+    if(retval != 0) {
+        sif::printInfo("SpiTestTask::performAt91LibTest: cfg failed with %d\n", retval);
+    }
+
+    if(spiTestMode == SpiTestMode::AT91_LIB_BLOCKING) {
+        std::string halloString = "Hallo\r\n ";
+        char recvBuffer[32] = {0};
+        retval = at91_spi_blocking_transfer(bus, cs,
+                reinterpret_cast<const uint8_t*>(halloString.c_str()),
+                reinterpret_cast<uint8_t*>(recvBuffer), halloString.size());
+        sif::printInfo("Received reply: %s", recvBuffer);
+        memset(recvBuffer, 0, sizeof(recvBuffer));
+    }
+
+
+    AIC_ConfigureIT(AT91C_ID_SPI0, AT91C_AIC_PRIOR_LOWEST + 3, spiIrqHandler);
 
 //
 //    std::string welt = "Hallo\r\n";
@@ -647,4 +657,7 @@ void SpiTestTask::performAt91LibTest() {
 //    }
 
 
+}
+
+void SpiTestTask::spiIrqHandler() {
 }

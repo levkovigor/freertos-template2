@@ -323,7 +323,7 @@ void Factory::produce(void) {
 #endif
 
 #if OBSW_ADD_SPI_TEST_TASK == 1
-    new SpiTestTask(objects::AT91_SPI_TEST_TASK, SpiTestTask::SpiTestMode::AT91_LIB);
+    new SpiTestTask(objects::AT91_SPI_TEST_TASK, SpiTestTask::SpiTestMode::AT91_LIB_BLOCKING);
 #endif
 
 #endif /* OBSW_ADD_TEST_CODE == 1 */

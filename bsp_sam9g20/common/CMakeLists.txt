@@ -13,6 +13,7 @@ endif()
 
 target_sources(${TARGET_NAME} PRIVATE
     lowlevel.c
+    At91SpiDriver.c
 )
 
 if(NOT SIMPLE_AT91_BL)
