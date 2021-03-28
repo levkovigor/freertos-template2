@@ -627,8 +627,9 @@ void SpiTestTask::SPIcallback(SystemContext context, xSemaphoreHandle semaphore)
 void SpiTestTask::performAt91LibTest() {
     At91Npcs cs = At91Npcs::NPCS_0;
     At91SpiBuses bus = At91SpiBuses::SPI_BUS_1;
-    spiTestMode = SpiTestMode::AT91_LIB_BLOCKING;
-    int retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, 1'000'000, 100000000, 6);
+    spiTestMode = SpiTestMode::AT91_LIB_DMA;
+    int retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, SPI_MIN_BUS_SPEED,
+            1000000000, 100);
     if(retval != 0) {
         sif::printInfo("SpiTestTask::performAt91LibTest: cfg failed with %d\n", retval);
     }
@@ -643,14 +644,12 @@ void SpiTestTask::performAt91LibTest() {
         memset(recvBuffer, 0, sizeof(recvBuffer));
     }
     else if(spiTestMode == SpiTestMode::AT91_LIB_DMA) {
-        if(oneshot) {
-            at91_spi_configure_non_blocking_driver(bus, AT91C_AIC_PRIOR_LOWEST + 3);
-            at91_spi_non_blocking_transfer(bus, cs,
-                    reinterpret_cast<const uint8_t*>(halloString.c_str()),
-                    reinterpret_cast<uint8_t*>(recvBuffer),
-                    halloString.size(), spiIrqHandler, nullptr);
-            oneshot = false;
-        }
+        at91_spi_configure_non_blocking_driver(bus, AT91C_AIC_PRIOR_LOWEST);
+        at91_spi_non_blocking_transfer(bus, cs,
+                reinterpret_cast<const uint8_t*>(halloString.c_str()),
+                reinterpret_cast<uint8_t*>(recvBuffer),
+                halloString.size(), spiIrqHandler, nullptr);
+
 
     }
 }

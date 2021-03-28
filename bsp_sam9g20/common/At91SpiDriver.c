@@ -121,14 +121,15 @@ int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const ui
         user_args_bus_1 = callback_args;
     }
 
+    /* Enable all required interrupts sources */
+    drv->SPI_IER = AT91C_SPI_TXBUFE | AT91C_SPI_RXBUFF | AT91C_SPI_ENDRX | AT91C_SPI_ENDTX |
+            AT91C_SPI_MODF | AT91C_SPI_OVRES;
+    rx_finished = false;
+    tx_finished = false;
 //    retval = SPI_ReadBuffer(drv, (void*) recv_buf, transfer_len);
 //    if (retval == 0) {
 //        return -2;
 //    }
-    /* Enable all required interrupts sources */
-    drv->SPI_IER = AT91C_SPI_TXBUFE | AT91C_SPI_RXBUFF | AT91C_SPI_MODF | AT91C_SPI_OVRES;
-    rx_finished = false;
-    tx_finished = false;
     retval = SPI_WriteBuffer(drv, (void*) send_buf, transfer_len);
     if (retval == 0) {
         return -2;
@@ -145,10 +146,12 @@ int at91_spi_configure_non_blocking_driver(At91SpiBuses spi_bus, uint8_t interru
         return retval;
     }
     if(spi_bus == SPI_BUS_0 && !bus_0_aic_configured) {
+        AIC_DisableIT(id);
         AIC_ConfigureIT(id, interrupt_priority, spi_irq_handler_bus_0);
         bus_0_aic_configured = true;
     }
     else if(spi_bus == SPI_BUS_1 && !bus_1_aic_configured) {
+        AIC_DisableIT(id);
         AIC_ConfigureIT(id, interrupt_priority, spi_irq_handler_bus_1);
         bus_1_aic_configured = true;
     }
@@ -156,7 +159,7 @@ int at91_spi_configure_non_blocking_driver(At91SpiBuses spi_bus, uint8_t interru
 }
 
 void spi_irq_handler_bus_0() {
-    TRACE_INFO("Interrupt on bus 0 received!\n\r");
+    //TRACE_INFO("Interrupt on bus 0 received!\n\r");
     bool finished = generic_spi_interrupt_handler(AT91C_BASE_SPI0, AT91C_ID_SPI0);
     if(user_callback_bus_0 != NULL && finished) {
         user_callback_bus_0(SPI_BUS_0, user_args_bus_0);
@@ -164,7 +167,7 @@ void spi_irq_handler_bus_0() {
 }
 
 void spi_irq_handler_bus_1() {
-    TRACE_INFO("Interrupt on bus 1 received!\n\r");
+    //TRACE_INFO("Interrupt on bus 1 received!\n\r");
     bool finished = generic_spi_interrupt_handler(AT91C_BASE_SPI1, AT91C_ID_SPI1);
     if(user_callback_bus_1 != NULL && finished) {
         user_callback_bus_1(SPI_BUS_1, user_args_bus_1);
@@ -176,7 +179,7 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source) {
     //TRACE_INFO("Status Register: %u\n\r", (unsigned int) status);
     if((status & AT91C_SPI_OVRES) == AT91C_SPI_OVRES) {
         //TRACE_INFO("Overrun error on SPI bus 0\n\r");
-        AIC_DisableIT(source);
+        //AIC_DisableIT(source);
         return true;
     }
     if((status & AT91C_SPI_MODF) == AT91C_SPI_MODF) {
