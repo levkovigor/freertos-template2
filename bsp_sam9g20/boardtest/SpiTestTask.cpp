@@ -1,7 +1,6 @@
 
 #include "SpiTestTask.h"
 #include <bsp_sam9g20/comIF/GpioDeviceComIF.h>
-#include <bsp_sam9g20/common/At91SpiDriver.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/tasks/TaskFactory.h>
@@ -20,7 +19,7 @@ SpiTestTask::SpiTestTask(object_id_t objectId, SpiTestMode spiTestMode):
 		        SystemObject(objectId), spiTestMode(spiTestMode) {
     ReturnValue_t result = RETURN_FAILED;
     // Arduino Test / AT91SAM9G20-EK
-    result = SPI_start(SPI_bus, slave2_spi);
+    //result = SPI_start(SPI_bus, slave2_spi);
     if(result != 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "SPIandFRAMtest: SPI_start returned " << (int)result << std::endl;
@@ -624,23 +623,35 @@ void SpiTestTask::SPIcallback(SystemContext context, xSemaphoreHandle semaphore)
 void SpiTestTask::performAt91LibTest() {
     At91Npcs cs = At91Npcs::NPCS_0;
     At91SpiBuses bus = At91SpiBuses::SPI_BUS_1;
+    spiTestMode = SpiTestMode::AT91_LIB_DMA;
     int retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, 1'000'000, 100);
     if(retval != 0) {
         sif::printInfo("SpiTestTask::performAt91LibTest: cfg failed with %d\n", retval);
     }
-
+    bool oneshot = true;
+    std::string halloString = "Hallo\r\n ";
+    char recvBuffer[32] = {0};
     if(spiTestMode == SpiTestMode::AT91_LIB_BLOCKING) {
-        std::string halloString = "Hallo\r\n ";
-        char recvBuffer[32] = {0};
         retval = at91_spi_blocking_transfer(bus, cs,
                 reinterpret_cast<const uint8_t*>(halloString.c_str()),
                 reinterpret_cast<uint8_t*>(recvBuffer), halloString.size());
         sif::printInfo("Received reply: %s", recvBuffer);
         memset(recvBuffer, 0, sizeof(recvBuffer));
     }
+    else if(spiTestMode == SpiTestMode::AT91_LIB_DMA) {
+        if(oneshot) {
+            at91_spi_configure_non_blocking_driver(bus, AT91C_AIC_PRIOR_LOWEST + 3);
+            at91_spi_non_blocking_transfer(bus, cs,
+                    reinterpret_cast<const uint8_t*>(halloString.c_str()),
+                    reinterpret_cast<uint8_t*>(recvBuffer),
+                    halloString.size(), spiIrqHandler, nullptr);
+            oneshot = false;
+        }
+
+    }
 
 
-    AIC_ConfigureIT(AT91C_ID_SPI0, AT91C_AIC_PRIOR_LOWEST + 3, spiIrqHandler);
+
 
 //
 //    std::string welt = "Hallo\r\n";
@@ -659,5 +670,6 @@ void SpiTestTask::performAt91LibTest() {
 
 }
 
-void SpiTestTask::spiIrqHandler() {
+void SpiTestTask::spiIrqHandler(At91SpiBuses bus, void* args) {
+    //sif::printInfo("Hellau!\n\r");
 }

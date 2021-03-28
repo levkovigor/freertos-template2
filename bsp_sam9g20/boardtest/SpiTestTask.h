@@ -1,8 +1,10 @@
 #ifndef SAM9G20_BOARDTEST_SPITESTTASK_H_
 #define SAM9G20_BOARDTEST_SPITESTTASK_H_
+
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
+#include <bsp_sam9g20/common/At91SpiDriver.h>
 
 extern "C" {
 #include <hal/Drivers/SPI.h>
@@ -68,7 +70,7 @@ private:
 	void performAt91LibTest();
 
 	SPIbus SPI_bus = bus1_spi; //!< SPI bus 0 can not be used on iOBC!
-	static void spiIrqHandler();
+	static void spiIrqHandler(At91SpiBuses bus, void* args);
 };
 
 
