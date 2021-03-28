@@ -161,16 +161,16 @@ void simple_bootloader() {
     TRACE_INFO_WP("-- SOURCE Bootloader v%d.%d --\n\r", BL_VERSION, BL_SUBVERSION);
     /* We don't need these */
     // initialize_all_iobc_peripherals();
-    setup_timer_interrupt();
+    //setup_timer_interrupt();
     int result = copy_norflash_binary_to_sdram(PRIMARY_IMAGE_RESERVED_SIZE, false);
     if(result != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_WARNING("Copy operation error\n\r");
 #endif
     }
-    for(int idx = 0; idx < 10; idx++) {
-        disable_pit_aic();
-    }
+//    for(int idx = 0; idx < 10; idx++) {
+//        disable_pit_aic();
+//    }
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Jumping to SDRAM application\n\r");
 #endif
