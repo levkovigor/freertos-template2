@@ -100,6 +100,15 @@ To do this, supply the following arguments to the `CMake` build generation comma
  
 A list of all important combinations will be shown for the Debug configuration. 
 
+If the boards are flashed for the first time, the SDRAM needs to be configured with
+the following command
+
+```sh
+./sdramCfg
+```
+
+It is recommended to use Eclipse to flash the boards conveniently.
+
 ### Build for the AT91-EK
 
 ```sh
@@ -135,9 +144,12 @@ cmake --build . -j
 ```
 
 ### Build bootloader for the iOBC
-2. The development board binaries have to be flashed with with J-Link/SAM-BA for 
-the AT91 and the `sdramCfg` make target needs to be run first once per AT91 power cycle before 
-flashing the SDRAM. Refer to respective instructions for more details.
+
+```sh
+mkdir Debug-BL2-AT91EK && cd Debug-BL2-AT91EK
+cmake -DBOOTLOADER=ON -DBOARD_IOBC=ON -DCMAKE_BUILD_TYPE=Release .. 
+cmake --build . -j
+```
 
 ## Starting QEMU
 
@@ -149,27 +161,16 @@ repository was cloned and built inside the same folder the OBSW was cloned.
    
 ## Build Host Software
 
-The build system to build the hosted binaries was changed to CMake.
 Perform the following steps to build the hosted software
 
 ### Windows
 
-Install [MSYS2](https://www.msys2.org/) and run the following 
-command in MinGW64:
-
-```sh
-pacman -Syuuu
-pacman -S gcc git mingw-w64-x86_64-gdb mingw-w64-x86_64-make mingw-w64-x86_64-cmake
-```
-
-It is recommended to set up `alias`es and use `git config --global core.autocrl`
-to have consistent line endings in MinGW64
-
+Install [MSYS2](https://www.msys2.org/) if not done so already. See Prerequisites chapter
+for more information.
 Now you can run the following commands in the `sourceobsw` folder to build the software
 
 ```sh
-mkdir Debug-Host
-cd Debug-Host
+mkdir Debug-Host && cd Debug-Host
 cmake .. -G "MinGW Makefiles"
 cmake --build . -j
 ```
@@ -180,40 +181,12 @@ Run the following command in the `sourceobsw` folder to build the software
 with the hosted OSAL. You can supply `-DOS_FSFW=linux` to the `cmake ..` command to build with the Linux OSAL instead
 
 ```sh
-mkdir Debug-Host
-cd Debug-Host
+mkdir Debug-Host && cd Debug-Host
 cmake ..
 cmake --build . -j
 ```
 
 # Build Configurations and testing of Flight Software
-
-Compilation can be sped up by providing the -j parameter.
-On windows, wsl must be added before make, if tools like MSYS2 or Windows Build
-Tools are not installed. It is recommended to set up Eclipse instead of using the command line to 
-build the software, as this allows for much more convenient development and debugging.
-For developers unfamiliar with Eclipse, it is recommended to read the
-[Eclipse setup guide](doc/README-eclipse.md#top).
-
-Following make targets are available:
-- sdramCfg: Configure AT91 SDRAM on start-up. Required after each restart.
-- clean: Clean the dependencies, binaries and includes of current active build
-  configurationand Communication Interface (Serial RS232 or UDP Ethernet)
-- hardclean: Clean the three mentioned folders for all systems and interfaces
-- cleanbin: Clean all binaries
-- debug: Additional FSFW debug messages
-- virtual: Virtualized software interfaces replace real connected hardware
-- mission: Optimized build for mission. Not good for debugging.
-
-Example call to build mission build:
-```sh
-make mission
-```
-
-Example call to build debug build in windows for the iOBC:
-```sh
-make debug WINDOWS=1 IOBC=1
-```
 
 The provided TMTC has separate [instructions](https://git.ksat-stuttgart.de/source/tmtc)
 It is possible to chose between serial communication via RS232 and Ethernet 
