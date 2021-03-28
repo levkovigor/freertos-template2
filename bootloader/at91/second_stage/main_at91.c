@@ -74,7 +74,7 @@ int at91_main()
 #if USE_FREERTOS == 0
     /* Activate MS interrupt for timer base. Again, consider disabling
     because of issues with FreeRTOS */
-    setup_timer_interrupt();
+    //setup_timer_interrupt();
 
     /* Info printout */
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
@@ -172,7 +172,7 @@ int perform_bootloader_core_operation() {
     CP15_Disable_I_Cache();
     /* This is a test section. If there are issues with the boot process
     play around with the upper loop limit :-) */
-    for(int idx = 0; idx < 0; idx ++) {
+    for(int idx = 0; idx < 10000; idx ++) {
         disable_pit_aic();
     }
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
