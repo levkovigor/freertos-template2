@@ -18,8 +18,6 @@ extern "C" {
 SpiTestTask::SpiTestTask(object_id_t objectId, SpiTestMode spiTestMode):
 		        SystemObject(objectId), spiTestMode(spiTestMode) {
     ReturnValue_t result = RETURN_FAILED;
-    // Arduino Test / AT91SAM9G20-EK
-    //result = SPI_start(SPI_bus, slave2_spi);
     if(result != 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "SPIandFRAMtest: SPI_start returned " << (int)result << std::endl;
@@ -69,18 +67,24 @@ ReturnValue_t SpiTestTask::performOperation(uint8_t operationCode) {
 }
 
 void SpiTestTask::performBlockingSpiTest(SPIslave slave, uint8_t bufferPosition) {
-    int retValInt = 0;
+    // Arduino Test / AT91SAM9G20-EK
     unsigned int i;
-    SPIslaveParameters slaveParams;
-    SPItransfer spiTransfer;
+    SPIslaveParameters slaveParams = {};
+    SPItransfer spiTransfer = {};
+    int retval = SPI_start(SPI_bus, slave3_spi);
+    if(retval != 0) {
+        return;
+    }
+
+    transferSize = sprintf((char*)writeData, "Hallo\n\r");
 
     slaveParams.bus    = SPI_bus;
-    slaveParams.mode   = mode2_spi;
-    slaveParams.slave  = slave;
-    slaveParams.dlybs  = 1;
-    slaveParams.dlybct = 1;
+    slaveParams.mode   = mode0_spi;
+    slaveParams.slave  = slave0_spi;
+    slaveParams.dlybs  = 6;
+    slaveParams.dlybct = 100;
     slaveParams.busSpeed_Hz = SPI_MIN_BUS_SPEED;
-    slaveParams.postTransferDelay = 4;
+    slaveParams.postTransferDelay = 0;
 
     spiTransfer.slaveParams = &slaveParams;
     spiTransfer.callback  = SPIcallback;
@@ -90,10 +94,10 @@ void SpiTestTask::performBlockingSpiTest(SPIslave slave, uint8_t bufferPosition)
 
 
 
-    retValInt = SPI_writeRead(&spiTransfer);
-    if(retValInt != 0) {
+    retval = SPI_writeRead(&spiTransfer);
+    if(retval != 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::warning << "SPI Test 2: SPI_writeRead returned: " << (int)retValInt << std::endl;
+        sif::warning << "SPI Test 2: SPI_writeRead returned: " << (int)retval << std::endl;
 #else
 
 #endif
@@ -623,8 +627,8 @@ void SpiTestTask::SPIcallback(SystemContext context, xSemaphoreHandle semaphore)
 void SpiTestTask::performAt91LibTest() {
     At91Npcs cs = At91Npcs::NPCS_0;
     At91SpiBuses bus = At91SpiBuses::SPI_BUS_1;
-    spiTestMode = SpiTestMode::AT91_LIB_DMA;
-    int retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, 1'000'000, 100);
+    spiTestMode = SpiTestMode::AT91_LIB_BLOCKING;
+    int retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, 1'000'000, 100000000, 6);
     if(retval != 0) {
         sif::printInfo("SpiTestTask::performAt91LibTest: cfg failed with %d\n", retval);
     }
@@ -649,25 +653,6 @@ void SpiTestTask::performAt91LibTest() {
         }
 
     }
-
-
-
-
-//
-//    std::string welt = "Hallo\r\n";
-//    int result = SPI_WriteBuffer(AT91C_BASE_SPI1, (void*) welt.c_str(), welt.size());
-//    if(result == 1) {
-//        uint32_t ticks = 0;
-//        while(SPI_IsFinished(AT91C_BASE_SPI1)) {
-//            ticks ++;
-//        }
-//        sif::printInfo("ticks: %d\n",ticks);
-//    }
-//    else {
-//        sif::printInfo("No free DMA bank!\n\r");
-//    }
-
-
 }
 
 void SpiTestTask::spiIrqHandler(At91SpiBuses bus, void* args) {

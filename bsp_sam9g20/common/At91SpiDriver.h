@@ -34,11 +34,11 @@ typedef enum {
  * @param npcs
  * @param spiMode
  * @param frequency
- * @param dlybct
+ * @param dlybct_ns Delay between consecutive transfers in nanoseconds
  * @return
  */
 int at91_spi_configure_driver(At91SpiBuses bus, At91Npcs npcs,
-        SpiModes spiMode, uint32_t frequency, uint32_t dlybct);
+        SpiModes spiMode, uint32_t frequency, uint32_t dlybct_ns, uint32_t dlybs_ns);
 
 /**
  * Configures the non-blocking driver by setting up the required interrupts and

@@ -6,6 +6,9 @@
 #include <at91/peripherals/aic/aic.h>
 #include <at91/utility/trace.h>
 
+#include <freertos/FreeRTOS.h>
+#include <freertos/include/freertos/task.h>
+
 #include <stddef.h>
 
 int get_drv_handle(At91SpiBuses spi_bus, At91Npcs npcs, AT91PS_SPI* drv, unsigned int* id);
@@ -30,7 +33,7 @@ void* user_args_bus_1 = NULL;
 
 
 int at91_spi_configure_driver(At91SpiBuses spi_bus, At91Npcs npcs,
-        SpiModes spiMode, uint32_t frequency, uint32_t dlybct) {
+        SpiModes spiMode, uint32_t frequency, uint32_t dlybct_ns, uint32_t dlybs_ns) {
     if(npcs > 3) {
         return -1;
     }
@@ -63,7 +66,7 @@ int at91_spi_configure_driver(At91SpiBuses spi_bus, At91Npcs npcs,
         mode_val = AT91C_SPI_CPOL;
     }
     drv->SPI_CSR[npcs] = SPI_SCBR(frequency, BOARD_MCK) | mode_val
-            | SPI_DLYBCT(dlybct, BOARD_MCK);
+            | SPI_DLYBCT(dlybct_ns, BOARD_MCK) |  SPI_DLYBS(dlybs_ns, BOARD_MCK);
     return 0;
 }
 
