@@ -97,8 +97,6 @@ To do this, supply the following arguments to the `CMake` build generation comma
  - Release: `-DCMAKE_BUILD_TYPE=Release`
  - Size: `-DCMAKE_BUILD_TYPE=MinSizeRel`
  - Release with Debug Info: `-DCMAKE_BUILD_TYPE=RelWithDebInfo`
- 
-A list of all important combinations will be shown for the Debug configuration. 
 
 If the boards are flashed for the first time, the SDRAM needs to be configured with
 the following command
@@ -108,8 +106,14 @@ the following command
 ```
 
 It is recommended to use Eclipse to flash the boards conveniently.
+A list of all important combinations will be shown for the Debug configuration.
+Please note that all commands here can be run conveniently by using 
+the shell scripts provided in the `cmake/scripts` folder.
 
 ### Build for the AT91-EK
+
+Can be loaded into SDRAM directly or to NAND-Flash 0x40000 to be loaded
+by bootloader.
 
 ```sh
 mkdir Debug-AT91EK && cd Debug-AT91EK
@@ -119,6 +123,9 @@ cmake --build . -j
 
 ### Build for the iOBC-EK
 
+Load at NOR-Flash 0x20000 when using the custom bootloader or NOR-Flash 0xA000
+when using ISIS bootloader.
+
 ```sh
 mkdir Mission-iOBC && cd Mission-iOBC
 cmake -DBOARD_IOBC=ON ..
@@ -127,7 +134,9 @@ cmake --build . -j
    
 ### Build bootloaders for the AT91-EK
 
-First stage bootloader:
+First stage bootloader.
+Load at NAND-Flash position 0x0, and edit sixth ARM vector
+to contain binary size (SAM-BA recommended). More information in AT91 README.
 
 ```sh
 mkdir Mission-BL-AT91EK && cd Mission-BL-AT91EK
@@ -135,18 +144,19 @@ cmake -DBOOTLOADER=ON -DCMAKE_BUILD_TYPE=MinSizeRel ..
 cmake --build . -j
 ```
 
-Second stage bootloader:
+Second stage bootloader.
+Load at NAND-Flash position 0x20000, more information in AT91 README
 
 ```sh
 mkdir Debug-BL2-AT91EK && cd Debug-BL2-AT91EK
-cmake -DBOOTLOADER=ON -DBL_STAGE_TWO=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo .. 
+cmake -DBOOTLOADER=ON -DBL_STAGE_TWO=ON -DCMAKE_BUILD_TYPE=Debug .. 
 cmake --build . -j
 ```
 
 ### Build bootloader for the iOBC
 
 ```sh
-mkdir Debug-BL2-AT91EK && cd Debug-BL2-AT91EK
+mkdir Mission-BL-iOBC && cd Mission-BL-iOBC 
 cmake -DBOOTLOADER=ON -DBOARD_IOBC=ON -DCMAKE_BUILD_TYPE=Release .. 
 cmake --build . -j
 ```
