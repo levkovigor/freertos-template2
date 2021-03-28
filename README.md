@@ -157,7 +157,7 @@ cmake --build . -j
 
 ```sh
 mkdir Mission-BL-iOBC && cd Mission-BL-iOBC 
-cmake -DBOOTLOADER=ON -DBOARD_IOBC=ON -DCMAKE_BUILD_TYPE=Release .. 
+cmake -DBOOTLOADER=ON -DBOARD_IOBC=ON -DAT91_NO_FREERTOS_STARTER_FILE=ON -DCMAKE_BUILD_TYPE=Release .. 
 cmake --build . -j
 ```
 
