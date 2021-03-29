@@ -80,12 +80,12 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         bootloader = true;
         result = change_directory(config::BOOTLOADER_REPOSITORY, true);
         if(result != F_NO_ERROR) {
-            // changing directory failed!
+            /* Changing directory failed! */
             return HasReturnvaluesIF::RETURN_FAILED;
         }
 
-        // Current file size only needs to be cached once.
-        // Info output should only be printed once.
+        /* Current file size only needs to be cached once.
+        Info output should only be printed once. */
         if(stepCounter == 0) {
             if(hammingCode) {
                 currentFileSize = f_filelength(config::BL_HAMMING_NAME);
@@ -95,7 +95,9 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
                     currentFileSize = f_filelength(config::BOOTLOADER_NAME);
                 }
                 else {
+#ifdef AT91SAM9G20_EK
                     currentFileSize = f_filelength(config::BOOTLOADER_2_NAME);
+#endif
                 }
             }
         }
@@ -108,19 +110,21 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
                 *filePtr = f_open(config::BOOTLOADER_NAME, "r");
             }
             else {
+#ifdef AT91SAM9G20_EK
                 *filePtr = f_open(config::BOOTLOADER_2_NAME, "r");
+#endif
             }
         }
     }
     else {
         result = change_directory(config::SW_REPOSITORY, true);
         if(result != F_NO_ERROR) {
-            // changing directory failed!
+            /* Changing directory failed! */
             return HasReturnvaluesIF::RETURN_FAILED;
         }
 
-        // Current file size only needs to be cached once.
-        // Info output should only be printed once.
+        /* Current file size only needs to be cached once.
+        Info output should only be printed once. */
         if(stepCounter == 0) {
             if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
                 if(hammingCode) {
@@ -149,7 +153,7 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
     }
 
     if(f_getlasterror() != F_NO_ERROR) {
-        // Opening file failed!
+        /* Opening file failed! */
         char const* missingFile = nullptr;
         if(bootloader) {
             if(hammingCode) {
@@ -183,11 +187,10 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
         handleInfoPrintout(currentVolume);
     }
 
-    // Seek correct position in file. This needs to be done every time
-    // the file is reopened!
+    /* Seek correct position in file. This needs to be done every time the file is reopened! */
     result = f_seek(*filePtr, currentByteIdx, F_SEEK_SET);
     if(result != F_NO_ERROR) {
-        // should not happen!
+        /* should not happen! */
         return HasReturnvaluesIF::RETURN_FAILED;
     }
     return HasReturnvaluesIF::RETURN_OK;
@@ -198,7 +201,7 @@ ReturnValue_t ImageCopyingEngine::readFile(uint8_t *buffer, size_t sizeToRead,
     ssize_t bytesRead = f_read(imgBuffer->data(), sizeof(uint8_t), sizeToRead, *file);
     if(bytesRead < 0) {
         errorCount++;
-        // if reading a file failed 3 times, exit.
+        /* If reading a file failed 3 times, exit. */
         if(errorCount >= 3) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
             sif::error << "ImageCopyingHelper::performNandCopyAlgorithm: "
@@ -209,7 +212,7 @@ ReturnValue_t ImageCopyingEngine::readFile(uint8_t *buffer, size_t sizeToRead,
 #endif
             return HasReturnvaluesIF::RETURN_FAILED;
         }
-        // reading file failed. retry next cycle
+        /* Reading file failed. Retry next cycle */
         return image::TASK_PERIOD_OVER_SOON;
     }
     *sizeRead = static_cast<size_t>(bytesRead);

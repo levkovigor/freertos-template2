@@ -70,22 +70,22 @@ int copy_with_hcc_lib(BootSelect boot_select) {
         return -1;
     }
 
-    F_FILE* file = f_open(SW_UPDATE_FILE_NAME, "r");
+    F_FILE* file = f_open(SW_SLOT_1_NAME, "r");
     result = f_getlasterror();
     if (result != F_NO_ERROR) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_WARNING("f_open of file \"%s\" failed with code %d.\n\r",
-                SW_UPDATE_FILE_NAME, result);
+                SW_SLOT_1_NAME, result);
 #endif
         /* opening file failed! */
         close_filesystem(true, true, current_volume);
         return -1;
     }
 
-    size_t filelength = f_filelength(SW_UPDATE_FILE_NAME);
+    size_t filelength = f_filelength(SW_SLOT_1_NAME);
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-    TRACE_INFO("Copying image \"%s\" from SD-Card %u to SDRAM\n\r", SW_UPDATE_FILE_NAME,
+    TRACE_INFO("Copying image \"%s\" from SD-Card %u to SDRAM\n\r", SW_SLOT_1_NAME,
             (unsigned int) current_volume);
 #endif
 

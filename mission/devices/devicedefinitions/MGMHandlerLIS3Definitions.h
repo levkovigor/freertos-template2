@@ -24,11 +24,11 @@ static const DeviceCommandId_t IDENTIFY_DEVICE = 0x03;
 static const DeviceCommandId_t TEMP_SENSOR_ENABLE = 0x04;
 static const DeviceCommandId_t ACCURACY_OP_MODE_SET = 0x05;
 
-//Number of all control registers
+/* Number of all control registers */
 static const uint8_t NR_OF_CTRL_REGISTERS = 5;
-//Number of registers in the MGM
+/* Number of registers in the MGM */
 static const uint8_t NR_OF_REGISTERS = 19;
-//Total number of adresses for all registers
+/* Total number of adresses for all registers */
 static const uint8_t TOTAL_NR_OF_ADRESSES = 52;
 static const uint8_t NR_OF_DATA_AND_CFG_REGISTERS = 14;
 static const uint8_t TEMPERATURE_REPLY_LEN = 3;
@@ -37,47 +37,47 @@ static const uint8_t SETUP_REPLY_LEN = 6;
 /*------------------------------------------------------------------------*/
 /* Register adresses */
 /*------------------------------------------------------------------------*/
-// Register adress returns identifier of device with default 0b00111101
+/* Register adress returns identifier of device with default 0b00111101 */
 static const uint8_t IDENTIFY_DEVICE_REG_ADDR = 0b00001111;
 static const uint8_t DEVICE_ID = 0b00111101;            // Identifier for Device
 
-//Register adress to access register 1
+/* Register adress to access register 1 */
 static const uint8_t CTRL_REG1 = 0b00100000;
-//Register adress to access register 2
+/* Register adress to access register 2 */
 static const uint8_t CTRL_REG2 = 0b00100001;
-//Register adress to access register 3
+/* Register adress to access register 3 */
 static const uint8_t CTRL_REG3 = 0b00100010;
-//Register adress to access register 4
+/* Register adress to access register 4 */
 static const uint8_t CTRL_REG4 = 0b00100011;
-//Register adress to access register 5
+/* Register adress to access register 5 */
 static const uint8_t CTRL_REG5 = 0b00100100;
 
-//Register adress to access status register
+/* Register adress to access status register */
 static const uint8_t STATUS_REG_IDX = 8;
 static const uint8_t STATUS_REG = 0b00100111;
 
- //Register adress to access low byte of x-axis
+/* Register adress to access low byte of x-axis */
 static const uint8_t X_LOWBYTE_IDX = 9;
 static const uint8_t X_LOWBYTE = 0b00101000;
-//Register adress to access high byte of x-axis
+/* Register adress to access high byte of x-axis */
 static const uint8_t X_HIGHBYTE_IDX = 10;
 static const uint8_t X_HIGHBYTE = 0b00101001;
-//Register adress to access low byte of y-axis
+/* Register adress to access low byte of y-axis */
 static const uint8_t Y_LOWBYTE_IDX = 11;
 static const uint8_t Y_LOWBYTE = 0b00101010;
-//Register adress to access high byte of y-axis
+/* Register adress to access high byte of y-axis */
 static const uint8_t Y_HIGHBYTE_IDX = 12;
 static const uint8_t Y_HIGHBYTE = 0b00101011;
-//Register adress to access low byte of z-axis
+/* Register adress to access low byte of z-axis */
 static const uint8_t Z_LOWBYTE_IDX = 13;
 static const uint8_t Z_LOWBYTE = 0b00101100;
-//Register adress to access high byte of z-axis
+/* Register adress to access high byte of z-axis */
 static const uint8_t Z_HIGHBYTE_IDX = 14;
 static const uint8_t Z_HIGHBYTE = 0b00101101;
 
-//Register adress to access low byte of temperature sensor
+/* Register adress to access low byte of temperature sensor */
 static const uint8_t TEMP_LOWBYTE = 0b00101110;
-//Register adress to access high byte of temperature sensor
+/* Register adress to access high byte of temperature sensor */
 static const uint8_t TEMP_HIGHBYTE = 0b00101111;
 
 /*------------------------------------------------------------------------*/
