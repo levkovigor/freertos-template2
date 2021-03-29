@@ -6,7 +6,7 @@
 #include <fsfw/osal/FreeRTOS/Mutex.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
-#include <fsfwconfig/devices/logicalAddresses.h>
+#include <devices/logicalAddresses.h>
 
 extern "C" {
 #include <at91/utility/trace.h>

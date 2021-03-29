@@ -46,11 +46,11 @@ in the QEMU documentation.
 [Hosted build getting started](doc/README-hosted.md#top)<br>
 
 # Prerequisites
-1. Make installed
+1. Make installed. Part of [MSYS2 MinGW64](https://www.msys2.org/) on Windows.
 2. Development board binaries: [GNU ARM Toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/) 
    installed, hardware or QEMU set-up available. See the
    [Setting up prerequisites](#setting-up-prerequisites) section
-3. For Host build: On Windows, GCC toolchain (MinGW64)
+3. For Host build: On Windows, GCC toolchain, e.g. [MSYS2 MinGW64](https://www.msys2.org/) on Windows.
 4. For QEMU: QEMU repository cloned and set up in same folder in which
    this repository was cloned
 
@@ -89,16 +89,23 @@ or for a host system.
 
 ##  Create OBSW binary for AT91 and iOBC
 
-1. Run Makefile to create binaries. You need to have make installed, either by installing
-the Windows Build Tools or using a tools like MinGW64. Please note that there are different build 
-options and configuration parameters for the Makefile available. An explanation and how to set up 
-the Eclipse IDE for these configurations will be provided in a separate chapter.
-There are following targets available:
-   
- - `all` and `debug` to build the debug binaries
- - `mission` to build the release binary
+1. CMake is used to generate Makefiles to build the images. Therefore, install
+CMake first. On Windows, Make needs to be installed. It is recommended to 
+install MinGW64 as part of [MSYS2](https://www.msys2.org/) for this, see more
+in prerequisites. Steps in Windows were performed in MinGW64 shell.
 
-General command for AT91:
+2. Create a build folder, run the `CMake` build generation command inside
+that folder and then run the build command. On Windows, add `-G "MinGW Makefiles"` 
+to the build command to avoid building for Visual Studio 2019.
+You can supply the build type specifically, `Debug` will be the default.
+To do this, supply the following arguments to the `CMake` build generation command:
+
+ - Release: `-DCMAKE_BUILD_TYPE=Release`
+ - Size: `-DCMAKE_BUILD_TYPE=MinSizeRel`
+ - Release with Debug Info: `-DCMAKE_BUILD_TYPE=RelWithDebInfo`
+
+If the boards are flashed for the first time, the SDRAM needs to be configured with
+the following command
 
 <<<<<<< HEAD
    General command for Host systems (Windows or Linux):
@@ -124,47 +131,85 @@ General command for AT91:
    SDRAM. Refer to respective instructions for more details.
 =======
 ```sh
-make all
+./sdramCfg
 ```
-   
-General command for the iOBC:
+
+It is recommended to use Eclipse to flash the boards conveniently.
+A list of all important combinations will be shown for the Debug configuration.
+Please note that all commands here can be run conveniently by using 
+the shell scripts provided in the `cmake/scripts` folder.
+
+### Build for the AT91-EK
+
+Can be loaded into SDRAM directly or to NAND-Flash 0x40000 to be loaded
+by bootloader.
+
 ```sh
-make IOBC=1 all
+mkdir Debug-AT91EK && cd Debug-AT91EK
+cmake ..
+cmake --build . -j
+```
+
+### Build for the iOBC-EK
+
+Load at NOR-Flash 0x20000 when using the custom bootloader or NOR-Flash 0xA000
+when using ISIS bootloader.
+
+```sh
+mkdir Mission-iOBC && cd Mission-iOBC
+cmake -DBOARD_IOBC=ON ..
+cmake --build . -j
 ```
    
+### Build bootloaders for the AT91-EK
+
+First stage bootloader.
+Load at NAND-Flash position 0x0, and edit sixth ARM vector
+to contain binary size (SAM-BA recommended). More information in AT91 README.
+
+```sh
+mkdir Mission-BL-AT91EK && cd Mission-BL-AT91EK
+cmake -DBOOTLOADER=ON -DCMAKE_BUILD_TYPE=MinSizeRel .. 
+cmake --build . -j
+```
+
+Second stage bootloader.
+Load at NAND-Flash position 0x20000, more information in AT91 README
+
+```sh
+mkdir Debug-BL2-AT91EK && cd Debug-BL2-AT91EK
+cmake -DBOOTLOADER=ON -DBL_STAGE_TWO=ON -DCMAKE_BUILD_TYPE=Debug .. 
+cmake --build . -j
+```
+
+### Build bootloader for the iOBC
+
+```sh
+mkdir Mission-BL-iOBC && cd Mission-BL-iOBC 
+cmake -DBOOTLOADER=ON -DBOARD_IOBC=ON -DAT91_NO_FREERTOS_STARTER_FILE=ON -DCMAKE_BUILD_TYPE=Release .. 
+cmake --build . -j
+```
+
+## Starting QEMU
+
 Command to start QEMU (inside sourceobsw folder). Please note this only works if the QEMU 
 repository was cloned and built inside the same folder the OBSW was cloned.
 ```sh
 ./StartQEMU.sh
 ``` 
    
-2. The development board binaries have to be flashed with with J-Link/SAM-BA for 
-the AT91 and the `sdramCfg` make target needs to be run first once per AT91 power cycle before 
-flashing the SDRAM. Refer to respective instructions for more details.
-
 ## Build Host Software
 
-The build system to build the hosted binaries was changed to CMake.
 Perform the following steps to build the hosted software
 
 ### Windows
 
-Install [MSYS2](https://www.msys2.org/) and run the following 
-command in MinGW64:
-
-```sh
-pacman -Syuuu
-pacman -S gcc git mingw-w64-x86_64-gdb mingw-w64-x86_64-make mingw-w64-x86_64-cmake
-```
-
-It is recommended to set up `alias`es and use `git config --global core.autocrl`
-to have consistent line endings in MinGW64
-
+Install [MSYS2](https://www.msys2.org/) if not done so already. See Prerequisites chapter
+for more information.
 Now you can run the following commands in the `sourceobsw` folder to build the software
 
 ```sh
-mkdir Debug-Host
-cd Debug-Host
+mkdir Debug-Host && cd Debug-Host
 cmake .. -G "MinGW Makefiles"
 cmake --build . -j
 ```
@@ -175,8 +220,7 @@ Run the following command in the `sourceobsw` folder to build the software
 with the hosted OSAL. You can supply `-DOS_FSFW=linux` to the `cmake ..` command to build with the Linux OSAL instead
 
 ```sh
-mkdir Debug-Host
-cd Debug-Host
+mkdir Debug-Host && cd Debug-Host
 cmake ..
 cmake --build . -j
 ```
@@ -184,39 +228,42 @@ cmake --build . -j
 
 # Build Configurations and testing of Flight Software
 
-Compilation can be sped up by providing the -j parameter.
-On windows, wsl must be added before make, if tools like MSYS2 or Windows Build
-Tools are not installed. It is recommended to set up Eclipse instead of using the command line to 
-build the software, as this allows for much more convenient development and debugging.
-For developers unfamiliar with Eclipse, it is recommended to read the
-[Eclipse setup guide](doc/README-eclipse.md#top).
-
-Following make targets are available:
-- sdramCfg: Configure AT91 SDRAM on start-up. Required after each restart.
-- clean: Clean the dependencies, binaries and includes of current active build
-  configurationand Communication Interface (Serial RS232 or UDP Ethernet)
-- hardclean: Clean the three mentioned folders for all systems and interfaces
-- cleanbin: Clean all binaries
-- debug: Additional FSFW debug messages
-- virtual: Virtualized software interfaces replace real connected hardware
-- mission: Optimized build for mission. Not good for debugging.
-
-Example call to build mission build:
-```sh
-make mission
-```
-
-Example call to build debug build in windows for the iOBC:
-```sh
-make debug WINDOWS=1 IOBC=1
-```
-
 The provided TMTC has separate [instructions](https://git.ksat-stuttgart.de/source/tmtc)
 It is possible to chose between serial communication via RS232 and Ethernet 
 communication with UDP datagrams. For the serial communication, a USB to female 
 RS232 cable can be used (or UART jumper wires..).
 
 # Setting up prerequisites
+
+## Windows: Installing and setting up MinGW64
+
+1. Install [MSYS2](https://www.msys2.org/).
+2. Run the following commands in MinGW64
+
+```sh
+pacman -Syuuu
+pacman -S gcc git mingw-w64-x86_64-gdb mingw-w64-x86_64-make mingw-w64-x86_64-cmake
+```
+
+It is recommended to set up `alias`es in the `.bashrc` file to 
+nagivate to the working directory quickly.
+
+3. Run `git config --global core.autocrlf true` if you like to use MinGW64 `git` as well
+
+4. Open the `.bashrc` file
+
+```sh
+cd ~
+nano .bashrc
+```
+
+Add the following line at the end to add the ARM cross-compile toolchain to MinGW64.
+This is just an example, correct the path for your use-case with the correct
+version and user name!
+
+```sh
+export PATH=$PATH:"/c/Users/Robin/AppData/Roaming/xPacks/@xpack-dev-tools/arm-none-eabi-gcc/10.2.1-1.1.2/.content/bin"
+```
 
 ## Windows: Installing and setting up the ARM Toolchain
 The code needs to be compiled for the ARM target system and we will use the

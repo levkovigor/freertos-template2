@@ -11,7 +11,7 @@ extern "C" {
 	#include <hal/Drivers/UART.h>
 }
 
-#include <fsfwconfig/OBSWConfig.h>
+#include <OBSWConfig.h>
 #include <array>
 
 /**

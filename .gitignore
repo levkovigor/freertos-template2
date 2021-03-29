@@ -44,7 +44,6 @@ __pycache__
 .swp 
 
 generators/*.csv
-/AT91/
 .eclipsesettings/
 
 generators/.idea/*

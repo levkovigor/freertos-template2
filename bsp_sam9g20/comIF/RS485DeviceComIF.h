@@ -3,7 +3,7 @@
 
 #include <fsfw/devicehandlers/DeviceCommunicationIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
-#include <fsfwconfig/OBSWConfig.h>
+#include <OBSWConfig.h>
 
 extern "C" {
 

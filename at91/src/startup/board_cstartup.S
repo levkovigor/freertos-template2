@@ -38,18 +38,18 @@
 //------------------------------------------------------------------------------
 #if defined(sram) || defined(norflash)
 // Let's assume 8192 bytes available stack space now for non-system modes.
-#define UND_STACK_SIZE	0x00000100		/* Stack size for "undefined instruction" interrupts	*/
-#define ABT_STACK_SIZE	0x00000100		/* Stack size for "abort" interrupts					*/
-#define FIQ_STACK_SIZE	0x00000000		/* Stack size for "FIQ" interrupts						*/
-#define IRQ_STACK_SIZE	0x00000400		/* Stack size for "IRQ" normal interrupts				*/
-#define SVC_STACK_SIZE	0x00000400		/* Stack size for "SVC" supervisor mode                 */
+#define UND_STACK_SIZE  0x00000100       /* Stack size for "undefined instruction" interrupts	*/
+#define ABT_STACK_SIZE  0x00000100       /* Stack size for "abort" interrupts                   */
+#define FIQ_STACK_SIZE  0x00000000       /* Stack size for "FIQ" interrupts	                    */
+#define IRQ_STACK_SIZE  0x00000400       /* Stack size for "IRQ" normal interrupts              */
+#define SYS_STACK_SIZE  0x00000800       /* Stack size for "SYS" system mode                    */
 #elif sdram
 // Around 200 kB of stack for non-system modes.
 #define UND_STACK_SIZE	0x00000200		/* Stack size for "undefined instruction" interrupts	*/
 #define ABT_STACK_SIZE	0x00000200		/* Stack size for "abort" interrupts					*/
 #define FIQ_STACK_SIZE	0x00000000		/* Stack size for "FIQ" interrupts						*/
 #define IRQ_STACK_SIZE	0x00009000		/* Stack size for "IRQ" normal interrupts				*/
-#define SVC_STACK_SIZE	0x00009000		/* Stack size for "SVC" supervisor mode                 */
+#define SYS_STACK_SIZE  0x00009000      /* Stack size for "SYS" system mode                     */
 #endif
 
 #define ARM_MODE_USR	0x10	/* Normal User Mode											*/
@@ -205,17 +205,14 @@ resetHandler:
     mov     sp, r0
     sub     r0, r0, #UND_STACK_SIZE
 
-/* Supervisor mode */
-    msr     CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
-    mov     sp, r0
-    sub     r0, r0, #SVC_STACK_SIZE
-
 /* System mode, the normal mode of operation */
     msr     CPSR_c, #ARM_MODE_SYS | F_BIT
     mov     sp, r0
+    sub     r0, r0, #SYS_STACK_SIZE
 
-/* Supervisor mode (interrupts enabled) */
-#    msr     CPSR_c, #ARM_MODE_SVC | F_BIT
+/* Supervisor mode */
+    msr     CPSR_c, #ARM_MODE_SVC | F_BIT
+    mov     sp, r0
 
 /* Branch to main()
  ******************/
@@ -233,7 +230,7 @@ First argument is the jump address */
 	.type jump_to_sdram_application, %function
 
 jump_to_sdram_application:
-	msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
+	msr CPSR_c, #ARM_MODE_SVC | F_BIT
 	mov sp, r0
 	mov pc, r1
 

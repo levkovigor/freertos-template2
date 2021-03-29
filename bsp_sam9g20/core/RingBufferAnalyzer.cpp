@@ -3,7 +3,7 @@
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/globalfunctions/DleEncoder.h>
 #include <fsfw/ipc/MutexGuard.h>
-#include <fsfwconfig/OBSWConfig.h>
+#include <OBSWConfig.h>
 
 #include <cstring>
 

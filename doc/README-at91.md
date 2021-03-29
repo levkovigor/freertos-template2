@@ -134,8 +134,7 @@ project. Steps:
 4. Connect J-Link to USB port of host computer
 5. Connect J-Link to AT91SAM9G20-EK
 6. Power on AT91SAM9G20-EK
-8. Execute `make sdramCfg` to configure the sdram. Can be done by creating a 
-   new target: Right click project &rarr; Build Targets &rarr; Create..
+8. Execute `./sdramCfg.sh` to configure the sdram. Can be done in a shell like MinGW64
 
 <img src="./readme_img/at91/sdramcfg.png" width="30%">
 

@@ -28,13 +28,9 @@
 #include <fsfw/pus/CService200ModeCommanding.h>
 #include <fsfw/pus/Service3Housekeeping.h>
 
-#ifdef LINUX
-#include <fsfw/osal/linux/TmTcUnixUdpBridge.h>
-#include <fsfw/osal/linux/TcUnixUdpPollingTask.h>
-#elif WIN32
-#include <fsfw/osal/windows/TcWinUdpPollingTask.h>
-#include <fsfw/osal/windows/TmTcWinUdpBridge.h>
-#endif
+/* UDP server includes */
+#include <fsfw/osal/common/UdpTcPollingTask.h>
+#include <fsfw/osal/common/UdpTmTcBridge.h>
 
 #include <cstdint>
 
@@ -105,19 +101,11 @@ void Factory::produce(void) {
 	/* TM Destination */
 	new TmFunnel(objects::TM_FUNNEL);
 
-#ifdef LINUX
-	new TmTcUnixUdpBridge(objects::UDP_BRIDGE,
+	new UdpTmTcBridge(objects::UDP_BRIDGE,
 	        objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
 	        objects::TC_STORE);
-	new TcUnixUdpPollingTask(objects::UDP_POLLING_TASK,
+	new UdpTcPollingTask(objects::UDP_POLLING_TASK,
 	        objects::UDP_BRIDGE);
-#elif WIN32
-	new TmTcWinUdpBridge(objects::UDP_BRIDGE,
-	        objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
-	        objects::TC_STORE);
-	new TcWinUdpPollingTask(objects::UDP_POLLING_TASK,
-	        objects::UDP_BRIDGE);
-#endif
 
 	/* PUS Service Base Services */
 	new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,

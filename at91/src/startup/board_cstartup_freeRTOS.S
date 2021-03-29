@@ -352,7 +352,7 @@ C++: extern "C" extern void jump_to_sdram_application(uint32_t stack_ptr, uint32
     .type jump_to_sdram_application, %function
 
 jump_to_sdram_application:
-    /* Put the core into supervisor mode with interrupts disabled */
-    msr CPSR_c, #ARM_MODE_SVC | F_BIT | I_BIT
+    /* Put the core into supervisor mode */
+    msr CPSR_c, #ARM_MODE_SVC | F_BIT
     mov sp, r0
     mov pc, r1

@@ -5,7 +5,7 @@
 #include <OBSWConfig.h>
 >>>>>>> mueller/master:bsp_sam9g20/comIF/GpioDeviceComIF.cpp
 #include <fsfw/serviceinterface/ServiceInterface.h>
-#include <fsfwconfig/devices/logicalAddresses.h>
+#include <devices/logicalAddresses.h>
 
 extern "C" {
 #include <board.h>

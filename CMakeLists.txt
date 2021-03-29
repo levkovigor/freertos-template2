@@ -154,7 +154,7 @@ if(NOT HOST_BUILD)
         # Only required because the AT91 library loads a specific header.
         set(FSFW_CONFIG_PATH "${BOOTLOADER_PATH}/config")
     else()
-        set(FSFW_CONFIG_PATH "fsfwconfig")
+        set(FSFW_CONFIG_PATH "${BSP_PATH}/fsfwconfig")
     endif()
     set(FSFW_CONFIG_PATH_FULL "${CMAKE_SOURCE_DIR}/${FSFW_CONFIG_PATH}")
     
@@ -260,7 +260,7 @@ if(BOOTLOADER)
 else()
     add_subdirectory(${MISSION_PATH})
     add_subdirectory(${TEST_PATH})
-    add_subdirectory(${FSFW_CONFIG_PATH})
+    # add_subdirectory(${FSFW_CONFIG_PATH})
     add_subdirectory(${FSFW_PATH})
     if(ADD_ETL_LIB)
         add_subdirectory(${ETL_PATH})
@@ -364,6 +364,11 @@ if(NOT CMAKE_SIZE)
     endif()
 endif()
 
+set(BUILD_TYPE_STR "debug")
+if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel" OR CMAKE_BUILD_TYPE MATCHES "Release")
+    set(BUILD_TYPE_STR "mission")
+endif()
+
 if(NOT HOST_BUILD)
     if(BOOTLOADER)
         set(TYPE_PRINTOUT "Bootloader")
@@ -378,10 +383,7 @@ if(NOT HOST_BUILD)
         set(TYPE_PRINTOUT "OBSW")
     endif()
     set(TARGET_STRING "${BOARD_PRINTOUT} ${TYPE_PRINTOUT}")
-    set(BUILD_TYPE_STR "debug")
-    if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel" OR CMAKE_BUILD_TYPE MATCHES "Release")
-        set(BUILD_TYPE_STR "mission")
-    endif()
+
     if(BOOTLOADER)
         if(NOT BOARD_IOBC)
             if(SIMPLE_AT91_BL)
@@ -402,6 +404,9 @@ if(NOT HOST_BUILD)
     endif()
 else()
     set(TARGET_STRING "Hosted")
+    set_target_properties(${TARGET_NAME} PROPERTIES
+        OUTPUT_NAME "${TARGET_NAME}-host-${BUILD_TYPE_STR}"
+    )
 endif()
 
 get_target_property(OUTPUT_NAME_VAR ${TARGET_NAME} OUTPUT_NAME)
@@ -422,7 +427,7 @@ string(CONCAT POST_BUILD_COMMENT
 add_custom_command(
    TARGET ${TARGET_NAME}
    POST_BUILD
-   COMMAND ${CMAKE_SIZE} ${OUTPUT_NAME_VAR}
+   COMMAND ${CMAKE_SIZE} ${OUTPUT_NAME_VAR}${FILE_SUFFIX}
    COMMENT ${POST_BUILD_COMMENT}
 )
 
