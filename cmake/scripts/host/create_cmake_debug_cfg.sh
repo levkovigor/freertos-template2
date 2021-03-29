@@ -15,15 +15,15 @@ if [ "${counter}" -ge 5 ];then
 fi
 
 build_generator=""
-os_fsfw="host"
 build_type="debug"
 builddir="Debug-Host"
 defines="HOST_BUILD=ON"
 
 if [ "${OS}" = "Windows_NT" ]; then
 	build_generator="MinGW Makefiles"
+	os_fsfw="host"
 # Could be other OS but this works for now.
-else
+else	os_fsfw="linux"
 	build_generator="Unix Makefiles"
 fi
 
