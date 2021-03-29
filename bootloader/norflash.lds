@@ -51,8 +51,8 @@ SECTIONS
         _sprerelocate = .;
         KEEP(*(.vectors));
         /* These functions need to be executed in the SRAM0 for the NORFlash */
-        *board_lowlevel.o(.text .text*)
-        *board_memories.o(.text .text*)
+        *libat91.a:board_lowlevel.c.obj
+        *libat91.a:board_memories.c.obj
         . = ALIGN(4);
         _eprerelocate = .;
     } >sram0

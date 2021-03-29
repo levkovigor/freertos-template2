@@ -5,16 +5,21 @@
 
 #include <bootloader/utility/CRC.h>
 
-#include <sam9g20/common/FRAMApi.h>
-#include <sam9g20/common/SRAMApi.h>
-#include <sam9g20/common/CommonFRAM.h>
+#include <bsp_sam9g20/common/FRAMApi.h>
+#include <bsp_sam9g20/common/SRAMApi.h>
+#include <bsp_sam9g20/common/CommonFRAM.h>
+#include <bsp_sam9g20/common/lowlevel.h>
 
+#if USE_FREERTOS == 1
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#endif
 
 #include <at91/utility/trace.h>
 #include <at91/utility/hamming.h>
 #include <at91/utility/exithandler.h>
+#include <at91/peripherals/aic/aic.h>
+#include <at91/peripherals/pit/pit.h>
 
 #include <hal/Drivers/LED.h>
 #include <hal/Timing/RTT.h>
@@ -22,11 +27,13 @@
 #include <string.h>
 #include <stdlib.h>
 
+/* Forward declarations */
 int perform_iobc_copy_operation_to_sdram();
-int handle_hamming_code_check(SlotType slotType);
+int handle_hamming_code_check(SlotType slotType, size_t image_size);
 int handle_hamming_code_result(int result);
+int increment_sdc_loc_reboot_counter(BootSelect boot_select, uint16_t* curr_reboot_counter);
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
-BootSelect determine_boot_select();
+BootSelect determine_boot_select(bool* use_hamming);
 
 /**
  * This is the core function of the bootloader which handles the copy operation,
@@ -43,7 +50,11 @@ void perform_bootloader_core_operation() {
     TRACE_INFO("Jumping to SDRAM application..\n\r");
 #endif
 
+#if USE_FREERTOS == 1
     vTaskEndScheduler();
+#endif
+
+    disable_pit_aic();
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
 }
 
@@ -70,51 +81,67 @@ int perform_iobc_copy_operation_to_sdram() {
      */
     BootSelect boot_select = BOOT_NOR_FLASH;
     int result = 0;
-    bool use_hamming = true;
+    bool use_hamming = false;
 
     /* If there are issues with the FRAM, we just boot from flash */
     if(!fram_faulty) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        TRACE_INFO("Determining boot select..\n\r");
+#endif
         boot_select = determine_boot_select(&use_hamming);
     }
 
     if(boot_select == BOOT_NOR_FLASH) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        if(use_hamming) {
+            TRACE_INFO("Booting from NOR-Flash, global hamming code checks enabled\n\r");
+        }
+        else {
+            TRACE_INFO("Booting from NOR-Flash without hamming code check\n\r");
+        }
+#endif
         result = copy_norflash_binary_to_sdram(PRIMARY_IMAGE_RESERVED_SIZE, use_hamming);
 
         if(result != 0) {
+            uint16_t curr_reboot_counter = 0;
             /* Increment local reboot counter */
-            result = fram_increment_img_reboot_counter(FLASH_SLOT, NULL);
+            result = fram_increment_img_reboot_counter(FLASH_SLOT, &curr_reboot_counter);
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+            TRACE_WARNING("Copy operation or hamming code check on NOR-Flash image failed\n\r");
+            TRACE_WARNING("Restarting, current reboot counter %d\n\r", curr_reboot_counter);
+#endif
             /* Restart */
             restart();
         }
+        /* Increment local reboot counter */
+        result = fram_increment_img_reboot_counter(FLASH_SLOT, NULL);
     }
     else {
-        result = copy_sdcard_binary_to_sdram(boot_select);
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        if(use_hamming) {
+            TRACE_INFO("Booting from SD card, global hamming code checks enabled\n\r");
+        }
+        else {
+            TRACE_INFO("Booting from SD card without hamming code check\n\r");
+        }
+#endif
+        result = copy_sdcard_binary_to_sdram(boot_select, use_hamming);
 
         if(result != 0) {
-            if(boot_select == BOOT_SD_CARD_0_SLOT_0) {
-                result = fram_increment_img_reboot_counter(SDC_0_SL_0, NULL);
-            }
-            else if(boot_select == BOOT_SD_CARD_0_SLOT_1) {
-                result = fram_increment_img_reboot_counter(SDC_0_SL_1, NULL);
-            }
-            else if(boot_select == BOOT_SD_CARD_1_SLOT_0) {
-                result = fram_increment_img_reboot_counter(SDC_1_SL_0, NULL);
-            }
-            else if(boot_select == BOOT_SD_CARD_1_SLOT_1) {
-                result = fram_increment_img_reboot_counter(SDC_1_SL_1, NULL);
-            }
+            uint16_t curr_reboot_counter = 0;
+            result = increment_sdc_loc_reboot_counter(boot_select, &curr_reboot_counter);
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+            TRACE_WARNING("Copy operation or hamming code check on SD card image failed\n\r");
+            TRACE_WARNING("Restarting, current reboot counter %d\n\r", curr_reboot_counter);
+#endif
             /* Restart */
             restart();
         }
+        increment_sdc_loc_reboot_counter(boot_select, NULL);
     }
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-    if(result == 0) {
-        TRACE_INFO("Copied successfully!\n\r");
-    }
-    else {
-        TRACE_ERROR("Copy failed with code %d!\n\r", result);
-    }
+    TRACE_INFO("Copied successfully\n\r");
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
     return result;
@@ -124,9 +151,6 @@ BootSelect determine_boot_select(bool* use_hamming) {
     BootloaderGroup bl_info_struct;
     BootSelect curr_boot_select = BOOT_NOR_FLASH;
     int result = fram_read_bootloader_block(&bl_info_struct);
-    if(use_hamming != NULL) {
-        *use_hamming = true;
-    }
     if (result != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_ERROR("determine_boot_select: FRAM could not be read!\n\r");
@@ -134,6 +158,16 @@ BootSelect determine_boot_select(bool* use_hamming) {
         fram_faulty = true;
         *use_hamming = false;
         return BOOT_NOR_FLASH;
+    }
+    else {
+        if(use_hamming != NULL) {
+            if(bl_info_struct.global_hamming_flag == FRAM_TRUE) {
+                *use_hamming = true;
+            }
+            else {
+                *use_hamming = false;
+            }
+        }
     }
 
     if (bl_info_struct.software_update_available == FRAM_TRUE) {
@@ -197,7 +231,9 @@ BootSelect determine_boot_select(bool* use_hamming) {
     /* Check the other SD card. If this does not work, boot from NOR-Flash without ECC check */
     if(curr_boot_select == BOOT_SD_CARD_0_SLOT_0) {
         if(bl_info_struct.sdc0_image_slot0_reboot_counter > 3) {
-            *use_hamming = false;
+            if(use_hamming != NULL) {
+                *use_hamming = false;
+            }
             curr_boot_select = BOOT_NOR_FLASH;
         }
         else {
@@ -206,7 +242,9 @@ BootSelect determine_boot_select(bool* use_hamming) {
     }
     else {
         if(bl_info_struct.sdc1_image_slot0_reboot_counter > 3) {
-            *use_hamming = false;
+            if(use_hamming != NULL) {
+                *use_hamming = false;
+            }
             curr_boot_select = BOOT_NOR_FLASH;
         }
         else {
@@ -248,11 +286,43 @@ int copy_norflash_binary_to_sdram(size_t copy_size, bool use_hamming)
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_INFO("Performing hamming code ECC check..\n\r");
 #endif
-        int result = handle_hamming_code_check(FLASH_SLOT);
-        result = handle_hamming_code_result(result);
+        size_t image_size = 0;
+        result = fram_read_binary_size(FLASH_SLOT, &image_size);
+        if(result != 0) {
+            /* Should really not happen, still jump to binary */
+            return 0;
+        }
+        else if (image_size == 0 || image_size == 0xffffffff) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+            TRACE_WARNING("Flash image size %d invalid\n\r", image_size);
+            /* Still jump to binary */
+            return 0;
+#endif
+        }
+        else {
+            int check_result = handle_hamming_code_check(FLASH_SLOT, image_size);
+            result = handle_hamming_code_result(check_result);
+        }
     }
     return result;
 }
+
+int increment_sdc_loc_reboot_counter(BootSelect boot_select, uint16_t* curr_reboot_counter) {
+    if(boot_select == BOOT_SD_CARD_0_SLOT_0) {
+        return fram_increment_img_reboot_counter(SDC_0_SL_0, curr_reboot_counter);
+    }
+    else if(boot_select == BOOT_SD_CARD_0_SLOT_1) {
+        return fram_increment_img_reboot_counter(SDC_0_SL_1, curr_reboot_counter);
+    }
+    else if(boot_select == BOOT_SD_CARD_1_SLOT_0) {
+        return fram_increment_img_reboot_counter(SDC_1_SL_0, curr_reboot_counter);
+    }
+    else if(boot_select == BOOT_SD_CARD_1_SLOT_1) {
+        return fram_increment_img_reboot_counter(SDC_1_SL_1, curr_reboot_counter);
+    }
+    return 0;
+}
+
 
 /**
  * Handle the hamming code check
@@ -263,7 +333,7 @@ int copy_norflash_binary_to_sdram(size_t copy_size, bool use_hamming)
  *  - Hamming_ERROR_MULTIPLEBITS(3) on multibit error.
  *  - -1 for FRAM issues or other issues where we should still jump to the same binary
  */
-int handle_hamming_code_check(SlotType slotType) {
+int handle_hamming_code_check(SlotType slotType, size_t image_size) {
     /* Now we can perform the hamming code check here. */
     if(slotType == BOOTLOADER_0) {
         /* Invalid slot type */
@@ -276,13 +346,16 @@ int handle_hamming_code_check(SlotType slotType) {
     int result = fram_read_ham_size(slotType, &ham_size, &ham_flag);
     if(result != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-        TRACE_WARNING("Could not read hamming size and  flag, error code %d!\n\r", result);
+        TRACE_WARNING("Could not read hamming size and flag, error code %d!\n\r", result);
 #endif
         return -1;
     }
 
     /* Hamming check disabled */
     if(!ham_flag) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        TRACE_INFO("Hamming check disabled locally. Booting directly\n\r");
+#endif
         return -1;
     }
 
@@ -291,20 +364,10 @@ int handle_hamming_code_check(SlotType slotType) {
     uint8_t* hamming_code = malloc(IMAGES_HAMMING_RESERVED_SIZE);
 
     result = fram_read_ham_code(slotType, hamming_code,
-            IMAGES_HAMMING_RESERVED_SIZE,0, ham_size, &size_read);
+            IMAGES_HAMMING_RESERVED_SIZE, 0, ham_size, &size_read);
     if(result != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_WARNING("Could not read hamming code, error code %d!\n\r", result);
-#endif
-        free(hamming_code);
-        return -1;
-    }
-
-    size_t image_size;
-    result = fram_read_binary_size(FLASH_SLOT, &image_size);
-    if(result != 0) {
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
-        TRACE_WARNING("Could not read image size, error code %d!\n\r", result);
 #endif
         free(hamming_code);
         return -1;
@@ -328,6 +391,9 @@ int handle_hamming_code_check(SlotType slotType) {
     }
 
     size_t size_to_check = image_size + fill_amount;
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+    TRACE_INFO("Verifying %d bytes with %d hamming code bytes\n\r", size_to_check, ham_size);
+#endif
     uint8_t hamming_result = Hamming_Verify256x((unsigned char*) SDRAM_DESTINATION,
             size_to_check, hamming_code);
     if(hamming_result == Hamming_ERROR_SINGLEBIT) {
@@ -348,6 +414,10 @@ int handle_hamming_code_check(SlotType slotType) {
 
 int handle_hamming_code_result(int result) {
     if(result == 0) {
+#if BOOTLOADER_VERBOSE_LEVEL >=1
+        TRACE_INFO("ECC check: No errors detected\n\r");
+#endif
+        set_sram0_status_field(SRAM_OK);
         return result;
     }
 
@@ -357,18 +427,27 @@ int handle_hamming_code_result(int result) {
         return 0;
     }
     else if(result == Hamming_ERROR_SINGLEBIT) {
+#if BOOTLOADER_VERBOSE_LEVEL >=1
+        TRACE_INFO("ECC check: Single bit error corrected\n\r");
+#endif
         /* We set a flag in SRAM to notify primary OBSW of bit flip */
         set_sram0_status_field(SRAM_HAMMING_ERROR_SINGLE_BIT);
         return 0;
     }
     else if(result == Hamming_ERROR_ECC) {
+#if BOOTLOADER_VERBOSE_LEVEL >=1
+        TRACE_INFO("ECC check: ECC error detected\n\r");
+#endif
         /* We set a flag in SRAM to notify primary OBSW of bit flip in hamming code */
         set_sram0_status_field(SRAM_HAMMING_ERROR_ECC);
         return 0;
     }
     else if(result == Hamming_ERROR_MULTIPLEBITS) {
+#if BOOTLOADER_VERBOSE_LEVEL >=1
+        TRACE_INFO("ECC check: ECC multibit error detected\n\r");
+#endif
         /* We set a flag in SRAM to notify primary OBSW of uncorrectable error
-            in hamming code and try to load image from SD Card instead */
+        in hamming code and try to load image from SD Card instead */
         set_sram0_status_field(SRAM_HAMMING_ERROR_MULTIBIT);
         return -1;
     }

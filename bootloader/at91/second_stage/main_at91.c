@@ -1,10 +1,11 @@
 #include "../common/at91_boot_from_nand.h"
 #include "at91_boot_from_sd.h"
 #include <bootloaderConfig.h>
-#include <core/timer.h>
+#include <bootloader/core/timer.h>
 
-#include <sam9g20/common/SRAMApi.h>
-#include <sam9g20/common/VirtualFRAMApi.h>
+#include <bsp_sam9g20/common/SRAMApi.h>
+#include <bsp_sam9g20/common/VirtualFRAMApi.h>
+#include <bsp_sam9g20/common/lowlevel.h>
 
 #include <at91/boards/at91sam9g20-ek/board.h>
 #include <at91/boards/at91sam9g20-ek/at91sam9g20/AT91SAM9G20.h>
@@ -20,17 +21,21 @@
 
 #include <hal/Timing/RTT.h>
 
+#if USE_FREERTOS == 1
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#endif
 
 #include <stdbool.h>
 #include <string.h>
 
-#define USE_FREERTOS            0
 extern void jump_to_sdram_application(uint32_t stack_ptr, uint32_t jump_address);
 
+#if USE_FREERTOS == 1
 void init_task(void* args);
 void handler_task(void * args);
+#endif
+
 int perform_bootloader_core_operation();
 void initialize_all_peripherals();
 void print_bl_info();
@@ -67,8 +72,9 @@ int at91_main()
     LED_Set(1);
 
 #if USE_FREERTOS == 0
-    /* Activate MS interrupt for timer base */
-    setup_timer_interrupt();
+    /* Activate MS interrupt for timer base. Again, consider disabling
+    because of issues with FreeRTOS */
+    //setup_timer_interrupt();
 
     /* Info printout */
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
@@ -99,6 +105,7 @@ int at91_main()
     return 0;
 }
 
+#if USE_FREERTOS == 1
 void init_task(void * args) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     print_bl_info();
@@ -126,7 +133,6 @@ void init_task(void * args) {
     vTaskDelete(NULL);
 }
 
-
 void handler_task(void * args) {
     /* Wait for initialization to finish */
     vTaskSuspend(NULL);
@@ -136,6 +142,7 @@ void handler_task(void * args) {
 
     perform_bootloader_core_operation();
 }
+#endif
 
 void initialize_all_peripherals() {
 }
@@ -160,16 +167,14 @@ int perform_bootloader_core_operation() {
 
 #if USE_FREERTOS == 1
     vTaskEndScheduler();
-    // Clear AIC and PIT interrupts and disable them.
-    AT91C_BASE_AIC->AIC_ICCR = 1 << AT91C_ID_SYS;
-    AIC_DisableIT( AT91C_ID_SYS );
-    PIT_GetPIVR();
-    PIT_DisableIT();
-    PIT_Disable();
 #endif
 
     CP15_Disable_I_Cache();
-
+    /* This is a test section. If there are issues with the boot process
+    play around with the upper loop limit :-) */
+    for(int idx = 0; idx < 10000; idx ++) {
+        disable_pit_aic();
+    }
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
 
     /* Should never be reached */

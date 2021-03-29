@@ -4,48 +4,60 @@
 #include <commonIOBCConfig.h>
 
 #include <bootloader/utility/CRC.h>
-
-#include <sam9g20/common/FRAMApi.h>
-#include <sam9g20/common/watchdog.h>
-#include <sam9g20/common/SRAMApi.h>
+#include <bsp_sam9g20/common/lowlevel.h>
+#include <bootloader/core/timer.h>
+#include <bsp_sam9g20/common/SRAMApi.h>
 
 #include <board.h>
 #include <AT91SAM9G20.h>
 #include <board_memories.h>
-#include <peripherals/dbgu/dbgu.h>
-#include <peripherals/pio/pio.h>
-#include <peripherals/aic/aic.h>
-#include <peripherals/pio/pio.h>
-#include <cp15/cp15.h>
+#include <at91/peripherals/dbgu/dbgu.h>
+#include <at91/peripherals/pio/pio.h>
+#include <at91/peripherals/aic/aic.h>
+#include <at91/peripherals/pio/pio.h>
+#include <at91/peripherals/cp15/cp15.h>
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
 #include <utility/trace.h>
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
+#if USE_FREERTOS == 1
+#include <bsp_sam9g20/common/FRAMApi.h>
+#include <bsp_sam9g20/common/watchdog.h>
+
 #include <FreeRTOSConfig.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
+#include <hal/Storage/FRAM.h>
+#include <hal/Timing/WatchDogTimer.h>
+#endif
+
 #include <hal/Drivers/LED.h>
 #include <hal/Timing/RTT.h>
-#include <hal/Timing/WatchDogTimer.h>
-#include <hal/Storage/FRAM.h>
 #include <hal/Storage/NORflash.h>
-#include <hal/Drivers/SPI.h>
 
 #include <stdbool.h>
 #include <string.h>
 
+#if USE_FREERTOS == 1
 void init_task(void* args);
-void perform_bootloader_check();
 void handler_task(void * args);
+static TaskHandle_t handler_task_handle_glob = NULL;
+static const uint32_t WATCHDOG_KICK_INTERVAL_MS = 15;
+
+#else
+
+void simple_bootloader();
+
+#endif
+
+void perform_bootloader_check();
 void initialize_all_iobc_peripherals();
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
 void print_bl_info();
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
-static TaskHandle_t handler_task_handle_glob = NULL;
-static const uint32_t WATCHDOG_KICK_INTERVAL_MS = 15;
 bool fram_faulty = false;
 
 
@@ -55,6 +67,7 @@ int boot_iobc_from_norflash() {
     //-------------------------------------------------------------------------
     TRACE_CONFIGURE(DBGU_STANDARD, 115200, BOARD_MCK);
 
+#if USE_FREERTOS == 1
     //-------------------------------------------------------------------------
     // Initiate watchdog for iOBC
     //-------------------------------------------------------------------------
@@ -65,6 +78,7 @@ int boot_iobc_from_norflash() {
         TRACE_ERROR("Starting iOBC Watchdog Feed Task failed!\r\n");
 #endif
     }
+#endif /* USE_FREERTOS == 1 */
 
     //-------------------------------------------------------------------------
     // Enable I-Cache
@@ -77,12 +91,14 @@ int boot_iobc_from_norflash() {
     LED_glow(led_3);
     LED_glow(led_4);
 
+#if USE_FREERTOS == 1
     /* iOBC Bootloader */
-    xTaskCreate(handler_task, "HANDLER_TASK", 2048, NULL, 4,
-            &handler_task_handle_glob);
-    xTaskCreate(init_task, "INIT_TASK", 524, handler_task_handle_glob,
-            5, NULL);
+    xTaskCreate(handler_task, "HANDLER_TASK", 2048, NULL, 4, &handler_task_handle_glob);
+    xTaskCreate(init_task, "INIT_TASK", 1024, handler_task_handle_glob, 5, NULL);
     vTaskStartScheduler();
+#else
+    simple_bootloader();
+#endif /* !USE_FREERTOS == 1 */
 
     /* This should never be reached. */
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
@@ -91,6 +107,8 @@ int boot_iobc_from_norflash() {
     for(;;) {};
     return 0;
 }
+
+#if USE_FREERTOS == 1
 
 void init_task(void * args) {
     /* This check is only possible if CRC and bootloader size were written
@@ -137,6 +155,30 @@ void handler_task(void * args) {
     perform_bootloader_core_operation();
 }
 
+#else /* USE_FREERTOS == 1 */
+
+void simple_bootloader() {
+    TRACE_INFO_WP("-- SOURCE Bootloader v%d.%d --\n\r", BL_VERSION, BL_SUBVERSION);
+    /* We don't need these */
+    // initialize_all_iobc_peripherals();
+    //setup_timer_interrupt();
+    int result = copy_norflash_binary_to_sdram(PRIMARY_IMAGE_RESERVED_SIZE, false);
+    if(result != 0) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        TRACE_WARNING("Copy operation error\n\r");
+#endif
+    }
+//    for(int idx = 0; idx < 10; idx++) {
+//        disable_pit_aic();
+//    }
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+    TRACE_INFO("Jumping to SDRAM application\n\r");
+#endif
+    jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
+}
+
+#endif /* !USE_FREERTOS == 1 */
+
 void print_bl_info() {
     TRACE_INFO_WP("\n\rStarting FreeRTOS task scheduler.\n\r");
     TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
@@ -165,13 +207,13 @@ void perform_bootloader_check() {
     /* Bootloader size and CRC16 are written at the end of the reserved bootloader space. */
     memcpy(&bootloader_size, (const void *) NORFLASH_BL_SIZE_START_READ, 4);
 
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 2
     TRACE_INFO("Written bootloader size: %d bytes.\n\r", bootloader_size);
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
     memcpy(&written_crc16, (const void*) NORFLASH_BL_CRC16_START_READ, sizeof(written_crc16));
 
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
+#if BOOTLOADER_VERBOSE_LEVEL >= 2
     TRACE_INFO("Written CRC16: 0x%4x.\n\r", written_crc16);
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
@@ -181,9 +223,17 @@ void perform_bootloader_check() {
         if(written_crc16 != calculated_crc) {
             memcpy((void*)SDRAM_DESTINATION, (const void*) BINARY_BASE_ADDRESS_READ,
                     PRIMARY_IMAGE_RESERVED_SIZE);
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+            TRACE_WARNING("Bootloader CRC check failed. Copying and jumping to "
+                    "NOR-Flash image..\n\r");
+#endif
             set_sram0_status_field(SRAM_BOOTLOADER_INVALID);
+#if USE_FREERTOS == 1
             vTaskEndScheduler();
-            jump_to_sdram_application(0x30400, SDRAM_DESTINATION);
+#endif
+            disable_pit_aic();
+
+            jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
         }
     }
     else {
@@ -196,6 +246,7 @@ void perform_bootloader_check() {
 void initialize_all_iobc_peripherals() {
     RTT_start();
 
+#if USE_FREERTOS == 1
     int result = FRAM_start();
     if(result != 0) {
         // This should not happen!
@@ -205,5 +256,6 @@ void initialize_all_iobc_peripherals() {
         fram_faulty = true;
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
     }
+#endif /* USE_FREERTOS == 1 */
 }
 

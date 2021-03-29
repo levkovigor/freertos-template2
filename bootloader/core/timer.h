@@ -9,4 +9,6 @@ extern volatile uint32_t u32_ms_counter;
 /* Setup interrupt which incremens the MS counter accordingly */
 void setup_timer_interrupt(void);
 
+uint32_t get_ms_counter();
+
 #endif /* BOOTLOADER_CORE_TIMER_H_ */

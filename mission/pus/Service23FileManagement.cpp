@@ -4,7 +4,7 @@
 #include <fsfw/tmtcpacket/pus/TmPacketStored.h>
 #include <fsfw/memory/HasFileSystemIF.h>
 #include <fsfw/action/ActionMessage.h>
-#include <fsfwconfig/objects/systemObjectList.h>
+#include <objects/systemObjectList.h>
 #include <mission/memory/FileSystemMessage.h>
 
 Service23FileManagement::Service23FileManagement(object_id_t objectId,

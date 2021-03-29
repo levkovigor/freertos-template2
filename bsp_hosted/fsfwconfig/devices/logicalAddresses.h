@@ -1,14 +1,9 @@
-/**
- * \file logicalAddresses.cpp
- *
- * \date 07.11.2019
- */
-
 #ifndef CONFIG_DEVICES_LOGICALADDRESSES_H_
 #define CONFIG_DEVICES_LOGICALADDRESSES_H_
-#include <stdint.h>
+
+#include <cstdint>
 #include <fsfw/devicehandlers/CookieIF.h>
-#include <fsfwconfig/objects/systemObjectList.h>
+#include <objects/systemObjectList.h>
 
 namespace addresses {
 	/* Logical addresses have uint32_t datatype */

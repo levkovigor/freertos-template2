@@ -1,0 +1,96 @@
+#include <board.h>
+#include <bsp_sam9g20/comIF/GpioDeviceComIF.h>
+#include <cstddef>
+
+void performHkbDecoderTesting(uint8_t decoderSelect) {
+    Pin pin[] = {PIN_GPIO06_INPUT, PIN_GPIO07_INPUT, PIN_GPIO08_INPUT,
+            PIN_GPIO09_INPUT, PIN_GPIO10_INPUT, PIN_GPIO11_INPUT,
+            PIN_GPIO12_INPUT, PIN_GPIO13_INPUT};
+    PIO_Configure(pin, PIO_LISTSIZE(pin));
+    switch(decoderSelect) {
+    case 0: GpioDeviceComIF::enableDecoder1(); break;
+    case 1: GpioDeviceComIF::enableDecoder2(); break;
+    case 2: GpioDeviceComIF::enableDecoder3(); break;
+    case 3: GpioDeviceComIF::enableDecoder4(); break;
+    }
+
+    switch(counter) {
+
+    case 0: {
+        sif::info << "New decoder cycle for decoder " << (int)decoderSelect + 1
+                << std::endl;
+        GpioDeviceComIF::enableDecoderOutput1();
+        sif::info << "Output with output 1 enabled: ";
+        printDecoderOutput();
+        break;
+    }
+    case 1: {
+        GpioDeviceComIF::enableDecoderOutput2();
+        sif::info << "Output with output 2 enabled: ";
+        printDecoderOutput();
+        break;
+    }
+    case 2: {
+        GpioDeviceComIF::enableDecoderOutput3();
+        sif::info << "Output with output 3 enabled: ";
+        printDecoderOutput();
+        break;
+    }
+    case 3: {
+        GpioDeviceComIF::enableDecoderOutput4();
+        sif::info << "Output with output 4 enabled: ";
+        printDecoderOutput();
+        break;
+    }
+    case 4: {
+        GpioDeviceComIF::enableDecoderOutput5();
+        sif::info << "Output with output 5 enabled: ";
+        printDecoderOutput();
+        break;
+    }
+    case 5: {
+        GpioDeviceComIF::enableDecoderOutput6();
+        sif::info << "Output with output 6 enabled: ";
+        printDecoderOutput();
+        break;
+    }
+    case 6: {
+        GpioDeviceComIF::enableDecoderOutput7();
+        sif::info << "Output with output 7 enabled: ";
+        printDecoderOutput();
+        break;
+    }
+    case 7: {
+        GpioDeviceComIF::enableDecoderOutput8();
+        sif::info << "Output with output 8 enabled: ";
+        printDecoderOutput();
+        break;
+    }
+    }
+
+    if(counter == 7) {
+        counter = 0;
+    }
+    else {
+        counter++;
+    }
+}
+
+void printDecoderOutput() {
+    bool gpioStat1 = GpioDeviceComIF::getGPIO(addresses::GPIO06, false);
+    bool gpioStat2 = GpioDeviceComIF::getGPIO(addresses::GPIO07, false);
+    bool gpioStat3 = GpioDeviceComIF::getGPIO(addresses::GPIO08, false);
+    bool gpioStat4 = GpioDeviceComIF::getGPIO(addresses::GPIO09, false);
+    bool gpioStat5 = GpioDeviceComIF::getGPIO(addresses::GPIO10, false);
+    bool gpioStat6 = GpioDeviceComIF::getGPIO(addresses::GPIO11, false);
+    bool gpioStat7 = GpioDeviceComIF::getGPIO(addresses::GPIO12, false);
+    bool gpioStat8 = GpioDeviceComIF::getGPIO(addresses::GPIO13, false);
+    sif::info << "[1: " << (int)gpioStat1
+            << ", 2: " << (int) gpioStat2
+            << ", 3: " << (int) gpioStat3
+            << ", 4: " << (int) gpioStat4
+            << ", 5: " << (int) gpioStat5
+            << ", 6: " << (int) gpioStat6
+            << ", 7: " << (int) gpioStat7
+            << ", 8: " << (int) gpioStat8 << "]" << std::endl;
+}

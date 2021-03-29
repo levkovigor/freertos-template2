@@ -1,12 +1,14 @@
 # CMake
-Debug
-Debug*
-Release
-Release*
-MinSizeRel
-MinSizeRel*
-RelWithDeb
-RelWithDeb*
+/Debug
+/Debug*
+/Release
+/Release*
+/MinSizeRel
+/MinSizeRel*
+/RelWithDeb
+/RelWithDeb*
+/Mission
+/Mission*
 
 # Make
 _build/*
@@ -24,10 +26,10 @@ _dependencies
 .project
 .cproject 
 *.launch
-!**/eclipse/.project
-!**/eclipse/.cproject
-!**/eclipse/*.launch
-
+!**/eclipse/**/.project
+!**/eclipse/**/.cproject
+!**/eclipse/**/.launch
+.pydevproject
 
 # Python
 __pycache__
@@ -42,7 +44,6 @@ __pycache__
 .swp 
 
 generators/*.csv
-/AT91/
 .eclipsesettings/
 
 generators/.idea/*
