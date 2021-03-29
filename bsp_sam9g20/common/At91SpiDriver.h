@@ -1,6 +1,9 @@
 #ifndef BSP_SAM9G20_COMMON_AT91SPIDRIVER_H_
 #define BSP_SAM9G20_COMMON_AT91SPIDRIVER_H_
 
+/**
+ * Implemented to allow convenient use of SPI without requiring FreeRTOS.
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif
