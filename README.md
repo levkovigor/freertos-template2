@@ -212,8 +212,16 @@ RS232 cable can be used (or UART jumper wires..).
 
 ```sh
 pacman -Syuuu
-pacman -S gcc git mingw-w64-x86_64-gdb mingw-w64-x86_64-make mingw-w64-x86_64-cmake
+pacman -S git mingw-w64-x86_64-gcc mingw-w64-x86_64-gdb mingw-w64-x86_64-make mingw-w64-x86_64-cmake
 ```
+
+Alternatively, you can use
+
+```sh
+pacman -S mingw-w64-x86_64-toolchain
+```
+
+to install `gdb`, `gcc` and `mingw32-make` at once.
 
 It is recommended to set up `alias`es in the `.bashrc` file to 
 nagivate to the working directory quickly.
