@@ -27,6 +27,12 @@ typedef enum {
     NPCS_3
 } At91Npcs;
 
+typedef enum {
+    SPI_SUCCESS,
+    SPI_OVERRUN_ERROR,
+    SPI_MODE_ERROR
+} At91TransferStates;
+
 /**
  * Configures the driver and a specific NPCS and also also starts the respective bus if this
  * was not done already.
@@ -63,9 +69,31 @@ int at91_spi_configure_non_blocking_driver(At91SpiBuses spi_bus, uint8_t interru
 int at91_spi_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const uint8_t* send_buf,
         uint8_t* recv_buf, size_t transfer_len);
 
+/**
+ * Set maximum number of block cycles to avoid deadlocks.
+ * @param block_cycles
+ * @return
+ */
+void at91_set_max_block_cycles(uint32_t block_cycles);
+
+/**
+ * Initiate non-blocking transfer, using DMA.
+ * This driver currently only supports one consecutive transfer.
+ * @param spi_bus
+ * @param npcs
+ * @param send_buf
+ * @param recv_buf
+ * @param transfer_len
+ * @param finish_callback
+ * @param callback_args
+ * @return
+ *  -1 for invalid input, -2 if another transfer is ongoing.
+ */
 int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const uint8_t* send_buf,
         uint8_t* recv_buf, size_t transfer_len,
-        void (*finish_callback)(At91SpiBuses bus, void* args), void* callback_args);
+        void (*finish_callback)(At91SpiBuses bus, At91TransferStates state, void* args),
+        void* callback_args);
+
 #ifdef __cplusplus
 }
 #endif

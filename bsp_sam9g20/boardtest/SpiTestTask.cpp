@@ -4,6 +4,7 @@
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/tasks/TaskFactory.h>
+#include <fsfw/globalfunctions/arrayprinter.h>
 
 extern "C" {
 #include <board.h>
@@ -630,14 +631,12 @@ void SpiTestTask::SPIcallback(SystemContext context, xSemaphoreHandle semaphore)
     }
 }
 
+volatile bool SpiTestTask::transferFinished = false;
+
 void SpiTestTask::performAt91LibTest() {
     At91Npcs cs = At91Npcs::NPCS_0;
     At91SpiBuses bus = At91SpiBuses::SPI_BUS_1;
-    spiTestMode = SpiTestMode::AT91_LIB_BLOCKING;
-    // This was for Arduino Nano Every
-    //    int retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, SPI_MIN_BUS_SPEED,
-    //            1000000000, 100);
-
+    spiTestMode = SpiTestMode::AT91_LIB_DMA;
 
     // for L3GD20H board
     int retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_3, 3'900'000, 100, 6, 0);
@@ -652,26 +651,49 @@ void SpiTestTask::performAt91LibTest() {
     }
 
     std::string halloString = "Hallo\r\n ";
-    char recvBuffer[32] = {0};
+    uint8_t recvBuffer[32] = {0};
     if(spiTestMode == SpiTestMode::AT91_LIB_BLOCKING) {
         retval = at91_spi_blocking_transfer(bus, cs,
                 reinterpret_cast<const uint8_t*>(sendBuf),
                 reinterpret_cast<uint8_t*>(recvBuffer), sendLen);
         sif::printInfo("Register: %d\n\r", recvBuffer[1]);
         memset(recvBuffer, 0, sizeof(recvBuffer));
+
+        // now configure config regs
+        sendBuf[0] = 0b0000'1111;
+        memset(sendBuf + 1, 0, 4);
+        retval = at91_spi_blocking_transfer(bus, cs,
+                reinterpret_cast<const uint8_t*>(sendBuf),
+                reinterpret_cast<uint8_t*>(recvBuffer), 5);
+
+        // now read all the regs
+        sendBuf[0] = 0b1110'0000;
+        memset(sendBuf + 1, 0, 5);
+        retval = at91_spi_blocking_transfer(bus, cs,
+                reinterpret_cast<const uint8_t*>(sendBuf),
+                reinterpret_cast<uint8_t*>(recvBuffer), 5);
+        arrayprinter::print(recvBuffer + 1, 6);
     }
     else if(spiTestMode == SpiTestMode::AT91_LIB_DMA) {
         if(oneshot) {
             at91_spi_configure_non_blocking_driver(bus, AT91C_AIC_PRIOR_LOWEST + 2);
             at91_spi_non_blocking_transfer(bus, cs,
-                    reinterpret_cast<const uint8_t*>(halloString.c_str()),
-                    reinterpret_cast<uint8_t*>(recvBuffer),
-                    halloString.size(), spiIrqHandler, nullptr);
-            oneshot = false;
+                    reinterpret_cast<const uint8_t*>(sendBuf), recvBuffer,
+                    2, spiIrqHandler, (void*) &transferFinished);
+            int idx = 0;
+            while(not transferFinished) {
+                idx++;
+            }
+
         }
     }
 }
 
-void SpiTestTask::spiIrqHandler(At91SpiBuses bus, void* args) {
-    //sif::printInfo("Hellau!\n\r");
+void SpiTestTask::spiIrqHandler(At91SpiBuses bus, At91TransferStates state, void* args) {
+    if(state == SPI_SUCCESS) {
+        auto finish = reinterpret_cast<volatile bool*>(args);
+        if (finish != nullptr) {
+            *finish = true;
+        }
+    }
 }
