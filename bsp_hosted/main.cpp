@@ -10,9 +10,9 @@
 // This will be the entry to the mission specific code
 void initMission();
 
-#ifdef WIN32
+#ifdef _WIN32
 static const char* COMPILE_PRINTOUT = "Windows";
-#elif LINUX
+#elif defined(__unix__)
 static const char* COMPILE_PRINTOUT = "Linux";
 #else
 static const char* COMPILE_PRINTOUT = "unknown OS";
