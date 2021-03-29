@@ -1,10 +1,10 @@
 
 #include "SpiTestTask.h"
 #include <bsp_sam9g20/comIF/GpioDeviceComIF.h>
-#include <bsp_sam9g20/common/At91SpiDriver.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/tasks/TaskFactory.h>
+#include <fsfw/globalfunctions/arrayprinter.h>
 
 extern "C" {
 #include <board.h>
@@ -19,8 +19,6 @@ extern "C" {
 SpiTestTask::SpiTestTask(object_id_t objectId, SpiTestMode spiTestMode):
 		        SystemObject(objectId), spiTestMode(spiTestMode) {
     ReturnValue_t result = RETURN_FAILED;
-    // Arduino Test / AT91SAM9G20-EK
-    result = SPI_start(SPI_bus, slave2_spi);
     if(result != 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "SPIandFRAMtest: SPI_start returned " << (int)result << std::endl;
@@ -47,6 +45,8 @@ ReturnValue_t SpiTestTask::performOperation(uint8_t operationCode) {
         return HasReturnvaluesIF::RETURN_OK;
     }
 
+    //spiTestMode = SpiTestMode::BLOCKING;
+
     if(spiTestMode == SpiTestMode::BLOCKING) {
         performBlockingSpiTest(slave0_spi, 0);
     }
@@ -70,18 +70,26 @@ ReturnValue_t SpiTestTask::performOperation(uint8_t operationCode) {
 }
 
 void SpiTestTask::performBlockingSpiTest(SPIslave slave, uint8_t bufferPosition) {
-    int retValInt = 0;
+    // Arduino Test / AT91SAM9G20-EK
     unsigned int i;
-    SPIslaveParameters slaveParams;
-    SPItransfer spiTransfer;
+    SPIslaveParameters slaveParams = {};
+    SPItransfer spiTransfer = {};
+    int retval = SPI_start(SPI_bus, slave3_spi);
+    if(retval != 0) {
+        return;
+    }
+
+    writeData[0] = 0b1000'1111;
+    writeData[1] = 0;
+    transferSize = 2;
 
     slaveParams.bus    = SPI_bus;
-    slaveParams.mode   = mode2_spi;
-    slaveParams.slave  = slave;
-    slaveParams.dlybs  = 1;
-    slaveParams.dlybct = 1;
-    slaveParams.busSpeed_Hz = SPI_MIN_BUS_SPEED;
-    slaveParams.postTransferDelay = 4;
+    slaveParams.mode   = mode3_spi;
+    slaveParams.slave  = slave0_spi;
+    slaveParams.dlybs  = 6;
+    slaveParams.dlybct = 100;
+    slaveParams.busSpeed_Hz = 3'900'000;
+    slaveParams.postTransferDelay = 0;
 
     spiTransfer.slaveParams = &slaveParams;
     spiTransfer.callback  = SPIcallback;
@@ -91,15 +99,17 @@ void SpiTestTask::performBlockingSpiTest(SPIslave slave, uint8_t bufferPosition)
 
 
 
-    retValInt = SPI_writeRead(&spiTransfer);
-    if(retValInt != 0) {
+    retval = SPI_writeRead(&spiTransfer);
+    if(retval != 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::warning << "SPI Test 2: SPI_writeRead returned: " << (int)retValInt << std::endl;
+        sif::warning << "SPI Test 2: SPI_writeRead returned: " << (int)retval << std::endl;
 #else
 
 #endif
         while(1);
     }
+    //uint32_t reg = AT91C_BASE_SPI1->SPI_CSR[0];
+    //uint32_t mr = AT91C_BASE_SPI1->SPI_MR;
 
     GpioDeviceComIF::disableDecoders();
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -621,43 +631,69 @@ void SpiTestTask::SPIcallback(SystemContext context, xSemaphoreHandle semaphore)
     }
 }
 
+volatile bool SpiTestTask::transferFinished = false;
+
 void SpiTestTask::performAt91LibTest() {
     At91Npcs cs = At91Npcs::NPCS_0;
     At91SpiBuses bus = At91SpiBuses::SPI_BUS_1;
-    int retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, 1'000'000, 100);
+    spiTestMode = SpiTestMode::AT91_LIB_DMA;
+
+    // for L3GD20H board
+    int retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_3, 3'900'000, 100, 6, 0);
+
+    uint8_t whoAmIReg = 0b0000'1111;
+    uint8_t readMask = 0b1000'0000;
+    uint8_t sendBuf[10] = {0};
+    sendBuf[0] = whoAmIReg | readMask;
+    size_t sendLen = 2;
     if(retval != 0) {
         sif::printInfo("SpiTestTask::performAt91LibTest: cfg failed with %d\n", retval);
     }
 
+    std::string halloString = "Hallo\r\n ";
+    uint8_t recvBuffer[32] = {0};
     if(spiTestMode == SpiTestMode::AT91_LIB_BLOCKING) {
-        std::string halloString = "Hallo\r\n ";
-        char recvBuffer[32] = {0};
         retval = at91_spi_blocking_transfer(bus, cs,
-                reinterpret_cast<const uint8_t*>(halloString.c_str()),
-                reinterpret_cast<uint8_t*>(recvBuffer), halloString.size());
-        sif::printInfo("Received reply: %s", recvBuffer);
+                reinterpret_cast<const uint8_t*>(sendBuf),
+                reinterpret_cast<uint8_t*>(recvBuffer), sendLen);
+        sif::printInfo("Register: %d\n\r", recvBuffer[1]);
         memset(recvBuffer, 0, sizeof(recvBuffer));
+
+        // now configure config regs
+        sendBuf[0] = 0b0000'1111;
+        memset(sendBuf + 1, 0, 4);
+        retval = at91_spi_blocking_transfer(bus, cs,
+                reinterpret_cast<const uint8_t*>(sendBuf),
+                reinterpret_cast<uint8_t*>(recvBuffer), 5);
+
+        // now read all the regs
+        sendBuf[0] = 0b1110'0000;
+        memset(sendBuf + 1, 0, 5);
+        retval = at91_spi_blocking_transfer(bus, cs,
+                reinterpret_cast<const uint8_t*>(sendBuf),
+                reinterpret_cast<uint8_t*>(recvBuffer), 5);
+        arrayprinter::print(recvBuffer + 1, 6);
     }
+    else if(spiTestMode == SpiTestMode::AT91_LIB_DMA) {
+        if(oneshot) {
+            at91_spi_configure_non_blocking_driver(bus, AT91C_AIC_PRIOR_LOWEST + 2);
+            at91_spi_non_blocking_transfer(bus, cs,
+                    reinterpret_cast<const uint8_t*>(sendBuf), recvBuffer,
+                    2, spiIrqHandler, (void*) &transferFinished);
+            int idx = 0;
+            while(not transferFinished) {
+                idx++;
+            }
 
-
-    AIC_ConfigureIT(AT91C_ID_SPI0, AT91C_AIC_PRIOR_LOWEST + 3, spiIrqHandler);
-
-//
-//    std::string welt = "Hallo\r\n";
-//    int result = SPI_WriteBuffer(AT91C_BASE_SPI1, (void*) welt.c_str(), welt.size());
-//    if(result == 1) {
-//        uint32_t ticks = 0;
-//        while(SPI_IsFinished(AT91C_BASE_SPI1)) {
-//            ticks ++;
-//        }
-//        sif::printInfo("ticks: %d\n",ticks);
-//    }
-//    else {
-//        sif::printInfo("No free DMA bank!\n\r");
-//    }
-
-
+        }
+    }
 }
 
-void SpiTestTask::spiIrqHandler() {
+void SpiTestTask::spiIrqHandler(At91SpiBuses bus, At91TransferStates state, void* args) {
+    if(state == SPI_SUCCESS) {
+        auto finish = reinterpret_cast<volatile bool*>(args);
+        if (finish != nullptr) {
+            *finish = true;
+        }
+    }
 }
