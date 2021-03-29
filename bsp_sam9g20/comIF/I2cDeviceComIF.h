@@ -2,7 +2,7 @@
 #define SAM9G20_COMIF_I2C_DEVICECOMIF_H_
 
 #include <fsfw/objectmanager/SystemObject.h>
-#include <fsfwconfig/OBSWConfig.h>
+#include <OBSWConfig.h>
 #include <bsp_sam9g20/comIF/cookies/I2cCookie.h>
 
 #include <unordered_map>

@@ -7,7 +7,7 @@
 #include <fsfw/ipc/MessageQueueIF.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/osal/FreeRTOS/Mutex.h>
-#include <fsfwconfig/OBSWConfig.h>
+#include <OBSWConfig.h>
 #include <bsp_sam9g20/comIF/cookies/SpiCookie.h>
 
 extern "C" {

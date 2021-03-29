@@ -1,6 +1,6 @@
 #include "portwrapper.h"
 
-#include <fsfwconfig/OBSWConfig.h>
+#include <OBSWConfig.h>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>

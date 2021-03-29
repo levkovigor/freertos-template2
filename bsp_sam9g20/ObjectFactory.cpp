@@ -1,8 +1,10 @@
 #include "ObjectFactory.h"
-#include <fsfwconfig/objects/systemObjectList.h>
-#include <fsfwconfig/OBSWConfig.h>
-#include <fsfwconfig/tmtc/apid.h>
-#include <fsfwconfig/tmtc/pusIds.h>
+#include <objects/systemObjectList.h>
+#include <OBSWConfig.h>
+#include <tmtc/apid.h>
+#include <tmtc/pusIds.h>
+#include <devices/logicalAddresses.h>
+#include <devices/powerSwitcherList.h>
 
 /* FSFW includes */
 #include <fsfw/serviceinterface/ServiceInterface.h>
@@ -27,8 +29,6 @@
 #include <fsfw/pus/CService200ModeCommanding.h>
 #include <fsfw/pus/Service20ParameterManagement.h>
 #include <fsfw/timemanager/TimeStamper.h>
-#include <fsfwconfig/devices/logicalAddresses.h>
-#include <fsfwconfig/devices/powerSwitcherList.h>
 
 /* Mission includes */
 #include <mission/controller/ThermalController.h>

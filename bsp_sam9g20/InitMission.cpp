@@ -2,8 +2,8 @@
 #include <OBSWVersion.h>
 #include <FSFWConfig.h>
 #include <OBSWConfig.h>
-#include <fsfwconfig/pollingsequence/PollingSequenceFactory.h>
-#include <fsfwconfig/objects/systemObjectList.h>
+#include <pollingsequence/PollingSequenceFactory.h>
+#include <objects/systemObjectList.h>
 
 #include <mission/utility/InitMission.h>
 #include <bsp_sam9g20/utility/compile_time.h>

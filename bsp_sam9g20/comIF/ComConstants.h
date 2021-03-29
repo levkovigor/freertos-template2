@@ -2,8 +2,8 @@
 #define SAM9G20_COMIF_UARTCONSTANTS_H_
 
 #include <fsfw/events/Event.h>
-#include <fsfwconfig/events/subsystemIdRanges.h>
-#include <fsfwconfig/returnvalues/classIds.h>
+#include <events/subsystemIdRanges.h>
+#include <returnvalues/classIds.h>
 
 namespace comconstants {
 static constexpr uint8_t UART_SUBSYSTEM_ID = SUBSYSTEM_ID::UART_COM_IF;

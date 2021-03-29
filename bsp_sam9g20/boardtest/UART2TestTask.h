@@ -14,7 +14,7 @@
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
-#include <fsfwconfig/objects/systemObjectList.h>
+#include <objects/systemObjectList.h>
 
 extern "C" {
 #include <hal/Drivers/UART.h>

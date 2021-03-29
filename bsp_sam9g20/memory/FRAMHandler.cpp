@@ -10,7 +10,7 @@
 #endif
 
 
-#include <fsfwconfig/OBSWVersion.h>
+#include <OBSWVersion.h>
 
 std::array<uint8_t, sizeof(CriticalDataBlock)> FRAMHandler::criticalBlock;
 

@@ -6,7 +6,7 @@
 #include <fsfw/objectmanager/SystemObjectIF.h>
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
-#include <fsfwconfig/objects/systemObjectList.h>
+#include <objects/systemObjectList.h>
 
 extern "C" {
 	#include <board.h>

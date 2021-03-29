@@ -10,7 +10,7 @@
 #include <fsfw/objectmanager/SystemObjectIF.h>
 #include <fsfw/objectmanager/frameworkObjects.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
-#include <fsfwconfig/OBSWConfig.h>
+#include <OBSWConfig.h>
 
 extern "C" {
 #include <board.h>

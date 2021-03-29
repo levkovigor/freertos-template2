@@ -154,7 +154,7 @@ if(NOT HOST_BUILD)
         # Only required because the AT91 library loads a specific header.
         set(FSFW_CONFIG_PATH "${BOOTLOADER_PATH}/config")
     else()
-        set(FSFW_CONFIG_PATH "fsfwconfig")
+        set(FSFW_CONFIG_PATH "${BSP_PATH}/fsfwconfig")
     endif()
     set(FSFW_CONFIG_PATH_FULL "${CMAKE_SOURCE_DIR}/${FSFW_CONFIG_PATH}")
     

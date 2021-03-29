@@ -5,9 +5,9 @@
 #include <fsfw/tmtcservices/CommandingServiceBase.h>
 #include <fsfw/tmtcpacket/pus/TmPacketStored.h>
 #include <fsfw/ipc/QueueFactory.h>
-#include <fsfwconfig/devices/logicalAddresses.h>
-#include <fsfwconfig/tmtc/apid.h>
-#include <fsfwconfig/tmtc/pusIds.h>
+#include <devices/logicalAddresses.h>
+#include <tmtc/apid.h>
+#include <tmtc/pusIds.h>
 
 #include <cstring>
 
