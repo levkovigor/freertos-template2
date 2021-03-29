@@ -4,7 +4,7 @@
 #include <at91/utility/trace.h>
 
 #include <privlib/hcc/include/hcc/api_hcc_mem.h>
-#include <sam9g20/common/SDCardApi.h>
+#include <bsp_sam9g20/common/SDCardApi.h>
 
 int copy_sdc_image_to_sdram() {
     VolumeId current_volume = SD_CARD_0;
@@ -44,7 +44,7 @@ int copy_sdc_image_to_sdram() {
         return -1;
     }
 
-    size_t filelength = f_filelength(SW_SLOT_1_NAME);
+    ssize_t filelength = f_filelength(SW_SLOT_1_NAME);
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Copying image \"%s\" from SD-Card %u to SDRAM\n\r", SW_SLOT_1_NAME,

@@ -19,7 +19,7 @@ import re
 import os
 import getpass
 # import MySQLdb
-from generatore_core.utility.mib_csv_writer import CsvWriter
+from genmib.utility.mib_csv_writer import CsvWriter
 
 doExportToFile = True
 moveCsvFile = True

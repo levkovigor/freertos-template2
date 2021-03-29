@@ -125,14 +125,28 @@ private:
         FIND_FILE = 7,
         FOUND_FILES_REPLY = 8,
 
+<<<<<<< HEAD
         CREATE_DIRECTORY = 9, //!<  [EXPORT] : [COMMAND] Create a directory
         DELETE_DIRECTORY = 10, //!<  [EXPORT] : [COMMAND] Delete a directory
+=======
+        //! [EXPORT] : [COMMAND] Create a directory
+        CREATE_DIRECTORY = 9,
+        //! [EXPORT] : [COMMAND] Delete a directory
+        DELETE_DIRECTORY = 10,
+>>>>>>> mueller/master
 
         RENAME_DIRECTORY = 11,
         REPORT_REPOSITORY = 12,
         REPORT_REPOSTIROY_REPLY = 13,
 
+<<<<<<< HEAD
         MOVE_FILE = 15,
+=======
+        //! [EXPORT] : [COMMAND] Copy a file
+        CMD_COPY_FILE = 14,
+        //! [EXPORT] : [COMMAND] Move a file
+        CMD_MOVE_FILE = 15,
+>>>>>>> mueller/master
 
         /** Custom subservices */
         APPEND_TO_FILE = 130, //!< [EXPORT] : [COMMAND] Append data to file

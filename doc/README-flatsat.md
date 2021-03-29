@@ -5,26 +5,49 @@ development and software deployment.
 
 ## Basic instructions for Flatsat
 
-### Connecting to the flatsat computer
+### Setting up the VPN
 
 1. Set up VPN, [IRS  mail account](https://cube18.irs.uni-stuttgart.de/) required: 
-Write mail to zert@irs.uni-stuttgart.de to get OpenVPN configuration.
-2. Download OpenVPN and configure it with the configuratioon files.
- - Windows: Put configuration files into the OpenVPN config folder
-   or add the configuration in the OpenVPN GUI
- - Ubuntu: Install the ubuntu gnome version of OpenVPN. Then go to 
-   Network &rarr VPN and press + to add the .ovpn file configuration
-3. Connect to the VPN
-4. Connect to Flatsat (password needed, ask Jonas Burgdorf on Mattermost):
+After that, write mail to zert@irs.uni-stuttgart.de to get OpenVPN configuration files.
+
+#### Windows
+
+1. Download [OpenVPN](https://openvpn.net/download-open-vpn/) and install it and configure it with 
+the configuration files.
+2. Put OVPN configuration files into the OpenVPN config folder or add the configuration in the 
+OpenVPN GUI
+   
+#### Ubuntu
+
+1. Install the ubuntu gnome version of OpenVPN
+2. Store the VPN files into some folder, for example a VPN folder in the DOocuments folder
+3. Go to Settings &rarr; Network &rarr; VPN and press + &rarr; Import From File.
+4. Select the .ovpn file previous stored somewhere
+5. Now you can activate the VPN via the network button on the top right. Go to the VPN settings to 
+the IPv4 settings and set a tick at "Use this connection only resources on its network" to allow
+other services like Mattermost.
+   
+
+### Connecting to the flatsat computer
+   
+1. Connect to the VPN
+2. Connect to Flatsat (password needed, ask Jonas Burgdorf on Mattermost):
+
    ```sh
-   ssh (-X) source@flatsat.source.absatvirt.lw
+   ssh -X source@flatsat.source.absatvirt.lw
    ```
    
-   It is recommended to set up SSH configuration either in Eclipse (cross-platform
-   and convenient solution) via the terminal feature (terminal button at the top) or
-   via Putty or Unix Alias.
-   -X is optional for graphical applications
-   There is also another command for port forwarding
+   You can also use the IP address (this is required for PyCharm remote configurations)
+   
+   ```sh
+   ssh -X source@192.168.199.228
+   ```
+   
+3. It is recommended to set up SSH configuration either in Eclipse (cross-platform
+and convenient solution) via the terminal feature (terminal button at the top) or
+via Putty or Unix Alias. -X is optional for graphical applications.
+There is also another command for port forwarding:
+
    ```sh
    ssh -L <localPort>:localhost:<remotePort> source@flatsat.source.absatvirt.lw
    ```
@@ -94,6 +117,7 @@ tmux a -t 0*
 
 If these sessions don't show up (e.g. after flatsat reboot), here are the 
 commands to get everything working again with the following command
+<<<<<<< HEAD
 
 ```py
 setup_flatsat_tmux.py
@@ -102,6 +126,16 @@ setup_flatsat_tmux.py
 This will run a script located in the `$HOME/scripts` to set up all tmux sessions. 
 All scripts used here are located in `$HOME/scripts` as well.
 
+=======
+
+```py
+setup_flatsat_tmux.py
+```
+
+This will run a script located in the `$HOME/scripts` to set up all tmux sessions. 
+All scripts used here are located in `$HOME/scripts` as well.
+
+>>>>>>> mueller/master
 Alternatively, all steps can be performed manually.
 Initiate the iOBC GDB Server in a new tmux session
 ```sh
@@ -110,10 +144,19 @@ gdb_iobc.sh
 ```
 
 `vor_iobc.sh` is a shell script which will run the GDB Server with the correct configuration. 
+<<<<<<< HEAD
 It runs the following command:
 
 ```sh
 JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=261002202 -nogui
+=======
+It runs the following command. Please note that the USB S/N number can change depending on J-Link
+adapter used:
+
+```sh
+JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=20127716
+ -nogui
+>>>>>>> mueller/master
 ```
 
 Then type `CTRL` + `B` and `d` to detach from the tmux session.
@@ -150,7 +193,8 @@ use `k` instead of `d` instead. In some cases, it can becomes necessary to resta
 the J-Link GDB Server. The GDB Server should be run with the following command
 
 ```sh
-JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=261002202 -nogui
+JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=20127716
+ -nogui
 ```
 
 Background processes can be listed with `ps -aux` and killed with `kill <processId>`
@@ -226,12 +270,21 @@ It is recommended to use the supplied launch configurations and project files
 instead of rerunning these steps.
 
 1. The current IP address of the flatsat computer is 
+<<<<<<< HEAD
 192.128.199.228 . That address could change, and it can be checked
 by logging into the flatsat like explained above and running: 
  
 ```sh
 ifconfig    
 ```
+=======
+   192.168.199.228 . That address could change, and it can be checked
+   by logging into the flatsat like explained above and running: 
+ 
+   ```sh
+   ifconfig
+   ```
+>>>>>>> mueller/master
   
 It is also assumed the the JLinkGDBServerCLExe application
 is already running on the interface computer (either directly

@@ -1,0 +1,5 @@
+if(BOARD_IOBC)
+    add_subdirectory(norflash)
+else()
+    add_subdirectory(nandflash)
+endif()

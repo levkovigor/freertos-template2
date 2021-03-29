@@ -33,6 +33,26 @@
 #define OBSW_PRINT_MISSED_DEADLINES             1
 #define OBSW_VERBOSE_LEVEL				        1
 #define OBSW_ACS_TEST							1
+#define OBSW_PERFORM_INTERNAL_UNIT_TESTS        1
+
+//! Special tests, should be disabled by default
+#define OBSW_ADD_LED_TASK                       1
+#define OBSW_ADD_UART_0_TEST_TASK               0
+#define OBSW_ADD_UART_2_TEST_TASK               0
+#define OBSW_ADD_I2C_TEST_TASK                  0
+#define OBSW_ADD_SPI_TEST_TASK                  0
+#define OBSW_ADD_TEST_PST                       0
+
+//! Enable ethernet communication. Disabled by default because it interferes with PIN usage
+//! of iOBC.
+#define OBSW_ENABLE_ETHERNET                    0
+
+//! Reconfigures the OBSW to only perform one simple task.
+#define OBSW_PERFORM_SIMPLE_TASK                0
+
+#if OBSW_ENABLE_ETHERNET == 1
+#define OBSW_USE_ETHERNET_TMTC_BRIDGE           0
+#endif /* OBSW_ENABLE_ETHERNET == 1 */
 
 //! Set to one for SAM-BA boot, necessary for proper low level initialization.
 #define SAM_BA_BOOT                             1
