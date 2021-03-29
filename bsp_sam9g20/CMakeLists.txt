@@ -13,6 +13,7 @@ if(NOT BOOTLOADER)
     add_subdirectory(tmtcbridge)
     add_subdirectory(boardtest)
     add_subdirectory(core)
+    add_subdirectory(fsfwconfig)
 endif()
 
 add_subdirectory(common)
