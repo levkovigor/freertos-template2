@@ -16,7 +16,7 @@ fi
 
 build_generator=""
 build_type="debug"
-builddir="Debug-Host"
+builddir="build-Debug-Host"
 defines="HOST_BUILD=ON"
 
 if [ "${OS}" = "Windows_NT" ]; then

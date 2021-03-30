@@ -16,7 +16,7 @@ fi
 
 build_generator=""
 build_type="release"
-builddir="Mission-Host"
+builddir="build-Mission-Host"
 defines="HOST_BUILD=ON"
 
 if [ "${OS}" = "Windows_NT" ]; then
