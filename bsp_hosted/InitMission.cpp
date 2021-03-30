@@ -134,7 +134,14 @@ void initTask() {
 			"PST_DEFAULT", 80, PeriodicTaskIF::MINIMUM_STACK_SIZE, 2.0, nullptr);
 	result = pst::pollingSequenceInitDefault(PollingSequenceTableTaskDefault);
 	if (result != HasReturnvaluesIF::RETURN_OK) {
-		sif::error << "creating PST failed" << std::endl;
+	    sif::error << "creating PST failed" << std::endl;
+	}
+
+	PeriodicTaskIF *attitudeController = TaskFactory::instance()->createPeriodicTask(
+	        "ATTITUDE_CTRL", 6, 2048 * 4, 0.4, nullptr);
+	result = attitudeController->addComponent(objects::ATTITUDE_CONTROLLER);
+	if (result != HasReturnvaluesIF::RETURN_OK) {
+	    initmission::printAddObjectError("Attitude Controller", objects::ATTITUDE_CONTROLLER);
 	}
 
 	sif::info << "Starting tasks.." << std::endl;
@@ -155,4 +162,6 @@ void initTask() {
 	PusService8->startTask();
 	PusService17->startTask();
 	PusService200->startTask();
+
+	attitudeController->startTask();
 }
