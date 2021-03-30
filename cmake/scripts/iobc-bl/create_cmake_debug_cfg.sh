@@ -16,7 +16,7 @@ fi
 
 build_generator=""
 os_fsfw="freertos"
-builddir="Debug-BL-iOBC"
+builddir="build-Debug-BL-iOBC"
 build_type="debug"
 defines="BOARD_IOBC=ON BOOTLOADER=ON AT91_NO_FREERTOS_STARTER_FILE=ON"
 
