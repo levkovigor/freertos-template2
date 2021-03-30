@@ -24,8 +24,9 @@ it is not open source. Those libraries to be added manually and the includes
 and source files have to be setup and included accordingly!
 
 The device specific documentation contains information on how to flash the built
-software to the boards as well. The Linux build can be run locally on the host computer.
-The QEMU image can be run on the host computer as well, but required QEMU installed as specified
+software to the boards as well. The host build can be run locally on the host computers but
+only Windows 10 and Ubuntu 20.04 were tested.
+The QEMU image can be run on a Linux computer as well, but requireds QEMU installed as specified
 in the QEMU documentation.
 
 # Reference
@@ -46,6 +47,7 @@ in the QEMU documentation.
 [Hosted build getting started](doc/README-hosted.md#top)<br>
 
 # Prerequisites
+
 1. Make installed. Part of [MSYS2 MinGW64](https://www.msys2.org/) on Windows.
 2. Development board binaries: [GNU ARM Toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/) 
    installed, hardware or QEMU set-up available. See the
@@ -54,17 +56,13 @@ in the QEMU documentation.
 4. For QEMU: QEMU repository cloned and set up in same folder in which
    this repository was cloned
 
-<<<<<<< HEAD
-## Building the software
+See separate prerequisite chapter for more details
 
-### Clone software and create OBSW binary
-=======
 # Building the software
 
 ## Clone software
 
 1. Create directory for OBSW.
->>>>>>> mueller/master
 
 2. Clone OBSW into this directory
    
@@ -81,7 +79,9 @@ git checkout <branch>
 4. Initialize and update all submodules
 
 ```sh
-git submodule update --init --recursive
+git submodule init
+git submodule sync
+git submodule update --recursive
 ```
 
 You can now build the software for either the AT91 and iOBC targets
@@ -107,29 +107,6 @@ To do this, supply the following arguments to the `CMake` build generation comma
 If the boards are flashed for the first time, the SDRAM needs to be configured with
 the following command
 
-<<<<<<< HEAD
-   General command for Host systems (Windows or Linux):
-   ```sh
-   make -f Makefile-Hosted all
-   ```
-   
-   General command for Linux:
-   ```sh
-   make -f Makefile-Linux all
-   ```
-   
-   Command to start QEMU (inside sourceobsw folder). Please note this
-   only works if the QEMU repository was cloned and built inside the same folder
-   the OBSW was cloned.
-   ```sh
-   ./StartQEMU.sh
-   ``` 
-   
-6. The Linux and Hosted binaries can be run directly via command line or by executing them on the 
-   host. The development board binaries have to be flashed with with J-Link/SAM-BA for the AT91 and 
-   the `sdramCfg` make target needs to be run first once per AT91 power cycle before flashing the 
-   SDRAM. Refer to respective instructions for more details.
-=======
 ```sh
 ./sdramCfg
 ```
@@ -224,7 +201,6 @@ mkdir Debug-Host && cd Debug-Host
 cmake ..
 cmake --build . -j
 ```
->>>>>>> mueller/master
 
 # Build Configurations and testing of Flight Software
 
@@ -242,8 +218,16 @@ RS232 cable can be used (or UART jumper wires..).
 
 ```sh
 pacman -Syuuu
-pacman -S gcc git mingw-w64-x86_64-gdb mingw-w64-x86_64-make mingw-w64-x86_64-cmake
+pacman -S git mingw-w64-x86_64-gcc mingw-w64-x86_64-gdb mingw-w64-x86_64-make mingw-w64-x86_64-cmake
 ```
+
+Alternatively, you can use
+
+```sh
+pacman -S mingw-w64-x86_64-toolchain
+```
+
+to install `gdb`, `gcc` and `mingw32-make` at once.
 
 It is recommended to set up `alias`es in the `.bashrc` file to 
 nagivate to the working directory quickly.
@@ -318,11 +302,7 @@ provided by ISIS. Some important differences will be documented and listed here.
 that memory allocation is only performed during start-up and was carefully avoided during run-time 
 to avoid associated problems like non-deterministic behaviour and memory fragmentation in the heap.
 
-<<<<<<< HEAD
-#### C++
-=======
 ### C++
->>>>>>> mueller/master
 C++ is used in this project. To allow this, some important changes in the linkerscript files and 
 the start up files were necessary. The most important change includes specifying `.fini`, `.init`,
 `.preinit_array`, `.init_array` and `.fini_array` sections. In the startup 

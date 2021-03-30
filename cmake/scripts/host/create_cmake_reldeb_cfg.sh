@@ -15,21 +15,20 @@ if [ "${counter}" -ge 5 ];then
 fi
 
 build_generator=""
-os_fsfw="host"
-build_type="size"
-builddir="Mission-Host"
+build_type="reldeb"
+builddir="build-Mission-Host"
 defines="HOST_BUILD=ON"
 
 if [ "${OS}" = "Windows_NT" ]; then
 	build_generator="MinGW Makefiles"
+	os_fsfw="host"
 # Could be other OS but this works for now.
-else
+else	os_fsfw="linux"
 	build_generator="Unix Makefiles"
 fi
 
 echo "Running command (without the leading +):"
 set -x # Print command 
 python3 cmake_build_config.py -o "${os_fsfw}" -g "${build_generator}" -b "${build_type}" \
-        -l "${builddir}"
-# Use this if commands are added which should not be printed
+        -l "${builddir}" -d "${defines}"
 # set +x

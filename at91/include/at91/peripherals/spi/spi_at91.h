@@ -91,11 +91,11 @@ extern bool pullDummySlaveSelectLow;
 
 /// Calculates the value of the CSR DLYBS field given the desired delay (in ns)
 #define SPI_DLYBS(delay, masterClock) \
-            ((unsigned int) (((masterClock / 1000000) * delay) / 1000) << 16)
+            ((unsigned int) ((((masterClock / 1000000) * delay) / 1000) & 0xff) << 16)
 
 /// Calculates the value of the CSR DLYBCT field given the desired delay (in ns)
 #define SPI_DLYBCT(delay, masterClock) \
-            ((unsigned int) (((masterClock / 1000000) * delay) / 32000) << 16)
+            ((unsigned int) (((masterClock / 1000000) * delay) / 32000) << 24)
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------

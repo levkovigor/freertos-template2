@@ -26,7 +26,7 @@ void vConfigureTimerForRunTimeStats() {
 	uint32_t timerFrequency = 10000;
 	TCTimerHandler::configureOverflowInterrupt(tcPeripheralSelect,
 			timerFrequency, timerOverflowISR,
-			TCTimerHandler::LOWEST_ISR_PRIORITY + 1, nullptr);
+			TCTimerHandler::LOWEST_ISR_PRIORITY, nullptr);
 }
 
 uint32_t vGetCurrentTimerCounterValue() {
