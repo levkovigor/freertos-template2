@@ -7,8 +7,6 @@
 /MinSizeRel*
 /RelWithDeb
 /RelWithDeb*
-/Mission
-/Mission*
 
 # Make
 _build/*
