@@ -10,17 +10,14 @@
 /Mission
 /Mission*
 
+
 # Make
 _build/*
-_dependencies/*
-_bin/*
 _dep
 _bin
 _obj
-_dependencies
 
 # Eclipse
-.settings/*
 .settings
 .metadata
 .project
