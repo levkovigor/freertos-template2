@@ -119,7 +119,6 @@ void initTask() {
         initmission::printAddObjectError("PUS 200", objects::PUS_SERVICE_200_MODE_MGMT);
     }
 
-
 	/* Test Task */
 	PeriodicTaskIF* TestTask = TaskFactory::instance()->createPeriodicTask(
 	        "TEST_TASK", 80, PeriodicTaskIF::MINIMUM_STACK_SIZE, 5.0, nullptr);
