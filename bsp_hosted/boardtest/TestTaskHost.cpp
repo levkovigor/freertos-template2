@@ -12,8 +12,9 @@ TestTaskHost::~TestTaskHost() {
 ReturnValue_t TestTaskHost::performOperation(uint8_t operationCode) {
     ReturnValue_t result = TestTask::performOperation(operationCode);
     if(periodicPrint) {
-        sif::info << "TestTaskHost::performOperation: Hello, I am alive."
-        		<< std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::info << "TestTaskHost::performOperation: Hello, I am alive." << std::endl;
+#endif
     }
 
 	return result;

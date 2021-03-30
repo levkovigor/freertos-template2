@@ -64,8 +64,10 @@ void Factory::produce(void) {
 	    PoolManager* ipcStore = new PoolManager(objects::IPC_STORE, poolConfig);
 	    size_t additionalSize = 0;
 	    size_t storeSize = ipcStore->getTotalSize(&additionalSize);
-        sif::info << "Allocating " << storeSize + additionalSize << " bytes "
-                <<"for the IPC Store.." << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::info << "Allocating " << storeSize + additionalSize << " bytes for the IPC Store.." <<
+                std::endl;
+#endif
 	}
 
 	{
@@ -76,8 +78,10 @@ void Factory::produce(void) {
         PoolManager* tmStore = new PoolManager(objects::TM_STORE, poolConfig);
         size_t additionalSize = 0;
         size_t storeSize = tmStore->getTotalSize(&additionalSize);
-        sif::info << "Allocating " << storeSize + additionalSize << " bytes "
-                <<"for the TM Store.." << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::info << "Allocating " << storeSize + additionalSize << " bytes for the TM Store.." <<
+                std::endl;
+#endif
 	}
 
 	{
@@ -88,8 +92,10 @@ void Factory::produce(void) {
         PoolManager* tcStore =new PoolManager(objects::TC_STORE, poolConfig);
         size_t additionalSize = 0;
         size_t storeSize = tcStore->getTotalSize(&additionalSize);
-        sif::info << "Allocating " << storeSize + additionalSize << " bytes "
-                <<"for the TC Store.." << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::info << "Allocating " << storeSize + additionalSize << " bytes for the TC Store.." <<
+                std::endl;
+#endif
 	}
 
 	new TimeStamper(objects::PUS_TIME);

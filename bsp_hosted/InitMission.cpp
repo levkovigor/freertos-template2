@@ -16,6 +16,7 @@
 /* Declare global object manager */
 ObjectManagerIF* objectManager;
 
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 /* Set up output streams */
 namespace sif {
 ServiceInterfaceStream debug("DEBUG");
@@ -23,21 +24,31 @@ ServiceInterfaceStream info("INFO");
 ServiceInterfaceStream warning("WARNING");
 ServiceInterfaceStream error("ERROR", false, true, true);
 }
+#endif /* FSFW_CPP_OSTREAM_ENABLED == 1 */
 
 
 void initTask();
 
 
 void initMission() {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 	sif::info << "Initiating mission specific code." << std::endl;
 	// Allocate object manager here, as global constructors might not be
 	// executed, depending on buildchain
 	sif::info << "Creating objects" << std::endl;
+#else
+	sif::printInfo("Initiating mission specific code\n");
+    sif::printInfo("Creating objects\n");
+#endif
 
 	objectManager = new ObjectManager(Factory::produce);
 	objectManager -> initialize();
 
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 	sif::info << "Creating tasks.." << std::endl;
+#else
+	sif::printInfo("Creating tasks..\n");
+#endif
 	initTask();
 }
 
@@ -168,7 +179,9 @@ void initTask() {
 			"PST_DEFAULT", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 2.0, nullptr);
 	result = pst::pollingSequenceInitDefault(PollingSequenceTableTaskDefault);
 	if (result != HasReturnvaluesIF::RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 	    sif::error << "creating PST failed" << std::endl;
+#endif
 	}
 
 #ifdef __unix__
@@ -181,7 +194,12 @@ void initTask() {
 	    initmission::printAddObjectError("Attitude Controller", objects::ATTITUDE_CONTROLLER);
 	}
 
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 	sif::info << "Starting tasks.." << std::endl;
+#else
+	sif::printInfo("Starting tasks..\n");
+#endif
+
 	TestTask->startTask();
 	PacketDistributorTask->startTask();
 	PollingSequenceTableTaskDefault->startTask();
