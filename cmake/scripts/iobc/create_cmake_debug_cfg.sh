@@ -17,7 +17,7 @@ fi
 build_generator=""
 os_fsfw="freertos"
 build_type="debug"
-builddir="Debug-iOBC"
+builddir="build-Debug-iOBC"
 defines="BOARD_IOBC=ON"
 
 if [ "${OS}" = "Windows_NT" ]; then

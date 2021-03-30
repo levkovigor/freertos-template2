@@ -27,6 +27,7 @@ namespace objects {
 		CORE_CONTROLLER = 0x40001000,
         SYSTEM_STATE_TASK = 0x40001005,
         THERMAL_CONTROLLER = 0x40002000,
+        ATTITUDE_CONTROLLER = 0x40003000,
 		RS485_CONTROLLER = 0x40005000,
 
         /* 0x44 ('D') for Device Handlers **/
@@ -114,7 +115,6 @@ namespace objects {
 
 #endif /* BSP_FSFWCONFIG_OBJECTS_SYSTEMOBJECTLIST_H_ */
 
-
 /**
                    ▄              ▄
                   ▌▒█           ▄▀▒▌
@@ -135,5 +135,4 @@ namespace objects {
               ▀▄▒▒▒▒▒▒▒▒▒▒▄▄▄▀▒▒▒▒▄▀
                 ▀▄▄▄▄▄▄▀▀▀▒▒▒▒▒▄▄▀
                    ▒▒▒▒▒▒▒▒▒▒▀▀
-*/
-
+**/

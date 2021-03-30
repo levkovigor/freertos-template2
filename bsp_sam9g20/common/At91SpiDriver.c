@@ -6,9 +6,6 @@
 #include <at91/peripherals/aic/aic.h>
 #include <at91/utility/trace.h>
 
-#include <freertos/FreeRTOS.h>
-#include <freertos/include/freertos/task.h>
-
 #include <stddef.h>
 
 int get_drv_handle(At91SpiBuses spi_bus, At91Npcs npcs, AT91PS_SPI* drv, unsigned int* id);

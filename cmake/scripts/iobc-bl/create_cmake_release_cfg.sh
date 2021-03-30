@@ -16,7 +16,7 @@ fi
 
 build_generator=""
 os_fsfw="freertos"
-builddir="Mission-BL-iOBC"
+builddir="build-Mission-BL-iOBC"
 build_type="release"
 defines="BOARD_IOBC=ON BOOTLOADER=ON AT91_NO_FREERTOS_STARTER_FILE=ON"
 

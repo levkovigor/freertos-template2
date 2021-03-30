@@ -1,26 +1,13 @@
 # CMake
-/Debug
-/Debug*
-/Release
-/Release*
-/MinSizeRel
-/MinSizeRel*
-/RelWithDeb
-/RelWithDeb*
-/Mission
-/Mission*
+/build*
 
 # Make
 _build/*
-_dependencies/*
-_bin/*
 _dep
 _bin
 _obj
-_dependencies
 
 # Eclipse
-.settings/*
 .settings
 .metadata
 .project
@@ -28,7 +15,7 @@ _dependencies
 *.launch
 !**/eclipse/**/.project
 !**/eclipse/**/.cproject
-!**/eclipse/**/.launch
+!**/eclipse/**.launch
 .pydevproject
 
 # Python
