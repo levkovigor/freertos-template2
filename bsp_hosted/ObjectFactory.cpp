@@ -31,6 +31,7 @@
 /* UDP server includes */
 #include <fsfw/osal/common/UdpTcPollingTask.h>
 #include <fsfw/osal/common/UdpTmTcBridge.h>
+#include <mission/controller/acs/AttitudeController.h>
 
 #include <cstdint>
 
@@ -106,6 +107,8 @@ void Factory::produce(void) {
 	        objects::TC_STORE);
 	new UdpTcPollingTask(objects::UDP_POLLING_TASK,
 	        objects::UDP_BRIDGE);
+
+	new AttitudeController(objects::ATTITUDE_CONTROLLER);
 
 	/* PUS Service Base Services */
 	new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,

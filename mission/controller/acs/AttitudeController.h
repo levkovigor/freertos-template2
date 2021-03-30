@@ -344,11 +344,16 @@ private:
 	virtual ReturnValue_t checkModeCommand(Mode_t mode, Submode_t submode,
 			uint32_t *msToReachTheMode) override;
 
+	virtual ReturnValue_t initializeLocalDataPool(
+			localpool::DataPool &localDataPoolMap,
+			LocalDataPoolManager &poolManager) override;
+	virtual LocalPoolDataSetBase* getDataSetHandle(sid_t sid) override;
+
 	ReturnValue_t initializeAfterTaskCreation() override;
 
-	void handleChangedDataset(sid_t sid,
-	            store_address_t storeId = storeId::INVALID_STORE_ADDRESS,
-	            bool* clearMessage = nullptr) override;
+	void handleChangedDataset(sid_t sid, store_address_t storeId =
+			storeId::INVALID_STORE_ADDRESS, bool *clearMessage = nullptr)
+			override;
 
 	double lastRefRotRate[COORDINATES_SIZE] { 0, 0, 0 };
 };
