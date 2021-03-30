@@ -30,11 +30,11 @@ int main(void)
     std::cout << "-- Software version v" << SW_VERSION << "." << SW_SUBVERSION << "."
             << SW_SUBSUBVERSION << " -- " << std::endl;
     std::cout << "-- " <<  __DATE__ << " " << __TIME__ << " --" << std::endl;
-	initMission();
-	for(;;) {
-		// suspend main thread by sleeping it.
-		TaskFactory::delayTask(5000);
-	}
+    initMission();
+    for(;;) {
+        // suspend main thread by sleeping it.
+        TaskFactory::delayTask(5000);
+    }
 }
 
 
