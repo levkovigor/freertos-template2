@@ -24,8 +24,9 @@ it is not open source. Those libraries to be added manually and the includes
 and source files have to be setup and included accordingly!
 
 The device specific documentation contains information on how to flash the built
-software to the boards as well. The Linux build can be run locally on the host computer.
-The QEMU image can be run on the host computer as well, but required QEMU installed as specified
+software to the boards as well. The host build can be run locally on the host computers but
+only Windows 10 and Ubuntu 20.04 were tested.
+The QEMU image can be run on a Linux computer as well, but requireds QEMU installed as specified
 in the QEMU documentation.
 
 # Reference
@@ -46,6 +47,7 @@ in the QEMU documentation.
 [Hosted build getting started](doc/README-hosted.md#top)<br>
 
 # Prerequisites
+
 1. Make installed. Part of [MSYS2 MinGW64](https://www.msys2.org/) on Windows.
 2. Development board binaries: [GNU ARM Toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/) 
    installed, hardware or QEMU set-up available. See the
@@ -53,6 +55,8 @@ in the QEMU documentation.
 3. For Host build: On Windows, GCC toolchain, e.g. [MSYS2 MinGW64](https://www.msys2.org/) on Windows.
 4. For QEMU: QEMU repository cloned and set up in same folder in which
    this repository was cloned
+
+See separate prerequisite chapter for more details
 
 # Building the software
 
@@ -75,7 +79,9 @@ git checkout <branch>
 4. Initialize and update all submodules
 
 ```sh
-git submodule update --init --recursive
+git submodule init
+git submodule sync
+git submodule update --recursive
 ```
 
 You can now build the software for either the AT91 and iOBC targets
