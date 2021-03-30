@@ -128,7 +128,7 @@ cmake ..
 cmake --build . -j
 ```
 
-### Build for the iOBC-EK
+### Build for the iOBC
 
 Load at NOR-Flash 0x20000 when using the custom bootloader or NOR-Flash 0xA000
 when using ISIS bootloader.
