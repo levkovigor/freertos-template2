@@ -15,7 +15,7 @@ _obj
 *.launch
 !**/eclipse/**/.project
 !**/eclipse/**/.cproject
-!**/eclipse/**/.launch
+!**/eclipse/**.launch
 .pydevproject
 
 # Python
