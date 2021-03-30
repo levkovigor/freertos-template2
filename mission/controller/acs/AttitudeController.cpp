@@ -1,6 +1,6 @@
 #include "AttitudeController.h"
 
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/coordinates/CoordinateTransformations.h>
 #include <fsfw/globalfunctions/constants.h>
 #include <fsfw/globalfunctions/math/MatrixOperations.h>
@@ -35,8 +35,12 @@ void AttitudeController::performControlOperation() {
 			positionTargetFTest[2], quatCurrentAttitudeTest[2],
 			positionTargetITest, quatLastPointingTest[2], quatBXTest,
 			refRotRateTest);
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+	sif::info<<"Hallo Welt"<<std::endl;
+#else
 	sif::printInfo("%f; %f; %f\n", refRotRateTest[0], refRotRateTest[1],
 			refRotRateTest[2]);
+#endif
 #endif
 }
 
@@ -51,4 +55,14 @@ ReturnValue_t AttitudeController::initializeAfterTaskCreation() {
 
 void AttitudeController::handleChangedDataset(sid_t sid, store_address_t storeId,
         bool* clearMessage) {
+}
+
+ReturnValue_t AttitudeController::initializeLocalDataPool(
+		localpool::DataPool &localDataPoolMap,
+		LocalDataPoolManager &poolManager) {
+	return HasReturnvaluesIF::RETURN_OK;
+}
+
+LocalPoolDataSetBase* AttitudeController::getDataSetHandle(sid_t sid) {
+	return nullptr;
 }
