@@ -67,6 +67,8 @@ void Factory::produce(void) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Allocating " << storeSize + additionalSize << " bytes for the IPC Store.." <<
                 std::endl;
+#else
+        sif::printInfo("Allocating %u bytes for the IPC store..\n", storeSize + additionalSize);
 #endif
 	}
 
@@ -81,6 +83,8 @@ void Factory::produce(void) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Allocating " << storeSize + additionalSize << " bytes for the TM Store.." <<
                 std::endl;
+#else
+        sif::printInfo("Allocating %u bytes for the TM store..\n", storeSize + additionalSize);
 #endif
 	}
 
@@ -95,6 +99,8 @@ void Factory::produce(void) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Allocating " << storeSize + additionalSize << " bytes for the TC Store.." <<
                 std::endl;
+#else
+        sif::printInfo("Allocating %u bytes for the TC store..\n", storeSize + additionalSize);
 #endif
 	}
 
