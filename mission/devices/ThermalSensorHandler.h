@@ -69,7 +69,7 @@ protected:
 
 	void debugInterface(uint8_t positionTracker = 0,
 			object_id_t objectId = 0, uint32_t parameter = 0) override;
-	ReturnValue_t initializeLocalDataPool(LocalDataPool& localDataPoolMap,
+	ReturnValue_t initializeLocalDataPool(localpool::DataPool& localDataPoolMap,
 	        LocalDataPoolManager& poolManager) override;
 	void modeChanged() override;
 
@@ -95,7 +95,7 @@ private:
 	TSensorDefinitions::ThermalSensorDataset sensorDataset;
 	sid_t sensorDatasetSid;
 
-#if OBSW_ENHANCED_PRINTOUT == 1
+#if OBSW_VERBOSE_LEVEL >= 1
 	PeriodicOperationDivider* debugDivider;
 #endif
 };

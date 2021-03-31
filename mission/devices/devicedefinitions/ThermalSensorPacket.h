@@ -4,7 +4,7 @@
 #include <fsfw/datapoollocal/StaticLocalDataSet.h>
 #include <fsfw/datapoollocal/LocalPoolVariable.h>
 #include <fsfw/devicehandlers/DeviceHandlerIF.h>
-#include <fsfwconfig/objects/systemObjectList.h>
+#include <objects/systemObjectList.h>
 
 namespace TSensorDefinitions {
 
@@ -48,9 +48,9 @@ public:
         StaticLocalDataSet(sid_t(objectId, THERMAL_SENSOR_SET_ID)) {
     }
 
-    lp_var_t<float> temperatureCelcius = lp_var_t<float>(hkManager->getOwner(),
+    lp_var_t<float> temperatureCelcius = lp_var_t<float>(sid.objectId,
             PoolIds::TEMPERATURE_C, this);
-    lp_var_t<uint8_t> errorByte = lp_var_t<uint8_t>(hkManager->getOwner(),
+    lp_var_t<uint8_t> errorByte = lp_var_t<uint8_t>(sid.objectId,
             PoolIds::FAULT_BYTE, this);
 };
 

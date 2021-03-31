@@ -1,4 +1,4 @@
-#include <sam9g20/utility/FreeRTOSTaskManager.h>
+#include <bsp_sam9g20/utility/FreeRTOSTaskManager.h>
 
 FreeRTOSTaskManager::FreeRTOSTaskManager(object_id_t objectId):
 		TaskMonitor(objectId) {

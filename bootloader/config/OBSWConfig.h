@@ -1,3 +1,3 @@
 // Added because adapted AT91 lib requires it.
 
-#define OBSW_ENHANCED_PRINTOUT  1
+#define OBSW_VERBOSE_LEVEL  1

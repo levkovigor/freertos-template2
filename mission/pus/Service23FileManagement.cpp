@@ -1,16 +1,16 @@
 #include "Service23FileManagement.h"
 
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/tmtcpacket/pus/TmPacketStored.h>
 #include <fsfw/memory/HasFileSystemIF.h>
 #include <fsfw/action/ActionMessage.h>
-#include <fsfwconfig/objects/systemObjectList.h>
+#include <objects/systemObjectList.h>
 #include <mission/memory/FileSystemMessage.h>
 
 Service23FileManagement::Service23FileManagement(object_id_t objectId,
         uint16_t apid, uint8_t serviceId):
-        CommandingServiceBase(objectId, apid, serviceId,
-        NUM_PARALLEL_COMMANDS, COMMAND_TIMEOUT_SECONDS) {
+        CommandingServiceBase(objectId, apid, serviceId, NUM_PARALLEL_COMMANDS,
+                COMMAND_TIMEOUT_SECONDS) {
 }
 
 
@@ -19,7 +19,7 @@ Service23FileManagement::~Service23FileManagement() {
 
 
 ReturnValue_t Service23FileManagement::isValidSubservice(uint8_t subservice) {
-    switch(subservice){
+    switch(subservice) {
     case Subservice::CMD_CREATE_FILE:
     case Subservice::CMD_DELETE_FILE:
     case Subservice::CMD_LOCK_FILE:
@@ -30,7 +30,9 @@ ReturnValue_t Service23FileManagement::isValidSubservice(uint8_t subservice) {
     case Subservice::APPEND_TO_FILE:
     case Subservice::FINISH_APPEND_TO_FILE:
     case Subservice::CMD_READ_FROM_FILE:
+    case Subservice::CMD_COPY_FILE: {
         return HasReturnvaluesIF::RETURN_OK;
+    }
     default:
         return CommandingServiceBase::INVALID_SUBSERVICE;
     }
@@ -79,7 +81,8 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
     case(Subservice::CMD_REPORT_FILE_ATTRIBUTES):
     case(Subservice::CMD_LOCK_FILE):
     case(Subservice::CMD_UNLOCK_FILE):
-    case(Subservice::CMD_READ_FROM_FILE): {
+    case(Subservice::CMD_READ_FROM_FILE):
+    case(Subservice::CMD_COPY_FILE): {
         result = addDataToStore(&storeId, tcData, tcDataLen);
         if(result != HasReturnvaluesIF::RETURN_OK) {
             return result;
@@ -133,6 +136,10 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
 	    FileSystemMessage::setReadCommand(message, storeId);
 		break;
 	}
+	case(Subservice::CMD_COPY_FILE): {
+	    FileSystemMessage::setCopyCommand(message, storeId);
+	    break;
+	}
 	}
 
 	return HasReturnvaluesIF::RETURN_OK;
@@ -156,8 +163,8 @@ ReturnValue_t Service23FileManagement::handleReply(const CommandMessage* reply,
 
 	case FileSystemMessage::REPLY_READ_FROM_FILE: {
 	    bool readFinished = FileSystemMessage::getReadReply(reply, nullptr);
-	    if(readFinished) {
-	        // Another reply will follow.
+	    if(not readFinished) {
+	        /* Another reply will follow. */
 	        *isStep = true;
 	    }
 		return forwardFileSystemReply(reply, objectId,
@@ -191,14 +198,19 @@ void Service23FileManagement::handleUnrequestedReply(
     Command_t replyId = reply->getCommand();
     switch(replyId) {
     case FileSystemMessage::REPLY_READ_FINISHED_STOP: {
-        // Should not really happen.
+        /* Should not really happen. */
         forwardFileSystemReply(reply, objects::NO_OBJECT,
                 Subservice::REPLY_READ_STOPED_OR_FINISHED);
         break;
     }
     default:
-        sif::debug << "Service23FileManagement::handleUnrequestedReply: "
-               << "Unknown reply with reply ID " << replyId << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::warning << "Service23FileManagement::handleUnrequestedReply: "
+                "Unknown reply with reply ID " << replyId << std::endl;
+#else
+        sif::printDebug( "Service23FileManagement::handleUnrequestedReply: "
+                "Unknown reply with reply ID %hu\n", static_cast<unsigned short>(replyId));
+#endif
     }
 }
 
@@ -206,13 +218,17 @@ void Service23FileManagement::handleUnrequestedReply(
 ReturnValue_t Service23FileManagement::addDataToStore(
         store_address_t* storeId, const uint8_t* tcData,
         size_t tcDataLen) {
-    // It is assumed the pointer to the tcData is passed unchanged,
-    // so we skip the objectId
+    /* It is assumed the pointer to the tcData is passed unchanged, so we skip the objectId */
     ReturnValue_t result = IPCStore->addData(storeId,
             tcData + sizeof(object_id_t), tcDataLen - sizeof(object_id_t));
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Service23FileManagement::addDataToStore: Failed to add "
-                << "data to IPC Store" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "Service23FileManagement::addDataToStore: Failed to add data to "
+                "IPC Store" << std::endl;
+#else
+        sif::printError("Service23FileManagement::addDataToStore: "
+                "Failed to add data to IPC Store\n");
+#endif
     }
     return result;
 }
@@ -224,17 +240,25 @@ ReturnValue_t Service23FileManagement::forwardFileSystemReply(
 	ConstStorageAccessor accessor(storeId);
 	ReturnValue_t result = IPCStore->getData(storeId, accessor);
 	if(result != RETURN_OK) {
-		sif::error << "Service23FileManagement::forwardFileSystemReply: Could "
-				<<"not retrieve data for data reply for subservice"
-				<< subservice << "!";
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "Service23FileManagement::forwardFileSystemReply: Could not retrieve data for "
+		        "data reply for subservice" << subservice << "!";
+#else
+        sif::printError("Service23FileManagement::forwardFileSystemReply: Could not retrieve data "
+                "for data reply for subservice %d!", static_cast<int>(subservice));
+#endif
 		return result;
 	}
 	result = sendTmPacket(subservice, objectId, accessor.data(),
 	        accessor.size());
 	if(result != HasReturnvaluesIF::RETURN_OK) {
-		sif::error << "Service23FileManagement::handleReply: Could not "
-				<< "send TM packet for subservice"
-				<< subservice << "!";
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "Service23FileManagement::handleReply: Could not send TM packet for "
+		        "subservice" << subservice << "!";
+#else
+		sif::printError("Service23FileManagement::handleReply: Could not send TM packet for "
+		        "subservice %d", static_cast<int>(subservice));
+#endif
 	}
 	return HasReturnvaluesIF::RETURN_OK;
 }

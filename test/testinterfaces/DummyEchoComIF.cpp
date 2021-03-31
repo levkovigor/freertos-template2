@@ -1,7 +1,7 @@
 #include <test/testinterfaces/DummyEchoComIF.h>
 
 #include <fsfw/serialize/SerializeAdapter.h>
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/tmtcservices/CommandingServiceBase.h>
 #include <fsfw/tmtcpacket/pus/TmPacketStored.h>
 #include <objects/systemObjectList.h>
@@ -15,7 +15,11 @@ TestEchoComIF::TestEchoComIF(object_id_t object_id_, bool initFunnel):
 			tmQueue->setDefaultDestination(funnel->getReportReceptionQueue());
 		}
 		else {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 			sif::info << "DummyEchoComIF: PUS funnel not created yet." << std::endl;
+#else
+			sif::printInfo("DummyEchoComIF: PUS funnel not created yet.\n");
+#endif
 		}
 	}
 }

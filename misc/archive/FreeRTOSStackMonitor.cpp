@@ -1,4 +1,4 @@
-#include <sam9g20/utility/FreeRTOSStackMonitor.h>
+#include <bsp_sam9g20/utility/FreeRTOSStackMonitor.h>
 
 #include <fsfw/ipc/MutexHelper.h>
 #include <fsfw/osal/FreeRTOS/FixedTimeslotTask.h>

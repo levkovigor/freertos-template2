@@ -106,7 +106,11 @@ void TestDevice::doStartUp() {
 
 
 void TestDevice::doShutDown() {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 	sif::debug << "DummyDevice: Switching Off" << std::endl;
+#else
+	sif::printDebug("DummyDevice: Switching Off\n");
+#endif
 	setMode(_MODE_SHUT_DOWN);
 	return;
 }
@@ -136,7 +140,11 @@ ReturnValue_t TestDevice::buildTransitionDeviceCommand(DeviceCommandId_t* id) {
 
 void TestDevice::doTransition(Mode_t modeFrom, Submode_t submodeFrom) {
 	if(mode == _MODE_TO_NORMAL) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::debug << "DummyDevice: Custom transition to normal mode" << std::endl;
+#else
+		sif::printDebug("DummyDevice: Custom transition to normal mode\n");
+#endif
 	}
 	else {
 		DeviceHandlerBase::doTransition(modeFrom, submodeFrom);
@@ -166,7 +174,11 @@ ReturnValue_t TestDevice::buildCommandFromCommand(
 
 ReturnValue_t TestDevice::buildTestCommand1(DeviceCommandId_t deviceCommand,
         const uint8_t* commandData, size_t commandDataLen) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 	sif::debug << "DummyDevice: Building command from TEST_COMMAND_1" << std::endl;
+#else
+	sif::printDebug("DummyDevice: Building command from TEST_COMMAND_1\n");
+#endif
 	if(commandDataLen > 255){
 		return DeviceHandlerIF::INVALID_NUMBER_OR_LENGTH_OF_PARAMETERS;
 	}
@@ -185,7 +197,11 @@ ReturnValue_t TestDevice::buildTestCommand2(DeviceCommandId_t deviceCommand,
 	if(commandDataLen < 7){
 		return DeviceHandlerIF::INVALID_NUMBER_OR_LENGTH_OF_PARAMETERS;
 	}
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 	sif::debug << "DummyDevice: Building command from TEST_COMMAND_2" << std::endl;
+#else
+	sif::printDebug("DummyDevice: Building command from TEST_COMMAND_2\n");
+#endif
 	deviceCommand = EndianConverter::convertBigEndian(deviceCommand);
 	memcpy(commandBuffer,&deviceCommand,sizeof(deviceCommand));
 	uint16_t parameter1 = 0;
@@ -217,7 +233,11 @@ ReturnValue_t TestDevice::buildTestCommand2(DeviceCommandId_t deviceCommand,
 
 ReturnValue_t TestDevice::buildTestCommand3(DeviceCommandId_t deviceCommand,
         const uint8_t* commandData, size_t commandDataLen) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 	sif::debug << "DummyDevice: Building command from TEST_COMMAND_3" << std::endl;
+#else
+	sif::printDebug("DummyDevice: Building command from TEST_COMMAND_3\n");
+#endif
 	if(commandDataLen > 255){
 		return DeviceHandlerIF::INVALID_NUMBER_OR_LENGTH_OF_PARAMETERS;
 	}
@@ -285,21 +305,30 @@ ReturnValue_t TestDevice::scanForReply(const uint8_t *start, size_t len,
 	}
 	switch(*foundId){
 	case TEST_COMMAND_1:
-		sif::debug << "DummyDevice: Reply for "
-				"TEST_COMMAND_1 (666) received! " << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::debug << "DummyDevice: Reply for TEST_COMMAND_1 (666) received!" << std::endl;
+#else
+		sif::printDebug("DummyDevice: Reply for TEST_COMMAND_1 (666) received!\n");
+#endif
 		*foundLen = len;
 		return RETURN_OK;
 	case TEST_COMMAND_2:
-		if(len < TEST_COMMAND_2_SIZE){
+		if(len < TEST_COMMAND_2_SIZE) {
 			return DeviceHandlerIF::LENGTH_MISSMATCH;
 		}
-		sif::debug << "DummyDevice: Reply for TEST_COMMAND_2 "
-				"(C0C0BABE) received!" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::debug << "DummyDevice: Reply for TEST_COMMAND_2 (C0C0BABE) received!" << std::endl;
+#else
+		sif::printDebug("DummyDevice: Reply for TEST_COMMAND_2 (C0C0BABE) received!\n");
+#endif
 		*foundLen = TEST_COMMAND_2_SIZE;
 		return RETURN_OK;
 	case TEST_COMMAND_3:
-		sif::debug << "DummyDevice: Reply for TEST_COMMAND_3 "
-				"(BADEAFFE) received" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::debug << "DummyDevice: Reply for TEST_COMMAND_3 (BADEAFFE) received" << std::endl;
+#else
+		sif::printDebug("DummyDevice: Reply for TEST_COMMAND_3 (BADEAFFE) received\n");
+#endif
 		*foundLen = len;
 		return RETURN_OK;
 	default:
@@ -334,22 +363,35 @@ ReturnValue_t TestDevice::interpretDeviceReply(DeviceCommandId_t id,
 
 ReturnValue_t TestDevice::interpretingReply1() {
 	CommandMessage directReplyMessage;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 	sif::debug << "DummyDevice: Setting Completion Reply for TEST_COMMAND_1" << std::endl;
+#else
+	sif::printDebug("DummyDevice: Setting Completion Reply for TEST_COMMAND_1\n");
+#endif
 	ActionMessage::setCompletionReply(&directReplyMessage,
-			TEST_COMMAND_1, RETURN_OK);
+			TEST_COMMAND_1, true);
 	return RETURN_OK;
 }
 
 ReturnValue_t TestDevice::interpretingReply2(DeviceCommandId_t id,
 		const uint8_t* packet) {
 	CommandMessage directReplyMessage;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 	sif::debug << "DummyDevice: Setting Data Reply for TEST_COMMAND_2" << std::endl;
+#else
+	sif::printDebug("DummyDevice: Setting Data Reply for TEST_COMMAND_2\n");
+#endif
 	// Send reply with data
 	store_address_t storeAddress;
 	ReturnValue_t result = IPCStore->addData(&storeAddress,packet,14);
 	if (result != RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "DummyDevice: Could not store TEST_COMMAND_2 packet into "
 				 "IPCStore" << std::endl;
+#else
+		sif::printError("DummyDevice: Could not store TEST_COMMAND_2 packet into "
+                 "IPCStore\n");
+#endif
 		return result;
 	}
 
@@ -359,7 +401,11 @@ ReturnValue_t TestDevice::interpretingReply2(DeviceCommandId_t id,
 	ReturnValue_t sendResult = commandQueue->sendMessage(commander,
 			&directReplyMessage,false);
 	if(sendResult != RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "DummyDevice: Could not issue data reply message" << std::endl;
+#else
+		sif::printError("DummyDevice: Could not issue data reply message\n");
+#endif
 		return result;
 	}
 	return RETURN_OK;
@@ -368,12 +414,17 @@ ReturnValue_t TestDevice::interpretingReply2(DeviceCommandId_t id,
 ReturnValue_t TestDevice::interpretingReply3(DeviceCommandId_t id,
 		const uint8_t* packet) {
 	CommandMessage commandMessage;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 	sif::debug << "Dummy Device: Triggering additional step and "
 			"completion for TEST_COMMAND_3" << std::endl;
+#else
+	sif::printDebug("Dummy Device: Triggering additional step and "
+            "completion for TEST_COMMAND_3\n");
+#endif
 	DeviceCommandMap::iterator commandIter = deviceCommandMap.find(id);
 	MessageQueueId_t commander = commandIter->second.sendReplyTo;
 	actionHelper.step(1,commander,id);
-	actionHelper.finish(commander,id);
+	actionHelper.finish(true, commander,id);
 
 	return RETURN_OK;
 }
@@ -386,7 +437,7 @@ uint32_t TestDevice::getTransitionDelayMs(Mode_t modeFrom, Mode_t modeTo) {
 	return 5000;
 }
 
-ReturnValue_t TestDevice::initializeLocalDataPool(LocalDataPool& localDataPoolMap,
+ReturnValue_t TestDevice::initializeLocalDataPool(localpool::DataPool& localDataPoolMap,
 	    LocalDataPoolManager& poolManager) {
 	// This will initialize a uint8_t pool entry with a length of one (uint8_t).
 	localDataPoolMap.emplace(static_cast<lp_id_t>(LocalPoolIds::TEST_VAR_1),

@@ -86,71 +86,76 @@ public:
     static constexpr uint8_t NUM_PARALLEL_COMMANDS = 15;
     static constexpr uint16_t COMMAND_TIMEOUT_SECONDS = 60;
 
-	Service23FileManagement(object_id_t objectId, uint16_t apid,
-	        uint8_t serviceId);
-	virtual ~Service23FileManagement();
+    Service23FileManagement(object_id_t objectId, uint16_t apid,
+            uint8_t serviceId);
+    virtual ~Service23FileManagement();
 
 protected:
 
-	/** ComandingServiceBase overrides */
-	virtual ReturnValue_t isValidSubservice(uint8_t subservice) override;
-	virtual ReturnValue_t getMessageQueueAndObject(uint8_t subservice,
-			const uint8_t *tcData, size_t tcDataLen, MessageQueueId_t *id,
-			object_id_t *objectId) override;
-	virtual ReturnValue_t prepareCommand(CommandMessage* message,
-			uint8_t subservice, const uint8_t *tcData, size_t tcDataLen,
-			uint32_t *state, object_id_t objectId) override;
-	virtual ReturnValue_t handleReply(const CommandMessage *reply,
-			Command_t previousCommand, uint32_t *state,
-			CommandMessage *optionalNextCommand, object_id_t objectId,
-			bool *isStep) override;
+    /** ComandingServiceBase overrides */
+    virtual ReturnValue_t isValidSubservice(uint8_t subservice) override;
+    virtual ReturnValue_t getMessageQueueAndObject(uint8_t subservice,
+            const uint8_t *tcData, size_t tcDataLen, MessageQueueId_t *id,
+            object_id_t *objectId) override;
+    virtual ReturnValue_t prepareCommand(CommandMessage* message,
+            uint8_t subservice, const uint8_t *tcData, size_t tcDataLen,
+            uint32_t *state, object_id_t objectId) override;
+    virtual ReturnValue_t handleReply(const CommandMessage *reply,
+            Command_t previousCommand, uint32_t *state,
+            CommandMessage *optionalNextCommand, object_id_t objectId,
+            bool *isStep) override;
 
-	virtual void handleUnrequestedReply(const CommandMessage *reply);
+    virtual void handleUnrequestedReply(const CommandMessage *reply);
 
 private:
-	ReturnValue_t checkInterfaceAndAcquireMessageQueue(
-	        MessageQueueId_t* messageQueueToSet, object_id_t* objectId);
+    ReturnValue_t checkInterfaceAndAcquireMessageQueue(
+            MessageQueueId_t* messageQueueToSet, object_id_t* objectId);
 
 
-	enum Subservice {
-		CMD_CREATE_FILE = 1, //!< [EXPORT] : [COMMAND] Create file
-		CMD_DELETE_FILE = 2, //!< [EXPORT] : [COMMADND] Delete file
+    enum Subservice {
+        CMD_CREATE_FILE = 1, //!< [EXPORT] : [COMMAND] Create file
+        CMD_DELETE_FILE = 2, //!< [EXPORT] : [COMMADND] Delete file
 
-		CMD_REPORT_FILE_ATTRIBUTES = 3,
-		REPLY_REPORT_FILE_ATTRIBUTES = 4,
+        CMD_REPORT_FILE_ATTRIBUTES = 3,
+        REPLY_REPORT_FILE_ATTRIBUTES = 4,
 
-		CMD_LOCK_FILE = 5,
-		CMD_UNLOCK_FILE = 6,
+        CMD_LOCK_FILE = 5,
+        CMD_UNLOCK_FILE = 6,
 
-		FIND_FILE = 7,
-		FOUND_FILES_REPLY = 8,
+        FIND_FILE = 7,
+        FOUND_FILES_REPLY = 8,
 
-		CREATE_DIRECTORY = 9, //!<  [EXPORT] : [COMMAND] Create a directory
-		DELETE_DIRECTORY = 10, //!<  [EXPORT] : [COMMAND] Delete a directory
+        //! [EXPORT] : [COMMAND] Create a directory
+        CREATE_DIRECTORY = 9,
+        //! [EXPORT] : [COMMAND] Delete a directory
+        DELETE_DIRECTORY = 10,
 
         RENAME_DIRECTORY = 11,
-		REPORT_REPOSITORY = 12,
-		REPORT_REPOSTIROY_REPLY = 13,
+        REPORT_REPOSITORY = 12,
+        REPORT_REPOSTIROY_REPLY = 13,
 
-		MOVE_FILE = 15,
+        //! [EXPORT] : [COMMAND] Copy a file
+        CMD_COPY_FILE = 14,
+        //! [EXPORT] : [COMMAND] Move a file
+        CMD_MOVE_FILE = 15,
 
-		/** Custom subservices */
-		APPEND_TO_FILE = 130, //!< [EXPORT] : [COMMAND] Append data to file
-		FINISH_APPEND_TO_FILE = 131,
-		FINISH_APPEND_REPLY = 132,
+        /** Custom subservices */
+        APPEND_TO_FILE = 130, //!< [EXPORT] : [COMMAND] Append data to file
+        FINISH_APPEND_TO_FILE = 131,
+        FINISH_APPEND_REPLY = 132,
 
-		CMD_READ_FROM_FILE = 140, //!< [EXPORT] : [COMMAND] Read data from a file
-		REPLY_READ_FROM_FILE = 141, //!< [EXPORT] : [REPLY] Reply of subservice 140
-		CMD_STOP_READ_FROM_FILE = 142, //!< [EXPORT] : [COMMAND] Stop read from file
-		REPLY_READ_STOPED_OR_FINISHED = 143, //!< [EXPORT] : [REPLY] Reply on stop command or sent when reading is finished.
+        CMD_READ_FROM_FILE = 140, //!< [EXPORT] : [COMMAND] Read data from a file
+        REPLY_READ_FROM_FILE = 141, //!< [EXPORT] : [REPLY] Reply of subservice 140
+        CMD_STOP_READ_FROM_FILE = 142, //!< [EXPORT] : [COMMAND] Stop read from file
+        REPLY_READ_STOPED_OR_FINISHED = 143, //!< [EXPORT] : [REPLY] Reply on stop command or sent when reading is finished.
 
-		CMD_CLEAR_REPOSITORY = 180, //!< [EXPORT] : [COMMAND] Clears a folder, and also deletes all contained files and folders recursively. Use with care!
-	};
+        CMD_CLEAR_REPOSITORY = 180, //!< [EXPORT] : [COMMAND] Clears a folder, and also deletes all contained files and folders recursively. Use with care!
+    };
 
-	ReturnValue_t addDataToStore(store_address_t* storeId, const uint8_t* tcData,
-	        size_t tcDataLen);
-	ReturnValue_t forwardFileSystemReply(const CommandMessage* reply,
-			object_id_t objectId, Subservice subservice);
+    ReturnValue_t addDataToStore(store_address_t* storeId, const uint8_t* tcData,
+            size_t tcDataLen);
+    ReturnValue_t forwardFileSystemReply(const CommandMessage* reply,
+            object_id_t objectId, Subservice subservice);
 };
 
 

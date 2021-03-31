@@ -1,13 +1,13 @@
 #include "DummyGPSComIF.h"
 
 #include <fsfw/serialize/SerializeAdapter.h>
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/tmtcservices/CommandingServiceBase.h>
 #include <fsfw/tmtcpacket/pus/TmPacketStored.h>
 #include <fsfw/ipc/QueueFactory.h>
-#include <fsfwconfig/devices/logicalAddresses.h>
-#include <fsfwconfig/tmtc/apid.h>
-#include <fsfwconfig/tmtc/pusIds.h>
+#include <devices/logicalAddresses.h>
+#include <tmtc/apid.h>
+#include <tmtc/pusIds.h>
 
 #include <cstring>
 
@@ -24,25 +24,6 @@ DummyGPSComIF::DummyGPSComIF(object_id_t object_id_):
 ReturnValue_t DummyGPSComIF::initializeInterface(CookieIF * cookie) {
 	return RETURN_OK;
 }
-//ReturnValue_t DummyGPSComIF::open(Cookie **cookie, uint32_t address,
-//		uint32_t maxReplyLen, comParameters_t comParameter) {
-//	DummyCookie * dummyCookie = new DummyCookie();
-//	dummyCookie->address = address;
-//	*cookie = dummyCookie;
-//	this->maxReplyLen = maxReplyLen;
-//	return RETURN_OK;
-//}
-//
-//ReturnValue_t DummyGPSComIF::reOpen(Cookie *cookie, uint32_t address,
-//		uint32_t maxReplyLen, uint32_t comParameter) {
-//	ReturnValue_t result;
-//	result = open(&cookie,address,maxReplyLen);
-//	return result;
-//}
-//
-//void DummyGPSComIF::close(Cookie *cookie) {
-//	delete cookie;
-//}
 
 ReturnValue_t DummyGPSComIF::sendMessage(CookieIF *cookie, const uint8_t * sendData,
 		size_t sendLen) {
@@ -61,7 +42,11 @@ ReturnValue_t DummyGPSComIF::sendMessage(CookieIF *cookie, const uint8_t * sendD
 		return RETURN_OK;
 	}
 	default:
-		sif::info << "Unknown Device Handler" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::info << "DummyGPSComIF::sendMessage: Unknown Device Handler" << std::endl;
+#else
+		sif::printInfo("DummyGPSComIF::sendMessage: Unknown Device Handler\n");
+#endif
 		return RETURN_FAILED;
 	}
 }
@@ -69,7 +54,11 @@ ReturnValue_t DummyGPSComIF::sendMessage(CookieIF *cookie, const uint8_t * sendD
 
 void DummyGPSComIF::prepareAckOrNackReply(const uint8_t * data, size_t * len,uint8_t AckType) {
 	if(*len < 7) {
-		sif::error <<"Dummy Com IF: Invalid packet length" << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::error << "DummyGPSComIF::prepareAckOrNackReply: Invalid packet length" << std::endl;
+#else
+		sif::printError("DummyGPSComIF::prepareAckOrNackReply: Invalid packet length\n");
+#endif
 		return;
 	}
 	uint8_t checksum = 0;
@@ -89,7 +78,13 @@ void DummyGPSComIF::prepareAckOrNackReply(const uint8_t * data, size_t * len,uin
 					gpsReplyBufferSize - BINARY_HEADER_AND_TAIL_SIZE);
 			reply[gpsReplyBufferSize - 3] = checksum;
 			if(gpsDataSizes.full()) {
-				sif::error << "Dummy Com IF: Maximum number of allowed parallel commands for GPS Dummy reached." << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+				sif::error << "Dummy Com IF: Maximum number of allowed parallel commands "
+				        "for GPS Dummy reached." << std::endl;
+#else
+				sif::printError("Dummy Com IF: Maximum number of allowed parallel commands "
+                        "for GPS Dummy reached.\n");
+#endif
 				uint32_t oldestSize;
 				gpsDataSizes.retrieve(reinterpret_cast<uint16_t *>(&oldestSize));
 				gpsReplyRingBuffer.deleteData(oldestSize,false,NULL);
@@ -100,7 +95,11 @@ void DummyGPSComIF::prepareAckOrNackReply(const uint8_t * data, size_t * len,uin
 			break;
 		}
 		default: {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 			sif::info << "Dummy Com IF: Message Reply not implemented yet" << std::endl;
+#else
+			sif::printInfo("Dummy Com IF: Message Reply not implemented yet\n");
+#endif
 			break;
 		}
 	}

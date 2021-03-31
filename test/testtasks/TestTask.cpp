@@ -1,16 +1,23 @@
-#include <test/testtasks/TestTask.h>
-#include <test/testtasks/PusTcInjector.h>
-#include <unittest/internal/InternalUnitTester.h>
+#include "TestTask.h"
+#include "PusTcInjector.h"
 
+#include <objects/systemObjectList.h>
+#include <devices/logicalAddresses.h>
+#include <tmtc/apid.h>
+
+#include <fsfw/unittest/internal/InternalUnitTester.h>
 #include <fsfw/objectmanager/ObjectManagerIF.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
-#include <etl/vector.h>
-#include <fsfwconfig/devices/logicalAddresses.h>
-#include <fsfwconfig/tmtc/apid.h>
 
+#include <etl/vector.h>
 #include <array>
 #include <cstring>
+
+extern "C" {
+
+}
+
 
 
 bool TestTask::oneShotAction = true;
@@ -57,6 +64,22 @@ ReturnValue_t TestTask::performOperation(uint8_t operationCode) {
 
 ReturnValue_t TestTask::performOneShotAction() {
 	// Everything here will only be performed once.
+    //SDCardTest();
+//    int res = 0;
+    //sdTest();
+//    SDCardAccess accessToken;
+    //int res = open_filesystem(VolumeId::SD_CARD_0);
+
+    //res = select_sd_card(VolumeId::SD_CARD_0);
+
+//    const char* const testString = "abc";
+//    F_FILE* file = f_open("test.bin", "w");
+//    if(file == nullptr) {
+//        return HasReturnvaluesIF::RETURN_FAILED;
+//    }
+//    res = f_write(testString, 3, 1, file);
+//
+//    f_close(file);
 
     //performEtlTemplateTest();
     return HasReturnvaluesIF::RETURN_OK;
@@ -85,7 +108,11 @@ void TestTask::performPusInjectorTest() {
 	        objects::CCSDS_PACKET_DISTRIBUTOR, objects::TC_STORE,
 	        apid::SOURCE_OBSW);
 	tcInjector.initialize();
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 	sif::info << "TestTask: injecting pus telecommand" << std::endl;
+#else
+	sif::printInfo("TestTask: injecting pus telecommand\n");
+#endif
 	tcInjector.injectPusTelecommand(17,1);
 }
 
@@ -123,12 +150,21 @@ void TestTask::examplePacketTest() {
 		ReturnValue_t result = testClass.deSerialize(&pointer, &size,
 		        SerializeIF::Endianness::BIG);
 		if(result != RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 			sif::error << "Deserialization did not work" << std::endl;
+#else
+			sif::printError("Deserialization did not work\n");
+#endif
 			return;
 		}
-		sif::info << "Priting deserialized packet members: " << std::endl;
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+		sif::info << "Printing deserialized packet members: " << std::endl;
 		sif::info << testClass.getHeader() << std::endl;
 		sif::info << testClass.getTail() << std::endl;
+#else
+		sif::printInfo("Printing deserialized packet members: \n");
+		sif::printInfo("%s\n%s\n", testClass.getHeader(), testClass.getTail());
+#endif
 		arrayprinter::print(testClass.getBuffer(), testClass.getBufferLength());
 	}
 
@@ -141,7 +177,11 @@ void TestTask::examplePacketTest() {
 		ReturnValue_t result = testClass2.serialize(&packetPointer,
 				&serializedSize, packetMaxSize, SerializeIF::Endianness::BIG);
 		if(result == RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 			sif::info << "Priting serialized packet:" << std::endl;
+#else
+			sif::printInfo("Priting serialized packet: \n");
+#endif
 			arrayprinter::print(packet, packetLen, OutputType::DEC);
 		}
 	}
@@ -158,6 +198,8 @@ void TestTask::performEtlTemplateTest() {
     }
     struct TmManagerStruct<templateSizes[poolId]>* test = dynamic_cast<
             struct TmManagerStruct<templateSizes[poolId]>*>(iter->second);
-    sif::info << test->testMap.size() << std::endl;
-    sif::info << test->testMap.max_size() << std::endl;
+    if(test) {}
 }
+
+
+

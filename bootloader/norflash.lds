@@ -51,8 +51,8 @@ SECTIONS
         _sprerelocate = .;
         KEEP(*(.vectors));
         /* These functions need to be executed in the SRAM0 for the NORFlash */
-        *board_lowlevel.o(.text .text*)
-        *board_memories.o(.text .text*)
+        *libat91.a:board_lowlevel.c.obj
+        *libat91.a:board_memories.c.obj
         . = ALIGN(4);
         _eprerelocate = .;
     } >sram0
@@ -63,9 +63,6 @@ SECTIONS
         . = ALIGN(4);
         _spostrelocate = .;
         *(.sramfunc*)
-        /* *SPI.o(.text .text*); */
-        /* *spi_at91.o(.text .text*); */
-        /* *HAL.a:*(.text .text.*); */
         /* contains all initialized global and static variables */
         *(.sramdata*)
         *(.data*)
@@ -126,7 +123,7 @@ SECTIONS
     /* Place .bss in sdram because it will grow quite large when using FreeRTOS */
     .bss (NOLOAD) : 
     {
-    	. = . + 0x200000;
+    	. = . + 0x200000; /* This space is reserved for the primary software image */
         /* This is used by the startup in order to initialize the .bss secion */
 		_sbss = .;         /* define a global symbol at bss start */
 		__bss_start__ = _sbss;

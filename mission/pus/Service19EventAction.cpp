@@ -1,10 +1,10 @@
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/events/EventManagerIF.h>
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/events/EventMessage.h>
 #include <fsfw/tmtcpacket/pus/TmPacketStored.h>
-#include <fsfwconfig/tmtc/apid.h>
-#include <fsfwconfig/tmtc/pusIds.h>
+#include <tmtc/apid.h>
+#include <tmtc/pusIds.h>
 #include <mission/pus/Service19EventAction.h>
 
 Service19EventAction::Service19EventAction(object_id_t objectId) :
@@ -41,30 +41,17 @@ ReturnValue_t Service19EventAction::handleRequest()
 {
 	switch (currentPacket.getSubService())
 	{
-//	case SUBSERVICE::ADD_ACTIONS:
-//	{
-//		//do stuff
-//		return HasReturnvaluesIF::RETURN_OK;
-//	}
-//	case SUBSERVICE::DELETE_ACTIONS:
-//	{
-//		// do stuff
-//		return HasReturnvaluesIF::RETURN_OK;
-//	}
 	default:
 		return AcceptsTelecommandsIF::INVALID_SUBSERVICE;
 	}
 }
 
-// In addition to the default PUSServiceBase initialization, this service needs to
-// be registered to the event manager to listen for events
-ReturnValue_t Service19EventAction::initialize()
-{
-
+/* In addition to the default PUSServiceBase initialization, this service needs to
+be registered to the event manager to listen for events */
+ReturnValue_t Service19EventAction::initialize() {
 	EventManagerIF *manager = objectManager->get<EventManagerIF>(
 		objects::EVENT_MANAGER);
 	
-	sif::info << "event action stuff is initialized" << std::endl;
 	if (manager == NULL)
 	{
 		return RETURN_FAILED;

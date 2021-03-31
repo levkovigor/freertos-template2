@@ -1,0 +1,24 @@
+job:
+    script:
+        - mkdir Debug-AT91EK && cd Debug-AT91EK
+        - cmake -DCMAKE_BUILD_TYPE=Debug ..
+        - cmake --build . -j
+
+        - mkdir Debug-iOBC && cd Debug-iOBC
+        - cmake -DCMAKE_BUILD_TYPE=Debug -DBOARD_IOBC=ON ..
+        - cmake --build . -j
+
+        - mkdir Mission-AT91EK && cd Mission-AT91EK
+        - cmake -DCMAKE_BUILD_TYPE=MinSizeRel ..
+        - cmake --build . -j
+
+        - mkdir Mission-iOBC && cd Mission-iOBC
+        - cmake -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD_IOBC=ON ..
+        - cmake --build . -j
+    
+    artifacts:
+        paths:
+            - Debug-AT91EK/sourceobsw-at91-debug
+            - Debug-iOBC/sourceobsw-iobc-debug.bin
+            - Mission-AT91EK/sourceobsw-at91-mission
+            - Mission-iobc/sourceobsw-iobc-mission.bin

@@ -1,7 +1,7 @@
-#include <fsfw/ipc/MutexHelper.h>
+#include <fsfw/ipc/MutexGuard.h>
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
 #include <mission/utility/TaskMonitor.h>
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 std::map<object_id_t, PeriodicTaskIF*> TaskMonitor::periodicTaskMap;
 std::map<object_id_t, FixedTimeslotTaskIF*> TaskMonitor::fixedTimeslotTaskMap;
@@ -18,14 +18,14 @@ TaskMonitor::~TaskMonitor() {
 }
 
 void TaskMonitor::setPeriodicOperation(float periodSeconds) {
-	MutexHelper(monitorMutex, MutexIF::TimeoutType::WAITING, 10);
+	MutexGuard(monitorMutex, MutexIF::TimeoutType::WAITING, 10);
 	performPeriodicOperation = true;
     this->periodicCounter = 0;
     this->periodicInterval = periodSeconds * 1000.0;
 }
 
 void TaskMonitor::clearPeriodicOperation() {
-    MutexHelper(monitorMutex, MutexIF::TimeoutType::WAITING, 10);
+    MutexGuard(monitorMutex, MutexIF::TimeoutType::WAITING, 10);
     performPeriodicOperation = false;
 }
 
@@ -52,8 +52,13 @@ ReturnValue_t TaskMonitor::insertFixedTimeslotTask(object_id_t objectId,
 PeriodicTaskIF* TaskMonitor::getPeriodicTaskHandle(object_id_t objectId) {
     auto iter = TaskMonitor::periodicTaskMap.find(objectId);
     if(iter == TaskMonitor::periodicTaskMap.end()) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::warning << "TaskMonitor::getPeriodicTaskHandle: Object ID does"
                 " not exists in PeriodicTask map." << std::endl;
+#else
+        sif::printWarning("TaskMonitor::getPeriodicTaskHandle: Object ID does"
+                " not exists in PeriodicTask map.\n");
+#endif
         return nullptr;
     }
     return iter->second;
@@ -63,8 +68,13 @@ FixedTimeslotTaskIF* TaskMonitor::getFixedTimeslotTaskHandle(
         object_id_t objectId) {
     auto iter = TaskMonitor::fixedTimeslotTaskMap.find(objectId);
     if(iter == TaskMonitor::fixedTimeslotTaskMap.end()) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::warning << "TaskMonitor::getPeriodicTaskHandle: Object ID does"
                 " not exists in PeriodicTask map." << std::endl;
+#else
+        sif::printWarning("TaskMonitor::getPeriodicTaskHandle: Object ID does"
+                " not exists in PeriodicTask map.\n");
+#endif
         return nullptr;
     }
     return iter->second;
