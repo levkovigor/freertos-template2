@@ -54,7 +54,11 @@ void initMission() {
 
 void initTask() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
+    TaskPriority taskPrio = 0;
+#ifdef _WIN32
     TaskPriority taskPrio = tasks::makeWinPriority();
+#endif
+
 
 #ifdef __unix__
     taskPrio = 50;
