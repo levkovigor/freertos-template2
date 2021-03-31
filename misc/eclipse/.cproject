@@ -1001,6 +1001,9 @@
 		</cconfiguration>
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.352525802.586252832">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.352525802.586252832" moduleId="org.eclipse.cdt.core.settings" name="obsw-iobc-debug">
+				<macros>
+					<stringMacro name="CROSS_COMPILE_PATH" type="VALUE_TEXT" value="/home/rmueller/opt/xPacks/@xpack-dev-tools/arm-none-eabi-gcc/10.2.1-1.1.2/.content/bin"/>
+				</macros>
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -1454,13 +1457,13 @@
 		<configuration configurationName="obsw-host-debug"/>
 		<configuration configurationName="obsw-iobc-mission"/>
 		<configuration configurationName="bl-at91-mission"/>
+		<configuration configurationName="obsw-host-unix-debug">
+			<resource resourceType="PROJECT" workspacePath="/sourceobsw"/>
+		</configuration>
 		<configuration configurationName="obsw-stm32-mission">
 			<resource resourceType="PROJECT" workspacePath="/sourceobsw"/>
 		</configuration>
 		<configuration configurationName="obsw-bootloader-debug">
-			<resource resourceType="PROJECT" workspacePath="/sourceobsw"/>
-		</configuration>
-		<configuration configurationName="obsw-host-unix-debug">
 			<resource resourceType="PROJECT" workspacePath="/sourceobsw"/>
 		</configuration>
 		<configuration configurationName="obsw-host-mingw-debug">

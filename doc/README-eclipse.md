@@ -28,25 +28,6 @@ The recommended steps show how to build `CMake` projects with Eclipse. The `CMak
 system generation still has to be done separately via the `CMake` GUI or via command line
 with the provided configuration scripts.
 
-### Setting up the cross compiler path
-
-It is not recommended anymore to add the cross-compile toolchain to the system environmental
-variables. Eclipse still requires access to utilities like `arm-none-eabi-gdb`. 
-
-The provided project files assume that the utility is contained inside a system environmental
-variable called `CROSS_COMPILE_PATH`.
-
-Developers should take care of setting this environmental variable either permanently or before
-starting Eclipse. On Windows, this can be done by simply creating a new environmental variables.
-On Unix systems, you can use the following code
-
-```sh
-export CROSS_COMPILE_PATH="<pathToCrossCompileBinaries>"
-```
-
-You can also add this to the `.profile` or `.bashrc` file and then `source` them
-to avoid having to rerun the command on each restart.
-
 ### Pre-Configured project
 
 Perform following steps to use a pre-configured project.
@@ -56,6 +37,16 @@ Perform following steps to use a pre-configured project.
 2. Import the project by going to File &rarr; Import &rarr; Existing Projects into Workspace and 
    selecting the cloned folder.
   
+## Additional Information
+
+### Cross compiler path
+
+It is not recommended anymore to add the cross-compile toolchain to the system environmental
+variables. Eclipse still requires access to utilities like `arm-none-eabi-gdb`. 
+Because a xPacks cross compiler toolchain is used, the toolchain path should be added to the
+Eclipse internal path variables automatically as long as the MCU settings for Eclipse 
+were configured properly.
+
 ### Lauch Configurations
 
 Launch configuration were provided. These configurations use the build configuration provided
