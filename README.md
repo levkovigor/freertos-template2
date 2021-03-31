@@ -50,9 +50,8 @@ in the QEMU documentation.
 
 1. Make installed. Part of [MSYS2 MinGW64](https://www.msys2.org/) on Windows.
 2. Development board binaries: [GNU ARM Toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/) 
-   installed, hardware or QEMU set-up available. See the
-   [Setting up prerequisites](#setting-up-prerequisites) section
-3. On Windows: [MSYS2 MinGW64](https://www.msys2.org/) installed to have a Unix environment.
+   installed, hardware or QEMU set-up available. 
+3. On Windows: [MSYS2 MinGW64](https://www.msys2.org/) installed to provide a Unix environment.
 4. For QEMU: QEMU repository cloned and set up in same folder in which
    this repository was cloned
 
@@ -171,9 +170,10 @@ cmake --build . -j
 
 Command to start QEMU (inside sourceobsw folder). Please note this only works if the QEMU 
 repository was cloned and built inside the same folder the OBSW was cloned.
+
 ```sh
 ./StartQEMU.sh
-``` 
+```
    
 ## Build Host Software
 
@@ -259,6 +259,7 @@ RS232 cable can be used (or UART jumper wires..).
    so the path is always added. However, the approach shown above keeps the path clean.
 
 ## Windows: Installing and setting up the ARM Toolchain
+
 The code needs to be compiled for the ARM target system and we will use the
 [GNU ARM Toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/).
 
