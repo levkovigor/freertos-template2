@@ -52,8 +52,7 @@ in the QEMU documentation.
 2. Development board binaries: [GNU ARM Toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/) 
    installed, hardware or QEMU set-up available. See the
    [Setting up prerequisites](#setting-up-prerequisites) section
-3. For Host build: On Windows, GCC toolchain, e.g. [MSYS2 MinGW64](https://www.msys2.org/) on 
-   Windows.
+3. On Windows: [MSYS2 MinGW64](https://www.msys2.org/) installed to have a Unix environment.
 4. For QEMU: QEMU repository cloned and set up in same folder in which
    this repository was cloned
 
@@ -234,22 +233,30 @@ RS232 cable can be used (or UART jumper wires..).
 
 3. Run `git config --global core.autocrlf true` if you like to use MinGW64 `git` as well
 
-4. Open the `.bashrc` file
+4. Open a new path setter file called `source_path_set.sh` file
 
    ```sh
    cd ~
-   nano .bashrc
+   nano source_path_set.sh
    ```
 
-   Add the following line at the end to add the ARM cross-compile toolchain to MinGW64.
+   Add the following line in thge file to MinGW64.
    This is just an example, correct the path for your use-case with the correct
    version and user name!
 
    ```sh 
-   export PATH=$PATH:"/c/Users/Robin/AppData/Roaming/xPacks/@xpack-dev-tools/arm-none-eabi-gcc/10.2.1-1.1.2/.content/bin"
+   export PATH="/c/Users/Robin/AppData/Roaming/xPacks/@xpack-dev-tools/arm-none-eabi-gcc/10.2.1-1.1.2/.content/bin":$PATH
    ```
    
-   Alternatively, you can put this in a separate file and `source` it before developing.
+   Now you can run
+   
+   ```sh
+   source source_path_set_sh
+   ```
+   
+   to add the path to the MinGW64 path temporarily.
+   Alternatively, you can put this `export` command in the `.profile` and `.bashrc` file
+   so the path is always added. However, the approach shown above keeps the path clean.
 
 ## Windows: Installing and setting up the ARM Toolchain
 The code needs to be compiled for the ARM target system and we will use the
@@ -273,11 +280,11 @@ The code needs to be compiled for the ARM target system and we will use the
    xpm install --global @xpack-dev-tools/openocd@latest
    ```
    
-4. Add arm-none-eabi-gcc binary location in the xPack folder to system variables. 
-   These are usually located in C:\Users\<...>\AppData\Roaming\xPacks\@gnu-mcu-eclipse\arm-none-eabi-gcc\<version>\.content\bin .
-   Alternatively, if you want to keep the environment and the path clean, add it temporarily 
-   with `SET PATH=%PATH%;c:\pathtotoolchain` before each debugging session(command can be put 
-   inside a bash script).  
+4. It is not recommendend anymore to put the path containing the binaries into the Windows system 
+   path because there can be nameclashes with Windows dynamic linked libraries. Instead, it is 
+   recommended to add them to the MinGW64 path temporarily like shown above before setting a a 
+   `CMake` build environment. `CMake` will then cache the toolchain path, so the Windows environment 
+   path stays clean.
    
 If you don't want to install nodejs you may go with the 
 [four-command manual installation](https://xpack.github.io/arm-none-eabi-gcc/install/#manual-install). 
