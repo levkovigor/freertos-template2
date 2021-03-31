@@ -1,7 +1,7 @@
 #include "at91_boot_from_nand.h"
 #include <bootloaderConfig.h>
 
-#include <sam9g20/common/SRAMApi.h>
+#include <bsp_sam9g20/common/SRAMApi.h>
 
 #include <at91/boards/at91sam9g20-ek/board.h>
 #include <at91/boards/at91sam9g20-ek/board_memories.h>
@@ -123,12 +123,12 @@ void NandInit()
 //------------------------------------------------------------------------------
 int BOOT_NAND_CopyBin(const uint32_t binary_offset, size_t binary_size, size_t target_offset)
 {
-    unsigned short block;
-    unsigned short page;
-    unsigned short offset;
+    unsigned short block = 0;
+    unsigned short page = 0;
+    unsigned short offset = 0;
 
-    unsigned char *ptr;
-    unsigned bytes_read;
+    unsigned char *ptr = NULL;
+    unsigned bytes_read = 0;
 
     // Errors returned by SkipNandFlash functions
     unsigned char error = 0;

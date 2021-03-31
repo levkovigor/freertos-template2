@@ -36,6 +36,10 @@ elseif(${CMAKE_BUILD_TYPE} MATCHES "MinSizeRel")
 		"flags: ${CMAKE_C_FLAGS_MINSIZEREL}"
 	)
 else()
+    if(DISABLE_AGGRESSIVE_OPTIMIZATION)
+        set(CMAKE_C_FLAGS_RELEASE "-O2 -g0" PARENT_SCOPE)
+        set(CMAKE_C_FLAGS_RELEASE "-O2 -g0")
+    endif()
 	message(STATUS 
 		"Building Release (Speed) application with "
 		"flags: ${CMAKE_C_FLAGS_RELEASE}"

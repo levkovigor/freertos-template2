@@ -5,7 +5,6 @@
  *      Author: pbot
  */
 
-#if defined(freeRTOS)
 
 #include <freertos/include/freertos/FreeRTOS.h>
 #include <freertos/include/freertos/task.h>
@@ -69,6 +68,3 @@ void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer,
     *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
 }
 #endif
-
-#endif /* defined(FREERTOS) */
-

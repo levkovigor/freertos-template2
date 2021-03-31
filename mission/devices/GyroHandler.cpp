@@ -2,7 +2,7 @@
 #include "devicedefinitions/GyroPackets.h"
 
 #if defined(at91sam9g20)
-#include <sam9g20/core/CoreController.h>
+#include <bsp_sam9g20/core/CoreController.h>
 #endif
 
 #if OBSW_VERBOSE_LEVEL >= 1

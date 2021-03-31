@@ -64,7 +64,7 @@
     <booleanAttribute key="org.eclipse.cdt.dsf.gdb.UPDATE_THREADLIST_ON_SUSPEND" value="false"/>
     <intAttribute key="org.eclipse.cdt.launch.ATTR_BUILD_BEFORE_LAUNCH_ATTR" value="1"/>
     <stringAttribute key="org.eclipse.cdt.launch.COREFILE_PATH" value=""/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="_bin/sam9g20ek/bootloader/sdram-debug/sourcebl-secondstage-at91ek-sdram-debug.elf"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="build-Debug-BL2-AT91EK/sourcebl-at91-stage2"/>
     <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="sourceobsw"/>
     <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="false"/>
     <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.1667046970.80339050.1948333335.171413460"/>

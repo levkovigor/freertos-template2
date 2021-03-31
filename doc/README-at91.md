@@ -3,7 +3,7 @@
 ## Options to execute binaries on board
 
 The AT91SAM9G20-EK board is similar to the iOBC but lacks some of the peripherals
-located on the iOBC. Unless `IOBC=1` is specified in the build command,
+located on the iOBC. Unless `BOARD_IOBC=1` is specified in the build system generation command,
 the generated binary will be built for the AT91SAM9G20-EK development board.
 There are two options to flash the AT91 board with the built software:
 
@@ -53,13 +53,17 @@ Therefore, it is recommended to disable FreeRTOS.
 The following command can be used to build the first-stage bootloader
 
 ```sh
-make -f Makefile-Bootloader -j
+mkdir build-Mission-BL-AT91EK && cd build-Mission-BL-AT91EK
+cmake -DBOOTLOADER=ON -DCMAKE_BUILD_TYPE=MinSizeRel .. 
+cmake --build . -j
 ```
 
 The following command can be used to build the second-stage bootloader
 
 ```sh
-make -f Makefile-Bootloader TYPE=2 -j
+mkdir build-Debug-BL2-AT91EK && cd build-Debug-BL2-AT91EK
+cmake -DBOOTLOADER=ON -DBL_STAGE_TWO=ON -DCMAKE_BUILD_TYPE=Debug .. 
+cmake --build . -j
 ```
 
 The bootloaders can be uploaded to the NAND-Flash using either SAM-BA or the USB/RS232 interface 
@@ -122,7 +126,10 @@ project. Steps:
    xpm install --global @xpack-dev-tools/arm-none-eabi-gcc@latest
    ```
 
-   On Windows, the wndows build tools should be installed as well:
+   On Windows, MSYS2 should have been installed to allow Makefile build generation.
+   Otherwise, you can also install Windows Build Tools with `xpm` as well (and add the path
+   to the system environment variables as well)
+   
    ```sh
    xpm install --global @xpack-dev-tools/windows-build-tools@latest
    ```
@@ -134,8 +141,7 @@ project. Steps:
 4. Connect J-Link to USB port of host computer
 5. Connect J-Link to AT91SAM9G20-EK
 6. Power on AT91SAM9G20-EK
-8. Execute `make sdramCfg` to configure the sdram. Can be done by creating a 
-   new target: Right click project &rarr; Build Targets &rarr; Create..
+8. Execute `./sdramCfg.sh` to configure the sdram. Can be done in a shell like MinGW64
 
 <img src="./readme_img/at91/sdramcfg.png" width="30%">
 

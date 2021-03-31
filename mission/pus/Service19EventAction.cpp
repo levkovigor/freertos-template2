@@ -3,8 +3,8 @@
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/events/EventMessage.h>
 #include <fsfw/tmtcpacket/pus/TmPacketStored.h>
-#include <fsfwconfig/tmtc/apid.h>
-#include <fsfwconfig/tmtc/pusIds.h>
+#include <tmtc/apid.h>
+#include <tmtc/pusIds.h>
 #include <mission/pus/Service19EventAction.h>
 
 Service19EventAction::Service19EventAction(object_id_t objectId) :

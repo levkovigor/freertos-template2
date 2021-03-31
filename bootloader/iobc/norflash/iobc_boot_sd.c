@@ -5,14 +5,14 @@
 #include <bootloaderConfig.h>
 #include <fatfs_config.h>
 
-#include <sam9g20/common/CommonFRAM.h>
+#include <bsp_sam9g20/common/CommonFRAM.h>
 
 #include <hcc/api_hcc_mem.h>
 #include <at91/memories/sdmmc/MEDSdcard.h>
 #include <at91/utility/trace.h>
 
 #if USE_TINY_FS == 0
-#include <sam9g20/common/SDCardApi.h>
+#include <bsp_sam9g20/common/SDCardApi.h>
 #else
 #include <tinyfatfs/tff.h>
 #include <peripherals/pio/pio.h>
@@ -23,35 +23,48 @@ Media medias[MAX_LUNS];
 
 #include <string.h>
 
+/**
+ * Will be implemented in a common file because it is also used by NOR-Flash copy algorithm.
+ * @param slotType
+ * @return
+ */
+extern int handle_hamming_code_check(SlotType slotType, size_t image_size);
+int handle_hamming_code_result(int result);
 
 #if USE_TINY_FS == 0
-int copy_with_hcc_lib(BootSelect boot_select);
+int copy_with_hcc_lib(BootSelect boot_select, size_t* image_size);
 #else
 int copy_with_tinyfatfs_lib(BootSelect boot_select);
 #endif
 
 
-int copy_sdcard_binary_to_sdram(BootSelect boot_select) {
+int copy_sdcard_binary_to_sdram(BootSelect boot_select, bool use_hamming) {
     if(boot_select == BOOT_NOR_FLASH) {
         return -1;
     }
 #if USE_TINY_FS == 0
-    int result = copy_with_hcc_lib(boot_select);
+    size_t image_size = 0;
+    int result = copy_with_hcc_lib(boot_select, &image_size);
     if(result != 0) {
         /* Copy operation failed, we can not jump */
         return result;
     }
+
+    if(!use_hamming) {
+        return result;
+    }
+
     if(boot_select == BOOT_SD_CARD_0_SLOT_0) {
-        result = handle_hamming_code_check(SDC_0_SL_0);
+        result = handle_hamming_code_check(SDC_0_SL_0, image_size);
     }
     else if(boot_select == BOOT_SD_CARD_0_SLOT_1) {
-        result = handle_hamming_code_check(SDC_0_SL_1);
+        result = handle_hamming_code_check(SDC_0_SL_1, image_size);
     }
     else if(boot_select == BOOT_SD_CARD_1_SLOT_0) {
-        result = handle_hamming_code_check(SDC_1_SL_0);
+        result = handle_hamming_code_check(SDC_1_SL_0, image_size);
     }
     else if(boot_select == BOOT_SD_CARD_1_SLOT_1) {
-        result = handle_hamming_code_check(SDC_1_SL_1);
+        result = handle_hamming_code_check(SDC_1_SL_1, image_size);
     }
 
     return handle_hamming_code_result(result);
@@ -62,14 +75,22 @@ int copy_sdcard_binary_to_sdram(BootSelect boot_select) {
 
 
 #if USE_TINY_FS == 0
-int copy_with_hcc_lib(BootSelect boot_select) {
+int copy_with_hcc_lib(BootSelect boot_select, size_t* image_size) {
     VolumeId current_volume = SD_CARD_0;
     if (boot_select == BOOT_SD_CARD_1_SLOT_1 || boot_select == BOOT_SD_CARD_1_SLOT_0) {
         current_volume = SD_CARD_1;
     }
 
+    const char* slot_name = NULL;
+    if(boot_select == BOOT_SD_CARD_0_SLOT_1 || boot_select == BOOT_SD_CARD_0_SLOT_1) {
+        slot_name = SW_SLOT_1_NAME;
+    }
+    else {
+        slot_name = SW_SLOT_0_NAME;
+    }
+
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-    TRACE_INFO("Setting up HCC filesystem.\n\r");
+    TRACE_INFO("Setting up HCC filesystem\n\r");
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
     int result = open_filesystem();
@@ -89,29 +110,40 @@ int copy_with_hcc_lib(BootSelect boot_select) {
     result = change_directory(SW_REPOSITORY, true);
     if(result != F_NO_ERROR) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-        TRACE_WARNING("Target SW repository \"%s\" does not exist.\n\r", SW_REPOSITORY);
+        TRACE_WARNING("Target SW repository \"%s\" does not exist\n\r", SW_REPOSITORY);
 #endif
         /* not good, should not happen. */
         close_filesystem(true, true, current_volume);
         return -1;
     }
 
-    F_FILE* file = f_open(SW_SLOT_1_NAME, "r");
+    F_FILE* file = f_open(slot_name, "r");
     result = f_getlasterror();
     if (result != F_NO_ERROR) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-        TRACE_WARNING("f_open of file \"%s\" failed with code %d.\n\r",
-                SW_SLOT_1_NAME, result);
+        TRACE_WARNING("f_open of file \"%s\" failed with code %d\n\r", slot_name, result);
 #endif
         /* opening file failed! */
         close_filesystem(true, true, current_volume);
         return -1;
     }
 
-    size_t filelength = f_filelength(SW_SLOT_1_NAME);
+    ssize_t filelength = f_filelength(slot_name);
+    if(filelength <= 0) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        TRACE_ERROR("Copying image \"%s\" from SD-Card %u: File does not exist \n\r",
+                SW_SLOT_1_NAME, (unsigned int) current_volume);
+#endif
+        /* File does not exist or has an error */
+        close_filesystem(true, true, current_volume);
+        return -1;
+    }
+    if(image_size != NULL) {
+        *image_size = filelength;
+    }
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-    TRACE_INFO("Copying image \"%s\" from SD-Card %u to SDRAM\n\r", SW_SLOT_1_NAME,
+    TRACE_INFO("Copying image \"%s\" from SD card %u to SDRAM\n\r", slot_name,
             (unsigned int) current_volume);
 #endif
 

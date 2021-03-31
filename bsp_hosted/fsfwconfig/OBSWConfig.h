@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstddef>
 
+#define OBSW_ACS_TEST 							1
 #define OBSW_TRACK_FACTORY_ALLOCATION_SIZE      0
 #define OBSW_ADD_TEST_CODE                      1
 #define OBSW_PRINT_MISSED_DEADLINES             1
