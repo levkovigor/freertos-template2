@@ -1,6 +1,7 @@
 #  Setting up Eclipse environment for build targets
 
 ## General information
+
 Eclipse is a major IDE used for various programming languages. While it might
 be better known as an IDE for Java development, it is possible to develop
 C and C++ code (for Desktop or for microcontrollers) with the right plugins and 
@@ -23,9 +24,28 @@ properly for convenient development.
 
 ## Recommended steps
 
-Makefile projects are generally imported by using File &rarr; New &rarr; Other
-&rarr; Makefile project with existing code and then importing the folder cloned
-from git.
+The recommended steps show how to build `CMake` projects with Eclipse. The `CMake` build
+system generation still has to be done separately via the `CMake` GUI or via command line
+with the provided configuration scripts.
+
+### Setting up the cross compiler path
+
+It is not recommended anymore to add the cross-compile toolchain to the system environmental
+variables. Eclipse still requires access to utilities like `arm-none-eabi-gdb`. 
+
+The provided project files assume that the utility is contained inside a system environmental
+variable called `CROSS_COMPILE_PATH`.
+
+Developers should take care of setting this environmental variable either permanently or before
+starting Eclipse. On Windows, this can be done by simply creating a new environmental variables.
+On Unix systems, you can use the following code
+
+```sh
+export CROSS_COMPILE_PATH="<pathToCrossCompileBinaries>"
+```
+
+You can also add this to the `.profile` or `.bashrc` file and then `source` them
+to avoid having to rerun the command on each restart.
 
 ### Pre-Configured project
 
@@ -33,17 +53,16 @@ Perform following steps to use a pre-configured project.
 
 1. Copy the  files `.project` and `.cproject` inside the misc/eclipse folder 
    into the root of the cloned folder.
-2. Import the project by going to File &rarr; Import &rarr; Existing Projects into Workspace and selecting
-   the cloned folder.
+2. Import the project by going to File &rarr; Import &rarr; Existing Projects into Workspace and 
+   selecting the cloned folder.
   
-### Loading Lauch Configurations
+### Lauch Configurations
 
-It is recommended to load the pre-configured launch configurations
+Launch configuration were provided. These configurations use the build configuration provided
+by the `.cproject` file and perform steps like starting the `JLink` software or the 
+debugger.
 
-1. Import the launch configurations by going to File &rarr; Import &rarr; Run/Debug &rarr; Launch Configurations
-   and selecting the misc/eclipse folder. Import the launch configurations.
-
-## Alternative to pre-configured porject: Manual Configuration
+## Alternative to pre-configured project: Manual Configuration
 
 These steps should not be necessary when the pre-configured project files are used.
 
