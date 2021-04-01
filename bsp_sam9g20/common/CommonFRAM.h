@@ -122,7 +122,7 @@ typedef struct __attribute__((__packed__))  _CriticalDataBlock {
     uint8_t filler_tasks[2];
 } CriticalDataBlock;
 
-static const uint8_t CRITICAL_BLOCK_START_ADDR = 0x0;
+static const uint32_t CRITICAL_BLOCK_START_ADDR = 0x0;
 
 /* Software information offsets */
 static const uint8_t SOFTWARE_VERSION_ADDR =

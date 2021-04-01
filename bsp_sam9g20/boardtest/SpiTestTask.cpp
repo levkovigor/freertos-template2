@@ -13,26 +13,22 @@ extern "C" {
 #include <at91/peripherals/aic/aic.h>
 }
 
+#ifdef ISIS_OBC_G20
+#include <bsp_sam9g20/common/CommonFRAM.h>
+#include <hal/Storage/FRAM.h>
+#endif
+
 #include <bitset>
 #include <cmath>
 
 SpiTestTask::SpiTestTask(object_id_t objectId, SpiTestMode spiTestMode):
-		        SystemObject(objectId), spiTestMode(spiTestMode) {
-    ReturnValue_t result = RETURN_FAILED;
-    if(result != 0) {
-#if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::error << "SPIandFRAMtest: SPI_start returned " << (int)result << std::endl;
-#else
-#endif
-    }
+		                SystemObject(objectId), spiTestMode(spiTestMode) {
     // designated command byte. return largest value
     //writeData[0] = 'l';
-    for(uint8_t i=0; i<sizeof(writeData); i++) {
+    for(size_t i = 0; i < sizeof(writeData); i++) {
         writeData[i] = i;
         readData[i] = 0xFF;
     }
-
-    //debug << "SPI Test: Bus started." << std::endl;
 }
 
 SpiTestTask::~SpiTestTask() {
@@ -45,7 +41,7 @@ ReturnValue_t SpiTestTask::performOperation(uint8_t operationCode) {
         return HasReturnvaluesIF::RETURN_OK;
     }
 
-    //spiTestMode = SpiTestMode::BLOCKING;
+    spiTestMode = SpiTestMode::IOBC_FRAM;
 
     if(spiTestMode == SpiTestMode::BLOCKING) {
         performBlockingSpiTest(slave0_spi, 0);
@@ -65,6 +61,11 @@ ReturnValue_t SpiTestTask::performOperation(uint8_t operationCode) {
     else if(spiTestMode == SpiTestMode::AT91_LIB_BLOCKING or
             spiTestMode == SpiTestMode::AT91_LIB_DMA) {
         performAt91LibTest();
+    }
+    else if(spiTestMode == SpiTestMode::IOBC_FRAM) {
+#ifdef ISIS_OBC_G20
+        iobcFramTest();
+#endif
     }
     return RETURN_OK;
 }
@@ -194,7 +195,7 @@ void SpiTestTask::performBlockingGyroTest() {
     if(result != 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::warning << "SPI Test 2: SPI_writeRead returned: " << static_cast<int>(result)
-	                    << std::endl;
+	                            << std::endl;
 #else
 #endif
     }
@@ -697,3 +698,75 @@ void SpiTestTask::spiIrqHandler(At91SpiBuses bus, At91TransferStates state, void
         }
     }
 }
+
+#ifdef ISIS_OBC_G20
+void SpiTestTask::iobcFramTest() {
+    int retval = 0;
+    At91Npcs cs = At91Npcs::NPCS_0;
+    At91SpiBuses bus = At91SpiBuses::SPI_BUS_0;
+
+    /* This code was used to determine SPI properties used by ISIS */
+    //    retval = FRAM_start();
+    //    if(retval) {};
+    //    retval = FRAM_read(readData, 0x0, 10);
+    //    /* Value: 4098 -> SPI Mode 0 with NCPHA = 1 and SCBR = 0x10 */
+    //    uint32_t framCsr = AT91C_BASE_SPI0->SPI_CSR[0];
+    //    /* 8.256 MHz Speed */
+    //    uint32_t framBaud = BOARD_MCK / 0x10;
+    //    uint32_t scbrTest = SPI_SCBR(framBaud, BOARD_MCK) >> 8;
+    //    (void) scbrTest;
+    //    /* Value: 4279107585 -> DLYBCS = 0xff */
+    //    uint32_t framMr = AT91C_BASE_SPI0->SPI_MR;
+    //    if(framCsr) {};
+    //    if(framMr) {};
+
+    /* For some reason, our custom implementation requires a little bit of dlybct in contrast
+    to the ISIS implementation */
+    retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, 8'256'000, 10, 0, 0xff);
+    if(retval != 0) {
+        sif::printWarning("SPI config failed with %d\n", retval);
+    }
+
+    //uint32_t customCsr = AT91C_BASE_SPI0->SPI_CSR[0];
+    //uint32_t customMr = AT91C_BASE_SPI0->SPI_MR;
+    uint8_t statusRegWrite = 0x01;
+    uint8_t statusRegRead = 0x05;
+
+    uint8_t statusRegValue = 0b0100'0000;
+    writeData[0] = statusRegWrite;
+    writeData[1] = statusRegValue;
+    size_t sendLen = 2;
+    retval = at91_spi_blocking_transfer(bus, cs, writeData, readData, sendLen);
+    if(retval != 0) {
+        sif::printWarning("SPI write failed with %d\n", retval);
+    }
+
+    writeData[0] = statusRegRead;
+    writeData[1] = 0x0;
+    retval = at91_spi_blocking_transfer(bus, cs, writeData, readData, sendLen);
+    if(retval != 0) {
+        sif::printWarning("SPI read failed with %d\n", retval);
+    }
+    sif::printInfo("FRAM Status Register: %d\n", readData[1]);
+
+    /*
+    INFO: | 20:17:23.005 | Printing critical block:
+    INFO: | 20:17:23.010 | Page 1: 0x03, 0x00, 0x02, 0x00
+    INFO: | 20:17:23.016 | Page 2: 0x7d, 0x00, 0x00, 0x00
+    INFO: | 20:17:23.022 | Page 3: 0x51, 0x41, 0x5e, 0x60
+     */
+    uint8_t readOpReg = 0x03;
+    uint32_t address = CRITICAL_BLOCK_START_ADDR;
+    sendLen = 32;
+    writeData[0] = readOpReg;
+    writeData[1] = (address >> 16) & 0xff;
+    writeData[2] = (address >> 8) & 0xff;
+    writeData[3] = address & 0xff;
+    memset(writeData + 4, 0, sendLen - 4);
+    retval = at91_spi_blocking_transfer(bus, cs, writeData, readData, sendLen);
+    if(retval != 0) {
+        sif::printWarning("SPI read failed with %d\n", retval);
+    }
+
+}
+#endif

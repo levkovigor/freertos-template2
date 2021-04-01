@@ -22,7 +22,8 @@ public:
 		GYRO,
 		MGM_LIS3,
 		AT91_LIB_BLOCKING,
-		AT91_LIB_DMA
+		AT91_LIB_DMA,
+		IOBC_FRAM
 	};
 
 	SpiTestTask(object_id_t objectId, SpiTestMode spiTestMode);
@@ -73,6 +74,11 @@ private:
 	SPIbus SPI_bus = bus1_spi; //!< SPI bus 0 can not be used on iOBC!
 	static void spiIrqHandler(At91SpiBuses bus, At91TransferStates state, void* args);
 	static volatile bool transferFinished;
+
+#ifdef ISIS_OBC_G20
+	void iobcFramTest();
+#endif
+
 };
 
 
