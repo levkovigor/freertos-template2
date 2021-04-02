@@ -184,7 +184,7 @@ void spi_irq_handler_bus_0() {
     bool finished = generic_spi_interrupt_handler(AT91C_BASE_SPI0, AT91C_ID_SPI0, &transferState);
     if(finished) {
         if(user_callback_bus_0 != NULL) {
-            user_callback_bus_1(SPI_BUS_0, transferState, user_args_bus_0);
+            user_callback_bus_0(SPI_BUS_0, transferState, user_args_bus_0);
         }
         AIC_DisableIT(AT91C_ID_SPI0);
     }
