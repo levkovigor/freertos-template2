@@ -16,6 +16,16 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
 
 uint32_t max_block_cycles = 99999;
 
+typedef struct {
+uint8_t dlybs;
+uint8_t dlybct;
+uint8_t dlybcs;
+uint8_t mode_val;
+uint32_t frequency;
+} CurrentSpiCfg;
+
+CurrentSpiCfg current_spi_cfg;
+
 bool bus_0_active = false;
 bool bus_1_active = false;
 
@@ -32,7 +42,7 @@ void* user_args_bus_1 = NULL;
 
 
 int at91_spi_configure_driver(At91SpiBuses spi_bus, At91Npcs npcs,
-        SpiModes spiMode, uint32_t frequency, uint8_t dlybct, uint8_t dlybs, uint8_t dlybcs) {
+        SpiModes spi_mode, uint32_t frequency, uint8_t dlybct, uint8_t dlybs, uint8_t dlybcs) {
     if(npcs > 3) {
         return -1;
     }
@@ -55,17 +65,22 @@ int at91_spi_configure_driver(At91SpiBuses spi_bus, At91Npcs npcs,
     }
 
     uint32_t mode_val = 0;
-    if(spiMode == SPI_MODE_0) {
+    if(spi_mode == SPI_MODE_0) {
         mode_val = AT91C_SPI_NCPHA;
     }
-    else if(spiMode == SPI_MODE_2) {
+    else if(spi_mode == SPI_MODE_2) {
         mode_val = AT91C_SPI_NCPHA | AT91C_SPI_CPOL;
     }
-    else if(spiMode == SPI_MODE_3) {
+    else if(spi_mode == SPI_MODE_3) {
         mode_val = AT91C_SPI_CPOL;
     }
     drv->SPI_CSR[npcs] = SPI_SCBR(frequency, BOARD_MCK) | mode_val
             | dlybct << 24 |  dlybs << 16;
+    current_spi_cfg.dlybcs = dlybcs;
+    current_spi_cfg.dlybct = dlybct;
+    current_spi_cfg.dlybs = dlybs;
+    current_spi_cfg.frequency = frequency;
+    current_spi_cfg.mode_val = mode_val;
     return 0;
 }
 
@@ -127,6 +142,13 @@ int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const ui
     if(retval != 0) {
         return retval;
     }
+    /* We need to reset the SPI peripheral each time before starting a non-blocking transfer.
+    We use the cached values to restore the configuration for the chip select */
+    uint32_t mr_cfg = current_spi_cfg.dlybcs << 24 | SPI_PCS(npcs) | AT91C_SPI_MSTR;
+    SPI_Configure(drv, id, mr_cfg);
+    SPI_Enable(drv);
+    drv->SPI_CSR[npcs] = SPI_SCBR(current_spi_cfg.frequency, BOARD_MCK) | current_spi_cfg.mode_val
+            | current_spi_cfg.dlybct << 24 |  current_spi_cfg.dlybs << 16;
     select_npcs(drv, id, npcs);
     if(spi_bus == SPI_BUS_0) {
         user_callback_bus_0 = finish_callback;
@@ -136,7 +158,6 @@ int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const ui
         user_callback_bus_1 = finish_callback;
         user_args_bus_1 = callback_args;
     }
-
     /* Enable all required interrupts sources */
     drv->SPI_IER = AT91C_SPI_TXBUFE | AT91C_SPI_RXBUFF | AT91C_SPI_ENDRX | AT91C_SPI_ENDTX |
             AT91C_SPI_MODF | AT91C_SPI_OVRES;
@@ -147,10 +168,9 @@ int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const ui
     if (drv->SPI_TCR == 0 && drv->SPI_RCR == 0) {
         drv->SPI_TPR = (unsigned int) send_buf;
         drv->SPI_TCR = transfer_len;
-        drv->SPI_PTCR = AT91C_PDC_TXTEN;
         drv->SPI_RPR = (unsigned int) recv_buf;
         drv->SPI_RCR = transfer_len;
-        drv->SPI_PTCR = AT91C_PDC_RXTEN;
+        drv->SPI_PTCR = AT91C_PDC_TXTEN | AT91C_PDC_RXTEN;
     }
     else {
         return -2;
@@ -237,6 +257,7 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
     }
     drv->SPI_IDR = disable_mask;
     if(rx_finished && tx_finished) {
+        drv->SPI_PTCR = AT91C_PDC_TXTDIS | AT91C_PDC_RXTDIS;
         if(state != NULL) {
             *state = SPI_SUCCESS;
         }
