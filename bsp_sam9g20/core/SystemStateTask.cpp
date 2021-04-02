@@ -221,7 +221,10 @@ void SystemStateTask::performStatsGeneration(InternalState csvOrPrint) {
 
     fileName.append(str, 3);
     fileName += ".csv";
-    sif::printInfo("%s\n", fileName);
+    csvCounter++;
+#if OBSW_VERBOSE_LEVEL >= 1
+    sif::printInfo("Generating CSV in %s\n", fileName.c_str());
+#endif
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     bool breakOnFinish = false;
     auto writeType = WriteCommand::WriteType::NEW_FILE;
@@ -259,6 +262,7 @@ void SystemStateTask::performStatsGeneration(InternalState csvOrPrint) {
             ipcStore->deleteData(storeId);
             break;
         }
+        // abhängig vom WriteType müssen hier 2 verschieden Commands gemacht werden
         CommandMessage fileCommand;
         FileSystemMessage::setCreateFileCommand(&fileCommand, storeId);
         result = MessageQueueSenderIF::sendMessage(queueId, &fileCommand);
