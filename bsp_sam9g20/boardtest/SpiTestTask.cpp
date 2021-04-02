@@ -702,7 +702,7 @@ void SpiTestTask::spiIrqHandler(At91SpiBuses bus, At91TransferStates state, void
 
 #ifdef ISIS_OBC_G20
 
-#define FRAM_PRINTOUT 0
+#define FRAM_PRINTOUT 1
 
 /* Test code for the CY15B104QI FRAM device */
 void SpiTestTask::iobcFramTest() {
@@ -906,7 +906,7 @@ void SpiTestTask::iobcFramTest() {
         while(not transferFinished) {}
     }
 #if FRAM_PRINTOUT
-    sif::printInfo("Read FRAM end, should be 5-1 (non-blocking)\n");
+    sif::printInfo("Read FRAM end, should be 1-5 (non-blocking)\n");
     arrayprinter::print(readData + 4, 5);
 #endif
 }

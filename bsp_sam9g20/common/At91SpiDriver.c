@@ -99,10 +99,10 @@ int at91_spi_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const uint8_
         return -1;
     }
     if(spi_bus == SPI_BUS_0 && !bus_0_active) {
-        return -2;
+        return -3;
     }
     if(spi_bus == SPI_BUS_1 && !bus_1_active) {
-        return -2;
+        return -3;
     }
     AT91PS_SPI drv = NULL;
     unsigned int id = 0;
@@ -122,7 +122,7 @@ int at91_spi_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const uint8_
     while ((drv->SPI_SR & AT91C_SPI_TXEMPTY) == 0) {
         block_limit_idx++;
         if(block_limit_idx == max_block_cycles) {
-            return -3;
+            return -2;
         }
     }
     uint32_t dummy = drv->SPI_RDR;
@@ -132,7 +132,7 @@ int at91_spi_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const uint8_
         while ((drv->SPI_SR & AT91C_SPI_RDRF) == 0) {
             block_limit_idx++;
             if(block_limit_idx == max_block_cycles) {
-                return -3;
+                return -2;
             }
         }
         *recv_buf = drv->SPI_RDR;
@@ -144,6 +144,32 @@ int at91_spi_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const uint8_
     return 0;
 }
 
+int at91_spi_configure_non_blocking_driver(At91SpiBuses spi_bus, uint8_t interrupt_priority) {
+    AT91PS_SPI drv = NULL;
+    unsigned int id = 0;
+    if(spi_bus == SPI_BUS_0 && !bus_0_active) {
+        return -3;
+    }
+    if(spi_bus == SPI_BUS_1 && !bus_1_active) {
+        return -3;
+    }
+    int retval = get_drv_handle(spi_bus, NPCS_0, &drv, &id);
+    if(retval != 0) {
+        return -1;
+    }
+    if(spi_bus == SPI_BUS_0 && !bus_0_aic_configured) {
+        AIC_DisableIT(id);
+        AIC_ConfigureIT(id, interrupt_priority, spi_irq_handler_bus_0);
+        bus_0_aic_configured = true;
+    }
+    else if(spi_bus == SPI_BUS_1 && !bus_1_aic_configured) {
+        AIC_DisableIT(id);
+        AIC_ConfigureIT(id, interrupt_priority, spi_irq_handler_bus_1);
+        bus_1_aic_configured = true;
+    }
+    return 0;
+}
+
 int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const uint8_t *send_buf,
         uint8_t *recv_buf, size_t transfer_len,
         void (*finish_callback)(At91SpiBuses bus, At91TransferStates state, void* args),
@@ -151,6 +177,13 @@ int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const ui
     if(send_buf == NULL || recv_buf == NULL) {
         return -1;
     }
+    if(spi_bus == SPI_BUS_0 && !bus_0_aic_configured) {
+        return -3;
+    }
+    if(spi_bus == SPI_BUS_1 && !bus_1_aic_configured) {
+        return -3;
+    }
+
     AT91PS_SPI drv = NULL;
     unsigned int id = 0;
     int retval = get_drv_handle(spi_bus, npcs, &drv, &id);
@@ -191,26 +224,6 @@ int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const ui
         return -2;
     }
     AIC_EnableIT(id);
-    return 0;
-}
-
-int at91_spi_configure_non_blocking_driver(At91SpiBuses spi_bus, uint8_t interrupt_priority) {
-    AT91PS_SPI drv = NULL;
-    unsigned int id = 0;
-    int retval = get_drv_handle(spi_bus, NPCS_0, &drv, &id);
-    if(retval != 0) {
-        return retval;
-    }
-    if(spi_bus == SPI_BUS_0 && !bus_0_aic_configured) {
-        AIC_DisableIT(id);
-        AIC_ConfigureIT(id, interrupt_priority, spi_irq_handler_bus_0);
-        bus_0_aic_configured = true;
-    }
-    else if(spi_bus == SPI_BUS_1 && !bus_1_aic_configured) {
-        AIC_DisableIT(id);
-        AIC_ConfigureIT(id, interrupt_priority, spi_irq_handler_bus_1);
-        bus_1_aic_configured = true;
-    }
     return 0;
 }
 
@@ -281,28 +294,6 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
     return finish;
 }
 
-int get_drv_handle(At91SpiBuses spi_bus, At91Npcs npcs, AT91PS_SPI* drv, unsigned int* id) {
-    if(drv == NULL || id == NULL) {
-        return -1;
-    }
-    if(spi_bus == SPI_BUS_0) {
-        *drv = AT91C_BASE_SPI0;
-        *id = AT91C_ID_SPI0;
-    }
-    else if(spi_bus == SPI_BUS_1) {
-        *drv = AT91C_BASE_SPI1;
-        *id = AT91C_ID_SPI1;
-    }
-    else {
-        return -1;
-    }
-
-    if(npcs > 3) {
-        return -1;
-    }
-    return 0;
-}
-
 void select_npcs(AT91PS_SPI drv, unsigned int id, At91Npcs npcs) {
     uint32_t cfg = drv->SPI_MR;
     // Clear PCS field
@@ -352,4 +343,54 @@ void internal_spi_reset(AT91PS_SPI drv, unsigned int id, At91Npcs npcs) {
     SPI_Enable(drv);
     drv->SPI_CSR[npcs] = SPI_SCBR(current_spi_cfg.frequency, BOARD_MCK) | current_spi_cfg.mode_val
             | current_spi_cfg.dlybct << 24 |  current_spi_cfg.dlybs << 16;
+}
+
+int at91_stop_driver(At91SpiBuses bus) {
+    AT91PS_SPI drv = NULL;
+    if(bus == SPI_BUS_0) {
+        if(bus_0_aic_configured) {
+            AIC_DisableIT(AT91C_ID_SPI0);
+            bus_0_aic_configured = false;
+        }
+        bus_0_active = false;
+        drv = AT91C_BASE_SPI0;
+    }
+    if(bus == SPI_BUS_1) {
+        if(bus_1_aic_configured) {
+            AIC_DisableIT(AT91C_ID_SPI1);
+            bus_1_aic_configured = false;
+        }
+        bus_1_active = false;
+        drv = AT91C_BASE_SPI1;
+    }
+    if(drv != NULL) {
+        SPI_Disable(drv);
+        // Execute a software reset of the SPI twice
+        drv->SPI_CR = AT91C_SPI_SWRST;
+        drv->SPI_CR = AT91C_SPI_SWRST;
+    }
+    return 0;
+}
+
+
+int get_drv_handle(At91SpiBuses spi_bus, At91Npcs npcs, AT91PS_SPI* drv, unsigned int* id) {
+    if(drv == NULL || id == NULL) {
+        return -1;
+    }
+    if(spi_bus == SPI_BUS_0) {
+        *drv = AT91C_BASE_SPI0;
+        *id = AT91C_ID_SPI0;
+    }
+    else if(spi_bus == SPI_BUS_1) {
+        *drv = AT91C_BASE_SPI1;
+        *id = AT91C_ID_SPI1;
+    }
+    else {
+        return -1;
+    }
+
+    if(npcs > 3) {
+        return -1;
+    }
+    return 0;
 }

@@ -53,7 +53,7 @@ int at91_spi_configure_driver(At91SpiBuses bus, At91Npcs npcs,
 
 /**
  * Configures the non-blocking driver by setting up the required interrupts and
- * enabling them.
+ * enabling them. Still requires a previous call to #at91_spi_configure_driver
  * @param spi_bus
  * @param interrupt_priority
  * @return
@@ -111,6 +111,13 @@ int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const ui
  */
 int at91_configure_csr(At91SpiBuses bus, At91Npcs npcs,
         SpiModes spi_mode, uint32_t frequency, uint8_t dlybct, uint8_t dlybs, uint8_t dlybcs);
+
+/**
+ * Stop the driver, disabling AIC interrupts where applicable, deactivating the SPI peripheral
+ * and resetting it.
+ * @return
+ */
+int at91_stop_driver(At91SpiBuses bus);
 
 #ifdef __cplusplus
 }
