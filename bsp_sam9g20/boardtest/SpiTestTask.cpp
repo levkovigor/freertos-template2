@@ -736,12 +736,13 @@ void SpiTestTask::iobcFramTest() {
 
     /* For some reason, our custom implementation requires a little bit of dlybct in contrast
     to the ISIS implementation */
+    /*
     unsigned int dlybs = SPI_DLYBS(10, BOARD_MCK);
     unsigned int dlybct = SPI_DLYBCT(65, BOARD_MCK);
     uint8_t dlybsField = dlybs >> 16;
     uint8_t dlybctField = dlybct >> 24;
-    retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, 8'256'000, dlybctField,
-            dlybsField, 0xff);
+    */
+    retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, 8'256'000, 25, 5, 0xff);
     if(retval != 0) {
         sif::printWarning("SPI config failed with %d\n", retval);
     }
@@ -776,6 +777,7 @@ void SpiTestTask::iobcFramTest() {
      */
     uint8_t readOpReg = 0x03;
     uint8_t writeOpReg = 0x02;
+    uint8_t writeEnableLatch = 0x06;
     uint32_t address = CRITICAL_BLOCK_START_ADDR;
     sendLen = 32;
     writeData[0] = readOpReg;
@@ -790,16 +792,21 @@ void SpiTestTask::iobcFramTest() {
 
     address = FRAM_END_ADDR - 5;
     sendLen = 5 + 4;
-    writeData[0] = 0x02;
+
+    writeData[0] = writeEnableLatch;
+    sendLen = 1;
+    retval = at91_spi_blocking_transfer(bus, cs, writeData, readData, sendLen);
+    writeData[0] = writeOpReg;
     writeData[1] = (address >> 16) & 0xff;
     writeData[2] = (address >> 8) & 0xff;
     writeData[3] = address & 0xff;
 
-    writeData[4] = 1;
-    writeData[5] = 2;
+    writeData[4] = 5;
+    writeData[5] = 4;
     writeData[6] = 3;
-    writeData[7] = 4;
-    writeData[8] = 5;
+    writeData[7] = 2;
+    writeData[8] = 1;
+    sendLen = 9;
     sif::printInfo("Writing 0-4 to FRAM end\n");
     retval = at91_spi_blocking_transfer(bus, cs, writeData, readData, sendLen);
     if(retval != 0) {
