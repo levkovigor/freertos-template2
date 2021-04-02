@@ -77,6 +77,7 @@ private:
 
 #ifdef ISIS_OBC_G20
 	void iobcFramTest();
+	static void spiCallback(At91SpiBuses bus, At91TransferStates state, void* args);
 #endif
 
 };

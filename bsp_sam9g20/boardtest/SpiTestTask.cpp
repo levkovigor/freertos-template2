@@ -700,6 +700,7 @@ void SpiTestTask::spiIrqHandler(At91SpiBuses bus, At91TransferStates state, void
 }
 
 #ifdef ISIS_OBC_G20
+/* Test code for the CY15B104QI FRAM device */
 void SpiTestTask::iobcFramTest() {
     int retval = 0;
     At91Npcs cs = At91Npcs::NPCS_0;
@@ -720,9 +721,20 @@ void SpiTestTask::iobcFramTest() {
     //    if(framCsr) {};
     //    if(framMr) {};
 
+    /* Write test data */
+    /*
+    retval = FRAM_start();
+    writeData[0] = 0;
+    writeData[1] = 1;
+    writeData[2] = 2;
+    writeData[3] = 3;
+    writeData[4] = 4;
+    retval = FRAM_writeAndVerify(writeData, FRAM_END_ADDR - 5, 5);
+    */
+
     /* For some reason, our custom implementation requires a little bit of dlybct in contrast
     to the ISIS implementation */
-    retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, 8'256'000, 10, 0, 0xff);
+    retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, 8'256'000, 15, 0, 0xff);
     if(retval != 0) {
         sif::printWarning("SPI config failed with %d\n", retval);
     }
@@ -768,5 +780,43 @@ void SpiTestTask::iobcFramTest() {
         sif::printWarning("SPI read failed with %d\n", retval);
     }
 
+    address = FRAM_END_ADDR - 5;
+    sendLen = 5 + 4;
+    writeData[0] = readOpReg;
+    writeData[1] = (address >> 16) & 0xff;
+    writeData[2] = (address >> 8) & 0xff;
+    writeData[3] = address & 0xff;
+    /*
+    writeData[1] = address & 0xff;
+    writeData[2] = (address >> 8) & 0xff;
+    writeData[3] = (address >> 16) & 0xff;
+    */
+    memset(writeData + 4, 0, sendLen - 4);
+    retval = at91_spi_blocking_transfer(bus, cs, writeData, readData, sendLen);
+    if(retval != 0) {
+        sif::printWarning("SPI read failed with %d\n", retval);
+    }
+    arrayprinter::print(readData + 4, 5);
+
+    address = CRITICAL_BLOCK_START_ADDR;
+    sendLen = 32;
+    writeData[0] = readOpReg;
+    writeData[1] = (address >> 16) & 0xff;
+    writeData[2] = (address >> 8) & 0xff;
+    writeData[3] = address & 0xff;
+    memset(writeData + 4, 0, sendLen - 4);
+    volatile bool transferFinished = false;
+    at91_spi_non_blocking_transfer(bus, cs, writeData, readData, sendLen, &spiCallback,
+            reinterpret_cast<void*>(const_cast<bool*>(&transferFinished)));
+    while(not transferFinished) {}
+    arrayprinter::print(readData + 4, 5);
 }
+
+void SpiTestTask::spiCallback(At91SpiBuses bus, At91TransferStates state, void *args) {
+    auto transferFinished = reinterpret_cast<volatile bool*>(args);
+    if(state == At91TransferStates::SPI_SUCCESS) {
+        *transferFinished = true;
+    }
+}
+
 #endif
