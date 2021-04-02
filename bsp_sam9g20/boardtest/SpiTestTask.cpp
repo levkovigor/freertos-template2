@@ -734,7 +734,7 @@ void SpiTestTask::iobcFramTest() {
 
     /* For some reason, our custom implementation requires a little bit of dlybct in contrast
     to the ISIS implementation */
-    retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, 8'256'000, 15, 0, 0xff);
+    retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, 8'256'000, 20, 5, 0xff);
     if(retval != 0) {
         sif::printWarning("SPI config failed with %d\n", retval);
     }
@@ -768,6 +768,7 @@ void SpiTestTask::iobcFramTest() {
     INFO: | 20:17:23.022 | Page 3: 0x51, 0x41, 0x5e, 0x60
      */
     uint8_t readOpReg = 0x03;
+    uint8_t writeOpReg = 0x02;
     uint32_t address = CRITICAL_BLOCK_START_ADDR;
     sendLen = 32;
     writeData[0] = readOpReg;
@@ -782,33 +783,57 @@ void SpiTestTask::iobcFramTest() {
 
     address = FRAM_END_ADDR - 5;
     sendLen = 5 + 4;
-    writeData[0] = readOpReg;
+    writeData[0] = writeOpReg;
     writeData[1] = (address >> 16) & 0xff;
     writeData[2] = (address >> 8) & 0xff;
     writeData[3] = address & 0xff;
+
+    writeData[4] = 0;
+    writeData[5] = 1;
+    writeData[6] = 2;
+    writeData[7] = 3;
+    writeData[8] = 4;
+    sif::printInfo("Writing 0-4 to FRAM end\n");
+    retval = at91_spi_blocking_transfer(bus, cs, writeData, readData, sendLen);
+    if(retval != 0) {
+        sif::printWarning("SPI write failed with %d\n", retval);
+    }
+
     /*
     writeData[1] = address & 0xff;
     writeData[2] = (address >> 8) & 0xff;
     writeData[3] = (address >> 16) & 0xff;
     */
+    writeData[0] = readOpReg;
     memset(writeData + 4, 0, sendLen - 4);
     retval = at91_spi_blocking_transfer(bus, cs, writeData, readData, sendLen);
     if(retval != 0) {
         sif::printWarning("SPI read failed with %d\n", retval);
     }
+    sif::printInfo("Reading FRAM end\n");
     arrayprinter::print(readData + 4, 5);
 
     address = CRITICAL_BLOCK_START_ADDR;
-    sendLen = 32;
+    sendLen = 10;
     writeData[0] = readOpReg;
     writeData[1] = (address >> 16) & 0xff;
     writeData[2] = (address >> 8) & 0xff;
     writeData[3] = address & 0xff;
     memset(writeData + 4, 0, sendLen - 4);
     volatile bool transferFinished = false;
-    at91_spi_non_blocking_transfer(bus, cs, writeData, readData, sendLen, &spiCallback,
+    retval = at91_spi_configure_non_blocking_driver(bus, 3);
+    if(retval != 0) {
+        sif::printWarning("SPI non-blocking config failed with %d\n", retval);
+    }
+    retval = at91_spi_non_blocking_transfer(bus, cs, writeData, readData, sendLen, &spiCallback,
             reinterpret_cast<void*>(const_cast<bool*>(&transferFinished)));
-    while(not transferFinished) {}
+    if(retval != 0) {
+        sif::printWarning("SPI non-blocking transfer failed with %d\n", retval);
+    }
+    else {
+        while(not transferFinished) {}
+    }
+    sif::printInfo("Reading critical block (non-blocking)\n");
     arrayprinter::print(readData + 4, 5);
 }
 
