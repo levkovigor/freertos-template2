@@ -5,6 +5,7 @@
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
+#include <fsfw/timemanager/Stopwatch.h>
 
 extern "C" {
 #include <board.h>
@@ -700,8 +701,12 @@ void SpiTestTask::spiIrqHandler(At91SpiBuses bus, At91TransferStates state, void
 }
 
 #ifdef ISIS_OBC_G20
+
+#define FRAM_PRINTOUT 0
+
 /* Test code for the CY15B104QI FRAM device */
 void SpiTestTask::iobcFramTest() {
+    Stopwatch stopwatch;
     int retval = 0;
     At91Npcs cs = At91Npcs::NPCS_0;
     At91SpiBuses bus = At91SpiBuses::SPI_BUS_0;
@@ -742,7 +747,8 @@ void SpiTestTask::iobcFramTest() {
     uint8_t dlybsField = dlybs >> 16;
     uint8_t dlybctField = dlybct >> 24;
     */
-    retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, 8'256'000, 25, 5, 0xff);
+
+    retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, 8'256'000, 15, 1, 0xff);
     if(retval != 0) {
         sif::printWarning("SPI config failed with %d\n", retval);
     }
@@ -767,7 +773,10 @@ void SpiTestTask::iobcFramTest() {
     if(retval != 0) {
         sif::printWarning("SPI read failed with %d\n", retval);
     }
+
+#if FRAM_PRINTOUT == 1
     sif::printInfo("FRAM Status Register: %d\n", readData[1]);
+#endif
 
     /*
     INFO: | 20:17:23.005 | Printing critical block:
@@ -807,7 +816,9 @@ void SpiTestTask::iobcFramTest() {
     writeData[7] = 2;
     writeData[8] = 1;
     sendLen = 9;
-    sif::printInfo("Writing 0-4 to FRAM end\n");
+#if FRAM_PRINTOUT == 1
+    sif::printInfo("Writing 5-1 to FRAM end\n");
+#endif
     retval = at91_spi_blocking_transfer(bus, cs, writeData, readData, sendLen);
     if(retval != 0) {
         sif::printWarning("SPI write failed with %d\n", retval);
@@ -824,9 +835,12 @@ void SpiTestTask::iobcFramTest() {
     if(retval != 0) {
         sif::printWarning("SPI read failed with %d\n", retval);
     }
+#if FRAM_PRINTOUT == 1
     sif::printInfo("Reading FRAM end\n");
     arrayprinter::print(readData + 4, 5);
+#endif
 
+    at91_configure_csr(bus, cs, SPI_MODE_0, 8'256'000, 0, 0, 0xff);
     address = CRITICAL_BLOCK_START_ADDR;
     sendLen = 10;
     writeData[0] = readOpReg;
@@ -847,8 +861,17 @@ void SpiTestTask::iobcFramTest() {
     else {
         while(not transferFinished) {}
     }
+#if FRAM_PRINTOUT == 1
     sif::printInfo("Read critical block (non-blocking)\n");
     arrayprinter::print(readData + 4, 5);
+#endif
+
+    writeData[0] = writeEnableLatch;
+    sendLen = 1;
+    retval = at91_spi_blocking_transfer(bus, cs, writeData, readData, sendLen);
+    if(retval != 0) {
+        sif::printWarning("SPI blocking transfer failed with %d\n", retval);
+    }
 
     address = FRAM_END_ADDR - 5;
     writeData[0] = writeOpReg;
@@ -871,8 +894,6 @@ void SpiTestTask::iobcFramTest() {
         while(not transferFinished) {}
     }
 
-    retval = at91_spi_blocking_transfer(bus, cs, writeData, readData, 9);
-
     writeData[0] = readOpReg;
     memset(writeData + 4, 0, 5);
     transferFinished = false;
@@ -884,8 +905,10 @@ void SpiTestTask::iobcFramTest() {
     else {
         while(not transferFinished) {}
     }
+#if FRAM_PRINTOUT
     sif::printInfo("Read FRAM end, should be 5-1 (non-blocking)\n");
     arrayprinter::print(readData + 4, 5);
+#endif
 }
 
 void SpiTestTask::spiCallback(At91SpiBuses bus, At91TransferStates state, void *args) {

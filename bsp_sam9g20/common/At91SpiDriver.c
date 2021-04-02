@@ -8,6 +8,12 @@
 
 #include <stddef.h>
 
+typedef enum {
+DMA,
+BLOCKING
+} InternalModes;
+
+void internal_spi_reset(AT91PS_SPI drv, unsigned int id, At91Npcs npcs);
 int get_drv_handle(At91SpiBuses spi_bus, At91Npcs npcs, AT91PS_SPI* drv, unsigned int* id);
 void select_npcs(AT91PS_SPI drv, unsigned int id, At91Npcs npcs);
 void spi_irq_handler_bus_0();
@@ -24,6 +30,7 @@ uint8_t mode_val;
 uint32_t frequency;
 } CurrentSpiCfg;
 
+InternalModes current_internal_mode;
 CurrentSpiCfg current_spi_cfg;
 
 bool bus_0_active = false;
@@ -103,6 +110,12 @@ int at91_spi_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const uint8_
     if(retval != 0) {
         return retval;
     }
+
+    if(current_internal_mode == DMA) {
+        internal_spi_reset(drv, id, npcs);
+        current_internal_mode = BLOCKING;
+    }
+
     /* Fixed peripheral select requires reprogramming the mode register */
     select_npcs(drv, id, npcs);
 
@@ -112,6 +125,8 @@ int at91_spi_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const uint8_
             return -3;
         }
     }
+    uint32_t dummy = drv->SPI_RDR;
+    (void) dummy;
     for(size_t idx = 0; idx < transfer_len; idx ++) {
         drv->SPI_TDR = *send_buf;
         while ((drv->SPI_SR & AT91C_SPI_RDRF) == 0) {
@@ -142,13 +157,13 @@ int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const ui
     if(retval != 0) {
         return retval;
     }
-    /* We need to reset the SPI peripheral each time before starting a non-blocking transfer.
-    We use the cached values to restore the configuration for the chip select */
-    uint32_t mr_cfg = current_spi_cfg.dlybcs << 24 | SPI_PCS(npcs) | AT91C_SPI_MSTR;
-    SPI_Configure(drv, id, mr_cfg);
-    SPI_Enable(drv);
-    drv->SPI_CSR[npcs] = SPI_SCBR(current_spi_cfg.frequency, BOARD_MCK) | current_spi_cfg.mode_val
-            | current_spi_cfg.dlybct << 24 |  current_spi_cfg.dlybs << 16;
+
+    if(current_internal_mode == BLOCKING) {
+        internal_spi_reset(drv, id, npcs);
+        current_internal_mode = DMA;
+    }
+
+    /* Fixed peripheral select requires reprogramming the mode register */
     select_npcs(drv, id, npcs);
     if(spi_bus == SPI_BUS_0) {
         user_callback_bus_0 = finish_callback;
@@ -298,4 +313,43 @@ void select_npcs(AT91PS_SPI drv, unsigned int id, At91Npcs npcs) {
 
 void at91_set_max_block_cycles(uint32_t block_cycles_) {
     max_block_cycles = block_cycles_;
+}
+
+int at91_configure_csr(At91SpiBuses bus, At91Npcs npcs,
+        SpiModes spi_mode, uint32_t frequency, uint8_t dlybct, uint8_t dlybs, uint8_t dlybcs) {
+    if(npcs > 3) {
+        return -1;
+    }
+    AT91PS_SPI drv = NULL;
+    unsigned int id = 0;
+    int retval = get_drv_handle(bus, npcs, &drv, &id);
+    if(retval != 0) {
+        return retval;
+    }
+    uint32_t mode_val = 0;
+    if(spi_mode == SPI_MODE_0) {
+        mode_val = AT91C_SPI_NCPHA;
+    }
+    else if(spi_mode == SPI_MODE_2) {
+        mode_val = AT91C_SPI_NCPHA | AT91C_SPI_CPOL;
+    }
+    else if(spi_mode == SPI_MODE_3) {
+        mode_val = AT91C_SPI_CPOL;
+    }
+    drv->SPI_CSR[npcs] = SPI_SCBR(frequency, BOARD_MCK) | mode_val
+            | dlybct << 24 |  dlybs << 16;
+    current_spi_cfg.dlybcs = dlybcs;
+    current_spi_cfg.dlybct = dlybct;
+    current_spi_cfg.dlybs = dlybs;
+    current_spi_cfg.frequency = frequency;
+    current_spi_cfg.mode_val = mode_val;
+    return 0;
+}
+
+void internal_spi_reset(AT91PS_SPI drv, unsigned int id, At91Npcs npcs) {
+    uint32_t mr_cfg = current_spi_cfg.dlybcs << 24 | SPI_PCS(npcs) | AT91C_SPI_MSTR;
+    SPI_Configure(drv, id, mr_cfg);
+    SPI_Enable(drv);
+    drv->SPI_CSR[npcs] = SPI_SCBR(current_spi_cfg.frequency, BOARD_MCK) | current_spi_cfg.mode_val
+            | current_spi_cfg.dlybct << 24 |  current_spi_cfg.dlybs << 16;
 }

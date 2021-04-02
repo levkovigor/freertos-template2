@@ -97,6 +97,21 @@ int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const ui
         void (*finish_callback)(At91SpiBuses bus, At91TransferStates state, void* args),
         void* callback_args);
 
+/**
+ * Configures the SPI properties for single slave selects without resetting and enabling
+ * the SPI peripheral.
+ * @param bus
+ * @param npcs
+ * @param spiMode
+ * @param frequency
+ * @param dlybct
+ * @param dlybs
+ * @param dlybcs
+ * @return
+ */
+int at91_configure_csr(At91SpiBuses bus, At91Npcs npcs,
+        SpiModes spi_mode, uint32_t frequency, uint8_t dlybct, uint8_t dlybs, uint8_t dlybcs);
+
 #ifdef __cplusplus
 }
 #endif
