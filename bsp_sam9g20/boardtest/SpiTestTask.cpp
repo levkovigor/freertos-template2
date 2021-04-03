@@ -717,6 +717,7 @@ void SpiTestTask::iobcFramTest() {
         }
     }
 
+
     uint8_t rec_buf[64] = {};
     size_t len = 10;
     uint32_t address = CRITICAL_BLOCK_START_ADDR;
@@ -737,6 +738,7 @@ void SpiTestTask::iobcFramTest() {
     sif::printInfo("Printing critical block 10 bytes\n");
     arrayprinter::print(rec_buf, len);
 
+    memset(rec_buf, 0, 10);
     transferState = At91TransferStates::IDLE;
     len = 64;
     retval = fram_read_no_os(rec_buf, address, len);
