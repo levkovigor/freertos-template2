@@ -29,12 +29,16 @@ public:
 	Base() = default;
 	virtual~ Base() {}
 	void basePublicInterface() {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		std::cout << "Hello, I'm the public base interface" << std::endl;
+#endif
 	}
 
 private:
 	void baseInternalFunction() {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		std::cout << "Hello, I'm the private base internal method" << std::endl;
+#endif
 	}
 };
 
@@ -43,7 +47,9 @@ public:
 	Child() = default;
 	virtual~ Child() {}
 	void childPublicInterface() {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		std::cout << "Hello, I'm the child base interface" << std::endl;
+#endif
 		basePublicInterface();
 	}
 
@@ -53,7 +59,9 @@ public:
 
 private:
 	void childInternalFunction() {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
 		std::cout << "Hello, I'm the child internal method" << std::endl;
+#endif
 	}
 };
 

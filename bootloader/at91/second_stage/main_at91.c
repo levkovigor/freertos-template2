@@ -1,37 +1,41 @@
 #include "../common/at91_boot_from_nand.h"
+#include "at91_boot_from_sd.h"
 #include <bootloaderConfig.h>
-#include <core/timer.h>
-#include <sam9g20/common/SRAMApi.h>
+#include <bootloader/core/timer.h>
 
-#include <board.h>
-#include <AT91SAM9G20.h>
-#include <led_ek.h>
-#include <board_memories.h>
-#include <peripherals/dbgu/dbgu.h>
-#include <peripherals/pio/pio.h>
-#include <peripherals/aic/aic.h>
-#include <peripherals/pio/pio.h>
-#include <cp15/cp15.h>
+#include <bsp_sam9g20/common/SRAMApi.h>
+#include <bsp_sam9g20/common/VirtualFRAMApi.h>
+#include <bsp_sam9g20/common/lowlevel.h>
+
+#include <at91/boards/at91sam9g20-ek/board.h>
+#include <at91/boards/at91sam9g20-ek/at91sam9g20/AT91SAM9G20.h>
+#include <at91/boards/at91sam9g20-ek/led_ek.h>
+#include <at91/boards/at91sam9g20-ek/board_memories.h>
+#include <at91/peripherals/pit/pit.h>
+#include <at91/peripherals/dbgu/dbgu.h>
+#include <at91/peripherals/pio/pio.h>
+#include <at91/peripherals/aic/aic.h>
+#include <at91/peripherals/pio/pio.h>
+#include <at91/peripherals/cp15/cp15.h>
+#include <at91/utility/trace.h>
 
 #include <hal/Timing/RTT.h>
-#include <privlib/hcc/include/hcc/api_hcc_mem.h>
-#include <sam9g20/common/SDCardApi.h>
 
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
-#include <utility/trace.h>
-#endif
-
+#if USE_FREERTOS == 1
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#endif
 
 #include <stdbool.h>
 #include <string.h>
 
-#define USE_FREERTOS            0
 extern void jump_to_sdram_application(uint32_t stack_ptr, uint32_t jump_address);
 
+#if USE_FREERTOS == 1
 void init_task(void* args);
 void handler_task(void * args);
+#endif
+
 int perform_bootloader_core_operation();
 void initialize_all_peripherals();
 void print_bl_info();
@@ -68,8 +72,9 @@ int at91_main()
     LED_Set(1);
 
 #if USE_FREERTOS == 0
-    /* Activate MS interrupt for timer base */
-    setup_timer_interrupt();
+    /* Activate MS interrupt for timer base. Again, consider disabling
+    because of issues with FreeRTOS */
+    //setup_timer_interrupt();
 
     /* Info printout */
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
@@ -83,7 +88,7 @@ int at91_main()
     perform_bootloader_core_operation();
 #else
     /* Right now, FreeRTOS is problematic, program crashes in portRESTORE_CONTEXT() when
-    branching to first task. */
+    branching to first task sometimes. It was not possible to solve this problem. */
     xTaskCreate(handler_task, "HANDLER_TASK", 1024, NULL, 4, &handler_task_handle_glob);
     xTaskCreate(init_task, "INIT_TASK", 1024, handler_task_handle_glob, 5, NULL);
     TRACE_INFO("Remaining FreeRTOS heap size: %d bytes.\n\r", xPortGetFreeHeapSize());
@@ -100,6 +105,7 @@ int at91_main()
     return 0;
 }
 
+#if USE_FREERTOS == 1
 void init_task(void * args) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     print_bl_info();
@@ -127,7 +133,6 @@ void init_task(void * args) {
     vTaskDelete(NULL);
 }
 
-
 void handler_task(void * args) {
     /* Wait for initialization to finish */
     vTaskSuspend(NULL);
@@ -137,6 +142,7 @@ void handler_task(void * args) {
 
     perform_bootloader_core_operation();
 }
+#endif
 
 void initialize_all_peripherals() {
 }
@@ -145,10 +151,12 @@ int perform_bootloader_core_operation() {
     LED_Clear(0);
     LED_Clear(1);
 
-    memset((void*) SDRAM_DESTINATION, 0, PRIMARY_IMAGE_RESERVED_SIZE);
-
-    copy_nandflash_binary_to_sdram(PRIMARY_IMAGE_NAND_OFFSET, PRIMARY_IMAGE_RESERVED_SIZE,
+    int result = 0;
+    //result = copy_sdc_image_to_sdram();
+    result = copy_nandflash_image_to_sdram(PRIMARY_IMAGE_NAND_OFFSET, PRIMARY_IMAGE_RESERVED_SIZE,
             PRIMARY_IMAGE_SDRAM_OFFSET, false);
+
+    if(result != 0) {};
 
     LED_Set(0);
 
@@ -160,8 +168,13 @@ int perform_bootloader_core_operation() {
 #if USE_FREERTOS == 1
     vTaskEndScheduler();
 #endif
-    CP15_Disable_I_Cache();
 
+    CP15_Disable_I_Cache();
+    /* This is a test section. If there are issues with the boot process
+    play around with the upper loop limit :-) */
+    for(int idx = 0; idx < 10000; idx ++) {
+        disable_pit_aic();
+    }
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
 
     /* Should never be reached */
@@ -175,28 +188,4 @@ void print_bl_info() {
     TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 }
 
-//VolumeId current_volume = SD_CARD_0;
-//int result = open_filesystem();
-//if(result != F_NO_ERROR) {
-//   /* not good, should not happen.
-//   hcc_mem_delete();
-//   return -1;
-//}
-//
-//result = select_sd_card(current_volume, true);
-//if(result != F_NO_ERROR) {
-//   /* not good, should not happen. */
-//   close_filesystem(true, true, current_volume);
-//   return -1;
-//}
-//
-//result = change_directory(SW_REPOSITORY, true);
-//if(result != F_NO_ERROR) {
-//#if BOOTLOADER_VERBOSE_LEVEL >= 1
-//   TRACE_WARNING("Target SW repository \"%s\" does not exist.\n\r", SW_REPOSITORY);
-//#endif
-//   /* not good, should not happen. */
-//   close_filesystem(true, true, current_volume);
-//   return -1;
-//}
 

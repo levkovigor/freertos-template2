@@ -5,26 +5,49 @@ development and software deployment.
 
 ## Basic instructions for Flatsat
 
-### Connecting to the flatsat computer
+### Setting up the VPN
 
 1. Set up VPN, [IRS  mail account](https://cube18.irs.uni-stuttgart.de/) required: 
-Write mail to zert@irs.uni-stuttgart.de to get OpenVPN configuration.
-2. Download OpenVPN and configure it with the configuratioon files.
- - Windows: Put configuration files into the OpenVPN config folder
-   or add the configuration in the OpenVPN GUI
- - Ubuntu: Install the ubuntu gnome version of OpenVPN. Then go to 
-   Network &rarr VPN and press + to add the .ovpn file configuration
-3. Connect to the VPN
-4. Connect to Flatsat (password needed, ask Jonas Burgdorf on Mattermost):
+After that, write mail to zert@irs.uni-stuttgart.de to get OpenVPN configuration files.
+
+#### Windows
+
+1. Download [OpenVPN](https://openvpn.net/download-open-vpn/) and install it and configure it with 
+the configuration files.
+2. Put OVPN configuration files into the OpenVPN config folder or add the configuration in the 
+OpenVPN GUI
+   
+#### Ubuntu
+
+1. Install the ubuntu gnome version of OpenVPN
+2. Store the VPN files into some folder, for example a VPN folder in the DOocuments folder
+3. Go to Settings &rarr; Network &rarr; VPN and press + &rarr; Import From File.
+4. Select the .ovpn file previous stored somewhere
+5. Now you can activate the VPN via the network button on the top right. Go to the VPN settings to 
+the IPv4 settings and set a tick at "Use this connection only resources on its network" to allow
+other services like Mattermost.
+   
+
+### Connecting to the flatsat computer
+   
+1. Connect to the VPN
+2. Connect to Flatsat (password needed, ask Jonas Burgdorf on Mattermost):
+
    ```sh
-   ssh (-X) source@flatsat.source.absatvirt.lw
+   ssh -X source@flatsat.source.absatvirt.lw
    ```
    
-   It is recommended to set up SSH configuration either in Eclipse (cross-platform
-   and convenient solution) via the terminal feature (terminal button at the top) or
-   via Putty or Unix Alias.
-   -X is optional for graphical applications
-   There is also another command for port forwarding
+   You can also use the IP address (this is required for PyCharm remote configurations)
+   
+   ```sh
+   ssh -X source@192.168.199.228
+   ```
+   
+3. It is recommended to set up SSH configuration either in Eclipse (cross-platform
+and convenient solution) via the terminal feature (terminal button at the top) or
+via Putty or Unix Alias. -X is optional for graphical applications.
+There is also another command for port forwarding:
+
    ```sh
    ssh -L <localPort>:localhost:<remotePort> source@flatsat.source.absatvirt.lw
    ```
@@ -34,20 +57,29 @@ Write mail to zert@irs.uni-stuttgart.de to get OpenVPN configuration.
 When building on the flatsat computer directly, it is recommended to add
 ADD\_CR=1 so that debug output is readable.
  
-Build software for debugging
+Build software for debugging:
+
 ```sh
-make debug IOBC=1 -j
+mkdir build-Mission-iOBC && cd build-Mission-iOBC
+cmake -DBOARD_IOBC=ON ..
+cmake --build . -j
+```
+Build release software:
+
+```sh
+mkdir build-Mission-iOBC && cd build-Mission-iOBC
+cmake -DBOARD_IOBC=ON -DCMAKE_BUILD_TYPE=Release ..
+cmake --build . -j
 ```
 
-Build release software
+Build bootloader:
+
 ```sh
-make mission IOBC=1 -j
+mkdir build-Mission-BL-iOBC && cd build-Mission-BL-iOBC 
+cmake -DBOOTLOADER=ON -DBOARD_IOBC=ON -DAT91_NO_FREERTOS_STARTER_FILE=ON -DCMAKE_BUILD_TYPE=Release .. 
+cmake --build . -j
 ```
 
-Build bootloader
-```sh
-make mission -f Makefile-Bootloader IOBC=1 -j
-```
 
 ### Setting up the Flatsat computer for remote deployment
 
@@ -110,10 +142,12 @@ gdb_iobc.sh
 ```
 
 `vor_iobc.sh` is a shell script which will run the GDB Server with the correct configuration. 
-It runs the following command:
+It runs the following command. Please note that the USB S/N number can change depending on J-Link
+adapter used:
 
 ```sh
-JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=261002202 -nogui
+JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=20127716
+ -nogui
 ```
 
 Then type `CTRL` + `B` and `d` to detach from the tmux session.
@@ -150,48 +184,45 @@ use `k` instead of `d` instead. In some cases, it can becomes necessary to resta
 the J-Link GDB Server. The GDB Server should be run with the following command
 
 ```sh
-JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=261002202 -nogui
+JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=20127716
+ -nogui
 ```
 
 Background processes can be listed with `ps -aux` and killed with `kill <processId>`
 
-3. Binary can be built locally with
-```sh
-make IOBC=1 virtual -j2
-```
-Or mission instead of virtual for mission build.
+3. Binary can be built locally with the `CMake` command shown above.
 
 4. Perform sdramCfg (only needs to be once after power cycle)
-```sh
-make sdramCfg
-```
+   ```sh
+   ./sdramCfg.sh
+   ```
 
 5. Connect to the tmux session which is listening to the USB port. 
 You can check whether the tmux exists with the command `tmux ls`.
 Follow the steps specified in the previous section if it does not exist
 to create a new tmux serial listener session.
 
-```sh
-tmux a -t 2_*
-```
+   ```sh
+   tmux a -t 2_*
+   ```
 
 6. Start GDB (the following steps can propably be automated, but I don't know how yet.)
 
-```sh
-arm-none-eabi-gdb
-```
+   ```sh
+   arm-none-eabi-gdb
+   ```
 
 7. Set target in 
 
-```sh
-target remote localhost:2331
-```
+   ```sh
+   target remote localhost:2331
+   ```
 
 8. Load .elf file
 
-```sh
-load _bin/iobc/<folder>/<binarary>.elf
-```
+   ```sh
+   load <build_folder>/<file_name>.elf
+   ```
 and press c to start
 
 ### Loading binaries built locally to the non-volatile memory
@@ -226,12 +257,12 @@ It is recommended to use the supplied launch configurations and project files
 instead of rerunning these steps.
 
 1. The current IP address of the flatsat computer is 
-192.128.199.228 . That address could change, and it can be checked
-by logging into the flatsat like explained above and running: 
+   192.168.199.228 . That address could change, and it can be checked
+   by logging into the flatsat like explained above and running: 
  
-```sh
-ifconfig    
-```
+   ```sh
+   ifconfig
+   ```
   
 It is also assumed the the JLinkGDBServerCLExe application
 is already running on the interface computer (either directly
@@ -243,13 +274,7 @@ pre-requisite and is explained in [AT91SAM9G20 getting started](../sam9g20/READM
 inside the build target section. If the launch configuration has been set-up, it is simply copied by
 clicking on "Duplicate" inside the launch configuration settings.
 
-3. Setup a new build configuration. The only different to the AT91 builds
-is the added `IOBC=1` make flag. Example make command for mission build
-on Windows
-```sh
-make WINDOWS=1 IOBC=1 mission -j
-```
-Don't forget to select the binary after building it initially
+3. Setup a new build configuration. The steps required in `CMake` are shown above.
 
 4. The debugger tab should be set up like show below. The IP address
 is the IP address of the iOBC interface computer and can be retrieved

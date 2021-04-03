@@ -4,7 +4,7 @@
 #include <fsfw/objectmanager/SystemObjectIF.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 
-namespace InitMission {
+namespace initmission {
 
 void printAddObjectError(const char* name, object_id_t objectId) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1

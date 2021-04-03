@@ -65,7 +65,7 @@ SECTIONS
         _efixed = .;
     } >sram0
     
-    	/* used for unwinding, can be useful for debugging  */  
+    /* used for unwinding, can be useful for debugging  */  
 	.ARM.extab   : AT(_efixedsec) 
     {  
 		*(.ARM.extab* .gnu.linkonce.armextab.*) 

@@ -4,10 +4,12 @@
 #include <cstdint>
 #include <cstddef>
 
-#define OBSW_TRACK_FACTORY_ALLOCATION_SIZE      0
-#define OBSW_ADD_TEST_CODE                      1
 #define OBSW_PRINT_MISSED_DEADLINES             1
 #define OBSW_VERBOSE_LEVEL                      1
+
+#define OBSW_ACS_TEST                           0
+#define OBSW_TRACK_FACTORY_ALLOCATION_SIZE      0
+#define OBSW_ADD_TEST_CODE                      1
 
 namespace config {
 static constexpr uint32_t MAX_STORED_TELECOMMANDS = 2000;
