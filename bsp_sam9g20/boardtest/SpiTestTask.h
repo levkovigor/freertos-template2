@@ -73,7 +73,7 @@ private:
 
 	SPIbus SPI_bus = bus1_spi; //!< SPI bus 0 can not be used on iOBC!
 	static void spiIrqHandler(At91SpiBuses bus, At91TransferStates state, void* args);
-	static volatile bool transferFinished;
+	static volatile At91TransferStates transferState;
 
 #ifdef ISIS_OBC_G20
 	void iobcFramTest();
