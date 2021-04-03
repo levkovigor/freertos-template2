@@ -45,6 +45,7 @@ void disable_pit_aic() {
     PIT_GetPIVR();
     PIT_DisableIT();
     PIT_Disable();
+    AT91C_BASE_PITC->PITC_PIMR = 0;
 }
 
 
