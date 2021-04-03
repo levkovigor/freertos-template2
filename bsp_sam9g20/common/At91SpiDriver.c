@@ -43,6 +43,7 @@ AT91PS_SPI current_drv = NULL;
 unsigned int current_spi_id = 0;
 At91Npcs current_npcs;
 InternalModes current_internal_mode;
+
 CurrentSpiCfg current_spi_cfg;
 
 bool bus_0_active = false;
@@ -53,13 +54,13 @@ bool bus_1_aic_configured = false;
 
 volatile bool tx_finished = false;
 volatile bool rx_finished = false;
-volatile bool write_only = false;
-volatile bool read_only = false;
+volatile InternalReception current_internal_reception = WRITE_AND_READ;
+volatile InternalReception next_internal_reception = WRITE_AND_READ;
 
-at91_user_callback_t user_callback_bus_0 = NULL;
-void* user_args_bus_0 = NULL;
-at91_user_callback_t user_callback_bus_1 = NULL;
-void* user_args_bus_1 = NULL;
+volatile at91_user_callback_t user_callback_bus_0 = NULL;
+volatile void* user_args_bus_0 = NULL;
+volatile at91_user_callback_t user_callback_bus_1 = NULL;
+volatile void* user_args_bus_1 = NULL;
 
 /* Dumy buffer to shift out DMA replies for write only operations */
 uint8_t dummy_buf[2][32] = {};
@@ -219,11 +220,11 @@ int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const ui
 
     uint8_t* recv_ptr = NULL;
     if(recv_buf == NULL) {
-        write_only = true;
+        current_internal_reception = WRITE_ONLY;
         recv_ptr = dummy_buf[current_dummy_buf];
     }
     else {
-        write_only = false;
+        current_internal_reception = WRITE_AND_READ;
         recv_ptr = recv_buf;
     }
 
@@ -245,12 +246,11 @@ int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const ui
     current_drv = drv;
     current_npcs = npcs;
     current_spi_id = id;
+
     /* Enable all required interrupts sources */
     drv->SPI_IER = AT91C_SPI_TXBUFE | AT91C_SPI_RXBUFF | AT91C_SPI_ENDRX | AT91C_SPI_ENDTX |
             AT91C_SPI_MODF | AT91C_SPI_OVRES;
-    if(!write_only) {
-        rx_finished = false;
-    }
+    rx_finished = false;
     tx_finished = false;
     /* This driver currently only supports one consecutive transfer.
     DMA pointer and size registers are assigned here. */
@@ -259,7 +259,7 @@ int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const ui
         drv->SPI_TCR = transfer_len;
         drv->SPI_RPR = (unsigned int) recv_ptr;
         /* Shift out data into dummy buffer */
-        if(write_only) {
+        if(current_internal_reception == WRITE_ONLY) {
             drv->SPI_RCR = sizeof(dummy_buf[0]);
             drv->SPI_RNCR = sizeof(dummy_buf[0]);
             current_dummy_buf = !current_dummy_buf;
@@ -282,18 +282,37 @@ int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const ui
 void at91_add_second_transfer(const uint8_t* second_send_buf, uint8_t* second_recv_buf,
         size_t transfer_len) {
     if(current_drv != NULL) {
-        current_drv->SPI_TNPR = (unsigned int) second_send_buf;
-        current_drv->SPI_TNCR = transfer_len;
-        if(second_recv_buf != NULL) {
-            current_drv->SPI_RNPR = (unsigned int) second_recv_buf;
-            current_drv->SPI_RNCR = transfer_len;
+        size_t next_size = transfer_len;
+        if(second_send_buf == NULL || second_recv_buf == NULL) {
+            if(transfer_len >= sizeof(dummy_buf[0])) {
+                next_size = sizeof(dummy_buf[0]);
+            }
         }
-        /* Shift out data into dummy buffer */
-        else if(current_drv->SPI_RCR == 0) {
-            current_drv->SPI_RCR = sizeof(dummy_buf[0]);
-            current_drv->SPI_RNCR = sizeof(dummy_buf[0]);
+
+        /* Only shift zeros out */
+        if(second_send_buf == NULL) {
+            current_drv->SPI_TNPR = (unsigned int) dummy_buf[current_dummy_buf];
             current_dummy_buf = !current_dummy_buf;
+            next_internal_reception = READ_ONLY;
+        }
+        else {
+            current_drv->SPI_TNPR = (unsigned int) second_send_buf;
+        }
+        current_drv->SPI_TNCR = next_size;
+
+        /* Shift out data into dummy buffer */
+        if(second_recv_buf == NULL) {
             current_drv->SPI_RNPR = (unsigned int) dummy_buf[current_dummy_buf];
+            current_dummy_buf = !current_dummy_buf;
+            next_internal_reception = WRITE_ONLY;
+        }
+        else {
+            current_drv->SPI_RNPR = (unsigned int) second_recv_buf;
+        }
+        current_drv->SPI_RNCR = next_size;
+
+        if(second_send_buf != NULL && second_recv_buf != NULL) {
+            next_internal_reception = WRITE_AND_READ;
         }
     }
     at91_start_non_blocking_transfer(current_drv);
@@ -313,7 +332,7 @@ void spi_irq_handler_bus_0() {
     bool finished = generic_spi_interrupt_handler(AT91C_BASE_SPI0, AT91C_ID_SPI0, &transferState);
     if(finished) {
         if(user_callback_bus_0 != NULL) {
-            user_callback_bus_0(SPI_BUS_0, transferState, user_args_bus_0);
+            user_callback_bus_0(SPI_BUS_0, transferState, (void*) user_args_bus_0);
         }
         AIC_DisableIT(AT91C_ID_SPI0);
     }
@@ -324,7 +343,7 @@ void spi_irq_handler_bus_1() {
     bool finished = generic_spi_interrupt_handler(AT91C_BASE_SPI1, AT91C_ID_SPI1, &transferState);
     if(finished) {
         if(user_callback_bus_1 != NULL) {
-            user_callback_bus_1(SPI_BUS_1, transferState, user_args_bus_1);
+            user_callback_bus_1(SPI_BUS_1, transferState, (void*) user_args_bus_1);
         }
         AIC_DisableIT(AT91C_ID_SPI1);
     }
@@ -353,18 +372,39 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
         /* In the future, could be extended to fill second bank here to allow multiple
          transfers */
         /* tx_finished = true; */
-        disable_mask |= AT91C_SPI_ENDTX;
+        if(next_internal_reception != current_internal_reception) {
+            current_internal_reception = next_internal_reception;
+        }
+        if(current_internal_reception == READ_ONLY &&
+                !((status & AT91C_SPI_RXBUFF) == AT91C_SPI_RXBUFF) && drv->SPI_RCR != 0) {
+            if(drv->SPI_TCR == 0) {
+                drv->SPI_TPR = (unsigned int) dummy_buf[current_dummy_buf];
+                drv->SPI_TCR = sizeof(dummy_buf[0]);
+                current_dummy_buf = !current_dummy_buf;
+            }
+
+            if(drv->SPI_TNCR == 0) {
+                drv->SPI_TNPR = (unsigned int) dummy_buf[current_dummy_buf];
+                drv->SPI_TNCR = sizeof(dummy_buf[0]);
+                current_dummy_buf = !current_dummy_buf;
+            }
+        }
     }
     if((status & AT91C_SPI_ENDRX) == AT91C_SPI_ENDRX) {
         /* In the future, could be extended to fill second bank here to allow multiple
          transfers */
         /* rx_finished = true; */
-        if(write_only) {
-            current_dummy_buf = !current_dummy_buf;
-            drv->SPI_RNPR = (unsigned int) dummy_buf[current_dummy_buf];
-            drv->SPI_RNCR = sizeof(dummy_buf[0]);
+        if(next_internal_reception != current_internal_reception) {
+            current_internal_reception = next_internal_reception;
         }
-        disable_mask |= AT91C_SPI_ENDRX;
+        if(current_internal_reception == WRITE_ONLY &&
+                !((status & AT91C_SPI_TXBUFE) == AT91C_SPI_TXBUFE) && drv->SPI_TCR != 0) {
+            if(drv->SPI_RNCR == 0) {
+                drv->SPI_RNPR = (unsigned int) dummy_buf[current_dummy_buf];
+                drv->SPI_RNCR = sizeof(dummy_buf[0]);
+                current_dummy_buf = !current_dummy_buf;
+            }
+        }
     }
     if((status & AT91C_SPI_TXBUFE) == AT91C_SPI_TXBUFE) {
         tx_finished = true;
@@ -374,23 +414,43 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
         rx_finished = true;
         disable_mask |= AT91C_SPI_RXBUFF;
     }
-    drv->SPI_IDR = disable_mask;
+
     if(error) {
         drv->SPI_PTCR = AT91C_PDC_TXTDIS | AT91C_PDC_RXTDIS;
         finish = true;
     }
-    else if((write_only && tx_finished) || (!write_only && tx_finished && rx_finished)) {
-        if(write_only) {
-            drv->SPI_RNCR = 0;
-            drv->SPI_RCR = 0;
+    else if(current_internal_reception == WRITE_ONLY && tx_finished) {
+        drv->SPI_PTCR = AT91C_PDC_TXTDIS | AT91C_PDC_RXTDIS;
+        drv->SPI_RNCR = 0;
+        drv->SPI_RCR = 0;
+        finish = true;
+        if(state != NULL) {
+            *state = SPI_SUCCESS;
         }
+
+    }
+    else if(current_internal_reception == READ_ONLY && rx_finished) {
+        drv->SPI_PTCR = AT91C_PDC_TXTDIS | AT91C_PDC_RXTDIS;
+        drv->SPI_TNCR = 0;
+        drv->SPI_TCR = 0;
+        finish = true;
+        if(state != NULL) {
+            *state = SPI_SUCCESS;
+        }
+    }
+    else if(rx_finished && tx_finished) {
         drv->SPI_PTCR = AT91C_PDC_TXTDIS | AT91C_PDC_RXTDIS;
         if(state != NULL) {
             *state = SPI_SUCCESS;
         }
         finish = true;
-    }
 
+    }
+    if(finish) {
+        /* Enable all required interrupts sources */
+        drv->SPI_IDR = AT91C_SPI_TXBUFE | AT91C_SPI_RXBUFF | AT91C_SPI_ENDRX | AT91C_SPI_ENDTX |
+                AT91C_SPI_MODF | AT91C_SPI_OVRES;
+    }
     return finish;
 }
 

@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 static const uint32_t FRAM_SPI_SPEED = 8256000;
 static const At91SpiBuses FRAM_BUS = SPI_BUS_0;
@@ -16,13 +17,14 @@ static const uint8_t WRITE_OP_REG = 0x02;
 static const uint8_t READ_OP_REG = 0x03;
 
 
-at91_user_callback_t user_fram_callback = NULL;
-void* callback_user_args = NULL;
-volatile uint8_t* alloc_buf = NULL;
+volatile at91_user_callback_t user_fram_callback = NULL;
+volatile void* callback_user_args = NULL;
+volatile void* alloc_buf = NULL;
 
 uint32_t write_verify_addr = 0;
 size_t write_verify_len = 0;
 volatile bool write_verify_mode = false;
+
 
 void internal_fram_callback(At91SpiBuses bus, At91TransferStates state, void* args);
 int enable_writes();
@@ -74,26 +76,19 @@ int fram_read_no_os(uint8_t* rec_buf, uint32_t address, size_t len) {
     if(address + len > FRAM_END_ADDR) {
         return -1;
     }
-    /* I'd like to avoid dynamic memory allocation but then the driver would require a mode
-    where is switches to read-only after the first part of the transfer -> complexity
-     */
-    size_t total_transfer_len = len + 4;
-    uint8_t* write_buf = malloc(total_transfer_len);
-    memset(write_buf, 0, total_transfer_len);
+    uint8_t write_buf[4];
     write_buf[0] = READ_OP_REG;
     write_buf[1] = (address >> 16) & 0xff;
     write_buf[2] = (address >> 8) & 0xff;
     write_buf[3] = address & 0xff;
     uint8_t rec_dummy[4];
     int retval = at91_spi_non_blocking_transfer(FRAM_BUS, FRAM_NPCS, write_buf, rec_dummy, 4,
-            internal_fram_callback, callback_user_args, false);
+            user_fram_callback, (void*) callback_user_args, false);
     if(retval != 0) {
-        free(write_buf);
         return retval;
     }
 
-    at91_add_second_transfer(write_buf + 4 , rec_buf, len);
-    alloc_buf = write_buf;
+    at91_add_second_transfer(NULL, rec_buf, len);
     return 0;
 }
 
@@ -111,7 +106,7 @@ int fram_write_no_os(uint8_t* send_buf, uint32_t address, size_t len) {
     write_buf[2] = (address >> 8) & 0xff;
     write_buf[3] = address & 0xff;
     retval = at91_spi_non_blocking_transfer(FRAM_BUS, FRAM_NPCS, write_buf, NULL, 4,
-            internal_fram_callback, callback_user_args, false);
+            user_fram_callback, (void*) callback_user_args, false);
     if(retval != 0) {
         return retval;
     }
@@ -124,8 +119,9 @@ int fram_stop_no_os() {
 }
 
 void internal_fram_callback(At91SpiBuses bus, At91TransferStates state, void* args) {
-    if(alloc_buf != NULL) {
-        free((void*) alloc_buf);
-    }
-    user_fram_callback(bus, state, args);
+   if(user_fram_callback != NULL) {
+       user_fram_callback(bus, state, args);
+   }
 }
+
+

@@ -17,6 +17,7 @@ extern "C" {
 #ifdef ISIS_OBC_G20
 #include <bsp_sam9g20/common/CommonFRAM.h>
 #include <hal/Storage/FRAM.h>
+#include <bsp_sam9g20/common/FRAMNoOs.h>
 #endif
 
 #include <bitset>
@@ -633,7 +634,7 @@ void SpiTestTask::SPIcallback(SystemContext context, xSemaphoreHandle semaphore)
     }
 }
 
-volatile At91TransferStates SpiTestTask::transferState = At91TransferStates::SPI_SUCCESS;
+volatile At91TransferStates SpiTestTask::transferState = At91TransferStates::IDLE;
 
 void SpiTestTask::performAt91LibTest() {
     At91Npcs cs = At91Npcs::NPCS_0;
@@ -706,6 +707,54 @@ void SpiTestTask::spiIrqHandler(At91SpiBuses bus, At91TransferStates state, void
 
 /* Test code for the CY15B104QI FRAM device */
 void SpiTestTask::iobcFramTest() {
+    //iobcFramRawTest();
+    int retval = fram_start_no_os(&spiCallback,
+            reinterpret_cast<void*>(const_cast<At91TransferStates*>(&transferState)));
+    if(retval != 0) {
+        sif::printWarning("FRAM start (NO OS) failed!\n");
+    }
+    uint8_t rec_buf[64] = {};
+
+    size_t len = 10;
+    uint32_t address = CRITICAL_BLOCK_START_ADDR;
+    retval = fram_read_no_os(rec_buf, address, len);
+    if(retval != 0) {
+        sif::printWarning("FRAM read (NO OS) failed!\n");
+    }
+
+    while(true) {
+        if(transferState == At91TransferStates::SPI_SUCCESS) {
+            break;
+        }
+        else if(transferState == At91TransferStates::SPI_OVERRUN_ERROR) {
+            sif::printWarning("Overrun error!\n");
+            break;
+        }
+    }
+    sif::printInfo("Printing critical block 10 bytes\n");
+    arrayprinter::print(rec_buf, len);
+
+    transferState = At91TransferStates::IDLE;
+    len = 64;
+    retval = fram_read_no_os(rec_buf, address, len);
+    if(retval != 0) {
+        sif::printWarning("FRAM read (NO OS) failed!\n");
+    }
+
+    while(true) {
+        if(transferState == At91TransferStates::SPI_SUCCESS) {
+            break;
+        }
+        else if(transferState == At91TransferStates::SPI_OVERRUN_ERROR) {
+            sif::printWarning("Overrun error!\n");
+            break;
+        }
+    }
+    sif::printInfo("Printing critical block 64 bytes\n");
+    arrayprinter::print(rec_buf, len);
+}
+
+void SpiTestTask::iobcFramRawTest() {
     Stopwatch stopwatch;
     int retval = 0;
     At91Npcs cs = At91Npcs::NPCS_0;
@@ -932,7 +981,7 @@ void SpiTestTask::iobcFramTest() {
 }
 
 void SpiTestTask::spiCallback(At91SpiBuses bus, At91TransferStates state, void *args) {
-    auto transferState= reinterpret_cast<volatile At91TransferStates*>(args);
+    At91TransferStates* transferState = static_cast<At91TransferStates*>(args);
     if(transferState != nullptr) {
         *transferState = state;
     }

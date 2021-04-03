@@ -3,6 +3,10 @@
 
 #include "At91SpiDriver.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * This module allows use of the CY15B104QI FRAM device without FreeRTOS. No block
  * protection implemented for now.
@@ -21,5 +25,9 @@ void fram_assign_callback(at91_user_callback_t callback, void* args);
  * @return
  */
 int fram_stop_no_os();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SAM9G20_COMMON_FRAMNOOS_H_ */
