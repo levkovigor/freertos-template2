@@ -707,14 +707,17 @@ void SpiTestTask::spiIrqHandler(At91SpiBuses bus, At91TransferStates state, void
 
 /* Test code for the CY15B104QI FRAM device */
 void SpiTestTask::iobcFramTest() {
+    int retval = 0;
     //iobcFramRawTest();
-    int retval = fram_start_no_os(&spiCallback,
-            reinterpret_cast<void*>(const_cast<At91TransferStates*>(&transferState)));
-    if(retval != 0) {
-        sif::printWarning("FRAM start (NO OS) failed!\n");
+    if(oneshot) {
+        retval = fram_start_no_os(&spiCallback,
+                reinterpret_cast<void*>(const_cast<At91TransferStates*>(&transferState)));
+        if(retval != 0) {
+            sif::printWarning("FRAM start (NO OS) failed!\n");
+        }
     }
-    uint8_t rec_buf[64] = {};
 
+    uint8_t rec_buf[64] = {};
     size_t len = 10;
     uint32_t address = CRITICAL_BLOCK_START_ADDR;
     retval = fram_read_no_os(rec_buf, address, len);
@@ -752,6 +755,7 @@ void SpiTestTask::iobcFramTest() {
     }
     sif::printInfo("Printing critical block 64 bytes\n");
     arrayprinter::print(rec_buf, len);
+    transferState = At91TransferStates::IDLE;
 }
 
 void SpiTestTask::iobcFramRawTest() {

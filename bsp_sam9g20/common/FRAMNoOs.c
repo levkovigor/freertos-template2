@@ -19,14 +19,13 @@ static const uint8_t READ_OP_REG = 0x03;
 
 volatile at91_user_callback_t user_fram_callback = NULL;
 volatile void* callback_user_args = NULL;
-volatile void* alloc_buf = NULL;
 
 uint32_t write_verify_addr = 0;
 size_t write_verify_len = 0;
 volatile bool write_verify_mode = false;
 
 
-void internal_fram_callback(At91SpiBuses bus, At91TransferStates state, void* args);
+static void internal_fram_callback(At91SpiBuses bus, At91TransferStates state, void* args);
 int enable_writes();
 
 int fram_start_no_os(at91_user_callback_t callback, void* callback_args) {
@@ -81,7 +80,7 @@ int fram_read_no_os(uint8_t* rec_buf, uint32_t address, size_t len) {
     write_buf[1] = (address >> 16) & 0xff;
     write_buf[2] = (address >> 8) & 0xff;
     write_buf[3] = address & 0xff;
-    uint8_t rec_dummy[4];
+    uint8_t rec_dummy[4] = {};
     int retval = at91_spi_non_blocking_transfer(FRAM_BUS, FRAM_NPCS, write_buf, rec_dummy, 4,
             user_fram_callback, (void*) callback_user_args, false);
     if(retval != 0) {
@@ -120,7 +119,7 @@ int fram_stop_no_os() {
 
 void internal_fram_callback(At91SpiBuses bus, At91TransferStates state, void* args) {
    if(user_fram_callback != NULL) {
-       user_fram_callback(bus, state, args);
+       user_fram_callback(bus, state, (void*) callback_user_args);
    }
 }
 

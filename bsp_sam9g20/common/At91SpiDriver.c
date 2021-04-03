@@ -25,6 +25,8 @@ int get_drv_handle(At91SpiBuses spi_bus, At91Npcs npcs, AT91PS_SPI* drv, unsigne
 void select_npcs(AT91PS_SPI drv, unsigned int id, At91Npcs npcs);
 void spi_irq_handler_bus_0();
 void spi_irq_handler_bus_1();
+void reset_dma_regs(AT91PS_SPI drv);
+
 bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91TransferStates* state);
 
 uint32_t max_block_cycles = 99999;
@@ -247,6 +249,12 @@ int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const ui
     current_npcs = npcs;
     current_spi_id = id;
 
+    uint32_t dummy = drv->SPI_SR;
+    (void) dummy;
+    reset_dma_regs(drv);
+    dummy = drv->SPI_RDR;
+    (void) dummy;
+
     /* Enable all required interrupts sources */
     drv->SPI_IER = AT91C_SPI_TXBUFE | AT91C_SPI_RXBUFF | AT91C_SPI_ENDRX | AT91C_SPI_ENDTX |
             AT91C_SPI_MODF | AT91C_SPI_OVRES;
@@ -355,11 +363,14 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
     bool finish = false;
     bool error = false;
     if((status & AT91C_SPI_OVRES) == AT91C_SPI_OVRES) {
-        if(state != NULL) {
-            *state = SPI_OVERRUN_ERROR;
+        if(!((status & AT91C_SPI_TXBUFE) == AT91C_SPI_TXBUFE) &&
+                !((status & AT91C_SPI_RXBUFF) == AT91C_SPI_RXBUFF)) {
+            if(state != NULL) {
+                *state = SPI_OVERRUN_ERROR;
+                error = true;
+            }
         }
         disable_mask |= AT91C_SPI_OVRES;
-        error = true;
     }
     if((status & AT91C_SPI_MODF) == AT91C_SPI_MODF) {
         if(state != NULL) {
@@ -376,13 +387,7 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
             current_internal_reception = next_internal_reception;
         }
         if(current_internal_reception == READ_ONLY &&
-                !((status & AT91C_SPI_RXBUFF) == AT91C_SPI_RXBUFF) && drv->SPI_RCR != 0) {
-            if(drv->SPI_TCR == 0) {
-                drv->SPI_TPR = (unsigned int) dummy_buf[current_dummy_buf];
-                drv->SPI_TCR = sizeof(dummy_buf[0]);
-                current_dummy_buf = !current_dummy_buf;
-            }
-
+                !((status & AT91C_SPI_RXBUFF) == AT91C_SPI_RXBUFF) /*&& drv->SPI_RCR != 0*/) {
             if(drv->SPI_TNCR == 0) {
                 drv->SPI_TNPR = (unsigned int) dummy_buf[current_dummy_buf];
                 drv->SPI_TNCR = sizeof(dummy_buf[0]);
@@ -398,7 +403,7 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
             current_internal_reception = next_internal_reception;
         }
         if(current_internal_reception == WRITE_ONLY &&
-                !((status & AT91C_SPI_TXBUFE) == AT91C_SPI_TXBUFE) && drv->SPI_TCR != 0) {
+                !((status & AT91C_SPI_TXBUFE) == AT91C_SPI_TXBUFE) /*&& drv->SPI_TCR != 0*/) {
             if(drv->SPI_RNCR == 0) {
                 drv->SPI_RNPR = (unsigned int) dummy_buf[current_dummy_buf];
                 drv->SPI_RNCR = sizeof(dummy_buf[0]);
@@ -421,8 +426,6 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
     }
     else if(current_internal_reception == WRITE_ONLY && tx_finished) {
         drv->SPI_PTCR = AT91C_PDC_TXTDIS | AT91C_PDC_RXTDIS;
-        drv->SPI_RNCR = 0;
-        drv->SPI_RCR = 0;
         finish = true;
         if(state != NULL) {
             *state = SPI_SUCCESS;
@@ -431,8 +434,6 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
     }
     else if(current_internal_reception == READ_ONLY && rx_finished) {
         drv->SPI_PTCR = AT91C_PDC_TXTDIS | AT91C_PDC_RXTDIS;
-        drv->SPI_TNCR = 0;
-        drv->SPI_TCR = 0;
         finish = true;
         if(state != NULL) {
             *state = SPI_SUCCESS;
@@ -450,6 +451,7 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
         /* Enable all required interrupts sources */
         drv->SPI_IDR = AT91C_SPI_TXBUFE | AT91C_SPI_RXBUFF | AT91C_SPI_ENDRX | AT91C_SPI_ENDTX |
                 AT91C_SPI_MODF | AT91C_SPI_OVRES;
+        reset_dma_regs(drv);
     }
     return finish;
 }
@@ -553,4 +555,15 @@ int get_drv_handle(At91SpiBuses spi_bus, At91Npcs npcs, AT91PS_SPI* drv, unsigne
         return -1;
     }
     return 0;
+}
+
+void reset_dma_regs(AT91PS_SPI drv) {
+    drv->SPI_RNCR = 0;
+    drv->SPI_RCR = 0;
+    drv->SPI_TNCR = 0;
+    drv->SPI_TCR = 0;
+    drv->SPI_TPR = 0;
+    drv->SPI_RPR = 0;
+    drv->SPI_TNPR = 0;
+    drv->SPI_RNPR = 0;
 }
