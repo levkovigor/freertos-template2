@@ -39,7 +39,8 @@ typedef enum {
     IDLE,
     SPI_SUCCESS,
     SPI_OVERRUN_ERROR,
-    SPI_MODE_ERROR
+    SPI_MODE_ERROR,
+    SPI_TIMEOUT
 } At91TransferStates;
 
 typedef void (*at91_user_callback_t) (At91SpiBuses bus, At91TransferStates state, void* args);

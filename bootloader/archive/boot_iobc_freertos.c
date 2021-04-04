@@ -172,7 +172,7 @@ BootSelect determine_boot_select(bool* use_hamming) {
 
     if (bl_info_struct.software_update_available == FRAM_TRUE) {
         /* Slot 1 will be the update slot */
-        if (bl_info_struct.software_update_in_slot_0 == FRAM_TRUE) {
+        if (bl_info_struct.software_update_in_volume_0 == FRAM_TRUE) {
             curr_boot_select = BOOT_SD_CARD_0_SLOT_1;
             if(bl_info_struct.sdc0_image_slot1_reboot_counter > 3) {
                 /* Load flash image instead */
@@ -183,7 +183,7 @@ BootSelect determine_boot_select(bool* use_hamming) {
             }
 
         }
-        else if(bl_info_struct.software_update_in_slot_1 == FRAM_TRUE) {
+        else if(bl_info_struct.software_update_in_volume_1 == FRAM_TRUE) {
             curr_boot_select = BOOT_SD_CARD_1_SLOT_1;
             if(bl_info_struct.sdc1_image_slot1_reboot_counter > 3) {
                 /* Load flash image instead */

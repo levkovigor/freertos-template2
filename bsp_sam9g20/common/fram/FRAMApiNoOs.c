@@ -68,7 +68,7 @@ int fram_no_os_read_binary_size(SlotType slotType, size_t *binary_size) {
     }
 
     return fram_read_no_os((unsigned char*) binary_size, address,
-            sizeof(((CriticalDataBlock*)0)->nor_flash_binary_size));
+            sizeof(((CriticalDataBlock*)0)->bl_group.nor_flash_binary_size));
 }
 
 int fram_no_os_read_ham_size(SlotType slotType, size_t *ham_size) {
@@ -81,7 +81,7 @@ int fram_no_os_read_ham_size(SlotType slotType, size_t *ham_size) {
         return -4;
     }
     return fram_read_no_os((unsigned char*) ham_size, ham_size_addr,
-            sizeof(((CriticalDataBlock*)0)->nor_flash_hamming_code_size));
+            sizeof(((CriticalDataBlock*)0)->bl_group.nor_flash_hamming_code_size));
 }
 
 int fram_no_os_read_ham_code(SlotType slotType, uint8_t* buffer, const size_t max_buffer,

@@ -20,6 +20,7 @@
 
 #include <bsp_sam9g20/common/fram/FRAMApiNoOs.h>
 #include <bsp_sam9g20/common/At91SpiDriver.h>
+#include <hal/Timing/WatchDogTimerNoOS.h>
 
 #endif /* USE_FREERTOS == 0 */
 
@@ -42,9 +43,9 @@ int handle_hamming_code_result(int result);
 int increment_sdc_loc_reboot_counter(BootSelect boot_select, uint16_t* curr_reboot_counter);
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
 BootSelect determine_boot_select(bool* use_hamming);
+bool local_hamming_flag_check(BootSelect boot_select);
 
-void fram_callback(At91SpiBuses bus, At91TransferStates state, void* args);
-volatile At91TransferStates transfer_state = IDLE;
+uint8_t hamming_code_buf[IMAGES_HAMMING_RESERVED_SIZE];
 
 /**
  * This is the core function of the bootloader which handles the copy operation,
@@ -102,10 +103,15 @@ int perform_iobc_copy_operation_to_sdram() {
         boot_select = determine_boot_select(&use_hamming);
     }
 
+    if(use_hamming) {
+        use_hamming = local_hamming_flag_check(boot_select);
+    }
+
     if(boot_select == BOOT_NOR_FLASH) {
+
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         if(use_hamming) {
-            TRACE_INFO("Booting from NOR-Flash, global hamming code checks enabled\n\r");
+            TRACE_INFO("Booting from NOR-Flash with hamming code check\n\r");
         }
         else {
             TRACE_INFO("Booting from NOR-Flash without hamming code check\n\r");
@@ -138,7 +144,7 @@ int perform_iobc_copy_operation_to_sdram() {
     else {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         if(use_hamming) {
-            TRACE_INFO("Booting from SD card, global hamming code checks enabled\n\r");
+            TRACE_INFO("Booting from SD card with hamming code check\n\r");
         }
         else {
             TRACE_INFO("Booting from SD card without hamming code check\n\r");
@@ -167,37 +173,34 @@ int perform_iobc_copy_operation_to_sdram() {
 }
 
 BootSelect determine_boot_select(bool* use_hamming) {
-    BootloaderGroup bl_info_struct;
     BootSelect curr_boot_select = BOOT_NOR_FLASH;
-#if USE_FREERTOS == 1
-    int result = fram_read_bootloader_block(&bl_info_struct);
-#else
-    int result = fram_no_os_read_bootloader_block(&bl_info_struct);
-#endif
-    if (result != 0) {
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
-        TRACE_ERROR("determine_boot_select: FRAM could not be read!\n\r");
-#endif
+    At91TransferStates current_transfer_state = wait_on_transfer(9999);
+    if(current_transfer_state != SPI_SUCCESS) {
         fram_faulty = true;
+    }
+
+    if (fram_faulty) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        TRACE_ERROR("determine_boot_select: FRAM error!\n\r");
+#endif
         *use_hamming = false;
         return BOOT_NOR_FLASH;
     }
-    else {
-        if(use_hamming != NULL) {
-            if(bl_info_struct.global_hamming_flag == FRAM_TRUE) {
-                *use_hamming = true;
-            }
-            else {
-                *use_hamming = false;
-            }
+
+    if(use_hamming != NULL) {
+        if(bl_fram_block.global_hamming_flag == FRAM_TRUE) {
+            *use_hamming = true;
+        }
+        else {
+            *use_hamming = false;
         }
     }
 
-    if (bl_info_struct.software_update_available == FRAM_TRUE) {
+    if (bl_fram_block.software_update_available == FRAM_TRUE) {
         /* Slot 1 will be the update slot */
-        if (bl_info_struct.software_update_in_slot_0 == FRAM_TRUE) {
+        if (bl_fram_block.software_update_in_volume_0 == FRAM_TRUE) {
             curr_boot_select = BOOT_SD_CARD_0_SLOT_1;
-            if(bl_info_struct.sdc0_image_slot1_reboot_counter > 3) {
+            if(bl_fram_block.sdc0_image_slot1_reboot_counter > 3) {
                 /* Load flash image instead */
                 curr_boot_select = BOOT_NOR_FLASH;
             }
@@ -206,9 +209,9 @@ BootSelect determine_boot_select(bool* use_hamming) {
             }
 
         }
-        else if(bl_info_struct.software_update_in_slot_1 == FRAM_TRUE) {
+        else if(bl_fram_block.software_update_in_volume_1 == FRAM_TRUE) {
             curr_boot_select = BOOT_SD_CARD_1_SLOT_1;
-            if(bl_info_struct.sdc1_image_slot1_reboot_counter > 3) {
+            if(bl_fram_block.sdc1_image_slot1_reboot_counter > 3) {
                 /* Load flash image instead */
                 curr_boot_select = BOOT_NOR_FLASH;
             }
@@ -220,9 +223,9 @@ BootSelect determine_boot_select(bool* use_hamming) {
 
     /* If we reach this point, no SW update is to be loaded or the update boot counters are too high
     and we check the NOR-Flash image instead */
-    if(bl_info_struct.nor_flash_reboot_counter > 3) {
-        if(bl_info_struct.preferred_sd_card == 0xff || bl_info_struct.preferred_sd_card == 1 ||
-                bl_info_struct.preferred_sd_card == 0) {
+    if(bl_fram_block.nor_flash_reboot_counter > 3) {
+        if(bl_fram_block.preferred_sd_card == 0xff || bl_fram_block.preferred_sd_card == 1 ||
+                bl_fram_block.preferred_sd_card == 0) {
             curr_boot_select = BOOT_SD_CARD_0_SLOT_0;
         }
         else {
@@ -235,7 +238,7 @@ BootSelect determine_boot_select(bool* use_hamming) {
 
     /* Check the preferred SD card */
     if(curr_boot_select == BOOT_SD_CARD_0_SLOT_0) {
-        if(bl_info_struct.sdc0_image_slot0_reboot_counter > 3) {
+        if(bl_fram_block.sdc0_image_slot0_reboot_counter > 3) {
             curr_boot_select = BOOT_SD_CARD_1_SLOT_0;
         }
         else {
@@ -243,7 +246,7 @@ BootSelect determine_boot_select(bool* use_hamming) {
         }
     }
     else {
-        if(bl_info_struct.sdc1_image_slot0_reboot_counter > 3) {
+        if(bl_fram_block.sdc1_image_slot0_reboot_counter > 3) {
             curr_boot_select = BOOT_SD_CARD_0_SLOT_0;
         }
         else {
@@ -253,7 +256,7 @@ BootSelect determine_boot_select(bool* use_hamming) {
 
     /* Check the other SD card. If this does not work, boot from NOR-Flash without ECC check */
     if(curr_boot_select == BOOT_SD_CARD_0_SLOT_0) {
-        if(bl_info_struct.sdc0_image_slot0_reboot_counter > 3) {
+        if(bl_fram_block.sdc0_image_slot0_reboot_counter > 3) {
             if(use_hamming != NULL) {
                 *use_hamming = false;
             }
@@ -264,7 +267,7 @@ BootSelect determine_boot_select(bool* use_hamming) {
         }
     }
     else {
-        if(bl_info_struct.sdc1_image_slot0_reboot_counter > 3) {
+        if(bl_fram_block.sdc1_image_slot0_reboot_counter > 3) {
             if(use_hamming != NULL) {
                 *use_hamming = false;
             }
@@ -286,40 +289,69 @@ BootSelect determine_boot_select(bool* use_hamming) {
  */
 int copy_norflash_binary_to_sdram(size_t copy_size, bool use_hamming)
 {
+    int result = 0;
     // Initialize Nor
     //-------------------------------------------------------------------------
     // => the configuration was already done in LowLevelInit()
     // Transfert data from Nor to External RAM
     //-------------------------------------------------------------------------
 
+    /* For the OSless case, we try to read the hamming code in parallel to the memcpy operation */
+#if USE_FREERTOS == 0
+    At91TransferStates current_state;
+    current_state = wait_on_transfer(99999);
+    if(current_state != SPI_SUCCESS) {
+        use_hamming = false;
+    }
+    size_t ham_size = bl_fram_block.nor_flash_hamming_code_size;
+
+    if(use_hamming) {
+        /* Start DMA transfer in background to be run in parallel to the memcpy operation */
+        size_t size_read = 0;
+        current_state = fram_no_os_read_ham_code(FLASH_SLOT, hamming_code_buf,
+                sizeof(hamming_code_buf), 0, ham_size, &size_read);
+        if(current_state != SPI_SUCCESS || size_read != ham_size) {
+            use_hamming = false;
+        }
+    }
+#endif
+
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Copying NOR-Flash binary to SDRAM..\n\r");
 #endif
 
+#if USE_FREERTOS == 1
     /* This operation takes 100-200 milliseconds if the whole NOR-Flash is
     copied. But the watchdog is running in a separate task with the highest priority
     and we are using a pre-emptive scheduler so this should not be an issue. */
     memcpy((void*) SDRAM_DESTINATION, (const void*) BINARY_BASE_ADDRESS_READ, copy_size);
+#else
+    /* Now we need to split up the copy operation to kick the watchdog. Watchdog window
+    is 1ms to 50ms */
+    {
+        uint8_t bucket_num = 10;
+        size_t bucket_size = copy_size / bucket_num;
+        size_t bucket_rest = copy_size % bucket_num;
+        size_t offset = 0;
+        for(uint8_t idx = 0; idx < bucket_num; idx++) {
+            offset = idx * bucket_size;
+            memcpy((void*) SDRAM_DESTINATION + offset,
+                    (const void*) BINARY_BASE_ADDRESS_READ + offset, bucket_size);
+            WDT_forceKick();
+        }
+        offset = bucket_size * bucket_num;
+        memcpy((void*) SDRAM_DESTINATION + offset,
+                (const void*) BINARY_BASE_ADDRESS_READ + offset, bucket_rest);
+    }
+#endif /* USE_FREERTOS == 0 */
 
-    int result = 0;
-    /* Verify that the binary was copied properly. Ideally, we will also run a hamming
-    code check here in the future.
-    Check whether a hamming code check is necessary first. */
+    /* Now we can perform the hamming code check on the image in the SDRAM */
     if(use_hamming) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_INFO("Performing hamming code ECC check..\n\r");
 #endif
-        size_t image_size = 0;
-#if USE_FREERTOS == 1
-        result = fram_read_binary_size(FLASH_SLOT, &image_size);
-#else
-        result = fram_no_os_read_binary_size(FLASH_SLOT, &image_size);
-#endif
-        if(result != 0) {
-            /* Should really not happen, still jump to binary */
-            return 0;
-        }
-        else if (image_size == 0 || image_size == 0xffffffff) {
+        size_t image_size = bl_fram_block.nor_flash_binary_size;
+        if (image_size == 0 || image_size == 0xffffffff) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
             TRACE_WARNING("Flash image size %d invalid\n\r", image_size);
             /* Still jump to binary */
@@ -373,49 +405,29 @@ int handle_hamming_code_check(SlotType slotType, size_t image_size) {
         /* Invalid slot type */
         return -1;
     }
+    int result = 0;
 
-    size_t size_read = 0;
-    size_t ham_size = 0;
-    /* I am going to assume this was checked previously. For FreeRTOS version, we check again */
-    bool ham_flag = true;
-#if USE_FREERTOS == 1
-    int result = fram_read_ham_size(slotType, &ham_size, &ham_flag);
-#else
-    int result = fram_no_os_read_ham_size(slotType, &ham_size);
-#endif
-
-    if(result != 0) {
+    size_t ham_size = bl_fram_block.nor_flash_hamming_code_size;
+    if(ham_size == 0x0 || ham_size == 0xffffffff) {
+        /* Invalid hamming size */
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-        TRACE_WARNING("Could not read hamming size and flag, error code %d!\n\r", result);
+        TRACE_WARNING("Hamming code size invalid. Skipping hamming code check..\n\r");
 #endif
         return -1;
     }
 
-    /* Hamming check disabled */
-    if(!ham_flag) {
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
-        TRACE_INFO("Hamming check disabled locally. Booting directly\n\r");
-#endif
-        return -1;
-    }
-
-    /* We will allocate enough memory in the SDRAM to store the hamming code, which is stored
-    in the FRAM */
-    uint8_t* hamming_code = malloc(IMAGES_HAMMING_RESERVED_SIZE);
-
+    /* Assuming that the Hamming code was already read for the NO OS case */
 #if USE_FREERTOS == 1
-    result = fram_read_ham_code(slotType, hamming_code,
+    result = fram_read_ham_code(slotType, hamming_code_buf,
             IMAGES_HAMMING_RESERVED_SIZE, 0, ham_size, &size_read);
 #else
-    result = fram_no_os_read_ham_code(slotType, hamming_code,
-            IMAGES_HAMMING_RESERVED_SIZE, 0, ham_size, &size_read);
+    result = 0;
 #endif
 
     if(result != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_WARNING("Could not read hamming code, error code %d!\n\r", result);
 #endif
-        free(hamming_code);
         return -1;
     }
 
@@ -441,7 +453,7 @@ int handle_hamming_code_check(SlotType slotType, size_t image_size) {
     TRACE_INFO("Verifying %d bytes with %d hamming code bytes\n\r", size_to_check, ham_size);
 #endif
     uint8_t hamming_result = Hamming_Verify256x((unsigned char*) SDRAM_DESTINATION,
-            size_to_check, hamming_code);
+            size_to_check, hamming_code_buf);
     if(hamming_result == Hamming_ERROR_SINGLEBIT) {
         result = Hamming_ERROR_SINGLEBIT;
     }
@@ -454,7 +466,6 @@ int handle_hamming_code_check(SlotType slotType, size_t image_size) {
     else {
         result = 0;
     }
-    free(hamming_code);
     return result;
 }
 
@@ -507,6 +518,35 @@ void fram_callback(At91SpiBuses bus, At91TransferStates state, void* args) {
     }
 }
 
+bool local_hamming_flag_check(BootSelect boot_select) {
+    bool use_hamming = false;
+    if(boot_select == BOOT_NOR_FLASH) {
+        if(bl_fram_block.nor_flash_hamming_flag == FRAM_TRUE) {
+            use_hamming = true;
+        }
+    }
+    else if(boot_select == BOOT_SD_CARD_0_SLOT_0) {
+        if(bl_fram_block.sdc0_image_slot0_hamming_flag == FRAM_TRUE) {
+            use_hamming = true;
+        }
+    }
+    else if(boot_select == BOOT_SD_CARD_0_SLOT_1) {
+        if(bl_fram_block.sdc0_image_slot1_hamming_flag == FRAM_TRUE) {
+            use_hamming = true;
+        }
+    }
+    else if(boot_select == BOOT_SD_CARD_1_SLOT_0) {
+        if(bl_fram_block.sdc1_image_slot0_hamming_flag == FRAM_TRUE) {
+            use_hamming = true;
+        }
+    }
+    else if(boot_select == BOOT_SD_CARD_1_SLOT_1) {
+        if(bl_fram_block.sdc1_image_slot1_hamming_flag == FRAM_TRUE) {
+            use_hamming = true;
+        }
+    }
+    return use_hamming;
+}
 
 /**
  * Used internally to jump to SDRAM.

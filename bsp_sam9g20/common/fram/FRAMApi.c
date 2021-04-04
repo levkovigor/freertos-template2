@@ -442,7 +442,7 @@ int fram_read_binary_size(SlotType slotType, size_t *binary_size) {
     }
 
     return FRAM_read((unsigned char*) binary_size, address,
-            sizeof(((CriticalDataBlock*)0)->nor_flash_binary_size));
+            sizeof(((CriticalDataBlock*)0)->bl_group.nor_flash_binary_size));
 }
 
 int fram_set_img_ham_flag(SlotType slotType) {
@@ -545,7 +545,7 @@ int fram_write_ham_size(SlotType slotType, size_t ham_size) {
         return -3;
     }
     return FRAM_writeAndVerify((unsigned char*) &ham_size,
-            address, sizeof(((CriticalDataBlock*)0)->nor_flash_hamming_code_size));
+            address, sizeof(((CriticalDataBlock*)0)->bl_group.nor_flash_hamming_code_size));
 }
 
 int fram_read_ham_size(SlotType slotType, size_t *ham_size, bool *ham_flag_set) {
@@ -567,7 +567,7 @@ int fram_read_ham_size(SlotType slotType, size_t *ham_size, bool *ham_flag_set) 
         return -4;
     }
     return FRAM_read((unsigned char*) ham_size, ham_size_addr,
-            sizeof(((CriticalDataBlock*)0)->nor_flash_hamming_code_size));
+            sizeof(((CriticalDataBlock*)0)->bl_group.nor_flash_hamming_code_size));
 }
 
 int fram_write_ham_code(SlotType slotType, uint8_t *buffer, size_t current_offset,

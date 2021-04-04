@@ -34,6 +34,8 @@
 #else
 
 #include <bsp_sam9g20/common/fram/FRAMNoOs.h>
+#include <bsp_sam9g20/common/fram/FRAMApiNoOs.h>
+#include <hal/Timing/WatchDogTimerNoOS.h>
 
 #endif
 
@@ -52,13 +54,16 @@ static const uint32_t WATCHDOG_KICK_INTERVAL_MS = 15;
 
 #else
 
+BootloaderGroup bl_fram_block;
+void fram_callback(At91SpiBuses bus, At91TransferStates state, void* args);
+volatile At91TransferStates spi_transfer_state = IDLE;
+
 /* Forward declaration, defined in common source file */
 extern void fram_callback(At91SpiBuses bus, At91TransferStates state, void* args);
-extern volatile At91TransferStates transfer_state;
 
 void simple_bootloader();
 
-#endif
+#endif /* USE_FREERTOS == 0 */
 
 void perform_bootloader_check();
 void initialize_all_iobc_peripherals();
@@ -86,7 +91,10 @@ int boot_iobc_from_norflash() {
         TRACE_ERROR("Starting iOBC Watchdog Feed Task failed!\r\n");
 #endif
     }
-#endif /* USE_FREERTOS == 1 */
+#else
+    WDT_start();
+    WDT_forceKick();
+#endif /* USE_FREERTOS == 0 */
 
     //-------------------------------------------------------------------------
     // Enable I-Cache
@@ -116,6 +124,7 @@ int boot_iobc_from_norflash() {
     for(;;) {};
     return 0;
 }
+
 
 #if USE_FREERTOS == 1
 
@@ -165,28 +174,7 @@ void handler_task(void * args) {
 }
 
 #else /* USE_FREERTOS == 1 */
-
-void simple_bootloader() {
-    TRACE_INFO_WP("-- SOURCE Bootloader v%d.%d --\n\r", BL_VERSION, BL_SUBVERSION);
-    /* We don't need these */
-    // initialize_all_iobc_peripherals();
-    // setup_timer_interrupt();
-    int result = copy_norflash_binary_to_sdram(PRIMARY_IMAGE_RESERVED_SIZE, false);
-    if(result != 0) {
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
-        TRACE_WARNING("Copy operation error\n\r");
 #endif
-    }
-//    for(int idx = 0; idx < 10; idx++) {
-//        disable_pit_aic();
-//    }
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
-    TRACE_INFO("Jumping to SDRAM application\n\r");
-#endif
-    jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
-}
-
-#endif /* !USE_FREERTOS == 1 */
 
 void print_bl_info() {
     TRACE_INFO_WP("\n\rStarting FreeRTOS task scheduler.\n\r");
@@ -252,6 +240,32 @@ void perform_bootloader_check() {
     }
 }
 
+At91TransferStates wait_on_transfer(uint32_t block_cycles) {
+#if USE_FREERTOS == 0
+    At91TransferStates temp_transfer_state;
+    uint32_t wait_cycles = 0;
+    while(true) {
+        if(spi_transfer_state == SPI_SUCCESS) {
+            temp_transfer_state = spi_transfer_state;
+            break;
+        }
+        else if(spi_transfer_state == SPI_OVERRUN_ERROR) {
+            temp_transfer_state = spi_transfer_state;
+            break;
+        }
+        else if(wait_cycles == block_cycles) {
+            temp_transfer_state = SPI_TIMEOUT;
+            break;
+        }
+        wait_cycles++;
+    }
+    spi_transfer_state = IDLE;
+    return temp_transfer_state;
+#else
+    return IDLE;
+#endif
+}
+
 void initialize_all_iobc_peripherals() {
     RTT_start();
 
@@ -265,15 +279,61 @@ void initialize_all_iobc_peripherals() {
         fram_faulty = true;
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
     }
+    else {
+        result = fram_read_bootloader_block(&bl_info_struct);
+        if(result != 0) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+            TRACE_WARNING("initialize_iobc_peripherals: "
+                    "FRAM read op for BL block failed with code %d\n\r", retval);
+#endif
+        }
+    }
 #else
-    int retval = fram_start_no_os(&fram_callback, (void*) transfer_state,
+    int retval = fram_start_no_os(&fram_callback, (void*) spi_transfer_state,
             AT91C_AIC_PRIOR_HIGHEST - 2);
     if(retval != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_WARNING("initialize_iobc_peripherals: "
                 "Could not start FRAM (No OS), code %d\n\r", retval);
+        fram_faulty = true;
 #endif
+    }
+    else {
+        /* Start reading the bootloader block with DMA right away */
+        retval = fram_no_os_read_bootloader_block(&bl_fram_block);
+        if(retval != 0) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+            TRACE_WARNING("initialize_iobc_peripherals: "
+                    "FRAM read op for BL block failed with code %d\n\r", retval);
+#endif
+        }
     }
 #endif /* USE_FREERTOS == 1 */
 }
+
+
+#if USE_FREERTOS == 0
+
+void simple_bootloader() {
+    TRACE_INFO_WP("-- SOURCE Bootloader v%d.%d --\n\r", BL_VERSION, BL_SUBVERSION);
+    /* We don't need these */
+    // initialize_all_iobc_peripherals();
+    // setup_timer_interrupt();
+    int result = copy_norflash_binary_to_sdram(PRIMARY_IMAGE_RESERVED_SIZE, false);
+    if(result != 0) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        TRACE_WARNING("Copy operation error\n\r");
+#endif
+    }
+//    for(int idx = 0; idx < 10; idx++) {
+//        disable_pit_aic();
+//    }
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+    TRACE_INFO("Jumping to SDRAM application\n\r");
+#endif
+    jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
+}
+
+#endif /* USE_FREERTOS == 0 */
+
 
