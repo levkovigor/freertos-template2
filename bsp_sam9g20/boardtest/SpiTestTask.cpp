@@ -737,9 +737,10 @@ void SpiTestTask::iobcFramTest() {
     sif::printInfo("Printing critical block 10 bytes\n");
     arrayprinter::print(readData, len);
 
-    memset(readData, 0, 10);
-    transferState = At91TransferStates::IDLE;
     len = 64;
+    memset(readData, 0, len);
+    transferState = At91TransferStates::IDLE;
+
     retval = fram_read_no_os(readData, address, len);
     if(retval != 0) {
         sif::printWarning("FRAM read (NO OS) failed!\n");
@@ -777,7 +778,7 @@ void SpiTestTask::iobcFramTest() {
 //    sif::printInfo("Printing last 128 bytes of FRAM\n");
 //    arrayprinter::print(readData, len);
 
-    len = 32;
+    len = 64;
     for(size_t idx = 0; idx < len; idx ++) {
         writeData[idx] = idx + utilityCounter;
     }

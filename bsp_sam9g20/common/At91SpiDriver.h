@@ -13,6 +13,9 @@ extern "C" {
 #include <stddef.h>
 #include <stdbool.h>
 
+/* Size of the internal dummy buffer used to shift out zeros or receive unneeded reply into */
+#define SPI_DUMMY_BUFFER_SIZE 128
+
 typedef enum {
     SPI_MODE_0,
     SPI_MODE_1,

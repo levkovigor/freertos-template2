@@ -33,7 +33,7 @@ int fram_start_no_os(at91_user_callback_t callback, void* callback_args) {
         return -1;
     }
 
-    int retval = at91_spi_configure_driver(FRAM_BUS, FRAM_NPCS, FRAM_MODE, FRAM_SPI_SPEED, 25, 5, 10);
+    int retval = at91_spi_configure_driver(FRAM_BUS, FRAM_NPCS, FRAM_MODE, FRAM_SPI_SPEED, 10, 2, 0);
     if(retval != 0) {
         return retval;
     }

@@ -1,5 +1,6 @@
 #include <fsfw/storagemanager/PoolManager.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
+#include <fsfw/globalfunctions/arrayprinter.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Stopwatch.h>
 
@@ -23,6 +24,7 @@ extern "C" {
 
 #ifdef ISIS_OBC_G20
 #include <hal/Storage/NORflash.h>
+#include <hal/Storage/FRAM.h>
 #include <bsp_sam9g20/common/fram/FRAMApi.h>
 #include <hal/supervisor.h>
 #endif
@@ -63,6 +65,12 @@ ReturnValue_t AtmelTestTask::performOneShotAction() {
     //moveFileTest();
     //int32_t test = get_sram0_status_field();
     //TRACE_INFO("SRAM status field: %d\n\r", (int) test);
+//    uint8_t read_buf[128];
+//    int retval = FRAM_read(read_buf, FRAM_END_ADDR - 64, 64);
+//    if(retval != 0) {
+//        sif::printWarning("FRAM read failed with %d\n", retval);
+//    }
+//    arrayprinter::print(read_buf, 64);
 
 #ifdef ISIS_OBC_G20
     performIOBCTest();
