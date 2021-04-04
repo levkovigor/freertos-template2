@@ -1,7 +1,6 @@
 #include "At91SpiDriver.h"
 
 #include <board.h>
-#include <AT91SAM9G20.h>
 #include <at91/peripherals/spi/spi_at91.h>
 #include <at91/peripherals/aic/aic.h>
 #include <at91/utility/trace.h>
@@ -20,10 +19,8 @@ WRITE_ONLY,
 READ_ONLY
 } InternalReception;
 
-void internal_spi_reset(AT91PS_SPI drv, unsigned int id, At91Npcs npcs);
+
 void at91_start_non_blocking_transfer(AT91PS_SPI drv);
-int get_drv_handle(At91SpiBuses spi_bus, At91Npcs npcs, AT91PS_SPI* drv, unsigned int* id);
-void select_npcs(AT91PS_SPI drv, unsigned int id, At91Npcs npcs);
 void spi_irq_handler_bus_0();
 void spi_irq_handler_bus_1();
 void reset_dma_regs(AT91PS_SPI drv);
@@ -74,7 +71,7 @@ int at91_spi_configure_driver(At91SpiBuses spi_bus, At91Npcs npcs,
     }
     AT91PS_SPI drv = NULL;
     unsigned int id = 0;
-    int retval = get_drv_handle(spi_bus, npcs, &drv, &id);
+    int retval = at91_get_drv_handle(spi_bus, npcs, &drv, &id);
     if(retval != 0) {
         return retval;
     }
@@ -125,7 +122,7 @@ int at91_spi_blocking_transfer_non_interrupt(At91SpiBuses spi_bus, At91Npcs npcs
     }
     AT91PS_SPI drv = NULL;
     unsigned int id = 0;
-    int retval = get_drv_handle(spi_bus, npcs, &drv, &id);
+    int retval = at91_get_drv_handle(spi_bus, npcs, &drv, &id);
     if(retval != 0) {
         return retval;
     }
@@ -139,12 +136,12 @@ int at91_spi_blocking_transfer_non_interrupt(At91SpiBuses spi_bus, At91Npcs npcs
     }
 
     if(current_internal_mode == DMA) {
-        internal_spi_reset(drv, id, npcs);
+        at91_internal_spi_reset(drv, id, npcs);
         current_internal_mode = BLOCKING;
     }
 
     /* Fixed peripheral select requires reprogramming the mode register */
-    select_npcs(drv, id, npcs);
+    at91_select_npcs(drv, id, npcs);
 
     while ((drv->SPI_SR & AT91C_SPI_TXEMPTY) == 0) {
         block_limit_idx++;
@@ -182,7 +179,7 @@ int at91_spi_configure_non_blocking_driver(At91SpiBuses spi_bus, uint8_t interru
     if(spi_bus == SPI_BUS_1 && !bus_1_active) {
         return -3;
     }
-    int retval = get_drv_handle(spi_bus, NPCS_0, &drv, &id);
+    int retval = at91_get_drv_handle(spi_bus, NPCS_0, &drv, &id);
     if(retval != 0) {
         return -1;
     }
@@ -215,7 +212,7 @@ int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const ui
 
     AT91PS_SPI drv = NULL;
     unsigned int id = 0;
-    int retval = get_drv_handle(spi_bus, npcs, &drv, &id);
+    int retval = at91_get_drv_handle(spi_bus, npcs, &drv, &id);
     if(retval != 0) {
         return retval;
     }
@@ -231,12 +228,12 @@ int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const ui
     }
 
     if(current_internal_mode == BLOCKING) {
-        internal_spi_reset(drv, id, npcs);
+        at91_internal_spi_reset(drv, id, npcs);
         current_internal_mode = DMA;
     }
 
     /* Fixed peripheral select requires reprogramming the mode register */
-    select_npcs(drv, id, npcs);
+    at91_select_npcs(drv, id, npcs);
     if(spi_bus == SPI_BUS_0) {
         user_callback_bus_0 = finish_callback;
         user_args_bus_0 = callback_args;
@@ -476,7 +473,7 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
     return finish;
 }
 
-void select_npcs(AT91PS_SPI drv, unsigned int id, At91Npcs npcs) {
+void at91_select_npcs(AT91PS_SPI drv, unsigned int id, At91Npcs npcs) {
     uint32_t cfg = drv->SPI_MR;
     // Clear PCS field
     cfg &= 0xff00ffff;
@@ -495,7 +492,7 @@ int at91_configure_csr(At91SpiBuses bus, At91Npcs npcs,
     }
     AT91PS_SPI drv = NULL;
     unsigned int id = 0;
-    int retval = get_drv_handle(bus, npcs, &drv, &id);
+    int retval = at91_get_drv_handle(bus, npcs, &drv, &id);
     if(retval != 0) {
         return retval;
     }
@@ -519,7 +516,7 @@ int at91_configure_csr(At91SpiBuses bus, At91Npcs npcs,
     return 0;
 }
 
-void internal_spi_reset(AT91PS_SPI drv, unsigned int id, At91Npcs npcs) {
+void at91_internal_spi_reset(AT91PS_SPI drv, unsigned int id, At91Npcs npcs) {
     uint32_t mr_cfg = current_spi_cfg.dlybcs << 24 | SPI_PCS(npcs) | AT91C_SPI_MSTR;
     SPI_Configure(drv, id, mr_cfg);
     SPI_Enable(drv);
@@ -555,7 +552,7 @@ int at91_stop_driver(At91SpiBuses bus) {
 }
 
 
-int get_drv_handle(At91SpiBuses spi_bus, At91Npcs npcs, AT91PS_SPI* drv, unsigned int* id) {
+int at91_get_drv_handle(At91SpiBuses spi_bus, At91Npcs npcs, AT91PS_SPI* drv, unsigned int* id) {
     if(drv == NULL || id == NULL) {
         return -1;
     }

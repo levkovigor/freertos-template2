@@ -1,3 +1,4 @@
+#include "../At91SpiDriver.h"
 #include "FRAMNoOs.h"
 #include "CommonFRAM.h"
 #include <AT91SAM9G20.h>
@@ -33,11 +34,11 @@ int enable_writes();
 
 int fram_start_no_os_no_interrupt() {
     return at91_spi_configure_driver(FRAM_BUS, FRAM_NPCS, FRAM_MODE, FRAM_SPI_SPEED,
-            15, 1, 0);
+            20, 2, 0xff);
     fram_started = true;
 }
 
-int fram_start_no_os_interrupt(at91_user_callback_t callback, void* callback_args,
+int fram_start_no_os(at91_user_callback_t callback, void* callback_args,
         uint8_t interrupt_priority) {
     if(callback == NULL) {
         return -1;
@@ -111,7 +112,13 @@ int fram_read_no_os_blocking(uint8_t* rec_buf, uint32_t address, size_t len) {
     cmd_buf[2] = (address >> 8) & 0xff;
     cmd_buf[3] = address & 0xff;
 
-    AT91PS_SPI drv = AT91C_BASE_SPI0;
+    AT91PS_SPI drv = NULL;
+    unsigned int id = 0;
+    /* Fixed peripheral select requires reprogramming the mode register */
+    at91_get_drv_handle(FRAM_BUS, FRAM_NPCS, &drv, &id);
+    at91_select_npcs(drv, id, FRAM_NPCS);
+    at91_internal_spi_reset(drv, id, FRAM_NPCS);
+
     uint32_t dummy = drv->SPI_RDR;
     (void) dummy;
     for(size_t idx = 0; idx < len + 4; idx ++) {
@@ -119,12 +126,14 @@ int fram_read_no_os_blocking(uint8_t* rec_buf, uint32_t address, size_t len) {
             drv->SPI_TDR = cmd_buf[idx];
             while ((drv->SPI_SR & AT91C_SPI_RDRF) == 0);
             dummy = drv->SPI_RDR;
+            while ((drv->SPI_SR & AT91C_SPI_TDRE) == 0);
         }
         else {
             drv->SPI_TDR = 0;
             while ((drv->SPI_SR & AT91C_SPI_RDRF) == 0);
             *rec_buf = drv->SPI_RDR;
             rec_buf++;
+            while ((drv->SPI_SR & AT91C_SPI_TDRE) == 0);
         }
     }
     return 0;

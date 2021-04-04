@@ -9,6 +9,7 @@
 extern "C" {
 #endif
 
+#include <AT91SAM9G20.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
@@ -146,6 +147,10 @@ int at91_configure_csr(At91SpiBuses bus, At91Npcs npcs,
  * @return
  */
 int at91_stop_driver(At91SpiBuses bus);
+
+void at91_select_npcs(AT91PS_SPI drv, unsigned int id, At91Npcs npcs);
+int at91_get_drv_handle(At91SpiBuses spi_bus, At91Npcs npcs, AT91PS_SPI* drv, unsigned int* id);
+void at91_internal_spi_reset(AT91PS_SPI drv, unsigned int id, At91Npcs npcs);
 
 #ifdef __cplusplus
 }

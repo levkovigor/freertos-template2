@@ -77,7 +77,8 @@ private:
 
 #ifdef ISIS_OBC_G20
     static volatile At91TransferStates transferState;
-	void iobcFramTest();
+    void iobcFramTestBlocking();
+	void iobcFramTestInterrupt();
 	void iobcFramRawTest();
 	static void spiCallback(At91SpiBuses bus, At91TransferStates state, void* args);
 #endif

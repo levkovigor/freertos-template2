@@ -16,6 +16,7 @@ extern "C" {
 
 #ifdef ISIS_OBC_G20
 #include <bsp_sam9g20/common/fram/CommonFRAM.h>
+#include <bsp_sam9g20/common/fram/FRAMApiNoOs.h>
 #include <hal/Storage/FRAM.h>
 #include <bsp_sam9g20/common/fram/FRAMNoOs.h>
 #endif
@@ -24,7 +25,7 @@ extern "C" {
 #include <cmath>
 
 SpiTestTask::SpiTestTask(object_id_t objectId, SpiTestMode spiTestMode):
-		                SystemObject(objectId), spiTestMode(spiTestMode) {
+		                        SystemObject(objectId), spiTestMode(spiTestMode) {
     // designated command byte. return largest value
     //writeData[0] = 'l';
     for(size_t i = 0; i < sizeof(writeData); i++) {
@@ -66,7 +67,8 @@ ReturnValue_t SpiTestTask::performOperation(uint8_t operationCode) {
     }
     else if(spiTestMode == SpiTestMode::IOBC_FRAM) {
 #ifdef ISIS_OBC_G20
-        iobcFramTest();
+        iobcFramTestBlocking();
+        //iobcFramTestInterrupt();
 #endif
     }
     return RETURN_OK;
@@ -197,7 +199,7 @@ void SpiTestTask::performBlockingGyroTest() {
     if(result != 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::warning << "SPI Test 2: SPI_writeRead returned: " << static_cast<int>(result)
-	                            << std::endl;
+	                                    << std::endl;
 #else
 #endif
     }
@@ -706,7 +708,7 @@ void SpiTestTask::spiIrqHandler(At91SpiBuses bus, At91TransferStates state, void
 #define FRAM_PRINTOUT 1
 
 /* Test code for the CY15B104QI FRAM device */
-void SpiTestTask::iobcFramTest() {
+void SpiTestTask::iobcFramTestInterrupt() {
     int retval = 0;
     //iobcFramRawTest();
     if(oneshot) {
@@ -760,24 +762,24 @@ void SpiTestTask::iobcFramTest() {
     arrayprinter::print(readData, len);
     transferState = At91TransferStates::IDLE;
 
-//    memset(readData, 0, 128);
-//    len = 128;
-//    retval = fram_read_no_os(readData, FRAM_END_ADDR - len, len);
-//    if(retval != 0) {
-//        sif::printWarning("FRAM read (NO OS) failed!\n");
-//    }
-//    while(true) {
-//        if(transferState == At91TransferStates::SPI_SUCCESS) {
-//            break;
-//        }
-//        else if(transferState == At91TransferStates::SPI_OVERRUN_ERROR) {
-//            sif::printWarning("Overrun error!\n");
-//            break;
-//        }
-//    }
-//    transferState = At91TransferStates::IDLE;
-//    sif::printInfo("Printing last 128 bytes of FRAM\n");
-//    arrayprinter::print(readData, len);
+    //    memset(readData, 0, 128);
+    //    len = 128;
+    //    retval = fram_read_no_os(readData, FRAM_END_ADDR - len, len);
+    //    if(retval != 0) {
+    //        sif::printWarning("FRAM read (NO OS) failed!\n");
+    //    }
+    //    while(true) {
+    //        if(transferState == At91TransferStates::SPI_SUCCESS) {
+    //            break;
+    //        }
+    //        else if(transferState == At91TransferStates::SPI_OVERRUN_ERROR) {
+    //            sif::printWarning("Overrun error!\n");
+    //            break;
+    //        }
+    //    }
+    //    transferState = At91TransferStates::IDLE;
+    //    sif::printInfo("Printing last 128 bytes of FRAM\n");
+    //    arrayprinter::print(readData, len);
 
     len = 1024;
     for(size_t idx = 0; idx < len; idx ++) {
@@ -861,7 +863,7 @@ void SpiTestTask::iobcFramRawTest() {
     writeData[3] = 2;
     writeData[4] = 1;
     retval = FRAM_writeAndVerify(writeData, FRAM_END_ADDR - 5, 5);
-    */
+     */
 
     /* For some reason, our custom implementation requires a little bit of dlybct in contrast
     to the ISIS implementation */
@@ -870,7 +872,7 @@ void SpiTestTask::iobcFramRawTest() {
     unsigned int dlybct = SPI_DLYBCT(65, BOARD_MCK);
     uint8_t dlybsField = dlybs >> 16;
     uint8_t dlybctField = dlybct >> 24;
-    */
+     */
 
     retval = at91_spi_configure_driver(bus, cs, SpiModes::SPI_MODE_0, 8'256'000, 15, 1, 0xff);
     if(retval != 0) {
@@ -952,7 +954,7 @@ void SpiTestTask::iobcFramRawTest() {
     writeData[1] = address & 0xff;
     writeData[2] = (address >> 8) & 0xff;
     writeData[3] = (address >> 16) & 0xff;
-    */
+     */
     writeData[0] = readOpReg;
     memset(writeData + 4, 0, sendLen - 4);
     retval = at91_spi_blocking_transfer_non_interrupt(bus, cs, writeData, readData, sendLen);
@@ -991,14 +993,14 @@ void SpiTestTask::iobcFramRawTest() {
 #endif
 
     retval = at91_spi_blocking_transfer_non_interrupt(bus, cs, &writeEnableLatch, readData, 1);
-//    retval = at91_spi_non_blocking_transfer(bus, cs, &writeEnableLatch, readData, 1,
-//            &spiCallback, reinterpret_cast<void*>(const_cast<bool*>(&transferFinished)), true);
-//    if(retval != 0) {
-//        sif::printWarning("SPI blocking transfer failed with %d\n", retval);
-//    }
-//    else {
-//        while(not transferFinished) {}
-//   }
+    //    retval = at91_spi_non_blocking_transfer(bus, cs, &writeEnableLatch, readData, 1,
+    //            &spiCallback, reinterpret_cast<void*>(const_cast<bool*>(&transferFinished)), true);
+    //    if(retval != 0) {
+    //        sif::printWarning("SPI blocking transfer failed with %d\n", retval);
+    //    }
+    //    else {
+    //        while(not transferFinished) {}
+    //   }
     //writeData[20] = writeEnableLatch;
 
     address = FRAM_END_ADDR - 5;
@@ -1062,4 +1064,17 @@ void SpiTestTask::spiCallback(At91SpiBuses bus, At91TransferStates state, void *
     }
 }
 
-#endif
+void SpiTestTask::iobcFramTestBlocking() {
+    int retval = fram_start_no_os_no_interrupt();
+    if(retval != 0) {
+        sif::printWarning("FRAM blocking init failed\n");
+    }
+    BootloaderGroup blGroup = {};
+    retval = fram_no_os_blocking_read_bootloader_block(&blGroup);
+    if(retval != 0) {
+        sif::printWarning("FRAM bl reas failed\n");
+    }
+    TRACE_INFO("global hamm flag: %d\n\r", blGroup.global_hamming_flag);
+}
+
+#endif /* ISIS_OBC_G20 */
