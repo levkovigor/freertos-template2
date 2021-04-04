@@ -357,6 +357,7 @@ void spi_irq_handler_bus_1() {
     }
 }
 
+/* SAM9G20 datasheet p.401 */
 bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91TransferStates* state) {
     uint32_t status = drv->SPI_SR;
     uint32_t disable_mask = 0;
@@ -380,6 +381,7 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
         disable_mask |= AT91C_SPI_MODF;
         error = true;
     }
+    /* This flag will be set if the transfer counter register has reached zero since last read */
     if((status & AT91C_SPI_ENDTX) == AT91C_SPI_ENDTX) {
         /* Track internal reception mode switches */
         if(next_internal_reception != current_internal_reception) {
@@ -395,6 +397,7 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
             }
         }
     }
+    /* This flag will be set if the receive counter register has reached zero since last read */
     if((status & AT91C_SPI_ENDRX) == AT91C_SPI_ENDRX) {
         /* Track internal reception mode switches */
         if(next_internal_reception != current_internal_reception) {
@@ -410,10 +413,12 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
             }
         }
     }
+    /* This flag will be set if both TCR and TNCR reached zero (all transfers finished) */
     if((status & AT91C_SPI_TXBUFE) == AT91C_SPI_TXBUFE) {
         tx_finished = true;
         disable_mask |= AT91C_SPI_TXBUFE;
     }
+    /* This flag will be set if both RCR and RNCR reached zero (all transfers finished) */
     if((status & AT91C_SPI_RXBUFF) == AT91C_SPI_RXBUFF) {
         rx_finished = true;
         disable_mask |= AT91C_SPI_RXBUFF;
