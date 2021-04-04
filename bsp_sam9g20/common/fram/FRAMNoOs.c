@@ -27,7 +27,7 @@ uint8_t cmd_buf[4] = {};
 
 void internal_fram_callback(At91SpiBuses bus, At91TransferStates state, void* args);
 /* Reference our callback so it does not get removed by the linker */
-volatile at91_user_callback_t internal_cb = &internal_fram_callback;
+volatile at91_user_callback_t internal_cb = internal_fram_callback;
 
 int enable_writes();
 
