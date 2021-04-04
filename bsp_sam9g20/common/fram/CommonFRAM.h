@@ -197,5 +197,4 @@ static const uint32_t BOOTLOADER_FAULTY_ADDRESS =
 static const uint32_t NUMBER_OF_ACTIVE_TASKS_ADDRESS =
         offsetof(CriticalDataBlock, number_of_active_tasks);
 
-
 #endif /* SAM9G20_COMMON_CRITICALDATABLOCK_H_ */

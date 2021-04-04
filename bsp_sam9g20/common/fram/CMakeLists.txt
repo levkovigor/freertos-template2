@@ -3,6 +3,7 @@ if(BOARD_IOBC)
         FRAMApi.c
         FRAMNoOs.c
         FRAMApiNoOs.c
+        CommonFRAM.c
     )
 else()
     if(NOT SIMPLE_AT91_BL)

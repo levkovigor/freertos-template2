@@ -116,7 +116,11 @@ int perform_iobc_copy_operation_to_sdram() {
         if(result != 0) {
             uint16_t curr_reboot_counter = 0;
             /* Increment local reboot counter */
+#if USE_FREERTOS == 1
             result = fram_increment_img_reboot_counter(FLASH_SLOT, &curr_reboot_counter);
+#else
+            result = fram_no_os_increment_img_reboot_counter(FLASH_SLOT, &curr_reboot_counter);
+#endif
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
             TRACE_WARNING("Copy operation or hamming code check on NOR-Flash image failed\n\r");
             TRACE_WARNING("Restarting, current reboot counter %d\n\r", curr_reboot_counter);
@@ -125,7 +129,11 @@ int perform_iobc_copy_operation_to_sdram() {
             restart();
         }
         /* Increment local reboot counter */
+#if USE_FREERTOS == 1
         result = fram_increment_img_reboot_counter(FLASH_SLOT, NULL);
+#else
+        result = fram_no_os_increment_img_reboot_counter(FLASH_SLOT, NULL);
+#endif
     }
     else {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
@@ -161,7 +169,11 @@ int perform_iobc_copy_operation_to_sdram() {
 BootSelect determine_boot_select(bool* use_hamming) {
     BootloaderGroup bl_info_struct;
     BootSelect curr_boot_select = BOOT_NOR_FLASH;
+#if USE_FREERTOS == 1
     int result = fram_read_bootloader_block(&bl_info_struct);
+#else
+    int result = fram_no_os_read_bootloader_block(&bl_info_struct);
+#endif
     if (result != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_ERROR("determine_boot_select: FRAM could not be read!\n\r");
@@ -298,7 +310,11 @@ int copy_norflash_binary_to_sdram(size_t copy_size, bool use_hamming)
         TRACE_INFO("Performing hamming code ECC check..\n\r");
 #endif
         size_t image_size = 0;
+#if USE_FREERTOS == 1
         result = fram_read_binary_size(FLASH_SLOT, &image_size);
+#else
+        result = fram_no_os_read_binary_size(FLASH_SLOT, &image_size);
+#endif
         if(result != 0) {
             /* Should really not happen, still jump to binary */
             return 0;
@@ -319,17 +335,24 @@ int copy_norflash_binary_to_sdram(size_t copy_size, bool use_hamming)
 }
 
 int increment_sdc_loc_reboot_counter(BootSelect boot_select, uint16_t* curr_reboot_counter) {
+    int (*increment_func) (SlotType slotType, uint16_t* new_reboot_counter) = NULL;
+#if USE_FREERTOS == 1
+    increment_func = fram_increment_img_reboot_counter;
+#else
+    increment_func = fram_no_os_increment_img_reboot_counter;
+#endif
+
     if(boot_select == BOOT_SD_CARD_0_SLOT_0) {
-        return fram_increment_img_reboot_counter(SDC_0_SL_0, curr_reboot_counter);
+        return increment_func(SDC_0_SL_0, curr_reboot_counter);
     }
     else if(boot_select == BOOT_SD_CARD_0_SLOT_1) {
-        return fram_increment_img_reboot_counter(SDC_0_SL_1, curr_reboot_counter);
+        return increment_func(SDC_0_SL_1, curr_reboot_counter);
     }
     else if(boot_select == BOOT_SD_CARD_1_SLOT_0) {
-        return fram_increment_img_reboot_counter(SDC_1_SL_0, curr_reboot_counter);
+        return increment_func(SDC_1_SL_0, curr_reboot_counter);
     }
     else if(boot_select == BOOT_SD_CARD_1_SLOT_1) {
-        return fram_increment_img_reboot_counter(SDC_1_SL_1, curr_reboot_counter);
+        return increment_func(SDC_1_SL_1, curr_reboot_counter);
     }
     return 0;
 }
@@ -353,8 +376,14 @@ int handle_hamming_code_check(SlotType slotType, size_t image_size) {
 
     size_t size_read = 0;
     size_t ham_size = 0;
-    bool ham_flag = false;
+    /* I am going to assume this was checked previously. For FreeRTOS version, we check again */
+    bool ham_flag = true;
+#if USE_FREERTOS == 1
     int result = fram_read_ham_size(slotType, &ham_size, &ham_flag);
+#else
+    int result = fram_no_os_read_ham_size(slotType, &ham_size);
+#endif
+
     if(result != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_WARNING("Could not read hamming size and flag, error code %d!\n\r", result);
@@ -374,8 +403,14 @@ int handle_hamming_code_check(SlotType slotType, size_t image_size) {
     in the FRAM */
     uint8_t* hamming_code = malloc(IMAGES_HAMMING_RESERVED_SIZE);
 
+#if USE_FREERTOS == 1
     result = fram_read_ham_code(slotType, hamming_code,
             IMAGES_HAMMING_RESERVED_SIZE, 0, ham_size, &size_read);
+#else
+    result = fram_no_os_read_ham_code(slotType, hamming_code,
+            IMAGES_HAMMING_RESERVED_SIZE, 0, ham_size, &size_read);
+#endif
+
     if(result != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_WARNING("Could not read hamming code, error code %d!\n\r", result);
