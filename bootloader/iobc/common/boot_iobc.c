@@ -387,30 +387,30 @@ int copy_norflash_binary_to_sdram(size_t copy_size, bool use_hamming)
     TRACE_INFO("Copying NOR-Flash binary to SDRAM..\n\r");
 #endif
 
-//#if USE_FREERTOS == 1
+#if USE_FREERTOS == 1
     /* This operation takes 100-200 milliseconds if the whole NOR-Flash is
     copied. But the watchdog is running in a separate task with the highest priority
     and we are using a pre-emptive scheduler so this should not be an issue. */
     memcpy((void*) SDRAM_DESTINATION, (const void*) BINARY_BASE_ADDRESS_READ, copy_size);
-//#else
-//    /* Now we need to split up the copy operation to kick the watchdog. Watchdog window
-//    is 1ms to 50ms */
-//    {
-//        uint8_t bucket_num = 10;
-//        size_t bucket_size = copy_size / bucket_num;
-//        size_t bucket_rest = copy_size % bucket_num;
-//        size_t offset = 0;
-//        for(uint8_t idx = 0; idx < bucket_num; idx++) {
-//            offset = idx * bucket_size;
-//            memcpy((void*) SDRAM_DESTINATION + offset,
-//                    (const void*) BINARY_BASE_ADDRESS_READ + offset, bucket_size);
-//            WDT_forceKick();
-//        }
-//        offset = bucket_size * bucket_num;
-//        memcpy((void*) SDRAM_DESTINATION + offset,
-//                (const void*) BINARY_BASE_ADDRESS_READ + offset, bucket_rest);
-//    }
-//#endif /* USE_FREERTOS == 0 */
+#else
+    /* Now we need to split up the copy operation to kick the watchdog. Watchdog window
+    is 1ms to 50ms */
+    {
+        uint8_t bucket_num = 10;
+        size_t bucket_size = copy_size / bucket_num;
+        size_t bucket_rest = copy_size % bucket_num;
+        size_t offset = 0;
+        for(uint8_t idx = 0; idx < bucket_num; idx++) {
+            offset = idx * bucket_size;
+            memcpy((void*) SDRAM_DESTINATION + offset,
+                    (const void*) BINARY_BASE_ADDRESS_READ + offset, bucket_size);
+            WDT_forceKick();
+        }
+        offset = bucket_size * bucket_num;
+        memcpy((void*) SDRAM_DESTINATION + offset,
+                (const void*) BINARY_BASE_ADDRESS_READ + offset, bucket_rest);
+    }
+#endif /* USE_FREERTOS == 0 */
 
     /* Now we can perform the hamming code check on the image in the SDRAM */
     if(use_hamming) {
