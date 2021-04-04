@@ -7,6 +7,7 @@
 #include <at91/utility/trace.h>
 
 #include <stddef.h>
+#include <string.h>
 
 typedef enum {
 DMA,
@@ -185,6 +186,7 @@ int at91_spi_configure_non_blocking_driver(At91SpiBuses spi_bus, uint8_t interru
     if(retval != 0) {
         return -1;
     }
+    memset(dummy_buf, 0, SPI_DUMMY_BUFFER_SIZE);
     if(spi_bus == SPI_BUS_0 && !bus_0_aic_configured) {
         AIC_DisableIT(id);
         AIC_ConfigureIT(id, interrupt_priority, spi_irq_handler_bus_0);
