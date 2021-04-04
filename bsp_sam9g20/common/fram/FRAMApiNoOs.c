@@ -27,25 +27,10 @@ int fram_no_os_read_bootloader_block(BootloaderGroup* bl_info) {
     return fram_read_no_os((unsigned char*) bl_info, BL_GROUP_ADDR, sizeof(BootloaderGroup));
 }
 
-int fram_no_os_increment_img_reboot_counter(SlotType slotType, uint16_t* new_reboot_counter) {
-    uint16_t new_counter_local = 0;
-    int result = fram_no_os_read_img_reboot_counter(slotType, &new_counter_local);
-    if(result != 0) {
-        return result;
-    }
-    new_counter_local++;
-
+int fram_no_os_increment_img_reboot_counter(SlotType slotType, uint16_t new_reboot_counter) {
     uint32_t address = determine_img_reboot_counter_addr(slotType);
-    result = fram_write_no_os((unsigned char*) &new_counter_local,
+    return fram_write_no_os((unsigned char*) &new_reboot_counter,
             address, sizeof(((CriticalDataBlock*)0)->bl_group.nor_flash_reboot_counter));
-    if(result != 0) {
-        return result;
-    }
-
-    if(new_reboot_counter != NULL) {
-        *new_reboot_counter = new_counter_local;
-    }
-    return result;
 }
 
 int fram_no_os_read_img_reboot_counter(SlotType slotType, uint16_t* reboot_counter) {
@@ -85,7 +70,7 @@ int fram_no_os_read_ham_size(SlotType slotType, size_t *ham_size) {
 }
 
 int fram_no_os_read_ham_code(SlotType slotType, uint8_t* buffer, const size_t max_buffer,
-        size_t current_offset, size_t size_to_read, size_t* size_read) {
+        size_t current_offset, size_t size_to_read) {
     uint32_t address = determine_ham_code_address(slotType);
     if(address == 0) {
         return -4;
@@ -111,13 +96,5 @@ int fram_no_os_read_ham_code(SlotType slotType, uint8_t* buffer, const size_t ma
         return -5;
     }
 
-    int result = fram_read_no_os(buffer + current_offset, address, size_to_read);
-    if(result != 0) {
-        return result;
-    }
-
-    if(size_read != NULL) {
-        *size_read = size_to_read;
-    }
-    return result;
+    return fram_read_no_os(buffer + current_offset, address, size_to_read);
 }

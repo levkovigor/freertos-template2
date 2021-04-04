@@ -14,6 +14,6 @@ extern bool fram_faulty;
  * Block cycles can be specified to avoid deadlock.
  * @return Transfer state
  */
-extern At91TransferStates wait_on_transfer(uint32_t block_cycles);
+extern At91TransferStates wait_on_transfer(uint32_t block_cycles, uint32_t* req_cycles);
 
 #endif /* BOOTLOADER_IOBC_NORFLASH_BL_IOBC_NORFLASH_H_ */

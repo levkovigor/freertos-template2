@@ -54,7 +54,7 @@ static const uint32_t WATCHDOG_KICK_INTERVAL_MS = 15;
 
 #else
 
-BootloaderGroup bl_fram_block;
+BootloaderGroup bl_fram_block = {};
 void fram_callback(At91SpiBuses bus, At91TransferStates state, void* args);
 volatile At91TransferStates spi_transfer_state = IDLE;
 
@@ -240,7 +240,7 @@ void perform_bootloader_check() {
     }
 }
 
-At91TransferStates wait_on_transfer(uint32_t block_cycles) {
+At91TransferStates wait_on_transfer(uint32_t block_cycles, uint32_t* wait_cycles_req) {
 #if USE_FREERTOS == 0
     At91TransferStates temp_transfer_state;
     uint32_t wait_cycles = 0;
@@ -260,6 +260,9 @@ At91TransferStates wait_on_transfer(uint32_t block_cycles) {
         wait_cycles++;
     }
     spi_transfer_state = IDLE;
+    if(wait_cycles_req != NULL) {
+        *wait_cycles_req = wait_cycles;
+    }
     return temp_transfer_state;
 #else
     return IDLE;
@@ -289,6 +292,7 @@ void initialize_all_iobc_peripherals() {
         }
     }
 #else
+    memset(&bl_fram_block, 0, sizeof(bl_fram_block));
     int retval = fram_start_no_os(&fram_callback, (void*) spi_transfer_state,
             AT91C_AIC_PRIOR_HIGHEST - 2);
     if(retval != 0) {
