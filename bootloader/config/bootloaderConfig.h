@@ -10,8 +10,8 @@
 #include <commonAt91Config.h>
 #endif
 
-#define BL_VERSION      1
-#define BL_SUBVERSION   4
+#define BL_VERSION      2
+#define BL_SUBVERSION   0
 
 //! Use FreeRTOS in bootloaders. Transfer of control can be problematic, crashes when first task is
 //! started, not recommended!
