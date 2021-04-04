@@ -43,8 +43,8 @@ private:
 
 	SpiTestMode spiTestMode = SpiTestMode::PT1000;
 	uint8_t transferSize = 3;
-	unsigned char readData[128] = {0};
-	unsigned char writeData[128] = {0};
+	unsigned char readData[1024] = {0};
+	unsigned char writeData[1024] = {0};
 	SPIslaveParameters slaveParams;
 	SPItransfer spiTransfer;
 	bool initWait = true;

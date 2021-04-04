@@ -22,22 +22,29 @@ volatile void* callback_user_args = NULL;
 
 bool fram_started = false;
 
+uint8_t cmd_buf[4] = {};
+uint8_t dummy_rec_buf[4] = {};
+
 void internal_fram_callback(At91SpiBuses bus, At91TransferStates state, void* args);
 /* Reference our callback so it does not get removed by the linker */
 volatile at91_user_callback_t internal_cb = &internal_fram_callback;
 
 int enable_writes();
 
-int fram_start_no_os(at91_user_callback_t callback, void* callback_args) {
+int fram_start_no_os(at91_user_callback_t callback, void* callback_args,
+        uint8_t interrupt_priority) {
     if(callback == NULL) {
         return -1;
     }
+    if(interrupt_priority > AT91C_AIC_PRIOR_HIGHEST) {
+        return -1;
+    }
 
-    int retval = at91_spi_configure_driver(FRAM_BUS, FRAM_NPCS, FRAM_MODE, FRAM_SPI_SPEED, 10, 2, 0);
+    int retval = at91_spi_configure_driver(FRAM_BUS, FRAM_NPCS, FRAM_MODE, FRAM_SPI_SPEED, 10, 1, 0);
     if(retval != 0) {
         return retval;
     }
-    retval = at91_spi_configure_non_blocking_driver(FRAM_BUS, AT91C_AIC_PRIOR_LOWEST + 2);
+    retval = at91_spi_configure_non_blocking_driver(FRAM_BUS, interrupt_priority);
     if(retval != 0) {
         return retval;
     }
@@ -76,13 +83,12 @@ int fram_read_no_os(uint8_t* rec_buf, uint32_t address, size_t len) {
     if(address + len > FRAM_END_ADDR || !fram_started) {
         return -1;
     }
-    uint8_t write_buf[4];
-    write_buf[0] = READ_OP_REG;
-    write_buf[1] = (address >> 16) & 0xff;
-    write_buf[2] = (address >> 8) & 0xff;
-    write_buf[3] = address & 0xff;
-    uint8_t rec_dummy[4] = {};
-    int retval = at91_spi_non_blocking_transfer(FRAM_BUS, FRAM_NPCS, write_buf, rec_dummy, 4,
+
+    cmd_buf[0] = READ_OP_REG;
+    cmd_buf[1] = (address >> 16) & 0xff;
+    cmd_buf[2] = (address >> 8) & 0xff;
+    cmd_buf[3] = address & 0xff;
+    int retval = at91_spi_non_blocking_transfer(FRAM_BUS, FRAM_NPCS, cmd_buf, NULL, 4,
             internal_cb, (void*) callback_user_args, false);
     if(retval != 0) {
         return retval;
@@ -100,17 +106,16 @@ int fram_write_no_os(uint8_t* send_buf, uint32_t address, size_t len) {
     if(retval != 0) {
         return retval;
     }
-    uint8_t write_buf[4];
-    write_buf[0] = WRITE_OP_REG;
-    write_buf[1] = (address >> 16) & 0xff;
-    write_buf[2] = (address >> 8) & 0xff;
-    write_buf[3] = address & 0xff;
-    retval = at91_spi_non_blocking_transfer(FRAM_BUS, FRAM_NPCS, write_buf, NULL, 4,
+    cmd_buf[0] = WRITE_OP_REG;
+    cmd_buf[1] = (address >> 16) & 0xff;
+    cmd_buf[2] = (address >> 8) & 0xff;
+    cmd_buf[3] = address & 0xff;
+    retval = at91_spi_non_blocking_transfer(FRAM_BUS, FRAM_NPCS, cmd_buf, NULL, 4,
             internal_cb, (void*) callback_user_args, false);
     if(retval != 0) {
         return retval;
     }
-    at91_add_second_transfer(send_buf + 4 , NULL, len);
+    at91_add_second_transfer(send_buf, NULL, len);
     return 0;
 }
 

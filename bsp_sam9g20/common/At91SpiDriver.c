@@ -268,8 +268,15 @@ int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const ui
         drv->SPI_RPR = (unsigned int) recv_ptr;
         /* Shift out data into dummy buffer */
         if(current_internal_reception == WRITE_ONLY) {
-            drv->SPI_RCR = sizeof(dummy_buf);
-            drv->SPI_RNCR = sizeof(dummy_buf);
+            if(transfer_len < sizeof(dummy_buf)) {
+                drv->SPI_RCR = transfer_len;
+                drv->SPI_RNCR = 0;
+            }
+            else {
+                drv->SPI_RCR = sizeof(dummy_buf);
+                drv->SPI_RNCR = sizeof(dummy_buf);
+            }
+
             //current_dummy_buf = !current_dummy_buf;
             drv->SPI_RNPR = (unsigned int) dummy_buf;
         }

@@ -711,7 +711,8 @@ void SpiTestTask::iobcFramTest() {
     //iobcFramRawTest();
     if(oneshot) {
         retval = fram_start_no_os(&spiCallback,
-                reinterpret_cast<void*>(const_cast<At91TransferStates*>(&transferState)));
+                reinterpret_cast<void*>(const_cast<At91TransferStates*>(&transferState)),
+                AT91C_AIC_PRIOR_LOWEST + 2);
         if(retval != 0) {
             sif::printWarning("FRAM start (NO OS) failed!\n");
         }
@@ -778,7 +779,7 @@ void SpiTestTask::iobcFramTest() {
 //    sif::printInfo("Printing last 128 bytes of FRAM\n");
 //    arrayprinter::print(readData, len);
 
-    len = 64;
+    len = 1024;
     for(size_t idx = 0; idx < len; idx ++) {
         writeData[idx] = idx + utilityCounter;
     }
@@ -815,9 +816,17 @@ void SpiTestTask::iobcFramTest() {
         }
     }
     transferState = At91TransferStates::IDLE;
-    sif::printInfo("Printing last %d bytes of FRAM\n", len);
-    arrayprinter::print(readData, len);
-
+    bool equal = true;
+    sif::printInfo("Checking equality of written and read bytes..\n");
+    for(size_t idx = 0; idx < len; idx++) {
+        if(writeData[idx] != readData[idx]) {
+            sif::printWarning("Written and read buffer not the same!\n");
+            break;
+        }
+    }
+    if(equal) {
+        sif::printInfo("Written and read buffer are the same\n");
+    }
 }
 
 void SpiTestTask::iobcFramRawTest() {

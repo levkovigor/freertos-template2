@@ -19,7 +19,8 @@ extern "C" {
  * @param callback_args
  * @return -1 for invalid input, -2 is configuration of the status register failed.
  */
-int fram_start_no_os(at91_user_callback_t callback, void* callback_args);
+int fram_start_no_os(at91_user_callback_t callback, void* callback_args,
+        uint8_t interrupt_priority);
 
 /**
  * Can be used to assign a different callback function for transfer completion
