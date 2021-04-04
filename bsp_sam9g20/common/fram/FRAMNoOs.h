@@ -9,7 +9,8 @@ extern "C" {
 
 /**
  * This module allows use of the CY15B104QI FRAM device on the iOBC without FreeRTOS. No block
- * protection implemented for now.
+ * protection implemented for now. These functions are not thread-safe! Use a OS mutex
+ * to ensure thread-safety when needed.
  * @author  R. Mueller
  */
 
