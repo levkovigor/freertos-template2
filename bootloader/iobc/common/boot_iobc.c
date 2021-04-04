@@ -82,8 +82,8 @@ void perform_bootloader_core_operation() {
 
 #endif /* USE_FREERTOS == 0 */
 
-    disable_pit_aic();
     fram_stop_no_os();
+    disable_pit_aic();
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
 }
 
@@ -228,7 +228,7 @@ BootSelect determine_boot_select(bool* use_hamming) {
     BootSelect curr_boot_select = BOOT_NOR_FLASH;
     /* Wait for the last transfer to finish */
 #if USE_FREERTOS == 0
-    At91TransferStates current_transfer_state = wait_on_transfer(9999, NULL);
+    At91TransferStates current_transfer_state = wait_on_transfer(100000, NULL);
     if(current_transfer_state != SPI_SUCCESS) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
         TRACE_WARNING("determine_boot_select: Reading BL block failed with code %d\n\r",
@@ -365,15 +365,15 @@ int copy_norflash_binary_to_sdram(size_t copy_size, bool use_hamming)
         use_hamming = false;
     }
 
-    size_t ham_size = bl_fram_block.nor_flash_hamming_code_size;
-    if(ham_size == 0x00 || ham_size == 0xff) {
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
-        TRACE_WARNING("Hamming code size might be invalid\n\r");
-#endif
-        use_hamming = false;
-    }
-
     if(use_hamming) {
+        size_t ham_size = bl_fram_block.nor_flash_hamming_code_size;
+        if(ham_size == 0x00 || ham_size == 0xff) {
+    #if BOOTLOADER_VERBOSE_LEVEL >= 1
+            TRACE_WARNING("Hamming code size might be invalid\n\r");
+    #endif
+            use_hamming = false;
+        }
+
         /* Start DMA transfer in background to be run in parallel to the memcpy operation */
         result = fram_no_os_read_ham_code(FLASH_SLOT, hamming_code_buf,
                 sizeof(hamming_code_buf), 0, ham_size);
@@ -387,30 +387,30 @@ int copy_norflash_binary_to_sdram(size_t copy_size, bool use_hamming)
     TRACE_INFO("Copying NOR-Flash binary to SDRAM..\n\r");
 #endif
 
-#if USE_FREERTOS == 1
+//#if USE_FREERTOS == 1
     /* This operation takes 100-200 milliseconds if the whole NOR-Flash is
     copied. But the watchdog is running in a separate task with the highest priority
     and we are using a pre-emptive scheduler so this should not be an issue. */
     memcpy((void*) SDRAM_DESTINATION, (const void*) BINARY_BASE_ADDRESS_READ, copy_size);
-#else
-    /* Now we need to split up the copy operation to kick the watchdog. Watchdog window
-    is 1ms to 50ms */
-    {
-        uint8_t bucket_num = 10;
-        size_t bucket_size = copy_size / bucket_num;
-        size_t bucket_rest = copy_size % bucket_num;
-        size_t offset = 0;
-        for(uint8_t idx = 0; idx < bucket_num; idx++) {
-            offset = idx * bucket_size;
-            memcpy((void*) SDRAM_DESTINATION + offset,
-                    (const void*) BINARY_BASE_ADDRESS_READ + offset, bucket_size);
-            WDT_forceKick();
-        }
-        offset = bucket_size * bucket_num;
-        memcpy((void*) SDRAM_DESTINATION + offset,
-                (const void*) BINARY_BASE_ADDRESS_READ + offset, bucket_rest);
-    }
-#endif /* USE_FREERTOS == 0 */
+//#else
+//    /* Now we need to split up the copy operation to kick the watchdog. Watchdog window
+//    is 1ms to 50ms */
+//    {
+//        uint8_t bucket_num = 10;
+//        size_t bucket_size = copy_size / bucket_num;
+//        size_t bucket_rest = copy_size % bucket_num;
+//        size_t offset = 0;
+//        for(uint8_t idx = 0; idx < bucket_num; idx++) {
+//            offset = idx * bucket_size;
+//            memcpy((void*) SDRAM_DESTINATION + offset,
+//                    (const void*) BINARY_BASE_ADDRESS_READ + offset, bucket_size);
+//            WDT_forceKick();
+//        }
+//        offset = bucket_size * bucket_num;
+//        memcpy((void*) SDRAM_DESTINATION + offset,
+//                (const void*) BINARY_BASE_ADDRESS_READ + offset, bucket_rest);
+//    }
+//#endif /* USE_FREERTOS == 0 */
 
     /* Now we can perform the hamming code check on the image in the SDRAM */
     if(use_hamming) {

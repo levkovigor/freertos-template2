@@ -61,7 +61,9 @@ volatile At91TransferStates spi_transfer_state = IDLE;
 /* Forward declaration, defined in common source file */
 extern void fram_callback(At91SpiBuses bus, At91TransferStates state, void* args);
 
+#if USE_SIMPLE_BOOTLOADER == 1
 void simple_bootloader();
+#endif
 
 #endif /* USE_FREERTOS == 0 */
 
@@ -113,8 +115,13 @@ int boot_iobc_from_norflash() {
     xTaskCreate(init_task, "INIT_TASK", 1024, handler_task_handle_glob, 5, NULL);
     vTaskStartScheduler();
 #else
+
+#if USE_SIMPLE_BOOTLOADER == 1
+    simple_bootloader();
+#else
     initialize_all_iobc_peripherals();
     perform_bootloader_core_operation();
+#endif /* USE_SIMPLE_BOOTLOADER == 1 */
 #endif /* !USE_FREERTOS == 1 */
 
     /* This should never be reached. */
@@ -270,7 +277,7 @@ At91TransferStates wait_on_transfer(uint32_t block_cycles, uint32_t* wait_cycles
 }
 
 void initialize_all_iobc_peripherals() {
-    RTT_start();
+    //RTT_start();
 
 #if USE_FREERTOS == 1
     int result = FRAM_start();
@@ -293,7 +300,7 @@ void initialize_all_iobc_peripherals() {
     }
 #else
     memset(&bl_fram_block, 0, sizeof(bl_fram_block));
-    int retval = fram_start_no_os(&fram_callback, (void*) spi_transfer_state,
+    int retval = fram_start_no_os(fram_callback, (void*) &spi_transfer_state,
             AT91C_AIC_PRIOR_HIGHEST - 2);
     if(retval != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
@@ -312,7 +319,11 @@ void initialize_all_iobc_peripherals() {
 #endif
         }
     }
-#endif /* USE_FREERTOS == 1 */
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+    print_bl_info();
+#endif
+
+#endif /* USE_FREERTOS == 0 */
 }
 
 
