@@ -31,6 +31,10 @@
 
 #include <hal/Storage/FRAM.h>
 #include <hal/Timing/WatchDogTimer.h>
+#else
+
+#include <bsp_sam9g20/common/fram/FRAMNoOs.h>
+
 #endif
 
 #include <hal/Drivers/LED.h>
@@ -47,6 +51,10 @@ static TaskHandle_t handler_task_handle_glob = NULL;
 static const uint32_t WATCHDOG_KICK_INTERVAL_MS = 15;
 
 #else
+
+/* Forward declaration, defined in common source file */
+extern void fram_callback(At91SpiBuses bus, At91TransferStates state, void* args);
+extern volatile At91TransferStates transfer_state;
 
 void simple_bootloader();
 
@@ -97,7 +105,8 @@ int boot_iobc_from_norflash() {
     xTaskCreate(init_task, "INIT_TASK", 1024, handler_task_handle_glob, 5, NULL);
     vTaskStartScheduler();
 #else
-    simple_bootloader();
+    initialize_all_iobc_peripherals();
+    perform_bootloader_core_operation();
 #endif /* !USE_FREERTOS == 1 */
 
     /* This should never be reached. */
@@ -161,7 +170,7 @@ void simple_bootloader() {
     TRACE_INFO_WP("-- SOURCE Bootloader v%d.%d --\n\r", BL_VERSION, BL_SUBVERSION);
     /* We don't need these */
     // initialize_all_iobc_peripherals();
-    //setup_timer_interrupt();
+    // setup_timer_interrupt();
     int result = copy_norflash_binary_to_sdram(PRIMARY_IMAGE_RESERVED_SIZE, false);
     if(result != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
@@ -255,6 +264,15 @@ void initialize_all_iobc_peripherals() {
         set_sram0_status_field(SRAM_FRAM_ISSUES);
         fram_faulty = true;
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
+    }
+#else
+    int retval = fram_start_no_os(&fram_callback, (void*) transfer_state,
+            AT91C_AIC_PRIOR_HIGHEST - 2);
+    if(retval != 0) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        TRACE_WARNING("initialize_iobc_peripherals: "
+                "Could not start FRAM (No OS), code %d\n\r", retval);
+#endif
     }
 #endif /* USE_FREERTOS == 1 */
 }

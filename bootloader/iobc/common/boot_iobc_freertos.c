@@ -5,23 +5,15 @@
 
 #include <bootloader/utility/CRC.h>
 
-
+#include <bsp_sam9g20/common/fram/FRAMApi.h>
+#include <bsp_sam9g20/common/fram/CommonFRAM.h>
 #include <bsp_sam9g20/common/SRAMApi.h>
 #include <bsp_sam9g20/common/lowlevel.h>
 
 #if USE_FREERTOS == 1
-
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include <bsp_sam9g20/common/fram/FRAMApi.h>
-#include <bsp_sam9g20/common/fram/CommonFRAM.h>
-
-#else
-
-#include <bsp_sam9g20/common/fram/FRAMApiNoOs.h>
-#include <bsp_sam9g20/common/At91SpiDriver.h>
-
-#endif /* USE_FREERTOS == 0 */
+#endif
 
 #include <at91/utility/trace.h>
 #include <at91/utility/hamming.h>
@@ -42,9 +34,6 @@ int handle_hamming_code_result(int result);
 int increment_sdc_loc_reboot_counter(BootSelect boot_select, uint16_t* curr_reboot_counter);
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
 BootSelect determine_boot_select(bool* use_hamming);
-
-void fram_callback(At91SpiBuses bus, At91TransferStates state, void* args);
-volatile At91TransferStates transfer_state = IDLE;
 
 /**
  * This is the core function of the bootloader which handles the copy operation,
@@ -463,13 +452,6 @@ int handle_hamming_code_result(int result) {
         return -1;
     }
     return 0;
-}
-
-void fram_callback(At91SpiBuses bus, At91TransferStates state, void* args) {
-    volatile At91TransferStates* transfer_state = (At91TransferStates*) args;
-    if(transfer_state != NULL) {
-        *transfer_state = state;
-    }
 }
 
 

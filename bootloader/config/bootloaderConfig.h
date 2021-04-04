@@ -61,6 +61,8 @@ static const size_t SECOND_STAGE_BL_JUMP_ADDR = SDRAM_DESTINATION + SECOND_STAGE
 
 #else
 
+#endif /* !defined(AT91SAM9G20_EK) */
+
 typedef enum {
     BOOT_SD_CARD_0_SLOT_0,
     BOOT_SD_CARD_0_SLOT_1,
@@ -68,8 +70,6 @@ typedef enum {
     BOOT_SD_CARD_1_SLOT_1,
     BOOT_NOR_FLASH
 } BootSelect;
-
-#endif
 
 //! If the bootloader is flashed with SAM-BA, certain operations like writing
 //! CRC of binary sizes and checks performed with them are not possible anymore

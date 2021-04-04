@@ -10,6 +10,8 @@
 extern "C" {
 #endif
 
+#include "CommonFRAM.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
