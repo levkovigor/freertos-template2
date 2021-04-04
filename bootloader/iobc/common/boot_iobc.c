@@ -70,13 +70,16 @@ void perform_bootloader_core_operation() {
 #if USE_FREERTOS == 1
     vTaskEndScheduler();
 #else
-    At91TransferStates state = wait_on_transfer(1000, NULL);
+
+    /* Considered a configuration error, the last transfers increment the reboot counter
+    and block until the transfer is completed (state should be IDLE then) */
+    if(spi_transfer_state != IDLE) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-    if(state != SPI_SUCCESS) {
-        TRACE_WARNING("perform_bootloader_core_operation: "
-                "Last SPI transfer failed with code %d!\n\r", (int) state);
-    }
+        TRACE_WARNING("perform_bootloader_core_operation: SPI transfer "
+                "might still be ongoing!\n\r");
 #endif
+    }
+
 #endif /* USE_FREERTOS == 0 */
 
     disable_pit_aic();

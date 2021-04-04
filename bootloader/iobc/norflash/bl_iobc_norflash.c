@@ -10,7 +10,7 @@
 
 #include <board.h>
 #include <AT91SAM9G20.h>
-#include <board_memories.h>
+
 #include <at91/peripherals/dbgu/dbgu.h>
 #include <at91/peripherals/pio/pio.h>
 #include <at91/peripherals/aic/aic.h>
