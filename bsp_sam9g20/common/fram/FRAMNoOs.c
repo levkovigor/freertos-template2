@@ -20,9 +20,7 @@ static const uint8_t READ_OP_REG = 0x03;
 volatile at91_user_callback_t user_fram_callback = NULL;
 volatile void* callback_user_args = NULL;
 
-uint32_t write_verify_addr = 0;
-size_t write_verify_len = 0;
-volatile bool write_verify_mode = false;
+bool fram_started = false;
 
 void internal_fram_callback(At91SpiBuses bus, At91TransferStates state, void* args);
 /* Reference our callback so it does not get removed by the linker */
@@ -31,7 +29,6 @@ volatile at91_user_callback_t internal_cb = &internal_fram_callback;
 int enable_writes();
 
 int fram_start_no_os(at91_user_callback_t callback, void* callback_args) {
-    (volatile void) internal_fram_callback;
     if(callback == NULL) {
         return -1;
     }
@@ -60,6 +57,7 @@ int fram_start_no_os(at91_user_callback_t callback, void* callback_args) {
         return -2;
     }
     fram_assign_callback(callback, callback_args);
+    fram_started = true;
     return 0;
 }
 
@@ -75,7 +73,7 @@ int enable_writes() {
 }
 
 int fram_read_no_os(uint8_t* rec_buf, uint32_t address, size_t len) {
-    if(address + len > FRAM_END_ADDR) {
+    if(address + len > FRAM_END_ADDR || !fram_started) {
         return -1;
     }
     uint8_t write_buf[4];

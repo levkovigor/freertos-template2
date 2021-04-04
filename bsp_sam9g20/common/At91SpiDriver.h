@@ -3,6 +3,7 @@
 
 /**
  * Implemented to allow convenient use of SPI without requiring FreeRTOS.
+ * @author  R. Mueller
  */
 #ifdef __cplusplus
 extern "C" {
