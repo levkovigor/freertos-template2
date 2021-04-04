@@ -203,11 +203,9 @@ void handle_problematic_norflash_copy_result() {
     }
 #else
 
-    result = fram_no_os_blocking_read_img_reboot_counter(FLASH_SLOT, &curr_reboot_counter);
-    if(result == 0) {
-        curr_reboot_counter++;
-        result = fram_no_os_blocking_increment_img_reboot_counter(FLASH_SLOT, curr_reboot_counter);
-    }
+    curr_reboot_counter = bl_fram_block.nor_flash_reboot_counter;
+    curr_reboot_counter++;
+    result = fram_no_os_blocking_increment_img_reboot_counter(FLASH_SLOT, curr_reboot_counter);
 
 #endif /* USE_FRAM_NON_INTERRUPT_DRV == 1 */
 

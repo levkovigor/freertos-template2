@@ -34,7 +34,7 @@ int enable_writes();
 
 int fram_start_no_os_no_interrupt() {
     return at91_spi_configure_driver(FRAM_BUS, FRAM_NPCS, FRAM_MODE, FRAM_SPI_SPEED,
-            20, 2, 0xff);
+            20, 5, 0xff);
     fram_started = true;
 }
 
@@ -167,19 +167,35 @@ int fram_write_no_os_blocking(uint8_t* send_buf, uint32_t address, size_t len) {
     cmd_buf[2] = (address >> 8) & 0xff;
     cmd_buf[3] = address & 0xff;
 
-    AT91PS_SPI drv = AT91C_BASE_SPI0;
+    AT91PS_SPI drv = NULL;
+    unsigned int id = 0;
+    /* Fixed peripheral select requires reprogramming the mode register */
+    at91_get_drv_handle(FRAM_BUS, FRAM_NPCS, &drv, &id);
+    at91_select_npcs(drv, id, FRAM_NPCS);
+    at91_internal_spi_reset(drv, id, FRAM_NPCS);
+
     uint32_t dummy = drv->SPI_RDR;
+    (void) dummy;
+    while((drv->SPI_SR & AT91C_SPI_TDRE) == 0);
+    drv->SPI_TDR = WRITE_ENB_LATCH;
+    while ((drv->SPI_SR & AT91C_SPI_RDRF) == 0);
+    dummy = drv->SPI_RDR;
+    while((drv->SPI_SR & AT91C_SPI_TXEMPTY) == 0);
+    at91_select_npcs(drv, id, FRAM_NPCS);
+
     for(size_t idx = 0; idx < len + 4; idx ++) {
         if(idx < 4) {
             drv->SPI_TDR = cmd_buf[idx];
             while ((drv->SPI_SR & AT91C_SPI_RDRF) == 0);
             dummy = drv->SPI_RDR;
+            while((drv->SPI_SR & AT91C_SPI_TDRE) == 0);
         }
         else {
             drv->SPI_TDR = *send_buf;
             while ((drv->SPI_SR & AT91C_SPI_RDRF) == 0);
             dummy = drv->SPI_RDR;
             send_buf++;
+            while((drv->SPI_SR & AT91C_SPI_TDRE) == 0);
         }
     }
     (void) dummy;
