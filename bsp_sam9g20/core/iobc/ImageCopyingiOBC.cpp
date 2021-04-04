@@ -21,7 +21,7 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
         return copySdCardImageToNorFlash();
     }
     case(ImageHandlerStates::COPY_IMG_SDC_TO_SDC): {
-        return HasReturnvaluesIF::RETURN_FAILED;
+        return copySdcImgToSdc();
     }
     case(ImageHandlerStates::COPY_IMG_HAMMING_SDC_TO_FRAM): {
         return copyImgHammingSdcToFram();

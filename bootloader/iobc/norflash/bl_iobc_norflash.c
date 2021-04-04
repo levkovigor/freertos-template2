@@ -326,8 +326,6 @@ void initialize_all_iobc_peripherals() {
     }
 #else
 
-    /* This call is necessary! Maybe it switches the power supply on? */
-    //FRAM_start();
     int retval = fram_start_no_os_no_interrupt();
     if(retval != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
@@ -342,8 +340,6 @@ void initialize_all_iobc_peripherals() {
 #endif
         fram_faulty = true;
     }
-    TRACE_INFO("global hamm flag: %d\n\r", bl_fram_block.global_hamming_flag);
-    TRACE_INFO("local hamm flag: %d\n\r", bl_fram_block.nor_flash_hamming_flag);
 
 #endif /* !USE_FRAM_NON_INTERRUPT_DRV == 0 */
 

@@ -34,7 +34,7 @@ int enable_writes();
 
 int fram_start_no_os_no_interrupt() {
     return at91_spi_configure_driver(FRAM_BUS, FRAM_NPCS, FRAM_MODE, FRAM_SPI_SPEED,
-            20, 5, 0xff);
+            20, 1, 0xff);
     fram_started = true;
 }
 
