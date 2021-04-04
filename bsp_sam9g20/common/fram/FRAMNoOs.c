@@ -23,7 +23,7 @@ volatile void* callback_user_args = NULL;
 bool fram_started = false;
 
 uint8_t cmd_buf[4] = {};
-uint8_t dummy_rec_buf[4] = {};
+//uint8_t dummy_rec_buf[4] = {};
 
 void internal_fram_callback(At91SpiBuses bus, At91TransferStates state, void* args);
 /* Reference our callback so it does not get removed by the linker */
