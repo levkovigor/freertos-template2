@@ -5,9 +5,9 @@
 
 #include <bootloader/utility/CRC.h>
 
-#include <bsp_sam9g20/common/FRAMApi.h>
+#include <bsp_sam9g20/common/fram/FRAMApi.h>
+#include <bsp_sam9g20/common/fram/CommonFRAM.h>
 #include <bsp_sam9g20/common/SRAMApi.h>
-#include <bsp_sam9g20/common/CommonFRAM.h>
 #include <bsp_sam9g20/common/lowlevel.h>
 
 #if USE_FREERTOS == 1

@@ -15,9 +15,9 @@
 
 
 #ifdef ISIS_OBC_G20
-#include <bsp_sam9g20/common/FRAMApi.h>
+#include <bsp_sam9g20/common/fram/FRAMApi.h>
 #else
-#include <bsp_sam9g20/common/VirtualFRAMApi.h>
+#include <bsp_sam9g20/common/fram/VirtualFRAMApi.h>
 #endif
 
 

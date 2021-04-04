@@ -1,14 +1,14 @@
 #ifndef SAM9G20_COMMON_FRAMNOOS_H_
 #define SAM9G20_COMMON_FRAMNOOS_H_
 
-#include "At91SpiDriver.h"
+#include "../At91SpiDriver.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
- * This module allows use of the CY15B104QI FRAM device without FreeRTOS. No block
+ * This module allows use of the CY15B104QI FRAM device on the iOBC without FreeRTOS. No block
  * protection implemented for now.
  * @return -1 for invalid input, -2 is configuration of the status register failed.
  */

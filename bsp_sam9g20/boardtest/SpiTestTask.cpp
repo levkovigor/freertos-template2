@@ -15,9 +15,9 @@ extern "C" {
 }
 
 #ifdef ISIS_OBC_G20
-#include <bsp_sam9g20/common/CommonFRAM.h>
+#include <bsp_sam9g20/common/fram/CommonFRAM.h>
 #include <hal/Storage/FRAM.h>
-#include <bsp_sam9g20/common/FRAMNoOs.h>
+#include <bsp_sam9g20/common/fram/FRAMNoOs.h>
 #endif
 
 #include <bitset>

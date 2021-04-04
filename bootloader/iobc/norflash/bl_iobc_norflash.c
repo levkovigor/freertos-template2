@@ -22,7 +22,7 @@
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
 #if USE_FREERTOS == 1
-#include <bsp_sam9g20/common/FRAMApi.h>
+#include <bsp_sam9g20/common/fram/FRAMApi.h>
 #include <bsp_sam9g20/common/watchdog.h>
 
 #include <FreeRTOSConfig.h>

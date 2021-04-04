@@ -5,7 +5,7 @@
 #include <bootloaderConfig.h>
 #include <fatfs_config.h>
 
-#include <bsp_sam9g20/common/CommonFRAM.h>
+#include <bsp_sam9g20/common/fram/CommonFRAM.h>
 
 #include <hcc/api_hcc_mem.h>
 #include <at91/memories/sdmmc/MEDSdcard.h>

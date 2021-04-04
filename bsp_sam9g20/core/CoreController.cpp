@@ -5,7 +5,7 @@
 #include <FreeRTOSConfig.h>
 
 #include <bsp_sam9g20/memory/FRAMHandler.h>
-#include <bsp_sam9g20/common/FRAMApi.h>
+#include <bsp_sam9g20/common/fram/FRAMApi.h>
 #include <bsp_sam9g20/common/SRAMApi.h>
 
 #include <freertos/FreeRTOS.h>

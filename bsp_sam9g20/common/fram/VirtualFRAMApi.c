@@ -1,5 +1,4 @@
 #include "VirtualFRAMApi.h"
-#include "SDCardApi.h"
 #include "CommonFRAM.h"
 
 #include <stdlib.h>

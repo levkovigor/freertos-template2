@@ -4,7 +4,7 @@
 #include <bootloader/core/timer.h>
 
 #include <bsp_sam9g20/common/SRAMApi.h>
-#include <bsp_sam9g20/common/VirtualFRAMApi.h>
+#include <bsp_sam9g20/common/fram/VirtualFRAMApi.h>
 #include <bsp_sam9g20/common/lowlevel.h>
 
 #include <at91/boards/at91sam9g20-ek/board.h>
