@@ -297,7 +297,7 @@ void at91_add_second_transfer(const uint8_t* second_send_buf, uint8_t* second_re
             }
         }
 
-        /* Only shift zeros out */
+        /* Only shift zeros out by using dummy buffer */
         if(second_send_buf == NULL) {
             current_drv->SPI_TNPR = (unsigned int) dummy_buf[current_dummy_buf];
             current_dummy_buf = !current_dummy_buf;
@@ -308,7 +308,7 @@ void at91_add_second_transfer(const uint8_t* second_send_buf, uint8_t* second_re
         }
         current_drv->SPI_TNCR = next_size;
 
-        /* Shift out data into dummy buffer */
+        /* Shift reply data into dummy buffer */
         if(second_recv_buf == NULL) {
             current_drv->SPI_RNPR = (unsigned int) dummy_buf[current_dummy_buf];
             current_dummy_buf = !current_dummy_buf;
@@ -363,6 +363,7 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
     bool finish = false;
     bool error = false;
     if((status & AT91C_SPI_OVRES) == AT91C_SPI_OVRES) {
+        /* Finished transfers take precedence */
         if(!((status & AT91C_SPI_TXBUFE) == AT91C_SPI_TXBUFE) &&
                 !((status & AT91C_SPI_RXBUFF) == AT91C_SPI_RXBUFF)) {
             if(state != NULL) {
@@ -380,14 +381,13 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
         error = true;
     }
     if((status & AT91C_SPI_ENDTX) == AT91C_SPI_ENDTX) {
-        /* In the future, could be extended to fill second bank here to allow multiple
-         transfers */
-        /* tx_finished = true; */
+        /* Track internal reception mode switches */
         if(next_internal_reception != current_internal_reception) {
             current_internal_reception = next_internal_reception;
         }
+        /* Take care of reassigning the dummy write buffer unless the transfer is finished. */
         if(current_internal_reception == READ_ONLY &&
-                !((status & AT91C_SPI_RXBUFF) == AT91C_SPI_RXBUFF) /*&& drv->SPI_RCR != 0*/) {
+                !((status & AT91C_SPI_RXBUFF) == AT91C_SPI_RXBUFF)) {
             if(drv->SPI_TNCR == 0) {
                 drv->SPI_TNPR = (unsigned int) dummy_buf[current_dummy_buf];
                 drv->SPI_TNCR = sizeof(dummy_buf[0]);
@@ -396,14 +396,13 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
         }
     }
     if((status & AT91C_SPI_ENDRX) == AT91C_SPI_ENDRX) {
-        /* In the future, could be extended to fill second bank here to allow multiple
-         transfers */
-        /* rx_finished = true; */
+        /* Track internal reception mode switches */
         if(next_internal_reception != current_internal_reception) {
             current_internal_reception = next_internal_reception;
         }
+        /* Take care of reassigning the dummy read buffer unless the transfer is finished. */
         if(current_internal_reception == WRITE_ONLY &&
-                !((status & AT91C_SPI_TXBUFE) == AT91C_SPI_TXBUFE) /*&& drv->SPI_TCR != 0*/) {
+                !((status & AT91C_SPI_TXBUFE) == AT91C_SPI_TXBUFE)) {
             if(drv->SPI_RNCR == 0) {
                 drv->SPI_RNPR = (unsigned int) dummy_buf[current_dummy_buf];
                 drv->SPI_RNCR = sizeof(dummy_buf[0]);
@@ -420,6 +419,7 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
         disable_mask |= AT91C_SPI_RXBUFF;
     }
 
+    /* Cancel the transfer for errors */
     if(error) {
         drv->SPI_PTCR = AT91C_PDC_TXTDIS | AT91C_PDC_RXTDIS;
         finish = true;
@@ -448,7 +448,8 @@ bool generic_spi_interrupt_handler(AT91PS_SPI drv, unsigned int source, At91Tran
 
     }
     if(finish) {
-        /* Enable all required interrupts sources */
+        /* Cleanup */
+        /* Disable all interrupts sources */
         drv->SPI_IDR = AT91C_SPI_TXBUFE | AT91C_SPI_RXBUFF | AT91C_SPI_ENDRX | AT91C_SPI_ENDTX |
                 AT91C_SPI_MODF | AT91C_SPI_OVRES;
         reset_dma_regs(drv);

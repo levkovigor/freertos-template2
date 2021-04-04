@@ -93,7 +93,8 @@ void at91_set_max_block_cycles(uint32_t block_cycles);
  * @param spi_bus
  * @param npcs
  * @param send_buf
- * @param recv_buf              Can be NULL if reply is not required.
+ * @param recv_buf              Can be NULL if reply is not required, reply will be shifter
+ *                              into internal dummy buffer
  * @param transfer_len
  * @param finish_callback
  * @param callback_args         Arguments to be passed to the callback.
@@ -109,9 +110,10 @@ int at91_spi_non_blocking_transfer(At91SpiBuses spi_bus, At91Npcs npcs, const ui
 /**
  * Add a second transfer which will be executed directly after the first transfer.
  * This function will also start the transfer.
- * @param second_transfer
- * @param second_len
- * @param recv_buf
+ * @param second_send_buf   Buffer to be sent immediately after first transfer. Can be NULL
+ *                          to only send zeros
+ * @param second_recv_buf   Buffer to write to immediately after first transfer. Can be null
+ *                          to shift reply into internal dummy buffer
  * @param transfer_len
  * @return
  */
