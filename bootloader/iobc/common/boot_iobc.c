@@ -83,7 +83,9 @@ void perform_bootloader_core_operation() {
 #endif /* USE_FREERTOS == 0 */
 
     fram_stop_no_os();
-    disable_pit_aic();
+    for(int idx = 0; idx < 100; idx++) {
+        disable_pit_aic();
+    }
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
 }
 

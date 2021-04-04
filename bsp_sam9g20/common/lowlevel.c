@@ -42,6 +42,8 @@ void disable_pit_aic() {
     // Disable all interrupts
     AT91C_BASE_AIC->AIC_ICCR = 0xff;
     AIC_DisableIT( AT91C_ALL_INT );
+    AT91C_BASE_AIC->AIC_SMR[AT91C_ID_SYS] = 0;
+    AT91C_BASE_AIC->AIC_SVR[AT91C_ID_SYS] = 0;
     PIT_GetPIVR();
     PIT_DisableIT();
     PIT_Disable();

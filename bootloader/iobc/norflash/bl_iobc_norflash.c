@@ -330,22 +330,40 @@ void initialize_all_iobc_peripherals() {
 #if USE_FREERTOS == 0
 
 void simple_bootloader() {
+
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO_WP("-- SOURCE Bootloader v%d.%d --\n\r", BL_VERSION, BL_SUBVERSION);
+#endif
+
     /* We don't need these */
     // initialize_all_iobc_peripherals();
     // setup_timer_interrupt();
-    int result = copy_norflash_binary_to_sdram(PRIMARY_IMAGE_RESERVED_SIZE, false);
-    if(result != 0) {
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
-        TRACE_WARNING("Copy operation error\n\r");
-#endif
+    //uint32_t start = get_ms_counter();
+
+    /* Might need to adapt this to kick the watchdog */
+    size_t copy_size = PRIMARY_IMAGE_RESERVED_SIZE;
+    uint8_t bucket_num = 10;
+    size_t bucket_size = copy_size / bucket_num;
+    size_t bucket_rest = copy_size % bucket_num;
+    size_t offset = 0;
+    for(uint8_t idx = 0; idx < bucket_num; idx++) {
+        offset = idx * bucket_size;
+        memcpy((void*) SDRAM_DESTINATION + offset,
+                (const void*) BINARY_BASE_ADDRESS_READ + offset, bucket_size);
+        WDT_forceKick();
     }
-//    for(int idx = 0; idx < 10; idx++) {
+    offset = bucket_size * bucket_num;
+    memcpy((void*) SDRAM_DESTINATION + offset,
+            (const void*) BINARY_BASE_ADDRESS_READ + offset, bucket_rest);
+
+//    for(int idx = 0; idx < 100; idx++) {
 //        disable_pit_aic();
 //    }
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Jumping to SDRAM application\n\r");
 #endif
+    /* 139 ms were measured */
+    //TRACE_INFO("Measurement: %d ms\n\r", (int) (get_ms_counter() - start));
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
 }
 
