@@ -4,6 +4,7 @@
 
 #include <at91/utility/hamming.h>
 #include <at91/utility/trace.h>
+#include <bsp_sam9g20/common/fram/FRAMApiNoOs.h>
 #include <bsp_sam9g20/common/fram/CommonFRAM.h>
 #include <bsp_sam9g20/common/SRAMApi.h>
 #include <bsp_sam9g20/common/At91SpiDriver.h>
@@ -37,6 +38,8 @@ int handle_hamming_code_check(SlotType slotType, size_t image_size, size_t ham_c
     result = fram_read_ham_code(slotType, hamming_code_buf,
             IMAGES_HAMMING_RESERVED_SIZE, 0, ham_code_size, &size_read);
 #else
+
+#if USE_FRAM_NON_INTERRUPT_DRV == 0
     /* Transfer should have finished by now */
     At91TransferStates state = wait_on_transfer(9999, NULL);
     if(state != SPI_SUCCESS) {
@@ -46,7 +49,15 @@ int handle_hamming_code_check(SlotType slotType, size_t image_size, size_t ham_c
         return -1;
     }
     result = 0;
-#endif /* USE_BOOTLOADER == 0 */
+#else
+
+    /* TODO: Need to measure how long this takes, might need to kick the watchdog */
+    result = fram_no_os_blocking_read_ham_code(slotType, hamming_code_buf,
+            IMAGES_HAMMING_RESERVED_SIZE, 0, ham_code_size);
+
+#endif /* USE_FRAM_NON_INTERRUPT_DRV == 1 */
+
+#endif /* USE_FREERTOS == 0 */
 
     if(result != 0) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1

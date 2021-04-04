@@ -14,6 +14,8 @@ extern "C" {
  * @author  R. Mueller
  */
 
+int fram_start_no_os_no_interrupt();
+
 /**
  * This function needs to be called before any other FRAM functions.
  * @param callback
@@ -38,6 +40,9 @@ void fram_assign_callback(at91_user_callback_t callback, void* args);
  * @return -1 for invalid address or if FRAM has not been started yet, 0 on success
  */
 int fram_read_no_os(uint8_t* rec_buf, uint32_t address, size_t len);
+
+int fram_read_no_os_blocking(uint8_t* rec_buf, uint32_t address, size_t len);
+
 /**
  * Write to FRAM
  * @param send_buf
@@ -46,6 +51,8 @@ int fram_read_no_os(uint8_t* rec_buf, uint32_t address, size_t len);
  * @return -1 for invalid address or if FRAM has not been started yet, 0 on success
  */
 int fram_write_no_os(uint8_t* send_buf, uint32_t address, size_t len);
+
+int fram_write_no_os_blocking(uint8_t* rec_buf, uint32_t address, size_t len);
 
 /**
  * This will deinitialize the SPI driver. Be careful if SPI bus is used by other devices!

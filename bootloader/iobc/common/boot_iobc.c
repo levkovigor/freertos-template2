@@ -82,10 +82,10 @@ void perform_bootloader_core_operation() {
 
 #endif /* USE_FREERTOS == 0 */
 
+#if USE_FRAM_NON_INTERRUPT_DRV == 0
     fram_stop_no_os();
-    for(int idx = 0; idx < 100; idx++) {
-        disable_pit_aic();
-    }
+#endif
+    disable_pit_aic();
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
 }
 
@@ -184,6 +184,8 @@ void handle_problematic_norflash_copy_result() {
 #if USE_FREERTOS == 1
     result = fram_increment_img_reboot_counter(FLASH_SLOT, &curr_reboot_counter);
 #else
+
+#if USE_FRAM_NON_INTERRUPT_DRV == 0
     result = fram_no_os_read_img_reboot_counter(FLASH_SLOT, &curr_reboot_counter);
     if(result != 0) {
         At91TransferStates state = wait_on_transfer(500, NULL);
@@ -199,7 +201,18 @@ void handle_problematic_norflash_copy_result() {
             result = state;
         }
     }
-#endif
+#else
+
+    result = fram_no_os_blocking_read_img_reboot_counter(FLASH_SLOT, &curr_reboot_counter);
+    if(result == 0) {
+        curr_reboot_counter++;
+        result = fram_no_os_blocking_increment_img_reboot_counter(FLASH_SLOT, curr_reboot_counter);
+    }
+
+#endif /* USE_FRAM_NON_INTERRUPT_DRV == 1 */
+
+#endif /* USE_FREERTOS == 0 */
+
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_WARNING("Copy operation or hamming code check on NOR-Flash image failed\n\r");
     TRACE_WARNING("Restarting, current reboot counter %d\n\r", curr_reboot_counter);
@@ -229,7 +242,7 @@ void handle_problematic_sdc_copy_result(BootSelect boot_select) {
 BootSelect determine_boot_select(bool* use_hamming) {
     BootSelect curr_boot_select = BOOT_NOR_FLASH;
     /* Wait for the last transfer to finish */
-#if USE_FREERTOS == 0
+#if USE_FREERTOS == 0 && USE_FRAM_NON_INTERRUPT_DRV == 0
     At91TransferStates current_transfer_state = wait_on_transfer(100000, NULL);
     if(current_transfer_state != SPI_SUCCESS) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
@@ -238,7 +251,7 @@ BootSelect determine_boot_select(bool* use_hamming) {
 #endif
         fram_faulty = true;
     }
-#endif
+#endif /* USE_FREERTOS == 0 && USE_FRAM_NON_INTERRUPT_DRV == 0 */
 
     if (fram_faulty) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
@@ -359,6 +372,8 @@ int copy_norflash_binary_to_sdram(size_t copy_size, bool use_hamming)
 
     /* For the OSless case, we try to read the hamming code in parallel to the memcpy operation */
 #if USE_FREERTOS == 0
+
+#if USE_FRAM_NON_INTERRUPT_DRV == 0
     /* This should not happen, we blocked on completion previously */
     if(spi_transfer_state != IDLE) {
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
@@ -366,6 +381,7 @@ int copy_norflash_binary_to_sdram(size_t copy_size, bool use_hamming)
 #endif
         use_hamming = false;
     }
+#endif
 
     if(use_hamming) {
         size_t ham_size = bl_fram_block.nor_flash_hamming_code_size;
@@ -376,12 +392,14 @@ int copy_norflash_binary_to_sdram(size_t copy_size, bool use_hamming)
             use_hamming = false;
         }
 
+#if USE_FRAM_NON_INTERRUPT_DRV == 0
         /* Start DMA transfer in background to be run in parallel to the memcpy operation */
         result = fram_no_os_read_ham_code(FLASH_SLOT, hamming_code_buf,
                 sizeof(hamming_code_buf), 0, ham_size);
         if(result != 0) {
             use_hamming = false;
         }
+#endif
     }
 #endif /* USE_FREERTOS == 0 */
 
@@ -507,6 +525,7 @@ bool local_hamming_flag_check(BootSelect boot_select) {
 #if USE_FREERTOS == 0
 int increment_reboot_counter_no_os(SlotType slot_type, uint16_t* new_reboot_counter) {
     uint16_t new_reboot_counter_loc = 0;
+#if USE_FRAM_NON_INTERRUPT_DRV == 0
     At91TransferStates state;
     int result = fram_no_os_read_img_reboot_counter(slot_type, &new_reboot_counter_loc);
     if(result == 0) {
@@ -531,6 +550,20 @@ int increment_reboot_counter_no_os(SlotType slot_type, uint16_t* new_reboot_coun
         }
     }
     return result;
+#else
+
+    int result = fram_no_os_blocking_read_img_reboot_counter(FLASH_SLOT, &new_reboot_counter_loc);
+    if(result == 0) {
+        new_reboot_counter_loc++;
+        result = fram_no_os_blocking_increment_img_reboot_counter(FLASH_SLOT,
+                new_reboot_counter_loc);
+        if(new_reboot_counter != NULL) {
+            *new_reboot_counter = new_reboot_counter_loc;
+        }
+    }
+    return result;
+
+#endif /* USE_FRAM_NON_INTERRUPT_DRV == 1 */
 }
 #endif
 

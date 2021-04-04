@@ -55,11 +55,12 @@ static const uint32_t WATCHDOG_KICK_INTERVAL_MS = 15;
 #else
 
 BootloaderGroup bl_fram_block = {};
-void fram_callback(At91SpiBuses bus, At91TransferStates state, void* args);
 volatile At91TransferStates spi_transfer_state = IDLE;
 
+#if USE_FRAM_NON_INTERRUPT_DRV == 0
 /* Forward declaration, defined in common source file */
 extern void fram_callback(At91SpiBuses bus, At91TransferStates state, void* args);
+#endif
 
 #if USE_SIMPLE_BOOTLOADER == 1
 void simple_bootloader();
@@ -300,6 +301,7 @@ void initialize_all_iobc_peripherals() {
     }
 #else
     memset(&bl_fram_block, 0, sizeof(bl_fram_block));
+#if USE_FRAM_NON_INTERRUPT_DRV == 0
     int retval = fram_start_no_os(fram_callback, (void*) &spi_transfer_state,
             AT91C_AIC_PRIOR_HIGHEST - 2);
     if(retval != 0) {
@@ -319,6 +321,25 @@ void initialize_all_iobc_peripherals() {
 #endif
         }
     }
+#else
+
+    int retval = fram_start_no_os_no_interrupt();
+    if(retval != 0) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        TRACE_WARNING("FRAM initialization failed with code %d\n\r", retval);
+#endif
+        fram_faulty = true;
+    }
+    retval = fram_no_os_blocking_read_bootloader_block(&bl_fram_block);
+    if(retval != 0) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        TRACE_WARNING("FRAM reading BL block failed with code %d\n\r", retval);
+#endif
+        fram_faulty = true;
+    }
+
+#endif /* !USE_FRAM_NON_INTERRUPT_DRV == 0 */
+
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     print_bl_info();
 #endif

@@ -181,6 +181,9 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
     }
     case(ZERO_OUT_FRAM_DEFAULT_ZERO_FIELD): {
         int errorVal = 0;
+#if OBSW_VERBOSE_LEVEL >= 1
+        sif::printInfo("Zeroing out FRAM critical block fields..\n");
+#endif
         ReturnValue_t result = FRAMHandler::zeroOutDefaultZeroFields(&errorVal);
         if(result != HasReturnvaluesIF::RETURN_OK) {
             actionHelper.finish(false, commandedBy, actionId, errorVal);

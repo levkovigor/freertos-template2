@@ -18,7 +18,9 @@
 #define USE_FREERTOS                0
 
 //! Minimalistic bootloader which copies NOR to SDRAM and jumps there.
-#define USE_SIMPLE_BOOTLOADER       1
+#define USE_SIMPLE_BOOTLOADER       0
+
+#define USE_FRAM_NON_INTERRUPT_DRV  1
 
 //! Can be used to enable or disable diagnostic printouts in the bootloader.
 #define BOOTLOADER_VERBOSE_LEVEL    1

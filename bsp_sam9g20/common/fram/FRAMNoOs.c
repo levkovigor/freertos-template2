@@ -31,7 +31,13 @@ volatile at91_user_callback_t internal_cb = internal_fram_callback;
 
 int enable_writes();
 
-int fram_start_no_os(at91_user_callback_t callback, void* callback_args,
+int fram_start_no_os_no_interrupt() {
+    return at91_spi_configure_driver(FRAM_BUS, FRAM_NPCS, FRAM_MODE, FRAM_SPI_SPEED,
+            15, 1, 0);
+    fram_started = true;
+}
+
+int fram_start_no_os_interrupt(at91_user_callback_t callback, void* callback_args,
         uint8_t interrupt_priority) {
     if(callback == NULL) {
         return -1;
@@ -99,6 +105,32 @@ int fram_read_no_os(uint8_t* rec_buf, uint32_t address, size_t len) {
     return 0;
 }
 
+int fram_read_no_os_blocking(uint8_t* rec_buf, uint32_t address, size_t len) {
+    cmd_buf[0] = READ_OP_REG;
+    cmd_buf[1] = (address >> 16) & 0xff;
+    cmd_buf[2] = (address >> 8) & 0xff;
+    cmd_buf[3] = address & 0xff;
+
+    AT91PS_SPI drv = AT91C_BASE_SPI0;
+    uint32_t dummy = drv->SPI_RDR;
+    (void) dummy;
+    for(size_t idx = 0; idx < len + 4; idx ++) {
+        if(idx < 4) {
+            drv->SPI_TDR = cmd_buf[idx];
+            while ((drv->SPI_SR & AT91C_SPI_RDRF) == 0);
+            dummy = drv->SPI_RDR;
+        }
+        else {
+            drv->SPI_TDR = 0;
+            while ((drv->SPI_SR & AT91C_SPI_RDRF) == 0);
+            *rec_buf = drv->SPI_RDR;
+            rec_buf++;
+        }
+    }
+    return 0;
+}
+
+
 int fram_write_no_os(uint8_t* send_buf, uint32_t address, size_t len) {
     if(address + len > FRAM_END_ADDR) {
         return -1;
@@ -117,6 +149,31 @@ int fram_write_no_os(uint8_t* send_buf, uint32_t address, size_t len) {
         return retval;
     }
     at91_add_second_transfer(send_buf, NULL, len);
+    return 0;
+}
+
+int fram_write_no_os_blocking(uint8_t* send_buf, uint32_t address, size_t len) {
+    cmd_buf[0] = WRITE_OP_REG;
+    cmd_buf[1] = (address >> 16) & 0xff;
+    cmd_buf[2] = (address >> 8) & 0xff;
+    cmd_buf[3] = address & 0xff;
+
+    AT91PS_SPI drv = AT91C_BASE_SPI0;
+    uint32_t dummy = drv->SPI_RDR;
+    for(size_t idx = 0; idx < len + 4; idx ++) {
+        if(idx < 4) {
+            drv->SPI_TDR = cmd_buf[idx];
+            while ((drv->SPI_SR & AT91C_SPI_RDRF) == 0);
+            dummy = drv->SPI_RDR;
+        }
+        else {
+            drv->SPI_TDR = *send_buf;
+            while ((drv->SPI_SR & AT91C_SPI_RDRF) == 0);
+            dummy = drv->SPI_RDR;
+            send_buf++;
+        }
+    }
+    (void) dummy;
     return 0;
 }
 
