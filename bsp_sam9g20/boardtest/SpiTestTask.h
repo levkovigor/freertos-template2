@@ -49,6 +49,7 @@ private:
 	SPItransfer spiTransfer;
 	bool initWait = true;
     bool oneshot = true;
+    int utilityCounter = 0;
 
 	bool decoderSSused = false;
 	void configureSpiDummySSIfNeeded();

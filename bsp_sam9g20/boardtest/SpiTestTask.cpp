@@ -718,10 +718,9 @@ void SpiTestTask::iobcFramTest() {
     }
 
 
-    uint8_t rec_buf[64] = {};
     size_t len = 10;
     uint32_t address = CRITICAL_BLOCK_START_ADDR;
-    retval = fram_read_no_os(rec_buf, address, len);
+    retval = fram_read_no_os(readData, address, len);
     if(retval != 0) {
         sif::printWarning("FRAM read (NO OS) failed!\n");
     }
@@ -736,12 +735,12 @@ void SpiTestTask::iobcFramTest() {
         }
     }
     sif::printInfo("Printing critical block 10 bytes\n");
-    arrayprinter::print(rec_buf, len);
+    arrayprinter::print(readData, len);
 
-    memset(rec_buf, 0, 10);
+    memset(readData, 0, 10);
     transferState = At91TransferStates::IDLE;
     len = 64;
-    retval = fram_read_no_os(rec_buf, address, len);
+    retval = fram_read_no_os(readData, address, len);
     if(retval != 0) {
         sif::printWarning("FRAM read (NO OS) failed!\n");
     }
@@ -756,8 +755,68 @@ void SpiTestTask::iobcFramTest() {
         }
     }
     sif::printInfo("Printing critical block 64 bytes\n");
-    arrayprinter::print(rec_buf, len);
+    arrayprinter::print(readData, len);
     transferState = At91TransferStates::IDLE;
+
+//    memset(readData, 0, 128);
+//    len = 128;
+//    retval = fram_read_no_os(readData, FRAM_END_ADDR - len, len);
+//    if(retval != 0) {
+//        sif::printWarning("FRAM read (NO OS) failed!\n");
+//    }
+//    while(true) {
+//        if(transferState == At91TransferStates::SPI_SUCCESS) {
+//            break;
+//        }
+//        else if(transferState == At91TransferStates::SPI_OVERRUN_ERROR) {
+//            sif::printWarning("Overrun error!\n");
+//            break;
+//        }
+//    }
+//    transferState = At91TransferStates::IDLE;
+//    sif::printInfo("Printing last 128 bytes of FRAM\n");
+//    arrayprinter::print(readData, len);
+
+    len = 32;
+    for(size_t idx = 0; idx < len; idx ++) {
+        writeData[idx] = idx + utilityCounter;
+    }
+
+    utilityCounter++;
+    retval = fram_write_no_os(writeData, FRAM_END_ADDR - len, len);
+    if(retval != 0) {
+        sif::printWarning("FRAM write (NO OS) failed!\n");
+    }
+    while(true) {
+        if(transferState == At91TransferStates::SPI_SUCCESS) {
+            break;
+        }
+        else if(transferState == At91TransferStates::SPI_OVERRUN_ERROR) {
+            sif::printWarning("Overrun error!\n");
+            break;
+        }
+    }
+    sif::printInfo("Wrote to last %d bytes of FRAM\n", len);
+    transferState = At91TransferStates::IDLE;
+
+    memset(readData, 0, len);
+    retval = fram_read_no_os(readData, FRAM_END_ADDR - len, len);
+    if(retval != 0) {
+        sif::printWarning("FRAM read (NO OS) failed!\n");
+    }
+    while(true) {
+        if(transferState == At91TransferStates::SPI_SUCCESS) {
+            break;
+        }
+        else if(transferState == At91TransferStates::SPI_OVERRUN_ERROR) {
+            sif::printWarning("Overrun error!\n");
+            break;
+        }
+    }
+    transferState = At91TransferStates::IDLE;
+    sif::printInfo("Printing last %d bytes of FRAM\n", len);
+    arrayprinter::print(readData, len);
+
 }
 
 void SpiTestTask::iobcFramRawTest() {
