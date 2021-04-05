@@ -6,10 +6,6 @@
 
 volatile uint32_t u32_ms_counter = 0;
 
-// Private constants
-static const uint32_t TICK_RATE_HZ = 1000;
-static const uint32_t port1SECOND_IN_uS = 1000000.0;
-static const uint32_t port1MHz_IN_Hz = 1000000ul;
 static const uint8_t TICK_SYSTEM_PRIORITY = AT91C_AIC_PRIOR_LOWEST;
 
 // Private functions

@@ -511,7 +511,7 @@ void boardTestTaskInit() {
     /* SPI Test Task */
 #if OBSW_ADD_SPI_TEST_TASK == 1
     PeriodicTaskIF* spiTestTask = taskFactory->createPeriodicTask(
-            "SPI_TASK", 4, 2048, 1, nullptr);
+            "SPI_TASK", 6, 2048, 1, nullptr);
     result = spiTestTask->addComponent(objects::AT91_SPI_TEST_TASK);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("SPI test task", objects::AT91_SPI_TEST_TASK);

@@ -6,7 +6,7 @@
 #ifndef SAM9G20_COMMON_VIRTUALFRAMAPI_H_
 #define SAM9G20_COMMON_VIRTUALFRAMAPI_H_
 
-#include "SDCardApi.h"
+#include "../SDCardApi.h"
 #include <stdbool.h>
 
 #ifdef __cplusplus

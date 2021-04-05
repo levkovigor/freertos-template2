@@ -4,7 +4,7 @@
 #include <bootloader/core/timer.h>
 
 #include <bsp_sam9g20/common/SRAMApi.h>
-#include <bsp_sam9g20/common/VirtualFRAMApi.h>
+#include <bsp_sam9g20/common/fram/VirtualFRAMApi.h>
 #include <bsp_sam9g20/common/lowlevel.h>
 
 #include <at91/boards/at91sam9g20-ek/board.h>
@@ -152,6 +152,7 @@ int perform_bootloader_core_operation() {
     LED_Clear(1);
 
     int result = 0;
+
     //result = copy_sdc_image_to_sdram();
     result = copy_nandflash_image_to_sdram(PRIMARY_IMAGE_NAND_OFFSET, PRIMARY_IMAGE_RESERVED_SIZE,
             PRIMARY_IMAGE_SDRAM_OFFSET, false);
@@ -170,11 +171,9 @@ int perform_bootloader_core_operation() {
 #endif
 
     CP15_Disable_I_Cache();
-    /* This is a test section. If there are issues with the boot process
-    play around with the upper loop limit :-) */
-    for(int idx = 0; idx < 10000; idx ++) {
-        disable_pit_aic();
-    }
+
+    //disable_pit_aic();
+
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
 
     /* Should never be reached */

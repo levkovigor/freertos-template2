@@ -39,12 +39,16 @@ void disable_pit_aic() {
     for (int i = 0; i < 8 ; i++) {
         AT91C_BASE_AIC->AIC_EOICR = 0;
     }
-    // Clear AIC and PIT interrupts and disable them.
-    AT91C_BASE_AIC->AIC_ICCR = 1 << AT91C_ID_SYS;
-    AIC_DisableIT( AT91C_ID_SYS );
+    // Disable all interrupts
+    AT91C_BASE_AIC->AIC_ICCR = 0xffffffff;
+    AIC_DisableIT( AT91C_ALL_INT );
+    AT91C_BASE_AIC->AIC_SMR[AT91C_ID_SYS] = 0;
+    AT91C_BASE_AIC->AIC_SVR[AT91C_ID_SYS] = 0;
     PIT_GetPIVR();
     PIT_DisableIT();
     PIT_Disable();
+    AT91C_BASE_AIC->AIC_EOICR = 0;
+    AT91C_BASE_PITC->PITC_PIMR = 0;
 }
 
 

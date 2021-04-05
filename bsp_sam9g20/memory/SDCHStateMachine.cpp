@@ -6,6 +6,7 @@
 
 #include <mission/memory/FileSystemMessage.h>
 #include <bsp_sam9g20/common/SDCardApi.h>
+#include <bsp_sam9g20/memory/HCCFileGuard.h>
 
 #include <fsfw/timemanager/Countdown.h>
 

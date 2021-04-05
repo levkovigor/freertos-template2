@@ -67,33 +67,3 @@ ReturnValue_t SDCardAccess::getAccessResult() const {
 VolumeId SDCardAccess::getActiveVolume() const {
     return currentVolumeId;
 }
-
-HCCFileGuard::HCCFileGuard(F_FILE **fileHandle, const char *fileName, const char *access) {
-    if(fileName != nullptr and access != nullptr and fileHandle != nullptr) {
-        *fileHandle = f_open(fileName, access);
-    }
-    if(fileHandle != nullptr) {
-        this->fileHandle = *fileHandle;
-    }
-}
-
-
-HCCFileGuard::~HCCFileGuard() {
-    if(fileHandle != nullptr) {
-        int result = f_close(fileHandle);
-        if(result != F_NO_ERROR) {
-#if FSFW_CPP_OSTREAM_ENABLED == 1
-            sif::error << "FileHelper: Closing failed, f_close error code: " << result <<
-                    std::endl;
-#else
-            sif::printError("FileHelper: Closing failed, f_close error code: %d\n", result);
-#endif
-        }
-    }
-}
-
-HCCFileGuard::HCCFileGuard(F_FILE **fileHandle) {
-    if(fileHandle != nullptr) {
-        this->fileHandle = * fileHandle;
-    }
-}
