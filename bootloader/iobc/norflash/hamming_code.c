@@ -13,6 +13,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#define HAM_CODE_DEBUGGING 1
+
 uint8_t hamming_code_buf[IMAGES_HAMMING_RESERVED_SIZE];
 
 /**
@@ -65,6 +67,16 @@ int handle_hamming_code_check(SlotType slotType, size_t image_size, size_t ham_c
 #endif
         return -1;
     }
+
+#if HAM_CODE_DEBUGGING == 1
+    TRACE_INFO("Hamming code size: %d\n\r", ham_code_size);
+    TRACE_INFO("First four bytes of hamming code %02x, %02x, %02x, %02x\n\r", hamming_code_buf[0],
+            hamming_code_buf[1], hamming_code_buf[2], hamming_code_buf[3]);
+    uint32_t last_idx = ham_code_size - 1;
+    TRACE_INFO("Last four bytes of hamming code %02x, %02x, %02x, %02x\n\r",
+            hamming_code_buf[last_idx - 3], hamming_code_buf[last_idx - 2],
+            hamming_code_buf[last_idx - 1], hamming_code_buf[last_idx]);
+#endif
 
     /* The hamming code used here always checks blocks of 256 bytes but the image might
     not always have the fitting size to be a multiple of 256.
