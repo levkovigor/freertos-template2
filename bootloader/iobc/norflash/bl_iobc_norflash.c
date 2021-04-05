@@ -84,6 +84,11 @@ int boot_iobc_from_norflash() {
     //-------------------------------------------------------------------------
     TRACE_CONFIGURE(DBGU_STANDARD, 115200, BOARD_MCK);
 
+    //-------------------------------------------------------------------------
+    // Enable I-Cache
+    //-------------------------------------------------------------------------
+    CP15_Enable_I_Cache();
+
 #if USE_FREERTOS == 1
     //-------------------------------------------------------------------------
     // Initiate watchdog for iOBC
@@ -101,11 +106,6 @@ int boot_iobc_from_norflash() {
     /* This call is necessary! Maybe it switches the power supply on? */
     FRAM_start();
 #endif /* USE_FREERTOS == 0 */
-
-    //-------------------------------------------------------------------------
-    // Enable I-Cache
-    //-------------------------------------------------------------------------
-    CP15_Enable_I_Cache();
 
     // Glow all LEDs
     LED_start();
