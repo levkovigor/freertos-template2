@@ -1,5 +1,5 @@
-#ifndef BOOTLOADER_IOBC_NORFLASH_BL_IOBC_NORFLASH_H_
-#define BOOTLOADER_IOBC_NORFLASH_BL_IOBC_NORFLASH_H_
+#ifndef BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_
+#define BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_
 
 #include <bsp_sam9g20/common/At91SpiDriver.h>
 #include <bsp_sam9g20/common/fram/CommonFRAM.h>
@@ -16,4 +16,4 @@ extern bool fram_faulty;
  */
 extern At91TransferStates wait_on_transfer(uint32_t block_cycles, uint32_t* req_cycles);
 
-#endif /* BOOTLOADER_IOBC_NORFLASH_BL_IOBC_NORFLASH_H_ */
+#endif /* BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_ */

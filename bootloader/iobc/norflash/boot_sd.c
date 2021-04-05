@@ -1,6 +1,5 @@
-#include "iobc_boot_sd.h"
-#include "bl_iobc_norflash.h"
-#include "../common/boot_iobc.h"
+#include "boot_sd.h"
+#include "main_norflash.h"
 
 #include <bootloaderConfig.h>
 #include <fatfs_config.h>
@@ -10,6 +9,7 @@
 #include <hcc/api_hcc_mem.h>
 #include <at91/memories/sdmmc/MEDSdcard.h>
 #include <at91/utility/trace.h>
+
 
 #if USE_TINY_FS == 0
 #include <bsp_sam9g20/common/SDCardApi.h>

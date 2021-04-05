@@ -1,6 +1,5 @@
 #include "boot_iobc.h"
 #include <bootloaderConfig.h>
-#include "../norflash/bl_iobc_norflash.h"
 #include "../norflash/iobc_boot_sd.h"
 
 #include <bootloader/utility/CRC.h>
@@ -9,6 +8,7 @@
 #include <bsp_sam9g20/common/fram/CommonFRAM.h>
 #include <bsp_sam9g20/common/SRAMApi.h>
 #include <bsp_sam9g20/common/lowlevel.h>
+#include <iobc/norflash/iobc_norflash.h>
 
 #if USE_FREERTOS == 1
 #include <freertos/FreeRTOS.h>

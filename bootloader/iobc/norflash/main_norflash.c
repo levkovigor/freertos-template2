@@ -1,4 +1,4 @@
-#include "bl_iobc_norflash.h"
+#include "main_norflash.h"
 #include "../common/boot_iobc.h"
 #include <bootloaderConfig.h>
 #include <commonIOBCConfig.h>
@@ -16,6 +16,7 @@
 #include <at91/peripherals/aic/aic.h>
 #include <at91/peripherals/pio/pio.h>
 #include <at91/peripherals/cp15/cp15.h>
+
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
 #include <utility/trace.h>
@@ -63,14 +64,25 @@ volatile At91TransferStates spi_transfer_state = IDLE;
 extern void fram_callback(At91SpiBuses bus, At91TransferStates state, void* args);
 #endif
 
+int increment_reboot_counter_no_os(SlotType slot_type, uint16_t* new_reboot_counter);
+
+#endif /* USE_FREERTOS == 0 */
+
 #if USE_SIMPLE_BOOTLOADER == 1
 void simple_bootloader();
 #endif
 
-#endif /* USE_FREERTOS == 0 */
-
+BootSelect determine_boot_select(bool* use_hamming);
+bool local_hamming_flag_check(BootSelect boot_select);
 void perform_bootloader_check();
 void initialize_all_iobc_peripherals();
+int copy_sdcard_binary_to_sdram(BootSelect boot_select, bool use_hamming);
+void handle_problematic_sdc_copy_result(BootSelect boot_select);
+int increment_sdc_loc_reboot_counter(BootSelect boot_select, uint16_t* curr_reboot_counter);
+void handle_problematic_norflash_copy_result();
+int handle_hamming_code_check(SlotType slotType, size_t image_size, size_t ham_code_size);
+int handle_hamming_code_result(int result);
+
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
 void print_bl_info();
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
@@ -137,6 +149,201 @@ int boot_iobc_from_norflash() {
 }
 
 
+int perform_iobc_copy_operation_to_sdram() {
+    /* The following bootloader sequence was designed by Jakob Meier and implemented by
+    Robin Mueller. A graph can be found in the OBSW DDJF document.
+
+    Determine which binary should be copied to SDRAM first.
+    First, we check whether a software update needs to be loaded by checking a FRAM flag.
+    The SW update volume (SD card 0 or 1) is specified in the FRAM as well.
+    After that, we also check the local reboot counter of either the software update
+    (SD card slot 1) or the primary flash image.
+
+    If the reboot counter for the SW update is larger than 3, we go to the flash image.
+    If the flash image reboot counter is larger than 3, we try the preferred SD card image.
+    If the default SD card image reboot counter is larger than 3, we switch the SD card and
+    try to boot the image from the other SD card. If the fault counter is larger than 3 here too
+    we boot from NOR-Flash without ECC.
+
+    Hamming code checks can be disabled individually for image types, which will lead to a
+    boot of that image without a hamming code check.
+    If a hamming code checks fails with ECC error or multibit errors, we increment the reboot
+    counter in the FRAM and restart the OBC immediately.
+     */
+    BootSelect boot_select = BOOT_NOR_FLASH;
+    int result = 0;
+    bool use_hamming = false;
+
+    /* If there are issues with the FRAM, we just boot from flash */
+    if(!fram_faulty) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        TRACE_INFO("Determining boot select..\n\r");
+#endif
+        boot_select = determine_boot_select(&use_hamming);
+    }
+
+    if(use_hamming) {
+        use_hamming = local_hamming_flag_check(boot_select);
+    }
+
+    if(boot_select == BOOT_NOR_FLASH) {
+
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        if(use_hamming) {
+            TRACE_INFO("Booting from NOR-Flash with hamming code check\n\r");
+        }
+        else {
+            TRACE_INFO("Booting from NOR-Flash without hamming code check\n\r");
+        }
+#endif
+        result = copy_norflash_binary_to_sdram(PRIMARY_IMAGE_RESERVED_SIZE, use_hamming);
+
+        if(result != 0) {
+            handle_problematic_norflash_copy_result();
+        }
+        /* Increment local reboot counter */
+#if USE_FREERTOS == 1
+        result = fram_increment_img_reboot_counter(FLASH_SLOT, NULL);
+#else
+        result = increment_reboot_counter_no_os(FLASH_SLOT, NULL);
+#endif
+    }
+    else {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        if(use_hamming) {
+            TRACE_INFO("Booting from SD card with hamming code check\n\r");
+        }
+        else {
+            TRACE_INFO("Booting from SD card without hamming code check\n\r");
+        }
+#endif
+        result = copy_sdcard_binary_to_sdram(boot_select, use_hamming);
+
+        if(result != 0) {
+            handle_problematic_sdc_copy_result(boot_select);
+        }
+        result = increment_sdc_loc_reboot_counter(boot_select, NULL);
+    }
+
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+    if(result == 0) {
+        TRACE_INFO("Copied successfully\n\r");
+    }
+    else {
+        TRACE_INFO("Copied with issues..\n\r");
+    }
+#endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
+
+    return result;
+}
+
+/**
+ * Handles the copy operation from NOR-Flash to SDRAM
+ * @param copy_size
+ * @return
+ *  - 0 on success (jump to SDRAM)
+ *  - -1 on failure (do not jump to SDRAM, increment reboot counter and restart)
+ */
+int copy_norflash_binary_to_sdram(size_t copy_size, bool use_hamming)
+{
+    int result = 0;
+    // Initialize Nor
+    //-------------------------------------------------------------------------
+    // => the configuration was already done in LowLevelInit()
+    // Transfert data from Nor to External RAM
+    //-------------------------------------------------------------------------
+
+    /* For the OSless case, we try to read the hamming code in parallel to the memcpy operation */
+#if USE_FREERTOS == 0
+
+#if USE_FRAM_NON_INTERRUPT_DRV == 0
+    /* This should not happen, we blocked on completion previously */
+    if(spi_transfer_state != IDLE) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        TRACE_WARNING("FRAM BL block might have failed\n\r");
+#endif
+        use_hamming = false;
+    }
+#endif
+
+    if(use_hamming) {
+        size_t ham_size = bl_fram_block.nor_flash_hamming_code_size;
+        if(ham_size == 0x00 || ham_size == 0xff) {
+    #if BOOTLOADER_VERBOSE_LEVEL >= 1
+            TRACE_WARNING("Hamming code size might be invalid\n\r");
+    #endif
+            use_hamming = false;
+        }
+
+#if USE_FRAM_NON_INTERRUPT_DRV == 0
+        /* Start DMA transfer in background to be run in parallel to the memcpy operation */
+        result = fram_no_os_read_ham_code(FLASH_SLOT, hamming_code_buf,
+                sizeof(hamming_code_buf), 0, ham_size);
+        if(result != 0) {
+            use_hamming = false;
+        }
+#endif
+    }
+#endif /* USE_FREERTOS == 0 */
+
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+    TRACE_INFO("Copying NOR-Flash binary to SDRAM..\n\r");
+#endif
+
+#if USE_FREERTOS == 1
+    /* This operation takes 100-200 milliseconds if the whole NOR-Flash is
+    copied. But the watchdog is running in a separate task with the highest priority
+    and we are using a pre-emptive scheduler so this should not be an issue. */
+    memcpy((void*) SDRAM_DESTINATION, (const void*) BINARY_BASE_ADDRESS_READ, copy_size);
+#else
+    /* Now we need to split up the copy operation to kick the watchdog. Watchdog window
+    is 1ms to 50ms */
+    {
+        uint8_t bucket_num = 10;
+        size_t bucket_size = copy_size / bucket_num;
+        size_t bucket_rest = copy_size % bucket_num;
+        size_t offset = 0;
+        for(uint8_t idx = 0; idx < bucket_num; idx++) {
+            offset = idx * bucket_size;
+            memcpy((void*) SDRAM_DESTINATION + offset,
+                    (const void*) BINARY_BASE_ADDRESS_READ + offset, bucket_size);
+            WDT_forceKick();
+        }
+        offset = bucket_size * bucket_num;
+        memcpy((void*) SDRAM_DESTINATION + offset,
+                (const void*) BINARY_BASE_ADDRESS_READ + offset, bucket_rest);
+    }
+#endif /* USE_FREERTOS == 0 */
+
+    /* Now we can perform the hamming code check on the image in the SDRAM */
+    if(use_hamming) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+        TRACE_INFO("Performing hamming code ECC check..\n\r");
+#endif
+        size_t image_size = bl_fram_block.nor_flash_binary_size;
+        size_t ham_code_size = bl_fram_block.nor_flash_hamming_code_size;
+        if (image_size == 0 || image_size == 0xffffffff) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+            TRACE_WARNING("Flash image size %d invalid\n\r", image_size);
+            /* Still jump to binary */
+            return 0;
+#endif
+        }
+        else if(ham_code_size == 0 || ham_code_size == 0xffffffff) {
+#if BOOTLOADER_VERBOSE_LEVEL >= 1
+            TRACE_WARNING("Flash hamming code size %d invalid\n\r", image_size);
+            /* Still jump to binary */
+            return 0;
+#endif
+        }
+        else {
+            int check_result = handle_hamming_code_check(FLASH_SLOT, image_size, ham_code_size);
+            result = handle_hamming_code_result(check_result);
+        }
+    }
+    return result;
+}
+
 #if USE_FREERTOS == 1
 
 void init_task(void * args) {
@@ -186,16 +393,6 @@ void handler_task(void * args) {
 
 #else /* USE_FREERTOS == 1 */
 #endif
-
-void print_bl_info() {
-    TRACE_INFO_WP("\n\rStarting FreeRTOS task scheduler.\n\r");
-    TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
-    TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME_PRINT);
-    TRACE_INFO_WP("-- Software version v%d.%d --\n\r", BL_VERSION,
-            BL_SUBVERSION);
-    TRACE_INFO_WP("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
-    TRACE_INFO("Running initialization task..\n\r");
-}
 
 void perform_bootloader_check() {
     /* Check CRC of bootloader:
@@ -392,5 +589,3 @@ void simple_bootloader() {
 }
 
 #endif /* USE_FREERTOS == 0 */
-
-
