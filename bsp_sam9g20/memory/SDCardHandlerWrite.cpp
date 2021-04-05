@@ -4,6 +4,7 @@
 #include "sdcardHandlerDefinitions.h"
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
+#include <bsp_sam9g20/memory/HCCFileGuard.h>
 #include <mission/memory/FileSystemMessage.h>
 
 #define SDC_FILE_WRITE_WIRETAPPING    0

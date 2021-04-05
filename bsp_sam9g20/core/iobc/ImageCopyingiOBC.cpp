@@ -6,6 +6,7 @@
 #include <fsfw/events/EventManagerIF.h>
 
 #include <bsp_sam9g20/memory/SDCardAccess.h>
+#include <bsp_sam9g20/memory/HCCFileGuard.h>
 #include <bsp_sam9g20/common/fram/CommonFRAM.h>
 #include <bsp_sam9g20/common/fram/FRAMApi.h>
 #include <hal/Storage/NORflash.h>

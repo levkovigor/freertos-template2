@@ -4,6 +4,7 @@
 #include <fsfw/timemanager/Countdown.h>
 #include <bsp_sam9g20/core/SoftwareImageHandler.h>
 #include <bsp_sam9g20/memory/SDCardAccess.h>
+#include <bsp_sam9g20/memory/HCCFileGuard.h>
 
 
 ImageCopyingEngine::ImageCopyingEngine(SoftwareImageHandler *owner,

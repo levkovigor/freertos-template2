@@ -35,7 +35,7 @@
 #include <at91/utility/hamming.h>
 #include <at91/utility/trace.h>
 
-#define HAMMING_LIB_DEBUG_MODE 1
+#define HAMMING_LIB_DEBUG_MODE 0
 
 //------------------------------------------------------------------------------
 //         Internal function

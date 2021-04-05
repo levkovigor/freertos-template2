@@ -577,7 +577,7 @@ int fram_write_ham_code(SlotType slotType, uint8_t *buffer, size_t current_offse
     if(result != 0) {
         return result;
     }
-    return FRAM_writeAndVerify((unsigned char*) address + current_offset,
+    return FRAM_writeAndVerify((unsigned char*) buffer + current_offset,
             address, size_to_write);
 }
 
