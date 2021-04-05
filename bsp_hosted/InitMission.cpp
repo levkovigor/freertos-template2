@@ -56,7 +56,7 @@ void initTask() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     TaskPriority taskPrio = 0;
 #ifdef _WIN32
-    TaskPriority taskPrio = tasks::makeWinPriority();
+    taskPrio = tasks::makeWinPriority();
 #endif
 
 
@@ -151,7 +151,7 @@ void initTask() {
     			1.0, nullptr);
         result = PusService11->addComponent(objects::PUS_SERVICE_11_TC_SCHED);
         if(result != HasReturnvaluesIF::RETURN_OK) {
-        	sif::error << "Add component TC SCHED failed" << std::endl;
+            initmission::printAddObjectError("PUS 11", objects::PUS_SERVICE_11_TC_SCHED);
         }
 
 #ifdef __unix__
@@ -226,7 +226,6 @@ void initTask() {
     UdpPollingTask->startTask();
 #endif
 
-<<<<<<< HEAD
 	PusService1->startTask();
 	PusService2->startTask();
 	PusService5->startTask();
@@ -234,14 +233,5 @@ void initTask() {
 	PusService11->startTask();
 	PusService17->startTask();
 	PusService200->startTask();
-=======
-    PusService1->startTask();
-    PusService2->startTask();
-    PusService5->startTask();
-    PusService8->startTask();
-    PusService17->startTask();
-    PusService200->startTask();
 
-    attitudeController->startTask();
->>>>>>> origin
 }

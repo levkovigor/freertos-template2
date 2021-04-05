@@ -6,7 +6,26 @@
 #include <OBSWConfig.h>
 
 
-
+/**
+ * @brief: PUS-Service 11 - Telecommand scheduling.
+ * Full documentation: ECSS-E-ST-70-41C, p. 168:
+ * ST[11] time-based scheduling
+ *
+ * This service provides the capability to command pre-loaded
+ * application processes (telecommands) by releasing them at their
+ * due-time.
+ * References to telecommands are stored together with their due-timepoints
+ * and are released at their corresponding due-time.
+ *
+ * The (optional) concept of subservices is supported and necessary subservice
+ * functionalities are implemented.
+ * Those are:
+ * TC[11,4] activity insertion
+ * TC[11,5] activity deletion
+ * TC[11,7] activity time-shift
+ *
+ * Groups are not supported.
+ */
 class Service11TelecommandScheduling final: public PusServiceBase {
 public:
 
@@ -14,10 +33,10 @@ public:
                 ENABLE_SCHEDULING = 1,
                 DISABLE_SCHEDULING = 2,
                 RESET_SCHEDULING = 3,
-                INSERT_ACTIVITY = 4,    // basic
-                DELETE_ACTIVITY = 5,    // ID erstellen dafür nötig, damit unique
+                INSERT_ACTIVITY = 4,
+                DELETE_ACTIVITY = 5,
                 FILTER_ACTIVITY = 6,
-                TIMESHIFT_ACTIVITY = 7, // sollte noch rein: timestamp anpassen, neu eintragen.
+                TIMESHIFT_ACTIVITY = 7,
                 DETAIL_REPORT = 9,
                 TIMEBASE_SCHEDULE_DETAIL_REPORT = 10,
                 TIMESHIFT_ALL_SCHEDULE_ACTIVITIES = 15
