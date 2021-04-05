@@ -6,6 +6,7 @@
 
 #include <objects/systemObjectList.h>
 #include <fsfw/tmtcservices/TmTcMessage.h>
+#include <fsfw/storagemanager/ConstStorageAccessor.h>
 
 #include <ctime>
 
@@ -106,17 +107,30 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
-    // Insert, if sched. time is above margin
+    // Insert, if sched. time is above margin...
     uint32_t tNow = static_cast<uint32_t>(std::time(nullptr));
     if (deserializedTimestamp - tNow <= TIME_MARGIN) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
+
+
+    // code to re-insert currentPacket into the tcStore:
+    // -------------------------------------------------
+
+    ConstStorageAccessor storageAccessor(addr);
+    size_t packetSize = storageAccessor.size();
+
+    //TODO: Re-insert currentPacket into tcStore
+    //TODO: addr might have a different value?!
+
 
     TelecommandStruct tc(deserializedTimestamp, addr);
     auto it = telecommandMap.insert(std::pair<uint32_t, TelecommandStruct>(deserializedTimestamp, tc));
     if (it == telecommandMap.end()){
         return HasReturnvaluesIF::RETURN_FAILED;
     }
+
+    //tcStore->addData(&addr, data, size, ignoreFault)
 
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -172,12 +186,19 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_TimeshiftActivity() 
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
+    // check if timestamp to shift to is feasible
     uint32_t tNow = static_cast<uint32_t>(std::time(nullptr));
+    if (deserializedTimestamp - tNow < TIME_MARGIN) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
 
-    // find store address as value in Map (this is inefficient)
+    // find the packet by address in multimap (is inefficient, but I cannot search by timestamp)
     for (auto it = telecommandMap.begin(); it != telecommandMap.end(); ++it) {
-        if (it->second.storeAddr == addr && deserializedTimestamp > it->first && deserializedTimestamp - tNow > TIME_MARGIN) {
+        if (it->second.storeAddr == addr) {
             telecommandMap.erase(it);
+
+            //TODO: Re-insert currentPacket into tcStore
+            //TODO: addr might have a different value!?
 
             TelecommandStruct tc(deserializedTimestamp, addr);
             auto insertIt = telecommandMap.insert(std::pair<uint32_t, TelecommandStruct>(deserializedTimestamp, tc));
@@ -188,7 +209,7 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_TimeshiftActivity() 
         }
     }
 
-    return HasReturnvaluesIF::RETURN_OK;
+    return HasReturnvaluesIF::RETURN_FAILED;
 }
 
 
