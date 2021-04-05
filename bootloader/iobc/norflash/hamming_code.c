@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#define HAM_CODE_DEBUGGING 1
+#define HAM_CODE_DEBUGGING          1
 
 uint8_t hamming_code_buf[IMAGES_HAMMING_RESERVED_SIZE];
 
