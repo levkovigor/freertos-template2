@@ -1,5 +1,4 @@
 #include "main_norflash.h"
-#include "../common/boot_iobc.h"
 #include <bootloaderConfig.h>
 
 #include <at91/utility/hamming.h>

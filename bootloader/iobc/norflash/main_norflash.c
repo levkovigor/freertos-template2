@@ -1,5 +1,5 @@
 #include "main_norflash.h"
-#include "../common/boot_iobc.h"
+#include "../common/iobc_common.h"
 #include <bootloaderConfig.h>
 #include <commonIOBCConfig.h>
 

@@ -1,4 +1,4 @@
-#include "boot_iobc.h"
+#include "iobc_common.h"
 #include <bootloaderConfig.h>
 
 #include <bsp_sam9g20/common/lowlevel.h>
@@ -99,7 +99,9 @@ void idle_loop() {
 }
 
 void print_bl_info() {
+#if USE_FREERTOS == 1
     TRACE_INFO_WP("\n\rStarting FreeRTOS task scheduler.\n\r");
+#endif
     TRACE_INFO_WP("-- SOURCE Bootloader --\n\r");
     TRACE_INFO_WP("-- %s --\n\r", BOARD_NAME_PRINT);
     TRACE_INFO_WP("-- Software version v%d.%d --\n\r", BL_VERSION,

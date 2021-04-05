@@ -8,7 +8,10 @@
 
 #include <stdint.h>
 
-extern int increment_sdc_loc_reboot_counter(BootSelect boot_select, uint16_t* curr_reboot_counter);
+int increment_sdc_loc_reboot_counter(BootSelect boot_select, uint16_t* curr_reboot_counter);
+#if USE_FREERTOS == 0
+int increment_reboot_counter_no_os(SlotType slot_type, uint16_t* new_reboot_counter);
+#endif
 
 BootSelect determine_boot_select(bool* use_hamming) {
     BootSelect curr_boot_select = BOOT_NOR_FLASH;
