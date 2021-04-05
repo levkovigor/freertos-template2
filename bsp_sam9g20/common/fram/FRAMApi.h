@@ -35,7 +35,7 @@
 extern "C" {
 #endif
 
-#include <bsp_sam9g20/common/CommonFRAM.h>
+#include <bsp_sam9g20/common/fram/CommonFRAM.h>
 #include <bsp_sam9g20/common/SDCardApi.h>
 #include <bsp_sam9g20/common/config/commonConfig.h>
 #include <stdint.h>
