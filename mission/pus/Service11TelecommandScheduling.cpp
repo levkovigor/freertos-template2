@@ -106,7 +106,12 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
-    // Insert
+    // Insert, if sched. time is above margin
+    uint32_t tNow = static_cast<uint32_t>(std::time(nullptr));
+    if (deserializedTimestamp - tNow <= this->TIME_MARGIN) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
     TelecommandStruct tc(deserializedTimestamp, addr);
     auto it = telecommandMap.insert(std::pair<uint32_t, TelecommandStruct>(deserializedTimestamp, tc));
     if (it == telecommandMap.end()){
@@ -167,6 +172,7 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_TimeshiftActivity() 
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
+    uint32_t tNow = static_cast<uint32_t>(std::time(nullptr));
 
     // find store address as value in Map (this is inefficient)
     for (auto it = telecommandMap.begin(); it != telecommandMap.end(); ++it) {
@@ -178,6 +184,7 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_TimeshiftActivity() 
             if (insertIt == telecommandMap.end()){
                 return HasReturnvaluesIF::RETURN_FAILED;
             }
+            return HasReturnvaluesIF::RETURN_OK;
         }
     }
 

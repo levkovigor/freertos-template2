@@ -66,6 +66,8 @@ private:
         }
     };
 
+    const uint32_t TIME_MARGIN = 5u;
+
     StorageManagerIF* tcStore = nullptr;
     AcceptsTelecommandsIF* tcRecipient = nullptr;
     MessageQueueId_t recipientMsgQueueId = 0;
