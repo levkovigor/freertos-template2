@@ -11,7 +11,7 @@
 #endif
 
 #define BL_VERSION      2
-#define BL_SUBVERSION   0
+#define BL_SUBVERSION   1
 
 //! Use FreeRTOS in bootloaders. Transfer of control can be problematic, crashes when first task is
 //! started, not recommended!
@@ -24,6 +24,8 @@
 
 //! Can be used to enable or disable diagnostic printouts in the bootloader.
 #define BOOTLOADER_VERBOSE_LEVEL    1
+
+#define HAM_CODE_DEBUGGING          0
 
 //! Use tiny FS instead of HCC FS.
 #define USE_TINY_FS                 0

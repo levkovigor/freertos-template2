@@ -319,7 +319,9 @@ unsigned char Hamming_Verify256x(
     unsigned char error;
     unsigned char result = 0;
 
+#if HAMMING_LIB_DEBUG_MODE == 1
     TRACE_DEBUG("Hamming_Verify256x()\n\r");
+#endif
 
     while (size > 0) {
 
