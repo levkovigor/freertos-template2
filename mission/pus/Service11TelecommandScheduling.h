@@ -91,6 +91,8 @@ private:
      */
     ReturnValue_t GetDeserializedTimestamp(uint32_t& timestamp);
 
+    ReturnValue_t ReStorePacket(store_address_t* addrNew);
+
 };
 
 

@@ -9,6 +9,7 @@
 #include <fsfw/storagemanager/ConstStorageAccessor.h>
 
 #include <ctime>
+#include <cstring>
 
 
 Service11TelecommandScheduling::Service11TelecommandScheduling(
@@ -116,9 +117,6 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
 
     // code to re-insert currentPacket into the tcStore:
     // -------------------------------------------------
-
-    ConstStorageAccessor storageAccessor(addr);
-    size_t packetSize = storageAccessor.size();
 
     //TODO: Re-insert currentPacket into tcStore
     //TODO: addr might have a different value?!
@@ -243,5 +241,26 @@ ReturnValue_t Service11TelecommandScheduling::GetDeserializedTimestamp(uint32_t&
     return HasReturnvaluesIF::RETURN_OK;
 }
 
+
+ReturnValue_t Service11TelecommandScheduling::ReStorePacket(store_address_t* const addrNew) {
+
+    size_t size = this->currentPacket.getApplicationDataSize();
+    uint8_t* pDataNew;
+
+    const uint8_t* pDataCurrent = this->currentPacket.getApplicationData();
+    if (pDataCurrent == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    // get new slot
+    auto ret = tcStore->getFreeElement(addrNew, size, &pDataNew, false);
+    if (ret != HasReturnvaluesIF::RETURN_OK) {
+        return ret;
+    }
+
+    std::memcpy(pDataNew, pDataCurrent, size);
+
+    return HasReturnvaluesIF::RETURN_OK;
+}
 
 
