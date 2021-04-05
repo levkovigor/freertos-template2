@@ -636,6 +636,8 @@ void SpiTestTask::SPIcallback(SystemContext context, xSemaphoreHandle semaphore)
     }
 }
 
+#ifdef ISIS_OBC_G20
+#define FRAM_PRINTOUT 1
 volatile At91TransferStates SpiTestTask::transferState = At91TransferStates::IDLE;
 
 void SpiTestTask::performAt91LibTest() {
@@ -702,10 +704,6 @@ void SpiTestTask::spiIrqHandler(At91SpiBuses bus, At91TransferStates state, void
         }
     }
 }
-
-#ifdef ISIS_OBC_G20
-
-#define FRAM_PRINTOUT 1
 
 /* Test code for the CY15B104QI FRAM device */
 void SpiTestTask::iobcFramTestInterrupt() {

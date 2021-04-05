@@ -146,7 +146,7 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
                     currentFileSize = f_filelength(config::SW_FLASH_HAMMING_NAME);
                 }
                 else {
-                    /* TODO: This is cached in FRAM so we need to read it from there */                    //currentFileSize =
+                    /* TODO: This is cached in FRAM so we need to read it from there */
                 }
             }
             else if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
