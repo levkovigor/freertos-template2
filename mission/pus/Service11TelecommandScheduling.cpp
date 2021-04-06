@@ -39,7 +39,8 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest(uint8_t subservice) 
 
 ReturnValue_t Service11TelecommandScheduling::performService() {
 
-    //sif::info << "Service11TelecommandScheduling performing." << std::endl;
+    //DEBUG
+    //sif::printInfo("Service 11 performService called.\n");
 
     // get current time as UNIX timestamp
     uint32_t tCurrent = static_cast<uint32_t>(std::time(nullptr));
@@ -108,6 +109,9 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
+    //DEBUG
+    sif::printInfo("currentPacket addr: %d\n", addr);
+
     // Insert, if sched. time is above margin...
     uint32_t tNow = static_cast<uint32_t>(std::time(nullptr));
     if (deserializedTimestamp - tNow <= TIME_MARGIN) {
@@ -115,13 +119,18 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
     }
 
 
-    // code to re-insert currentPacket into the tcStore:
-    // -------------------------------------------------
+    if (auto res = ReStorePacket(&addr) != HasReturnvaluesIF::RETURN_OK) {
+        return res;
+    }
+    if (addr.raw == storeId::INVALID_STORE_ADDRESS) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
 
-    //TODO: Re-insert currentPacket into tcStore
-    //TODO: addr might have a different value?!
+    //DEBUG
+    sif::printInfo("new addr: %d\n", addr);
 
-
+    // insert into mm, with new store address
+    //NOTE: addr is now different from currentPacket
     TelecommandStruct tc(deserializedTimestamp, addr);
     auto it = telecommandMap.insert(std::pair<uint32_t, TelecommandStruct>(deserializedTimestamp, tc));
     if (it == telecommandMap.end()){
