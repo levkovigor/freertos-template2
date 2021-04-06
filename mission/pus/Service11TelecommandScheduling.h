@@ -86,11 +86,16 @@ private:
     ReturnValue_t handleRequest_TimeshiftActivity();
 
     /**
-     * De-serializes currentPacket and retrieves its de-serialized timestamp
+     * @brief De-serializes currentPacket and retrieves its de-serialized timestamp
      * @param timestamp     (out) de-serialized timestamp
      */
     ReturnValue_t GetDeserializedTimestamp(uint32_t& timestamp);
 
+    /**
+     * @brief Copys the currentPacket into the tcStore
+     * @param [out] new store address inside tcStore
+     * @return status
+     */
     ReturnValue_t ReStorePacket(store_address_t* addrNew);
 
 };
