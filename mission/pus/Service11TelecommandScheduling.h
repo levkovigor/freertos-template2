@@ -17,14 +17,14 @@
  * References to telecommands are stored together with their due-timepoints
  * and are released at their corresponding due-time.
  *
- * The (optional) concept of subservices is supported and necessary subservice
- * functionalities are implemented.
+ * Necessary subservice functionalities are implemented.
  * Those are:
  * TC[11,4] activity insertion
  * TC[11,5] activity deletion
  * TC[11,7] activity time-shift
  *
  * Groups are not supported.
+ * This service remains always enabled. Sending a disable-request has no effect.
  */
 class Service11TelecommandScheduling final: public PusServiceBase {
 public:

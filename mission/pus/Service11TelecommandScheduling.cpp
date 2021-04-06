@@ -159,6 +159,7 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_DeleteActivity() {
     }
 
     // erase position from multimap, if storeAddress is equal to currentPacket's storeAddress
+    // nothing else needs to be done as currentPacket is deleted from store after calling handleRequest().
     for (auto& it = range.first; it != range.second; ++it) {
         if (it->second.storeAddr == addr) {
             telecommandMap.erase(it);
