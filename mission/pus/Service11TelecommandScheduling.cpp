@@ -268,7 +268,7 @@ ReturnValue_t Service11TelecommandScheduling::ReStorePacket(store_address_t* con
         return ret;
     }
 
-    std::memcpy(pDataNew, pDataCurrent, size);  //TODO: fix ambiguous functio call error
+    std::memcpy(pDataNew, pDataCurrent, size);
 
     return HasReturnvaluesIF::RETURN_OK;
 }
