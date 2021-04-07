@@ -57,6 +57,8 @@ ReturnValue_t Service11TelecommandScheduling::performService() {
             }
 
             telecommandMap.erase(it);
+
+            sif::printInfo("Sent message & erased from telecommandMap!\n");
         }
         else {
             break;  //save some time as multimap is sorted anyway
@@ -118,8 +120,9 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
-
+    // store currentPacket
     if (auto res = ReStorePacket(&addr) != HasReturnvaluesIF::RETURN_OK) {
+        sif::printInfo("ReStorePacket returned != RETURN_OK\n");
         return res;
     }
     if (addr.raw == storeId::INVALID_STORE_ADDRESS) {
