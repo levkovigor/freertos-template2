@@ -1,5 +1,5 @@
 #include "../common/at91_boot_from_nand.h"
-#include "at91_boot_from_sd.h"
+#include <bootloader/common/boot_sd.h>
 #include <bootloaderConfig.h>
 #include <bootloader/core/timer.h>
 
@@ -153,7 +153,7 @@ int perform_bootloader_core_operation() {
 
     int result = 0;
 
-    //result = copy_sdc_image_to_sdram();
+    //result = copy_sdcard_binary_to_sdram(BOOT_SD_CARD_0_SLOT_0, false);
     result = copy_nandflash_image_to_sdram(PRIMARY_IMAGE_NAND_OFFSET, PRIMARY_IMAGE_RESERVED_SIZE,
             PRIMARY_IMAGE_SDRAM_OFFSET, false);
 
