@@ -6,8 +6,8 @@
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
 #include <fsfw/serialize/SerialLinkedListAdapter.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
-#include <bsp_sam9g20/common/FRAMApi.h>
-#include <bsp_sam9g20/common/CommonFRAM.h>
+#include <bsp_sam9g20/common/fram/FRAMApi.h>
+#include <bsp_sam9g20/common/fram/CommonFRAM.h>
 
 #include <array>
 

@@ -6,8 +6,9 @@
 #include <fsfw/events/EventManagerIF.h>
 
 #include <bsp_sam9g20/memory/SDCardAccess.h>
-#include <bsp_sam9g20/common/CommonFRAM.h>
-#include <bsp_sam9g20/common/FRAMApi.h>
+#include <bsp_sam9g20/memory/HCCFileGuard.h>
+#include <bsp_sam9g20/common/fram/CommonFRAM.h>
+#include <bsp_sam9g20/common/fram/FRAMApi.h>
 #include <hal/Storage/NORflash.h>
 
 #include <array>
@@ -21,7 +22,7 @@ ReturnValue_t ImageCopyingEngine::continueCurrentOperation() {
         return copySdCardImageToNorFlash();
     }
     case(ImageHandlerStates::COPY_IMG_SDC_TO_SDC): {
-        return HasReturnvaluesIF::RETURN_FAILED;
+        return copySdcImgToSdc();
     }
     case(ImageHandlerStates::COPY_IMG_HAMMING_SDC_TO_FRAM): {
         return copyImgHammingSdcToFram();

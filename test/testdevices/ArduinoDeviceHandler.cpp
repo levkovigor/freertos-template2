@@ -85,11 +85,12 @@ ReturnValue_t ArduinoHandler::scanForReply(const uint8_t *start,
         size_t remainingSize, DeviceCommandId_t *foundId, size_t *foundLen) {
 	size_t expectedSize = ArduinoHandler::awesomeMap[lastCommand].size();
 	if(remainingSize == expectedSize) {
-		char readString[remainingSize];
-		memcpy(readString, start, remainingSize);
+	    std::vector<char> readString(remainingSize);
+		//char readString[remainingSize];
+		memcpy(readString.data(), start, remainingSize);
 		readString[remainingSize] = '\0';
 		if(commandPrintCounter == commandPrintInterval) {
-			printReply((unsigned char*)readString, remainingSize);
+			printReply((unsigned char*)readString.data(), remainingSize);
 			commandPrintCounter = 1;
 		}
 		else {

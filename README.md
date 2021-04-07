@@ -50,13 +50,12 @@ in the QEMU documentation.
 
 1. Make installed. Part of [MSYS2 MinGW64](https://www.msys2.org/) on Windows.
 2. Development board binaries: [GNU ARM Toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/) 
-   installed, hardware or QEMU set-up available. See the
-   [Setting up prerequisites](#setting-up-prerequisites) section
-3. For Host build: On Windows, GCC toolchain, e.g. [MSYS2 MinGW64](https://www.msys2.org/) on Windows.
+   installed, hardware or QEMU set-up available. 
+3. On Windows: [MSYS2 MinGW64](https://www.msys2.org/) installed to provide a Unix environment.
 4. For QEMU: QEMU repository cloned and set up in same folder in which
    this repository was cloned
 
-See separate prerequisite chapter for more details
+See separate [prerequisite](#prereq) chapter for more details
 
 # Building the software
 
@@ -66,23 +65,23 @@ See separate prerequisite chapter for more details
 
 2. Clone OBSW into this directory
    
-```sh
-git clone https://git.ksat-stuttgart.de/source/sourceobsw.git
-```
+   ```sh
+   git clone https://git.ksat-stuttgart.de/source/sourceobsw.git
+   ```
 
 3. Switch branch to desired branch (if not master branch)
 
-```sh
-git checkout <branch>
-```
+   ```sh
+   git checkout <branch>
+   ```
 
 4. Initialize and update all submodules
 
-```sh
-git submodule init
-git submodule sync
-git submodule update --recursive
-```
+   ```sh
+   git submodule init
+   git submodule sync
+   git submodule update --recursive
+   ```
 
 You can now build the software for either the AT91 and iOBC targets
 or for a host system.
@@ -122,18 +121,18 @@ Can be loaded into SDRAM directly or to NAND-Flash 0x40000 to be loaded
 by bootloader.
 
 ```sh
-mkdir Debug-AT91EK && cd Debug-AT91EK
+mkdir build-Debug-AT91EK && cd build-Debug-AT91EK
 cmake ..
 cmake --build . -j
 ```
 
-### Build for the iOBC-EK
+### Build for the iOBC
 
 Load at NOR-Flash 0x20000 when using the custom bootloader or NOR-Flash 0xA000
 when using ISIS bootloader.
 
 ```sh
-mkdir Mission-iOBC && cd Mission-iOBC
+mkdir build-Mission-iOBC && cd build-Mission-iOBC
 cmake -DBOARD_IOBC=ON ..
 cmake --build . -j
 ```
@@ -145,7 +144,7 @@ Load at NAND-Flash position 0x0, and edit sixth ARM vector
 to contain binary size (SAM-BA recommended). More information in AT91 README.
 
 ```sh
-mkdir Mission-BL-AT91EK && cd Mission-BL-AT91EK
+mkdir build-Mission-BL-AT91EK && cd build-Mission-BL-AT91EK
 cmake -DBOOTLOADER=ON -DCMAKE_BUILD_TYPE=MinSizeRel .. 
 cmake --build . -j
 ```
@@ -154,7 +153,7 @@ Second stage bootloader.
 Load at NAND-Flash position 0x20000, more information in AT91 README
 
 ```sh
-mkdir Debug-BL2-AT91EK && cd Debug-BL2-AT91EK
+mkdir build-Debug-BL2-AT91EK && cd build-Debug-BL2-AT91EK
 cmake -DBOOTLOADER=ON -DBL_STAGE_TWO=ON -DCMAKE_BUILD_TYPE=Debug .. 
 cmake --build . -j
 ```
@@ -162,7 +161,7 @@ cmake --build . -j
 ### Build bootloader for the iOBC
 
 ```sh
-mkdir Mission-BL-iOBC && cd Mission-BL-iOBC 
+mkdir build-Mission-BL-iOBC && cd build-Mission-BL-iOBC 
 cmake -DBOOTLOADER=ON -DBOARD_IOBC=ON -DAT91_NO_FREERTOS_STARTER_FILE=ON -DCMAKE_BUILD_TYPE=Release .. 
 cmake --build . -j
 ```
@@ -171,9 +170,10 @@ cmake --build . -j
 
 Command to start QEMU (inside sourceobsw folder). Please note this only works if the QEMU 
 repository was cloned and built inside the same folder the OBSW was cloned.
+
 ```sh
 ./StartQEMU.sh
-``` 
+```
    
 ## Build Host Software
 
@@ -181,12 +181,12 @@ Perform the following steps to build the hosted software
 
 ### Windows
 
-Install [MSYS2](https://www.msys2.org/) if not done so already. See Prerequisites chapter
+Install [MSYS2](https://www.msys2.org/) if not done so already. See [prerequisites](#prereq) chapter
 for more information.
 Now you can run the following commands in the `sourceobsw` folder to build the software
 
 ```sh
-mkdir Debug-Host && cd Debug-Host
+mkdir build-Debug-Host && cd build-Debug-Host
 cmake .. -G "MinGW Makefiles"
 cmake --build . -j
 ```
@@ -194,10 +194,11 @@ cmake --build . -j
 ### Linux
 
 Run the following command in the `sourceobsw` folder to build the software
-with the hosted OSAL. You can supply `-DOS_FSFW=linux` to the `cmake ..` command to build with the Linux OSAL instead
+with the hosted OSAL. You can supply `-DOS_FSFW=linux` to the `cmake ..` command to build with the 
+Linux OSAL instead
 
 ```sh
-mkdir Debug-Host && cd Debug-Host
+mkdir build-Debug-Host && cd build-Debug-Host
 cmake ..
 cmake --build . -j
 ```
@@ -209,47 +210,56 @@ It is possible to chose between serial communication via RS232 and Ethernet
 communication with UDP datagrams. For the serial communication, a USB to female 
 RS232 cable can be used (or UART jumper wires..).
 
-# Setting up prerequisites
+# <a name="prereq"></a> Setting up prerequisites
 
 ## Windows: Installing and setting up MinGW64
 
 1. Install [MSYS2](https://www.msys2.org/).
 2. Run the following commands in MinGW64
 
-```sh
-pacman -Syuuu
-pacman -S git mingw-w64-x86_64-gcc mingw-w64-x86_64-gdb mingw-w64-x86_64-make mingw-w64-x86_64-cmake
-```
+   ```sh
+   pacman -Syuuu
+   pacman -S git mingw-w64-x86_64-gcc mingw-w64-x86_64-gdb mingw-w64-x86_64-make mingw-w64-x86_64-cmake
+   ```
 
-Alternatively, you can use
+   Alternatively, you can use
 
-```sh
-pacman -S mingw-w64-x86_64-toolchain
-```
+   ```sh
+   pacman -S mingw-w64-x86_64-toolchain
+   ```
 
-to install `gdb`, `gcc` and `mingw32-make` at once.
-
-It is recommended to set up `alias`es in the `.bashrc` file to 
-nagivate to the working directory quickly.
+   to install `gdb`, `gcc` and `mingw32-make` at once. It is recommended to set up `alias`es in 
+   the `.bashrc` file to nagivate to the working directory quickly.
 
 3. Run `git config --global core.autocrlf true` if you like to use MinGW64 `git` as well
 
-4. Open the `.bashrc` file
+4. Open a new path setter file called `source_path_set.sh` file
 
-```sh
-cd ~
-nano .bashrc
-```
+   ```sh
+   cd ~
+   nano source_path_set.sh
+   ```
 
-Add the following line at the end to add the ARM cross-compile toolchain to MinGW64.
-This is just an example, correct the path for your use-case with the correct
-version and user name!
+   Add the following line in thge file to MinGW64.
+   This is just an example, correct the path for your use-case with the correct
+   version and user name!
 
-```sh
-export PATH=$PATH:"/c/Users/Robin/AppData/Roaming/xPacks/@xpack-dev-tools/arm-none-eabi-gcc/10.2.1-1.1.2/.content/bin"
-```
+   ```sh 
+   export PATH="/c/Users/Robin/AppData/Roaming/xPacks/@xpack-dev-tools/arm-none-eabi-gcc/10.2.1-1.1.2/.content/bin":$PATH
+   ```
+   
+   Now you can run
+   
+   ```sh
+   source source_path_set_sh
+   ```
+   
+   to add the path to the MinGW64 path temporarily.
+   Alternatively, you can put this `export` command in the `.profile` and `.bashrc` file
+   so the path is always added. However, the approach shown above keeps the path clean.
 
 ## Windows: Installing and setting up the ARM Toolchain
+
 The code needs to be compiled for the ARM target system and we will use the
 [GNU ARM Toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/).
 
@@ -271,11 +281,11 @@ The code needs to be compiled for the ARM target system and we will use the
    xpm install --global @xpack-dev-tools/openocd@latest
    ```
    
-4. Add arm-none-eabi-gcc binary location in the xPack folder to system variables. 
-   These are usually located in C:\Users\<...>\AppData\Roaming\xPacks\@gnu-mcu-eclipse\arm-none-eabi-gcc\<version>\.content\bin .
-   Alternatively, if you want to keep the environment and the path clean, add it temporarily 
-   with `SET PATH=%PATH%;c:\pathtotoolchain` before each debugging session(command can be put 
-   inside a bash script).  
+4. It is not recommendend anymore to put the path containing the binaries into the Windows system 
+   path because there can be nameclashes with Windows dynamic linked libraries. Instead, it is 
+   recommended to add them to the MinGW64 path temporarily like shown above before setting a a 
+   `CMake` build environment. `CMake` will then cache the toolchain path, so the Windows environment 
+   path stays clean.
    
 If you don't want to install nodejs you may go with the 
 [four-command manual installation](https://xpack.github.io/arm-none-eabi-gcc/install/#manual-install). 

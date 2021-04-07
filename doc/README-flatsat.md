@@ -40,7 +40,7 @@ other services like Mattermost.
    You can also use the IP address (this is required for PyCharm remote configurations)
    
    ```sh
-   ssh -X source@192.168.199.228
+   ssh -X source@192.168.199.178
    ```
    
 3. It is recommended to set up SSH configuration either in Eclipse (cross-platform
@@ -57,20 +57,29 @@ There is also another command for port forwarding:
 When building on the flatsat computer directly, it is recommended to add
 ADD\_CR=1 so that debug output is readable.
  
-Build software for debugging
+Build software for debugging:
+
 ```sh
-make debug IOBC=1 -j
+mkdir build-Mission-iOBC && cd build-Mission-iOBC
+cmake -DBOARD_IOBC=ON ..
+cmake --build . -j
+```
+Build release software:
+
+```sh
+mkdir build-Mission-iOBC && cd build-Mission-iOBC
+cmake -DBOARD_IOBC=ON -DCMAKE_BUILD_TYPE=Release ..
+cmake --build . -j
 ```
 
-Build release software
+Build bootloader:
+
 ```sh
-make mission IOBC=1 -j
+mkdir build-Mission-BL-iOBC && cd build-Mission-BL-iOBC 
+cmake -DBOOTLOADER=ON -DBOARD_IOBC=ON -DAT91_NO_FREERTOS_STARTER_FILE=ON -DCMAKE_BUILD_TYPE=Release .. 
+cmake --build . -j
 ```
 
-Build bootloader
-```sh
-make mission -f Makefile-Bootloader IOBC=1 -j
-```
 
 ### Setting up the Flatsat computer for remote deployment
 
@@ -181,43 +190,39 @@ JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noL
 
 Background processes can be listed with `ps -aux` and killed with `kill <processId>`
 
-3. Binary can be built locally with
-```sh
-make IOBC=1 virtual -j2
-```
-Or mission instead of virtual for mission build.
+3. Binary can be built locally with the `CMake` command shown above.
 
 4. Perform sdramCfg (only needs to be once after power cycle)
-```sh
-make sdramCfg
-```
+   ```sh
+   ./sdramCfg.sh
+   ```
 
 5. Connect to the tmux session which is listening to the USB port. 
 You can check whether the tmux exists with the command `tmux ls`.
 Follow the steps specified in the previous section if it does not exist
 to create a new tmux serial listener session.
 
-```sh
-tmux a -t 2_*
-```
+   ```sh
+   tmux a -t 2_*
+   ```
 
 6. Start GDB (the following steps can propably be automated, but I don't know how yet.)
 
-```sh
-arm-none-eabi-gdb
-```
+   ```sh
+   arm-none-eabi-gdb
+   ```
 
 7. Set target in 
 
-```sh
-target remote localhost:2331
-```
+   ```sh
+   target remote localhost:2331
+   ```
 
 8. Load .elf file
 
-```sh
-load _bin/iobc/<folder>/<binarary>.elf
-```
+   ```sh
+   load <build_folder>/<file_name>.elf
+   ```
 and press c to start
 
 ### Loading binaries built locally to the non-volatile memory
@@ -269,13 +274,7 @@ pre-requisite and is explained in [AT91SAM9G20 getting started](../sam9g20/READM
 inside the build target section. If the launch configuration has been set-up, it is simply copied by
 clicking on "Duplicate" inside the launch configuration settings.
 
-3. Setup a new build configuration. The only different to the AT91 builds
-is the added `IOBC=1` make flag. Example make command for mission build
-on Windows
-```sh
-make WINDOWS=1 IOBC=1 mission -j
-```
-Don't forget to select the binary after building it initially
+3. Setup a new build configuration. The steps required in `CMake` are shown above.
 
 4. The debugger tab should be set up like show below. The IP address
 is the IP address of the iOBC interface computer and can be retrieved

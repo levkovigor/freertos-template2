@@ -16,7 +16,7 @@ fi
 
 build_generator=""
 os_fsfw="freertos"
-builddir="Debug-BL2-AT91EK"
+builddir="build-Debug-BL2-AT91EK"
 defines="BOOTLOADER=ON BL_STAGE_TWO=ON"
 build_type="debug"
 

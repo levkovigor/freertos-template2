@@ -21,7 +21,7 @@ static const uint32_t FRAM_END_ADDR = 0x3ffff;
 static const size_t BOOTLOADER_HAMMING_RESERVED_SIZE = 0x600;
 
 //! Calculated required size for images: 0x100000 (NOR-Flash) - 0x20000 (bootloader) * 3 / 256
-static const uint32_t IMAGES_HAMMING_RESERVED_SIZE = 0x2A00;
+#define IMAGES_HAMMING_RESERVED_SIZE                    0x2A00
 
 static const uint32_t BOOTLOADER_HAMMING_ADDR = FRAM_END_ADDR - BOOTLOADER_HAMMING_RESERVED_SIZE;
 
@@ -73,10 +73,20 @@ typedef struct __attribute__((__packed__)) _BootloaderGroup {
     uint16_t sdc1_image_slot1_reboot_counter;
     uint16_t filler_reboot_counter[1];
 
+    /* NOR-Flash binary information */
+    size_t nor_flash_binary_size;
+    /* NOR-Flash binary hamming code size */
+    size_t nor_flash_hamming_code_size;
+    /* Hamming code size for SD Card 0 slot 0 */
+    size_t sdc0_image_slot0_hamming_size;
+    size_t sdc0_image_slot1_hamming_size;
+    size_t sdc1_image_slot0_hamming_size;
+    size_t sdc1_image_slot1_hamming_size;
+
     /* Software update information */
     uint8_t software_update_available;
-    uint8_t software_update_in_slot_0;
-    uint8_t software_update_in_slot_1;
+    uint8_t software_update_in_volume_0;
+    uint8_t software_update_in_volume_1;
     uint8_t filler_software_update[1];
 } BootloaderGroup;
 
@@ -99,16 +109,6 @@ typedef struct __attribute__((__packed__))  _CriticalDataBlock {
     /* The following block will be read at once by the bootloader */
     BootloaderGroup bl_group;
 
-    /* NOR-Flash binary information */
-    size_t nor_flash_binary_size;
-    /* NOR-Flash binary hamming code size */
-    size_t nor_flash_hamming_code_size;
-    /* Hamming code size for SD Card 0 slot 0 */
-    size_t sdc0_image_slot0_hamming_size;
-    size_t sdc0_image_slot1_hamming_size;
-    size_t sdc1_image_slot0_hamming_size;
-    size_t sdc1_image_slot1_hamming_size;
-
     /*
      * Bootloader binary information. Bootloader itself could also be stored
      * in FRAM. Hamming code will be stored in FRAM in any case.
@@ -122,7 +122,7 @@ typedef struct __attribute__((__packed__))  _CriticalDataBlock {
     uint8_t filler_tasks[2];
 } CriticalDataBlock;
 
-static const uint8_t CRITICAL_BLOCK_START_ADDR = 0x0;
+static const uint32_t CRITICAL_BLOCK_START_ADDR = 0x0;
 
 /* Software information offsets */
 static const uint8_t SOFTWARE_VERSION_ADDR =
@@ -173,19 +173,19 @@ static const uint32_t SDC1_SL1_REBOOT_COUNTER_ADDR =
 static const uint32_t SOFTWARE_UPDATE_BOOL_ADDR =
         offsetof(CriticalDataBlock, bl_group.software_update_available);
 
-/* Size addresses which are not part of the bootloader block. */
+/* Size addresses */
 static const uint32_t NOR_FLASH_BINARY_SIZE_ADDR =
-        offsetof(CriticalDataBlock, nor_flash_binary_size);
+        offsetof(CriticalDataBlock, bl_group.nor_flash_binary_size);
 static const uint32_t NOR_FLASH_HAMMING_CODE_SIZE_ADDR =
-        offsetof(CriticalDataBlock, nor_flash_hamming_code_size);
+        offsetof(CriticalDataBlock, bl_group.nor_flash_hamming_code_size);
 static const uint32_t SDC0_SL0_HAMMING_SIZE_ADDR =
-        offsetof(CriticalDataBlock, sdc0_image_slot0_hamming_size);
+        offsetof(CriticalDataBlock, bl_group.sdc0_image_slot0_hamming_size);
 static const uint32_t SDC0_SL1_HAMMING_SIZE_ADDR =
-        offsetof(CriticalDataBlock, sdc0_image_slot1_hamming_size);
+        offsetof(CriticalDataBlock, bl_group.sdc0_image_slot1_hamming_size);
 static const uint32_t SDC1_SL0_HAMMING_SIZE_ADDR =
-        offsetof(CriticalDataBlock, sdc1_image_slot0_hamming_size);
+        offsetof(CriticalDataBlock, bl_group.sdc1_image_slot0_hamming_size);
 static const uint32_t SDC1_SL1_HAMMING_SIZE_ADDR =
-        offsetof(CriticalDataBlock, sdc1_image_slot1_hamming_size);
+        offsetof(CriticalDataBlock, bl_group.sdc1_image_slot1_hamming_size);
 
 /* Bootloader addresses */
 static const uint32_t BOOTLOADER_SIZE_ADDR = offsetof(CriticalDataBlock, bootloader_size);
@@ -196,6 +196,5 @@ static const uint32_t BOOTLOADER_FAULTY_ADDRESS =
 
 static const uint32_t NUMBER_OF_ACTIVE_TASKS_ADDRESS =
         offsetof(CriticalDataBlock, number_of_active_tasks);
-
 
 #endif /* SAM9G20_COMMON_CRITICALDATABLOCK_H_ */

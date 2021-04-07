@@ -5,7 +5,7 @@
 #ifdef ISIS_OBC_G20
 #include <hal/Storage/FRAM.h>
 #else
-#include <bsp_sam9g20/common/VirtualFRAMApi.h>
+#include <bsp_sam9g20/common/fram/VirtualFRAMApi.h>
 #include <bsp_sam9g20/memory/SDCardAccess.h>
 #endif
 

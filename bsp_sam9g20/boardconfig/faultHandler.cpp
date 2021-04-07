@@ -4,7 +4,7 @@
 #include <at91/utility/exithandler.h>
 #include <at91/utility/trace.h>
 #ifdef ISIS_OBC_G20
-#include <bsp_sam9g20/common/FRAMApi.h>
+#include <bsp_sam9g20/common/fram/FRAMApi.h>
 #endif
 
 

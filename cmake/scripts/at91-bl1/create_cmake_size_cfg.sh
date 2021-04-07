@@ -16,7 +16,7 @@ fi
 
 build_generator=""
 os_fsfw="freertos"
-builddir="Mission-BL-AT91EK"
+builddir="build-Mission-BL-AT91EK"
 defines="BOOTLOADER=ON"
 build_type="size"
 

@@ -16,8 +16,8 @@ fi
 
 build_generator=""
 os_fsfw="freertos"
-builddir="Mission-BL2-AT91EK"
-defines="BOOTLOADER=ON BL_STAGE_TWO=ON"
+builddir="build-Mission-BL2-AT91EK"
+defines="BOOTLOADER=ON BL_STAGE_TWO=ON BL_USE_FREERTOS=ON"
 build_type="size"
 
 if [ "${OS}" = "Windows_NT" ]; then

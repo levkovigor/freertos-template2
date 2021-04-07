@@ -4,12 +4,13 @@
 #include <fsfw/objectmanager/SystemObjectIF.h>
 
 namespace Factory {
-	/**
-	 * @brief 	Creates all SystemObject elements which are persistent
-	 * 			during execution.
-	 */
-	void produce();
-	void setStaticFrameworkObjectIds();
+
+/**
+ * @brief 	Creates all SystemObject elements which are persistent
+ * 			during execution.
+ */
+void produce();
+void setStaticFrameworkObjectIds();
 
 }
 

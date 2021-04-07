@@ -27,6 +27,7 @@ private:
     void performExceptionTest();
     void performSDCardDemo();
 #ifdef ISIS_OBC_G20
+    void performIobcHammingTest();
     void performIOBCTest();
     void performNorflashTest();
     // it is assumed software version was written by FRAM handler
