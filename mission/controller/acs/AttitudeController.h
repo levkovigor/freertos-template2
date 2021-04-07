@@ -1,3 +1,11 @@
+/**
+ * @author Mikael Senger
+ *
+ * About: Header file of the AttitudeController class, whose objective it is to
+ * manage the attitude of SOURCE and calculate the rotation needed to target a
+ * point
+ */
+
 #ifndef MISSION_CONTROLLER_ATTITUDECONTROLLER_H_
 #define MISSION_CONTROLLER_ATTITUDECONTROLLER_H_
 
@@ -11,9 +19,7 @@
 #include <fsfw/globalfunctions/timevalOperations.h>
 #include <OBSWConfig.h>
 
-/**
- * @author
- */
+
 class AttitudeController: public ExtendedControllerBase {
 
 public:
@@ -22,20 +28,26 @@ public:
 
 	virtual ~AttitudeController();
 
+	/* Defining Array size for 3 dimensional vectors and 4 dimensional
+	   quaternions */
+
 	static constexpr uint8_t COORDINATES_SIZE = 3;
 
 	static constexpr uint8_t QUATERNION_SIZE = 4;
 
 protected:
 
+	// Guidance algorithm function
 	void calcQuatAndRefRot(double *multFactor, timeval currentTime,
 			const double *positionF, const double *velocityF,
 			double *quatRotPointingAxis, const double *positionTargetF,
 			double *quatCurrentAttitude, double *positionTargetI,
 			double *quatLastPointing, double *quatBX, double *refRotRate);
 
+	// Sign correction matrix
 	int8_t multFactor[QUATERNION_SIZE] { 1, 1, 1, 1 };
 
+	// Creating a RotationCalc object that stores instances of attitude and time
 	RotationCalc rotationCalc;
 
 #if OBSW_ACS_TEST == 1
@@ -355,10 +367,11 @@ private:
 			storeId::INVALID_STORE_ADDRESS, bool *clearMessage = nullptr)
 			override;
 
+
 	double lastRefRotRate[COORDINATES_SIZE] { 0, 0, 0 };
 };
 
-/*
+/* Information about variables of the guidance algorithm
  typedef struct input{
  double multFactor[QUATERNION_SIZE];
  / sign correction /

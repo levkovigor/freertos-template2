@@ -1,3 +1,11 @@
+/**
+ * @author Mikael Senger
+ *
+ * About: Source file of the AttitudeController class, whose objective it is to
+ * manage the attitude of SOURCE and calculate the rotation needed to target a
+ * point
+ */
+
 #include "AttitudeController.h"
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
@@ -24,8 +32,8 @@ ReturnValue_t AttitudeController::handleCommandMessage(
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
+// Periodic function that will later control the attitude
 void AttitudeController::performControlOperation() {
-	//sif::info;
 #if OBSW_ACS_TEST == 1
 	//sif::printInfo("%f; %f; %f; %f\n", multFactorTest[0][0],
 	//		multFactorTest[0][1], multFactorTest[0][2], multFactorTest[0][3]);
@@ -53,8 +61,8 @@ ReturnValue_t AttitudeController::initializeAfterTaskCreation() {
 	return HasReturnvaluesIF::RETURN_OK;
 }
 
-void AttitudeController::handleChangedDataset(sid_t sid, store_address_t storeId,
-        bool* clearMessage) {
+void AttitudeController::handleChangedDataset(sid_t sid,
+		store_address_t storeId, bool *clearMessage) {
 }
 
 ReturnValue_t AttitudeController::initializeLocalDataPool(

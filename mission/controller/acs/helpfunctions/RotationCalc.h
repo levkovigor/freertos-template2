@@ -1,8 +1,8 @@
-/*
- * RotationCalc.h
+/**
+ * @author Mikael Senger
  *
- *  Created on: Feb 19, 2021
- *      Author: user
+ * About: Class used to store information about last instance of the guidance
+ * algorithm and to calculate reference rotation
  */
 
 #ifndef MISSION_CONTROLLER_ACS_HELPFUNCTIONS_ROTATIONCALC_H_

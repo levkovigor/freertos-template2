@@ -1,8 +1,7 @@
-/*
- * AttitudeControllerAlgorithms.cpp
+/**
+ * @author Mikael Senger
  *
- *  Created on: Feb 1, 2021
- *      Author: Mikael Senger
+ * About: Algorithms needed for the AttitudeController class
  */
 
 #include "AttitudeController.h"
@@ -18,21 +17,28 @@
 #include <string.h>
 #include <fsfw/coordinates/CoordinateTransformations.h>
 
-
+/* Guidance algorithm function, uses global functions math operations and
+   RotationCalc class*/
 void AttitudeController::calcQuatAndRefRot(double *multFactor,
 		timeval currentTime, const double *positionF, const double *velocityF,
 		double *quatRotPointingAxis, const double *positionTargetF,
 		double *quatCurrentAttitude, double *positionTargetI,
 		double *quatLastPointing, double *quatBX, double *refRotRate) {
 
-	/* Determining ECEF to ECI transformation matrix */
+	// Determining ECEF (short F) to ECI (short I) transformation matrix
 	double positionI[COORDINATES_SIZE], velocityI[COORDINATES_SIZE];
-	CoordinateTransformations::positionEcfToEci(positionF, positionI, &currentTime);
-	CoordinateTransformations::velocityEcfToEci(velocityF, positionF, velocityI, &currentTime);
-	CoordinateTransformations::positionEcfToEci(positionTargetF, positionTargetI, &currentTime);
+	CoordinateTransformations::positionEcfToEci(positionF, positionI,
+			&currentTime);
+	CoordinateTransformations::velocityEcfToEci(velocityF, positionF, velocityI,
+			&currentTime);
+	CoordinateTransformations::positionEcfToEci(positionTargetF,
+			positionTargetI, &currentTime);
 
+	// Creating target coordinate system (short X)
 	double x[COORDINATES_SIZE];
 	VectorOperations<double>::subtract(positionTargetI, positionI, x, 3);
+	/* SOURCE points towards the target with the opposite direction of the
+	   x-Axis, due to camera position */
 	VectorOperations<double>::mulScalar(x, -1, x, 3);
 	VectorOperations<double>::normalize(x, x, 3);
 
@@ -48,6 +54,7 @@ void AttitudeController::calcQuatAndRefRot(double *multFactor,
 	VectorOperations<double>::cross(z, x, y);
 	VectorOperations<double>::normalize(y, y, 3);
 
+	// I to X coordinate matrix
 	double matrixIX[3][3];
 	matrixIX[0][0] = x[0];
 	matrixIX[1][0] = x[1];
@@ -64,8 +71,11 @@ void AttitudeController::calcQuatAndRefRot(double *multFactor,
 	QuaternionOperations::fromDcm(matrixIX, quatLastPointing, &indexMaxElement);
 	QuaternionOperations::normalize(quatLastPointing);
 
-	VectorOperations<double>::mulScalar(quatLastPointing, multFactor[indexMaxElement], quatLastPointing, 4);
+	VectorOperations<double>::mulScalar(quatLastPointing,
+			multFactor[indexMaxElement], quatLastPointing, 4);
 
+	/* correct the sign of the quaternion components to ensure the correct sign
+	   of the reference rotation rate */
 	for(uint8_t i = 0; i < 4; i++) {
 		if(quatLastPointing[i] < 0) {
 			multFactor[i] = -1;
@@ -74,15 +84,18 @@ void AttitudeController::calcQuatAndRefRot(double *multFactor,
 		}
 	}
 
-	QuaternionOperations::multiply(quatLastPointing, quatRotPointingAxis, quatLastPointing);
+	// Rotate around pointing axis
+	QuaternionOperations::multiply(quatLastPointing, quatRotPointingAxis,
+			quatLastPointing);
 
 	QuaternionOperations::inverse(quatCurrentAttitude, quatCurrentAttitude);
-	QuaternionOperations::multiply(quatCurrentAttitude, quatLastPointing, quatBX);
+	QuaternionOperations::multiply(quatCurrentAttitude, quatLastPointing,
+			quatBX);
 	QuaternionOperations::normalize(quatBX);
 
 	rotationCalc.calc(quatLastPointing, currentTime, refRotRate);
 
-/*
+/* Pending calculation method of reference rate
 	for (uint8_t i = 0; i < 3; i++) {
 		refRotRate[i] = refRotRate[i] * alpha
 				+ lastRefRotRate[i] * (1 - alpha);
