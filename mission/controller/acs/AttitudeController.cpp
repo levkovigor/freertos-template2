@@ -35,6 +35,7 @@ ReturnValue_t AttitudeController::handleCommandMessage(
 // Periodic function that will later control the attitude
 void AttitudeController::performControlOperation() {
 #if OBSW_ACS_TEST == 1
+	// test code work in progress
 	//sif::printInfo("%f; %f; %f; %f\n", multFactorTest[0][0],
 	//		multFactorTest[0][1], multFactorTest[0][2], multFactorTest[0][3]);
 	calcQuatAndRefRot(multFactorTest[2],
