@@ -14,6 +14,7 @@ PCDUHandler::PCDUHandler(object_id_t objectId, object_id_t comIF,
 
 
 PCDUHandler::~PCDUHandler() {
+    QueueFactory::instance()->deleteMessageQueue(eventQueue);
 }
 
 
@@ -77,7 +78,7 @@ void PCDUHandler::sendFuseOnCommand(uint8_t fuseNr) const {
 }
 
 ReturnValue_t PCDUHandler::getSwitchState(uint8_t switchNr) const {
-	if(switchNr < sizeof(switchList)){
+	if(switchNr < sizeof(switchList) * sizeof(ReturnValue_t)) {
 		return switchList[switchNr];
 	} else {
 		return NO_SWITCH;

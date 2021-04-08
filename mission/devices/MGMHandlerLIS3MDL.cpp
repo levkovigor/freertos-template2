@@ -19,6 +19,9 @@ MGMHandlerLIS3MDL::MGMHandlerLIS3MDL(object_id_t objectId,
 }
 
 MGMHandlerLIS3MDL::~MGMHandlerLIS3MDL() {
+#if OBSW_VERBOSE_LEVEL >= 1
+    delete(debugDivider);
+#endif
 }
 
 

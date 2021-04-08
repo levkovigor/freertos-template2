@@ -27,6 +27,10 @@ ReturnValue_t SatelliteSystem::initialize() {
     return result;
 }
 
+SatelliteSystem::~SatelliteSystem() {
+    QueueFactory::instance()->deleteMessageQueue(eventQueue);
+}
+
 void SatelliteSystem::checkEventQueue() {
     EventMessage event;
     ReturnValue_t result = eventQueue->receiveMessage(&event);

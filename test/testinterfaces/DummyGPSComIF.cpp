@@ -163,7 +163,9 @@ void DummyGPSComIF::generateGpsPacket(CookieIF * cookie, uint8_t ** gpsPacket,
 	uint8_t checksum = DummyGPSComIF::calcChecksum(
 			gpsDataBuffer + BINARY_HEADER_SIZE,
 			navMessage.getSerializedSize() - BINARY_HEADER_AND_TAIL_SIZE);
-	gpsDataBuffer[navMessage.getSerializedSize()-3] = checksum;
+	if(navMessage.getSerializedSize() < sizeof(gpsDataBuffer)) {
+	    gpsDataBuffer[navMessage.getSerializedSize()-3] = checksum;
+	}
 	gpsDataBufferSize = navMessage.getSerializedSize();
 	*gpsPacket = this->gpsDataBuffer;
 	*packetSize = gpsDataBufferSize;
