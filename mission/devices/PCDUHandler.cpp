@@ -78,7 +78,7 @@ void PCDUHandler::sendFuseOnCommand(uint8_t fuseNr) const {
 }
 
 ReturnValue_t PCDUHandler::getSwitchState(uint8_t switchNr) const {
-	if(switchNr < sizeof(switchList) * sizeof(ReturnValue_t)) {
+	if(switchNr < SWITCH_LIST_SIZE) {
 		return switchList[switchNr];
 	} else {
 		return NO_SWITCH;
