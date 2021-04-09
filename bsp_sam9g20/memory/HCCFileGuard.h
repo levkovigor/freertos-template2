@@ -33,7 +33,7 @@ public:
     HCCFileGuard(F_FILE** fileHandle);
     ~HCCFileGuard();
 private:
-    F_FILE* fileHandle;
+    F_FILE* fileHandle = nullptr;
     int errorCode = F_NO_ERROR;
 };
 

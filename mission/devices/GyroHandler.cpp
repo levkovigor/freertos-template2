@@ -23,6 +23,9 @@ GyroHandler::GyroHandler(object_id_t objectId, object_id_t comIF,
     }
 
 GyroHandler::~GyroHandler() {
+#if OBSW_VERBOSE_LEVEL >= 1
+    delete(debugDivider);
+#endif
 }
 
 void GyroHandler::doStartUp() {

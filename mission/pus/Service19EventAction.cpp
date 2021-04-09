@@ -16,6 +16,7 @@ Service19EventAction::Service19EventAction(object_id_t objectId) :
 
 Service19EventAction::~Service19EventAction()
 {
+    QueueFactory::instance()->deleteMessageQueue(eventQueue);
 }
 
 ReturnValue_t Service19EventAction::performService()

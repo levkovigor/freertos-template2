@@ -355,7 +355,7 @@ ReturnValue_t CoreController::initializeIsisTimerDrivers() {
 
 #else
     RTT_start();
-    timeval currentTime;
+    timeval currentTime = {};
     uint32_t secSinceEpoch = UNIX_TIMESTAMP;
     currentTime.tv_sec = secSinceEpoch;
     Clock::setClock(&currentTime);

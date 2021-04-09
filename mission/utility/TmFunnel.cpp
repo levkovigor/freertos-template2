@@ -17,6 +17,8 @@ TmFunnel::TmFunnel(object_id_t objectId, uint32_t messageDepth):
 }
 
 TmFunnel::~TmFunnel() {
+    QueueFactory::instance()->deleteMessageQueue(tmQueue);
+    QueueFactory::instance()->deleteMessageQueue(storageQueue);
 }
 
 MessageQueueId_t TmFunnel::getReportReceptionQueue(uint8_t virtualChannel) {

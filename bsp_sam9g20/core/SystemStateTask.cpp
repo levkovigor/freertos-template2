@@ -221,7 +221,7 @@ void SystemStateTask::performStatsGeneration(InternalState csvOrPrint) {
 
     fileName.append(str, 3);
     fileName += ".csv";
-    sif::printInfo("%s\n", fileName);
+    sif::printInfo("%s\n", fileName.c_str());
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     bool breakOnFinish = false;
     auto writeType = WriteCommand::WriteType::NEW_FILE;

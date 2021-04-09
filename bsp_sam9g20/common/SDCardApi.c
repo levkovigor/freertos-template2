@@ -246,11 +246,7 @@ int delete_file(const char* repository_path,
         }
     }
 
-    result = f_delete(filename);
-    if(result != F_NO_ERROR){
-        return result;
-    }
-    return result;
+    return f_delete(filename);
 }
 
 int lock_file(const char* repository_path, const char* filename) {

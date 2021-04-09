@@ -193,8 +193,7 @@ ReturnValue_t Service23FileManagement::handleReply(const CommandMessage* reply,
 }
 
 
-void Service23FileManagement::handleUnrequestedReply(
-        const CommandMessage *reply) {
+void Service23FileManagement::handleUnrequestedReply(CommandMessage *reply) {
     Command_t replyId = reply->getCommand();
     switch(replyId) {
     case FileSystemMessage::REPLY_READ_FINISHED_STOP: {

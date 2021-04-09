@@ -110,6 +110,7 @@ ReturnValue_t SDCardHandler::appendToFile(const char* repositoryPath,
                 << std::endl;
 #else
         sif::printError("SDCardHandler::appendToFile: Args invalid!\n");
+        return HasReturnvaluesIF::RETURN_FAILED;
 #endif
     }
 

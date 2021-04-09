@@ -1,5 +1,18 @@
+<div align="left"><img src="./doc/cubesat.png" width="50%"></div>
+
 SOURCE On-Board Software
 ======
+
+<a href="https://scan.coverity.com/projects/source-obsw-at91">
+  <img alt="Coverity Scan Build Status AT91"
+       src="https://scan.coverity.com/projects/22934/badge.svg"/>
+</a>
+
+<a href="https://scan.coverity.com/projects/source-obsw-iobc">
+  <img alt="Coverity Scan Build Status iOBC"
+       src="https://scan.coverity.com/projects/22935/badge.svg"/>
+</a>
+
 
 # General Information
 
@@ -202,6 +215,38 @@ mkdir build-Debug-Host && cd build-Debug-Host
 cmake ..
 cmake --build . -j
 ```
+
+# Static Code Analysis with Coverity
+
+Follow these instructions to perform static code analysis:
+
+1. Install the [Coverity Scan Build Tool](https://scan.coverity.com/download?tab=cxx)
+and make sure it can be called from the command line. MinGW64 recommended for Windows,
+path can be edited in the `.bashrc` file for this.
+
+2. Configure Coverity for ARM. Only needs to be done once.
+
+   ```sh
+   cov-configure --compiler arm-none-eabi-gcc --comptype gcc --template
+   ```
+
+
+3. Set up the CMake build folder as specified above
+
+4. Build with Coverity in the CMake build folder
+
+   ```sh
+   cov-build --dir cov-int cmake --build . -j
+   ```
+
+5. Package the coverity files
+
+   ```sh
+   tar czvf sourceobsw-coverity.tgz cov-int
+   ```
+
+6. Upload the files for the [AT91](https://scan.coverity.com/projects/source-obsw-at91) or
+the [iOBC](https://scan.coverity.com/projects/source-obsw-iobc?tab=overview) to Coverity
 
 # Build Configurations and testing of Flight Software
 

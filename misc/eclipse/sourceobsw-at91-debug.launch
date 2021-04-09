@@ -2,7 +2,7 @@
 <launchConfiguration type="ilg.gnumcueclipse.debug.gdbjtag.jlink.launchConfigurationType">
     <booleanAttribute key="ilg.gnumcueclipse.debug.gdbjtag.jlink.doConnectToRunning" value="false"/>
     <booleanAttribute key="ilg.gnumcueclipse.debug.gdbjtag.jlink.doContinue" value="true"/>
-    <booleanAttribute key="ilg.gnumcueclipse.debug.gdbjtag.jlink.doDebugInRam" value="false"/>
+    <booleanAttribute key="ilg.gnumcueclipse.debug.gdbjtag.jlink.doDebugInRam" value="true"/>
     <booleanAttribute key="ilg.gnumcueclipse.debug.gdbjtag.jlink.doFirstReset" value="true"/>
     <booleanAttribute key="ilg.gnumcueclipse.debug.gdbjtag.jlink.doGdbServerAllocateConsole" value="true"/>
     <booleanAttribute key="ilg.gnumcueclipse.debug.gdbjtag.jlink.doGdbServerAllocateSemihostingConsole" value="true"/>

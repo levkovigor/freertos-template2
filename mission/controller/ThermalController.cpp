@@ -33,8 +33,7 @@ void ThermalController::handleChangedDataset(sid_t sid,
 }
 
 ReturnValue_t ThermalController::initializeAfterTaskCreation() {
-    ReturnValue_t result =
-            ExtendedControllerBase::initializeAfterTaskCreation();
+    ReturnValue_t result = ExtendedControllerBase::initializeAfterTaskCreation();
     if(result != HasReturnvaluesIF::RETURN_OK) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "ThermalController::initializeAfterTaskCreation: Base"
@@ -56,6 +55,7 @@ ReturnValue_t ThermalController::initializeAfterTaskCreation() {
         sif::printWarning("ThermalController::initializeAfterTaskCreation: Test"
                 " HKB Handler invalid!\n");
 #endif
+        return HasReturnvaluesIF::RETURN_FAILED;
     }
     // Test normal notifications without data packet first.
     testHkbHandler->getSubscriptionInterface()->subscribeForSetUpdateMessage(
