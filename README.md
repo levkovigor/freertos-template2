@@ -1,7 +1,7 @@
 SOURCE On-Board Software
 ======
 
-<div style="text-align:center"><img src="./doc/cubesat.png" /></div>
+<div style="text-align:center"><img src="./doc/cubesat.png" width="30%"></div>
 
 <a href="https://scan.coverity.com/projects/source-obsw-at91">
   <img alt="Coverity Scan Build Status AT91"
