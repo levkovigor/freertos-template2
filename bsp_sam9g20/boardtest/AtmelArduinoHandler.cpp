@@ -60,8 +60,11 @@ I2cCommunicationType AtmelArduinoHandler::getI2cComType() const {
 #endif
         return I2cCommunicationType::UNKNOWN;
     }
-    I2cCookie * i2cCookie = dynamic_cast<I2cCookie *>(comCookie);
-    return i2cCookie->getI2cComType();
+    I2cCookie* i2cCookie = dynamic_cast<I2cCookie*>(comCookie);
+    if(i2cCookie != nullptr) {
+        return i2cCookie->getI2cComType();
+    }
+    return I2cCommunicationType::UNKNOWN;
 }
 
 void AtmelArduinoHandler::setI2cReceiveDataSize(size_t receiveDataSize) {
