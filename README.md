@@ -3,10 +3,14 @@
 SOURCE On-Board Software
 ======
 
+AT91
+
 <a href="https://scan.coverity.com/projects/source-obsw-at91">
   <img alt="Coverity Scan Build Status AT91"
        src="https://scan.coverity.com/projects/22934/badge.svg"/>
 </a>
+
+iOBC
 
 <a href="https://scan.coverity.com/projects/source-obsw-iobc">
   <img alt="Coverity Scan Build Status iOBC"
