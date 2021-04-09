@@ -214,7 +214,7 @@ path can be edited in the `.bashrc` file for this.
 2. Configure Coverity for ARM. Only needs to be done once.
 
    ```sh
-   cov-configure --compiler arm-none-eabi-gcc --comptype gcc
+   cov-configure --compiler arm-none-eabi-gcc --comptype gcc --template
    ```
 
 
