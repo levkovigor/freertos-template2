@@ -137,13 +137,14 @@ void UartPollingBase::genericUartCallback(SystemContext context,
         BinarySemaphore::release(sem);
     }
     else {
-        BinarySemaphore::releaseFromISR(sem,
+        ReturnValue_t result = BinarySemaphore::releaseFromISR(sem,
                 &higherPriorityTaskAwoken);
+        /* Not much we can do here. This really should not fail anyway.. */
+        if(result != HasReturnvaluesIF::RETURN_OK) {}
     }
     if(context == SystemContext::isr_context and
             higherPriorityTaskAwoken == pdPASS) {
-        // Request a context switch before exiting ISR, as recommended
-        // by FreeRTOS.
+        /* Request a context switch before exiting ISR, as recommended by FreeRTOS. */
         TaskManagement::requestContextSwitch(CallContext::ISR);
     }
 }

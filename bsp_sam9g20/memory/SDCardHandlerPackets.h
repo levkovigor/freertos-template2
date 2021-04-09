@@ -362,7 +362,7 @@ public:
     }
 
 private:
-    bool lockFile;
+    bool lockFile = false;
 };
 
 class FinishAppendReply: public SerialLinkedListAdapter<SerializeIF> {

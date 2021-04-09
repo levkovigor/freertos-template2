@@ -242,7 +242,7 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
         if (size < 1) {
             return HasActionsIF::INVALID_PARAMETERS;
         }
-        if (data[0] != 0 or data[0] != 1) {
+        if (data[0] > 1) {
             return HasActionsIF::INVALID_PARAMETERS;
         }
         bool enable = data[0];

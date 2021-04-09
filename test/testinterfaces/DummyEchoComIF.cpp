@@ -1,3 +1,4 @@
+#include <fsfw/ipc/QueueFactory.h>
 #include <test/testinterfaces/DummyEchoComIF.h>
 
 #include <fsfw/serialize/SerializeAdapter.h>
@@ -9,7 +10,8 @@
 
 TestEchoComIF::TestEchoComIF(object_id_t object_id_, bool initFunnel):
 	SystemObject(object_id_), replyBuffer(100) {
-	if(initFunnel) {
+    tmQueue = QueueFactory::instance()->createMessageQueue(20);
+	if(initFunnel and tmQueue != nullptr) {
 		funnel = objectManager->get<AcceptsTelemetryIF>(objects::TM_FUNNEL);
 		if (funnel != nullptr) {
 			tmQueue->setDefaultDestination(funnel->getReportReceptionQueue());
@@ -24,7 +26,9 @@ TestEchoComIF::TestEchoComIF(object_id_t object_id_, bool initFunnel):
 	}
 }
 
-TestEchoComIF::~TestEchoComIF() {}
+TestEchoComIF::~TestEchoComIF() {
+    QueueFactory::instance()->deleteMessageQueue(tmQueue);
+}
 
 ReturnValue_t TestEchoComIF::initializeInterface(CookieIF * cookie) {
 	// We could set the correct vector size here.

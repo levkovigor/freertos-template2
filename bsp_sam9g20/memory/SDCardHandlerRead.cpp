@@ -113,7 +113,7 @@ ReturnValue_t SDCardHandler::handleReadReplies(ReadCommand& command) {
                 << command.getFilename() << " failed" << std::endl;
 #else
         sif::printWarning("SDCardHandler::handleReadReply: Reading from file %s failed\n",
-                command.getFilename());
+                command.getFilename()->c_str());
 #endif
         sendCompletionReply(false, result);
         int retval = f_close(file);
