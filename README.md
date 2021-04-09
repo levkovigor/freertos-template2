@@ -1,6 +1,11 @@
 SOURCE On-Board Software
 ======
 
+<a href="https://scan.coverity.com/projects/source-obsw-at91">
+  <img alt="Coverity Scan Build Status AT91"
+       src="https://scan.coverity.com/projects/22934/badge.svg"/>
+</a>
+
 # General Information
 
 More general information of the project can be found
