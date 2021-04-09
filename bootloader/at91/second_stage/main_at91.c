@@ -173,6 +173,7 @@ int perform_bootloader_core_operation() {
     CP15_Disable_I_Cache();
 
     //disable_pit_aic();
+    _invalidateICache();
 
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
 
