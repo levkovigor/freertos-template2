@@ -166,6 +166,9 @@ ReturnValue_t SpiDeviceComIF::requestReceiveMessage(CookieIF *cookie,
 ReturnValue_t SpiDeviceComIF::readReceivedMessage(CookieIF *cookie,
         uint8_t** buffer, size_t* size) {
     SpiCookie* spiCookie = dynamic_cast<SpiCookie*> (cookie);
+    if(spiCookie == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
     uint32_t spiAddress = spiCookie->getAddress();
 
     auto spiIter = spiMap.find(spiAddress);

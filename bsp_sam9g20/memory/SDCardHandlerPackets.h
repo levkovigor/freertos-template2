@@ -434,7 +434,7 @@ public:
         return sequenceNumber;
     }
 private:
-    uint16_t sequenceNumber;
+    uint16_t sequenceNumber = 0;
 };
 
 

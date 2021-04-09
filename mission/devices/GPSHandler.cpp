@@ -220,6 +220,10 @@ ReturnValue_t GPSHandler::buildGpsUpdateRateCommand(const uint8_t *commandData,
     }
     const GpsSetUpdateRate *updateRate =
             reinterpret_cast<const GpsSetUpdateRate*>(commandData);
+    if(updateRate == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
     if (updateRate->updateRate > 50 || updateRate == 0) {
         return DeviceHandlerIF::INVALID_COMMAND_PARAMETER;
     }

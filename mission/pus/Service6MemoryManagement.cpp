@@ -50,14 +50,13 @@ ReturnValue_t Service6MemoryManagement::checkInterfaceAndAcquireMessageQueue(
 ReturnValue_t Service6MemoryManagement::prepareCommand(
 		CommandMessage* message, uint8_t subservice, const uint8_t* tcData,
 		size_t tcDataLen, uint32_t* state, object_id_t objectId) {
-	CommandMessage* memoryMessage = dynamic_cast<CommandMessage*>(message);
 	switch(static_cast<Subservice>(subservice)) {
 	case Subservice::LOAD_DATA_TO_MEMORY:
-		return prepareMemoryLoadCommand(memoryMessage, tcData, tcDataLen);
+		return prepareMemoryLoadCommand(message, tcData, tcDataLen);
 	case Subservice::DUMP_MEMORY:
-		return prepareMemoryDumpCommand(memoryMessage, tcData, tcDataLen);
+		return prepareMemoryDumpCommand(message, tcData, tcDataLen);
 	case Subservice::CHECK_MEMORY:
-		return prepareMemoryCheckCommand(memoryMessage, tcData, tcDataLen);
+		return prepareMemoryCheckCommand(message, tcData, tcDataLen);
 	default:
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
