@@ -197,6 +197,9 @@ ReturnValue_t GPSHandler::buildBaudSelectCommand(const uint8_t *commandData,
     // commandData to use it directly
     const GpsSetBaudRate *baudRate =
             reinterpret_cast<const GpsSetBaudRate*>(commandData);
+    if(baudRate == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
     commandBuffer[5] = 0; // Comm Port is zero
     if (baudRate->baudRateSelect > 8) {
         return DeviceHandlerIF::INVALID_COMMAND_PARAMETER;

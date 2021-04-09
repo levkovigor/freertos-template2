@@ -44,11 +44,10 @@ ReturnValue_t SpiDeviceComIF::checkAddress(address_t spiAddress) {
 }
 
 ReturnValue_t SpiDeviceComIF::initializeInterface(CookieIF *cookie)  {
-    if(cookie == nullptr) {
+    SpiCookie * spiCookie = dynamic_cast<SpiCookie*>(cookie);
+    if(spiCookie == nullptr) {
         return NULLPOINTER;
     }
-
-    SpiCookie * spiCookie = dynamic_cast<SpiCookie*>(cookie);
     address_t spiAddress = spiCookie->getAddress();
     if(ReturnValue_t result = checkAddress(spiAddress); result != RETURN_OK) {
         return result;
