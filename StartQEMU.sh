@@ -136,7 +136,7 @@ if [ ! -d "$req_directory" ] || [ ! -d "$build_directory" ]; then
 	exit
 fi
 
-directory=_bin
+directory=".."
 files=$(find . -type f -name "*.bin")
 
 index=0

@@ -18,7 +18,7 @@ build_generator=""
 os_fsfw="freertos"
 build_type="release"
 builddir="build-Mission-iOBC"
-defines="BOARD_IOBC=ON"
+defines="BOARD_IOBC=ON DISABLE_AGGRESSIVE_OPTIMIZATION=ON"
 
 if [ "${OS}" = "Windows_NT" ]; then
 	build_generator="MinGW Makefiles"

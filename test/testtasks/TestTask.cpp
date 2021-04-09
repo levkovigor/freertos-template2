@@ -163,7 +163,7 @@ void TestTask::examplePacketTest() {
 		sif::info << testClass.getTail() << std::endl;
 #else
 		sif::printInfo("Printing deserialized packet members: \n");
-		sif::printInfo("%s\n%s\n", testClass.getHeader(), testClass.getTail());
+		sif::printInfo("%d\n%d\n", testClass.getHeader(), testClass.getTail());
 #endif
 		arrayprinter::print(testClass.getBuffer(), testClass.getBufferLength());
 	}

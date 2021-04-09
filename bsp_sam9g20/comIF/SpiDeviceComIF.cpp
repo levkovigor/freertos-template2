@@ -44,11 +44,10 @@ ReturnValue_t SpiDeviceComIF::checkAddress(address_t spiAddress) {
 }
 
 ReturnValue_t SpiDeviceComIF::initializeInterface(CookieIF *cookie)  {
-    if(cookie == nullptr) {
+    SpiCookie * spiCookie = dynamic_cast<SpiCookie*>(cookie);
+    if(spiCookie == nullptr) {
         return NULLPOINTER;
     }
-
-    SpiCookie * spiCookie = dynamic_cast<SpiCookie*>(cookie);
     address_t spiAddress = spiCookie->getAddress();
     if(ReturnValue_t result = checkAddress(spiAddress); result != RETURN_OK) {
         return result;
@@ -82,7 +81,10 @@ ReturnValue_t SpiDeviceComIF::performOperation(uint8_t operationCode) {
 
 ReturnValue_t SpiDeviceComIF::sendMessage(CookieIF *cookie,
         const uint8_t * sendData, size_t sendLen) {
-    SpiCookie * spiCookie = dynamic_cast<SpiCookie *> (cookie);
+    SpiCookie* spiCookie = dynamic_cast<SpiCookie *> (cookie);
+    if(spiCookie == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
     address_t spiAddress = spiCookie->getAddress();
     auto spiMapIter = spiMap.find(spiAddress);
     if(spiMapIter == spiMap.end()) {
@@ -164,6 +166,9 @@ ReturnValue_t SpiDeviceComIF::requestReceiveMessage(CookieIF *cookie,
 ReturnValue_t SpiDeviceComIF::readReceivedMessage(CookieIF *cookie,
         uint8_t** buffer, size_t* size) {
     SpiCookie* spiCookie = dynamic_cast<SpiCookie*> (cookie);
+    if(spiCookie == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
     uint32_t spiAddress = spiCookie->getAddress();
 
     auto spiIter = spiMap.find(spiAddress);

@@ -272,11 +272,11 @@ void initTasks(void) {
     /* PUS Low Priority */
     PeriodicTaskIF* PusLowPriorityTask = taskFactory->
             createPeriodicTask("PUS_LOW_PRIO", 3, 2048 * 4, 1.6, genericMissedDeadlineFunc);
-    PusLowPriorityTask->addComponent(objects::PUS_SERVICE_20_PARAM_MGMT);
+    result = PusLowPriorityTask->addComponent(objects::PUS_SERVICE_20_PARAM_MGMT);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("PUS 20", objects::PUS_SERVICE_20_PARAM_MGMT);
     }
-    PusLowPriorityTask->addComponent(objects::PUS_SERVICE_17_TEST);
+    result = PusLowPriorityTask->addComponent(objects::PUS_SERVICE_17_TEST);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("PUS 17", objects::PUS_SERVICE_17_TEST);
     }
@@ -511,7 +511,7 @@ void boardTestTaskInit() {
     /* SPI Test Task */
 #if OBSW_ADD_SPI_TEST_TASK == 1
     PeriodicTaskIF* spiTestTask = taskFactory->createPeriodicTask(
-            "SPI_TASK", 4, 2048, 1, nullptr);
+            "SPI_TASK", 6, 2048, 1, nullptr);
     result = spiTestTask->addComponent(objects::AT91_SPI_TEST_TASK);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("SPI test task", objects::AT91_SPI_TEST_TASK);

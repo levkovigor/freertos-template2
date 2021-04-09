@@ -7,4 +7,5 @@ target_sources(${TARGET_NAME} PRIVATE
     SDCardHandlerWrite.cpp
     SDCHStateMachine.cpp
     FRAMHandler.cpp
+    HCCFileGuard.cpp
 )

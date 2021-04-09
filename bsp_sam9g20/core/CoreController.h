@@ -3,7 +3,7 @@
 
 #include <fsfw/controller/ExtendedControllerBase.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
-#include <bsp_sam9g20/common/CommonFRAM.h>
+#include <bsp_sam9g20/common/fram/CommonFRAM.h>
 #include <OBSWConfig.h>
 
 #ifdef ISIS_OBC_G20

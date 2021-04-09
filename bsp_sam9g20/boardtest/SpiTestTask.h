@@ -43,12 +43,13 @@ private:
 
 	SpiTestMode spiTestMode = SpiTestMode::PT1000;
 	uint8_t transferSize = 3;
-	unsigned char readData[128] = {0};
-	unsigned char writeData[128] = {0};
-	SPIslaveParameters slaveParams;
-	SPItransfer spiTransfer;
+	unsigned char readData[1024] = {0};
+	unsigned char writeData[1024] = {0};
+	SPIslaveParameters slaveParams= {};
+	SPItransfer spiTransfer = {};
 	bool initWait = true;
     bool oneshot = true;
+    int utilityCounter = 0;
 
 	bool decoderSSused = false;
 	void configureSpiDummySSIfNeeded();
@@ -73,10 +74,12 @@ private:
 
 	SPIbus SPI_bus = bus1_spi; //!< SPI bus 0 can not be used on iOBC!
 	static void spiIrqHandler(At91SpiBuses bus, At91TransferStates state, void* args);
-	static volatile bool transferFinished;
 
 #ifdef ISIS_OBC_G20
-	void iobcFramTest();
+    static volatile At91TransferStates transferState;
+    void iobcFramTestBlocking();
+	void iobcFramTestInterrupt();
+	void iobcFramRawTest();
 	static void spiCallback(At91SpiBuses bus, At91TransferStates state, void* args);
 #endif
 

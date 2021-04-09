@@ -7,6 +7,7 @@ endif()
 add_subdirectory(utility)
 add_subdirectory(config)
 add_subdirectory(core)
+add_subdirectory(common)
 
 target_sources(${TARGET_NAME} PRIVATE
     main.c

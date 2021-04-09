@@ -1,4 +1,5 @@
 target_sources(${TARGET_NAME} PRIVATE
-    bl_iobc_norflash.c
-    iobc_boot_sd.c
+    main_norflash.c
+	fram_logic.c
+	boot_logic.c
 )

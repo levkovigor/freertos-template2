@@ -15,9 +15,9 @@
 
 
 #ifdef ISIS_OBC_G20
-#include <bsp_sam9g20/common/FRAMApi.h>
+#include <bsp_sam9g20/common/fram/FRAMApi.h>
 #else
-#include <bsp_sam9g20/common/VirtualFRAMApi.h>
+#include <bsp_sam9g20/common/fram/VirtualFRAMApi.h>
 #endif
 
 
@@ -242,7 +242,7 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
         if (size < 1) {
             return HasActionsIF::INVALID_PARAMETERS;
         }
-        if (data[0] != 0 or data[0] != 1) {
+        if (data[0] > 1) {
             return HasActionsIF::INVALID_PARAMETERS;
         }
         bool enable = data[0];
