@@ -8,6 +8,12 @@ SOURCE On-Board Software
        src="https://scan.coverity.com/projects/22934/badge.svg"/>
 </a>
 
+<a href="https://scan.coverity.com/projects/source-obsw-iobc">
+  <img alt="Coverity Scan Build Status iOBC"
+       src="https://scan.coverity.com/projects/22935/badge.svg"/>
+</a>
+
+
 # General Information
 
 More general information of the project can be found
