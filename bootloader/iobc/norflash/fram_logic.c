@@ -68,32 +68,7 @@ int increment_sdc_loc_reboot_counter(BootSelect boot_select, uint16_t* curr_rebo
 int increment_reboot_counter_no_os(SlotType slot_type, uint16_t* new_reboot_counter) {
     uint16_t new_reboot_counter_loc = 0;
     int result = 0;
-#if USE_FRAM_NON_INTERRUPT_DRV == 0
-    At91TransferStates state;
-    result = fram_no_os_read_img_reboot_counter(slot_type, &new_reboot_counter_loc);
-    if(result == 0) {
-        state = wait_on_transfer(1000, NULL);
-        if(state != SPI_SUCCESS) {
-            result = (int) state;
-        }
-        else {
-            new_reboot_counter_loc++;
-            result = fram_no_os_increment_img_reboot_counter(slot_type, new_reboot_counter_loc);
-            if(result != 0) {
-                state = wait_on_transfer(1000, NULL);
-                if(state != SPI_SUCCESS) {
-                    result = (int) state;
-                }
-                else {
-                    if(new_reboot_counter != NULL) {
-                        *new_reboot_counter = new_reboot_counter_loc;
-                    }
-                }
-            }
-        }
-    }
-    return result;
-#else
+
     if(slot_type == FLASH_SLOT) {
         new_reboot_counter_loc = bl_fram_block.nor_flash_reboot_counter;
     }
@@ -116,6 +91,25 @@ int increment_reboot_counter_no_os(SlotType slot_type, uint16_t* new_reboot_coun
         TRACE_WARNING("Reboot counter found might be unset. Setting to zero\n\r");
 #endif
     }
+#if USE_FRAM_NON_INTERRUPT_DRV == 0
+    At91TransferStates state;
+    new_reboot_counter_loc++;
+    result = fram_no_os_increment_img_reboot_counter(slot_type, new_reboot_counter_loc);
+    if(result != 0) {
+        state = wait_on_transfer(1000, NULL);
+        if(state != SPI_SUCCESS) {
+            result = (int) state;
+        }
+        else {
+            if(new_reboot_counter != NULL) {
+                *new_reboot_counter = new_reboot_counter_loc;
+            }
+        }
+    }
+
+    return result;
+#else
+
     new_reboot_counter_loc++;
     result = fram_no_os_blocking_increment_img_reboot_counter(slot_type,
             new_reboot_counter_loc);

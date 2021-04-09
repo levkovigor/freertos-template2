@@ -27,8 +27,8 @@ int main(void)
 {
     std::cout << "-- SOURCE Hosted OBSW --" << std::endl;
     std::cout << "-- Compiled for " << COMPILE_PRINTOUT << " --" << std::endl;
-    std::cout << "-- Software version v" << SW_VERSION << "." << SW_SUBVERSION << "."
-            << SW_SUBSUBVERSION << " -- " << std::endl;
+    std::cout << "-- Software version v" << SW_VERSION << "." << SW_SUBVERSION << "." <<
+            SW_SUBSUBVERSION << " -- " << std::endl;
     std::cout << "-- " <<  __DATE__ << " " << __TIME__ << " --" << std::endl;
     initMission();
     for(;;) {

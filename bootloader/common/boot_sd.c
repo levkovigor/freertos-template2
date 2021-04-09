@@ -1,5 +1,4 @@
 #include "boot_sd.h"
-#include "main_norflash.h"
 
 #include <bootloaderConfig.h>
 #include <fatfs_config.h>
@@ -135,6 +134,7 @@ int copy_with_hcc_lib(BootSelect boot_select, size_t* image_size) {
                 SW_SLOT_1_NAME, (unsigned int) current_volume);
 #endif
         /* File does not exist or has an error */
+        f_close(file);
         close_filesystem(true, true, current_volume);
         return -1;
     }
