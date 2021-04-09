@@ -47,6 +47,9 @@ ReturnValue_t LedTask::performOperation(uint8_t operationCode) {
     if(result == HasReturnvaluesIF::RETURN_OK) {
         actionHelper.handleActionMessage(&message);
     }
+    else if (result != MessageQueueIF::EMPTY) {
+        return result;
+    }
 
     if(ledMode == LedModes::OFF) {
         return HasReturnvaluesIF::RETURN_OK;

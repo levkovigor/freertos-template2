@@ -138,6 +138,10 @@ ReturnValue_t I2cDeviceComIF::requestReceiveMessage(CookieIF *cookie,
 		size_t requestLen) {
 	// For separate send/read: Request read here
 	i2cCookie = dynamic_cast<I2cCookie*>(cookie);
+	if(i2cCookie == nullptr) {
+	    return HasReturnvaluesIF::RETURN_FAILED;
+	}
+
 	i2cCookie->setReceiveDataSize(requestLen);
 
 	if(requestLen == 0 or i2cCookie->getI2cComType() ==

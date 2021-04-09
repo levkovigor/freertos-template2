@@ -81,7 +81,10 @@ ReturnValue_t SpiDeviceComIF::performOperation(uint8_t operationCode) {
 
 ReturnValue_t SpiDeviceComIF::sendMessage(CookieIF *cookie,
         const uint8_t * sendData, size_t sendLen) {
-    SpiCookie * spiCookie = dynamic_cast<SpiCookie *> (cookie);
+    SpiCookie* spiCookie = dynamic_cast<SpiCookie *> (cookie);
+    if(spiCookie == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
     address_t spiAddress = spiCookie->getAddress();
     auto spiMapIter = spiMap.find(spiAddress);
     if(spiMapIter == spiMap.end()) {
