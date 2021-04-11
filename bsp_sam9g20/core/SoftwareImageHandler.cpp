@@ -54,6 +54,9 @@ void SoftwareImageHandler::handleMessages() {
         }
 
         result = parameterHelper.handleParameterMessage(&message);
+        if(result == HasReturnvaluesIF::RETURN_OK) {
+            continue;
+        }
     }
 }
 
