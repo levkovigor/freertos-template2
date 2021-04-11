@@ -140,8 +140,6 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
-    //tcStore->addData(&addr, data, size, ignoreFault)
-
     return HasReturnvaluesIF::RETURN_OK;
 }
 
