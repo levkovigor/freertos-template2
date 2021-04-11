@@ -45,7 +45,8 @@ ReturnValue_t LedTask::performOperation(uint8_t operationCode) {
     CommandMessage message;
     ReturnValue_t result = commandQueue->receiveMessage(&message);
     if(result == HasReturnvaluesIF::RETURN_OK) {
-        actionHelper.handleActionMessage(&message);
+        result = actionHelper.handleActionMessage(&message);
+        if(result != HasReturnvaluesIF::RETURN_OK) {};
     }
     else if (result != MessageQueueIF::EMPTY) {
         return result;
