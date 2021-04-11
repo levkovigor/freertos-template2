@@ -106,6 +106,7 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
 
 
     // Get store address
+    //TODO: This is probably useless, as currentPacket's store address is always 0
     store_address_t addr = this->currentPacket.getStoreAddress();
     if (addr.raw == storeId::INVALID_STORE_ADDRESS) {
         return HasReturnvaluesIF::RETURN_FAILED;
