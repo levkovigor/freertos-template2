@@ -279,7 +279,9 @@ ReturnValue_t I2cDeviceComIF::assignReply(I2cCookie * i2cCookie,
 		return result;
 	}
 	*buffer = i2cVectorMap[slaveAddress].data();
-	*size = i2cCookie->getReceiveDataSize();
+	if(size != nullptr) {
+	    *size = i2cCookie->getReceiveDataSize();
+	}
 	i2cCookie->setReceiveDataSize(0);
 	return result;
 }
