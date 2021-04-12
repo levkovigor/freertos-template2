@@ -4,7 +4,7 @@
 #include <fsfw/serialize/SerializeAdapter.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/tmtcservices/CommandingServiceBase.h>
-#include <fsfw/tmtcpacket/pus/TmPacketStored.h>
+#include <fsfw/tmtcpacket/pus/TmPacketStoredPusA.h>
 #include <objects/systemObjectList.h>
 
 
