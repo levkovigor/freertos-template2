@@ -53,7 +53,7 @@ ReturnValue_t TmFunnel::handlePacket(TmTcMessage* message) {
     if(result != HasReturnvaluesIF::RETURN_OK){
         return result;
     }
-    TmPacketBase packet(packetData);
+    TmPacketPusA packet(packetData);
     packet.setPacketSequenceCount(this->sourceSequenceCount);
     sourceSequenceCount++;
     sourceSequenceCount = sourceSequenceCount %
