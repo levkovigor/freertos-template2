@@ -43,9 +43,9 @@
 #define FSFW_USE_MODESTORE          0
 
 namespace fsfwconfig {
-//! Default timestamp size. The default timestamp will be an eight byte CDC
+//! Default timestamp size. The default timestamp will be a seven byte CDC
 //! short timestamp.
-static constexpr uint8_t FSFW_MISSION_TIMESTAMP_SIZE = 8;
+static constexpr uint8_t FSFW_MISSION_TIMESTAMP_SIZE = 7;
 
 //! Configure the allocated pool sizes for the event manager.
 static constexpr size_t FSFW_EVENTMGMR_MATCHTREE_NODES = 240;

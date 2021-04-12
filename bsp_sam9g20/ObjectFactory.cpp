@@ -345,7 +345,7 @@ void Factory::setStaticFrameworkObjectIds() {
 
     DeviceHandlerFailureIsolation::powerConfirmationId = objects::PCDU_HANDLER;
 
-    TmPacketStored::timeStamperId = objects::TIME_STAMPER;
+    TmPacketBase::timeStamperId = objects::TIME_STAMPER;
 #if defined(ETHERNET)
     TmFunnel::downlinkDestination = objects::UDP_TMTC_BRIDGE;
 #else
