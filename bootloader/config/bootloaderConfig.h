@@ -11,27 +11,37 @@
 #endif
 
 #define BL_VERSION      2
-#define BL_SUBVERSION   1
+#define BL_SUBVERSION   2
 
 //! Can be used if SAM-BA is used to flash the bootloader, which is not able to write
 //! the CRC expected written at the end of the NOR-Flash memory.
 #define BOOTLOADER_CRC_CHECK_ENABLED        0
 
+//! Use PIT/AIC to kick watchdog periodically. If this is problematic, it can be disabled but
+//! then watchdog needs to be kicked manually, which requires measurement for operations
+//! like copying large images or the hamming code check
+#define BOOTLOADER_KICK_WATCHDOG_IN_PIT_IRQ 1
+
 //! Minimalistic bootloader which copies NOR to SDRAM and jumps there.
 #define USE_SIMPLE_BOOTLOADER               0
 
-#define USE_FRAM_NON_INTERRUPT_DRV          1
-
-//! Can be used to enable or disable diagnostic printouts in the bootloader.
-#define BOOTLOADER_VERBOSE_LEVEL            1
-
+//! This is related to the boot logic, which will increment a counter for each boot
+//! to avoid reboot loops if it is not reset
 #define BOOTLOADER_MAX_REBOOT_COUNTER       5
 
-#define BOOTLOADER_KICK_WATCHDOG_IN_PIT_IRQ 1
+//! Can be used to enable or disable diagnostic printouts in the bootloader.
+//! Set to 0 for mission code, 1 recommended for development
+#define BOOTLOADER_VERBOSE_LEVEL            1
 
-#define BOOTLOADER_TIME_MEASUREMENT         1
+//! For debugging purposes, can be used to measure elapsed times fpr the whole bootloader
+//! operation
+#define BOOTLOADER_TIME_MEASUREMENT         0
 
-#define HAM_CODE_DEBUGGING                  0
+//! Can be used to display additional information about hamming code check
+#define BOOTLOADER_HAM_CODE_DEBUGGING       0
+
+//! Use the SPI driver which does not make use of interrupts. Using AIC can be problematic.
+#define USE_FRAM_NON_INTERRUPT_DRV          1
 
 //! Use FreeRTOS in bootloaders. Transfer of control can be problematic, crashes when first task is
 //! started, not recommended!

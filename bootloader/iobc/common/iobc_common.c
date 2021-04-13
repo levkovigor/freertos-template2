@@ -70,13 +70,12 @@ void perform_bootloader_core_operation() {
     fram_stop_no_os();
 #endif
 
+    /* Generally, a full boot process from the NOR-Flash with hamming code checks will take 300 ms.
+    100-150ms for the copy operation, the rest for the hamming code check. */
 #if BOOTLOADER_TIME_MEASUREMENT == 1
     current_time = get_ms_counter();
     uint32_t elapsed = current_time - start_time;
-    TRACE_INFO("Current ticks: %d\n\r", (int) current_time);
-    TRACE_INFO("Elapsed bootloader execution time: %d\n\r", (int) elapsed);
-    int test = PIT_GetPIVR();
-    TRACE_INFO("PIVR value: %d\n\r", test);
+    TRACE_INFO("Elapsed bootloader execution time: %d ms\n\r", (int) elapsed);
 #endif
 
     disable_pit_aic();

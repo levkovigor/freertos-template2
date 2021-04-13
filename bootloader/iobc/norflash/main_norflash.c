@@ -88,6 +88,7 @@ bool fram_faulty = false;
 uint32_t start_time = 0;
 uint32_t current_time = 0;
 
+
 int boot_iobc_from_norflash() {
     //-------------------------------------------------------------------------
     // Configure traces
@@ -117,7 +118,6 @@ int boot_iobc_from_norflash() {
     WDT_forceKick();
 #endif
 
-    asm_enable_irq();
     setup_timer_interrupt();
     start_time = get_ms_counter();
 
@@ -126,6 +126,7 @@ int boot_iobc_from_norflash() {
     FRAM_stop();
 #endif /* USE_FREERTOS == 0 */
 
+    /* The ISIS drivers probably disable the interrupts for whatever reason */
     asm_enable_irq();
 
     // Glow all LEDs
