@@ -3,7 +3,7 @@
 #include <board.h>
 #include <AT91SAM9G20.h>
 #if defined(ISIS_OBC_G20) && BOOTLOADER_KICK_WATCHDOG_IN_PIT_IRQ == 1
-#include <hal/Timing/WatchdogTimerNoOs.h>
+#include <hal/Timing/WatchDogTimerNoOS.h>
 #endif
 #include <peripherals/pit/pit.h>
 #include <peripherals/aic/aic.h>
