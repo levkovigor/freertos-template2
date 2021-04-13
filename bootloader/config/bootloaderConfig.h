@@ -15,7 +15,7 @@
 
 //! Can be used if SAM-BA is used to flash the bootloader, which is not able to write
 //! the CRC expected written at the end of the NOR-Flash memory.
-#define BOOTLOADER_CRC_CHECK_ENABLED        0
+#define BOOTLOADER_CRC_CHECK_ENABLED        1
 
 //! Use PIT/AIC to kick watchdog periodically. If this is problematic, it can be disabled but
 //! then watchdog needs to be kicked manually, which requires measurement for operations
@@ -47,8 +47,13 @@
 //! started, not recommended!
 #define USE_FREERTOS                        0
 
-//! Use tiny FS instead of HCC FS.
-#define USE_TINY_FS                 0
+//! Use tiny FS instead of HCC FS. Problematic on iOBC
+#define USE_TINY_FS                         0
+
+//! If the bootloader is flashed with SAM-BA, certain operations like writing
+//! CRC of binary sizes and checks performed with them are not possible anymore
+//! This flag should be enabled if the software is flashed with SAM-BA.
+#define SAM_BA_BOOT                         0
 
 static const uint32_t SDRAM_DESTINATION = 0x20000000;
 
@@ -97,11 +102,6 @@ typedef enum {
     BOOT_SD_CARD_1_SLOT_1,
     BOOT_NOR_FLASH
 } BootSelect;
-
-//! If the bootloader is flashed with SAM-BA, certain operations like writing
-//! CRC of binary sizes and checks performed with them are not possible anymore
-//! This flag should be enabled if the software is flashed with SAM-BA.
-#define SAM_BA_BOOT         0
 
 #endif /* BOOTLOADER_CONFIG_BOOTLOADERCONFIG_H_ */
 

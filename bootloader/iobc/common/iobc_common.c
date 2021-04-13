@@ -29,13 +29,14 @@
 /* Forward declarations */
 int perform_iobc_copy_operation_to_sdram();
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
+void perform_bootloader_check();
 
 /**
  * This is the core function of the bootloader which handles the copy operation,
  * performing ECC functionalities where applicable and jumping to the application.
  */
 void perform_bootloader_core_operation() {
-#if BOOTLOADER_CRC_CHECK_ENABLED == 1
+#if BOOTLOADER_CRC_CHECK_ENABLED == 1 && SAM_BA_BOOT == 0
     perform_bootloader_check();
 #endif
 
