@@ -23,7 +23,7 @@ from Windows with `gcc --version` and `mingw32-make --version`.
 ## Building the Software
 
 After that, you should be able to build the binary with the following command.
-On Windows, add `-G "MinGW Makefiles` to the command before `..`.
+On Windows, add `-G "MinGW Makefiles"` to the command before `..`.
 
 ```sh
 mkdir build-Debug-Host && cd build-Debug-Host
