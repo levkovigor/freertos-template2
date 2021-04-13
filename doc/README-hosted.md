@@ -1,5 +1,9 @@
 # <a id="top"></a> <a name="host"></a> Host
 
+These steps specify how to build with CMake from the command line. If the build system
+was generated with CMake via shell script or command line, you can use Eclipse with
+the provided run configurations to build the software as well.
+
 ## Windows
 
 On Windows, it is necessary to install a GCC toolchain, and it is recommended to use MinGW64
@@ -31,8 +35,8 @@ cmake -DHOST_BUILD=ON -DOS_FSFW=host ..
 cmake --build . -j
 ```
 
-Please note that the `cmake/script/host` folders contains shell scripts to perform these steps
-as well and these scripts should be executed with MinGW64.
+Please note that the `cmake/script/host` folders contains shell scripts to generatwe the build
+system as well and these scripts should be executed with MinGW64.
 You can start the software with the Windows command line with `start <binaryName>`. It is
 recommended to start the image by double-clicking it or with the Windows command line because
 the printout coming from threads might not be displayed properly in MinGW64.
