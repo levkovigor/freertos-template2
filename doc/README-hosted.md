@@ -32,7 +32,10 @@ cmake --build . -j
 ```
 
 Please note that the `cmake/script/host` folders contains shell scripts to perform these steps
-as well.
+as well and these scripts should be executed with MinGW64.
+You can start the software with the Windows command line with `start <binaryName>`. It is
+recommended to start the image by double-clicking it or with the Windows command line because
+the printout coming from threads might not be displayed properly in MinGW64.
 
 # <a id="top"></a> <a name="linux"></a> Linux
 
