@@ -35,6 +35,7 @@ void ms_tick_isr(void)
 {
     volatile unsigned long ulDummy;
     u32_ms_counter++;
+
     /* Clear the PIT interrupt. */
     ulDummy = AT91C_BASE_PITC->PITC_PIVR;
     /* To remove compiler warning. */

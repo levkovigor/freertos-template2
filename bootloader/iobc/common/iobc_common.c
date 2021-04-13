@@ -2,6 +2,7 @@
 #include <bootloaderConfig.h>
 
 #include <bsp_sam9g20/common/lowlevel.h>
+#include <bootloader/core/timer.h>
 
 #if USE_FREERTOS == 1
 
@@ -34,6 +35,10 @@ void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
  * performing ECC functionalities where applicable and jumping to the application.
  */
 void perform_bootloader_core_operation() {
+#if BOOTLOADER_CRC_CHECK_ENABLED == 1
+    perform_bootloader_check();
+#endif
+
     int result = perform_iobc_copy_operation_to_sdram();
     if(result != 0) {
         /* This really should not happen. We still assume we can jump to SDRAM because there is
@@ -64,10 +69,19 @@ void perform_bootloader_core_operation() {
 #if USE_FRAM_NON_INTERRUPT_DRV == 0
     fram_stop_no_os();
 #endif
+
+#if BOOTLOADER_TIME_MEASUREMENT == 1
+    current_time = get_ms_counter();
+    uint32_t elapsed = current_time - start_time;
+    TRACE_INFO("Current ticks: %d\n\r", (int) current_time);
+    TRACE_INFO("Elapsed bootloader execution time: %d\n\r", (int) elapsed);
+    int test = PIT_GetPIVR();
+    TRACE_INFO("PIVR value: %d\n\r", test);
+#endif
+
     disable_pit_aic();
     CP15_Disable_I_Cache();
     _invalidateICache();
-
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
 }
 

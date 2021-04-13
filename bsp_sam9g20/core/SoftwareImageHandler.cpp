@@ -364,6 +364,7 @@ ReturnValue_t SoftwareImageHandler::handleCopyingHammingToStorage(ActionId_t act
 #endif
     ReturnValue_t result = imgCpHelper->startHammingCodeToFramOperation(respectiveSlot);
     handlerState = HandlerState::COPYING;
+    recipient = commandedBy;
     actionHelper.step(1, commandedBy, actionId, result);
     return result;
 }

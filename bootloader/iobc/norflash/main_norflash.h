@@ -1,6 +1,7 @@
 #ifndef BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_
 #define BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_
 
+#include <bootloaderConfig.h>
 #include <bsp_sam9g20/common/At91SpiDriver.h>
 #include <bsp_sam9g20/common/fram/CommonFRAM.h>
 #include <stdbool.h>
@@ -8,7 +9,6 @@
 extern volatile At91TransferStates spi_transfer_state;
 extern BootloaderGroup bl_fram_block;
 extern bool fram_faulty;
-extern uint32_t start_time;
 
 /**
  * Wait on transfers. Resets the global state flag for the next transfer internally.

@@ -18,7 +18,7 @@ build_generator=""
 os_fsfw="freertos"
 builddir="build-Mission-BL-iOBC"
 build_type="release"
-defines="BOARD_IOBC=ON BOOTLOADER=ON AT91_NO_FREERTOS_STARTER_FILE=ON"
+defines="BOARD_IOBC=ON BOOTLOADER=ON AT91_NO_FREERTOS_STARTER_FILE=OFF"
 
 if [ "${OS}" = "Windows_NT" ]; then
 	build_generator="MinGW Makefiles"

@@ -16,11 +16,7 @@
 #include <at91/peripherals/aic/aic.h>
 #include <at91/peripherals/pio/pio.h>
 #include <at91/peripherals/cp15/cp15.h>
-
-
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
-#include <utility/trace.h>
-#endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
+#include <at91/utility/trace.h>
 
 #if USE_FREERTOS == 1
 #include <bsp_sam9g20/common/fram/FRAMApi.h>
@@ -89,6 +85,7 @@ void print_bl_info();
 
 bool fram_faulty = false;
 uint32_t start_time = 0;
+uint32_t current_time = 0;
 
 int boot_iobc_from_norflash() {
     //-------------------------------------------------------------------------
@@ -113,8 +110,13 @@ int boot_iobc_from_norflash() {
 #endif
     }
 #else
-    //setup_timer_interrupt();
-    //uint32_t start = get_ms_counter();
+
+#if BOOTLOADER_TIME_MEASUREMENT == 1
+    TRACE_INFO("Enabling MS interrupt..\n\r");
+    setup_timer_interrupt();
+    start_time = get_ms_counter();
+#endif
+
     WDT_start();
     WDT_forceKick();
     /* This call is necessary! Maybe it switches the power supply on? */
