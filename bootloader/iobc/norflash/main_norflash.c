@@ -88,7 +88,7 @@ void print_bl_info();
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
 bool fram_faulty = false;
-
+uint32_t start_time = 0;
 
 int boot_iobc_from_norflash() {
     //-------------------------------------------------------------------------
@@ -113,6 +113,8 @@ int boot_iobc_from_norflash() {
 #endif
     }
 #else
+    //setup_timer_interrupt();
+    //uint32_t start = get_ms_counter();
     WDT_start();
     WDT_forceKick();
     /* This call is necessary! Maybe it switches the power supply on? */

@@ -8,6 +8,7 @@
 extern volatile At91TransferStates spi_transfer_state;
 extern BootloaderGroup bl_fram_block;
 extern bool fram_faulty;
+extern uint32_t start_time;
 
 /**
  * Wait on transfers. Resets the global state flag for the next transfer internally.

@@ -17,6 +17,7 @@
 #include <at91/utility/trace.h>
 #include <at91/peripherals/aic/aic.h>
 #include <at91/peripherals/pit/pit.h>
+#include <at91/peripherals/cp15/cp15.h>
 
 #include <hal/Drivers/LED.h>
 #include <hal/Timing/RTT.h>
@@ -64,6 +65,9 @@ void perform_bootloader_core_operation() {
     fram_stop_no_os();
 #endif
     disable_pit_aic();
+    CP15_Disable_I_Cache();
+    _invalidateICache();
+
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
 }
 
