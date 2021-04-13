@@ -16,8 +16,8 @@ pacman -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake
 A prompt should appear, asking for which packages to install. Confirm with Enter to install
 everything.
 
-Make sure that you have added the folder containing the `MinGW64` binaries to the 
-Windows system environmental variables and test whether the toolchain can be called 
+Make sure that you have added the folder `C:/msys2/mingw64/bin` containing the `MinGW64` binaries
+to the Windows system environmental variables and test whether the toolchain can be called
 from Windows with `gcc --version` and `mingw32-make --version`.
 
 ## Building the Software
