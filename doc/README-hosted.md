@@ -13,6 +13,9 @@ the GCC toolchain.
 pacman -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake
 ```
 
+A prompt should appear, asking for which packages to install. Confirm with Enter to install
+everything.
+
 Make sure that you have added the folder containing the `MinGW64` binaries to the 
 Windows system environmental variables and test whether the toolchain can be called 
 from Windows with `gcc --version` and `mingw32-make --version`.
@@ -28,7 +31,7 @@ cmake -DHOST_BUILD=ON -DOS_FSFW=host ..
 cmake --build . -j
 ```
 
-Please note that the `cmake/script/host` folders contains shell scripts to perform these steps 
+Please note that the `cmake/script/host` folders contains shell scripts to perform these steps
 as well.
 
 # <a id="top"></a> <a name="linux"></a> Linux
