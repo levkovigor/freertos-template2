@@ -598,24 +598,3 @@ void simple_bootloader() {
 }
 
 #endif /* USE_FREERTOS == 0 */
-
-/* Delete at later stage */
-//AIC_EnableIT();
-//    uint32_t svrAddr = AT91C_BASE_AIC->AIC_SVR[AT91C_ID_SPI0];
-//    TRACE_INFO("svr addr 0x%08x\n\r", (unsigned int) svrAddr);
-//    unsigned int enabled = AT91C_BASE_AIC->AIC_IMR;
-//    TRACE_INFO("Interrupt mask register aic %d\n\r", enabled);
-//    unsigned int irMask = AT91C_BASE_SPI0->SPI_IMR;
-//    TRACE_INFO("Interrupt mask register spi0 %d\n\r", irMask);
-//    AIC_DisableIT(AT91C_ALL_INT);
-//
-//    AT91C_BASE_AIC->AIC_ICCR = AT91C_ALL_INT;
-//    for (uint8_t idx = 0; idx < 8; idx++) {
-//        uint32_t dummy = AT91C_BASE_AIC->AIC_EOICR;
-//        (void) dummy;
-//    }
-//    AT91C_BASE_AIC->AIC_SMR[AT91C_ID_SPI0] = 0;
-//    AT91C_BASE_AIC->AIC_SVR[AT91C_ID_SPI0] = 0;
-//    SPI_Disable(AT91C_BASE_SPI0);
-//    AT91C_BASE_SPI0->SPI_CR = AT91C_SPI_SWRST;
-//    AT91C_BASE_SPI0->SPI_CR = AT91C_SPI_SWRST;
