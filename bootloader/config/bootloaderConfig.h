@@ -15,25 +15,27 @@
 
 //! Can be used if SAM-BA is used to flash the bootloader, which is not able to write
 //! the CRC expected written at the end of the NOR-Flash memory.
-#define BOOTLOADER_CRC_CHECK_ENABLED    0
+#define BOOTLOADER_CRC_CHECK_ENABLED        0
 
 //! Minimalistic bootloader which copies NOR to SDRAM and jumps there.
-#define USE_SIMPLE_BOOTLOADER           0
+#define USE_SIMPLE_BOOTLOADER               0
 
-#define USE_FRAM_NON_INTERRUPT_DRV      1
+#define USE_FRAM_NON_INTERRUPT_DRV          1
 
 //! Can be used to enable or disable diagnostic printouts in the bootloader.
-#define BOOTLOADER_VERBOSE_LEVEL        0
+#define BOOTLOADER_VERBOSE_LEVEL            1
 
-#define BOOTLOADER_MAX_REBOOT_COUNTER   5
+#define BOOTLOADER_MAX_REBOOT_COUNTER       5
 
-#define BOOTLOADER_TIME_MEASUREMENT     1
+#define BOOTLOADER_KICK_WATCHDOG_IN_PIT_IRQ 1
 
-#define HAM_CODE_DEBUGGING              0
+#define BOOTLOADER_TIME_MEASUREMENT         1
+
+#define HAM_CODE_DEBUGGING                  0
 
 //! Use FreeRTOS in bootloaders. Transfer of control can be problematic, crashes when first task is
 //! started, not recommended!
-#define USE_FREERTOS                    0
+#define USE_FREERTOS                        0
 
 //! Use tiny FS instead of HCC FS.
 #define USE_TINY_FS                 0

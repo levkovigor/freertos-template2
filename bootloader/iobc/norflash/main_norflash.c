@@ -16,6 +16,7 @@
 #include <at91/peripherals/aic/aic.h>
 #include <at91/peripherals/pio/pio.h>
 #include <at91/peripherals/cp15/cp15.h>
+#include <at91/peripherals/spi/spi_at91.h>
 #include <at91/utility/trace.h>
 
 #if USE_FREERTOS == 1
@@ -111,17 +112,21 @@ int boot_iobc_from_norflash() {
     }
 #else
 
-#if BOOTLOADER_TIME_MEASUREMENT == 1
-    TRACE_INFO("Enabling MS interrupt..\n\r");
-    setup_timer_interrupt();
-    start_time = get_ms_counter();
+    WDT_start();
+#if BOOTLOADER_KICK_WATCHDOG_IN_PIT_IRQ == 0
+    WDT_forceKick();
 #endif
 
-    WDT_start();
-    WDT_forceKick();
+    asm_enable_irq();
+    setup_timer_interrupt();
+    start_time = get_ms_counter();
+
     /* This call is necessary! Maybe it switches the power supply on? */
     FRAM_start();
+    FRAM_stop();
 #endif /* USE_FREERTOS == 0 */
+
+    asm_enable_irq();
 
     // Glow all LEDs
     LED_start();
@@ -294,7 +299,7 @@ int copy_norflash_binary_to_sdram(size_t copy_size, bool use_hamming)
     TRACE_INFO("Copying NOR-Flash binary to SDRAM..\n\r");
 #endif
 
-#if USE_FREERTOS == 1
+#if USE_FREERTOS == 1 || BOOTLOADER_KICK_WATCHDOG_IN_PIT_IRQ == 1
     /* This operation takes 100-200 milliseconds if the whole NOR-Flash is
     copied. But the watchdog is running in a separate task with the highest priority
     and we are using a pre-emptive scheduler so this should not be an issue. */
@@ -440,7 +445,10 @@ void perform_bootloader_check() {
 #if USE_FREERTOS == 1
             vTaskEndScheduler();
 #endif
+
             disable_pit_aic();
+            CP15_Disable_I_Cache();
+            _invalidateICache();
 
             jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
         }
@@ -581,9 +589,6 @@ void simple_bootloader() {
     memcpy((void*) SDRAM_DESTINATION + offset,
             (const void*) BINARY_BASE_ADDRESS_READ + offset, bucket_rest);
 
-//    for(int idx = 0; idx < 100; idx++) {
-//        disable_pit_aic();
-//    }
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Jumping to SDRAM application\n\r");
 #endif
@@ -593,3 +598,24 @@ void simple_bootloader() {
 }
 
 #endif /* USE_FREERTOS == 0 */
+
+/* Delete at later stage */
+//AIC_EnableIT();
+//    uint32_t svrAddr = AT91C_BASE_AIC->AIC_SVR[AT91C_ID_SPI0];
+//    TRACE_INFO("svr addr 0x%08x\n\r", (unsigned int) svrAddr);
+//    unsigned int enabled = AT91C_BASE_AIC->AIC_IMR;
+//    TRACE_INFO("Interrupt mask register aic %d\n\r", enabled);
+//    unsigned int irMask = AT91C_BASE_SPI0->SPI_IMR;
+//    TRACE_INFO("Interrupt mask register spi0 %d\n\r", irMask);
+//    AIC_DisableIT(AT91C_ALL_INT);
+//
+//    AT91C_BASE_AIC->AIC_ICCR = AT91C_ALL_INT;
+//    for (uint8_t idx = 0; idx < 8; idx++) {
+//        uint32_t dummy = AT91C_BASE_AIC->AIC_EOICR;
+//        (void) dummy;
+//    }
+//    AT91C_BASE_AIC->AIC_SMR[AT91C_ID_SPI0] = 0;
+//    AT91C_BASE_AIC->AIC_SVR[AT91C_ID_SPI0] = 0;
+//    SPI_Disable(AT91C_BASE_SPI0);
+//    AT91C_BASE_SPI0->SPI_CR = AT91C_SPI_SWRST;
+//    AT91C_BASE_SPI0->SPI_CR = AT91C_SPI_SWRST;
