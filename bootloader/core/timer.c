@@ -11,7 +11,9 @@
 volatile uint32_t u32_ms_counter = 0;
 
 #if defined(ISIS_OBC_G20) && BOOTLOADER_KICK_WATCHDOG_IN_PIT_IRQ == 1
-static const uint8_t TICK_SYSTEM_PRIORITY = AT91C_AIC_PRIOR_LOWEST + 5;
+/* Watchdog is only avialable on the iOBC. Highest priority for iOBC if the watchdog is kicked in
+the PIT interrupt */
+static const uint8_t TICK_SYSTEM_PRIORITY = AT91C_AIC_PRIOR_HIGHEST;
 #else
 static const uint8_t TICK_SYSTEM_PRIORITY = AT91C_AIC_PRIOR_LOWEST;
 #endif
