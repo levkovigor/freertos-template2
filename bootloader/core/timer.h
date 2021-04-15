@@ -2,10 +2,10 @@
 #define BOOTLOADER_CORE_TIMER_H_
 
 #include <stdint.h>
+#include <bootloaderConfig.h>
 
 /* MS timer counter (needed for watchdog) */
 extern volatile uint32_t u32_ms_counter;
-// Private constants
 static const uint32_t TICK_RATE_HZ = 1000;
 static const uint32_t port1SECOND_IN_uS = 1000000.0;
 static const uint32_t port1MHz_IN_Hz = 1000000ul;

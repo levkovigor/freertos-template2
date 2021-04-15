@@ -56,7 +56,7 @@ void initTask() {
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     TaskPriority taskPrio = 0;
 #ifdef _WIN32
-    TaskPriority taskPrio = tasks::makeWinPriority();
+    taskPrio = tasks::makeWinPriority();
 #endif
 
 

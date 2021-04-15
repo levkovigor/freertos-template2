@@ -135,7 +135,7 @@ void GpioDeviceComIF::enableDecoderOutput8() {
 }
 
 Pin GpioDeviceComIF::pinSelect(uint32_t address) {
-	Pin pin;
+	Pin pin = {};
 	switch(address) {
 	case(addresses::DEC_SELECT_0_GPIO00): pin = PIN_GPIO00; break;
 	case(addresses::DEC_SELECT_1_GPIO01): pin = PIN_GPIO01; break;

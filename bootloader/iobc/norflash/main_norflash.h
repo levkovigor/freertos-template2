@@ -1,6 +1,7 @@
 #ifndef BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_
 #define BOOTLOADER_IOBC_NORFLASH_IOBC_NORFLASH_H_
 
+#include <bootloaderConfig.h>
 #include <bsp_sam9g20/common/At91SpiDriver.h>
 #include <bsp_sam9g20/common/fram/CommonFRAM.h>
 #include <stdbool.h>

@@ -81,6 +81,7 @@ extern void _prefetchICacheLine(unsigned int value);
 extern void _flushDCache(void);
 extern void _flushWriteBuffer(void);
 extern void _invalidateIDTLBs(void);
+extern void _invalidateICache(void);
 
 #endif // CP15_PRESENT
 

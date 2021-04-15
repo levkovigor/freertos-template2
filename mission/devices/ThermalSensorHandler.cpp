@@ -13,6 +13,9 @@ ThermalSensorHandler::ThermalSensorHandler(object_id_t objectId,
 }
 
 ThermalSensorHandler::~ThermalSensorHandler() {
+#if OBSW_VERBOSE_LEVEL >= 1
+    delete(debugDivider);
+#endif
 }
 
 void ThermalSensorHandler::doStartUp() {

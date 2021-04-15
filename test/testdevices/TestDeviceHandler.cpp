@@ -179,7 +179,7 @@ ReturnValue_t TestDevice::buildTestCommand1(DeviceCommandId_t deviceCommand,
 #else
 	sif::printDebug("DummyDevice: Building command from TEST_COMMAND_1\n");
 #endif
-	if(commandDataLen > 255){
+	if(commandDataLen > MAX_BUFFER_SIZE - sizeof(DeviceCommandId_t)){
 		return DeviceHandlerIF::INVALID_NUMBER_OR_LENGTH_OF_PARAMETERS;
 	}
 	// The command is passed on in the command buffer as it is
@@ -238,7 +238,7 @@ ReturnValue_t TestDevice::buildTestCommand3(DeviceCommandId_t deviceCommand,
 #else
 	sif::printDebug("DummyDevice: Building command from TEST_COMMAND_3\n");
 #endif
-	if(commandDataLen > 255){
+	if(commandDataLen > MAX_BUFFER_SIZE - sizeof(DeviceCommandId_t)){
 		return DeviceHandlerIF::INVALID_NUMBER_OR_LENGTH_OF_PARAMETERS;
 	}
 	DeviceCommandId_t commandIdToPass;

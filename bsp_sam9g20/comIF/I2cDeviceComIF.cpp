@@ -95,6 +95,9 @@ ReturnValue_t I2cDeviceComIF::sendMessage(CookieIF *cookie,
 	}
 
 	i2cCookie = dynamic_cast<I2cCookie*>(cookie);
+	if(i2cCookie == nullptr) {
+	    return HasReturnvaluesIF::RETURN_FAILED;
+	}
 	I2CgenericTransfer& i2cTransfer = i2cCookie->getI2cGenericTransferStructHandle();
 	if(i2cCookie->getI2cComType() == I2cCommunicationType::CONSECUTIVE_WRITE_READ) {
 		// This function prepares the generic i2cTransfer structure
@@ -138,6 +141,10 @@ ReturnValue_t I2cDeviceComIF::requestReceiveMessage(CookieIF *cookie,
 		size_t requestLen) {
 	// For separate send/read: Request read here
 	i2cCookie = dynamic_cast<I2cCookie*>(cookie);
+	if(i2cCookie == nullptr) {
+	    return HasReturnvaluesIF::RETURN_FAILED;
+	}
+
 	i2cCookie->setReceiveDataSize(requestLen);
 
 	if(requestLen == 0 or i2cCookie->getI2cComType() ==
@@ -209,8 +216,14 @@ ReturnValue_t I2cDeviceComIF::requestReply(I2cCookie * i2cCookie,
 
 ReturnValue_t I2cDeviceComIF::readReceivedMessage(CookieIF *cookie,
 		uint8_t **buffer, size_t* size) {
-	*size = 0;
 	i2cCookie = dynamic_cast<I2cCookie*>(cookie);
+	if(i2cCookie == nullptr) {
+	    return HasReturnvaluesIF::RETURN_FAILED;
+	}
+	if(size != nullptr) {
+	    *size = 0;
+	}
+
 	I2CtransferStatus & transferStatus = i2cCookie->getI2cTransferStatusHandle();
 
 	switch(transferStatus) {
@@ -266,7 +279,9 @@ ReturnValue_t I2cDeviceComIF::assignReply(I2cCookie * i2cCookie,
 		return result;
 	}
 	*buffer = i2cVectorMap[slaveAddress].data();
-	*size = i2cCookie->getReceiveDataSize();
+	if(size != nullptr) {
+	    *size = i2cCookie->getReceiveDataSize();
+	}
 	i2cCookie->setReceiveDataSize(0);
 	return result;
 }

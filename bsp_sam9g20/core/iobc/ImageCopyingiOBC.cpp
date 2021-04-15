@@ -152,6 +152,10 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
 
         ReturnValue_t result = prepareGenericFileInformation(access.getActiveVolume(), &file);
         if(result != HasReturnvaluesIF::RETURN_OK) {
+#if OBSW_VERBOSE_LEVEL >= 1
+            sif::printWarning("ImageCopyingEngine::copyImgHammingSdcToFram: Preparing Hamming code "
+                    "file failed with code %d\n", result);
+#endif
             f_close(file);
             return result;
         }
@@ -201,8 +205,7 @@ ReturnValue_t ImageCopyingEngine::copyImgHammingSdcToFram() {
             if(currentByteIdx >= currentFileSize) {
                 break;
             }
-
-            if(countdown->hasTimedOut()) {
+            else if(countdown->hasTimedOut()) {
                 return image::TASK_PERIOD_OVER_SOON;
             }
         }

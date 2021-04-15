@@ -1,12 +1,22 @@
+#include <at91/utility/trace.h>
 #include "timer.h"
 #include <board.h>
 #include <AT91SAM9G20.h>
+#if defined(ISIS_OBC_G20) && BOOTLOADER_KICK_WATCHDOG_IN_PIT_IRQ == 1
+#include <hal/Timing/WatchDogTimerNoOS.h>
+#endif
 #include <peripherals/pit/pit.h>
 #include <peripherals/aic/aic.h>
 
 volatile uint32_t u32_ms_counter = 0;
 
+#if defined(ISIS_OBC_G20) && BOOTLOADER_KICK_WATCHDOG_IN_PIT_IRQ == 1
+/* Watchdog is only avialable on the iOBC. Highest priority for iOBC if the watchdog is kicked in
+the PIT interrupt */
+static const uint8_t TICK_SYSTEM_PRIORITY = AT91C_AIC_PRIOR_HIGHEST;
+#else
 static const uint8_t TICK_SYSTEM_PRIORITY = AT91C_AIC_PRIOR_LOWEST;
+#endif
 
 // Private functions
 void ms_tick_isr(void);
@@ -31,10 +41,19 @@ void setup_timer_interrupt(void)
     PIT_Enable();
 }
 
+void ms_tick_isr(void) __attribute__((section(".sramfunc")));
 void ms_tick_isr(void)
 {
     volatile unsigned long ulDummy;
     u32_ms_counter++;
+
+#if defined(ISIS_OBC_G20) && BOOTLOADER_KICK_WATCHDOG_IN_PIT_IRQ == 1
+    /* Kick watchdog every 10 ms */
+    if(u32_ms_counter % 10 == 0) {
+        WDT_forceKick();
+    }
+#endif
+
     /* Clear the PIT interrupt. */
     ulDummy = AT91C_BASE_PITC->PITC_PIVR;
     /* To remove compiler warning. */

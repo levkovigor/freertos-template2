@@ -45,8 +45,8 @@ private:
 	uint8_t transferSize = 3;
 	unsigned char readData[1024] = {0};
 	unsigned char writeData[1024] = {0};
-	SPIslaveParameters slaveParams;
-	SPItransfer spiTransfer;
+	SPIslaveParameters slaveParams= {};
+	SPItransfer spiTransfer = {};
 	bool initWait = true;
     bool oneshot = true;
     int utilityCounter = 0;

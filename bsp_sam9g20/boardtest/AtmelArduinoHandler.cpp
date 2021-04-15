@@ -49,6 +49,9 @@ void AtmelArduinoHandler::setI2cComType(I2cCommunicationType i2cComType) {
         return;
     }
     I2cCookie * i2cCookie = dynamic_cast<I2cCookie *>(comCookie);
+    if(i2cCookie == nullptr) {
+        return;
+    }
     i2cCookie->setI2cComType(i2cComType);
 }
 
@@ -60,8 +63,11 @@ I2cCommunicationType AtmelArduinoHandler::getI2cComType() const {
 #endif
         return I2cCommunicationType::UNKNOWN;
     }
-    I2cCookie * i2cCookie = dynamic_cast<I2cCookie *>(comCookie);
-    return i2cCookie->getI2cComType();
+    I2cCookie* i2cCookie = dynamic_cast<I2cCookie*>(comCookie);
+    if(i2cCookie != nullptr) {
+        return i2cCookie->getI2cComType();
+    }
+    return I2cCommunicationType::UNKNOWN;
 }
 
 void AtmelArduinoHandler::setI2cReceiveDataSize(size_t receiveDataSize) {
@@ -72,7 +78,10 @@ void AtmelArduinoHandler::setI2cReceiveDataSize(size_t receiveDataSize) {
 #endif
 		return;
 	}
-	I2cCookie * i2cCookie = dynamic_cast<I2cCookie *>(comCookie);
+	I2cCookie* i2cCookie = dynamic_cast<I2cCookie *>(comCookie);
+	if(i2cCookie == nullptr) {
+	    return;
+	}
 	i2cCookie->setReceiveDataSize(receiveDataSize);
 }
 
