@@ -123,13 +123,14 @@ int boot_iobc_from_norflash() {
 
     /* This call is necessary! Maybe it switches the power supply on? */
     FRAM_start();
+    /* Will be started in main application again */
     FRAM_stop();
 #endif /* USE_FREERTOS == 0 */
 
     /* The ISIS drivers probably disable the interrupts for whatever reason */
     asm_enable_irq();
 
-    // Glow all LEDs
+    /* Glow all LEDs */
     LED_start();
     LED_glow(led_2);
     LED_glow(led_3);
