@@ -99,7 +99,7 @@ ReturnValue_t TmTcSerialBridge::sendTm(const uint8_t *data, size_t dataLen) {
 		sif::error << "TmTcSerialBridge::sendTm: Send error with code "
 		      << static_cast<int>(result) << "on bus 0." << std::endl;
 #else
-		sif::printError("TmTcSerialBridge::sendTm: Send error with code &d on bus0\n", result);
+		sif::printError("TmTcSerialBridge::sendTm: Send error with code %d on bus0\n", result);
 #endif
 	}
 	// If data is being sent too fast, this delay could be used.

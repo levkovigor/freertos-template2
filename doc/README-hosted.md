@@ -1,68 +1,74 @@
 # <a id="top"></a> <a name="host"></a> Host
 
+These steps specify how to build with CMake from the command line. If the build system
+was generated with CMake via shell script or command line, you can use Eclipse with
+the provided run configurations to build the software as well.
+
 ## Windows
 
 On Windows, it is necessary to install a GCC toolchain, and it is recommended to use MinGW64
 for this. If not already done so, install MinGW64 by using the
 [MSYS2 installer](https://www.msys2.org/).
 
-After that, open the MinGW64 shell and run the following commands to install
+After that, open the `MinGW64` shell and run the following commands to install
 the GCC toolchain.
 
 ```sh
-pacman -S mingw-w64-x86_64-toolchain
+pacman -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake
 ```
 
-Make sure that you have added the folder containing the MinGW64 binaries to the 
-Windows system environmental variables and test whether the toolchain can be called 
+A prompt should appear, asking for which packages to install. Confirm with Enter to install
+everything.
+
+Make sure that you have added the folder `C:/msys2/mingw64/bin` containing the `MinGW64` binaries
+to the Windows system environmental variables and test whether the toolchain can be called
 from Windows with `gcc --version` and `mingw32-make --version`.
 
-After that, you should be able to build the binary with the following command
+## Building the Software
+
+After that, you should be able to build the binary with the following command.
+On Windows, add `-G "MinGW Makefiles"` to the command before `..`.
 
 ```sh
-mingw32-make -f Makefile-Hosted
+mkdir build-Debug-Host && cd build-Debug-Host
+cmake -DHOST_BUILD=ON -DOS_FSFW=host ..
+cmake --build . -j
 ```
 
-## Linux
-
-Follow the steps in the following Linux section but replace `Makefile-Linux` with `Makefile-Hosted`.
+Please note that the `cmake/script/host` folders contains shell scripts to generatwe the build
+system as well and these scripts should be executed with MinGW64.
+You can start the software with the Windows command line with `start <binaryName>`. It is
+recommended to start the image by double-clicking it or with the Windows command line because
+the printout coming from threads might not be displayed properly in MinGW64.
 
 # <a id="top"></a> <a name="linux"></a> Linux
 
 Please note that a full linux installation should be available,
 either inside a virtual machine or as dualboot or stand-alone installation to run
 the linux binary. These steps were tested for Ubuntu 20.04.
-If not done yet, install the full C++ build chain:
+If not done yet, install the full C++ build chain and CMake:
+
 ```sh
-sudo apt-get install build-essential
+sudo apt-get install build-essential cmake
 ```
 
 After that, the linux binary can be built with:
+
 ```sh
-make -f Makefile-Linux
+mkdir build-Debug-Host && cd build-Debug-Host
+cmake -DHOST_BUILD=ON -DOS_FSFW=linux ..
+cmake --build . -j
 ```
-to compile for Linux.
+
+to compile for Linux. You can also use `-DOS_FSFW=host` to use the host OSAL instead.
+
 Please note that on most UNIX environments (e.g. Ubuntu), the real time functionalities 
 used by the UNIX pthread module are restricted, which will lead to permission errors when creating these tasks
 and configuring real-time properites like scheduling priorities.
 
 To solve this issues, try following steps:
 
-1. Run the shell script inside the linux folder
-```sh
-./unlockRealtime
-```
-This script executes the `setcap` command on bash and on the binaries.
-It also increases the soft real time limit of the current shell instance
-to the maximum and increases the maximum number of message queues.
-All changes are only applied for the current session (read 2. and 3. for 
-a permanent solution).
-If running the script before executing the binary does
-not help or an warning is issue that the soft real time value is invalid, 
-the hard rteal time limit of the system might not be high enough.
-Try the following step.
-
-2. Edit the /etc/security/limits.conf 
+1. Edit the /etc/security/limits.conf 
 file and add following lines at the end:
 ```sh
 <username>   hard   rtprio  99
@@ -82,7 +88,7 @@ raise the maximum allowed message queue length to a higher number permanently, w
 required for some framework components. The recommended values for the new message
 length is 120.
 
-3. Edit the /etc/sysctl.conf file
+2. Edit the /etc/sysctl.conf file
 ```sh
 sudo nano /etc/sysctl.conf
 ```

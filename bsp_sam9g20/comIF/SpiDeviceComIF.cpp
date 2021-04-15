@@ -133,6 +133,9 @@ void SpiDeviceComIF::prepareSpiTransfer(SPItransfer& spiTransfer,
 
 ReturnValue_t SpiDeviceComIF::getSendSuccess(CookieIF *cookie) {
     SpiCookie * spiCookie = dynamic_cast<SpiCookie *> (cookie);
+    if(spiCookie == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
     uint32_t spiAddress = spiCookie->getAddress();
     auto spiIter = spiMap.find(spiAddress);
     if(spiIter == spiMap.end()) {

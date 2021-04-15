@@ -2,6 +2,7 @@
 #include <bootloaderConfig.h>
 
 #include <bsp_sam9g20/common/lowlevel.h>
+#include <bootloader/core/timer.h>
 
 #if USE_FREERTOS == 1
 
@@ -17,6 +18,7 @@
 #include <at91/utility/trace.h>
 #include <at91/peripherals/aic/aic.h>
 #include <at91/peripherals/pit/pit.h>
+#include <at91/peripherals/cp15/cp15.h>
 
 #include <hal/Drivers/LED.h>
 #include <hal/Timing/RTT.h>
@@ -27,12 +29,17 @@
 /* Forward declarations */
 int perform_iobc_copy_operation_to_sdram();
 void go_to_jump_address(unsigned int jumpAddr, unsigned int matchType);
+void perform_bootloader_check();
 
 /**
  * This is the core function of the bootloader which handles the copy operation,
  * performing ECC functionalities where applicable and jumping to the application.
  */
 void perform_bootloader_core_operation() {
+#if BOOTLOADER_CRC_CHECK_ENABLED == 1 && SAM_BA_BOOT == 0
+    perform_bootloader_check();
+#endif
+
     int result = perform_iobc_copy_operation_to_sdram();
     if(result != 0) {
         /* This really should not happen. We still assume we can jump to SDRAM because there is
@@ -63,7 +70,18 @@ void perform_bootloader_core_operation() {
 #if USE_FRAM_NON_INTERRUPT_DRV == 0
     fram_stop_no_os();
 #endif
+
+    /* Generally, a full boot process from the NOR-Flash with hamming code checks will take 300 ms.
+    100-150ms for the copy operation, the rest for the hamming code check. */
+#if BOOTLOADER_TIME_MEASUREMENT == 1
+    current_time = get_ms_counter();
+    uint32_t elapsed = current_time - start_time;
+    TRACE_INFO("Elapsed bootloader execution time: %d ms\n\r", (int) elapsed);
+#endif
+
     disable_pit_aic();
+    CP15_Disable_I_Cache();
+    _invalidateICache();
     jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
 }
 

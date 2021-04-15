@@ -2,7 +2,7 @@
 
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/tmtcpacket/pus/TmPacketBase.h>
-#include <fsfw/tmtcpacket/pus/TmPacketStored.h>
+#include <fsfw/tmtcpacket/pus/TmPacketStoredPusA.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 
 object_id_t TmFunnel::downlinkDestination = objects::NO_OBJECT;
@@ -53,7 +53,7 @@ ReturnValue_t TmFunnel::handlePacket(TmTcMessage* message) {
     if(result != HasReturnvaluesIF::RETURN_OK){
         return result;
     }
-    TmPacketBase packet(packetData);
+    TmPacketPusA packet(packetData);
     packet.setPacketSequenceCount(this->sourceSequenceCount);
     sourceSequenceCount++;
     sourceSequenceCount = sourceSequenceCount %

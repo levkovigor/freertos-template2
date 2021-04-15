@@ -17,4 +17,7 @@ extern uint8_t hamming_code_buf[IMAGES_HAMMING_RESERVED_SIZE];
 void print_bl_info();
 void idle_loop();
 
+extern uint32_t start_time;
+extern uint32_t current_time;
+
 #endif /* BOOTLOADER_CORE_BOOTIOBC_H_ */

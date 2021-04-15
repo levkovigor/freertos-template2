@@ -2,7 +2,7 @@
 #include <fsfw/events/EventManagerIF.h>
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/events/EventMessage.h>
-#include <fsfw/tmtcpacket/pus/TmPacketStored.h>
+#include <fsfw/tmtcpacket/pus/TmPacketStoredPusA.h>
 #include <tmtc/apid.h>
 #include <tmtc/pusIds.h>
 #include <mission/pus/Service19EventAction.h>
