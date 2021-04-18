@@ -87,17 +87,6 @@ ReturnValue_t SDCardHandler::handleReadReplies(ReadCommand& command) {
     // Generate and serialize the reply packet.
     ReadReply replyPacket(command.getRepoPath(), command.getFilename(),
             &file, sizeToRead);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-#if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::error << "SDCardHandler::handleReadReply: Reading from file "
-                << command.getFilename() << " failed" << std::endl;
-#else
-        sif::printError("SDCardHandler::handleReadReply: Reading from file %s failed\n",
-                command.getFilename());
-#endif
-        sendCompletionReply(false, result);
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
 
     // Get space in IPC store to serialize packet.
     uint8_t* writePtr = nullptr;
@@ -119,6 +108,14 @@ ReturnValue_t SDCardHandler::handleReadReplies(ReadCommand& command) {
     result = replyPacket.serialize(&writePtr, &serializedSize,
             sizeToRead,SerializeIF::Endianness::BIG);
     if(result != HasReturnvaluesIF::RETURN_OK) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::warning << "SDCardHandler::handleReadReply: Serialization of file "
+                << command.getFilename() << " failed" << std::endl;
+#else
+        sif::printWarning("SDCardHandler::handleReadReply: Reading from file %s failed\n",
+                command.getFilename()->c_str());
+#endif
+        sendCompletionReply(false, result);
         int retval = f_close(file);
         if(retval != F_NO_ERROR) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1

@@ -7,18 +7,11 @@ with telecommands and read the telemetry generated.
 Common TMTC commands and procedures will be listed here. 
 While most important commands are included as PyCharm run configurations,
 the listing will help when changing to different operations software
-or using another Python IDE.
+or using another Python IDE. The current serial baudrate to send 
+and receive telecommands is 230400.
 
 It is assumed that Python 3.8 is installed. The required steps to make
 the program work are shown in the [TMTC readme](https://git.ksat-stuttgart.de/source/tmtc)
-
-Please note that for the commands shown here a serial interface is assumed to
-command the iOBC or AT91 development board, which is the meaning of the `-c 1` flag.
-QEMU users need to specify `-c 2` and Linux/Host users need to specify `-c 3` for the 
-UDP communication interface.
-
-A timeout for reply checking can be specified by adding the `-t <timeout duration>` flag to the
-command for sequential commands (all commands which are specified with -m 3).
 
 In the following sections, only the command line arguments will be supplied which you need to run
 supply to the `tmtc_client_cli.py` call.
@@ -26,6 +19,8 @@ supply to the `tmtc_client_cli.py` call.
 The service argument supplied with `-s <ServiceNumberString>` can be a number or a string.
 For numbers, this will generally be a PUS service while for strings, this will be a custom class 
 (e.g. `-s img` for the Software Image Handler).
+
+You can replace `-c ser_dle` with `-c udp` for the hosted software build.
 
 The operation code argument is a string used to define multiple functional tasks for a 
 specific service. There are three common prefixes for operation codes (op-codes):
@@ -108,18 +103,18 @@ You can also just run the `tmtc_client_cli.py` file directly.
 
 A ping command uses the PUS test service (17)
 ```sh
--m 3 -s 17 -c 1 
+-m seqcmd -s 17 -c ser_dle
 ```
 
 Enable periodic printout, using PUS test service 17
 ```sh
--m 3 -s 17 -o 129 -c 1
+-m seqcmd -s 17 -o 129 -c ser_dle
 ```
 
 Disable periodic printout
 
 ```sh
--m 3 -s 17 -o 130 -c 1
+-m seqcmd -s 17 -o 130 -c ser_dle
 ```
 
 ### Core Management
@@ -129,24 +124,24 @@ or its supervisor.
 
 Software reset or supervisor reset
 ```sh
--m 3 -s Core -o a10 -c 1
+-m seqcmd -s Core -o a10 -c ser_dle
 ```
 
 Supervisor power cycle
 ```sh
--m 3 -s Core -o a11 -c 1
+-m seqcmd -s Core -o a11 -c ser_dle
 ```
 
 Print run time stats
 
 ```sh
--m 3 -s Core -o a0 -c 1
+-m seqcmd -s Core -o a0 -c ser_dle
 ```
 
 Trigger a software exception which should lead to a restart
 
 ```sh
--m 3 -s 17 -o 150 -c 1
+-m seqcmd -s 17 -o 150 -c ser_dle
 ```
 
 ### Service tests
@@ -155,7 +150,7 @@ Perform a service test which should work without connected hardware.
 Service tests were implemented for the services 2, 5, 8, 9, 17 and 200.
 
 ```sh
--m 3 -s <serviceNumber> -c 1
+-m seqcmd -s <serviceNumber> -c ser_dle
 ```
 
 ## SD-Card and Image Handling
@@ -165,36 +160,36 @@ Service tests were implemented for the services 2, 5, 8, 9, 17 and 200.
 Print contents of active SD card
 
 ```sh
--m 3 -s sd -o a2 -c 1 
+-m seqcmd -s sd -o a2 -c ser_dle
 ``` 
 
 Clear active SD card
 ```sh
--m 3 -s sd -o a20 -c 1
+-m seqcmd -s sd -o a20 -c ser_dle
 ``` 
 
 Format active SD card
 
 ```sh
--m 3 -s sd -o a21 -c 1
+-m seqcmd -s sd -o a21 -c ser_dle
 ```
 
 Generate generic folder structure, `-o c0a` for AT91, `-o c0i` for iOBC
 
 ```sh
--m 3 -s sd -o c0a -c 1
+-m seqcmd -s sd -o c0a -c ser_dle
 ```
 
 Lock file on SD card. Locked files are read-only and can not be deleted.
 The all directories containing a locked file can not be deleted as well.
 ```sh
--m 3 -s sd -o 5 -c 1
+-m seqcmd -s sd -o 5 -c ser_dle
 ```
 
 Unlock file on SD card
 
 ```sh
--m 3 -s sd -o 6 -c 1
+-m seqcmd -s sd -o 6 -c ser_dle
 ```
 
 ###  Software Update Procedure
@@ -209,19 +204,19 @@ For the GUI mode, the binary can be located anywhere.
 Upload bootloader(s) or software image
 
 ```sh
--m 5 -c 1
+-m 5 -c ser_dle
 ```
 
 Copy OBSW image to boot memory
 
 ```sh
--m 3 -s img -o a3u -c 1
+-m seqcmd -s img -o a3u -c ser_dle
 ```
 
 Copy bootloader image to boot memory. Use `a16a1` to copy the second-stage bootloader for the AT91.
 
 ```sh
--m 3 -s img -o a16a0 -c 1 
+-m seqcmd -s img -o a16a0 -c ser_dle
 ```
 
 Test whether binary was uploaded successfully: 

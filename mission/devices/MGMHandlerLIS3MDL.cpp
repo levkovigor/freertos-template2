@@ -19,6 +19,9 @@ MGMHandlerLIS3MDL::MGMHandlerLIS3MDL(object_id_t objectId,
 }
 
 MGMHandlerLIS3MDL::~MGMHandlerLIS3MDL() {
+#if OBSW_VERBOSE_LEVEL >= 1
+    delete(debugDivider);
+#endif
 }
 
 
@@ -319,7 +322,7 @@ ReturnValue_t MGMHandlerLIS3MDL::interpretDeviceReply(DeviceCommandId_t id,
             sif::info << "MGMHandlerLIS3: Temperature: " << tempValue << " \xC2\xB0" << "C" <<
                     std::endl;
 #else
-            sif::printInfo("MGMHandlerLIS3: Temperature: %f" "\xC2\xB0" "C\n");
+            sif::printInfo("MGMHandlerLIS3: Temperature: %f" "\xC2\xB0" "C\n", tempValue);
 #endif
         }
 #endif

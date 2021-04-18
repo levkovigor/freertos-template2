@@ -65,7 +65,7 @@ private:
 
 	static volatile bool uart0Started;
 
-	UARTgenericTransfer uartTransfer1;
+	UARTgenericTransfer uartTransfer1 = {};
 	static volatile size_t transfer1bytesReceived;
 	BinarySemaphore uartSemaphore1;
 	UARTtransferStatus transfer1Status = done_uart;
@@ -73,7 +73,7 @@ private:
 
 	BinarySemaphore uartSemaphore2;
 	static volatile size_t transfer2bytesReceived;
-	UARTgenericTransfer uartTransfer2;
+	UARTgenericTransfer uartTransfer2 = {};
 	UARTtransferStatus transfer2Status = done_uart;
 	std::array<uint8_t, RS232_MAX_SERIAL_FRAME_SIZE> readBuffer2;
 

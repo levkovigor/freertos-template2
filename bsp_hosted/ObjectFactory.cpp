@@ -19,7 +19,6 @@
 #include <fsfw/storagemanager/PoolManager.h>
 #include <fsfw/tcdistribution/CCSDSDistributor.h>
 #include <fsfw/tcdistribution/PUSDistributor.h>
-#include <fsfw/tmtcpacket/pus/TmPacketStored.h>
 #include <fsfw/tmtcservices/PusServiceBase.h>
 #include <fsfw/pus/Service1TelecommandVerification.h>
 #include <fsfw/pus/Service2DeviceAccess.h>
@@ -31,6 +30,7 @@
 /* UDP server includes */
 #include <fsfw/osal/common/UdpTcPollingTask.h>
 #include <fsfw/osal/common/UdpTmTcBridge.h>
+#include <fsfw/tmtcpacket/pus/TmPacketBase.h>
 #include <mission/controller/acs/AttitudeController.h>
 
 #include <cstdint>
@@ -162,7 +162,7 @@ void Factory::setStaticFrameworkObjectIds() {
     DeviceHandlerBase::rawDataReceiverId = objects::PUS_SERVICE_2_DEVICE_ACCESS;
     DeviceHandlerBase::powerSwitcherId = objects::NO_OBJECT;
 
-    TmPacketStored::timeStamperId = objects::PUS_TIME;
+    TmPacketBase::timeStamperId = objects::PUS_TIME;
     TmFunnel::downlinkDestination = objects::UDP_BRIDGE;
 }
 

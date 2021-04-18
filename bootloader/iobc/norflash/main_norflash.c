@@ -16,11 +16,8 @@
 #include <at91/peripherals/aic/aic.h>
 #include <at91/peripherals/pio/pio.h>
 #include <at91/peripherals/cp15/cp15.h>
-
-
-#if BOOTLOADER_VERBOSE_LEVEL >= 1
-#include <utility/trace.h>
-#endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
+#include <at91/peripherals/spi/spi_at91.h>
+#include <at91/utility/trace.h>
 
 #if USE_FREERTOS == 1
 #include <bsp_sam9g20/common/fram/FRAMApi.h>
@@ -88,6 +85,8 @@ void print_bl_info();
 #endif /* BOOTLOADER_VERBOSE_LEVEL >= 1 */
 
 bool fram_faulty = false;
+uint32_t start_time = 0;
+uint32_t current_time = 0;
 
 
 int boot_iobc_from_norflash() {
@@ -113,13 +112,25 @@ int boot_iobc_from_norflash() {
 #endif
     }
 #else
+
     WDT_start();
+#if BOOTLOADER_KICK_WATCHDOG_IN_PIT_IRQ == 0
     WDT_forceKick();
+#endif
+
+    setup_timer_interrupt();
+    start_time = get_ms_counter();
+
     /* This call is necessary! Maybe it switches the power supply on? */
     FRAM_start();
+    /* Will be started in main application again */
+    FRAM_stop();
 #endif /* USE_FREERTOS == 0 */
 
-    // Glow all LEDs
+    /* The ISIS drivers probably disable the interrupts for whatever reason */
+    asm_enable_irq();
+
+    /* Glow all LEDs */
     LED_start();
     LED_glow(led_2);
     LED_glow(led_3);
@@ -290,7 +301,7 @@ int copy_norflash_binary_to_sdram(size_t copy_size, bool use_hamming)
     TRACE_INFO("Copying NOR-Flash binary to SDRAM..\n\r");
 #endif
 
-#if USE_FREERTOS == 1
+#if USE_FREERTOS == 1 || BOOTLOADER_KICK_WATCHDOG_IN_PIT_IRQ == 1
     /* This operation takes 100-200 milliseconds if the whole NOR-Flash is
     copied. But the watchdog is running in a separate task with the highest priority
     and we are using a pre-emptive scheduler so this should not be an issue. */
@@ -436,7 +447,10 @@ void perform_bootloader_check() {
 #if USE_FREERTOS == 1
             vTaskEndScheduler();
 #endif
+
             disable_pit_aic();
+            CP15_Disable_I_Cache();
+            _invalidateICache();
 
             jump_to_sdram_application(0x22000000 - 1024, SDRAM_DESTINATION);
         }
@@ -577,9 +591,6 @@ void simple_bootloader() {
     memcpy((void*) SDRAM_DESTINATION + offset,
             (const void*) BINARY_BASE_ADDRESS_READ + offset, bucket_rest);
 
-//    for(int idx = 0; idx < 100; idx++) {
-//        disable_pit_aic();
-//    }
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
     TRACE_INFO("Jumping to SDRAM application\n\r");
 #endif

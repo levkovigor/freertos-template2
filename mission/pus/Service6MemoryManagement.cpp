@@ -2,7 +2,7 @@
 
 #include <fsfw/memory/AcceptsMemoryMessagesIF.h>
 #include <fsfw/globalfunctions/CRC.h>
-#include <fsfw/tmtcpacket/pus/TmPacketStored.h>
+#include <fsfw/tmtcpacket/pus/TmPacketStoredPusA.h>
 #include <mission/pus/servicepackets/Service6Packets.h>
 
 Service6MemoryManagement::Service6MemoryManagement(object_id_t objectId,
@@ -50,14 +50,13 @@ ReturnValue_t Service6MemoryManagement::checkInterfaceAndAcquireMessageQueue(
 ReturnValue_t Service6MemoryManagement::prepareCommand(
 		CommandMessage* message, uint8_t subservice, const uint8_t* tcData,
 		size_t tcDataLen, uint32_t* state, object_id_t objectId) {
-	CommandMessage* memoryMessage = dynamic_cast<CommandMessage*>(message);
 	switch(static_cast<Subservice>(subservice)) {
 	case Subservice::LOAD_DATA_TO_MEMORY:
-		return prepareMemoryLoadCommand(memoryMessage, tcData, tcDataLen);
+		return prepareMemoryLoadCommand(message, tcData, tcDataLen);
 	case Subservice::DUMP_MEMORY:
-		return prepareMemoryDumpCommand(memoryMessage, tcData, tcDataLen);
+		return prepareMemoryDumpCommand(message, tcData, tcDataLen);
 	case Subservice::CHECK_MEMORY:
-		return prepareMemoryCheckCommand(memoryMessage, tcData, tcDataLen);
+		return prepareMemoryCheckCommand(message, tcData, tcDataLen);
 	default:
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}
@@ -166,7 +165,7 @@ ReturnValue_t Service6MemoryManagement::sendMemoryCheckPacket(
 	checkPacket.setLength(MemoryMessage::getLength(reply));
 	checkPacket.setChecksum(MemoryMessage::getCrc(reply));
 
-	TmPacketStored tmPacket(apid, service,
+	TmPacketStoredPusA tmPacket(apid, service,
 			static_cast<uint8_t>(Subservice::MEMORY_CHECK_REPORT),
 			packetSubCounter++, &checkPacket);
 	sendTmPacket(static_cast<uint8_t>(Subservice::MEMORY_CHECK_REPORT),

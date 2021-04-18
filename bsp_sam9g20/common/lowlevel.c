@@ -15,13 +15,13 @@ void asm_set_cpsr(unsigned int val) {
     asm volatile (" msr cpsr, %0" : /* no outputs */ : "r" (val) );
 }
 
-void asm_disable_irq() {
+void asm_enable_irq() {
     unsigned long retval = asm_get_cpsr();
     retval &= ~I_BIT;
     asm_set_cpsr(retval);
 }
 
-void asm_enable_irq() {
+void asm_disable_irq() {
     unsigned long retval = asm_get_cpsr();
     retval |= I_BIT;
     asm_set_cpsr(retval);

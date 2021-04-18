@@ -48,7 +48,7 @@ BootSelect determine_boot_select(bool* use_hamming) {
         /* Slot 1 will be the update slot */
         if (bl_fram_block.software_update_in_volume_0 == FRAM_TRUE) {
             curr_boot_select = BOOT_SD_CARD_0_SLOT_1;
-            if(bl_fram_block.sdc0_image_slot1_reboot_counter > 3) {
+            if(bl_fram_block.sdc0_image_slot1_reboot_counter >= BOOTLOADER_MAX_REBOOT_COUNTER) {
                 /* Load flash image instead */
                 curr_boot_select = BOOT_NOR_FLASH;
             }
@@ -59,7 +59,7 @@ BootSelect determine_boot_select(bool* use_hamming) {
         }
         else if(bl_fram_block.software_update_in_volume_1 == FRAM_TRUE) {
             curr_boot_select = BOOT_SD_CARD_1_SLOT_1;
-            if(bl_fram_block.sdc1_image_slot1_reboot_counter > 3) {
+            if(bl_fram_block.sdc1_image_slot1_reboot_counter >= BOOTLOADER_MAX_REBOOT_COUNTER) {
                 /* Load flash image instead */
                 curr_boot_select = BOOT_NOR_FLASH;
             }
@@ -71,7 +71,7 @@ BootSelect determine_boot_select(bool* use_hamming) {
 
     /* If we reach this point, no SW update is to be loaded or the update boot counters are too high
     and we check the NOR-Flash image instead */
-    if(bl_fram_block.nor_flash_reboot_counter > 3) {
+    if(bl_fram_block.nor_flash_reboot_counter >= BOOTLOADER_MAX_REBOOT_COUNTER) {
         if(bl_fram_block.preferred_sd_card == 0xff || bl_fram_block.preferred_sd_card == 1 ||
                 bl_fram_block.preferred_sd_card == 0) {
             curr_boot_select = BOOT_SD_CARD_0_SLOT_0;
@@ -86,7 +86,7 @@ BootSelect determine_boot_select(bool* use_hamming) {
 
     /* Check the preferred SD card */
     if(curr_boot_select == BOOT_SD_CARD_0_SLOT_0) {
-        if(bl_fram_block.sdc0_image_slot0_reboot_counter > 3) {
+        if(bl_fram_block.sdc0_image_slot0_reboot_counter >= BOOTLOADER_MAX_REBOOT_COUNTER) {
             curr_boot_select = BOOT_SD_CARD_1_SLOT_0;
         }
         else {
@@ -94,7 +94,7 @@ BootSelect determine_boot_select(bool* use_hamming) {
         }
     }
     else {
-        if(bl_fram_block.sdc1_image_slot0_reboot_counter > 3) {
+        if(bl_fram_block.sdc1_image_slot0_reboot_counter >= BOOTLOADER_MAX_REBOOT_COUNTER) {
             curr_boot_select = BOOT_SD_CARD_0_SLOT_0;
         }
         else {
@@ -104,7 +104,7 @@ BootSelect determine_boot_select(bool* use_hamming) {
 
     /* Check the other SD card. If this does not work, boot from NOR-Flash without ECC check */
     if(curr_boot_select == BOOT_SD_CARD_0_SLOT_0) {
-        if(bl_fram_block.sdc0_image_slot0_reboot_counter > 3) {
+        if(bl_fram_block.sdc0_image_slot0_reboot_counter >= BOOTLOADER_MAX_REBOOT_COUNTER) {
             if(use_hamming != NULL) {
                 *use_hamming = false;
             }
@@ -115,7 +115,7 @@ BootSelect determine_boot_select(bool* use_hamming) {
         }
     }
     else {
-        if(bl_fram_block.sdc1_image_slot0_reboot_counter > 3) {
+        if(bl_fram_block.sdc1_image_slot0_reboot_counter >= BOOTLOADER_MAX_REBOOT_COUNTER) {
             if(use_hamming != NULL) {
                 *use_hamming = false;
             }
@@ -167,7 +167,7 @@ void handle_problematic_norflash_copy_result() {
         TRACE_WARNING("Issues setting new reboot counter, error code %d\n\r", result);
     }
 #endif
-
+    (void) result;
     /* Restart */
     restart();
 }
@@ -181,6 +181,8 @@ void handle_problematic_sdc_copy_result(BootSelect boot_select) {
     if(result != 0) {
         TRACE_WARNING("Issues setting new reboot counter, error code %d\n\r", result);
     }
+#else
+    (void) result;
 #endif
     /* Restart */
     restart();
