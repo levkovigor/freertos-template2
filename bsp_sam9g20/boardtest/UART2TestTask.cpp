@@ -22,7 +22,7 @@ extern "C" {
  */
 
 UART2TestTask::UART2TestTask(const char * printName, object_id_t objectId):
-        SystemObject(objectId), printName(printName), uartMode(SEND_TEST),
+        SystemObject(objectId), printName(printName), uartMode(SEND_RECV_TEST),
         uartState(WRITE) {
     configBus2.mode = AT91C_US_USMODE_NORMAL | AT91C_US_CLKS_CLOCK |
             AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE | AT91C_US_OVER_16 |
@@ -30,7 +30,7 @@ UART2TestTask::UART2TestTask(const char * printName, object_id_t objectId):
     configBus2.baudrate = 115200;
     configBus2.timeGuard = 1;
     configBus2.busType = rs422_withTermination_uart;
-    configBus2.rxtimeout = 0xFFFF;
+    configBus2.rxtimeout = 10;
     retValInt = UART_start(uartBus2 , configBus2);
     if (retValInt != 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -53,7 +53,11 @@ ReturnValue_t UART2TestTask::performOperation(uint8_t operationCode){
         performSendTest();
         break;
     }
-    case(READ_SEND_TEST): {
+    case(SEND_RECV_TEST): {
+        performSendRecvTest();
+        break;
+    }
+    case(READ_SEND_TEST_ISIS): {
         performReadSendTest();
         break;
     }
@@ -66,17 +70,37 @@ ReturnValue_t UART2TestTask::performOperation(uint8_t operationCode){
 }
 
 void UART2TestTask::performSendTest() {
-    char data[] = "Hallo!";
+    char data[] = "Hallo Welt!\n\r";
     size_t dataLen = sizeof(data);
 
-    retValInt = UART_write(bus2_uart,
-            reinterpret_cast<unsigned char*>(data), dataLen);
+    retValInt = UART_write(bus2_uart, reinterpret_cast<unsigned char*>(data), dataLen);
     if (retValInt != 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "taskUARTtest: UART_read returned: " << retValInt << " for bus 2" << std::endl;
 #else
 #endif
     }
+}
+
+void UART2TestTask::performSendRecvTest() {
+    // Simple echo send and receive
+    char data[] = "Hallo Welt!\n\r";
+    size_t dataLen = sizeof(data);
+
+    retValInt = UART_write(bus2_uart, reinterpret_cast<unsigned char*>(data), dataLen);
+    if(retValInt != 0) {
+        sif::printWarning("UART2TestTask::performSendRecvTest: Send failed with %d\n\r", retValInt);
+    }
+
+    char recvBuf[1024] = {0};
+    retValInt = UART_read(bus2_uart, reinterpret_cast<unsigned char*>(recvBuf), sizeof(recvBuf));
+    if(retValInt != 0) {
+        sif::printWarning("UART2TestTask::performSendRecvTest: Receive failed with %d\n\r",
+                retValInt);
+    }
+    sif::printInfo("Receive string: %s", recvBuf);
+    memset(recvBuf, 0, sizeof(recvBuf));
+
 }
 
 void UART2TestTask::performReadSendTest() {
