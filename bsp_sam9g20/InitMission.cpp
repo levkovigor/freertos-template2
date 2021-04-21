@@ -342,7 +342,7 @@ void initTasks(void) {
 #if OBSW_ADD_SPI_TEST_TASK == 0
     /* SPI Communication Interface*/
     PeriodicTaskIF* spiComTask = taskFactory->createPeriodicTask(
-            "SPI_COM_IF", 8, 1024 * 4, 0.4,genericMissedDeadlineFunc);
+            "SPI_COM_IF", 8, 1024 * 4, 0.4, genericMissedDeadlineFunc);
     result = spiComTask->addComponent(objects::SPI_DEVICE_COM_IF);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("SPI ComIF", objects::SPI_DEVICE_COM_IF);
@@ -491,7 +491,7 @@ void boardTestTaskInit() {
     /* UART2 Test Task */
 #if OBSW_ADD_UART_2_TEST_TASK == 1
     PeriodicTaskIF* UART2Task = taskFactory->createPeriodicTask(
-            "UART2_TASK", 1, 2048, 2, nullptr);
+            "UART2_TASK", 3, 2048, 2, genericMissedDeadlineFunc);
     result = UART2Task->addComponent(objects::AT91_UART2_TEST_TASK);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         sif::error << "Add component UART2 Task failed" << std::endl;
