@@ -494,7 +494,7 @@ void boardTestTaskInit() {
             "UART2_TASK", 3, 2048, 2, genericMissedDeadlineFunc);
     result = UART2Task->addComponent(objects::AT91_UART2_TEST_TASK);
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component UART2 Task failed" << std::endl;
+        initmission::printAddObjectError("UART2 Test Task", objects::AT91_UART2_TEST_TASK);
     }
 #endif
 

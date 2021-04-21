@@ -22,21 +22,20 @@ extern "C" {
  */
 
 UART2TestTask::UART2TestTask(const char * printName, object_id_t objectId) :
-		        SystemObject(objectId), printName(printName), uartMode(NON_BLOCKING),
-		        uartState(WRITE) {
-    //info << "UART2TestTask object created!" << std::endl;
+                    SystemObject(objectId), printName(printName), uartMode(NON_BLOCKING), uartState(WRITE) {
     configBus2.mode = AT91C_US_USMODE_NORMAL | AT91C_US_CLKS_CLOCK |
             AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE | AT91C_US_OVER_16 |
             AT91C_US_NBSTOP_1_BIT;
     configBus2.baudrate = 115200;
-    configBus2.timeGuard = 1,
-            configBus2.busType = rs232_uart;
+    configBus2.timeGuard = 1;
+    configBus2.busType = rs422_withTermination_uart;
     configBus2.rxtimeout = 0xFFFF;
     retValInt = UART_start(uartBus2 , configBus2);
     if (retValInt != 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::info << "UARTtest: UART_start returned " << retValInt << "! bus 2" << std::endl;
+        sif::warning << "UARTtest: UART_start returned " << retValInt << " for bus 2" << std::endl;
 #else
+        sif::printWarning("UARTtest: UART_start returned %d for bus2\n", retValInt);
 #endif
     }
 }
@@ -49,15 +48,18 @@ UART2TestTask::~UART2TestTask() {}
 
 ReturnValue_t UART2TestTask::performOperation(uint8_t operationCode){
     switch(uartMode) {
-    case(SEND_TEST):
-		        performSendTest();
-    break;
-    case(READ_SEND_TEST):
-		        performReadSendTest();
-    break;
-    case(NON_BLOCKING):
-		        performNonBlockingOperation();
-    break;
+    case(SEND_TEST): {
+        performSendTest();
+        break;
+    }
+    case(READ_SEND_TEST): {
+        performReadSendTest();
+        break;
+    }
+    case(NON_BLOCKING): {
+        performNonBlockingOperation();
+        break;
+    }
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
