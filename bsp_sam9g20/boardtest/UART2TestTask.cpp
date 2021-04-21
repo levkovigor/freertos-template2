@@ -12,6 +12,8 @@ extern "C" {
 #include <at91/utility/trace.h>
 }
 
+#include <string>
+
 /* this is a test for the UART2 driver from ISIS
  * at the AT91SAM9G20:
  * bus2_uart TX = PB8
@@ -70,9 +72,9 @@ ReturnValue_t UART2TestTask::performOperation(uint8_t operationCode){
 }
 
 void UART2TestTask::performSendTest() {
-    std::string data = "Hallo Welt!\n\r";
+    std::string testString = "Hallo Welt!\n\r";
 
-    retValInt = UART_write(bus2_uart, (unsigned char*) data.c_str(), data.size());
+    retValInt = UART_write(bus2_uart, (unsigned char*) testString.c_str(), testString.size());
     if (retValInt != 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "taskUARTtest: UART_read returned: " << retValInt << " for bus 2" << std::endl;

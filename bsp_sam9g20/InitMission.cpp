@@ -491,7 +491,7 @@ void boardTestTaskInit() {
     /* UART2 Test Task */
 #if OBSW_ADD_UART_2_TEST_TASK == 1
     PeriodicTaskIF* UART2Task = taskFactory->createPeriodicTask(
-            "UART2_TASK", 3, 2048, 2, genericMissedDeadlineFunc);
+            "UART2_TASK", 3, 2048, 5.0, genericMissedDeadlineFunc);
     result = UART2Task->addComponent(objects::AT91_UART2_TEST_TASK);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("UART2 Test Task", objects::AT91_UART2_TEST_TASK);
