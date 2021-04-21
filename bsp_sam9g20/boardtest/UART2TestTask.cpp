@@ -22,7 +22,7 @@ extern "C" {
  */
 
 UART2TestTask::UART2TestTask(const char * printName, object_id_t objectId):
-        SystemObject(objectId), printName(printName), uartMode(SEND_RECV_TEST),
+        SystemObject(objectId), printName(printName), uartMode(SEND_TEST),
         uartState(WRITE) {
     configBus2.mode = AT91C_US_USMODE_NORMAL | AT91C_US_CLKS_CLOCK |
             AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE | AT91C_US_OVER_16 |
@@ -70,10 +70,9 @@ ReturnValue_t UART2TestTask::performOperation(uint8_t operationCode){
 }
 
 void UART2TestTask::performSendTest() {
-    char data[] = "Hallo Welt!\n\r";
-    size_t dataLen = sizeof(data);
+    std::string data = "Hallo Welt!\n\r";
 
-    retValInt = UART_write(bus2_uart, reinterpret_cast<unsigned char*>(data), dataLen);
+    retValInt = UART_write(bus2_uart, (unsigned char*) data.c_str(), data.size());
     if (retValInt != 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "taskUARTtest: UART_read returned: " << retValInt << " for bus 2" << std::endl;
