@@ -72,9 +72,9 @@ ReturnValue_t UART2TestTask::performOperation(uint8_t operationCode){
 }
 
 void UART2TestTask::performSendTest() {
-    std::string testString = "Hallo Welt!\n\r";
-
-    retValInt = UART_write(bus2_uart, (unsigned char*) testString.c_str(), testString.size());
+    std::string testString = "Hallo Welt. Diesmal ein größerer string!\n\r";
+    //retValInt = UART_write(bus2_uart, (unsigned char*) sendBuf, sizeof(sendBuf));
+    retValInt = UART_write(bus2_uart, (unsigned char*) testString.data(), testString.size());
     if (retValInt != 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "taskUARTtest: UART_read returned: " << retValInt << " for bus 2" << std::endl;
@@ -85,7 +85,7 @@ void UART2TestTask::performSendTest() {
 
 void UART2TestTask::performSendRecvTest() {
     // Simple echo send and receive
-    char data[] = "Hallo Welt!\n\r";
+    char data[] = "Hallo Welt. Diesmal ein größerer string!\n\r";
     size_t dataLen = sizeof(data);
 
     retValInt = UART_write(bus2_uart, reinterpret_cast<unsigned char*>(data), dataLen);
