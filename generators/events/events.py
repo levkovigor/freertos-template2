@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 """
-@file   mib_events.py
+@file   events.py
 @brief  Part of the Mission Information Base Exporter for the SOURCE project by KSat.
 @details
 Event exporter.
@@ -11,9 +11,9 @@ On Windows, Build Tools installation might be necessary
 """
 import re
 import datetime
-from genmib.parserbase.mib_parser import FileParser
-from genmib.parserbase.mib_file_list_parser import FileListParser
-from genmib.utility.mib_printer import PrettyPrinter
+from modgen.parserbase.parser import FileParser
+from modgen.parserbase.file_list_parser import FileListParser
+from modgen.utility.mib_printer import PrettyPrinter
 from utility.mib_file_management import copy_file, move_file
 
 DATE_TODAY = datetime.datetime.now()
@@ -24,16 +24,23 @@ GENERATE_CSV = True
 COPY_CPP_FILE = True
 MOVE_CSV_FILE = True
 
+PARSE_HOST_BSP = False
+
 CSV_FILENAME = "mib_events.csv"
 CSV_MOVE_DESTINATION = "../"
 
 CPP_FILENAME = "translateEvents.cpp"
-CPP_COPY_DESTINATION = "../../fsfwconfig/events/"
+if PARSE_HOST_BSP:
+    BSP_FOLDER = "bsp_hosted"
+else:
+    BSP_FOLDER = "bsp_sam9g20"
+
+CPP_COPY_DESTINATION = f"../../{BSP_FOLDER}/fsfwconfig/events/"
 
 FILE_SEPARATOR = ";"
-SUBSYSTEM_DEFINITION_DESTINATIONS = ["../../fsfwconfig/events/subsystemIdRanges.h",
+SUBSYSTEM_DEFINITION_DESTINATIONS = [f"../../{BSP_FOLDER}/fsfwconfig/events/subsystemIdRanges.h",
                                      "../../fsfw/events/fwSubsystemIdRanges.h"]
-HEADER_DEFINITION_DESTINATIONS = ["../../mission/", "../../fsfw/", "../../sam9g20"]
+HEADER_DEFINITION_DESTINATIONS = ["../../mission/", "../../fsfw/", f"../../{BSP_FOLDER}"]
 
 
 def main():
@@ -202,7 +209,7 @@ def write_translation_file(filename, list_of_entries):
     outputfile.write("/**\n * @brief    Auto-generated event translation file. "
                      "Contains " + str(len(list_of_entries)) + " translations.\n"
                      " * Generated on: " + DATE_STRING_FULL +
-                     " \n */\n")
+                     "\n */\n")
     outputfile.write("#include \"translateEvents.h\"\n\n")
     outputfile.write(definitions + "\n" + function + "\t}\n\treturn 0;\n}\n")
     outputfile.close()
@@ -215,9 +222,11 @@ def handle_csv_export(file_name: str, list_items: list):
     """
     export_to_file(file_name, list_items)
 
+
 def handle_cpp_export(file_name: str, list_items):
     print("EventParser: Generating translation cpp file.")
     write_translation_file(file_name, list_items)
+
 
 if __name__ == "__main__":
     main()
