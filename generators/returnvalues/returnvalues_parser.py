@@ -82,8 +82,8 @@ def parse_returnvalues():
     returnvalue_table = returnvalue_parser.parse_files(True)
     if PRINT_TABLES:
         Printer.print_content(returnvalue_table, "Returnvalue Table: ")
-    print("ReturnvalueParser: "
-          "Found " + str(len(returnvalue_table)) + " returnvalues.")
+    print(
+        f"ReturnvalueParser: Found {len(returnvalue_table)} returnvalues.")
     return returnvalue_table
 
 
