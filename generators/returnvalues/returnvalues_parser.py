@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 @file
-    mib_returnvalues_parser.py
+    returnvalues_parser.py
 @brief
     Part of the Mission Information Base Exporter for the SOURCE project by KSat.
     TODO: Integrate into Parser Structure instead of calling this file (no cpp file generated yet)
@@ -16,7 +16,7 @@
     21.11.2019
 """
 from modgen.parserbase.file_list_parser import FileListParser
-from modgen.returnvalues.mib_returnvalues_parser import InterfaceParser, ReturnValueParser
+from modgen.returnvalues.returnvalues_parser import InterfaceParser, ReturnValueParser
 from modgen.utility.mib_sql_writer import SqlWriter
 from modgen.utility.mib_csv_writer import CsvWriter
 from modgen.utility.mib_printer import Printer
@@ -29,9 +29,13 @@ CSV_RETVAL_FILENAME = "mib_returnvalues.csv"
 CSV_MOVE_DESTINATION = "../"
 FILE_SEPARATOR = ';'
 MAX_STRING_LENGTH = 32
-INTERFACE_DEFINITION_FILES = ["../../fsfw/returnvalues/FwClassIds.h",
-                              "../../fsfwconfig/returnvalues/classIds.h"]
-RETURNVALUE_DESTINATIONS = ["../../mission/", "../../fsfw/", "../../fsfwconfig/", "../../sam9g20/"]
+INTERFACE_DEFINITION_FILES = [
+    "../../fsfw/returnvalues/FwClassIds.h",
+    "../../bsp_sam9g20/fsfwconfig/returnvalues/classIds.h"
+]
+RETURNVALUE_DESTINATIONS = [
+    "../../mission/", "../../fsfw/", "../../bsp_sam9g20/", "../../bsp_hosted/"
+]
 # RETURNVALUE_DESTINATIONS = ["../../sam9g20/"]
 
 SQL_DELETE_RETURNVALUES_CMD = """

@@ -71,7 +71,7 @@ from devicecommands.mib_device_command_parser import (
     SQL_INSERT_INTO_CMDTABLE_CMD,
     SQL_DELETE_CMDTABLE_CMD
 )
-from returnvalues.mod_returnvalues import (
+from returnvalues.returnvalues_parser import (
     InterfaceParser,
     ReturnValueParser,
     INTERFACE_DEFINITION_FILES,
