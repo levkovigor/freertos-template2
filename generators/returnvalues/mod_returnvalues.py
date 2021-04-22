@@ -15,11 +15,11 @@
 @data
     21.11.2019
 """
-from genmib.parserbase.mib_file_list_parser import FileListParser
-from genmib.returnvalues.mib_returnvalues_parser import InterfaceParser, ReturnValueParser
-from genmib.utility.mib_sql_writer import SqlWriter
-from genmib.utility.mib_csv_writer import CsvWriter
-from genmib.utility.mib_printer import Printer
+from modgen.parserbase.file_list_parser import FileListParser
+from modgen.returnvalues.mib_returnvalues_parser import InterfaceParser, ReturnValueParser
+from modgen.utility.mib_sql_writer import SqlWriter
+from modgen.utility.mib_csv_writer import CsvWriter
+from modgen.utility.mib_printer import Printer
 
 EXPORT_TO_FILE = True
 MOVE_CSV_FILE = True
