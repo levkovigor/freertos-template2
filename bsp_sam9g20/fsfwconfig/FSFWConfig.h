@@ -25,7 +25,7 @@
 //! If FSFW_OBJ_EVENT_TRANSLATION is set to one,
 //! additional output which requires the translation files translateObjects
 //! and translateEvents (and their compiled source files)
-#define FSFW_OBJ_EVENT_TRANSLATION	0
+#define FSFW_OBJ_EVENT_TRANSLATION	1
 
 #if FSFW_OBJ_EVENT_TRANSLATION == 1
 //! Specify whether info events are printed too.

@@ -1,6 +1,6 @@
 /** 
- * @brief	Auto-generated object translation file. Contains 89 translations. 
- * Generated on: 2021-01-02 20:05:47
+ * @brief	Auto-generated object translation file. Contains 93 translations. 
+ * Generated on: 2021-04-22 18:02:33
  **/ 
 #include "translateObjects.h"
 
@@ -12,6 +12,7 @@ const char *ARDUINO_4_STRING = "ARDUINO_4";
 const char *CORE_CONTROLLER_STRING = "CORE_CONTROLLER";
 const char *SYSTEM_STATE_TASK_STRING = "SYSTEM_STATE_TASK";
 const char *THERMAL_CONTROLLER_STRING = "THERMAL_CONTROLLER";
+const char *ATTITUDE_CONTROLLER_STRING = "ATTITUDE_CONTROLLER";
 const char *RS485_CONTROLLER_STRING = "RS485_CONTROLLER";
 const char *TEST_TASK_STRING = "TEST_TASK";
 const char *PCDU_HANDLER_STRING = "PCDU_HANDLER";
@@ -70,6 +71,7 @@ const char *PUS_SERVICE_20_PARAM_MGMT_STRING = "PUS_SERVICE_20_PARAM_MGMT";
 const char *PUS_SERVICE_23_FILE_MGMT_STRING = "PUS_SERVICE_23_FILE_MGMT";
 const char *PUS_SERVICE_201_HEALTH_STRING = "PUS_SERVICE_201_HEALTH";
 const char *TM_FUNNEL_STRING = "TM_FUNNEL";
+const char *FSFW_OBJECTS_START_STRING = "FSFW_OBJECTS_START";
 const char *PUS_SERVICE_1_VERIFICATION_STRING = "PUS_SERVICE_1_VERIFICATION";
 const char *PUS_SERVICE_2_DEVICE_ACCESS_STRING = "PUS_SERVICE_2_DEVICE_ACCESS";
 const char *PUS_SERVICE_3_HOUSEKEEPING_STRING = "PUS_SERVICE_3_HOUSEKEEPING";
@@ -77,6 +79,7 @@ const char *PUS_SERVICE_5_EVENT_REPORTING_STRING = "PUS_SERVICE_5_EVENT_REPORTIN
 const char *PUS_SERVICE_8_FUNCTION_MGMT_STRING = "PUS_SERVICE_8_FUNCTION_MGMT";
 const char *PUS_SERVICE_9_TIME_MGMT_STRING = "PUS_SERVICE_9_TIME_MGMT";
 const char *PUS_SERVICE_17_TEST_STRING = "PUS_SERVICE_17_TEST";
+const char *PUS_SERVICE_20_PARAMETERS_STRING = "PUS_SERVICE_20_PARAMETERS";
 const char *PUS_SERVICE_200_MODE_MGMT_STRING = "PUS_SERVICE_200_MODE_MGMT";
 const char *HEALTH_TABLE_STRING = "HEALTH_TABLE";
 const char *MODE_STORE_STRING = "MODE_STORE";
@@ -86,6 +89,7 @@ const char *TC_STORE_STRING = "TC_STORE";
 const char *TM_STORE_STRING = "TM_STORE";
 const char *IPC_STORE_STRING = "IPC_STORE";
 const char *TIME_STAMPER_STRING = "TIME_STAMPER";
+const char *FSFW_OBJECTS_END_STRING = "FSFW_OBJECTS_END";
 const char *LED_TASK_STRING = "LED_TASK";
 const char *AT91_I2C_TEST_TASK_STRING = "AT91_I2C_TEST_TASK";
 const char *AT91_UART0_TEST_TASK_STRING = "AT91_UART0_TEST_TASK";
@@ -112,6 +116,8 @@ const char* translateObject(object_id_t object){
 			return SYSTEM_STATE_TASK_STRING;
 		case 0x40002000:
 			return THERMAL_CONTROLLER_STRING;
+		case 0x40003000:
+			return ATTITUDE_CONTROLLER_STRING;
 		case 0x40005000:
 			return RS485_CONTROLLER_STRING;
 		case 0x42694269:
@@ -228,6 +234,8 @@ const char* translateObject(object_id_t object){
 			return PUS_SERVICE_201_HEALTH_STRING;
 		case 0x52000002:
 			return TM_FUNNEL_STRING;
+		case 0x53000000:
+			return FSFW_OBJECTS_START_STRING;
 		case 0x53000001:
 			return PUS_SERVICE_1_VERIFICATION_STRING;
 		case 0x53000002:
@@ -242,6 +250,8 @@ const char* translateObject(object_id_t object){
 			return PUS_SERVICE_9_TIME_MGMT_STRING;
 		case 0x53000017:
 			return PUS_SERVICE_17_TEST_STRING;
+		case 0x53000020:
+			return PUS_SERVICE_20_PARAMETERS_STRING;
 		case 0x53000200:
 			return PUS_SERVICE_200_MODE_MGMT_STRING;
 		case 0x53010000:
@@ -260,6 +270,8 @@ const char* translateObject(object_id_t object){
 			return IPC_STORE_STRING;
 		case 0x53500010:
 			return TIME_STAMPER_STRING;
+		case 0x53ffffff:
+			return FSFW_OBJECTS_END_STRING;
 		case 0x62000001:
 			return LED_TASK_STRING;
 		case 0x62007401:

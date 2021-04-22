@@ -79,7 +79,7 @@ from returnvalues.returnvalues_parser import (
     sql_retval_exporter,
     CSV_RETVAL_FILENAME
 )
-from objects.mib_objects import (
+from objects.objects import (
     ObjectDefinitionParser,
     OBJECTS_DEFINITIONS,
     export_object_file,

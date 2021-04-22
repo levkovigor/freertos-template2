@@ -1,7 +1,7 @@
 #! /usr/bin/python3.7
 """
 @file
-    mib_objects.py
+    objects.py
 @brief
     Part of the Mission Information Base Exporter for the SOURCE project by KSat.
 @details
