@@ -38,7 +38,7 @@
 //! Special tests, should be disabled by default
 #define OBSW_ADD_LED_TASK                       1
 #define OBSW_ADD_UART_0_TEST_TASK               0
-#define OBSW_ADD_UART_2_TEST_TASK               0
+#define OBSW_ADD_UART_2_TEST_TASK               1
 #define OBSW_ADD_I2C_TEST_TASK                  0
 #define OBSW_ADD_SPI_TEST_TASK                  0
 #define OBSW_ADD_TEST_PST                       0
