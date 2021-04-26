@@ -263,7 +263,7 @@ ReturnValue_t TestDevice::buildTestCommand4(DeviceCommandId_t deviceCommand,
 	return RETURN_OK;
 }
 
-ReturnValue_t TestDevice::getParameter(uint8_t domainId, uint16_t parameterId,
+ReturnValue_t TestDevice::getParameter(uint8_t domainId, uint8_t parameterId,
 		ParameterWrapper* parameterWrapper, const ParameterWrapper* newValues,
 		uint16_t startAtIndex) {
 	//TODO: should the domainID also be checked? What does it do?

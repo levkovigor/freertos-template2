@@ -50,11 +50,11 @@ public:
 	TestDevice(object_id_t objectId, object_id_t comIF, CookieIF * cookie,
 	        bool onImmediately = true, bool changingDataset = true);
 
-	virtual ~ TestDevice();
+	virtual~ TestDevice();
 
-	virtual ReturnValue_t getParameter(uint8_t domainId, uint16_t parameterId,
+	virtual ReturnValue_t getParameter(uint8_t domainId, uint8_t uniqueId,
 			ParameterWrapper *parameterWrapper,
-			const ParameterWrapper *newValues, uint16_t startAtIndex);
+			const ParameterWrapper *newValues, uint16_t startAtIndex) override;
 
 protected:
 	void performOperationHook() override;
