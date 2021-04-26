@@ -65,7 +65,10 @@ void RotationCalc::calc(const double* quaternion,
 }
 
 void RotationCalc::reset() {
-	lastQuaternion = {0,0,0,1};
+	lastQuaternion[0] = 0;
+	lastQuaternion[1] = 0;
+	lastQuaternion[2] = 0;
+	lastQuaternion[3] = 1;
 	timeOfLastQuaternion = {0,0};
 	valid = false;
 }
