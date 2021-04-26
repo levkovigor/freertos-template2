@@ -23,7 +23,7 @@ public:
 			double *rotation);
 	void reset();
 
-	double lastQuaternion[4] { 0, 0, 0, 1 };
+	double lastQuaternion[4] = { 0, 0, 0, 1 };
 	timeval timeOfLastQuaternion;
 	bool valid;
 };

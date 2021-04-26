@@ -164,6 +164,16 @@ void initTask() {
     }
 
 #ifdef __unix__
+    taskPrio = 50;
+#endif
+    PeriodicTaskIF* PusService20 = TaskFactory::instance()->createPeriodicTask(
+            "PUS_SRV_20", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.4, nullptr);
+    result = PusService20->addComponent(objects::PUS_SERVICE_20_PARAMETERS);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        initmission::printAddObjectError("PUS 20", objects::PUS_SERVICE_20_PARAMETERS);
+    }
+
+#ifdef __unix__
     taskPrio = 80;
 #endif
     /* Test Task */
@@ -188,12 +198,13 @@ void initTask() {
 #endif
     }
 
+    /* Core Controller task */
 #ifdef __unix__
     taskPrio = 60;
 #endif
-    PeriodicTaskIF *attitudeController = TaskFactory::instance()->createPeriodicTask(
+    PeriodicTaskIF *AttitudeController = TaskFactory::instance()->createPeriodicTask(
             "ATTITUDE_CTRL", taskPrio, 2048 * 4, 0.4, nullptr);
-    result = attitudeController->addComponent(objects::ATTITUDE_CONTROLLER);
+    result = AttitudeController->addComponent(objects::ATTITUDE_CONTROLLER);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("Attitude Controller", objects::ATTITUDE_CONTROLLER);
     }
@@ -220,7 +231,8 @@ void initTask() {
     PusService5->startTask();
     PusService8->startTask();
     PusService17->startTask();
+    PusService20->startTask();
     PusService200->startTask();
 
-    attitudeController->startTask();
+    AttitudeController->startTask();
 }
