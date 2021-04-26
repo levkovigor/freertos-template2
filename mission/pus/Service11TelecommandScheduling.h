@@ -54,6 +54,7 @@ public:
 
 private:
     struct TelecommandStruct {
+        uint32_t uid;
         uint32_t seconds;
         store_address_t storeAddr;
 
@@ -90,6 +91,13 @@ private:
      * @param timestamp     (out) de-serialized timestamp
      */
     ReturnValue_t GetDeserializedTimestamp(uint32_t& timestamp);
+
+    /**
+     * @brief Generates a UID from packet data ...
+     * @param uid (out) Generated UID from packet
+     * @return  success
+     */
+    ReturnValue_t GetUid(uint32_t& uid);
 
     /**
      * @brief Copys the currentPacket into the tcStore

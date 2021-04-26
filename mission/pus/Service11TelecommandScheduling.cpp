@@ -115,6 +115,7 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
     //DEBUG
     sif::printInfo("currentPacket addr: %d\n", addr);
 
+
     // Insert, if sched. time is above margin...
     uint32_t tNow = static_cast<uint32_t>(std::time(nullptr));
     if (deserializedTimestamp - tNow <= TIME_MARGIN) {
@@ -249,6 +250,14 @@ ReturnValue_t Service11TelecommandScheduling::GetDeserializedTimestamp(uint32_t&
 
     // deserializedTimestamp should now be the correct UNIX timestamp in sec,
     // without any further bit-shifting etc.
+
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+
+ReturnValue_t GetUid(uint32_t& uid) {
+
+
 
     return HasReturnvaluesIF::RETURN_OK;
 }
