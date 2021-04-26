@@ -1,6 +1,6 @@
-#! /usr/bin/python3.8
+#! /usr/bin/env python3
 """
-@file   mib_objects.py
+@file   objects.py
 @brief  Part of the Mission Information Base Exporter for the SOURCE project by KSat.
 @details
 Object exporter.
@@ -10,11 +10,11 @@ On Windows, Build Tools installation might be necessary
 """
 import re
 import datetime
-from genmib.utility.mib_csv_writer import CsvWriter
-from genmib.utility.mib_printer import PrettyPrinter
+from modgen.utility.mib_csv_writer import CsvWriter
+from modgen.utility.mib_printer import PrettyPrinter
 from utility.mib_file_management import copy_file
-from genmib.parserbase.mib_parser import FileParser
-from genmib.utility.mib_sql_writer import SqlWriter, SQL_DATABASE_NAME
+from modgen.parserbase.parser import FileParser
+from modgen.utility.mib_sql_writer import SqlWriter, SQL_DATABASE_NAME
 
 DATE_TODAY = datetime.datetime.now()
 DATE_STRING_FULL = DATE_TODAY.strftime("%Y-%m-%d %H:%M:%S")
@@ -25,15 +25,26 @@ MOVE_CSV = True
 GENERATE_CPP = True
 COPY_CPP = True
 
+PARSE_HOST_BSP = False
+
 EXPORT_TO_SQL = True
 
-CPP_COPY_DESTINATION = "../../fsfwconfig/objects/"
+if PARSE_HOST_BSP:
+    BSP_DIR_NAME = "bsp_hosted"
+else:
+    BSP_DIR_NAME = "bsp_sam9g20"
+
+CPP_COPY_DESTINATION = f"../../{BSP_DIR_NAME}/fsfwconfig/objects/"
 CSV_MOVE_DESTINATION = "../"
 CPP_FILENAME = "translateObjects.cpp"
 CSV_OBJECT_FILENAME = "mib_objects.csv"
 FILE_SEPARATOR = ";"
 
-SUBSYSTEM_DEFINITION_DESTINATION = "../../fsfwconfig/objects/systemObjectList.h"
+if PARSE_HOST_BSP:
+    SUBSYSTEM_DEFINITION_DESTINATION = f"../../{BSP_DIR_NAME}/fsfwconfig/objects/systemObjectList.h"
+else:
+    SUBSYSTEM_DEFINITION_DESTINATION = f"../../{BSP_DIR_NAME}/fsfwconfig/objects/systemObjectList.h"
+
 FRAMEWORK_SUBSYSTEM_DEFINITION_DESTINATION = "../../fsfw/objectmanager/frameworkObjects.h"
 OBJECTS_DEFINITIONS = [SUBSYSTEM_DEFINITION_DESTINATION, FRAMEWORK_SUBSYSTEM_DEFINITION_DESTINATION]
 
@@ -53,6 +64,7 @@ SQL_INSERT_INTO_OBJECTS_CMD = """
 INSERT INTO Objects(objectid, name)
 VALUES(?,?)
 """
+
 
 def main():
     print("Parsing objects: ")
