@@ -317,7 +317,7 @@ def handle_external_file_running():
     TODO: Make this stuff OOP too. Retvals and objects were already refactored
     """
     os.chdir("events")
-    os.system("python events.py")
+    os.system("python event_parser.py")
     os.chdir("..")
     print_string = "Exported to file: MIB_Events.csv\r\n"
     return print_string

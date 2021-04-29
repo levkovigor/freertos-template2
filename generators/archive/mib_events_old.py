@@ -196,16 +196,16 @@ def exportToFile(filename, listOfEntries):
     return
 
 
-def writeTranslationFile(filename, listOfEntries):
+def writeTranslationFile(filename, list_of_entries):
     outputfile = open(filename, "w")
     definitions = ""
     function = "const char * translateEvents(Event event){\n\tswitch((event&0xFFFF)){\n"
-    for entry in listOfEntries:
+    for entry in list_of_entries:
         definitions += "const char *" + entry[1][0] + "_STRING = \"" + entry[1][0] + "\";\n"
         function += "\t\tcase " + str(entry[0]) + ":\n\t\t\treturn " + entry[1][0] + "_STRING;\n"
     function += '\t\tdefault:\n\t\t\treturn "UNKNOWN_EVENT";\n'
     outputfile.write("/* Auto-generated event translation file. Contains "
-                     + str(len(listOfEntries)) + " translations. */\n")
+                     + str(len(list_of_entries)) + " translations. */\n")
     outputfile.write("#include \"translateEvents.h\"\n\n")
     outputfile.write(definitions + "\n" + function + "\t}\n\treturn 0;\n}\n")
     outputfile.close()
