@@ -4,7 +4,7 @@
 #include "fsfwconfig/tmtc/apid.h"
 #include "fsfwconfig/tmtc/pusIds.h"
 
-#include <test/testinterfaces/DummyEchoComIF.h>
+#include <test/testinterfaces/TestEchoComIF.h>
 #include <test/testdevices/TestDeviceHandler.h>
 
 #include <fsfw/events/EventManager.h>
@@ -147,7 +147,7 @@ void Factory::produce(void) {
 
 
     /* Test Tasks */
-    CookieIF* dummyCookie = new TestCookie(0);
+    CookieIF* dummyCookie = new DummyCookie(0, 128);
     new TestEchoComIF(objects::DUMMY_INTERFACE);
     new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_INTERFACE,
             dummyCookie, true);
