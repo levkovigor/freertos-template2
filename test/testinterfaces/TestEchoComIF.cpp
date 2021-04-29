@@ -40,7 +40,7 @@ ReturnValue_t TestEchoComIF::sendMessage(CookieIF *cookie,
     }
 
     ReplyBuffer& replyBuffer = replyMap.find(dummyCookie->getAddress())->second;
-	if(sendLen > replyBuffer.size()) {
+	if(sendLen > replyBuffer.capacity()) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::warning << "TestEchoComIF::sendMessage: Send length " << sendLen << " larger than "
 		        "current reply buffer length!" << std::endl;
