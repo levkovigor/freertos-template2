@@ -1,12 +1,15 @@
 # SD-Card Tests
 
+The SD-Card is a part of the boot process which already verifies functionalities like
+consecutive file writes, file deletion, file locking and file copying.
+
 ## Basic tests
 
 Write to simple file - Verified
 Copy file - Verified
 Read file information - Verified
 Delete File - Verified
-Lock File - Verified
+Lock and Unlock File - Verified
 
 ## Basic Image tests
 
