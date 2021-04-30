@@ -42,10 +42,9 @@
 #include <mission/devices/GyroHandler.h>
 #include <mission/devices/MGMHandlerLIS3MDL.h>
 #include <mission/fdir/PCDUFailureIsolation.h>
-#include <mission/controller/acs/AttitudeController.h>
 
 /* Test files */
-#include <test/testinterfaces/DummyEchoComIF.h>
+#include <test/testinterfaces/TestEchoComIF.h>
 #include <test/testinterfaces/DummyGPSComIF.h>
 #include <test/testinterfaces/DummyCookie.h>
 #include <test/testdevices/ArduinoDeviceHandler.h>
@@ -211,19 +210,17 @@ void Factory::produce(void) {
     /* Device Handlers using DeviceHandlerBase.
     These includes work without connected hardware via virtualized
     devices and interfaces */
-    CookieIF * dummyCookie0 = new DummyCookie(addresses::PCDU);
+    CookieIF * dummyCookie0 = new DummyCookie(addresses::PCDU, 128);
     new PCDUHandler(objects::PCDU_HANDLER,objects::DUMMY_ECHO_COM_IF,
             dummyCookie0);
-    CookieIF * dummyCookie1 = new DummyCookie(addresses::DUMMY_ECHO);
-    new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_ECHO_COM_IF,
-            dummyCookie1, true);
+    CookieIF * dummyCookie1 = new DummyCookie(addresses::DUMMY_ECHO, 128);
+    new TestDevice(objects::DUMMY_HANDLER_0, objects::DUMMY_ECHO_COM_IF, dummyCookie1);
 
     new CoreController(objects::CORE_CONTROLLER, objects::SYSTEM_STATE_TASK);
     new SystemStateTask(objects::SYSTEM_STATE_TASK, objects::CORE_CONTROLLER);
     new ThermalController(objects::THERMAL_CONTROLLER);
-    new AttitudeController(objects::ATTITUDE_CONTROLLER);
 
-    DummyCookie * dummyCookie2 = new DummyCookie(addresses::DUMMY_GPS0);
+    DummyCookie * dummyCookie2 = new DummyCookie(addresses::DUMMY_GPS0, 128);
 #if defined(VIRTUAL_BUILD)
     new GPSHandler(objects::GPS0_HANDLER, objects::DUMMY_GPS_COM_IF,
             dummyCookie2, switches::GPS0);

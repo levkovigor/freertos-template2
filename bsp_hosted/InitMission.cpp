@@ -198,17 +198,6 @@ void initTask() {
 #endif
     }
 
-    /* Core Controller task */
-#ifdef __unix__
-    taskPrio = 60;
-#endif
-    PeriodicTaskIF *AttitudeController = TaskFactory::instance()->createPeriodicTask(
-            "ATTITUDE_CTRL", taskPrio, 2048 * 4, 0.4, nullptr);
-    result = AttitudeController->addComponent(objects::ATTITUDE_CONTROLLER);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        initmission::printAddObjectError("Attitude Controller", objects::ATTITUDE_CONTROLLER);
-    }
-
 #if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Starting tasks.." << std::endl;
 #else
@@ -233,6 +222,4 @@ void initTask() {
     PusService17->startTask();
     PusService20->startTask();
     PusService200->startTask();
-
-    AttitudeController->startTask();
 }

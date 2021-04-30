@@ -5,6 +5,7 @@
 #include "fsfwconfig/tmtc/pusIds.h"
 
 #include <test/testinterfaces/TestEchoComIF.h>
+#include <test/testinterfaces/DummyCookie.h>
 #include <test/testdevices/TestDeviceHandler.h>
 
 #include <fsfw/events/EventManager.h>
@@ -33,7 +34,6 @@
 /* Mission includes*/
 #include <mission/pus/Service17CustomTest.h>
 #include <mission/utility/TmFunnel.h>
-#include <mission/controller/acs/AttitudeController.h>
 
 #include <cstdint>
 
@@ -122,9 +122,6 @@ void Factory::produce(void) {
     new UdpTcPollingTask(objects::UDP_POLLING_TASK,
             objects::UDP_BRIDGE);
 
-    /* Controller */
-    new AttitudeController(objects::ATTITUDE_CONTROLLER);
-
     /* PUS Service Base Services */
     new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,
             apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::TM_FUNNEL, 30);
@@ -149,8 +146,7 @@ void Factory::produce(void) {
     /* Test Tasks */
     CookieIF* dummyCookie = new DummyCookie(0, 128);
     new TestEchoComIF(objects::DUMMY_INTERFACE);
-    new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_INTERFACE,
-            dummyCookie, true);
+    new TestDevice(objects::DUMMY_HANDLER_0, objects::DUMMY_INTERFACE, dummyCookie);
     new TestTaskHost(objects::TEST_TASK, false);
 }
 
