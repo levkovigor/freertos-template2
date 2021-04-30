@@ -2,6 +2,7 @@
 #define DUMMYCOOKIE_H_
 
 #include <fsfw/devicehandlers/CookieIF.h>
+#include <cstddef>
 
 /**
  * Use this to identify different device handlers for DummyComIF

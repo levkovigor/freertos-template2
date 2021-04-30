@@ -215,7 +215,7 @@ void Factory::produce(void) {
     new PCDUHandler(objects::PCDU_HANDLER,objects::DUMMY_ECHO_COM_IF,
             dummyCookie0);
     CookieIF * dummyCookie1 = new DummyCookie(addresses::DUMMY_ECHO, 128);
-    new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_ECHO_COM_IF, dummyCookie1);
+    new TestDevice(objects::DUMMY_HANDLER_0, objects::DUMMY_ECHO_COM_IF, dummyCookie1);
 
     new CoreController(objects::CORE_CONTROLLER, objects::SYSTEM_STATE_TASK);
     new SystemStateTask(objects::SYSTEM_STATE_TASK, objects::CORE_CONTROLLER);

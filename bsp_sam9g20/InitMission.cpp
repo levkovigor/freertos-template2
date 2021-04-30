@@ -336,7 +336,7 @@ void initTasks(void) {
                     2048 * 4, 0.4, genericMissedDeadlineFunc);
     result = AttitudeController->addComponent(objects::ATTITUDE_CONTROLLER);
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        InitMission::printAddObjectError("Attitude Controller", objects::ATTITUDE_CONTROLLER);
+        initmission::printAddObjectError("Attitude Controller", objects::ATTITUDE_CONTROLLER);
     }
 
 #if OBSW_ADD_SPI_TEST_TASK == 0
