@@ -1,7 +1,7 @@
 /**
- * @brief    Auto-generated event translation file. Contains 84 translations.
+ * @brief    Auto-generated event translation file. Contains 89 translations.
  * @details
- * Generated on: 2021-04-29 23:15:15
+ * Generated on: 2021-04-30 22:39:11
  */
 #include "translateEvents.h"
 
@@ -10,7 +10,12 @@ const char *GPS_FIX_STRING = "GPS_FIX";
 const char *GPS_LOST_FIX_STRING = "GPS_LOST_FIX";
 const char *CHANGE_OF_SETUP_PARAMETER_STRING = "CHANGE_OF_SETUP_PARAMETER";
 const char *LOW_REM_STACK_STRING = "LOW_REM_STACK";
+const char *FRAM_ISSUE_EVENT_STRING = "FRAM_ISSUE_EVENT";
 const char *BOOT_EVENT_STRING = "BOOT_EVENT";
+const char *FRAM_FAILURE_STRING = "FRAM_FAILURE";
+const char *SUPERVISOR_FAILURE_STRING = "SUPERVISOR_FAILURE";
+const char *RTT_RTC_FAILURE_STRING = "RTT_RTC_FAILURE";
+const char *FSFW_CLOCK_SYNC_STRING = "FSFW_CLOCK_SYNC";
 const char *STORE_SEND_WRITE_FAILED_STRING = "STORE_SEND_WRITE_FAILED";
 const char *STORE_WRITE_FAILED_STRING = "STORE_WRITE_FAILED";
 const char *STORE_SEND_READ_FAILED_STRING = "STORE_SEND_READ_FAILED";
@@ -102,8 +107,18 @@ const char * translateEvents(Event event) {
 		return CHANGE_OF_SETUP_PARAMETER_STRING;
 	case(1600):
 		return LOW_REM_STACK_STRING;
+	case(1800):
+		return FRAM_ISSUE_EVENT_STRING;
 	case(1900):
 		return BOOT_EVENT_STRING;
+	case(1901):
+		return FRAM_FAILURE_STRING;
+	case(1902):
+		return SUPERVISOR_FAILURE_STRING;
+	case(1903):
+		return RTT_RTC_FAILURE_STRING;
+	case(1904):
+		return FSFW_CLOCK_SYNC_STRING;
 	case(2200):
 		return STORE_SEND_WRITE_FAILED_STRING;
 	case(2201):

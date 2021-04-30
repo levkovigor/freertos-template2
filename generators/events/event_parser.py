@@ -80,6 +80,7 @@ def parse_events():
     # g.PP.pprint(event_headers)
     # myEventList = parseHeaderFiles(subsystem_table, event_headers)
     event_parser = EventParser(event_headers, subsystem_table)
+    event_parser.set_moving_window_mode(moving_window_size=7)
     event_table = event_parser.parse_files()
     list_items = sorted(event_table.items())
     print(f"Found {len(list_items)} entries:")
