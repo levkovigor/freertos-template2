@@ -35,11 +35,13 @@ TODO:
 import os
 import pprint
 
-from genmib.utility.mib_csv_writer import CsvWriter
-from genmib.utility.mib_printer import Printer
-from genmib.utility.mib_sql_writer import SqlWriter
+from modgen.utility.mib_csv_writer import CsvWriter
+from modgen.utility.mib_printer import Printer
+from modgen.utility.mib_sql_writer import SqlWriter
 from utility import mib_globals as g
-from genmib.parserbase import FileListParser
+from modgen.parserbase.file_list_parser import FileListParser
+
+
 from packetcontent.mib_packet_content_parser import (
     PacketContentParser,
     PACKET_CONTENT_DEFINITION_DESTINATION,
@@ -69,7 +71,7 @@ from devicecommands.mib_device_command_parser import (
     SQL_INSERT_INTO_CMDTABLE_CMD,
     SQL_DELETE_CMDTABLE_CMD
 )
-from returnvalues.mib_returnvalues import (
+from returnvalues.returnvalues_parser import (
     InterfaceParser,
     ReturnValueParser,
     INTERFACE_DEFINITION_FILES,
@@ -77,7 +79,7 @@ from returnvalues.mib_returnvalues import (
     sql_retval_exporter,
     CSV_RETVAL_FILENAME
 )
-from objects.mib_objects import (
+from objects.objects import (
     ObjectDefinitionParser,
     OBJECTS_DEFINITIONS,
     export_object_file,
@@ -257,7 +259,7 @@ def handle_returnvalue_generation():
         Printer.print_content(returnvalue_table)
     if EXPORT_TO_CSV:
         print("MIB Exporter: Exporting returnvalues to " + CSV_RETVAL_FILENAME)
-        ReturnValueParser.export_to_file(CSV_RETVAL_FILENAME, returnvalue_table)
+        ReturnValueParser.export_to_file(CSV_RETVAL_FILENAME, returnvalue_table, file_separator=",")
     if EXPORT_TO_SQL:
         print("MIB Exporter: Export returnvalues to SQL: ")
         sql_retval_exporter(returnvalue_table)
@@ -315,7 +317,7 @@ def handle_external_file_running():
     TODO: Make this stuff OOP too. Retvals and objects were already refactored
     """
     os.chdir("events")
-    os.system("python mib_events.py")
+    os.system("python event_parser.py")
     os.chdir("..")
     print_string = "Exported to file: MIB_Events.csv\r\n"
     return print_string

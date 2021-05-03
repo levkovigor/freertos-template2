@@ -1,15 +1,14 @@
-/**
- * @file DummyCookie.cpp
- *
- * @date 06.04.2020
- */
+#include "DummyCookie.h"
 
-#include <test/testinterfaces/DummyCookie.h>
+DummyCookie::DummyCookie(address_t address, size_t maxReplySize):
+        address(address), maxReplySize(maxReplySize) {}
 
-TestCookie::TestCookie(address_t address_): address(address_) {}
+DummyCookie::~DummyCookie() {}
 
-TestCookie::~TestCookie() {}
-
-address_t TestCookie::getAddress() const {
+address_t DummyCookie::getAddress() const {
 	return address;
+}
+
+size_t DummyCookie::getMaxReplySize() const {
+    return maxReplySize;
 }

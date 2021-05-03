@@ -145,7 +145,7 @@ ReturnValue_t DummyGPSComIF::readReceivedMessage(CookieIF *cookie,
 
 void DummyGPSComIF::generateGpsPacket(CookieIF * cookie, uint8_t ** gpsPacket,
         size_t * packetSize) {
-    TestCookie * dummyCookie = dynamic_cast<TestCookie*>(cookie);
+    DummyCookie * dummyCookie = dynamic_cast<DummyCookie*>(cookie);
     if(dummyCookie == nullptr) {
         return;
     }

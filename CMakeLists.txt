@@ -2,8 +2,7 @@
 # CMake support for the SOURCE OBSW.
 # 
 # Developed in an effort to replace Make with a modern build system.
-# Currently only works for the hosted build.
-# 
+#
 # Author: R. Mueller
 ################################################################################
 

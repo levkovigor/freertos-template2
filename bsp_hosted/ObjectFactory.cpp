@@ -4,11 +4,9 @@
 #include "fsfwconfig/tmtc/apid.h"
 #include "fsfwconfig/tmtc/pusIds.h"
 
-#include <test/testinterfaces/DummyEchoComIF.h>
+#include <test/testinterfaces/TestEchoComIF.h>
+#include <test/testinterfaces/DummyCookie.h>
 #include <test/testdevices/TestDeviceHandler.h>
-
-#include <mission/pus/Service17CustomTest.h>
-#include <mission/utility/TmFunnel.h>
 
 #include <fsfw/events/EventManager.h>
 #include <fsfw/health/HealthTable.h>
@@ -30,8 +28,12 @@
 /* UDP server includes */
 #include <fsfw/osal/common/UdpTcPollingTask.h>
 #include <fsfw/osal/common/UdpTmTcBridge.h>
+#include <fsfw/pus/Service20ParameterManagement.h>
 #include <fsfw/tmtcpacket/pus/TmPacketBase.h>
-#include <mission/controller/acs/AttitudeController.h>
+
+/* Mission includes*/
+#include <mission/pus/Service17CustomTest.h>
+#include <mission/utility/TmFunnel.h>
 
 #include <cstdint>
 
@@ -120,8 +122,6 @@ void Factory::produce(void) {
     new UdpTcPollingTask(objects::UDP_POLLING_TASK,
             objects::UDP_BRIDGE);
 
-    new AttitudeController(objects::ATTITUDE_CONTROLLER);
-
     /* PUS Service Base Services */
     new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,
             apid::SOURCE_OBSW, pus::PUS_SERVICE_1, objects::TM_FUNNEL, 30);
@@ -139,13 +139,14 @@ void Factory::produce(void) {
             apid::SOURCE_OBSW, pus::PUS_SERVICE_8);
     new CService200ModeCommanding(objects::PUS_SERVICE_200_MODE_MGMT,
             apid::SOURCE_OBSW,pus::PUS_SERVICE_200);
+    new Service20ParameterManagement(objects::PUS_SERVICE_20_PARAMETERS, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_20);
 
 
     /* Test Tasks */
-    CookieIF* dummyCookie = new TestCookie(0);
+    CookieIF* dummyCookie = new DummyCookie(0, 128);
     new TestEchoComIF(objects::DUMMY_INTERFACE);
-    new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_INTERFACE,
-            dummyCookie, true);
+    new TestDevice(objects::DUMMY_HANDLER_0, objects::DUMMY_INTERFACE, dummyCookie);
     new TestTaskHost(objects::TEST_TASK, false);
 }
 
