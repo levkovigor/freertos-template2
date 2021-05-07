@@ -10,6 +10,7 @@
 
 #include <ctime>
 #include <cstring>
+#include <array>
 
 
 Service11TelecommandScheduling::Service11TelecommandScheduling(
@@ -136,7 +137,12 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
 
     // insert into mm, with new store address
     //NOTE: addr is now different from currentPacket
-    TelecommandStruct tc(deserializedTimestamp, addr);
+
+    TelecommandStruct tc;
+    tc.seconds = deserializedTimestamp;
+    tc.storeAddr = addr;
+    GetUid(tc.uid);
+
     auto it = telecommandMap.insert(std::pair<uint32_t, TelecommandStruct>(deserializedTimestamp, tc));
     if (it == telecommandMap.end()){
         return HasReturnvaluesIF::RETURN_FAILED;
@@ -148,79 +154,79 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
 
 ReturnValue_t Service11TelecommandScheduling::handleRequest_DeleteActivity() {
 
-    // get timestamp
-    uint32_t deserializedTimestamp = 0;
-    auto ret = this->GetDeserializedTimestamp(deserializedTimestamp);
-    if (ret != RETURN_OK) {
-        return ret;
-    }
-
-    // retrieve all corresponding timestamps, if any
-    // multiple timestamp keys can be inside map
-    auto range = telecommandMap.equal_range(deserializedTimestamp);
-
-    if (range.first == range.second) {
-        // no corresponding timestamp keys found
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-    // get store address
-    store_address_t addr = this->currentPacket.getStoreAddress();
-    if (addr.raw == storeId::INVALID_STORE_ADDRESS) {
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-    // erase position from multimap, if storeAddress is equal to currentPacket's storeAddress
-    // nothing else needs to be done as currentPacket is deleted from store after calling handleRequest().
-    for (auto& it = range.first; it != range.second; ++it) {
-        if (it->second.storeAddr == addr) {
-            telecommandMap.erase(it);
-        }
-    }
-
-    return HasReturnvaluesIF::RETURN_OK;
+//    // get timestamp
+//    uint32_t deserializedTimestamp = 0;
+//    auto ret = this->GetDeserializedTimestamp(deserializedTimestamp);
+//    if (ret != RETURN_OK) {
+//        return ret;
+//    }
+//
+//    // retrieve all corresponding timestamps, if any
+//    // multiple timestamp keys can be inside map
+//    auto range = telecommandMap.equal_range(deserializedTimestamp);
+//
+//    if (range.first == range.second) {
+//        // no corresponding timestamp keys found
+//        return HasReturnvaluesIF::RETURN_FAILED;
+//    }
+//
+//    // get store address
+//    store_address_t addr = this->currentPacket.getStoreAddress();
+//    if (addr.raw == storeId::INVALID_STORE_ADDRESS) {
+//        return HasReturnvaluesIF::RETURN_FAILED;
+//    }
+//
+//    // erase position from multimap, if storeAddress is equal to currentPacket's storeAddress
+//    // nothing else needs to be done as currentPacket is deleted from store after calling handleRequest().
+//    for (auto& it = range.first; it != range.second; ++it) {
+//        if (it->second.storeAddr == addr) {
+//            telecommandMap.erase(it);
+//        }
+//    }
+//
+//    return HasReturnvaluesIF::RETURN_OK;
 }
 
 
 ReturnValue_t Service11TelecommandScheduling::handleRequest_TimeshiftActivity() {
 
     // get timestamp
-    uint32_t deserializedTimestamp = 0;
-    auto ret = this->GetDeserializedTimestamp(deserializedTimestamp);
-    if (ret != RETURN_OK) {
-        return ret;
-    }
-
-    // get store address
-    store_address_t addr = this->currentPacket.getStoreAddress();
-    if (addr.raw == storeId::INVALID_STORE_ADDRESS) {
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-    // check if timestamp to shift to is feasible
-    uint32_t tNow = static_cast<uint32_t>(std::time(nullptr));
-    if (deserializedTimestamp - tNow < TIME_MARGIN) {
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-    // find the packet by address in multimap (is inefficient, but I cannot search by timestamp)
-    for (auto it = telecommandMap.begin(); it != telecommandMap.end(); ++it) {
-        if (it->second.storeAddr == addr) {
-            telecommandMap.erase(it);
-
-            //TODO: Re-insert currentPacket into tcStore
-            //TODO: addr might have a different value!?
-
-            TelecommandStruct tc(deserializedTimestamp, addr);
-            auto insertIt = telecommandMap.insert(std::pair<uint32_t, TelecommandStruct>(deserializedTimestamp, tc));
-            if (insertIt == telecommandMap.end()){
-                return HasReturnvaluesIF::RETURN_FAILED;
-            }
-            return HasReturnvaluesIF::RETURN_OK;
-        }
-    }
-
-    return HasReturnvaluesIF::RETURN_FAILED;
+//    uint32_t deserializedTimestamp = 0;
+//    auto ret = this->GetDeserializedTimestamp(deserializedTimestamp);
+//    if (ret != RETURN_OK) {
+//        return ret;
+//    }
+//
+//    // get store address
+//    store_address_t addr = this->currentPacket.getStoreAddress();
+//    if (addr.raw == storeId::INVALID_STORE_ADDRESS) {
+//        return HasReturnvaluesIF::RETURN_FAILED;
+//    }
+//
+//    // check if timestamp to shift to is feasible
+//    uint32_t tNow = static_cast<uint32_t>(std::time(nullptr));
+//    if (deserializedTimestamp - tNow < TIME_MARGIN) {
+//        return HasReturnvaluesIF::RETURN_FAILED;
+//    }
+//
+//    // find the packet by address in multimap (is inefficient, but I cannot search by timestamp)
+//    for (auto it = telecommandMap.begin(); it != telecommandMap.end(); ++it) {
+//        if (it->second.storeAddr == addr) {
+//            telecommandMap.erase(it);
+//
+//            //TODO: Re-insert currentPacket into tcStore
+//            //TODO: addr might have a different value!?
+//
+//            TelecommandStruct tc(deserializedTimestamp, addr);
+//            auto insertIt = telecommandMap.insert(std::pair<uint32_t, TelecommandStruct>(deserializedTimestamp, tc));
+//            if (insertIt == telecommandMap.end()){
+//                return HasReturnvaluesIF::RETURN_FAILED;
+//            }
+//            return HasReturnvaluesIF::RETURN_OK;
+//        }
+//    }
+//
+//    return HasReturnvaluesIF::RETURN_FAILED;
 }
 
 
@@ -255,8 +261,24 @@ ReturnValue_t Service11TelecommandScheduling::GetDeserializedTimestamp(uint32_t&
 }
 
 
-ReturnValue_t GetUid(uint32_t& uid) {
+ReturnValue_t Service11TelecommandScheduling::GetUid(uint32_t& uid) {
 
+    const uint8_t* pRawData = this->currentPacket.getApplicationData();
+    if (not pRawData) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    uint32_t srvType = (uint32_t)currentPacket.getService();
+    uint32_t srvSubtype = (uint32_t)currentPacket.getSubService();
+    uint32_t sequenceControl = (uint32_t)currentPacket.getPacketSequenceControl();
+
+    // uid is set together like this:
+    // service (8) | subsrv (8) | sequence ctrl (flags + count) (16)
+
+    uid = (srvType << 24) + (srvSubtype << 16) + sequenceControl;
+
+
+    sif::printInfo("..::GetUid: srvType: %d  srvSubtype: %d  uid: %d \n", srvType, srvSubtype, uid);
 
 
     return HasReturnvaluesIF::RETURN_OK;

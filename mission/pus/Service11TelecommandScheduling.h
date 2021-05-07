@@ -57,14 +57,6 @@ private:
         uint32_t uid;
         uint32_t seconds;
         store_address_t storeAddr;
-
-        TelecommandStruct(uint32_t seconds, store_address_t storeAddr):
-        seconds(seconds), storeAddr(storeAddr) { }
-
-        void debugPrint(void) const {
-        	sif::info << "TelecommandStruct{ seconds: " << this->seconds
-        			<< "  storeAddr (raw): " << this->storeAddr.raw << "}" << std::endl;
-        }
     };
 
     const uint32_t TIME_MARGIN = 5u;
