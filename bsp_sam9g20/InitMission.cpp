@@ -397,8 +397,8 @@ void initTasks(void) {
 
     coreController->startTask();
     systemStateTask -> startTask();
-    //ThermalController -> startTask();
-    AttitudeController->startTask();
+    // ThermalController -> startTask();
+    // AttitudeController->startTask();
 #if OBSW_ADD_SPI_TEST_TASK == 0
     spiComTask->startTask();
 #endif
