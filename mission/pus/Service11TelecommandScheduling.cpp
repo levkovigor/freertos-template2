@@ -185,6 +185,8 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_DeleteActivity() {
 //    }
 //
 //    return HasReturnvaluesIF::RETURN_OK;
+
+    return HasReturnvaluesIF::RETURN_FAILED;
 }
 
 
@@ -227,6 +229,9 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_TimeshiftActivity() 
 //    }
 //
 //    return HasReturnvaluesIF::RETURN_FAILED;
+
+    // to make it compile
+    return HasReturnvaluesIF::RETURN_FAILED;
 }
 
 
