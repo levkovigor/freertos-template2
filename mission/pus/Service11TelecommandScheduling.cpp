@@ -125,7 +125,7 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
 
     // store currentPacket
     if (auto res = ReStorePacket(&addr) != HasReturnvaluesIF::RETURN_OK) {
-        sif::printInfo("ReStorePacket returned != RETURN_OK\n");
+        sif::printWarning("ReStorePacket returned != RETURN_OK\n");
         return res;
     }
     if (addr.raw == storeId::INVALID_STORE_ADDRESS) {
@@ -141,7 +141,7 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
     TelecommandStruct tc;
     tc.seconds = deserializedTimestamp;
     tc.storeAddr = addr;
-    GetUid(tc.uid);
+    GetUidFromCurrentPacket(tc.uid);
 
     auto it = telecommandMap.insert(std::pair<uint32_t, TelecommandStruct>(deserializedTimestamp, tc));
     if (it == telecommandMap.end()){
@@ -266,12 +266,7 @@ ReturnValue_t Service11TelecommandScheduling::GetDeserializedTimestamp(uint32_t&
 }
 
 
-ReturnValue_t Service11TelecommandScheduling::GetUid(uint32_t& uid) {
-
-    const uint8_t* pRawData = this->currentPacket.getApplicationData();
-    if (not pRawData) {
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
+void Service11TelecommandScheduling::GetUidFromCurrentPacket(uint32_t& uid) {
 
     uint32_t srvType = (uint32_t)currentPacket.getService();
     uint32_t srvSubtype = (uint32_t)currentPacket.getSubService();
@@ -284,9 +279,6 @@ ReturnValue_t Service11TelecommandScheduling::GetUid(uint32_t& uid) {
 
 
     sif::printInfo("..::GetUid: srvType: %d  srvSubtype: %d  uid: %d \n", srvType, srvSubtype, uid);
-
-
-    return HasReturnvaluesIF::RETURN_OK;
 }
 
 

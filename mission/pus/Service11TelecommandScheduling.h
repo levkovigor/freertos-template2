@@ -85,11 +85,10 @@ private:
     ReturnValue_t GetDeserializedTimestamp(uint32_t& timestamp);
 
     /**
-     * @brief Generates a UID from packet data ...
+     * @brief Generates a UID from the currentPacket
      * @param uid (out) Generated UID from packet
-     * @return  success
      */
-    ReturnValue_t GetUid(uint32_t& uid);
+    void GetUidFromCurrentPacket(uint32_t& uid);
 
     /**
      * @brief Copys the currentPacket into the tcStore
