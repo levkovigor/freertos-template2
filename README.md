@@ -201,7 +201,7 @@ Now you can run the following commands in the `sourceobsw` folder to build the s
 
 ```sh
 mkdir build-Debug-Host && cd build-Debug-Host
-cmake .. -G "MinGW Makefiles"
+cmake -G "MinGW Makefiles" -DHOST_BUILD=ON .. 
 cmake --build . -j
 ```
 
@@ -213,7 +213,7 @@ Linux OSAL instead
 
 ```sh
 mkdir build-Debug-Host && cd build-Debug-Host
-cmake ..
+cmake -DHOST_BUILD=ON ..
 cmake --build . -j
 ```
 
