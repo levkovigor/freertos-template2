@@ -34,6 +34,8 @@
 #include <mission/pus/Service17CustomTest.h>
 #include <mission/utility/TmFunnel.h>
 #include <mission/controller/acs/AttitudeController.h>
+#include <test/testdevices/devicedefinitions/testDeviceDefinitions.h>
+#include <test/testinterfaces/DummyCookie.h>
 
 #include <cstdint>
 
@@ -149,8 +151,8 @@ void Factory::produce(void) {
     /* Test Tasks */
     CookieIF* dummyCookie = new DummyCookie(0, 128);
     new TestEchoComIF(objects::DUMMY_INTERFACE);
-    new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_INTERFACE,
-            dummyCookie, true);
+    new TestDevice(objects::DUMMY_HANDLER_0, objects::DUMMY_INTERFACE,
+            dummyCookie, testdevice::DeviceIndex::DEVICE_0, true);
     new TestTaskHost(objects::TEST_TASK, false);
 }
 
