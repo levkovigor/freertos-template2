@@ -13,3 +13,6 @@
 [submodule "generators/generatore_core"]
 	path = generators/modgen
 	url = https://git.ksat-stuttgart.de/source/generatore_core.git
+[submodule "thirdparty/Catch2"]
+	path = thirdparty/Catch2
+	url = https://github.com/catchorg/Catch2.git
