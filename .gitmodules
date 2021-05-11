@@ -8,7 +8,7 @@
 	path = fsfw
 	url = https://egit.irs.uni-stuttgart.de/KSat/fsfw.git
 [submodule "etl"]
-	path = etl
+	path = thirdparty/etl
 	url = https://github.com/ETLCPP/etl.git
 [submodule "generators/generatore_core"]
 	path = generators/modgen
