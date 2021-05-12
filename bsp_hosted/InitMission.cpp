@@ -76,21 +76,21 @@ void initTask() {
     taskPrio = 50;
 #endif
     /* Packet Distributor Taks */
-    PeriodicTaskIF* PacketDistributorTask = TaskFactory::instance()-> createPeriodicTask(
+    PeriodicTaskIF* packetDistributorTask = TaskFactory::instance()-> createPeriodicTask(
             "PACKET_DIST_TASK", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.4,
             deadlineMissedFunc);
-    result = PacketDistributorTask->
+    result = packetDistributorTask->
             addComponent(objects::CCSDS_PACKET_DISTRIBUTOR);
     if(result != HasReturnvaluesIF::RETURN_OK){
         initmission::printAddObjectError("CCSDS distributor", objects::CCSDS_PACKET_DISTRIBUTOR);
     }
-    result = PacketDistributorTask->
+    result = packetDistributorTask->
             addComponent(objects::PUS_PACKET_DISTRIBUTOR);
     if(result != HasReturnvaluesIF::RETURN_OK){
         initmission::printAddObjectError("PUS packet distributor", objects::PUS_PACKET_DISTRIBUTOR);
 
     }
-    result = PacketDistributorTask->addComponent(objects::TM_FUNNEL);
+    result = packetDistributorTask->addComponent(objects::TM_FUNNEL);
     if(result != HasReturnvaluesIF::RETURN_OK){
         initmission::printAddObjectError("TM funnel", objects::TM_FUNNEL);
     }
@@ -110,20 +110,20 @@ void initTask() {
     taskPrio = 50;
 #endif
     /* UDP bridge */
-    PeriodicTaskIF* UdpBridgeTask = TaskFactory::instance()->createPeriodicTask(
+    PeriodicTaskIF* udpBridgeTask = TaskFactory::instance()->createPeriodicTask(
             "UDP_UNIX_BRIDGE", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.2,
             deadlineMissedFunc);
-    result = UdpBridgeTask->addComponent(objects::UDP_BRIDGE);
+    result = udpBridgeTask->addComponent(objects::UDP_BRIDGE);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("UDP Bridge", objects::UDP_BRIDGE);
     }
 #ifdef __unix__
     taskPrio = 80;
 #endif
-    PeriodicTaskIF* UdpPollingTask = TaskFactory::instance()->createPeriodicTask(
+    PeriodicTaskIF* udpPollingTask = TaskFactory::instance()->createPeriodicTask(
             "UDP_POLLING", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 2.0,
             deadlineMissedFunc);
-    result = UdpPollingTask->addComponent(objects::UDP_POLLING_TASK);
+    result = udpPollingTask->addComponent(objects::UDP_POLLING_TASK);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("UDP Polling", objects::UDP_POLLING_TASK);
     }
@@ -194,9 +194,9 @@ void initTask() {
     taskPrio = 80;
 #endif
     /* Test Task */
-    PeriodicTaskIF* TestTask = TaskFactory::instance()->createPeriodicTask(
+    PeriodicTaskIF* testTask = TaskFactory::instance()->createPeriodicTask(
             "TEST_TASK", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 5.0, nullptr);
-    result = TestTask->addComponent(objects::TEST_TASK);
+    result = testTask->addComponent(objects::TEST_TASK);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("Test Task", objects::TEST_TASK);
     }
@@ -205,10 +205,10 @@ void initTask() {
     taskPrio = 80;
 #endif
     /* Polling Sequence Table Default */
-    FixedTimeslotTaskIF * PollingSequenceTableTaskDefault =
+    FixedTimeslotTaskIF * pollingSequenceTableTaskDefault =
             TaskFactory::instance()-> createFixedTimeslotTask(
                     "PST_DEFAULT", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 2.0, nullptr);
-    result = pst::pollingSequenceInitDefault(PollingSequenceTableTaskDefault);
+    result = pst::pollingSequenceInitDefault(pollingSequenceTableTaskDefault);
     if (result != HasReturnvaluesIF::RETURN_OK) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "creating PST failed" << std::endl;
@@ -219,9 +219,9 @@ void initTask() {
 #ifdef __unix__
     taskPrio = 60;
 #endif
-    PeriodicTaskIF *AttitudeController = TaskFactory::instance()->createPeriodicTask(
+    PeriodicTaskIF *attitudeController = TaskFactory::instance()->createPeriodicTask(
             "ATTITUDE_CTRL", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE,  0.4, nullptr);
-    result = AttitudeController->addComponent(objects::ATTITUDE_CONTROLLER);
+    result = attitudeController->addComponent(objects::ATTITUDE_CONTROLLER);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("Attitude Controller", objects::ATTITUDE_CONTROLLER);
     }
@@ -233,15 +233,15 @@ void initTask() {
 #endif
 
     eventTask-> startTask();
-    PacketDistributorTask->startTask();
-    UdpBridgeTask->startTask();
-    UdpPollingTask->startTask();
+    packetDistributorTask->startTask();
+    udpBridgeTask->startTask();
+    udpPollingTask->startTask();
 
     pusHighPrio->startTask();
     pusMedPrio->startTask();
     pusLowPrio->startTask();
 
-    AttitudeController->startTask();
-    TestTask->startTask();
-    PollingSequenceTableTaskDefault->startTask();
+    attitudeController->startTask();
+    testTask->startTask();
+    pollingSequenceTableTaskDefault->startTask();
 }
