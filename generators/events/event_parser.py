@@ -77,7 +77,7 @@ def parse_events():
     event_headers = event_header_parser.parse_header_files(
         True, "Parsing event header file list:\n", True
     )
-    # g.PP.pprint(event_headers)
+    # PrettyPrinter.pprint(event_headers)
     # myEventList = parseHeaderFiles(subsystem_table, event_headers)
     event_parser = EventParser(event_headers, subsystem_table)
     event_parser.set_moving_window_mode(moving_window_size=7)

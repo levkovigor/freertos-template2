@@ -33,7 +33,7 @@ public:
 protected:
 	static constexpr uint8_t SUBSYSTEM_ID = SUBSYSTEM_ID::TEST_TASK;
 
-	static constexpr Event testEvent = MAKE_EVENT(0, severity::INFO);
+	static constexpr Event TEST_EVENT = MAKE_EVENT(0, severity::INFO);
     //event::makeEvent(subsystemId, 1, severity::INFO);
 
 	virtual ReturnValue_t performOneShotAction();

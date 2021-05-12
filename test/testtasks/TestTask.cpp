@@ -63,7 +63,7 @@ ReturnValue_t TestTask::performOperation(uint8_t operationCode) {
 }
 
 ReturnValue_t TestTask::performOneShotAction() {
-    triggerEvent(testEvent, 0, 0);
+    triggerEvent(TEST_EVENT, 0, 0);
     return HasReturnvaluesIF::RETURN_OK;
 }
 

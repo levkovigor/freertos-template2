@@ -1,7 +1,7 @@
 /**
- * @brief    Auto-generated event translation file. Contains 82 translations.
+ * @brief    Auto-generated event translation file. Contains 83 translations.
  * @details
- * Generated on: 2021-05-12 15:06:12
+ * Generated on: 2021-05-12 15:55:51
  */
 #include "translateEvents.h"
 
@@ -87,6 +87,7 @@ const char *GPS_STARTUP_FAILED_STRING = "GPS_STARTUP_FAILED";
 const char *GPS_FIX_STRING = "GPS_FIX";
 const char *GPS_LOST_FIX_STRING = "GPS_LOST_FIX";
 const char *CHANGE_OF_SETUP_PARAMETER_STRING = "CHANGE_OF_SETUP_PARAMETER";
+const char *TEST_EVENT_STRING = "TEST_EVENT";
 
 const char * translateEvents(Event event) {
 	switch( (event & 0xffff) ) {
@@ -254,6 +255,8 @@ const char * translateEvents(Event event) {
 		return GPS_LOST_FIX_STRING;
 	case(13000):
 		return CHANGE_OF_SETUP_PARAMETER_STRING;
+	case(13200):
+		return TEST_EVENT_STRING;
 	default:
 		return "UNKNOWN_EVENT";
 	}
