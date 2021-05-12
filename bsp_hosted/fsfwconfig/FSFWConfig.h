@@ -7,7 +7,7 @@
 //! Used to determine whether C++ ostreams are used which can increase
 //! the binary size significantly. If this is disabled,
 //! the C stdio functions can be used alternatively
-#define FSFW_CPP_OSTREAM_ENABLED    0
+#define FSFW_CPP_OSTREAM_ENABLED    1
 
 //! More FSFW related printouts depending on level. Useful for development.
 #define FSFW_VERBOSE_LEVEL          1
@@ -25,7 +25,7 @@
 //! If FSFW_OBJ_EVENT_TRANSLATION is set to one,
 //! additional output which requires the translation files translateObjects
 //! and translateEvents (and their compiled source files)
-#define FSFW_OBJ_EVENT_TRANSLATION  1
+#define FSFW_OBJ_EVENT_TRANSLATION  0
 
 #if FSFW_OBJ_EVENT_TRANSLATION == 1
 //! Specify whether info events are printed too.

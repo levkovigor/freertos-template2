@@ -332,7 +332,6 @@ endif()
 # Add include paths for all sources.
 target_include_directories(${TARGET_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${FSFW_CONFIG_PATH}
 )
 
 # Compile options for all sources.

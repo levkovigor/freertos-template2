@@ -1,3 +1,4 @@
+#include "ObjectFactory.h"
 #include <pollingsequence/PollingSequenceFactory.h>
 #include <objects/systemObjectList.h>
 
@@ -9,14 +10,15 @@
 #include <fsfw/timemanager/Stopwatch.h>
 
 #include <mission/utility/InitMission.h>
-#include <ObjectFactory.h>
 
-#include <ostream>
 
 /* Declare global object manager */
 ObjectManagerIF* objectManager;
 
 #if FSFW_CPP_OSTREAM_ENABLED == 1
+
+#include <ostream>
+
 /* Set up output streams */
 namespace sif {
 ServiceInterfaceStream debug("DEBUG");
