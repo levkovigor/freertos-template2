@@ -237,6 +237,7 @@ void initTask() {
     udpBridgeTask->startTask();
     udpPollingTask->startTask();
 
+    pusVerification->startTask();
     pusHighPrio->startTask();
     pusMedPrio->startTask();
     pusLowPrio->startTask();
