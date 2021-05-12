@@ -55,19 +55,30 @@ void initMission() {
 }
 
 void initTask() {
+    TaskFactory* taskFactory = TaskFactory::instance();
+    if(taskFactory == nullptr) {
+        return;
+    }
+
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     TaskPriority taskPrio = 0;
 #ifdef _WIN32
     taskPrio = tasks::makeWinPriority();
 #endif
 
+    TaskDeadlineMissedFunction deadlineMissedFunc = nullptr;
+
+#if OBSW_PRINT_MISSED_DEADLINES  == 1
+    deadlineMissedFunc = TaskFactory::printMissedDeadline;
+#endif
 
 #ifdef __unix__
     taskPrio = 50;
 #endif
     /* Packet Distributor Taks */
     PeriodicTaskIF* PacketDistributorTask = TaskFactory::instance()-> createPeriodicTask(
-            "PACKET_DIST_TASK", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.4, nullptr);
+            "PACKET_DIST_TASK", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.4,
+            deadlineMissedFunc);
     result = PacketDistributorTask->
             addComponent(objects::CCSDS_PACKET_DISTRIBUTOR);
     if(result != HasReturnvaluesIF::RETURN_OK){
@@ -87,9 +98,21 @@ void initTask() {
 #ifdef __unix__
     taskPrio = 50;
 #endif
+    PeriodicTaskIF* eventTask = taskFactory->createPeriodicTask(
+            "EVENT", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.2, deadlineMissedFunc
+    );
+    result = eventTask->addComponent(objects::EVENT_MANAGER);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        initmission::printAddObjectError("Event Manager", objects::EVENT_MANAGER);
+    }
+
+#ifdef __unix__
+    taskPrio = 50;
+#endif
     /* UDP bridge */
     PeriodicTaskIF* UdpBridgeTask = TaskFactory::instance()->createPeriodicTask(
-            "UDP_UNIX_BRIDGE", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.2, nullptr);
+            "UDP_UNIX_BRIDGE", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.2,
+            deadlineMissedFunc);
     result = UdpBridgeTask->addComponent(objects::UDP_BRIDGE);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("UDP Bridge", objects::UDP_BRIDGE);
@@ -98,19 +121,21 @@ void initTask() {
     taskPrio = 80;
 #endif
     PeriodicTaskIF* UdpPollingTask = TaskFactory::instance()->createPeriodicTask(
-            "UDP_POLLING", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 2.0, nullptr);
+            "UDP_POLLING", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 2.0,
+            deadlineMissedFunc);
     result = UdpPollingTask->addComponent(objects::UDP_POLLING_TASK);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("UDP Polling", objects::UDP_POLLING_TASK);
     }
 
-#ifdef __unix__
-    taskPrio = 50;
-#endif
     /* PUS Services */
-    PeriodicTaskIF* PusService1 = TaskFactory::instance()->createPeriodicTask(
-            "PUS_SRV_1", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.4, nullptr);
-    result = PusService1->addComponent(objects::PUS_SERVICE_1_VERIFICATION);
+#ifdef __unix__
+    taskPrio = 45;
+#endif
+    PeriodicTaskIF* pusVerification = taskFactory->createPeriodicTask(
+            "PUS_VERIF_1", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.200,
+            deadlineMissedFunc);
+    result = pusVerification->addComponent(objects::PUS_SERVICE_1_VERIFICATION);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("PUS 1", objects::PUS_SERVICE_1_VERIFICATION);
     }
@@ -118,61 +143,51 @@ void initTask() {
 #ifdef __unix__
     taskPrio = 50;
 #endif
-    PeriodicTaskIF* PusService2 = TaskFactory::instance()->createPeriodicTask(
-            "PUS_SRV_2", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.2, nullptr);
-    result = PusService2->addComponent(objects::PUS_SERVICE_2_DEVICE_ACCESS);
-    if(result != HasReturnvaluesIF::RETURN_OK) {
+    PeriodicTaskIF* pusHighPrio = taskFactory->createPeriodicTask(
+            "PUS_HIGH_PRIO", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.2, deadlineMissedFunc);
+    result = pusHighPrio->addComponent(objects::PUS_SERVICE_2_DEVICE_ACCESS);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("PUS 2", objects::PUS_SERVICE_2_DEVICE_ACCESS);
     }
-
-#ifdef __unix__
-    taskPrio = 50;
-#endif
-    PeriodicTaskIF* PusService5 = TaskFactory::instance()->createPeriodicTask(
-            "PUS_SRV_5", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.4, nullptr);
-    result = PusService5->addComponent(objects::PUS_SERVICE_5_EVENT_REPORTING);
-    if(result != HasReturnvaluesIF::RETURN_OK) {
-        initmission::printAddObjectError("PUS 5", objects::PUS_SERVICE_5_EVENT_REPORTING);
+    result = pusHighPrio->addComponent(objects::PUS_SERVICE_5_EVENT_REPORTING);
+    if(result != HasReturnvaluesIF::RETURN_OK){
+        initmission::printAddObjectError("PUS 5",objects::PUS_SERVICE_5_EVENT_REPORTING);
+    }
+    result = pusHighPrio->addComponent(objects::PUS_SERVICE_9_TIME_MGMT);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        initmission::printAddObjectError("PUS 9", objects::PUS_SERVICE_9_TIME_MGMT);
     }
 
 #ifdef __unix__
-    taskPrio = 50;
+    taskPrio = 40;
 #endif
-    PeriodicTaskIF* PusService8 = TaskFactory::instance()->createPeriodicTask(
-            "PUS_SRV_8", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.4, nullptr);
-    result = PusService2->addComponent(objects::PUS_SERVICE_8_FUNCTION_MGMT);
-    if(result != HasReturnvaluesIF::RETURN_OK) {
+    PeriodicTaskIF* pusMedPrio = taskFactory->createPeriodicTask(
+            "PUS_MED_PRIO", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.6, deadlineMissedFunc);
+    result = pusMedPrio->addComponent(objects::PUS_SERVICE_3_HOUSEKEEPING);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        initmission::printAddObjectError("PUS 3", objects::PUS_SERVICE_3_HOUSEKEEPING);
+    }
+    result = pusMedPrio->addComponent(objects::PUS_SERVICE_8_FUNCTION_MGMT);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("PUS 8", objects::PUS_SERVICE_8_FUNCTION_MGMT);
     }
-
-#ifdef __unix__
-    taskPrio = 50;
-#endif
-    PeriodicTaskIF* PusService17 = TaskFactory::instance()->createPeriodicTask(
-            "PUS_SRV_17", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.4, nullptr);
-    result = PusService17->addComponent(objects::PUS_SERVICE_17_TEST);
-    if(result != HasReturnvaluesIF::RETURN_OK) {
-        initmission::printAddObjectError("PUS 17", objects::PUS_SERVICE_17_TEST);
+    result = pusMedPrio->addComponent(objects::PUS_SERVICE_20_PARAMETERS);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        initmission::printAddObjectError("PUS 20", objects::PUS_SERVICE_20_PARAMETERS);
     }
-
-#ifdef __unix__
-    taskPrio = 50;
-#endif
-    PeriodicTaskIF* PusService200 = TaskFactory::instance()->createPeriodicTask(
-            "PUS_SRV_200", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.4, nullptr);
-    result = PusService200->addComponent(objects::PUS_SERVICE_200_MODE_MGMT);
-    if(result != HasReturnvaluesIF::RETURN_OK) {
+    result = pusMedPrio->addComponent(objects::PUS_SERVICE_200_MODE_MGMT);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("PUS 200", objects::PUS_SERVICE_200_MODE_MGMT);
     }
 
 #ifdef __unix__
-    taskPrio = 50;
+    taskPrio = 30;
 #endif
-    PeriodicTaskIF* PusService20 = TaskFactory::instance()->createPeriodicTask(
-            "PUS_SRV_20", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.4, nullptr);
-    result = PusService20->addComponent(objects::PUS_SERVICE_20_PARAMETERS);
-    if(result != HasReturnvaluesIF::RETURN_OK) {
-        initmission::printAddObjectError("PUS 20", objects::PUS_SERVICE_20_PARAMETERS);
+    PeriodicTaskIF* pusLowPrio = taskFactory->createPeriodicTask(
+            "PUS_LOW_PRIO", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 1.2, deadlineMissedFunc);
+    result = pusLowPrio->addComponent(objects::PUS_SERVICE_17_TEST);
+    if(result!=HasReturnvaluesIF::RETURN_OK) {
+        initmission::printAddObjectError("PUS 17", objects::PUS_SERVICE_17_TEST);
     }
 
 #ifdef __unix__
@@ -217,24 +232,16 @@ void initTask() {
     sif::printInfo("Starting tasks..\n");
 #endif
 
-    TestTask->startTask();
+    eventTask-> startTask();
     PacketDistributorTask->startTask();
+    UdpBridgeTask->startTask();
+    UdpPollingTask->startTask();
+
+    pusHighPrio->startTask();
+    pusMedPrio->startTask();
+    pusLowPrio->startTask();
+
+    AttitudeController->startTask();
+    TestTask->startTask();
     PollingSequenceTableTaskDefault->startTask();
-#ifdef __unix__
-    UdpBridgeTask->startTask();
-    UdpPollingTask->startTask();
-#elif _WIN32
-    UdpBridgeTask->startTask();
-    UdpPollingTask->startTask();
-#endif
-
-    PusService1->startTask();
-    PusService2->startTask();
-    PusService5->startTask();
-    PusService8->startTask();
-    PusService17->startTask();
-    PusService20->startTask();
-    PusService200->startTask();
-
-    // AttitudeController->startTask();
 }
