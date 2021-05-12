@@ -1,14 +1,10 @@
 /**
  * @brief    Auto-generated event translation file. Contains 82 translations.
  * @details
- * Generated on: 2021-05-12 14:26:27
+ * Generated on: 2021-05-12 14:39:36
  */
 #include "translateEvents.h"
 
-const char *GPS_STARTUP_FAILED_STRING = "GPS_STARTUP_FAILED";
-const char *GPS_FIX_STRING = "GPS_FIX";
-const char *GPS_LOST_FIX_STRING = "GPS_LOST_FIX";
-const char *CHANGE_OF_SETUP_PARAMETER_STRING = "CHANGE_OF_SETUP_PARAMETER";
 const char *STORE_SEND_WRITE_FAILED_STRING = "STORE_SEND_WRITE_FAILED";
 const char *STORE_WRITE_FAILED_STRING = "STORE_WRITE_FAILED";
 const char *STORE_SEND_READ_FAILED_STRING = "STORE_SEND_READ_FAILED";
@@ -87,17 +83,13 @@ const char *FRAME_PROCESSING_FAILED_STRING = "FRAME_PROCESSING_FAILED";
 const char *CLOCK_SET_STRING = "CLOCK_SET";
 const char *CLOCK_SET_FAILURE_STRING = "CLOCK_SET_FAILURE";
 const char *TEST_STRING = "TEST";
+const char *GPS_STARTUP_FAILED_STRING = "GPS_STARTUP_FAILED";
+const char *GPS_FIX_STRING = "GPS_FIX";
+const char *GPS_LOST_FIX_STRING = "GPS_LOST_FIX";
+const char *CHANGE_OF_SETUP_PARAMETER_STRING = "CHANGE_OF_SETUP_PARAMETER";
 
 const char * translateEvents(Event event) {
 	switch( (event & 0xffff) ) {
-	case(1200):
-		return GPS_STARTUP_FAILED_STRING;
-	case(1201):
-		return GPS_FIX_STRING;
-	case(1202):
-		return GPS_LOST_FIX_STRING;
-	case(1300):
-		return CHANGE_OF_SETUP_PARAMETER_STRING;
 	case(2200):
 		return STORE_SEND_WRITE_FAILED_STRING;
 	case(2201):
@@ -254,6 +246,14 @@ const char * translateEvents(Event event) {
 		return CLOCK_SET_FAILURE_STRING;
 	case(9700):
 		return TEST_STRING;
+	case(12900):
+		return GPS_STARTUP_FAILED_STRING;
+	case(12901):
+		return GPS_FIX_STRING;
+	case(12902):
+		return GPS_LOST_FIX_STRING;
+	case(13000):
+		return CHANGE_OF_SETUP_PARAMETER_STRING;
 	default:
 		return "UNKNOWN_EVENT";
 	}
