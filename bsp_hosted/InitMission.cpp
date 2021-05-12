@@ -205,7 +205,7 @@ void initTask() {
     taskPrio = 60;
 #endif
     PeriodicTaskIF *AttitudeController = TaskFactory::instance()->createPeriodicTask(
-            "ATTITUDE_CTRL", taskPrio, 2048 * 4, 0.4, nullptr);
+            "ATTITUDE_CTRL", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE,  0.4, nullptr);
     result = AttitudeController->addComponent(objects::ATTITUDE_CONTROLLER);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("Attitude Controller", objects::ATTITUDE_CONTROLLER);
@@ -236,5 +236,5 @@ void initTask() {
     PusService20->startTask();
     PusService200->startTask();
 
-    AttitudeController->startTask();
+    // AttitudeController->startTask();
 }
