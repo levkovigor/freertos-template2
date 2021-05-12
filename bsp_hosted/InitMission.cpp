@@ -220,10 +220,10 @@ void initTask() {
     TestTask->startTask();
     PacketDistributorTask->startTask();
     PollingSequenceTableTaskDefault->startTask();
-#ifdef LINUX
+#ifdef __unix__
     UdpBridgeTask->startTask();
     UdpPollingTask->startTask();
-#elif WIN32
+#elif _WIN32
     UdpBridgeTask->startTask();
     UdpPollingTask->startTask();
 #endif

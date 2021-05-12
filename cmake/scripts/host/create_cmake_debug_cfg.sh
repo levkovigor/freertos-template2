@@ -23,7 +23,8 @@ if [ "${OS}" = "Windows_NT" ]; then
 	build_generator="MinGW Makefiles"
 	os_fsfw="host"
 # Could be other OS but this works for now.
-else	os_fsfw="linux"
+else
+    os_fsfw="linux"
 	build_generator="Unix Makefiles"
 fi
 

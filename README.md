@@ -191,7 +191,8 @@ repository was cloned and built inside the same folder the OBSW was cloned.
    
 ## Build Host Software
 
-Perform the following steps to build the hosted software
+Perform the following steps to build the hosted software. It is recommended to read
+[the separate README](doc/README-hosted.md#top) as well.
 
 ### Windows
 
