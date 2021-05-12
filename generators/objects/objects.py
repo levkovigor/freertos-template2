@@ -25,7 +25,7 @@ MOVE_CSV = True
 GENERATE_CPP = True
 COPY_CPP = True
 
-PARSE_HOST_BSP = False
+PARSE_HOST_BSP = True
 
 EXPORT_TO_SQL = True
 

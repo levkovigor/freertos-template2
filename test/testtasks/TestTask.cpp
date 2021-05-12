@@ -63,25 +63,7 @@ ReturnValue_t TestTask::performOperation(uint8_t operationCode) {
 }
 
 ReturnValue_t TestTask::performOneShotAction() {
-	// Everything here will only be performed once.
-    //SDCardTest();
-//    int res = 0;
-    //sdTest();
-//    SDCardAccess accessToken;
-    //int res = open_filesystem(VolumeId::SD_CARD_0);
-
-    //res = select_sd_card(VolumeId::SD_CARD_0);
-
-//    const char* const testString = "abc";
-//    F_FILE* file = f_open("test.bin", "w");
-//    if(file == nullptr) {
-//        return HasReturnvaluesIF::RETURN_FAILED;
-//    }
-//    res = f_write(testString, 3, 1, file);
-//
-//    f_close(file);
-
-    //performEtlTemplateTest();
+    triggerEvent(testEvent, 0, 0);
     return HasReturnvaluesIF::RETURN_OK;
 }
 
