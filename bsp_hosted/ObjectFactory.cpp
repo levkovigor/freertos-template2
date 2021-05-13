@@ -123,8 +123,7 @@ void Factory::produce(void) {
     new TmFunnel(objects::TM_FUNNEL);
 
 #if OBSW_TCPIP_SERVER_TYPE == OBSW_TCPIP_SERVER_UDP
-    new UdpTmTcBridge(objects::TCPIP_BRIDGE, objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
-            objects::TC_STORE);
+    new UdpTmTcBridge(objects::TCPIP_BRIDGE, objects::CCSDS_PACKET_DISTRIBUTOR);
     new UdpTcPollingTask(objects::TCPIP_HELPER, objects::TCPIP_BRIDGE);
 #elif OBSW_TCPIP_SERVER_TYPE == OBSW_TCPIP_SERVER_TCP
     new TcpTmTcBridge(objects::TCPIP_BRIDGE, objects::CCSDS_PACKET_DISTRIBUTOR);
