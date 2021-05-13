@@ -1,3 +1,4 @@
+#include "OBSWConfig.h"
 #include "bsp_hosted/ObjectFactory.h"
 #include "boardtest/TestTaskHost.h"
 #include "fsfwconfig/objects/systemObjectList.h"
@@ -11,6 +12,8 @@
 #include <fsfw/health/HealthTable.h>
 #include <fsfw/internalError/InternalErrorReporter.h>
 #include <fsfw/objectmanager/frameworkObjects.h>
+#include <fsfw/osal/common/TcpTmTcBridge.h>
+#include <fsfw/osal/common/TcpTmTcServer.h>
 #include <fsfw/timemanager/TimeStamper.h>
 
 #include <fsfw/storagemanager/PoolManager.h>
@@ -119,11 +122,14 @@ void Factory::produce(void) {
     /* TM Destination */
     new TmFunnel(objects::TM_FUNNEL);
 
-    new UdpTmTcBridge(objects::UDP_BRIDGE,
-            objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
+#if OBSW_TCPIP_SERVER_TYPE == OBSW_TCPIP_SERVER_UDP
+    new UdpTmTcBridge(objects::TCPIP_BRIDGE, objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
             objects::TC_STORE);
-    new UdpTcPollingTask(objects::UDP_POLLING_TASK,
-            objects::UDP_BRIDGE);
+    new UdpTcPollingTask(objects::TCPIP_HELPER, objects::TCPIP_BRIDGE);
+#elif OBSW_TCPIP_SERVER_TYPE == OBSW_TCPIP_SERVER_TCP
+    new TcpTmTcBridge(objects::TCPIP_BRIDGE, objects::CCSDS_PACKET_DISTRIBUTOR);
+    new TcpTmTcServer(objects::TCPIP_HELPER, objects::TCPIP_BRIDGE);
+#endif /* OBSW_TCPIP_SERVER_TYPE == OBSW_TCPIP_SERVER_UDP */
 
     /* Controller */
     new AttitudeController(objects::ATTITUDE_CONTROLLER);
@@ -173,7 +179,7 @@ void Factory::setStaticFrameworkObjectIds() {
     DeviceHandlerBase::powerSwitcherId = objects::NO_OBJECT;
 
     TmPacketBase::timeStamperId = objects::PUS_TIME;
-    TmFunnel::downlinkDestination = objects::UDP_BRIDGE;
+    TmFunnel::downlinkDestination = objects::TCPIP_BRIDGE;
 }
 
 
