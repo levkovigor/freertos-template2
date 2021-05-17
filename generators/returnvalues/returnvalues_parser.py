@@ -90,7 +90,7 @@ def parse_returnvalues():
 
 def handle_file_move(destination: str):
     """ Handles moving the CSV file somewhere """
-    csv_writer = CsvWriter(CSV_RETVAL_FILENAME)
+    csv_writer = CsvWriter(filename=CSV_RETVAL_FILENAME, file_separator=FILE_SEPARATOR)
     if MOVE_CSV_FILE:
         csv_writer.move_csv(destination)
 

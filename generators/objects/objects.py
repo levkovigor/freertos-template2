@@ -11,10 +11,9 @@ On Windows, Build Tools installation might be necessary
 import datetime
 
 from modgen.objects.objects import ObjectDefinitionParser, sql_object_exporter, write_translation_file, \
-    export_object_file
-from modgen.utility.csv_writer import CsvWriter
+    export_object_file, write_translation_header_file
 from modgen.utility.printer import PrettyPrinter
-from modgen.utility.file_management import copy_file
+from modgen.utility.file_management import copy_file, move_file
 from modgen.utility.sql_writer import SQL_DATABASE_NAME
 
 DATE_TODAY = datetime.datetime.now()
@@ -25,6 +24,8 @@ MOVE_CSV = True
 
 GENERATE_CPP = True
 COPY_CPP = True
+
+GENERATE_HEADER = True
 
 PARSE_HOST_BSP = True
 
@@ -38,6 +39,7 @@ else:
 CPP_COPY_DESTINATION = f"../../{BSP_DIR_NAME}/fsfwconfig/objects/"
 CSV_MOVE_DESTINATION = "../"
 CPP_FILENAME = "translateObjects.cpp"
+CPP_H_FILENAME = "translateObjects.h"
 CSV_OBJECT_FILENAME = "mib_objects.csv"
 FILE_SEPARATOR = ";"
 
@@ -91,18 +93,20 @@ def parse_objects():
 
 
 def handle_file_export(list_items):
-    csv_writer = CsvWriter(CSV_OBJECT_FILENAME)
     if GENERATE_CPP:
         print("ObjectParser: Generating translation C++ file.")
         write_translation_file(filename=CPP_FILENAME, list_of_entries=list_items, date_string_full=DATE_STRING_FULL)
         if COPY_CPP:
             print("ObjectParser: Copying object file to " + CPP_COPY_DESTINATION)
             copy_file(CPP_FILENAME, CPP_COPY_DESTINATION)
+    if GENERATE_HEADER:
+        write_translation_header_file(filename=CPP_H_FILENAME)
+        copy_file(filename=CPP_H_FILENAME, destination=CPP_COPY_DESTINATION)
     if GENERATE_CSV:
         print("ObjectParser: Generating text export.")
         export_object_file(filename=CSV_OBJECT_FILENAME, object_list=list_items, file_separator=FILE_SEPARATOR)
         if MOVE_CSV:
-            csv_writer.move_csv(CSV_MOVE_DESTINATION)
+            move_file(file_name=CSV_OBJECT_FILENAME, destination=CSV_MOVE_DESTINATION)
 
 
 if __name__ == "__main__":
