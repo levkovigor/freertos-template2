@@ -102,6 +102,7 @@ def handle_file_export(list_items):
 
 
 class ObjectDefinitionParser(FileParser):
+
     def __init__(self, file_list: list):
         super().__init__(file_list)
 
@@ -111,6 +112,10 @@ class ObjectDefinitionParser(FileParser):
             match = re.search('([\w]*)[\s]*=[\s]*(0[xX][0-9a-fA-F]+)', line)
             if match:
                 self.mib_table.update({match.group(2): [match.group(1)]})
+
+    def _handle_file_parsing_moving_window(self, file_name: str, current_line: int, moving_window_size: int,
+                                           moving_window: list, *args, **kwargs):
+        pass
 
     def _post_parsing_operation(self):
         pass
