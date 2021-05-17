@@ -10,11 +10,11 @@ On Windows, Build Tools installation might be necessary
 """
 import re
 import datetime
-from modgen.utility.mib_csv_writer import CsvWriter
-from modgen.utility.mib_printer import PrettyPrinter
-from utility.mib_file_management import copy_file
+from modgen.utility.csv_writer import CsvWriter
+from modgen.utility.printer import PrettyPrinter
+from modgen.utility.file_management import copy_file
 from modgen.parserbase.parser import FileParser
-from modgen.utility.mib_sql_writer import SqlWriter, SQL_DATABASE_NAME
+from modgen.utility.sql_writer import SqlWriter, SQL_DATABASE_NAME
 
 DATE_TODAY = datetime.datetime.now()
 DATE_STRING_FULL = DATE_TODAY.strftime("%Y-%m-%d %H:%M:%S")

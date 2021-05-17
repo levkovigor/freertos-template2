@@ -17,9 +17,9 @@
 """
 from modgen.parserbase.file_list_parser import FileListParser
 from modgen.returnvalues.returnvalues_parser import InterfaceParser, ReturnValueParser
-from modgen.utility.mib_sql_writer import SqlWriter
-from modgen.utility.mib_csv_writer import CsvWriter
-from modgen.utility.mib_printer import Printer
+from modgen.utility.sql_writer import SqlWriter
+from modgen.utility.csv_writer import CsvWriter
+from modgen.utility.printer import Printer
 
 EXPORT_TO_FILE = True
 MOVE_CSV_FILE = True
