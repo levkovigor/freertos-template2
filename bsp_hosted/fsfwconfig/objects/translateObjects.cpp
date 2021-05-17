@@ -1,12 +1,13 @@
 /** 
- * @brief	Auto-generated object translation file. Contains 68 translations. 
- * Generated on: 2021-04-22 17:59:51
+ * @brief	Auto-generated object translation file. Contains 69 translations. 
+ * Generated on: 2021-05-17 18:43:47
  **/ 
 #include "translateObjects.h"
 
 const char *ATTITUDE_CONTROLLER_STRING = "ATTITUDE_CONTROLLER";
 const char *TEST_TASK_STRING = "TEST_TASK";
-const char *DUMMY_HANDLER_STRING = "DUMMY_HANDLER";
+const char *DUMMY_HANDLER_0_STRING = "DUMMY_HANDLER_0";
+const char *DUMMY_HANDLER_1_STRING = "DUMMY_HANDLER_1";
 const char *SuS_ADC1_DEC2_STRING = "SuS_ADC1_DEC2";
 const char *SPI_Test_PT1000_STRING = "SPI_Test_PT1000";
 const char *PT1000_Syrlinks_DEC1_O1_STRING = "PT1000_Syrlinks_DEC1_O1";
@@ -42,8 +43,8 @@ const char *SPI_DEVICE_COM_IF_STRING = "SPI_DEVICE_COM_IF";
 const char *DUMMY_ECHO_COM_IF_STRING = "DUMMY_ECHO_COM_IF";
 const char *CCSDS_PACKET_DISTRIBUTOR_STRING = "CCSDS_PACKET_DISTRIBUTOR";
 const char *PUS_PACKET_DISTRIBUTOR_STRING = "PUS_PACKET_DISTRIBUTOR";
-const char *UDP_BRIDGE_STRING = "UDP_BRIDGE";
-const char *UDP_POLLING_TASK_STRING = "UDP_POLLING_TASK";
+const char *TCPIP_BRIDGE_STRING = "TCPIP_BRIDGE";
+const char *TCPIP_HELPER_STRING = "TCPIP_HELPER";
 const char *PUS_SERVICE_3_STRING = "PUS_SERVICE_3";
 const char *PUS_SERVICE_6_MEM_MGMT_STRING = "PUS_SERVICE_6_MEM_MGMT";
 const char *PUS_SERVICE_23_FILE_MGMT_STRING = "PUS_SERVICE_23_FILE_MGMT";
@@ -80,7 +81,9 @@ const char* translateObject(object_id_t object){
 		case 0x42694269:
 			return TEST_TASK_STRING;
 		case 0x4400AFFE:
-			return DUMMY_HANDLER_STRING;
+			return DUMMY_HANDLER_0_STRING;
+		case 0x4401AFFE:
+			return DUMMY_HANDLER_1_STRING;
 		case 0x44020108:
 			return SuS_ADC1_DEC2_STRING;
 		case 0x44115400:
@@ -152,9 +155,9 @@ const char* translateObject(object_id_t object){
 		case 0x50000200:
 			return PUS_PACKET_DISTRIBUTOR_STRING;
 		case 0x50000300:
-			return UDP_BRIDGE_STRING;
+			return TCPIP_BRIDGE_STRING;
 		case 0x50000400:
-			return UDP_POLLING_TASK_STRING;
+			return TCPIP_HELPER_STRING;
 		case 0x51000300:
 			return PUS_SERVICE_3_STRING;
 		case 0x51000500:
