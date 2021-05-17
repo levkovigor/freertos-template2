@@ -22,6 +22,8 @@ enum: uint8_t {
 	GPS_DEVICE = 129,
     MGM_LIS3MDL = 130,
 
+    TEST_TASK = 132,
+
 	SPI_COM_IF = 140,
 	I2C_COM_IF = 141,
 	UART_COM_IF = 142,

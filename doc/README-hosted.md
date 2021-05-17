@@ -68,42 +68,46 @@ and configuring real-time properites like scheduling priorities.
 
 To solve this issues, try following steps:
 
-1. Edit the /etc/security/limits.conf 
-file and add following lines at the end:
-```sh
-<username>   hard   rtprio  99
-<username>   soft   rtprio  99
-```
-The soft limit can also be set in the console with `ulimit -Sr` if the hard
-limit has been increased, but it is recommended to add it to the file as well for convenience.
-If adding the second line is not desired for security reasons,
-the soft limit needs to be set for each session. If using an IDE like eclipse 
-in that case, the IDE needs to be started from the console after setting
-the soft limit higher there. After adding the two lines to the file,
-the computer needs to be restarted.
+1. Edit the /etc/security/limits.conf file and add following lines at the end:
+   ```sh
+   <username>   hard   rtprio  99
+   <username>   soft   rtprio  99
+   ```
+   
+   The soft limit can also be set in the console with `ulimit -Sr` if the hard
+   limit has been increased, but it is recommended to add it to the file as well for convenience.
+   If adding the second line is not desired for security reasons,
+   the soft limit needs to be set for each session. If using an IDE like eclipse 
+   in that case, the IDE needs to be started from the console after setting
+   the soft limit higher there. After adding the two lines to the file,
+   the computer needs to be restarted.
 
-It is also recommended to perform the following change so that the unlockRealtime
-script does not need to be run anymore each time. The following steps
-raise the maximum allowed message queue length to a higher number permanently, which is 
-required for some framework components. The recommended values for the new message
-length is 120.
+   It is also recommended to perform the following change so that the unlockRealtime
+   script does not need to be run anymore each time. The following steps
+   raise the maximum allowed message queue length to a higher number permanently, which is 
+   required for some framework components. The recommended values for the new message
+   length is 120.
 
 2. Edit the /etc/sysctl.conf file
-```sh
-sudo nano /etc/sysctl.conf
-```
-Append at end: 
-```sh
-fs/mqueue/msg_max = <newMsgMaxLen>
-```
-Apply changes with: 
-```sh
-sudo sysctl -p
-``` 
+   ```sh
+   sudo nano /etc/sysctl.conf
+   ```
+   
+   Append at end: 
+   ```sh
+   fs/mqueue/msg_max = <newMsgMaxLen>
+   ```
 
-A possible solution which only persists for the current session is
-```sh
-echo <newMsgMax> | sudo tee /proc/sys/fs/mqueue/msg_max
-```
-or running the `unlockRealtime` script.
+   Apply changes with: 
+   
+   ```sh
+   sudo sysctl -p
+   ``` 
+
+   A possible solution which only persists for the current session is
+   
+   ```sh
+   echo <newMsgMax> | sudo tee /proc/sys/fs/mqueue/msg_max
+   ```
+   or running the `unlockRealtime` script.
 

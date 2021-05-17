@@ -191,7 +191,8 @@ repository was cloned and built inside the same folder the OBSW was cloned.
    
 ## Build Host Software
 
-Perform the following steps to build the hosted software
+Perform the following steps to build the hosted software. It is recommended to read
+[the separate README](doc/README-hosted.md#top) as well.
 
 ### Windows
 
@@ -201,7 +202,7 @@ Now you can run the following commands in the `sourceobsw` folder to build the s
 
 ```sh
 mkdir build-Debug-Host && cd build-Debug-Host
-cmake .. -G "MinGW Makefiles"
+cmake -G "MinGW Makefiles" -DHOST_BUILD=ON .. 
 cmake --build . -j
 ```
 
@@ -213,7 +214,7 @@ Linux OSAL instead
 
 ```sh
 mkdir build-Debug-Host && cd build-Debug-Host
-cmake ..
+cmake -DHOST_BUILD=ON ..
 cmake --build . -j
 ```
 

@@ -24,6 +24,8 @@ option(ADD_ETL_LIB "Add ETL library" ON)
 option(BOOTLOADER "Build bootloader" OFF)
 option(HOST_BUILD "Build for host" OFF)
 option(USE_LTO "Enable link-time optimization" OFF)
+option(BUILD_UNITTEST "Build Catch2 unit tests" OFF)
+
 # This option can also decrease binary size.
 option(DISABLE_AGGRESSIVE_OPTIMIZATION 
     "Enable to use O2 instead of O3 optimization for the release build" OFF
@@ -129,7 +131,8 @@ set(LIB_PRIVAT_LIB_NAME privlib)
 set(FSFW_PATH fsfw)
 set(MISSION_PATH mission)
 set(TEST_PATH test)
-set(ETL_PATH etl)
+set(ETL_PATH thirdparty/etl)
+set(CATCH2_PATH thirdparty/Catch2)
 set(SAM9G20_PATH bsp_sam9g20)
 set(HOST_BSP_PATH bsp_hosted)
 set(BOOTLOADER_PATH bootloader)
@@ -329,7 +332,6 @@ endif()
 # Add include paths for all sources.
 target_include_directories(${TARGET_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${FSFW_CONFIG_PATH}
 )
 
 # Compile options for all sources.

@@ -29,11 +29,15 @@
 #include <fsfw/osal/common/UdpTcPollingTask.h>
 #include <fsfw/osal/common/UdpTmTcBridge.h>
 #include <fsfw/pus/Service20ParameterManagement.h>
+#include <fsfw/pus/Service9TimeManagement.h>
 #include <fsfw/tmtcpacket/pus/TmPacketBase.h>
 
 /* Mission includes*/
 #include <mission/pus/Service17CustomTest.h>
 #include <mission/utility/TmFunnel.h>
+#include <mission/controller/acs/AttitudeController.h>
+#include <test/testdevices/devicedefinitions/testDeviceDefinitions.h>
+#include <test/testinterfaces/DummyCookie.h>
 
 #include <cstdint>
 
@@ -129,6 +133,8 @@ void Factory::produce(void) {
             pus::PUS_SERVICE_3);
     new Service5EventReporting(objects::PUS_SERVICE_5_EVENT_REPORTING, apid::SOURCE_OBSW,
             pus::PUS_SERVICE_5);
+    new Service9TimeManagement(objects::PUS_SERVICE_9_TIME_MGMT, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_9);
     new Service17CustomTest(objects::PUS_SERVICE_17_TEST, apid::SOURCE_OBSW,
             pus::PUS_SERVICE_17);
 
@@ -146,7 +152,8 @@ void Factory::produce(void) {
     /* Test Tasks */
     CookieIF* dummyCookie = new DummyCookie(0, 128);
     new TestEchoComIF(objects::DUMMY_INTERFACE);
-    new TestDevice(objects::DUMMY_HANDLER_0, objects::DUMMY_INTERFACE, dummyCookie);
+    new TestDevice(objects::DUMMY_HANDLER_0, objects::DUMMY_INTERFACE,
+            dummyCookie, testdevice::DeviceIndex::DEVICE_0, true);
     new TestTaskHost(objects::TEST_TASK, false);
 }
 

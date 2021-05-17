@@ -1,16 +1,10 @@
 /**
- * @brief    Auto-generated event translation file. Contains 84 translations.
+ * @brief    Auto-generated event translation file. Contains 83 translations.
  * @details
- * Generated on: 2021-04-29 23:15:15
+ * Generated on: 2021-05-12 15:55:51
  */
 #include "translateEvents.h"
 
-const char *GPS_STARTUP_FAILED_STRING = "GPS_STARTUP_FAILED";
-const char *GPS_FIX_STRING = "GPS_FIX";
-const char *GPS_LOST_FIX_STRING = "GPS_LOST_FIX";
-const char *CHANGE_OF_SETUP_PARAMETER_STRING = "CHANGE_OF_SETUP_PARAMETER";
-const char *LOW_REM_STACK_STRING = "LOW_REM_STACK";
-const char *BOOT_EVENT_STRING = "BOOT_EVENT";
 const char *STORE_SEND_WRITE_FAILED_STRING = "STORE_SEND_WRITE_FAILED";
 const char *STORE_WRITE_FAILED_STRING = "STORE_WRITE_FAILED";
 const char *STORE_SEND_READ_FAILED_STRING = "STORE_SEND_READ_FAILED";
@@ -89,21 +83,14 @@ const char *FRAME_PROCESSING_FAILED_STRING = "FRAME_PROCESSING_FAILED";
 const char *CLOCK_SET_STRING = "CLOCK_SET";
 const char *CLOCK_SET_FAILURE_STRING = "CLOCK_SET_FAILURE";
 const char *TEST_STRING = "TEST";
+const char *GPS_STARTUP_FAILED_STRING = "GPS_STARTUP_FAILED";
+const char *GPS_FIX_STRING = "GPS_FIX";
+const char *GPS_LOST_FIX_STRING = "GPS_LOST_FIX";
+const char *CHANGE_OF_SETUP_PARAMETER_STRING = "CHANGE_OF_SETUP_PARAMETER";
+const char *TEST_EVENT_STRING = "TEST_EVENT";
 
 const char * translateEvents(Event event) {
 	switch( (event & 0xffff) ) {
-	case(1200):
-		return GPS_STARTUP_FAILED_STRING;
-	case(1201):
-		return GPS_FIX_STRING;
-	case(1202):
-		return GPS_LOST_FIX_STRING;
-	case(1300):
-		return CHANGE_OF_SETUP_PARAMETER_STRING;
-	case(1600):
-		return LOW_REM_STACK_STRING;
-	case(1900):
-		return BOOT_EVENT_STRING;
 	case(2200):
 		return STORE_SEND_WRITE_FAILED_STRING;
 	case(2201):
@@ -260,6 +247,16 @@ const char * translateEvents(Event event) {
 		return CLOCK_SET_FAILURE_STRING;
 	case(9700):
 		return TEST_STRING;
+	case(12900):
+		return GPS_STARTUP_FAILED_STRING;
+	case(12901):
+		return GPS_FIX_STRING;
+	case(12902):
+		return GPS_LOST_FIX_STRING;
+	case(13000):
+		return CHANGE_OF_SETUP_PARAMETER_STRING;
+	case(13200):
+		return TEST_EVENT_STRING;
 	default:
 		return "UNKNOWN_EVENT";
 	}

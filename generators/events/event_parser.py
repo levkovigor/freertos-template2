@@ -26,7 +26,7 @@ COPY_CPP_FILE = True
 COPY_CPP_H_FILE = True
 MOVE_CSV_FILE = True
 
-PARSE_HOST_BSP = False
+PARSE_HOST_BSP = True
 
 CSV_FILENAME = "mib_events.csv"
 CSV_MOVE_DESTINATION = "../"
@@ -46,7 +46,7 @@ SUBSYSTEM_DEFINITION_DESTINATIONS = [
     f"../../{BSP_FOLDER}/fsfwconfig/events/subsystemIdRanges.h",
     "../../fsfw/events/fwSubsystemIdRanges.h"
 ]
-HEADER_DEFINITION_DESTINATIONS = ["../../mission/", "../../fsfw/", f"../../{BSP_FOLDER}"]
+HEADER_DEFINITION_DESTINATIONS = ["../../mission/", "../../fsfw/", f"../../{BSP_FOLDER}", "../../test/"]
 
 
 def main():
@@ -77,9 +77,10 @@ def parse_events():
     event_headers = event_header_parser.parse_header_files(
         True, "Parsing event header file list:\n", True
     )
-    # g.PP.pprint(event_headers)
+    # PrettyPrinter.pprint(event_headers)
     # myEventList = parseHeaderFiles(subsystem_table, event_headers)
     event_parser = EventParser(event_headers, subsystem_table)
+    event_parser.set_moving_window_mode(moving_window_size=7)
     event_table = event_parser.parse_files()
     list_items = sorted(event_table.items())
     print(f"Found {len(list_items)} entries:")

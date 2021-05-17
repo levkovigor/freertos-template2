@@ -25,166 +25,150 @@ MutexIF* TestTask::testLock = nullptr;
 //static constexpr std::array<size_t, 5> TestTask::templateSizes =
 
 TestTask::TestTask(object_id_t objectId_):
-	SystemObject(objectId_), testMode(testModes::A) {
-	if(testLock == nullptr) {
-		testLock = MutexFactory::instance()->createMutex();
-	}
-	IPCStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
+	        SystemObject(objectId_), testMode(testModes::A) {
+    if(testLock == nullptr) {
+        testLock = MutexFactory::instance()->createMutex();
+    }
+    IPCStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
 
-	//subscribeInTmManager(service, subservice);
+    //subscribeInTmManager(service, subservice);
 }
 
 TestTask::~TestTask() {
 }
 
 ReturnValue_t TestTask::performOperation(uint8_t operationCode) {
-	ReturnValue_t result = RETURN_OK;
-	testLock ->lockMutex(MutexIF::TimeoutType::WAITING, 20);
-	if(oneShotAction) {
-		// Add code here which should only be run once
-		performOneShotAction();
-		oneShotAction = false;
-	}
-	testLock->unlockMutex();
+    ReturnValue_t result = RETURN_OK;
+    testLock ->lockMutex(MutexIF::TimeoutType::WAITING, 20);
+    if(oneShotAction) {
+        // Add code here which should only be run once
+        performOneShotAction();
+        oneShotAction = false;
+    }
+    testLock->unlockMutex();
 
-	// Add code here which should only be run once per performOperation
-	performPeriodicAction();
+    // Add code here which should only be run once per performOperation
+    performPeriodicAction();
 
-	// Add code here which should only be run on alternating cycles.
-	if(testMode == testModes::A) {
-		performActionA();
-		testMode = testModes::B;
-	}
-	else if(testMode == testModes::B) {
-		performActionB();
-		testMode = testModes::A;
-	}
-	return result;
+    // Add code here which should only be run on alternating cycles.
+    if(testMode == testModes::A) {
+        performActionA();
+        testMode = testModes::B;
+    }
+    else if(testMode == testModes::B) {
+        performActionB();
+        testMode = testModes::A;
+    }
+    return result;
 }
 
 ReturnValue_t TestTask::performOneShotAction() {
-	// Everything here will only be performed once.
-    //SDCardTest();
-//    int res = 0;
-    //sdTest();
-//    SDCardAccess accessToken;
-    //int res = open_filesystem(VolumeId::SD_CARD_0);
+    // triggerEvent(TEST_EVENT, 0, 0);
+    // triggerEvent(TEST_EVENT_HIGH, 5, 4224);
 
-    //res = select_sd_card(VolumeId::SD_CARD_0);
-
-//    const char* const testString = "abc";
-//    F_FILE* file = f_open("test.bin", "w");
-//    if(file == nullptr) {
-//        return HasReturnvaluesIF::RETURN_FAILED;
-//    }
-//    res = f_write(testString, 3, 1, file);
-//
-//    f_close(file);
-
-    //performEtlTemplateTest();
     return HasReturnvaluesIF::RETURN_OK;
 }
 
 ReturnValue_t TestTask::performPeriodicAction() {
-	ReturnValue_t result = RETURN_OK;
-	return result;
+    ReturnValue_t result = RETURN_OK;
+    return result;
 }
 
 ReturnValue_t TestTask::performActionA() {
-	ReturnValue_t result = RETURN_OK;
-	// Add periodically executed code here
-	return result;
+    ReturnValue_t result = RETURN_OK;
+    // Add periodically executed code here
+    return result;
 }
 
 ReturnValue_t TestTask::performActionB() {
-	ReturnValue_t result = RETURN_OK;
-	// Add periodically executed code here
-	return result;
+    ReturnValue_t result = RETURN_OK;
+    // Add periodically executed code here
+    return result;
 }
 
 
 void TestTask::performPusInjectorTest() {
-	PusTcInjector tcInjector(objects::TC_INJECTOR,
-	        objects::CCSDS_PACKET_DISTRIBUTOR, objects::TC_STORE,
-	        apid::SOURCE_OBSW);
-	tcInjector.initialize();
+    PusTcInjector tcInjector(objects::TC_INJECTOR,
+            objects::CCSDS_PACKET_DISTRIBUTOR, objects::TC_STORE,
+            apid::SOURCE_OBSW);
+    tcInjector.initialize();
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-	sif::info << "TestTask: injecting pus telecommand" << std::endl;
+    sif::info << "TestTask: injecting pus telecommand" << std::endl;
 #else
-	sif::printInfo("TestTask: injecting pus telecommand\n");
+    sif::printInfo("TestTask: injecting pus telecommand\n");
 #endif
-	tcInjector.injectPusTelecommand(17,1);
+    tcInjector.injectPusTelecommand(17,1);
 }
 
 void TestTask::examplePacketTest() {
-	object_id_t header = 42;
-	//uint8_t testArray1[3] = {1,2,3};
-	//std::vector<uint8_t> testArray3 = {1,2,3};
-	std::array<uint8_t, 3> testArray {1,2,3};
-	ParameterId_t tail = 96;
-	size_t packetMaxSize = 256;
-	uint8_t packet [packetMaxSize];
-	size_t packetLen = 0;
+    object_id_t header = 42;
+    //uint8_t testArray1[3] = {1,2,3};
+    //std::vector<uint8_t> testArray3 = {1,2,3};
+    std::array<uint8_t, 3> testArray {1,2,3};
+    ParameterId_t tail = 96;
+    size_t packetMaxSize = 256;
+    uint8_t packet [packetMaxSize];
+    size_t packetLen = 0;
 
-	// make big-endian packet (like packets from ground) and deserialize it.
-	{
-		header = EndianConverter::convertBigEndian(header);
-		std::memcpy(packet, &header, sizeof(header));
-		packetLen += sizeof(header);
+    // make big-endian packet (like packets from ground) and deserialize it.
+    {
+        header = EndianConverter::convertBigEndian(header);
+        std::memcpy(packet, &header, sizeof(header));
+        packetLen += sizeof(header);
 
-		std::copy(testArray.data(), testArray.data() + testArray.size(),
-				packet + sizeof(header));
-		packetLen += testArray.size();
+        std::copy(testArray.data(), testArray.data() + testArray.size(),
+                packet + sizeof(header));
+        packetLen += testArray.size();
 
-		tail = EndianConverter::convertBigEndian(tail);
-		std::memcpy(packet + packetLen, &tail, sizeof(tail));
-		packetLen += sizeof(tail);
+        tail = EndianConverter::convertBigEndian(tail);
+        std::memcpy(packet + packetLen, &tail, sizeof(tail));
+        packetLen += sizeof(tail);
 
-		// The deserialized buffer will be stored in this adaptee
-		std::array<uint8_t, 3> bufferAdaptee = {};
-		arrayprinter::print(packet, packetLen, OutputType::DEC);
-		TestExamplePacket testClass(packet, packetLen, bufferAdaptee.data(),
-				bufferAdaptee.size());
-		const uint8_t * pointer = packet;
-		size_t size = packetLen;
-		ReturnValue_t result = testClass.deSerialize(&pointer, &size,
-		        SerializeIF::Endianness::BIG);
-		if(result != RETURN_OK) {
+        // The deserialized buffer will be stored in this adaptee
+        std::array<uint8_t, 3> bufferAdaptee = {};
+        arrayprinter::print(packet, packetLen, OutputType::DEC);
+        TestExamplePacket testClass(packet, packetLen, bufferAdaptee.data(),
+                bufferAdaptee.size());
+        const uint8_t * pointer = packet;
+        size_t size = packetLen;
+        ReturnValue_t result = testClass.deSerialize(&pointer, &size,
+                SerializeIF::Endianness::BIG);
+        if(result != RETURN_OK) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-			sif::error << "Deserialization did not work" << std::endl;
+            sif::error << "Deserialization did not work" << std::endl;
 #else
-			sif::printError("Deserialization did not work\n");
+            sif::printError("Deserialization did not work\n");
 #endif
-			return;
-		}
+            return;
+        }
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-		sif::info << "Printing deserialized packet members: " << std::endl;
-		sif::info << testClass.getHeader() << std::endl;
-		sif::info << testClass.getTail() << std::endl;
+        sif::info << "Printing deserialized packet members: " << std::endl;
+        sif::info << testClass.getHeader() << std::endl;
+        sif::info << testClass.getTail() << std::endl;
 #else
-		sif::printInfo("Printing deserialized packet members: \n");
-		sif::printInfo("%d\n%d\n", testClass.getHeader(), testClass.getTail());
+        sif::printInfo("Printing deserialized packet members: \n");
+        sif::printInfo("%d\n%d\n", testClass.getHeader(), testClass.getTail());
 #endif
-		arrayprinter::print(testClass.getBuffer(), testClass.getBufferLength());
-	}
+        arrayprinter::print(testClass.getBuffer(), testClass.getBufferLength());
+    }
 
-	// Serialization (e.g. for ground packet)
-	{
-		TestExamplePacket testClass2(header, tail, testArray.data(), testArray.size());
-		size_t serializedSize = 0;
-		uint8_t* packetPointer = packet;
-		// serialize for ground: bigEndian = true.
-		ReturnValue_t result = testClass2.serialize(&packetPointer,
-				&serializedSize, packetMaxSize, SerializeIF::Endianness::BIG);
-		if(result == RETURN_OK) {
+    // Serialization (e.g. for ground packet)
+    {
+        TestExamplePacket testClass2(header, tail, testArray.data(), testArray.size());
+        size_t serializedSize = 0;
+        uint8_t* packetPointer = packet;
+        // serialize for ground: bigEndian = true.
+        ReturnValue_t result = testClass2.serialize(&packetPointer,
+                &serializedSize, packetMaxSize, SerializeIF::Endianness::BIG);
+        if(result == RETURN_OK) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-			sif::info << "Priting serialized packet:" << std::endl;
+            sif::info << "Priting serialized packet:" << std::endl;
 #else
-			sif::printInfo("Priting serialized packet: \n");
+            sif::printInfo("Priting serialized packet: \n");
 #endif
-			arrayprinter::print(packet, packetLen, OutputType::DEC);
-		}
-	}
+            arrayprinter::print(packet, packetLen, OutputType::DEC);
+        }
+    }
 }
 
 
