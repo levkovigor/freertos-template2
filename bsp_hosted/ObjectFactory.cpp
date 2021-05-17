@@ -5,6 +5,7 @@
 #include "fsfwconfig/tmtc/pusIds.h"
 
 #include <test/testinterfaces/TestEchoComIF.h>
+#include <test/testinterfaces/DummyCookie.h>
 #include <test/testdevices/TestDeviceHandler.h>
 
 #include <fsfw/events/EventManager.h>
@@ -124,9 +125,6 @@ void Factory::produce(void) {
             objects::TC_STORE);
     new UdpTcPollingTask(objects::UDP_POLLING_TASK,
             objects::UDP_BRIDGE);
-
-    /* Controller */
-    new AttitudeController(objects::ATTITUDE_CONTROLLER);
 
     /* PUS Service Base Services */
     new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,
