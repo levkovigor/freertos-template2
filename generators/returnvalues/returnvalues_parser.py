@@ -14,12 +14,14 @@ from modgen.returnvalues.returnvalues_parser import InterfaceParser, ReturnValue
 from modgen.utility.sql_writer import SqlWriter
 from modgen.utility.file_management import move_file
 
+from definitions import DATABASE_NAME
+
 EXPORT_TO_FILE = True
 MOVE_CSV_FILE = True
 EXPORT_TO_SQL = True
 PRINT_TABLES = True
 
-CSV_RETVAL_FILENAME = "mod_returnvalues.csv"
+CSV_RETVAL_FILENAME = f"mod_returnvalues.csv"
 CSV_MOVE_DESTINATION = "../"
 FILE_SEPARATOR = ';'
 MAX_STRING_LENGTH = 32
@@ -62,7 +64,7 @@ def main():
             move_file(file_name=CSV_RETVAL_FILENAME, destination=CSV_MOVE_DESTINATION)
     if EXPORT_TO_SQL:
         print("ReturnvalueParser: Exporting to SQL")
-        sql_retval_exporter(returnvalue_table)
+        sql_retval_exporter(returnvalue_table, db_filename=f"../{DATABASE_NAME}")
 
 
 def parse_returnvalues():
@@ -79,8 +81,8 @@ def parse_returnvalues():
     return returnvalue_table
 
 
-def sql_retval_exporter(returnvalue_table):
-    sql_writer = SqlWriter()
+def sql_retval_exporter(returnvalue_table, db_filename: str):
+    sql_writer = SqlWriter(db_filename=db_filename)
     sql_writer.open(SQL_CREATE_RETURNVALUES_CMD)
     for entry in returnvalue_table.items():
         sql_writer.write_entries(

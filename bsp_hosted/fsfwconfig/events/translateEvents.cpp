@@ -1,10 +1,13 @@
 /**
- * @brief    Auto-generated event translation file. Contains 83 translations.
+ * @brief    Auto-generated event translation file. Contains 81 translations.
  * @details
- * Generated on: 2021-05-12 15:55:51
+ * Generated on: 2021-05-18 16:28:16
  */
 #include "translateEvents.h"
 
+const char *CHANGE_OF_SETUP_PARAMETER_STRING = "CHANGE_OF_SETUP_PARAMETER";
+const char *GPS_FIX_STRING = "GPS_FIX";
+const char *GPS_LOST_FIX_STRING = "GPS_LOST_FIX";
 const char *STORE_SEND_WRITE_FAILED_STRING = "STORE_SEND_WRITE_FAILED";
 const char *STORE_WRITE_FAILED_STRING = "STORE_WRITE_FAILED";
 const char *STORE_SEND_READ_FAILED_STRING = "STORE_SEND_READ_FAILED";
@@ -23,8 +26,8 @@ const char *DELETION_FAILED_STRING = "DELETION_FAILED";
 const char *AUTO_CATALOGS_SENDING_FAILED_STRING = "AUTO_CATALOGS_SENDING_FAILED";
 const char *GET_DATA_FAILED_STRING = "GET_DATA_FAILED";
 const char *STORE_DATA_FAILED_STRING = "STORE_DATA_FAILED";
-const char *DEVICE_BUILDING_COMMAND_FAILED_STRING = "DEVICE_BUILDING_COMMAND_FAILED";
-const char *DEVICE_SENDING_COMMAND_FAILED_STRING = "DEVICE_SENDING_COMMAND_FAILED";
+const char *TEST_EVENT_STRING = "TEST_EVENT";
+const char *TEST_EVENT_HIGH_STRING = "TEST_EVENT_HIGH";
 const char *DEVICE_REQUESTING_REPLY_FAILED_STRING = "DEVICE_REQUESTING_REPLY_FAILED";
 const char *DEVICE_READING_REPLY_FAILED_STRING = "DEVICE_READING_REPLY_FAILED";
 const char *DEVICE_INTERPRETING_REPLY_FAILED_STRING = "DEVICE_INTERPRETING_REPLY_FAILED";
@@ -83,14 +86,15 @@ const char *FRAME_PROCESSING_FAILED_STRING = "FRAME_PROCESSING_FAILED";
 const char *CLOCK_SET_STRING = "CLOCK_SET";
 const char *CLOCK_SET_FAILURE_STRING = "CLOCK_SET_FAILURE";
 const char *TEST_STRING = "TEST";
-const char *GPS_STARTUP_FAILED_STRING = "GPS_STARTUP_FAILED";
-const char *GPS_FIX_STRING = "GPS_FIX";
-const char *GPS_LOST_FIX_STRING = "GPS_LOST_FIX";
-const char *CHANGE_OF_SETUP_PARAMETER_STRING = "CHANGE_OF_SETUP_PARAMETER";
-const char *TEST_EVENT_STRING = "TEST_EVENT";
 
 const char * translateEvents(Event event) {
 	switch( (event & 0xffff) ) {
+	case(0):
+		return CHANGE_OF_SETUP_PARAMETER_STRING;
+	case(1):
+		return GPS_FIX_STRING;
+	case(2):
+		return GPS_LOST_FIX_STRING;
 	case(2200):
 		return STORE_SEND_WRITE_FAILED_STRING;
 	case(2201):
@@ -128,9 +132,9 @@ const char * translateEvents(Event event) {
 	case(2601):
 		return STORE_DATA_FAILED_STRING;
 	case(2800):
-		return DEVICE_BUILDING_COMMAND_FAILED_STRING;
+		return TEST_EVENT_STRING;
 	case(2801):
-		return DEVICE_SENDING_COMMAND_FAILED_STRING;
+		return TEST_EVENT_HIGH_STRING;
 	case(2802):
 		return DEVICE_REQUESTING_REPLY_FAILED_STRING;
 	case(2803):
@@ -247,16 +251,6 @@ const char * translateEvents(Event event) {
 		return CLOCK_SET_FAILURE_STRING;
 	case(9700):
 		return TEST_STRING;
-	case(12900):
-		return GPS_STARTUP_FAILED_STRING;
-	case(12901):
-		return GPS_FIX_STRING;
-	case(12902):
-		return GPS_LOST_FIX_STRING;
-	case(13000):
-		return CHANGE_OF_SETUP_PARAMETER_STRING;
-	case(13200):
-		return TEST_EVENT_STRING;
 	default:
 		return "UNKNOWN_EVENT";
 	}

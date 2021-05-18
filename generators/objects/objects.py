@@ -14,7 +14,7 @@ from modgen.objects.objects import ObjectDefinitionParser, sql_object_exporter, 
     export_object_file, write_translation_header_file
 from modgen.utility.printer import PrettyPrinter
 from modgen.utility.file_management import copy_file, move_file
-from modgen.utility.sql_writer import SQL_DATABASE_NAME
+from definitions import DATABASE_NAME
 
 DATE_TODAY = datetime.datetime.now()
 DATE_STRING_FULL = DATE_TODAY.strftime("%Y-%m-%d %H:%M:%S")
@@ -27,7 +27,7 @@ COPY_CPP = True
 
 GENERATE_HEADER = True
 
-PARSE_HOST_BSP = True
+PARSE_HOST_BSP = False
 
 EXPORT_TO_SQL = True
 
@@ -40,7 +40,7 @@ CPP_COPY_DESTINATION = f"../../{BSP_DIR_NAME}/fsfwconfig/objects/"
 CSV_MOVE_DESTINATION = "../"
 CPP_FILENAME = "translateObjects.cpp"
 CPP_H_FILENAME = "translateObjects.h"
-CSV_OBJECT_FILENAME = "mod_objects.csv"
+CSV_OBJECT_FILENAME = f"{BSP_DIR_NAME}_objects.csv"
 FILE_SEPARATOR = ";"
 
 if PARSE_HOST_BSP:
@@ -77,7 +77,7 @@ def main():
         print("ObjectParser: Exporting to SQL")
         sql_object_exporter(
             object_table=list_items, delete_cmd=SQL_DELETE_OBJECTS_CMD, insert_cmd=SQL_INSERT_INTO_OBJECTS_CMD,
-            create_cmd=SQL_CREATE_OBJECTS_CMD, sql_table="../" + SQL_DATABASE_NAME
+            create_cmd=SQL_CREATE_OBJECTS_CMD, db_filename=f"../{DATABASE_NAME}"
         )
 
 

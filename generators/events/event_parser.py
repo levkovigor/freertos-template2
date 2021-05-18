@@ -26,9 +26,8 @@ COPY_CPP_FILE = True
 COPY_CPP_H_FILE = True
 MOVE_CSV_FILE = True
 
-PARSE_HOST_BSP = True
+PARSE_HOST_BSP = False
 
-CSV_FILENAME = "mod_events.csv"
 CSV_MOVE_DESTINATION = "../"
 
 CPP_FILENAME = "translateEvents.cpp"
@@ -39,6 +38,7 @@ if PARSE_HOST_BSP:
 else:
     BSP_FOLDER = "bsp_sam9g20"
 
+CSV_FILENAME = f"{BSP_FOLDER}_events.csv"
 CPP_COPY_DESTINATION = f"../../{BSP_FOLDER}/fsfwconfig/events/"
 
 FILE_SEPARATOR = ";"

@@ -1,21 +1,13 @@
 /**
- * @brief    Auto-generated event translation file. Contains 89 translations.
+ * @brief    Auto-generated event translation file. Contains 90 translations.
  * @details
- * Generated on: 2021-05-12 14:16:36
+ * Generated on: 2021-05-18 16:31:53
  */
 #include "translateEvents.h"
 
-const char *GPS_STARTUP_FAILED_STRING = "GPS_STARTUP_FAILED";
+const char *CHANGE_OF_SETUP_PARAMETER_STRING = "CHANGE_OF_SETUP_PARAMETER";
 const char *GPS_FIX_STRING = "GPS_FIX";
 const char *GPS_LOST_FIX_STRING = "GPS_LOST_FIX";
-const char *CHANGE_OF_SETUP_PARAMETER_STRING = "CHANGE_OF_SETUP_PARAMETER";
-const char *LOW_REM_STACK_STRING = "LOW_REM_STACK";
-const char *FRAM_ISSUE_EVENT_STRING = "FRAM_ISSUE_EVENT";
-const char *BOOT_EVENT_STRING = "BOOT_EVENT";
-const char *FRAM_FAILURE_STRING = "FRAM_FAILURE";
-const char *SUPERVISOR_FAILURE_STRING = "SUPERVISOR_FAILURE";
-const char *RTT_RTC_FAILURE_STRING = "RTT_RTC_FAILURE";
-const char *FSFW_CLOCK_SYNC_STRING = "FSFW_CLOCK_SYNC";
 const char *STORE_SEND_WRITE_FAILED_STRING = "STORE_SEND_WRITE_FAILED";
 const char *STORE_WRITE_FAILED_STRING = "STORE_WRITE_FAILED";
 const char *STORE_SEND_READ_FAILED_STRING = "STORE_SEND_READ_FAILED";
@@ -94,31 +86,24 @@ const char *FRAME_PROCESSING_FAILED_STRING = "FRAME_PROCESSING_FAILED";
 const char *CLOCK_SET_STRING = "CLOCK_SET";
 const char *CLOCK_SET_FAILURE_STRING = "CLOCK_SET_FAILURE";
 const char *TEST_STRING = "TEST";
+const char *TEST_EVENT_STRING = "TEST_EVENT";
+const char *TEST_EVENT_HIGH_STRING = "TEST_EVENT_HIGH";
+const char *BOOT_EVENT_STRING = "BOOT_EVENT";
+const char *FRAM_FAILURE_STRING = "FRAM_FAILURE";
+const char *SUPERVISOR_FAILURE_STRING = "SUPERVISOR_FAILURE";
+const char *RTT_RTC_FAILURE_STRING = "RTT_RTC_FAILURE";
+const char *FSFW_CLOCK_SYNC_STRING = "FSFW_CLOCK_SYNC";
+const char *ISIS_CLOCK_SET_FAILURE_STRING = "ISIS_CLOCK_SET_FAILURE";
+const char *FRAM_ISSUE_EVENT_STRING = "FRAM_ISSUE_EVENT";
 
 const char * translateEvents(Event event) {
 	switch( (event & 0xffff) ) {
-	case(1200):
-		return GPS_STARTUP_FAILED_STRING;
-	case(1201):
-		return GPS_FIX_STRING;
-	case(1202):
-		return GPS_LOST_FIX_STRING;
-	case(1300):
+	case(0):
 		return CHANGE_OF_SETUP_PARAMETER_STRING;
-	case(1600):
-		return LOW_REM_STACK_STRING;
-	case(1800):
-		return FRAM_ISSUE_EVENT_STRING;
-	case(1900):
-		return BOOT_EVENT_STRING;
-	case(1901):
-		return FRAM_FAILURE_STRING;
-	case(1902):
-		return SUPERVISOR_FAILURE_STRING;
-	case(1903):
-		return RTT_RTC_FAILURE_STRING;
-	case(1904):
-		return FSFW_CLOCK_SYNC_STRING;
+	case(1):
+		return GPS_FIX_STRING;
+	case(2):
+		return GPS_LOST_FIX_STRING;
 	case(2200):
 		return STORE_SEND_WRITE_FAILED_STRING;
 	case(2201):
@@ -275,6 +260,24 @@ const char * translateEvents(Event event) {
 		return CLOCK_SET_FAILURE_STRING;
 	case(9700):
 		return TEST_STRING;
+	case(14100):
+		return TEST_EVENT_STRING;
+	case(14101):
+		return TEST_EVENT_HIGH_STRING;
+	case(16100):
+		return BOOT_EVENT_STRING;
+	case(16101):
+		return FRAM_FAILURE_STRING;
+	case(16102):
+		return SUPERVISOR_FAILURE_STRING;
+	case(16103):
+		return RTT_RTC_FAILURE_STRING;
+	case(16104):
+		return FSFW_CLOCK_SYNC_STRING;
+	case(16228):
+		return ISIS_CLOCK_SET_FAILURE_STRING;
+	case(18100):
+		return FRAM_ISSUE_EVENT_STRING;
 	default:
 		return "UNKNOWN_EVENT";
 	}
