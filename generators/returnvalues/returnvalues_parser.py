@@ -32,6 +32,7 @@ FILE_SEPARATOR = ';'
 MAX_STRING_LENGTH = 32
 INTERFACE_DEFINITION_FILES = [
     "../../fsfw/returnvalues/FwClassIds.h",
+    "../../common/returnvalues/commonClassIds.h",
     "../../bsp_sam9g20/fsfwconfig/returnvalues/classIds.h"
 ]
 RETURNVALUE_DESTINATIONS = [
@@ -62,29 +63,27 @@ VALUES(?,?,?,?,?)
 
 def main():
     returnvalue_table = parse_returnvalues()
+    print("")
     if EXPORT_TO_FILE:
         ReturnValueParser.export_to_file(CSV_RETVAL_FILENAME, returnvalue_table, FILE_SEPARATOR)
         if MOVE_CSV_FILE:
             handle_file_move(CSV_MOVE_DESTINATION)
     if EXPORT_TO_SQL:
-        pass
-        # print("ReturnvalueParser: Exporting to SQL")
-        # sql_retval_exporter(returnvalue_table)
+        print("ReturnvalueParser: Exporting to SQL")
+        sql_retval_exporter(returnvalue_table)
 
 
 def parse_returnvalues():
     """ Core function to parse for the return values """
-    interface_parser = InterfaceParser(INTERFACE_DEFINITION_FILES, PRINT_TABLES)
+    interface_parser = InterfaceParser(file_list=INTERFACE_DEFINITION_FILES, print_table=PRINT_TABLES)
     interfaces = interface_parser.parse_files()
     header_parser = FileListParser(RETURNVALUE_DESTINATIONS)
     header_list = header_parser.parse_header_files(True, "Parsing header file list: ")
+    print("")
     returnvalue_parser = ReturnValueParser(interfaces, header_list, PRINT_TABLES)
     returnvalue_parser.set_moving_window_mode(moving_window_size=7)
     returnvalue_table = returnvalue_parser.parse_files(True)
-    if PRINT_TABLES:
-        Printer.print_content(returnvalue_table, "Returnvalue Table: ")
-    print(
-        f"ReturnvalueParser: Found {len(returnvalue_table)} returnvalues.")
+    print(f"ReturnvalueParser: Found {len(returnvalue_table)} returnvalues.")
     return returnvalue_table
 
 

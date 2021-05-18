@@ -10,6 +10,7 @@
 namespace CLASS_ID {
 enum: uint8_t {
 	MISSION_CLASS_ID_START = COMMON_CLASS_ID_RANGE,
+    MISSION_CLASS_ID_RANGE // [EXPORT] : [END]
 };
 }
 
