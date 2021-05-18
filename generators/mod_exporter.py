@@ -1,7 +1,7 @@
 #! /usr/bin/python3.8
 # -*- coding: utf-8 -*-
 """
-@file   mib_exporter.py
+@file   mod_exporter.py
 @brief  Mission Information Base Exporter for the SOURCE project by KSat.
 @details
 Parses OBSW which is based on FSFW developed by the Institute of Space Systems (IRS) Stuttgart.
@@ -51,7 +51,7 @@ from packetcontent.mib_packet_content_parser import (
     SQL_INSERT_PACKET_DATA_CMD,
     SQL_DELETE_PACKET_DATA_CONTENT_CMD
 )
-from subservice.mib_subservice_parser import (
+from subservice.subservice_parser import (
     SubserviceParser,
     SUBSERVICE_DEFINITION_DESTINATION,
     SUBSERVICE_CSV_NAME,
