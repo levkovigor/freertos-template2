@@ -26,7 +26,7 @@ MOVE_CSV_FILE = True
 EXPORT_TO_SQL = True
 PRINT_TABLES = True
 
-CSV_RETVAL_FILENAME = "mib_returnvalues.csv"
+CSV_RETVAL_FILENAME = "mod_returnvalues.csv"
 CSV_MOVE_DESTINATION = "../"
 FILE_SEPARATOR = ';'
 MAX_STRING_LENGTH = 32

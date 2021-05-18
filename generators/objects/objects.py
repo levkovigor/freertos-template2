@@ -40,7 +40,7 @@ CPP_COPY_DESTINATION = f"../../{BSP_DIR_NAME}/fsfwconfig/objects/"
 CSV_MOVE_DESTINATION = "../"
 CPP_FILENAME = "translateObjects.cpp"
 CPP_H_FILENAME = "translateObjects.h"
-CSV_OBJECT_FILENAME = "mib_objects.csv"
+CSV_OBJECT_FILENAME = "mod_objects.csv"
 FILE_SEPARATOR = ";"
 
 if PARSE_HOST_BSP:

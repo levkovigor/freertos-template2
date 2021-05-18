@@ -28,7 +28,7 @@ MOVE_CSV_FILE = True
 
 PARSE_HOST_BSP = True
 
-CSV_FILENAME = "mib_events.csv"
+CSV_FILENAME = "mod_events.csv"
 CSV_MOVE_DESTINATION = "../"
 
 CPP_FILENAME = "translateEvents.cpp"
