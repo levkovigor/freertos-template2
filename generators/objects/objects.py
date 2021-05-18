@@ -44,12 +44,13 @@ CSV_OBJECT_FILENAME = f"{BSP_DIR_NAME}_objects.csv"
 FILE_SEPARATOR = ";"
 
 if PARSE_HOST_BSP:
-    SUBSYSTEM_DEFINITION_DESTINATION = f"../../{BSP_DIR_NAME}/fsfwconfig/objects/systemObjectList.h"
+    OBJECTS_PATH = f"../../{BSP_DIR_NAME}/fsfwconfig/objects/systemObjectList.h"
 else:
-    SUBSYSTEM_DEFINITION_DESTINATION = f"../../{BSP_DIR_NAME}/fsfwconfig/objects/systemObjectList.h"
+    OBJECTS_PATH = f"../../{BSP_DIR_NAME}/fsfwconfig/objects/systemObjectList.h"
 
-FRAMEWORK_SUBSYSTEM_DEFINITION_DESTINATION = "../../fsfw/objectmanager/frameworkObjects.h"
-OBJECTS_DEFINITIONS = [SUBSYSTEM_DEFINITION_DESTINATION, FRAMEWORK_SUBSYSTEM_DEFINITION_DESTINATION]
+FRAMEWORK_OBJECTS_PATH = "../../fsfw/objectmanager/frameworkObjects.h"
+COMMON_OBJECTS_PATH = "../../common/objects/commonObjectsList.h"
+OBJECTS_DEFINITIONS = [OBJECTS_PATH, FRAMEWORK_OBJECTS_PATH, COMMON_OBJECTS_PATH]
 
 SQL_DELETE_OBJECTS_CMD = """
     DROP TABLE IF EXISTS Objects
