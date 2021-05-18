@@ -109,23 +109,24 @@ void initTask() {
 #ifdef __unix__
     taskPrio = 50;
 #endif
-    /* UDP bridge */
-    PeriodicTaskIF* udpBridgeTask = TaskFactory::instance()->createPeriodicTask(
-            "UDP_UNIX_BRIDGE", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.2,
+    // TCPIP bridge
+    PeriodicTaskIF* tcpipBridgeTask = TaskFactory::instance()->createPeriodicTask(
+            "TCPIP_BRIDGE", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.2,
             deadlineMissedFunc);
-    result = udpBridgeTask->addComponent(objects::UDP_BRIDGE);
+    result = tcpipBridgeTask->addComponent(objects::TCPIP_BRIDGE);
     if(result != HasReturnvaluesIF::RETURN_OK) {
-        initmission::printAddObjectError("UDP Bridge", objects::UDP_BRIDGE);
+        initmission::printAddObjectError("TCPIP Bridge", objects::TCPIP_BRIDGE);
     }
 #ifdef __unix__
     taskPrio = 80;
 #endif
-    PeriodicTaskIF* udpPollingTask = TaskFactory::instance()->createPeriodicTask(
-            "UDP_POLLING", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 2.0,
+    // Can be TCP server or UDP polling task, depending on configuration
+    PeriodicTaskIF* tcpipPollingTask = TaskFactory::instance()->createPeriodicTask(
+            "TCPIP_HELPER", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 2.0,
             deadlineMissedFunc);
-    result = udpPollingTask->addComponent(objects::UDP_POLLING_TASK);
+    result = tcpipPollingTask->addComponent(objects::TCPIP_HELPER);
     if(result != HasReturnvaluesIF::RETURN_OK) {
-        initmission::printAddObjectError("UDP Polling", objects::UDP_POLLING_TASK);
+        initmission::printAddObjectError("TCPIP Helper", objects::TCPIP_HELPER);
     }
 
     /* PUS Services */
@@ -234,8 +235,8 @@ void initTask() {
 
     eventTask-> startTask();
     packetDistributorTask->startTask();
-    udpBridgeTask->startTask();
-    udpPollingTask->startTask();
+    tcpipBridgeTask->startTask();
+    tcpipPollingTask->startTask();
 
     pusVerification->startTask();
     pusHighPrio->startTask();
