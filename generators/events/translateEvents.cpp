@@ -1,13 +1,10 @@
 /**
- * @brief    Auto-generated event translation file. Contains 90 translations.
+ * @brief    Auto-generated event translation file. Contains 92 translations.
  * @details
- * Generated on: 2021-05-18 16:31:53
+ * Generated on: 2021-05-18 16:33:49
  */
 #include "translateEvents.h"
 
-const char *CHANGE_OF_SETUP_PARAMETER_STRING = "CHANGE_OF_SETUP_PARAMETER";
-const char *GPS_FIX_STRING = "GPS_FIX";
-const char *GPS_LOST_FIX_STRING = "GPS_LOST_FIX";
 const char *STORE_SEND_WRITE_FAILED_STRING = "STORE_SEND_WRITE_FAILED";
 const char *STORE_WRITE_FAILED_STRING = "STORE_WRITE_FAILED";
 const char *STORE_SEND_READ_FAILED_STRING = "STORE_SEND_READ_FAILED";
@@ -86,6 +83,10 @@ const char *FRAME_PROCESSING_FAILED_STRING = "FRAME_PROCESSING_FAILED";
 const char *CLOCK_SET_STRING = "CLOCK_SET";
 const char *CLOCK_SET_FAILURE_STRING = "CLOCK_SET_FAILURE";
 const char *TEST_STRING = "TEST";
+const char *GPS_STARTUP_FAILED_STRING = "GPS_STARTUP_FAILED";
+const char *GPS_FIX_STRING = "GPS_FIX";
+const char *GPS_LOST_FIX_STRING = "GPS_LOST_FIX";
+const char *CHANGE_OF_SETUP_PARAMETER_STRING = "CHANGE_OF_SETUP_PARAMETER";
 const char *TEST_EVENT_STRING = "TEST_EVENT";
 const char *TEST_EVENT_HIGH_STRING = "TEST_EVENT_HIGH";
 const char *BOOT_EVENT_STRING = "BOOT_EVENT";
@@ -94,16 +95,11 @@ const char *SUPERVISOR_FAILURE_STRING = "SUPERVISOR_FAILURE";
 const char *RTT_RTC_FAILURE_STRING = "RTT_RTC_FAILURE";
 const char *FSFW_CLOCK_SYNC_STRING = "FSFW_CLOCK_SYNC";
 const char *ISIS_CLOCK_SET_FAILURE_STRING = "ISIS_CLOCK_SET_FAILURE";
+const char *LOW_REM_STACK_STRING = "LOW_REM_STACK";
 const char *FRAM_ISSUE_EVENT_STRING = "FRAM_ISSUE_EVENT";
 
 const char * translateEvents(Event event) {
 	switch( (event & 0xffff) ) {
-	case(0):
-		return CHANGE_OF_SETUP_PARAMETER_STRING;
-	case(1):
-		return GPS_FIX_STRING;
-	case(2):
-		return GPS_LOST_FIX_STRING;
 	case(2200):
 		return STORE_SEND_WRITE_FAILED_STRING;
 	case(2201):
@@ -260,22 +256,32 @@ const char * translateEvents(Event event) {
 		return CLOCK_SET_FAILURE_STRING;
 	case(9700):
 		return TEST_STRING;
-	case(14100):
+	case(11300):
+		return GPS_STARTUP_FAILED_STRING;
+	case(11301):
+		return GPS_FIX_STRING;
+	case(11302):
+		return GPS_LOST_FIX_STRING;
+	case(11400):
+		return CHANGE_OF_SETUP_PARAMETER_STRING;
+	case(12000):
 		return TEST_EVENT_STRING;
-	case(14101):
+	case(12001):
 		return TEST_EVENT_HIGH_STRING;
-	case(16100):
+	case(12100):
 		return BOOT_EVENT_STRING;
-	case(16101):
+	case(12101):
 		return FRAM_FAILURE_STRING;
-	case(16102):
+	case(12102):
 		return SUPERVISOR_FAILURE_STRING;
-	case(16103):
+	case(12103):
 		return RTT_RTC_FAILURE_STRING;
-	case(16104):
+	case(12104):
 		return FSFW_CLOCK_SYNC_STRING;
-	case(16228):
+	case(12228):
 		return ISIS_CLOCK_SET_FAILURE_STRING;
+	case(16100):
+		return LOW_REM_STACK_STRING;
 	case(18100):
 		return FRAM_ISSUE_EVENT_STRING;
 	default:

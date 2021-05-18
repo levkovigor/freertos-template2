@@ -44,7 +44,8 @@ CPP_COPY_DESTINATION = f"../../{BSP_FOLDER}/fsfwconfig/events/"
 FILE_SEPARATOR = ";"
 SUBSYSTEM_DEFINITION_DESTINATIONS = [
     f"../../{BSP_FOLDER}/fsfwconfig/events/subsystemIdRanges.h",
-    "../../fsfw/events/fwSubsystemIdRanges.h"
+    "../../fsfw/events/fwSubsystemIdRanges.h",
+    "../../common/events/commonSubsystemIds.h"
 ]
 HEADER_DEFINITION_DESTINATIONS = ["../../mission/", "../../fsfw/", f"../../{BSP_FOLDER}", "../../test/"]
 
