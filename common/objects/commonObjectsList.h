@@ -1,8 +1,83 @@
 #ifndef COMMON_COMMONOBJECTSLIST_H_
 #define COMMON_COMMONOBJECTSLIST_H_
 
+#include "fsfw/objectmanager/SystemObjectIF.h"
+#include <cstdint>
 
+namespace objects {
+enum commonObjects: object_id_t {
+    /* First Byte 0x50-0x52 reserved for PUS Services **/
+    CCSDS_PACKET_DISTRIBUTOR = 0x50000100,
+    PUS_PACKET_DISTRIBUTOR = 0x50000200,
+    TCPIP_BRIDGE = 0x50000300,
+    TCPIP_HELPER = 0x50000400,
 
+    PUS_SERVICE_6_MEM_MGMT = 0x51000500,
+    PUS_SERVICE_23_FILE_MGMT = 0x51002300,
 
+    PUS_TIME = 0x52000001,
+    TM_FUNNEL = 0x52000002,
+
+    /* 0x43 ('C') for Controllers */
+    THERMAL_CONTROLLER = 0x43002000,
+    ATTITUDE_CONTROLLER = 0x43003000,
+
+    /* 0x44 ('D') for Device Handlers **/
+    /* Second Byte: ComIF -> 0x00: UART,0x10 SPI,0x20: I2C,30: GPIO,40: PWM */
+    /* Third Byte: Device ID */
+    PCDU_HANDLER = 0x44003200,
+    GPS0_HANDLER = 0x44101F00,
+    GPS1_HANDLER = 0x44202000,
+
+    DLR_PVCH = 0x44104000,
+    GYRO1 = 0x44105000,
+    DLR_IRAS = 0x44106000,
+
+    /* fourth byte decoder output ID */
+
+    // Devices connected to decoder 1
+    SPI_Test_PT1000 = 0x44115000,
+    SPI_Test_Gyro = 0x44115001,
+    SPI_Test_MGM = 0x44115002,
+
+    PT1000_Syrlinks_DEC1_O1 = 0x44115401,
+    PT1000_Camera_DEC1_O2 = 0x44115402,
+    PT1000_SuS1_DEC1_O3 = 0x44115404,
+    PT1000_SuS2_DEC1_O4 = 0x44115405,
+    PT1000_SuS3_DEC1_O5 = 0x44115406,
+    PT1000_PVHC_DEC1_O6 = 0x44115407,
+
+    // Devices connected to decoder 2
+    PT1000_CCSDS1_DEC2 = 0x44125401,
+    PT1000_MGT1_DEC2 = 0x44125403,
+    PT1000_SuS4_DEC2 = 0x44125404,
+    PT1000_SuS5_DEC2 = 0x44125405,
+    PT1000_SuS6_DEC2 = 0x44125406,
+    PT1000_PVCH_DEC2 = 0x44125407,
+    SuS_ADC1_DEC2 = 0x44020108,
+
+    // Devices connected to decoder 3
+    PT1000_Iridium_DEC3 = 0x44130301,
+    PT1000_CCSDS2_DEC3 = 0x44130302,
+    PT1000_SuS7_DEC3 = 0x44130305,
+    PT1000_SuS8_DEC3 = 0x44130306,
+    PT1000_PVCH_DEC3 = 0x44130307,
+    GYRO2 = 0x44130308,
+
+    // Devices connected to decoder 4
+    PT1000_PLOC_DEC4 = 0x44145401,
+    PT1000_SuS9_DEC4 = 0x44145404,
+    PT1000_SuS10_DEC4 = 0x44145405,
+    PT1000_PVHC_DEC4 = 0x44145406,
+    SuS_ADC_DEC4 = 0x44145407,
+
+    /* Test Task */
+    TEST_TASK = 0x42694269,
+    DUMMY_INTERFACE = 0xCAFECAFE,
+    DUMMY_HANDLER_0 = 0x4400AFFE,
+    DUMMY_HANDLER_1 = 0x4401AFFE,
+    TC_INJECTOR = 0x99000001
+};
+}
 
 #endif /* COMMON_COMMONOBJECTSLIST_H_ */

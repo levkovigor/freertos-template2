@@ -272,9 +272,9 @@ void initTasks(void) {
     /* PUS Low Priority */
     PeriodicTaskIF* PusLowPriorityTask = taskFactory->
             createPeriodicTask("PUS_LOW_PRIO", 3, 2048 * 4, 1.6, genericMissedDeadlineFunc);
-    result = PusLowPriorityTask->addComponent(objects::PUS_SERVICE_20_PARAM_MGMT);
+    result = PusLowPriorityTask->addComponent(objects::PUS_SERVICE_20_PARAMETERS);
     if (result != HasReturnvaluesIF::RETURN_OK) {
-        initmission::printAddObjectError("PUS 20", objects::PUS_SERVICE_20_PARAM_MGMT);
+        initmission::printAddObjectError("PUS 20", objects::PUS_SERVICE_20_PARAMETERS);
     }
     result = PusLowPriorityTask->addComponent(objects::PUS_SERVICE_17_TEST);
     if (result != HasReturnvaluesIF::RETURN_OK) {
