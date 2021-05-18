@@ -1,5 +1,5 @@
 #include "ObjectFactory.h"
-#include <objects/systemObjectList.h>
+#include "objects/systemObjectList.h"
 #include <OBSWConfig.h>
 #include <tmtc/apid.h>
 #include <tmtc/pusIds.h>
@@ -198,7 +198,7 @@ void Factory::produce(void) {
             apid::SOURCE_OBSW, pus::PUS_SERVICE_6);
     new Service8FunctionManagement(objects::PUS_SERVICE_8_FUNCTION_MGMT,
             apid::SOURCE_OBSW, pus::PUS_SERVICE_8);
-    new Service20ParameterManagement(objects::PUS_SERVICE_20_PARAM_MGMT, apid::SOURCE_OBSW,
+    new Service20ParameterManagement(objects::PUS_SERVICE_20_PARAMETERS, apid::SOURCE_OBSW,
             pus::PUS_SERVICE_20);
     new Service23FileManagement(objects::PUS_SERVICE_23_FILE_MGMT, apid::SOURCE_OBSW,
             pus::PUS_SERVICE_23);

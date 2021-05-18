@@ -13,8 +13,8 @@ import datetime
 
 from modgen.events.event_parser import handle_csv_export, handle_cpp_export, SubsystemDefinitionParser, EventParser
 from modgen.parserbase.file_list_parser import FileListParser
-from modgen.utility.mib_printer import PrettyPrinter
-from utility.mib_file_management import copy_file, move_file
+from modgen.utility.printer import PrettyPrinter
+from modgen.utility.file_management import copy_file, move_file
 
 DATE_TODAY = datetime.datetime.now()
 DATE_STRING_FULL = DATE_TODAY.strftime("%Y-%m-%d %H:%M:%S")
@@ -26,9 +26,8 @@ COPY_CPP_FILE = True
 COPY_CPP_H_FILE = True
 MOVE_CSV_FILE = True
 
-PARSE_HOST_BSP = True
+PARSE_HOST_BSP = False
 
-CSV_FILENAME = "mib_events.csv"
 CSV_MOVE_DESTINATION = "../"
 
 CPP_FILENAME = "translateEvents.cpp"
@@ -39,12 +38,14 @@ if PARSE_HOST_BSP:
 else:
     BSP_FOLDER = "bsp_sam9g20"
 
+CSV_FILENAME = f"{BSP_FOLDER}_events.csv"
 CPP_COPY_DESTINATION = f"../../{BSP_FOLDER}/fsfwconfig/events/"
 
 FILE_SEPARATOR = ";"
 SUBSYSTEM_DEFINITION_DESTINATIONS = [
     f"../../{BSP_FOLDER}/fsfwconfig/events/subsystemIdRanges.h",
-    "../../fsfw/events/fwSubsystemIdRanges.h"
+    "../../fsfw/events/fwSubsystemIdRanges.h",
+    "../../common/events/commonSubsystemIds.h"
 ]
 HEADER_DEFINITION_DESTINATIONS = ["../../mission/", "../../fsfw/", f"../../{BSP_FOLDER}", "../../test/"]
 

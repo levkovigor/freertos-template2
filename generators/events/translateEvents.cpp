@@ -1,7 +1,7 @@
 /**
- * @brief    Auto-generated event translation file. Contains 83 translations.
+ * @brief    Auto-generated event translation file. Contains 92 translations.
  * @details
- * Generated on: 2021-05-12 15:55:51
+ * Generated on: 2021-05-18 16:33:49
  */
 #include "translateEvents.h"
 
@@ -88,6 +88,15 @@ const char *GPS_FIX_STRING = "GPS_FIX";
 const char *GPS_LOST_FIX_STRING = "GPS_LOST_FIX";
 const char *CHANGE_OF_SETUP_PARAMETER_STRING = "CHANGE_OF_SETUP_PARAMETER";
 const char *TEST_EVENT_STRING = "TEST_EVENT";
+const char *TEST_EVENT_HIGH_STRING = "TEST_EVENT_HIGH";
+const char *BOOT_EVENT_STRING = "BOOT_EVENT";
+const char *FRAM_FAILURE_STRING = "FRAM_FAILURE";
+const char *SUPERVISOR_FAILURE_STRING = "SUPERVISOR_FAILURE";
+const char *RTT_RTC_FAILURE_STRING = "RTT_RTC_FAILURE";
+const char *FSFW_CLOCK_SYNC_STRING = "FSFW_CLOCK_SYNC";
+const char *ISIS_CLOCK_SET_FAILURE_STRING = "ISIS_CLOCK_SET_FAILURE";
+const char *LOW_REM_STACK_STRING = "LOW_REM_STACK";
+const char *FRAM_ISSUE_EVENT_STRING = "FRAM_ISSUE_EVENT";
 
 const char * translateEvents(Event event) {
 	switch( (event & 0xffff) ) {
@@ -247,16 +256,34 @@ const char * translateEvents(Event event) {
 		return CLOCK_SET_FAILURE_STRING;
 	case(9700):
 		return TEST_STRING;
-	case(12900):
+	case(11300):
 		return GPS_STARTUP_FAILED_STRING;
-	case(12901):
+	case(11301):
 		return GPS_FIX_STRING;
-	case(12902):
+	case(11302):
 		return GPS_LOST_FIX_STRING;
-	case(13000):
+	case(11400):
 		return CHANGE_OF_SETUP_PARAMETER_STRING;
-	case(13200):
+	case(12000):
 		return TEST_EVENT_STRING;
+	case(12001):
+		return TEST_EVENT_HIGH_STRING;
+	case(12100):
+		return BOOT_EVENT_STRING;
+	case(12101):
+		return FRAM_FAILURE_STRING;
+	case(12102):
+		return SUPERVISOR_FAILURE_STRING;
+	case(12103):
+		return RTT_RTC_FAILURE_STRING;
+	case(12104):
+		return FSFW_CLOCK_SYNC_STRING;
+	case(12228):
+		return ISIS_CLOCK_SET_FAILURE_STRING;
+	case(16100):
+		return LOW_REM_STACK_STRING;
+	case(18100):
+		return FRAM_ISSUE_EVENT_STRING;
 	default:
 		return "UNKNOWN_EVENT";
 	}
