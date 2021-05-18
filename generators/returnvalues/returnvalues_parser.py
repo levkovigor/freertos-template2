@@ -1,25 +1,18 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
 """
-@file
-    returnvalues_parser.py
-@brief
-    Part of the Mission Information Base Exporter for the SOURCE project by KSat.
-    TODO: Integrate into Parser Structure instead of calling this file (no cpp file generated yet)
-@details
-    Returnvalue exporter.
-
-    To use MySQLdb, run pip install mysqlclient or install in IDE.
-    On Windows, Build Tools installation might be necessary.
-
-@data
-    21.11.2019
+:file:      returnvalues_parser.py
+:brief:     Part of the MOD export tools for the SOURCE project by KSat.
+TODO: Integrate into Parser Structure instead of calling this file (no cpp file generated yet)
+:details:
+Returnvalue exporter.
+To use MySQLdb, run pip install mysqlclient or install in IDE. On Windows, Build Tools installation might be necessary.
+:data:      21.11.2019
 """
 from modgen.parserbase.file_list_parser import FileListParser
 from modgen.returnvalues.returnvalues_parser import InterfaceParser, ReturnValueParser
 from modgen.utility.sql_writer import SqlWriter
-from modgen.utility.csv_writer import CsvWriter
-from modgen.utility.printer import Printer
+from modgen.utility.file_management import move_file
 
 EXPORT_TO_FILE = True
 MOVE_CSV_FILE = True
@@ -38,7 +31,6 @@ INTERFACE_DEFINITION_FILES = [
 RETURNVALUE_DESTINATIONS = [
     "../../mission/", "../../fsfw/", "../../bsp_sam9g20/", "../../bsp_hosted/"
 ]
-# RETURNVALUE_DESTINATIONS = ["../../sam9g20/"]
 
 SQL_DELETE_RETURNVALUES_CMD = """
     DROP TABLE IF EXISTS Returnvalues
@@ -67,7 +59,7 @@ def main():
     if EXPORT_TO_FILE:
         ReturnValueParser.export_to_file(CSV_RETVAL_FILENAME, returnvalue_table, FILE_SEPARATOR)
         if MOVE_CSV_FILE:
-            handle_file_move(CSV_MOVE_DESTINATION)
+            move_file(file_name=CSV_RETVAL_FILENAME, destination=CSV_MOVE_DESTINATION)
     if EXPORT_TO_SQL:
         print("ReturnvalueParser: Exporting to SQL")
         sql_retval_exporter(returnvalue_table)
@@ -85,13 +77,6 @@ def parse_returnvalues():
     returnvalue_table = returnvalue_parser.parse_files(True)
     print(f"ReturnvalueParser: Found {len(returnvalue_table)} returnvalues.")
     return returnvalue_table
-
-
-def handle_file_move(destination: str):
-    """ Handles moving the CSV file somewhere """
-    csv_writer = CsvWriter(filename=CSV_RETVAL_FILENAME, file_separator=FILE_SEPARATOR)
-    if MOVE_CSV_FILE:
-        csv_writer.move_csv(destination)
 
 
 def sql_retval_exporter(returnvalue_table):
