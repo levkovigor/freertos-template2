@@ -6,6 +6,7 @@
 #include "fsfwconfig/tmtc/pusIds.h"
 
 #include <test/testinterfaces/TestEchoComIF.h>
+#include <test/testinterfaces/DummyCookie.h>
 #include <test/testdevices/TestDeviceHandler.h>
 
 #include <fsfw/events/EventManager.h>
@@ -129,9 +130,6 @@ void Factory::produce(void) {
     new TcpTmTcBridge(objects::TCPIP_BRIDGE, objects::CCSDS_PACKET_DISTRIBUTOR);
     new TcpTmTcServer(objects::TCPIP_HELPER, objects::TCPIP_BRIDGE);
 #endif /* OBSW_TCPIP_SERVER_TYPE == OBSW_TCPIP_SERVER_UDP */
-
-    /* Controller */
-    new AttitudeController(objects::ATTITUDE_CONTROLLER);
 
     /* PUS Service Base Services */
     new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,
