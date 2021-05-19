@@ -38,7 +38,7 @@
 /* Mission includes*/
 #include <mission/pus/Service17CustomTest.h>
 #include <mission/utility/TmFunnel.h>
-#include <mission/controller/acs/AttitudeController.h>
+//#include <mission/controller/acs/AttitudeController.h>
 #include <test/testdevices/devicedefinitions/testDeviceDefinitions.h>
 #include <test/testinterfaces/DummyCookie.h>
 
