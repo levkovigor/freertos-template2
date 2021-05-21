@@ -1,10 +1,11 @@
 FROM ubuntu:latest
+# FROM alpine:latest
 
-RUN apt-get update -y && apt-get upgrade -y
-RUN apt-get install -y cmake g++
+RUN apt-get update && apt-get install -y cmake g++
+# RUN apk add cmake make g++
 
-COPY . /usr/src/app
 WORKDIR /usr/src/app
+COPY . .
 
 RUN set -ex; \
     rm -rf build-hosted; \
@@ -14,3 +15,4 @@ RUN set -ex; \
 
 ENTRYPOINT ["cmake", "--build", "build-hosted"]
 CMD ["-j"]
+# CMD ["bash"]
