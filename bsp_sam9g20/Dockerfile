@@ -33,7 +33,7 @@ RUN set -ex; \
     rm -rf build-freertos; \
     mkdir build-freertos; \
     cd build-freertos; \
-    cmake -DCMAKE_BUILD_TYPE=Release -DOS_FSFW=freertos -DTGT_BSP=arm/stm32h743zi-nucleo ..;
+    cmake -DCMAKE_BUILD_TYPE=Release ..;
 
 ENTRYPOINT ["cmake", "--build", "build-freertos"]
 CMD ["-j"]
