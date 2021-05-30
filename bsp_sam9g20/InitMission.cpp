@@ -184,9 +184,8 @@ void initTasks(void) {
     }
 
     /* Polling Sequence Table Default */
-    FixedTimeslotTaskIF * pollingSequenceTableTaskDefault =
-            taskFactory-> createFixedTimeslotTask(
-                    "PST_TASK_DEFAULT", 5, 2048 * 4, 0.4, genericMissedDeadlineFunc);
+    FixedTimeslotTaskIF * pollingSequenceTableTaskDefault = taskFactory-> createFixedTimeslotTask(
+                    "PST_TASK_DEFAULT", 8, 2048 * 4, 0.4, genericMissedDeadlineFunc);
     result = pst::pollingSequenceInitDefault(pollingSequenceTableTaskDefault);
     if (result != HasReturnvaluesIF::RETURN_OK) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -198,19 +197,10 @@ void initTasks(void) {
 
     /* Event Manager */
     PeriodicTaskIF* eventManager = taskFactory->createPeriodicTask(
-            "EVENT_MANAGER", 8, 2048 * 4, 0.2, genericMissedDeadlineFunc);
+            "EVENT_MANAGER", 7, 2048 * 4, 0.2, genericMissedDeadlineFunc);
     result = eventManager->addComponent(objects::EVENT_MANAGER);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("Event Manager", objects::EVENT_MANAGER);
-    }
-
-    /* Internal Error Reporter */
-    PeriodicTaskIF* internalErrorReporter = taskFactory->
-            createPeriodicTask("INT_ERR_RPRTR", 1, 1024 * 4, 2.0, genericMissedDeadlineFunc);
-    result = internalErrorReporter->addComponent(objects::INTERNAL_ERROR_REPORTER);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        initmission::printAddObjectError("internal error reporter",
-                objects::INTERNAL_ERROR_REPORTER);
     }
 
     /* PUS Services */
@@ -248,37 +238,42 @@ void initTasks(void) {
     }
 
     /* PUS Medium Priority */
-    PeriodicTaskIF* PusMediumPriorityTask = taskFactory->
+    PeriodicTaskIF* pusMediumPriorityTask = taskFactory->
             createPeriodicTask("PUS_MED_PRIO", 4, 2048 * 4, 0.4, genericMissedDeadlineFunc);
 
-    result = PusMediumPriorityTask->addComponent(objects::PUS_SERVICE_3_HOUSEKEEPING);
+    result = pusMediumPriorityTask->addComponent(objects::PUS_SERVICE_3_HOUSEKEEPING);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("PUS 3", objects::PUS_SERVICE_3_HOUSEKEEPING);
     }
-    result = PusMediumPriorityTask->addComponent(objects::PUS_SERVICE_8_FUNCTION_MGMT);
+    result = pusMediumPriorityTask->addComponent(objects::PUS_SERVICE_8_FUNCTION_MGMT);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("PUS 8", objects::PUS_SERVICE_8_FUNCTION_MGMT);
     }
-    result = PusMediumPriorityTask->addComponent(objects::PUS_SERVICE_200_MODE_MGMT);
+    result = pusMediumPriorityTask->addComponent(objects::PUS_SERVICE_200_MODE_MGMT);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("PUS 200", objects::PUS_SERVICE_200_MODE_MGMT);
     }
-    result = PusMediumPriorityTask->addComponent(objects::PUS_SERVICE_201_HEALTH);
+    result = pusMediumPriorityTask->addComponent(objects::PUS_SERVICE_201_HEALTH);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("PUS 201", objects::PUS_SERVICE_201_HEALTH);
     }
 
 
     /* PUS Low Priority */
-    PeriodicTaskIF* PusLowPriorityTask = taskFactory->
+    PeriodicTaskIF* pusLowPriorityTask = taskFactory->
             createPeriodicTask("PUS_LOW_PRIO", 3, 2048 * 4, 1.6, genericMissedDeadlineFunc);
-    result = PusLowPriorityTask->addComponent(objects::PUS_SERVICE_20_PARAMETERS);
+    result = pusLowPriorityTask->addComponent(objects::PUS_SERVICE_20_PARAMETERS);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("PUS 20", objects::PUS_SERVICE_20_PARAMETERS);
     }
-    result = PusLowPriorityTask->addComponent(objects::PUS_SERVICE_17_TEST);
+    result = pusLowPriorityTask->addComponent(objects::PUS_SERVICE_17_TEST);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("PUS 17", objects::PUS_SERVICE_17_TEST);
+    }
+    result = pusLowPriorityTask->addComponent(objects::INTERNAL_ERROR_REPORTER);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        initmission::printAddObjectError("internal error reporter",
+                objects::INTERNAL_ERROR_REPORTER);
     }
 
     /* PUS File Management */
@@ -325,16 +320,16 @@ void initTasks(void) {
         initmission::printAddObjectError("System State Task", objects::SYSTEM_STATE_TASK);
     }
 
-    PeriodicTaskIF* ThermalController = taskFactory->createPeriodicTask(
+    PeriodicTaskIF* thermalController = taskFactory->createPeriodicTask(
             "THERMAL_CTRL", 6, 2048 * 4, 1, genericMissedDeadlineFunc);
-    result = ThermalController->addComponent(objects::THERMAL_CONTROLLER);
+    result = thermalController->addComponent(objects::THERMAL_CONTROLLER);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("Thermal Controller", objects::THERMAL_CONTROLLER);
     }
 
-    PeriodicTaskIF *AttitudeController = taskFactory->createPeriodicTask("ATTITUDE_CTRL", 6,
+    PeriodicTaskIF *attitudeController = taskFactory->createPeriodicTask("ATTITUDE_CTRL", 6,
                     2048 * 4, 0.4, genericMissedDeadlineFunc);
-    result = AttitudeController->addComponent(objects::ATTITUDE_CONTROLLER);
+    result = attitudeController->addComponent(objects::ATTITUDE_CONTROLLER);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("Attitude Controller", objects::ATTITUDE_CONTROLLER);
     }
@@ -379,7 +374,6 @@ void initTasks(void) {
 
     tmTcPollingTask -> startTask();
     tmTcBridge -> startTask();
-    internalErrorReporter -> startTask();
     packetDistributorTask -> startTask();
     pollingSequenceTableTaskDefault -> startTask();
     eventManager -> startTask();
@@ -389,8 +383,8 @@ void initTasks(void) {
 
     pusFileManagement -> startTask();
     PusHighPriorityTask -> startTask();
-    PusMediumPriorityTask -> startTask();
-    PusLowPriorityTask -> startTask();
+    pusMediumPriorityTask -> startTask();
+    pusLowPriorityTask -> startTask();
 
     sdCardTask -> startTask();
     softwareImageTask -> startTask();

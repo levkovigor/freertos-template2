@@ -35,14 +35,13 @@
 extern "C" {
 #endif
 
-#include <bsp_sam9g20/common/fram/CommonFRAM.h>
-#include <bsp_sam9g20/common/SDCardApi.h>
-#include <bsp_sam9g20/common/config/commonConfig.h>
+#include "bsp_sam9g20/common/fram/CommonFRAM.h"
+#include "bsp_sam9g20/common/SDCardApi.h"
+#include "bsp_sam9g20/common/config/commonConfig.h"
+
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-
-
 
 /**
  * Read the whole critical block. Size of buffer has to be provided in max_size.
@@ -187,6 +186,13 @@ int fram_set_to_load_softwareupdate(bool enable, VolumeId volume);
  * 0 on success, -1 and -2 on FRAM failures, -3 on invalid input.
  */
 int fram_get_to_load_softwareupdate(bool* enable, VolumeId* volume);
+
+int fram_arm_deployment_timer(bool disarm);
+int fram_is_deployment_timer_armed(bool* armed);
+
+int fram_get_seconds_on_deployment_timer(uint32_t* seconds);
+int fram_set_seconds_on_deployment_timer(uint32_t seconds);
+int fram_increment_seconds_on_deployment_timer(uint32_t incrementSeconds);
 
 #ifdef __cplusplus
 }

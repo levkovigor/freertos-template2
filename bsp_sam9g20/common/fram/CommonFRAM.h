@@ -52,7 +52,7 @@ typedef struct __attribute__((__packed__)) _BootloaderGroup {
     /* These value will be used on reboot to determine which SD card is the
     default SD card on reboot. 0 or 0xff: None (use SD-Card 0), 1: SD Card 0, 2: SD Card 1 */
     uint16_t preferred_sd_card;
-    /* This flag determines whether hamming codes will be used to check the binary. */
+    // This flag determines whether hamming codes will be used to check the binary
     uint16_t global_hamming_flag;
 
     /* Hamming code flag for individual binaries.  It is recommended to clear the flags when
@@ -65,7 +65,7 @@ typedef struct __attribute__((__packed__)) _BootloaderGroup {
     uint16_t sdc1_image_slot1_hamming_flag;
     uint16_t filler_hamming_flags[1];
 
-    /* Reboot counters for individual binaries */
+    // Reboot counters for individual binaries
     uint16_t nor_flash_reboot_counter;
     uint16_t sdc0_image_slot0_reboot_counter;
     uint16_t sdc0_image_slot1_reboot_counter;
@@ -73,17 +73,17 @@ typedef struct __attribute__((__packed__)) _BootloaderGroup {
     uint16_t sdc1_image_slot1_reboot_counter;
     uint16_t filler_reboot_counter[1];
 
-    /* NOR-Flash binary information */
+    // NOR-Flash binary information
     size_t nor_flash_binary_size;
-    /* NOR-Flash binary hamming code size */
+    // NOR-Flash binary hamming code size
     size_t nor_flash_hamming_code_size;
-    /* Hamming code size for SD Card 0 slot 0 */
+    // Hamming code size for SD Card 0 slot 0
     size_t sdc0_image_slot0_hamming_size;
     size_t sdc0_image_slot1_hamming_size;
     size_t sdc1_image_slot0_hamming_size;
     size_t sdc1_image_slot1_hamming_size;
 
-    /* Software update information */
+    // Software update information
     uint8_t software_update_available;
     uint8_t software_update_in_volume_0;
     uint8_t software_update_in_volume_1;
@@ -94,52 +94,55 @@ typedef struct __attribute__((__packed__)) _BootloaderGroup {
  * This struct will gather all critical data stored on (virutalized) FRAM.
  */
 typedef struct __attribute__((__packed__))  _CriticalDataBlock {
-    /* Software information */
+    // Software information
     uint8_t software_version;
     uint8_t software_subversion;
     uint8_t software_subsubversion;
     uint8_t filler_sw_version;
 
-    /* Reboot information */
+    // Reboot information
     uint32_t reboot_counter;
 
-    /* Second counter */
+    // Seconds counter
     uint32_t seconds_since_epoch;
 
-    /* The following block will be read at once by the bootloader */
+    // The following block will be read at once by the bootloader
     BootloaderGroup bl_group;
 
-    /*
-     * Bootloader binary information. Bootloader itself could also be stored
-     * in FRAM. Hamming code will be stored in FRAM in any case.
-     */
+    // Flag which determines whether the dployment timer has been armed
+    uint8_t deploy_timer_armed;
+    // Second count which will be incremented if the deploy timer was armed
+    uint32_t seconds_since_timer_armed;
+
+    /* Bootloader binary information. Bootloader itself could also be stored
+     in FRAM. Hamming code will be stored in FRAM in any case. */
     uint32_t bootloader_faulty;
     size_t bootloader_size;
     size_t bootloader_hamming_code_size;
 
-    /* Task information */
+    // Task information
     uint16_t number_of_active_tasks;
     uint8_t filler_tasks[2];
 } CriticalDataBlock;
 
 static const uint32_t CRITICAL_BLOCK_START_ADDR = 0x0;
 
-/* Software information offsets */
-static const uint8_t SOFTWARE_VERSION_ADDR =
+// Software information offsets
+static const uint8_t FRAM_SOFTWARE_VERSION_ADDR =
         offsetof(CriticalDataBlock, software_version);
-static const uint8_t SOFTWARE_SUBVERSION_ADDR =
+static const uint8_t FRAM_SOFTWARE_SUBVERSION_ADDR =
         offsetof(CriticalDataBlock, software_subversion);
-static const uint8_t SOFTWARE_SUBSUBVERSION_ADDR =
+static const uint8_t FRAM_SOFTWARE_SUBSUBVERSION_ADDR =
         offsetof(CriticalDataBlock, software_subsubversion);
 
-/* Reboot info offset */
+// Reboot info offset
 static const uint32_t REBOOT_COUNTER_ADDR =
         offsetof(CriticalDataBlock, reboot_counter);
 
 static const uint32_t SEC_SINCE_EPOCH_ADDR =
         offsetof(CriticalDataBlock, seconds_since_epoch);
 
-/* Bootloader block addresses */
+// Bootloader block addresses
 static const uint32_t BL_GROUP_ADDR = offsetof(CriticalDataBlock, bl_group);
 
 static const uint32_t HAMMING_CHECK_FLAG_ADDR =
@@ -173,7 +176,7 @@ static const uint32_t SDC1_SL1_REBOOT_COUNTER_ADDR =
 static const uint32_t SOFTWARE_UPDATE_BOOL_ADDR =
         offsetof(CriticalDataBlock, bl_group.software_update_available);
 
-/* Size addresses */
+// Size addresses
 static const uint32_t NOR_FLASH_BINARY_SIZE_ADDR =
         offsetof(CriticalDataBlock, bl_group.nor_flash_binary_size);
 static const uint32_t NOR_FLASH_HAMMING_CODE_SIZE_ADDR =
@@ -187,7 +190,13 @@ static const uint32_t SDC1_SL0_HAMMING_SIZE_ADDR =
 static const uint32_t SDC1_SL1_HAMMING_SIZE_ADDR =
         offsetof(CriticalDataBlock, bl_group.sdc1_image_slot1_hamming_size);
 
-/* Bootloader addresses */
+// Deployment timer addresses
+static const uint32_t FRAM_DEPLOY_TIMER_ARMED_ADDR =
+        offsetof(CriticalDataBlock, deploy_timer_armed);
+static const uint32_t FRAM_SECONDS_SINCE_TIMER_ARMED_ADDR =
+        offsetof(CriticalDataBlock, seconds_since_timer_armed);
+
+// Bootloader addresses
 static const uint32_t BOOTLOADER_SIZE_ADDR = offsetof(CriticalDataBlock, bootloader_size);
 static const uint32_t BOOTLOADER_HAMMING_SIZE_ADDR =
         offsetof(CriticalDataBlock, bootloader_hamming_code_size);

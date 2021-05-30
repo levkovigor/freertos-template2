@@ -26,12 +26,17 @@ int create_generic_fram_file() {
     }
 
     F_FILE* file = NULL;
-    /* Check whether file exists */
+    // Check whether file exists
     file = f_open(VIRT_FRAM_NAME, "r");
     result = f_getlasterror();
     if(result != F_ERR_NOTFOUND) {
-        /* File already exists or is locked */
+        // File already exists or is locked
         if(result == F_NO_ERROR) {
+            // Check correct size as well and extend file if necessary
+            size_t filesize = f_filelength(VIRT_FRAM_NAME);
+            if(filesize < FRAM_END_ADDR + 1) {
+                file = f_truncate(VIRT_FRAM_NAME, FRAM_END_ADDR + 1);
+            }
             return close_fram_file(file);
         }
         return result;
@@ -41,7 +46,7 @@ int create_generic_fram_file() {
     file = f_open(VIRT_FRAM_NAME, "w");
     result = f_getlasterror();
     if(result != F_NO_ERROR) {
-        /* Could not create file */
+        // Could not create file
         return result;
     }
 
@@ -54,7 +59,7 @@ int create_generic_fram_file() {
     with the correct length */
     file = f_truncate(VIRT_FRAM_NAME, FRAM_END_ADDR + 1);
     if(file == NULL) {
-        /* Could not truncate file should not happen! */
+        // Could not truncate file should not happen!
         return -1;
     }
 
@@ -116,13 +121,13 @@ int fram_set_to_load_softwareupdate(bool enable, VolumeId volume) {
 int fram_write_software_version(uint8_t software_version, uint8_t software_subversion,
         uint8_t sw_subsubversion) {
     F_FILE* file = NULL;
-    int result = open_fram_file(&file, SOFTWARE_VERSION_ADDR, "r+");
+    int result = open_fram_file(&file, FRAM_SOFTWARE_VERSION_ADDR, "r+");
     if(result != 0) {
         return result;
     }
 
     uint8_t write_buffer[3] = {software_version, software_subversion, sw_subsubversion};
-    result = f_write((void *) write_buffer, 1, sizeof(write_buffer), file);
+    result = f_write((void *) write_buffer, sizeof(uint8_t), sizeof(write_buffer), file);
     /* Result is bytes written */
     if(result != sizeof(write_buffer)) {
         close_fram_file(file);
@@ -138,7 +143,7 @@ int fram_read_software_version(uint8_t *software_version, uint8_t* software_subv
     }
 
     F_FILE* file = NULL;
-    int result = open_fram_file(&file, SOFTWARE_VERSION_ADDR, "r");
+    int result = open_fram_file(&file, FRAM_SOFTWARE_VERSION_ADDR, "r");
     if(result != 0) {
         return result;
     }
@@ -218,4 +223,59 @@ int fram_reset_img_reboot_counter(SlotType slotType) {
 
 int fram_read_bootloader_block_raw(uint8_t* buff, size_t max_size) {
     return 0;
+}
+
+int fram_arm_deployment_timer(bool disarm) {
+    return 0;
+}
+
+int fram_is_deployment_timer_armed(bool *armed) {
+    return 0;
+}
+
+int fram_get_seconds_on_deployment_timer(uint32_t* seconds) {
+    return 0;
+}
+
+int fram_set_seconds_on_deployment_timer(uint32_t seconds) {
+    return 0;
+}
+
+int fram_increment_seconds_on_deployment_timer(uint32_t incrementSeconds) {
+    return 0;
+}
+
+int fram_increment_reboot_counter(uint32_t* new_reboot_counter) {
+    return 0;
+}
+
+int fram_update_seconds_since_epoch(uint32_t secondsSinceEpoch) {
+    F_FILE* file = NULL;
+    int result = open_fram_file(&file, SEC_SINCE_EPOCH_ADDR, "r+");
+    if(result != 0) {
+        return result;
+    }
+    size_t sizeWritten = f_write(&secondsSinceEpoch, sizeof(uint8_t), sizeof(uint32_t), file);
+    if(sizeWritten != sizeof(uint32_t)) {
+        result = -1;
+    }
+    close_fram_file(file);
+    return result;
+}
+
+int fram_read_seconds_since_epoch(uint32_t* secondsSinceEpoch) {
+    if(secondsSinceEpoch == NULL) {
+        return -3;
+    }
+    F_FILE* file = NULL;
+    int result = open_fram_file(&file, SEC_SINCE_EPOCH_ADDR, "r");
+    if(result != 0) {
+        return result;
+    }
+    size_t sizeRead = f_read(secondsSinceEpoch, sizeof(uint8_t), sizeof(uint32_t), file);
+    if(sizeRead != sizeof(uint32_t)) {
+        result = -1;
+    }
+    close_fram_file(file);
+    return result;
 }
