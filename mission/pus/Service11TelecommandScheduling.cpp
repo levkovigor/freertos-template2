@@ -268,6 +268,14 @@ ReturnValue_t Service11TelecommandScheduling::GetDeserializedTimestamp(uint32_t&
 
 void Service11TelecommandScheduling::GetUidFromCurrentPacket(uint32_t& uid) {
 
+    //TODO: This needs to be changed to follow the standard!
+    // currentpacket is the TC[11,4]!
+    // I need: currentPacket.getApplicationData()'s sourceId, apId and sequenceCount!
+    // CHECK: Endianness? Use of a SerializeAdapter?
+
+    uint32_t apId = (uint32_t)currentPacket.getAPID();
+    uint32_t ssc = (uint32_t)currentPacket.getPacketSequenceCount();
+
     uint32_t srvType = (uint32_t)currentPacket.getService();
     uint32_t srvSubtype = (uint32_t)currentPacket.getSubService();
     uint32_t sequenceControl = (uint32_t)currentPacket.getPacketSequenceControl();
