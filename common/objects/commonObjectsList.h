@@ -18,6 +18,9 @@ enum commonObjects: object_id_t {
     PUS_TIME = 0x52000001,
     TM_FUNNEL = 0x52000002,
 
+	/* CFDP Distributer */
+	CFDP_PACKET_DISTRIBUTOR = 0x53000100,
+
     /* 0x43 ('C') for Controllers */
     THERMAL_CONTROLLER = 0x43002000,
     ATTITUDE_CONTROLLER = 0x43003000,
