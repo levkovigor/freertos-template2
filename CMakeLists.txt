@@ -24,85 +24,22 @@ option(ADD_ETL_LIB "Add ETL library" ON)
 option(BOOTLOADER "Build bootloader" OFF)
 option(HOST_BUILD "Build for host" OFF)
 option(USE_LTO "Enable link-time optimization" OFF)
+
 option(BUILD_UNITTEST "Build Catch2 unit tests" OFF)
+
+if(BUILD_UNITTEST)
+    option(CUSTOM_UNITTEST_RUNNER 
+        "Specify whether custom main or Catch2 main is used" TRUE
+    )
+endif()
 
 # This option can also decrease binary size.
 option(DISABLE_AGGRESSIVE_OPTIMIZATION 
     "Enable to use O2 instead of O3 optimization for the release build" OFF
 )
 
-if(NOT OS_FSFW)
-    if(HOST_BUILD)
-        set(OS_FSFW host CACHE STRING "OS for the FSFW.")
-    else()
-        set(OS_FSFW freertos CACHE STRING "OS for the FSFW.")
-    endif()
-endif()
-
-if(NOT HOST_BUILD)
-    set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SCRIPT_PATH}/Arm926ejsCrossCompile.cmake)
-    
-    option(BOARD_IOBC "iOBC target hardware instead of AT91SAM9G20-EK development board" OFF)
-    option(SAT_BUILD
-        "If the iOBC is not connected to the flatsat or integrated into the satellite" ON
-    )
-    
-    if(BOOTLOADER)
-        if(NOT BOARD_IOBC)
-            option(BL_STAGE_TWO 
-                "Build second stage bootloader instead of first stage bootloader" OFF
-             )
-        endif()
-        option(BL_USE_FREERTOS
-            "Use FreeRTOS for iOBC or AT91 second-stage bootloader" ON
-        )
-        
-        if(NOT BOARD_IOBC AND NOT BL_STAGE_TWO)
-             set(SIMPLE_AT91_BL ON CACHE INTERNAL "Simple flag to detect simple bootloader")
-             set(BL_USE_FREERTOS OFF)
-        endif() 
-    endif()
-endif()
-
-if(BOOTLOADER)
-    set(AT91_USE_AT91_STDIO ON)
-endif()
-
-if(BOARD_IOBC)
-    add_definitions(-DISIS_OBC_G20)
-    set(BOARD_PRINTOUT "iOBC")
-    if(BOOTLOADER)
-        add_definitions(-DISIS_BL)
-        set(AT91_MEMORY norflash)
-    else()
-        set(AT91_MEMORY sdram)
-        if(SAT_BUILD)
-            add_definitions(-DSAT_BUILD)
-        endif()
-    endif()
-else()
-    add_definitions(-DAT91SAM9G20_EK)
-    set(BOARD_PRINTOUT "AT91SAM9G20-EK")
-    if(BOOTLOADER)
-        add_definitions(-DBOOTLOADER)
-        if(USE_LTO)
-            set(AT91_USE_LINK_TIME_OPTIMIZATION ON)
-        endif()
-        set(AT91_ISOLATE_ERRONEOUS_PATHS OFF)
-        if(NOT BL_STAGE_TWO)
-            add_definitions(-DAT91_BL_ST1)
-
-            set(AT91_MEMORY sram)
-        else()
-            add_definitions(-DAT91_BL_ST2)
-            set(AT91_MEMORY sdram)
-        endif()
-    else()
-        set(AT91_MEMORY sdram)
-    endif()
-endif()
-
-# Perform steps like loading toolchain files where applicable.
+include(${CMAKE_SCRIPT_PATH}/PreProjectConfig.cmake)
+pre_project_config()
 
 # Project Name
 if(BOOTLOADER)
@@ -120,7 +57,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Set names and variables
-set(TARGET_NAME ${CMAKE_PROJECT_NAME}) 
+set(TARGET_NAME ${CMAKE_PROJECT_NAME})
+if(CUSTOM_UNITTEST_RUNNER)
+    set(CATCH2_TARGET Catch2)
+else()
+    set(CATCH2_TARGET Catch2WithMain)
+endif()
+
 set(LIB_FSFW_NAME fsfw)
 set(LIB_ETL_NAME etl)
 set(LIB_OS_NAME freertos)
@@ -263,12 +206,15 @@ if(BOOTLOADER)
 else()
     add_subdirectory(${MISSION_PATH})
     add_subdirectory(${TEST_PATH})
-    # add_subdirectory(${FSFW_CONFIG_PATH})
     add_subdirectory(${FSFW_PATH})
     add_subdirectory(${COMMON_PATH})
     if(ADD_ETL_LIB)
         add_subdirectory(${ETL_PATH})
     endif()
+endif()
+
+if(BUILD_UNITTEST)
+    add_subdirectory(${CATCH2_PATH})
 endif()
 
 ################################################################################
@@ -329,6 +275,12 @@ if(NOT HOST_BUILD)
     endif()
 endif()
     
+if(BUILD_UNITTEST)
+    target_link_libraries(${TARGET_NAME} PRIVATE
+        ${CATCH2_TARGET}
+    )
+endif()
+
 # Add include paths for all sources.
 target_include_directories(${TARGET_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
