@@ -20,26 +20,8 @@ set(CMAKE_SCRIPT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # Options
 ################################################################################
 
-option(ADD_ETL_LIB "Add ETL library" ON)
-option(BOOTLOADER "Build bootloader" OFF)
-option(HOST_BUILD "Build for host" OFF)
-option(USE_LTO "Enable link-time optimization" OFF)
-
-option(BUILD_UNITTEST "Build Catch2 unit tests" OFF)
-
-if(BUILD_UNITTEST)
-    option(CUSTOM_UNITTEST_RUNNER 
-        "Specify whether custom main or Catch2 main is used" TRUE
-    )
-endif()
-
-# This option can also decrease binary size.
-option(DISABLE_AGGRESSIVE_OPTIMIZATION 
-    "Enable to use O2 instead of O3 optimization for the release build" OFF
-)
-
 include(${CMAKE_SCRIPT_PATH}/PreProjectConfig.cmake)
-pre_project_config()
+options_config()
 
 # Project Name
 if(BOOTLOADER)
@@ -59,6 +41,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # Set names and variables
 set(TARGET_NAME ${CMAKE_PROJECT_NAME})
 if(CUSTOM_UNITTEST_RUNNER)
+    message(STATUS "TEST")
     set(CATCH2_TARGET Catch2)
 else()
     set(CATCH2_TARGET Catch2WithMain)
@@ -80,6 +63,7 @@ set(SAM9G20_PATH bsp_sam9g20)
 set(HOST_BSP_PATH bsp_hosted)
 set(BOOTLOADER_PATH bootloader)
 set(COMMON_PATH common)
+set(UNITTEST_PATH unittest)
 
 set(LIB_FREERTOS_PATH ${LIB_OS_NAME})
 set(LIB_AT91_PATH ${LIB_AT91_NAME})
@@ -189,7 +173,9 @@ set(LINK_HAL ON)
 add_executable(${TARGET_NAME})
 
 # Add subdirectories
-add_subdirectory(${BSP_PATH})
+if(NOT BUILD_UNITTEST)
+    add_subdirectory(${BSP_PATH})
+endif()
 
 if(NOT HOST_BUILD)
     if(NOT BOOTLOADER)
@@ -215,6 +201,7 @@ endif()
 
 if(BUILD_UNITTEST)
     add_subdirectory(${CATCH2_PATH})
+    add_subdirectory(${UNITTEST_PATH})
 endif()
 
 ################################################################################
@@ -397,8 +384,3 @@ endif()
 
 include (${CMAKE_SCRIPT_PATH}/BuildType.cmake)
 set_build_type()
-
-
-
-
-

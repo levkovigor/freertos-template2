@@ -1,4 +1,24 @@
-function(pre_project_config)
+function(options_config)
+
+option(ADD_ETL_LIB "Add ETL library" ON)
+option(BOOTLOADER "Build bootloader" OFF)
+option(USE_LTO "Enable link-time optimization" OFF)
+
+option(BUILD_UNITTEST "Build Catch2 unit tests" OFF)
+
+if(BUILD_UNITTEST)
+    option(CUSTOM_UNITTEST_RUNNER 
+        "Specify whether custom main or Catch2 main is used" TRUE
+    )
+    set(HOST_BUILD ON CACHE BOOL "Host build set to on for unit tests")
+else()
+    option(HOST_BUILD "Build for host" OFF)
+endif()
+
+# This option can also decrease binary size.
+option(DISABLE_AGGRESSIVE_OPTIMIZATION 
+    "Enable to use O2 instead of O3 optimization for the release build" OFF
+)
 
 if(NOT OS_FSFW)
     if(HOST_BUILD)
@@ -6,10 +26,6 @@ if(NOT OS_FSFW)
     else()
         set(OS_FSFW freertos CACHE STRING "OS for the FSFW.")
     endif()
-endif()
-
-if(BUILD_UNITTEST)
-    set(HOST_BUILD ON CACHE STRING "Host build set to on for unit tests")
 endif()
 
 if(NOT HOST_BUILD)
