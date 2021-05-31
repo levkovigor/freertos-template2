@@ -519,7 +519,7 @@ void USBDDriver_RequestHandler(
 
             // Sends a zero-length packet and then set the device address
             address = USBSetAddressRequest_GetAddress(pRequest);
-            USBD_Write(0, 0, 0, (TransferCallback) USBD_SetAddress, (void *) address);
+            USBD_Write(0, 0, 0, (TransferCallback) USBD_SetAddressCb, (void *) address);
             break;
 
         case USBGenericRequest_SETCONFIGURATION:
