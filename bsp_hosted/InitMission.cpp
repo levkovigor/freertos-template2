@@ -90,6 +90,12 @@ void initTask() {
         initmission::printAddObjectError("PUS packet distributor", objects::PUS_PACKET_DISTRIBUTOR);
 
     }
+    result = packetDistributorTask->
+            addComponent(objects::CFDP_PACKET_DISTRIBUTOR);
+    if(result != HasReturnvaluesIF::RETURN_OK){
+        initmission::printAddObjectError("CFDP packet distributor", objects::CFDP_PACKET_DISTRIBUTOR);
+
+    }
     result = packetDistributorTask->addComponent(objects::TM_FUNNEL);
     if(result != HasReturnvaluesIF::RETURN_OK){
         initmission::printAddObjectError("TM funnel", objects::TM_FUNNEL);
