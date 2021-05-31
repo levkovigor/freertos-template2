@@ -7,6 +7,7 @@ option(USE_LTO "Enable link-time optimization" OFF)
 option(BUILD_UNITTEST "Build Catch2 unit tests" OFF)
 
 if(BUILD_UNITTEST)
+    # set(LINK_CATCH2 ON)
     option(CUSTOM_UNITTEST_RUNNER 
         "Specify whether custom main or Catch2 main is used" TRUE
     )

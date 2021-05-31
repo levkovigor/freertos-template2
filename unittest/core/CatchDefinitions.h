@@ -11,6 +11,7 @@ static constexpr int CATCH_FAILED = static_cast<int>(HasReturnvaluesIF::RETURN_F
 }
 
 namespace tconst {
+static constexpr MessageQueueId_t testQueueId = 42;
 }
 
 namespace tglob {

@@ -41,7 +41,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # Set names and variables
 set(TARGET_NAME ${CMAKE_PROJECT_NAME})
 if(CUSTOM_UNITTEST_RUNNER)
-    message(STATUS "TEST")
     set(CATCH2_TARGET Catch2)
 else()
     set(CATCH2_TARGET Catch2WithMain)
@@ -142,7 +141,11 @@ if(NOT HOST_BUILD)
         endif()
     endif()
 else()
-    set(FSFW_CONFIG_PATH "${BSP_PATH}/fsfwconfig")
+    if(BUILD_UNITTEST)
+        set(FSFW_CONFIG_PATH "${UNITTEST_PATH}/testcfg")
+    else()
+        set(FSFW_CONFIG_PATH "${BSP_PATH}/fsfwconfig")
+    endif()
 endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -345,10 +348,17 @@ if(NOT HOST_BUILD)
         )
     endif()
 else()
-    set(TARGET_STRING "Hosted")
-    set_target_properties(${TARGET_NAME} PROPERTIES
-        OUTPUT_NAME "${TARGET_NAME}-host-${BUILD_TYPE_STR}"
-    )
+    if(BUILD_UNITTEST)
+        set(TARGET_STRING "unittest")
+        set_target_properties(${TARGET_NAME} PROPERTIES
+            OUTPUT_NAME "${TARGET_NAME}-unittest-${BUILD_TYPE_STR}"
+        )
+    else()
+        set(TARGET_STRING "Hosted")
+        set_target_properties(${TARGET_NAME} PROPERTIES
+            OUTPUT_NAME "${TARGET_NAME}-host-${BUILD_TYPE_STR}"
+        )
+    endif()
 endif()
 
 get_target_property(OUTPUT_NAME_VAR ${TARGET_NAME} OUTPUT_NAME)

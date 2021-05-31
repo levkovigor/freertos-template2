@@ -1,13 +1,14 @@
 #include "DummyGPSComIF.h"
+#include "objects/systemObjectList.h"
+#include "devices/logicalAddresses.h"
+#include "tmtc/apid.h"
+#include "tmtc/pusIds.h"
 
 #include <fsfw/serialize/SerializeAdapter.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/tmtcservices/CommandingServiceBase.h>
 #include <fsfw/tmtcpacket/pus/TmPacketStoredPusA.h>
 #include <fsfw/ipc/QueueFactory.h>
-#include <devices/logicalAddresses.h>
-#include <tmtc/apid.h>
-#include <tmtc/pusIds.h>
 
 #include <cstring>
 
