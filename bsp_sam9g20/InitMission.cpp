@@ -312,9 +312,9 @@ void initTasks(void) {
     }
 
 #ifdef AT91SAM9G20_EK
-    uint8_t coreCtrlPrio = 6;
-#else
     uint8_t coreCtrlPrio = 5;
+#else
+    uint8_t coreCtrlPrio = 6;
 #endif
     /* Core Controller task */
     PeriodicTaskIF* coreController = taskFactory->createPeriodicTask(
