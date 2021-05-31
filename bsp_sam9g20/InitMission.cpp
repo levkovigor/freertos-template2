@@ -308,7 +308,7 @@ void initTasks(void) {
 
     /* Core Controller task */
     PeriodicTaskIF* coreController = taskFactory->createPeriodicTask(
-            "CORE_CONTROLLER", 6, 2048 * 4, 1, genericMissedDeadlineFunc);
+            "CORE_CONTROLLER", 5, 2048 * 4, 1, genericMissedDeadlineFunc);
     result = coreController->addComponent(objects::CORE_CONTROLLER);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("Core controller", objects::CORE_CONTROLLER);
