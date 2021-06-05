@@ -7,8 +7,8 @@
 #include <tmtc/pusIds.h>
 #include <mission/pus/Service19EventAction.h>
 
-Service19EventAction::Service19EventAction(object_id_t objectId) :
-    PusServiceBase(objectId, apid::SOURCE_OBSW, pus::PUS_SERVICE_19),
+Service19EventAction::Service19EventAction(object_id_t objectId, uint16_t apid) :
+    PusServiceBase(objectId, apid, pus::PUS_SERVICE_19),
     packetSubCounter(0)
 {
 	eventQueue = QueueFactory::instance()->createMessageQueue();
