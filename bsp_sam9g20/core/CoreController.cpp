@@ -240,7 +240,7 @@ ReturnValue_t CoreController::initializeAfterTaskCreation() {
 
 ReturnValue_t CoreController::initialize() {
 #ifdef ISIS_OBC_G20
-    framHandler = objectManager->get<FRAMHandler>(objects::FRAM_HANDLER);
+    framHandler = ObjectManager::instance()->get<FRAMHandler>(objects::FRAM_HANDLER);
     if(framHandler == nullptr) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "CoreController::initialize: No FRAM handler found!"
