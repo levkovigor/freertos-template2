@@ -50,7 +50,7 @@ ReturnValue_t Service19EventAction::handleRequest()
 /* In addition to the default PUSServiceBase initialization, this service needs to
 be registered to the event manager to listen for events */
 ReturnValue_t Service19EventAction::initialize() {
-	EventManagerIF *manager = objectManager->get<EventManagerIF>(
+	EventManagerIF *manager = ObjectManager::instance()->get<EventManagerIF>(
 		objects::EVENT_MANAGER);
 	
 	if (manager == NULL)

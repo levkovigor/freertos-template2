@@ -265,7 +265,7 @@ ReturnValue_t CoreController::initialize() {
 
 
 ReturnValue_t CoreController::setUpSystemStateTask() {
-    systemStateTask = objectManager->
+    systemStateTask = ObjectManager::instance()->
             get<SystemStateTask>(systemStateTaskId);
     if(systemStateTask == nullptr) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -298,15 +298,15 @@ ReturnValue_t CoreController::storeSelect(StorageManagerIF** store, Stores store
 
     switch(storeType) {
     case(TM_STORE): {
-        *store = objectManager->get<StorageManagerIF>(objects::TM_STORE);
+        *store = ObjectManager::instance()->get<StorageManagerIF>(objects::TM_STORE);
         break;
     }
     case(TC_STORE): {
-        *store = objectManager->get<StorageManagerIF>(objects::TC_STORE);
+        *store = ObjectManager::instance()->get<StorageManagerIF>(objects::TC_STORE);
         break;
     }
     case(IPC_STORE): {
-        *store = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
+        *store = ObjectManager::instance()->get<StorageManagerIF>(objects::IPC_STORE);
         break;
     }
     default: {

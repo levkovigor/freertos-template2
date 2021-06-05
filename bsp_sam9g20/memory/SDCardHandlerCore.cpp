@@ -6,6 +6,7 @@
 
 #include <mission/memory/FileSystemMessage.h>
 
+#include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/ipc/CommandMessage.h>
@@ -24,7 +25,7 @@
 SDCardHandler::SDCardHandler(object_id_t objectId): SystemObject(objectId),
         commandQueue(QueueFactory::instance()->createMessageQueue(MAX_MESSAGE_QUEUE_DEPTH)),
         actionHelper(this, commandQueue), countdown(0), stateMachine(this, &countdown) {
-    ipcStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
+    ipcStore = ObjectManager::instance()->get<StorageManagerIF>(objects::IPC_STORE);
 }
 
 

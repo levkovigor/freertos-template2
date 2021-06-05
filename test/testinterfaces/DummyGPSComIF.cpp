@@ -1,6 +1,7 @@
 #include "DummyGPSComIF.h"
 
 #include <fsfw/serialize/SerializeAdapter.h>
+#include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/tmtcservices/CommandingServiceBase.h>
 #include <fsfw/tmtcpacket/pus/TmPacketStoredPusA.h>
@@ -17,7 +18,7 @@ gpsReplyBufferSize(0), gpsReplyRingBuffer(1024,true),gpsDataBufferSize(0),
 gpsReplyCounter(0), packetSubCounter(0)
 {
     tmQueue = QueueFactory::instance()->createMessageQueue();
-    funnel = objectManager->get<AcceptsTelemetryIF>(objects::TM_FUNNEL);
+    funnel = ObjectManager::instance()->get<AcceptsTelemetryIF>(objects::TM_FUNNEL);
     tmQueue->setDefaultDestination(funnel->getReportReceptionQueue());
 }
 

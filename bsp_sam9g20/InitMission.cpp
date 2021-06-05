@@ -122,8 +122,9 @@ void initMission(void) {
     sif::printInfo("Creating objects.\n");
 #endif
 
-    objectManager = new ObjectManager(Factory::produce);
-    objectManager->initialize();
+    ObjectManager* objManager = ObjectManager::instance();
+    objManager->setObjectFactoryFunction(Factory::produce, nullptr);
+    objManager->initialize();
 
 #if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Creating tasks.." << std::endl;

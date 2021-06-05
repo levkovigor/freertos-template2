@@ -7,7 +7,7 @@ namespace Factory {
  * @brief   Creates all SystemObject elements which are persistent
  *          during execution.
  */
-void produce();
+void produce(void* args);
 void setStaticFrameworkObjectIds();
 
 }

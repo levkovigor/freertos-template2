@@ -1,6 +1,7 @@
 #include "Service6MemoryManagement.h"
 
 #include <fsfw/memory/AcceptsMemoryMessagesIF.h>
+#include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/globalfunctions/CRC.h>
 #include <fsfw/tmtcpacket/pus/TmPacketStoredPusA.h>
 #include <mission/pus/servicepackets/Service6Packets.h>
@@ -37,7 +38,7 @@ ReturnValue_t Service6MemoryManagement::getMessageQueueAndObject(
 
 ReturnValue_t Service6MemoryManagement::checkInterfaceAndAcquireMessageQueue(
         MessageQueueId_t* messageQueueToSet, object_id_t* objectId) {
-    AcceptsMemoryMessagesIF * destination = objectManager->
+    AcceptsMemoryMessagesIF * destination = ObjectManager::instance()->
             get<AcceptsMemoryMessagesIF>(*objectId);
     if(destination == nullptr) {
         return CommandingServiceBase::INVALID_OBJECT;

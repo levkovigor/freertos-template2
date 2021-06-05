@@ -1,6 +1,7 @@
 #include <mission/utility/TmFunnel.h>
 
 #include <fsfw/ipc/QueueFactory.h>
+#include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/tmtcpacket/pus/TmPacketBase.h>
 #include <fsfw/tmtcpacket/pus/TmPacketStoredPusA.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
@@ -88,7 +89,7 @@ ReturnValue_t TmFunnel::handlePacket(TmTcMessage* message) {
 
 ReturnValue_t TmFunnel::initialize() {
 
-    tmPool = objectManager->get<StorageManagerIF>(objects::TM_STORE);
+    tmPool = ObjectManager::instance()->get<StorageManagerIF>(objects::TM_STORE);
     if(tmPool == nullptr) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "TmFunnel::initialize: TM store not set." << std::endl;
@@ -102,8 +103,8 @@ ReturnValue_t TmFunnel::initialize() {
         return ObjectManagerIF::CHILD_INIT_FAILED;
     }
 
-    AcceptsTelemetryIF* tmTarget =
-            objectManager->get<AcceptsTelemetryIF>(downlinkDestination);
+    AcceptsTelemetryIF* tmTarget = ObjectManager::instance()->
+            get<AcceptsTelemetryIF>(downlinkDestination);
     if(tmTarget == nullptr){
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "TmFunnel::initialize: Downlink Destination not set." << std::endl;
@@ -124,8 +125,8 @@ ReturnValue_t TmFunnel::initialize() {
         return SystemObject::initialize();
     }
 
-    AcceptsTelemetryIF* storageTarget =
-            objectManager->get<AcceptsTelemetryIF>(storageDestination);
+    AcceptsTelemetryIF* storageTarget = ObjectManager::instance()->
+            get<AcceptsTelemetryIF>(storageDestination);
     if(storageTarget != nullptr) {
         storageQueue->setDefaultDestination(
                 storageTarget->getReportReceptionQueue());
