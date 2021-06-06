@@ -8,6 +8,9 @@
 #include <fsfw/tmtcservices/TmTcMessage.h>
 #include <fsfw/storagemanager/ConstStorageAccessor.h>
 
+#include <fsfw/tmtcpacket/SpacePacketBase.h>
+#include <fsfw/tmtcpacket/pus/TmPacketBase.h>
+
 #include <ctime>
 #include <cstring>
 #include <array>
@@ -22,6 +25,8 @@ Service11TelecommandScheduling::~Service11TelecommandScheduling() { }
 
 
 ReturnValue_t Service11TelecommandScheduling::handleRequest(uint8_t subservice) {
+
+    sif::printWarning("........ HANDLING REQUEST ......");
 
     switch(subservice){
     case Subservice::INSERT_ACTIVITY:
@@ -41,7 +46,16 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest(uint8_t subservice) 
 ReturnValue_t Service11TelecommandScheduling::performService() {
 
     //DEBUG
-    //sif::printInfo("Service 11 performService called.\n");
+    bool printDebug = false;
+    printDebug = true;
+    if (printDebug) {
+        sif::printInfo("MULTIMAP CONTENT: \n");
+        for (auto it = telecommandMap.begin(); it != telecommandMap.end(); ++it) {
+                sif::printInfo("[%d]: uid: %d  storeAddr: %d\n", it->first, it->second.uid, it->second.storeAddr);
+        }
+        sif::printInfo("END OF CONTENT\n\n");
+    }
+
 
     // get current time as UNIX timestamp
     uint32_t tCurrent = static_cast<uint32_t>(std::time(nullptr));
@@ -106,24 +120,14 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
     sif::printInfo("Deserialized Timestamp: %d\n", deserializedTimestamp);
 
 
-    // Get store address
-    //TODO: This is probably useless, as currentPacket's store address is always 0
-    store_address_t addr = this->currentPacket.getStoreAddress();
-    if (addr.raw == storeId::INVALID_STORE_ADDRESS) {
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-    //DEBUG
-    sif::printInfo("currentPacket addr: %d\n", addr);
-
-
-    // Insert, if sched. time is above margin...
+    // Insert possible if sched. time is above margin...
     uint32_t tNow = static_cast<uint32_t>(std::time(nullptr));
     if (deserializedTimestamp - tNow <= TIME_MARGIN) {
         return HasReturnvaluesIF::RETURN_FAILED;
     }
 
     // store currentPacket
+    store_address_t addr;
     if (auto res = ReStorePacket(&addr) != HasReturnvaluesIF::RETURN_OK) {
         sif::printWarning("ReStorePacket returned != RETURN_OK\n");
         return res;
@@ -266,27 +270,23 @@ ReturnValue_t Service11TelecommandScheduling::GetDeserializedTimestamp(uint32_t&
 }
 
 
-void Service11TelecommandScheduling::GetUidFromCurrentPacket(uint32_t& uid) {
+void Service11TelecommandScheduling::GetUidFromCurrentPacket(uint32_t& requestId) {
 
     //TODO: This needs to be changed to follow the standard!
     // currentpacket is the TC[11,4]!
     // I need: currentPacket.getApplicationData()'s sourceId, apId and sequenceCount!
     // CHECK: Endianness? Use of a SerializeAdapter?
 
-    uint32_t apId = (uint32_t)currentPacket.getAPID();
-    uint32_t ssc = (uint32_t)currentPacket.getPacketSequenceCount();
+    uint8_t* data = (uint8_t*)currentPacket.getApplicationData();
+    TmPacketBase mask(data);
 
-    uint32_t srvType = (uint32_t)currentPacket.getService();
-    uint32_t srvSubtype = (uint32_t)currentPacket.getSubService();
-    uint32_t sequenceControl = (uint32_t)currentPacket.getPacketSequenceControl();
+    //uint32_t sourceId = mask.get
+    uint32_t apid = (uint32_t)mask.getAPID();
+    uint32_t sequenceCount = (uint32_t)mask.getPacketSequenceCount();
 
-    // uid is set together like this:
-    // service (8) | subsrv (8) | sequence ctrl (flags + count) (16)
+    requestId = (apid << 16) + sequenceCount;
 
-    uid = (srvType << 24) + (srvSubtype << 16) + sequenceControl;
-
-
-    sif::printInfo("..::GetUid: srvType: %d  srvSubtype: %d  uid: %d \n", srvType, srvSubtype, uid);
+    sif::printInfo("GetUidFromCurrentPacket: apid: %d  sequenceCount: %d  requestId: %d\n", apid, sequenceCount, requestId);
 }
 
 
