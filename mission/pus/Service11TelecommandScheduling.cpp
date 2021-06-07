@@ -10,6 +10,7 @@
 
 #include <fsfw/tmtcpacket/SpacePacketBase.h>
 #include <fsfw/tmtcpacket/pus/TmPacketBase.h>
+#include <fsfw/tmtcpacket/pus/TcPacketBase.h>
 
 #include <ctime>
 #include <cstring>
@@ -26,7 +27,7 @@ Service11TelecommandScheduling::~Service11TelecommandScheduling() { }
 
 ReturnValue_t Service11TelecommandScheduling::handleRequest(uint8_t subservice) {
 
-    sif::printWarning("........ HANDLING REQUEST ......");
+    sif::printWarning("........ HANDLING REQUEST ......\n");
 
     switch(subservice){
     case Subservice::INSERT_ACTIVITY:
@@ -47,7 +48,7 @@ ReturnValue_t Service11TelecommandScheduling::performService() {
 
     //DEBUG
     bool printDebug = false;
-    printDebug = true;
+    //printDebug = true;
     if (printDebug) {
         sif::printInfo("MULTIMAP CONTENT: \n");
         for (auto it = telecommandMap.begin(); it != telecommandMap.end(); ++it) {
@@ -151,6 +152,19 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
     if (it == telecommandMap.end()){
         return HasReturnvaluesIF::RETURN_FAILED;
     }
+
+
+    //DEBUG
+    bool printDebug = false;
+    printDebug = true;
+    if (printDebug) {
+        sif::printInfo("MULTIMAP CONTENT: \n");
+        for (auto dit = telecommandMap.begin(); dit != telecommandMap.end(); ++dit) {
+                sif::printInfo("[%d]: uid: %d  storeAddr: %d\n", dit->first, dit->second.uid, dit->second.storeAddr);
+        }
+        sif::printInfo("END OF CONTENT\n\n");
+    }
+
 
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -278,15 +292,19 @@ void Service11TelecommandScheduling::GetUidFromCurrentPacket(uint32_t& requestId
     // CHECK: Endianness? Use of a SerializeAdapter?
 
     uint8_t* data = (uint8_t*)currentPacket.getApplicationData();
-    TmPacketBase mask(data);
+    data += sizeof(uint32_t);
 
-    //uint32_t sourceId = mask.get
+    TmPacketBase mask(data);
+    mask.getSourceData();
+
+
+    uint32_t sourceId = mask.getPacketId();
     uint32_t apid = (uint32_t)mask.getAPID();
     uint32_t sequenceCount = (uint32_t)mask.getPacketSequenceCount();
 
     requestId = (apid << 16) + sequenceCount;
 
-    sif::printInfo("GetUidFromCurrentPacket: apid: %d  sequenceCount: %d  requestId: %d\n", apid, sequenceCount, requestId);
+    sif::printInfo("GetUidFromCurrentPacket: sourceId: %d  apid: %d  sequenceCount: %d  requestId: %d\n", sourceId, apid, sequenceCount, requestId);
 }
 
 
