@@ -54,7 +54,7 @@ public:
 
 private:
     struct TelecommandStruct {
-        uint32_t uid;
+        uint64_t uid;
         uint32_t seconds;
         store_address_t storeAddr;
     };
@@ -88,7 +88,7 @@ private:
      * @brief Generates a UID from the currentPacket
      * @param uid (out) Generated UID from packet
      */
-    void GetUidFromCurrentPacket(uint32_t& uid);
+    void GetRequestIdFromCurrentPacket(uint64_t& uid);
 
     /**
      * @brief Copys the currentPacket into the tcStore

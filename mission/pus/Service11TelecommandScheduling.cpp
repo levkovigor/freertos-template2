@@ -146,7 +146,7 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
     TelecommandStruct tc;
     tc.seconds = deserializedTimestamp;
     tc.storeAddr = addr;
-    GetUidFromCurrentPacket(tc.uid);
+    GetRequestIdFromCurrentPacket(tc.uid);
 
     auto it = telecommandMap.insert(std::pair<uint32_t, TelecommandStruct>(deserializedTimestamp, tc));
     if (it == telecommandMap.end()){
@@ -284,7 +284,7 @@ ReturnValue_t Service11TelecommandScheduling::GetDeserializedTimestamp(uint32_t&
 }
 
 
-void Service11TelecommandScheduling::GetUidFromCurrentPacket(uint32_t& requestId) {
+void Service11TelecommandScheduling::GetRequestIdFromCurrentPacket(uint64_t& requestId) {
 
     //TODO: This needs to be changed to follow the standard!
     // currentpacket is the TC[11,4]!
@@ -295,14 +295,12 @@ void Service11TelecommandScheduling::GetUidFromCurrentPacket(uint32_t& requestId
     data += sizeof(uint32_t);
 
     TmPacketBase mask(data);
-    mask.getSourceData();
+    //uint64_t sourceId = mask.getPacketId();
+    uint64_t sourceId = 0;
+    uint64_t apid = (uint64_t)mask.getAPID();
+    uint64_t sequenceCount = (uint64_t)mask.getPacketSequenceCount();
 
-
-    uint32_t sourceId = mask.getPacketId();
-    uint32_t apid = (uint32_t)mask.getAPID();
-    uint32_t sequenceCount = (uint32_t)mask.getPacketSequenceCount();
-
-    requestId = (apid << 16) + sequenceCount;
+    requestId = (sourceId << 32) + (apid << 16) + sequenceCount;
 
     sif::printInfo("GetUidFromCurrentPacket: sourceId: %d  apid: %d  sequenceCount: %d  requestId: %d\n", sourceId, apid, sequenceCount, requestId);
 }
