@@ -65,7 +65,6 @@ ReturnValue_t TestTask::performOperation(uint8_t operationCode) {
 ReturnValue_t TestTask::performOneShotAction() {
     // triggerEvent(TEST_EVENT, 0, 0);
     // triggerEvent(TEST_EVENT_HIGH, 5, 4224);
-
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -170,20 +169,3 @@ void TestTask::examplePacketTest() {
         }
     }
 }
-
-
-void TestTask::performEtlTemplateTest() {
-    const uint32_t poolId = 0;
-    insertNewTmManagerStruct<templateSizes[poolId]>(poolId);
-    // now we should be able to access it like this
-    auto iter = testMap.find(poolId);
-    if(iter == testMap.end()) {
-        return;
-    }
-    struct TmManagerStruct<templateSizes[poolId]>* test = dynamic_cast<
-            struct TmManagerStruct<templateSizes[poolId]>*>(iter->second);
-    if(test) {}
-}
-
-
-
