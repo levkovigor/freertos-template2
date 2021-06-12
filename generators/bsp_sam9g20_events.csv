@@ -4,7 +4,7 @@
 2203;STORE_READ_FAILED;LOW; ;../../fsfw/tmstorage/TmStoreBackendIF.h
 2204;UNEXPECTED_MSG;LOW; ;../../fsfw/tmstorage/TmStoreBackendIF.h
 2205;STORING_FAILED;LOW; ;../../fsfw/tmstorage/TmStoreBackendIF.h
-2206;TM_DUMP_FAILED;LOW; ;../../fsfw/tmstorage/TmStoreBackendIF.h
+2206;TM_DUMP_FAILED;LOW;BlaBla;../../fsfw/tmstorage/TmStoreBackendIF.h
 2207;STORE_INIT_FAILED;LOW; ;../../fsfw/tmstorage/TmStoreBackendIF.h
 2208;STORE_INIT_EMPTY;INFO; ;../../fsfw/tmstorage/TmStoreBackendIF.h
 2209;STORE_CONTENT_CORRUPTED;LOW; ;../../fsfw/tmstorage/TmStoreBackendIF.h
@@ -87,6 +87,6 @@
 12102;SUPERVISOR_FAILURE;MEDIUM; ;../../bsp_sam9g20/core/CoreController.h
 12103;RTT_RTC_FAILURE;MEDIUM; ;../../bsp_sam9g20/core/CoreController.h
 12104;FSFW_CLOCK_SYNC;INFO; ;../../bsp_sam9g20/core/CoreController.h
-12228;ISIS_CLOCK_SET_FAILURE;LOW; ;../../bsp_sam9g20/pus/Service9CustomTimeManagement.h
 16100;LOW_REM_STACK;LOW; ;../../bsp_sam9g20/core/SystemStateTask.h
 18100;FRAM_ISSUE_EVENT;MEDIUM; ;../../bsp_sam9g20/core/imageHandlerDefintions.h
+18128;ISIS_CLOCK_SET_FAILURE;LOW; ;../../bsp_sam9g20/pus/Service9CustomTimeManagement.h

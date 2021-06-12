@@ -1,7 +1,7 @@
 /**
  * @brief    Auto-generated event translation file. Contains 92 translations.
  * @details
- * Generated on: 2021-05-18 16:33:49
+ * Generated on: 2021-06-08 09:39:33
  */
 #include "translateEvents.h"
 
@@ -94,9 +94,9 @@ const char *FRAM_FAILURE_STRING = "FRAM_FAILURE";
 const char *SUPERVISOR_FAILURE_STRING = "SUPERVISOR_FAILURE";
 const char *RTT_RTC_FAILURE_STRING = "RTT_RTC_FAILURE";
 const char *FSFW_CLOCK_SYNC_STRING = "FSFW_CLOCK_SYNC";
-const char *ISIS_CLOCK_SET_FAILURE_STRING = "ISIS_CLOCK_SET_FAILURE";
 const char *LOW_REM_STACK_STRING = "LOW_REM_STACK";
 const char *FRAM_ISSUE_EVENT_STRING = "FRAM_ISSUE_EVENT";
+const char *ISIS_CLOCK_SET_FAILURE_STRING = "ISIS_CLOCK_SET_FAILURE";
 
 const char * translateEvents(Event event) {
 	switch( (event & 0xffff) ) {
@@ -278,12 +278,12 @@ const char * translateEvents(Event event) {
 		return RTT_RTC_FAILURE_STRING;
 	case(12104):
 		return FSFW_CLOCK_SYNC_STRING;
-	case(12228):
-		return ISIS_CLOCK_SET_FAILURE_STRING;
 	case(16100):
 		return LOW_REM_STACK_STRING;
 	case(18100):
 		return FRAM_ISSUE_EVENT_STRING;
+	case(18128):
+		return ISIS_CLOCK_SET_FAILURE_STRING;
 	default:
 		return "UNKNOWN_EVENT";
 	}
