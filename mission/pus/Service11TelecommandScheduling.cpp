@@ -92,12 +92,13 @@ ReturnValue_t Service11TelecommandScheduling::initialize() {
         return res;
     }
 
-    tcStore = objectManager->get<StorageManagerIF>(objects::TC_STORE);
+    tcStore = ObjectManager::instance()->get<StorageManagerIF>(objects::TC_STORE);
     if (not tcStore) {
         return ObjectManagerIF::CHILD_INIT_FAILED;
     }
 
-    tcRecipient = objectManager->get<AcceptsTelecommandsIF>(objects::CCSDS_PACKET_DISTRIBUTOR);
+    tcRecipient = ObjectManager::instance()->get<AcceptsTelecommandsIF>(
+            objects::CCSDS_PACKET_DISTRIBUTOR);
     if (not tcRecipient){
         return ObjectManagerIF::CHILD_INIT_FAILED;
     }
