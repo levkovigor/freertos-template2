@@ -27,8 +27,12 @@ ReturnValue_t PusTcInjector::injectPusTelecommand(uint8_t service,
 ReturnValue_t PusTcInjector::injectPusTelecommand(uint8_t service,
 		uint8_t subservice,uint16_t apid, const uint8_t* appData,
 		size_t appDataLen) {
+#if FSFW_USE_PUS_C_TELECOMMANDS == 1
 	// Prepare TC packet. Store into TC store immediately.
-	TcPacketStored tcPacket(apid, service, subservice, sequenceCount++);
+	TcPacketStoredPusC tcPacket(apid, service, subservice, sequenceCount++);
+#else
+    TcPacketStoredPusA tcPacket(apid, service, subservice, sequenceCount++);
+#endif
 
 	const uint8_t* packetPtr = nullptr;
 	size_t packetSize = 0;
