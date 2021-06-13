@@ -65,12 +65,12 @@ private:
     AcceptsTelecommandsIF* tcRecipient = nullptr;
     MessageQueueId_t recipientMsgQueueId = 0;
 
+    static constexpr uint16_t MAX_STORED_TELECOMMANDS = 500;
     /**
      * The telecommand map uses the exectution time as a Unix time stamp as
      * the key. This is mapped to a generic telecommand struct.
      */
-    using TelecommandMap = etl::multimap<uint32_t, TelecommandStruct,
-            config::MAX_STORED_TELECOMMANDS>;
+    using TelecommandMap = etl::multimap<uint32_t, TelecommandStruct, MAX_STORED_TELECOMMANDS>;
 
     TelecommandMap telecommandMap;
 

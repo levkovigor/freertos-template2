@@ -5,6 +5,7 @@
 #include <fsfw/serviceinterface/ServiceInterfacePrinter.h>
 
 #include <objects/systemObjectList.h>
+#include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/tmtcservices/TmTcMessage.h>
 #include <fsfw/storagemanager/ConstStorageAccessor.h>
 
@@ -293,14 +294,15 @@ void Service11TelecommandScheduling::GetRequestIdFromCurrentPacket(uint64_t& req
     TcPacketBase mask2(data);
 
 
-    TmPacketBase mask(data);
-    uint64_t sourceId = 0;  //TODO: Get this
-    uint64_t apid = (uint64_t)mask.getAPID();
-    uint64_t sequenceCount = (uint64_t)mask.getPacketSequenceCount();
+    //TmPacketBase mask(data);
+    //uint64_t sourceId = 0;  //TODO: Get this
+    //uint64_t apid = (uint64_t)mask.getAPID();
+    //uint64_t sequenceCount = (uint64_t)mask.getPacketSequenceCount();
 
-    requestId = (sourceId << 32) | (apid << 16) | sequenceCount;
-
-    sif::printInfo("GetUidFromCurrentPacket: sourceId: %d  apid: %d  sequenceCount: %d  requestId: %d\n", sourceId, apid, sequenceCount, requestId);
+//    requestId = (sourceId << 32) | (apid << 16) | sequenceCount;
+//
+//    sif::printInfo("GetUidFromCurrentPacket: sourceId: %d  apid: %d  sequenceCount: %d requestId: %d\n",
+//            sourceId, apid, sequenceCount, requestId);
 }
 
 
