@@ -11,6 +11,7 @@ RS232DeviceComIF::RS232DeviceComIF(object_id_t objectId):
 	writeStruct.postTransferDelay = 0;
 	writeStruct.result = &writeResult;
 	writeStruct.callback = uartWriteCallback;
+	writeStruct.semaphore = writeSemaphore.getSemaphore();
 }
 
 RS232DeviceComIF::~RS232DeviceComIF() {

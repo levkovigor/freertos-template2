@@ -1,7 +1,7 @@
 #include "UartPollingBase.h"
 #include "ComConstants.h"
 
-#include <fsfw/objectmanager/ObjectManagerIF.h>
+#include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
@@ -26,7 +26,7 @@ ReturnValue_t UartPollingBase::initialize() {
 #endif
     }
 
-    sharedRingBuffer = objectManager->get<SharedRingBuffer>(sharedRingBufferId);
+    sharedRingBuffer = ObjectManager::instance()->get<SharedRingBuffer>(sharedRingBufferId);
     if(sharedRingBuffer == nullptr) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "TcSerialPollingTask::initialize: Passed ring buffer invalid!" << std::endl;
@@ -137,13 +137,14 @@ void UartPollingBase::genericUartCallback(SystemContext context,
         BinarySemaphore::release(sem);
     }
     else {
-        BinarySemaphore::releaseFromISR(sem,
+        ReturnValue_t result = BinarySemaphore::releaseFromISR(sem,
                 &higherPriorityTaskAwoken);
+        /* Not much we can do here. This really should not fail anyway.. */
+        if(result != HasReturnvaluesIF::RETURN_OK) {}
     }
     if(context == SystemContext::isr_context and
             higherPriorityTaskAwoken == pdPASS) {
-        // Request a context switch before exiting ISR, as recommended
-        // by FreeRTOS.
+        /* Request a context switch before exiting ISR, as recommended by FreeRTOS. */
         TaskManagement::requestContextSwitch(CallContext::ISR);
     }
 }

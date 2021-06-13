@@ -1,5 +1,5 @@
 #include "ObjectFactory.h"
-#include <objects/systemObjectList.h>
+#include "objects/systemObjectList.h"
 #include <OBSWConfig.h>
 #include <tmtc/apid.h>
 #include <tmtc/pusIds.h>
@@ -45,7 +45,7 @@
 #include <mission/controller/acs/AttitudeController.h>
 
 /* Test files */
-#include <test/testinterfaces/DummyEchoComIF.h>
+#include <test/testinterfaces/TestEchoComIF.h>
 #include <test/testinterfaces/DummyGPSComIF.h>
 #include <test/testinterfaces/DummyCookie.h>
 #include <test/testdevices/ArduinoDeviceHandler.h>
@@ -91,7 +91,7 @@
  *
  * @ingroup init
  */
-void Factory::produce(void) {
+void Factory::produce(void* args) {
     setStaticFrameworkObjectIds();
     new EventManager(objects::EVENT_MANAGER);
     new HealthTable(objects::HEALTH_TABLE);
@@ -199,7 +199,7 @@ void Factory::produce(void) {
             apid::SOURCE_OBSW, pus::PUS_SERVICE_6);
     new Service8FunctionManagement(objects::PUS_SERVICE_8_FUNCTION_MGMT,
             apid::SOURCE_OBSW, pus::PUS_SERVICE_8);
-    new Service20ParameterManagement(objects::PUS_SERVICE_20_PARAM_MGMT, apid::SOURCE_OBSW,
+    new Service20ParameterManagement(objects::PUS_SERVICE_20_PARAMETERS, apid::SOURCE_OBSW,
             pus::PUS_SERVICE_20);
     new Service23FileManagement(objects::PUS_SERVICE_23_FILE_MGMT, apid::SOURCE_OBSW,
             pus::PUS_SERVICE_23);
@@ -211,23 +211,22 @@ void Factory::produce(void) {
     /* Device Handlers using DeviceHandlerBase.
     These includes work without connected hardware via virtualized
     devices and interfaces */
-    CookieIF * dummyCookie0 = new TestCookie(addresses::PCDU);
+    CookieIF * dummyCookie0 = new DummyCookie(addresses::PCDU, 128);
     new PCDUHandler(objects::PCDU_HANDLER,objects::DUMMY_ECHO_COM_IF,
             dummyCookie0);
-    CookieIF * dummyCookie1 = new TestCookie(addresses::DUMMY_ECHO);
-    new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_ECHO_COM_IF,
-            dummyCookie1, true);
+    CookieIF * dummyCookie1 = new DummyCookie(addresses::DUMMY_ECHO, 128);
+    new TestDevice(objects::DUMMY_HANDLER_0, objects::DUMMY_ECHO_COM_IF, dummyCookie1);
 
     new CoreController(objects::CORE_CONTROLLER, objects::SYSTEM_STATE_TASK);
     new SystemStateTask(objects::SYSTEM_STATE_TASK, objects::CORE_CONTROLLER);
     new ThermalController(objects::THERMAL_CONTROLLER);
-    //new AttitudeController(objects::ATTITUDE_CONTROLLER);
+    new AttitudeController(objects::ATTITUDE_CONTROLLER);
 
-    TestCookie * dummyCookie2 = new TestCookie(addresses::DUMMY_GPS0);
+    DummyCookie * dummyCookie2 = new DummyCookie(addresses::DUMMY_GPS0, 128);
 #if defined(VIRTUAL_BUILD)
     new GPSHandler(objects::GPS0_HANDLER, objects::DUMMY_GPS_COM_IF,
             dummyCookie2, switches::GPS0);
-    TestCookie * dummyCookie3 = new TestCookie(addresses::DUMMY_GPS1);
+    DummyCookie * dummyCookie3 = new DummyCookie(addresses::DUMMY_GPS1);
     new GPSHandler(objects::GPS1_HANDLER, objects::DUMMY_GPS_COM_IF,
             dummyCookie3, switches::GPS1);
 #else
@@ -345,7 +344,7 @@ void Factory::setStaticFrameworkObjectIds() {
 
     DeviceHandlerFailureIsolation::powerConfirmationId = objects::PCDU_HANDLER;
 
-    TmPacketStored::timeStamperId = objects::TIME_STAMPER;
+    TmPacketBase::timeStamperId = objects::TIME_STAMPER;
 #if defined(ETHERNET)
     TmFunnel::downlinkDestination = objects::UDP_TMTC_BRIDGE;
 #else

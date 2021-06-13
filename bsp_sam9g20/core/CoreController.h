@@ -3,7 +3,7 @@
 
 #include <fsfw/controller/ExtendedControllerBase.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
-#include <bsp_sam9g20/common/CommonFRAM.h>
+#include <bsp_sam9g20/common/fram/CommonFRAM.h>
 #include <OBSWConfig.h>
 
 #ifdef ISIS_OBC_G20
@@ -110,6 +110,8 @@ public:
 	static constexpr ActionId_t CLEAR_WHOLE_STORE = 13;
 	static constexpr ActionId_t GET_FILL_COUNT = 14;
 
+	static constexpr ActionId_t ARM_DEPLOYMENT_TIMER = 16;
+
     /**
      * Dump the whole bootloader block which also contains information about the
      * hamming code checks
@@ -135,6 +137,7 @@ private:
     synchronize the FSFW clock. Will be a tweakable parameter */
     uint8_t clockSecDiffSyncTrigger = 2;
 
+    uint32_t epochTime = 0;
 #ifdef ISIS_OBC_G20
 	FRAMHandler* framHandler = nullptr;
 	supervisor_housekeeping_t supervisorHk;
@@ -142,7 +145,17 @@ private:
 
 	uint16_t msOverflowCounter = 0;
 	uint32_t lastUptimeMs = 0;
+#elif defined(AT91SAM9G20_EK)
+    bool deploymentTimerArmed = false;
+	uint32_t lastRttSecondCount = 0;
+	uint32_t lastSdCardUpdate = 0;
+	//! Increment for uptime will be cached for periodic SD card updates
+    uint32_t uptimeIncrement = 0;
+    //! Increment for deployment timer will be cached for periodic SD card updates
+    uint32_t deploymentTimerIncrement = 0;
 #endif
+
+    uint32_t lastDeploymentTimerIncrement = 0;
 
 	object_id_t systemStateTaskId = objects::NO_OBJECT;
 
@@ -156,7 +169,6 @@ private:
 
 	void update64bit10kHzCounter();
 	ReturnValue_t setUpSystemStateTask();
-	ReturnValue_t initializeIsisTimerDrivers();
 	void generateStatsCsvAndCheckStack();
 	void writePaddedName(uint8_t* buffer, const char *pcTaskName);
     enum DataIdx {
@@ -176,6 +188,13 @@ private:
 
 #if OBSW_MONITOR_ALLOCATION == 1
     bool swInitCompleteFlagFlipped = false;
+#endif
+
+    ReturnValue_t initializeTimerDrivers();
+#ifdef ISIS_OBC_G20
+    ReturnValue_t initializeIobcTimerDrivers();
+#elif defined(AT91SAM9G20_EK)
+    ReturnValue_t initializeAt91TimerDrivers();
 #endif
 };
 

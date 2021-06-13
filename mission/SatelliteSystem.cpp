@@ -15,7 +15,7 @@ ReturnValue_t SatelliteSystem::initialize() {
     if (result != HasReturnvaluesIF::RETURN_OK) {
         return result;
     }
-    EventManagerIF* eventManager = objectManager->get<EventManagerIF>(
+    EventManagerIF* eventManager = ObjectManager::instance()->get<EventManagerIF>(
             objects::EVENT_MANAGER);
     if (eventManager == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;
@@ -25,6 +25,10 @@ ReturnValue_t SatelliteSystem::initialize() {
     // the whole satellite (e.g. temperature events)
 
     return result;
+}
+
+SatelliteSystem::~SatelliteSystem() {
+    QueueFactory::instance()->deleteMessageQueue(eventQueue);
 }
 
 void SatelliteSystem::checkEventQueue() {

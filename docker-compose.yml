@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+    build-hosted:
+        build:
+            context: .
+            dockerfile: bsp_hosted/Dockerfile
+
+    build-obsw:
+        build:
+            context: .
+            dockerfile: bsp_sam9g20/Dockerfile

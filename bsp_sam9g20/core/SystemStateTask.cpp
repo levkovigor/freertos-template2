@@ -87,7 +87,7 @@ bool SystemStateTask::generateStatsPrint() {
 }
 
 ReturnValue_t SystemStateTask::initializeAfterTaskCreation() {
-    ipcStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
+    ipcStore = ObjectManager::instance()->get<StorageManagerIF>(objects::IPC_STORE);
     if (ipcStore == nullptr) {
         sif::printWarning("SystemStateTask::initializeAfterTaskCreation: No IPC store found\n");
     }
@@ -101,7 +101,7 @@ ReturnValue_t SystemStateTask::initializeAfterTaskCreation() {
     statsVector.reserve(sizeToReserve);
     statsVector.resize(sizeToReserve);
 
-    HasFileSystemIF* sdCardHandler = objectManager->get<HasFileSystemIF>(objects::SD_CARD_HANDLER);
+    HasFileSystemIF* sdCardHandler = ObjectManager::instance()->get<HasFileSystemIF>(objects::SD_CARD_HANDLER);
     if (sdCardHandler == nullptr) {
         sif::printError("SystemStateTask::initializeAfterTaskCreation: "
                 "SD Card Handler does not exist\n");
@@ -109,7 +109,7 @@ ReturnValue_t SystemStateTask::initializeAfterTaskCreation() {
     }
     queueId = sdCardHandler->getCommandQueue();
 
-    coreController = objectManager->get<CoreController>(coreControllerId);
+    coreController = ObjectManager::instance()->get<CoreController>(coreControllerId);
     if(coreController == nullptr) {
         sif::printError("SystemStateTask::initializeAfterTaskCreation: "
                 "Core Controller does not exist\n");
@@ -221,7 +221,7 @@ void SystemStateTask::performStatsGeneration(InternalState csvOrPrint) {
 
     fileName.append(str, 3);
     fileName += ".csv";
-    sif::printInfo("%s\n", fileName);
+    sif::printInfo("%s\n", fileName.c_str());
     ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
     bool breakOnFinish = false;
     auto writeType = WriteCommand::WriteType::NEW_FILE;

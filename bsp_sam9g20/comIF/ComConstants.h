@@ -8,12 +8,9 @@
 namespace comconstants {
 static constexpr uint8_t UART_SUBSYSTEM_ID = SUBSYSTEM_ID::UART_COM_IF;
 
-//! P1: Number of occured uart errors.
-//! First byte: Parity Error Count.
-//! Second byte: Overrun Error Count.
-//! Third byte: Framing Error Count.
-//! Fourth byte: Other Error Count.
-//! P2: Last error (for other error count, e.g. mutex timeout)
+//! [EXPORT] : [COMMENT] P1: Number of occured uart errors. First byte: Parity Error Count.
+//! Second byte: Overrun Error Count. Third byte: Framing Error Count.
+//! Fourth byte: Other Error Count. P2: Last error (for other error count, e.g. mutex timeout).
 static const Event RS232_POLLING_ERROR = event::makeEvent(UART_SUBSYSTEM_ID,
         0x01, severity::MEDIUM);
 static const Event RS485_POLLING_ERROR = event::makeEvent(UART_SUBSYSTEM_ID,

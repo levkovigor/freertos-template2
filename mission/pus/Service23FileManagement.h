@@ -105,7 +105,7 @@ protected:
             CommandMessage *optionalNextCommand, object_id_t objectId,
             bool *isStep) override;
 
-    virtual void handleUnrequestedReply(const CommandMessage *reply);
+    virtual void handleUnrequestedReply(CommandMessage* reply) override;
 
 private:
     ReturnValue_t checkInterfaceAndAcquireMessageQueue(

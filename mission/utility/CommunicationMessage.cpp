@@ -136,12 +136,12 @@ uint8_t CommunicationMessage::getDataByte(uint8_t position) const {
 		return byte;
 	}
 	else {
-		return 0;
 #if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "CommunicationMessage::getDataByte: Invalid byte position" << std::endl;
 #else
 		sif::printError("CommunicationMessage::getDataByte: Invalid byte position\n");
 #endif
+        return 0;
 	}
 }
 
@@ -197,7 +197,7 @@ void CommunicationMessage::clearCommunicationMessage() {
 	case(messageType::REPLY_DATA_IPC_STORE):
 	case(messageType::SEND_DATA_FROM_IPC_STORE): {
 		store_address_t storeId = getStoreId();
-		StorageManagerIF *ipcStore = objectManager->
+		StorageManagerIF *ipcStore = ObjectManager::instance()->
 				get<StorageManagerIF>(objects::IPC_STORE);
 		if (ipcStore != NULL) {
 			ipcStore->deleteData(storeId);

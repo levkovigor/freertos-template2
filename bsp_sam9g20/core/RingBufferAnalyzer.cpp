@@ -18,6 +18,7 @@ RingBufferAnalyzer::RingBufferAnalyzer(SharedRingBuffer *ringBuffer,
         sif::printError("SerialAnalyzerTask::SerialAnalyzerTask: "
                 "Passed ring buffer invalid!\n");
 #endif
+        return;
     }
     analysisVector = std::vector<uint8_t>(ringBuffer->getMaxSize());
 

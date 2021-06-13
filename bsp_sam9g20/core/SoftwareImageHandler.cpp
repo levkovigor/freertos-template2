@@ -12,9 +12,9 @@
 #include <fsfw/serviceinterface/ServiceInterface.h>
 
 #ifdef ISIS_OBC_G20
-#include <bsp_sam9g20/common/FRAMApi.h>
+#include <bsp_sam9g20/common/fram/FRAMApi.h>
 #else
-#include <bsp_sam9g20/common/VirtualFRAMApi.h>
+#include <bsp_sam9g20/common/fram/VirtualFRAMApi.h>
 #endif
 
 SoftwareImageHandler::SoftwareImageHandler(object_id_t objectId): SystemObject(objectId),
@@ -54,6 +54,9 @@ void SoftwareImageHandler::handleMessages() {
         }
 
         result = parameterHelper.handleParameterMessage(&message);
+        if(result == HasReturnvaluesIF::RETURN_OK) {
+            continue;
+        }
     }
 }
 
@@ -361,6 +364,7 @@ ReturnValue_t SoftwareImageHandler::handleCopyingHammingToStorage(ActionId_t act
 #endif
     ReturnValue_t result = imgCpHelper->startHammingCodeToFramOperation(respectiveSlot);
     handlerState = HandlerState::COPYING;
+    recipient = commandedBy;
     actionHelper.step(1, commandedBy, actionId, result);
     return result;
 }

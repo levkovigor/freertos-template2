@@ -1,5 +1,18 @@
+<div align="left"><img src="./doc/cubesat.png" width="50%"></div>
+
 SOURCE On-Board Software
 ======
+
+<a href="https://scan.coverity.com/projects/source-obsw-at91">
+  <img alt="Coverity Scan Build Status AT91"
+       src="https://scan.coverity.com/projects/22934/badge.svg"/>
+</a>
+
+<a href="https://scan.coverity.com/projects/source-obsw-iobc">
+  <img alt="Coverity Scan Build Status iOBC"
+       src="https://scan.coverity.com/projects/22935/badge.svg"/>
+</a>
+
 
 # General Information
 
@@ -27,7 +40,8 @@ The device specific documentation contains information on how to flash the built
 software to the boards as well. The host build can be run locally on the host computers but
 only Windows 10 and Ubuntu 20.04 were tested.
 The QEMU image can be run on a Linux computer as well, but requireds QEMU installed as specified
-in the QEMU documentation.
+in the QEMU documentation. It is also possible to build and run QEMU images on Windows using
+WSL (2).
 
 # Reference
 
@@ -52,7 +66,8 @@ in the QEMU documentation.
 2. Development board binaries: [GNU ARM Toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/) 
    installed, hardware or QEMU set-up available. 
 3. On Windows: [MSYS2 MinGW64](https://www.msys2.org/) installed to provide a Unix environment.
-4. For QEMU: QEMU repository cloned and set up in same folder in which
+4. For development boards:[SEGGER J-Link Software and Documentation Pack](https://www.segger.com/downloads/jlink/)
+5. For QEMU: QEMU repository cloned and set up in same folder in which
    this repository was cloned
 
 See separate [prerequisite](#prereq) chapter for more details
@@ -80,7 +95,7 @@ See separate [prerequisite](#prereq) chapter for more details
    ```sh
    git submodule init
    git submodule sync
-   git submodule update --recursive
+   git submodule update --init --recursive
    ```
 
 You can now build the software for either the AT91 and iOBC targets
@@ -177,7 +192,8 @@ repository was cloned and built inside the same folder the OBSW was cloned.
    
 ## Build Host Software
 
-Perform the following steps to build the hosted software
+Perform the following steps to build the hosted software. It is recommended to read
+[the separate README](doc/README-hosted.md#top) as well.
 
 ### Windows
 
@@ -187,7 +203,7 @@ Now you can run the following commands in the `sourceobsw` folder to build the s
 
 ```sh
 mkdir build-Debug-Host && cd build-Debug-Host
-cmake .. -G "MinGW Makefiles"
+cmake -G "MinGW Makefiles" -DHOST_BUILD=ON .. 
 cmake --build . -j
 ```
 
@@ -199,9 +215,41 @@ Linux OSAL instead
 
 ```sh
 mkdir build-Debug-Host && cd build-Debug-Host
-cmake ..
+cmake -DHOST_BUILD=ON ..
 cmake --build . -j
 ```
+
+# Static Code Analysis with Coverity
+
+Follow these instructions to perform static code analysis:
+
+1. Install the [Coverity Scan Build Tool](https://scan.coverity.com/download?tab=cxx)
+and make sure it can be called from the command line. MinGW64 recommended for Windows,
+path can be edited in the `.bashrc` file for this.
+
+2. Configure Coverity for ARM. Only needs to be done once.
+
+   ```sh
+   cov-configure --compiler arm-none-eabi-gcc --comptype gcc --template
+   ```
+
+
+3. Set up the CMake build folder as specified above
+
+4. Build with Coverity in the CMake build folder
+
+   ```sh
+   cov-build --dir cov-int cmake --build . -j
+   ```
+
+5. Package the coverity files
+
+   ```sh
+   tar czvf sourceobsw-coverity.tgz cov-int
+   ```
+
+6. Upload the files for the [AT91](https://scan.coverity.com/projects/source-obsw-at91) or
+the [iOBC](https://scan.coverity.com/projects/source-obsw-iobc?tab=overview) to Coverity
 
 # Build Configurations and testing of Flight Software
 

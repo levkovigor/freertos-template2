@@ -1,6 +1,6 @@
 #include <test/testtasks/PusTcInjector.h>
 
-#include <fsfw/objectmanager/ObjectManagerIF.h>
+#include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/tmtcservices/AcceptsTelecommandsIF.h>
 #include <fsfw/tmtcservices/TmTcMessage.h>
 #include <fsfw/tmtcpacket/pus/TcPacketBase.h>
@@ -52,7 +52,7 @@ ReturnValue_t PusTcInjector::initialize() {
 	// Prepare message queue which is used to send telecommands.
 	injectionQueue = QueueFactory::instance()->
 			createMessageQueue(INJECTION_QUEUE_DEPTH);
-	AcceptsTelecommandsIF* targetQueue = objectManager->
+	AcceptsTelecommandsIF* targetQueue = ObjectManager::instance()->
 			get<AcceptsTelecommandsIF>(destination);
 	if(targetQueue == nullptr) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -67,7 +67,7 @@ ReturnValue_t PusTcInjector::initialize() {
 	}
 
 	// Prepare store used to store TC messages
-	tcStore = objectManager->get<StorageManagerIF>(tcStoreId);
+	tcStore = ObjectManager::instance()->get<StorageManagerIF>(tcStoreId);
 	if(tcStore == nullptr) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "PusTcInjector: TC Store not initialized!" << std::endl;

@@ -289,12 +289,15 @@ void Service11TelecommandScheduling::GetRequestIdFromCurrentPacket(uint64_t& req
     uint8_t* data = (uint8_t*)currentPacket.getApplicationData();
     data += sizeof(uint32_t);
 
+    TcPacketBase mask2(data);
+
+
     TmPacketBase mask(data);
     uint64_t sourceId = 0;  //TODO: Get this
     uint64_t apid = (uint64_t)mask.getAPID();
     uint64_t sequenceCount = (uint64_t)mask.getPacketSequenceCount();
 
-    requestId = (sourceId << 32) + (apid << 16) + sequenceCount;
+    requestId = (sourceId << 32) | (apid << 16) | sequenceCount;
 
     sif::printInfo("GetUidFromCurrentPacket: sourceId: %d  apid: %d  sequenceCount: %d  requestId: %d\n", sourceId, apid, sequenceCount, requestId);
 }

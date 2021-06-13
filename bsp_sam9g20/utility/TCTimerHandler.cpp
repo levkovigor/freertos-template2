@@ -55,7 +55,7 @@ void TCTimerHandler::configureGenericInterrupt(TcPeripherals tcSelect,
     int retval = TC_FindMckDivisor(frequency, BOARD_MCK,
             reinterpret_cast<unsigned int*>(&div),
             reinterpret_cast<unsigned int*>(&tcclks));
-    if(retval == 0) {
+    if(retval == 0 || div == 0) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::warning << "TCTimerHandler::configureGenericInterrupt: Frequency "
                 "too high!" << std::endl;
