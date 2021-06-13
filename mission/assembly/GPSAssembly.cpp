@@ -115,8 +115,8 @@ ReturnValue_t GPSAssembly::initialize() {
 		return result;
 	}
 
-	GPSHandler* gps1Handler = objectManager->get<GPSHandler>(gps0Id);
-	GPSHandler* gps2Handler = objectManager->get<GPSHandler>(gps1Id);
+	GPSHandler* gps1Handler = ObjectManager::instance()->get<GPSHandler>(gps0Id);
+	GPSHandler* gps2Handler = ObjectManager::instance()->get<GPSHandler>(gps1Id);
 	if((gps1Handler == nullptr) or (gps2Handler == nullptr)) {
 	    return HasReturnvaluesIF::RETURN_FAILED;
 	}

@@ -10,6 +10,7 @@ public:
     SatelliteSystem(object_id_t setObjectId, object_id_t parent,
             uint32_t maxNumberOfSequences, uint32_t maxNumberOfTables,
             Mode_t noneMode, Mode_t bootMode, Mode_t safeMode, Mode_t idleMode);
+    virtual~ SatelliteSystem();
 
     ReturnValue_t initialize() override;
 private:

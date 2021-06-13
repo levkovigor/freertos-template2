@@ -2,13 +2,13 @@
 #include <fsfw/events/EventManagerIF.h>
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/events/EventMessage.h>
-#include <fsfw/tmtcpacket/pus/TmPacketStored.h>
+#include <fsfw/tmtcpacket/pus/TmPacketStoredPusA.h>
 #include <tmtc/apid.h>
 #include <tmtc/pusIds.h>
 #include <mission/pus/Service19EventAction.h>
 
-Service19EventAction::Service19EventAction(object_id_t objectId) :
-    PusServiceBase(objectId, apid::SOURCE_OBSW, pus::PUS_SERVICE_19),
+Service19EventAction::Service19EventAction(object_id_t objectId, uint16_t apid) :
+    PusServiceBase(objectId, apid, pus::PUS_SERVICE_19),
     packetSubCounter(0)
 {
 	eventQueue = QueueFactory::instance()->createMessageQueue();
@@ -16,6 +16,7 @@ Service19EventAction::Service19EventAction(object_id_t objectId) :
 
 Service19EventAction::~Service19EventAction()
 {
+    QueueFactory::instance()->deleteMessageQueue(eventQueue);
 }
 
 ReturnValue_t Service19EventAction::performService()
@@ -49,7 +50,7 @@ ReturnValue_t Service19EventAction::handleRequest()
 /* In addition to the default PUSServiceBase initialization, this service needs to
 be registered to the event manager to listen for events */
 ReturnValue_t Service19EventAction::initialize() {
-	EventManagerIF *manager = objectManager->get<EventManagerIF>(
+	EventManagerIF *manager = ObjectManager::instance()->get<EventManagerIF>(
 		objects::EVENT_MANAGER);
 	
 	if (manager == NULL)

@@ -54,6 +54,7 @@ protected:
 
 private:
 	static const uint8_t MAX_BUFFER_SIZE = 10;
+	static const uint8_t SWITCH_LIST_SIZE = 40;
 	uint8_t commandBuffer[MAX_BUFFER_SIZE];
 
 
@@ -64,7 +65,7 @@ private:
 
 	PCDUFailureIsolation fdir;
 
-	ReturnValue_t switchList[40];
+	ReturnValue_t switchList[SWITCH_LIST_SIZE];
 
 	enum test_enum { //!< [EXPORT] : [ENUM]
 		TEST = 0, //!< Default value

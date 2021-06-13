@@ -4,6 +4,7 @@
 #include <fsfw/timemanager/Countdown.h>
 #include <bsp_sam9g20/core/SoftwareImageHandler.h>
 #include <bsp_sam9g20/memory/SDCardAccess.h>
+#include <bsp_sam9g20/memory/HCCFileGuard.h>
 
 
 ImageCopyingEngine::ImageCopyingEngine(SoftwareImageHandler *owner,
@@ -36,9 +37,9 @@ ReturnValue_t ImageCopyingEngine::startSdcToSdcOperation(
     imageHandlerState = ImageHandlerStates::COPY_IMG_SDC_TO_SDC;
     this->sourceSlot = sourceSlot;
     if(sourceSlot == image::ImageSlot::SDC_SLOT_1){
-    	targetSlot = image::ImageSlot::SDC_SLOT_0;
+        targetSlot = image::ImageSlot::SDC_SLOT_0;
     }else{
-    	targetSlot = image::ImageSlot::SDC_SLOT_1;
+        targetSlot = image::ImageSlot::SDC_SLOT_1;
     }
     return HasReturnvaluesIF::RETURN_OK;
 }
@@ -146,7 +147,7 @@ ReturnValue_t ImageCopyingEngine::prepareGenericFileInformation(
                     currentFileSize = f_filelength(config::SW_FLASH_HAMMING_NAME);
                 }
                 else {
-                    /* TODO: This is cached in FRAM so we need to read it from there */                    //currentFileSize =
+                    /* TODO: This is cached in FRAM so we need to read it from there */
                 }
             }
             else if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
@@ -270,62 +271,65 @@ ReturnValue_t ImageCopyingEngine::readFile(uint8_t *buffer, size_t sizeToRead,
 }
 
 ReturnValue_t ImageCopyingEngine::copySdcImgToSdc() {
-	SDCardAccess sdCardAccess;
-	F_FILE *targetFile = nullptr;
-	F_FILE *sourceFile = nullptr;
-	size_t bytesRead = 0;
-	size_t sizeToRead = 0;
-	ssize_t bytesWritten = 0;
+    SDCardAccess sdCardAccess;
+    F_FILE *targetFile = nullptr;
+    F_FILE *sourceFile = nullptr;
+    size_t bytesRead = 0;
+    size_t sizeToRead = 0;
+    ssize_t bytesWritten = 0;
 
-	ReturnValue_t result = prepareGenericFileInformation(
-	        sdCardAccess.getActiveVolume(), &sourceFile);
-	if (result!=HasReturnvaluesIF::RETURN_OK){
-	    return result;
-	}
-	const char* targetSlotName = nullptr;
-	if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
-	    targetSlotName = config::SW_SLOT_1_NAME;
-	}else{
-	    targetSlotName = config::SW_SLOT_0_NAME;
-	}
-	if(stepCounter==0){
-	    //remove previous file at targetSlot
-	    f_delete(targetSlotName);
-	}
-	// "appending" opens file or creates it if it doesn't exist
-	targetFile = f_open(targetSlotName, "a");
+    ReturnValue_t result = prepareGenericFileInformation(
+            sdCardAccess.getActiveVolume(), &sourceFile);
+    if (result != HasReturnvaluesIF::RETURN_OK){
+        return result;
+    }
+    const char* targetSlotName = nullptr;
+    if(sourceSlot == image::ImageSlot::SDC_SLOT_0) {
+        targetSlotName = config::SW_SLOT_1_NAME;
+    }
+    else {
+        targetSlotName = config::SW_SLOT_0_NAME;
+    }
+    if(stepCounter==0) {
+        //remove previous file at targetSlot
+        f_delete(targetSlotName);
+    }
+    // "appending" opens file or creates it if it doesn't exist
+    targetFile = f_open(targetSlotName, "a");
 
-	if(targetFile==nullptr){
-	    return HasReturnvaluesIF::RETURN_FAILED;
-	}
-	HCCFileGuard fg(&targetFile);
+    if(targetFile==nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    HCCFileGuard fg(&targetFile);
 
-	while(true){
-		if(currentFileSize-currentByteIdx>imgBuffer->size()){
-			sizeToRead=imgBuffer->size();
-		}else{
-			sizeToRead=currentFileSize-currentByteIdx;
-		}
-		result = readFile(imgBuffer->data(), sizeToRead, &bytesRead, &sourceFile);
-		if(result!=HasReturnvaluesIF::RETURN_OK){
-		    return result;
-		}
-		currentByteIdx += bytesRead;
-		bytesWritten = f_write(imgBuffer->data(),  sizeof(uint8_t) , bytesRead, targetFile);
-		if(bytesWritten <= 0) {
+    while(true) {
+        if(currentFileSize-currentByteIdx>imgBuffer->size()){
+            sizeToRead=imgBuffer->size();
+        }
+        else {
+            sizeToRead=currentFileSize-currentByteIdx;
+        }
+        result = readFile(imgBuffer->data(), sizeToRead, &bytesRead, &sourceFile);
+        if(result!=HasReturnvaluesIF::RETURN_OK){
+            return result;
+        }
+        currentByteIdx += bytesRead;
+        bytesWritten = f_write(imgBuffer->data(),  sizeof(uint8_t) , bytesRead, targetFile);
+        if(bytesWritten <= 0) {
 
-		}
-		stepCounter++;
-		if(currentByteIdx>=currentFileSize){
-			reset();
-	        lastFinishedState = imageHandlerState;
-	        handleFinishPrintout();
-	        return image::OPERATION_FINISHED;
-		}
-		if(countdown->hasTimedOut()) {
-		    return image::TASK_PERIOD_OVER_SOON;
-		}
-	}
+        }
+        stepCounter++;
+        if(currentByteIdx>=currentFileSize){
+            /* Operation finished. */
+            handleFinishPrintout();
+            lastFinishedState = imageHandlerState;
+            reset();
+            return image::OPERATION_FINISHED;
+        }
+        if(countdown->hasTimedOut()) {
+            return image::TASK_PERIOD_OVER_SOON;
+        }
+    }
 
     return HasReturnvaluesIF::RETURN_OK;
 }

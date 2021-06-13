@@ -40,7 +40,7 @@ other services like Mattermost.
    You can also use the IP address (this is required for PyCharm remote configurations)
    
    ```sh
-   ssh -X source@192.168.199.228
+   ssh -X source@192.168.199.178
    ```
    
 3. It is recommended to set up SSH configuration either in Eclipse (cross-platform

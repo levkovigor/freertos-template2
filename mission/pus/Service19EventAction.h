@@ -45,7 +45,7 @@
 class Service19EventAction : public PusServiceBase
 {
 public:
-	Service19EventAction(object_id_t objectId_);
+	Service19EventAction(object_id_t objectId, uint16_t apid);
 	virtual ~Service19EventAction();
 
 	/***

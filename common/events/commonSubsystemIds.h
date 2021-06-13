@@ -1,0 +1,22 @@
+#ifndef COMMON_OBJECTS_COMMONSUBSYSTEMIDS_H_
+#define COMMON_OBJECTS_COMMONSUBSYSTEMIDS_H_
+
+#include "fsfw/events/fwSubsystemIdRanges.h"
+#include <cstdint>
+
+namespace SUBSYSTEM_ID {
+enum: uint8_t {
+    COMMON_SUBSYSTEM_ID_START = FW_SUBSYSTEM_ID_RANGE,
+
+    DUMMY_DEVICE = 112,
+    GPS_DEVICE = 113,
+    MGM_LIS3MDL = 114,
+
+    TEST_TASK = 120,
+    CORE_CONTROLLER = 121,
+
+    COMMON_SUBSYSTEM_ID_RANGE
+};
+}
+
+#endif /* COMMON_OBJECTS_COMMONSUBSYSTEMIDS_H_ */

@@ -1,10 +1,11 @@
+#include "OBSWConfig.h"
 #include "bsp_hosted/ObjectFactory.h"
 #include "boardtest/TestTaskHost.h"
 #include "fsfwconfig/objects/systemObjectList.h"
 #include "fsfwconfig/tmtc/apid.h"
 #include "fsfwconfig/tmtc/pusIds.h"
 
-#include <test/testinterfaces/DummyEchoComIF.h>
+#include <test/testinterfaces/TestEchoComIF.h>
 #include <test/testdevices/TestDeviceHandler.h>
 
 #include <mission/pus/Service11TelecommandScheduling.h>
@@ -15,12 +16,13 @@
 #include <fsfw/health/HealthTable.h>
 #include <fsfw/internalError/InternalErrorReporter.h>
 #include <fsfw/objectmanager/frameworkObjects.h>
+#include <fsfw/osal/common/TcpTmTcBridge.h>
+#include <fsfw/osal/common/TcpTmTcServer.h>
 #include <fsfw/timemanager/TimeStamper.h>
 
 #include <fsfw/storagemanager/PoolManager.h>
 #include <fsfw/tcdistribution/CCSDSDistributor.h>
 #include <fsfw/tcdistribution/PUSDistributor.h>
-#include <fsfw/tmtcpacket/pus/TmPacketStored.h>
 #include <fsfw/tmtcservices/PusServiceBase.h>
 #include <fsfw/pus/Service1TelecommandVerification.h>
 #include <fsfw/pus/Service2DeviceAccess.h>
@@ -32,7 +34,16 @@
 /* UDP server includes */
 #include <fsfw/osal/common/UdpTcPollingTask.h>
 #include <fsfw/osal/common/UdpTmTcBridge.h>
+#include <fsfw/pus/Service20ParameterManagement.h>
+#include <fsfw/pus/Service9TimeManagement.h>
+#include <fsfw/tmtcpacket/pus/TmPacketBase.h>
+
+/* Mission includes*/
+#include <mission/pus/Service17CustomTest.h>
+#include <mission/utility/TmFunnel.h>
 #include <mission/controller/acs/AttitudeController.h>
+#include <test/testdevices/devicedefinitions/testDeviceDefinitions.h>
+#include <test/testinterfaces/DummyCookie.h>
 
 #include <cstdint>
 
@@ -49,7 +60,7 @@
  *
  * @ingroup init
  */
-void Factory::produce(void) {
+void Factory::produce(void* args) {
     setStaticFrameworkObjectIds();
     new EventManager(objects::EVENT_MANAGER);
     new HealthTable(objects::HEALTH_TABLE);
@@ -115,12 +126,19 @@ void Factory::produce(void) {
     /* TM Destination */
     new TmFunnel(objects::TM_FUNNEL);
 
-    new UdpTmTcBridge(objects::UDP_BRIDGE,
-            objects::CCSDS_PACKET_DISTRIBUTOR, objects::TM_STORE,
-            objects::TC_STORE);
-    new UdpTcPollingTask(objects::UDP_POLLING_TASK,
-            objects::UDP_BRIDGE);
+#if OBSW_TCPIP_SERVER_TYPE == OBSW_TCPIP_SERVER_UDP
+    sif::printInfo("Setting up UDP server with listener port %s..\n",
+            UdpTmTcBridge::DEFAULT_UDP_SERVER_PORT.c_str());
+    new UdpTmTcBridge(objects::TCPIP_BRIDGE, objects::CCSDS_PACKET_DISTRIBUTOR);
+    new UdpTcPollingTask(objects::TCPIP_HELPER, objects::TCPIP_BRIDGE);
+#elif OBSW_TCPIP_SERVER_TYPE == OBSW_TCPIP_SERVER_TCP
+    sif::printInfo("Setting up TCP server with listener port %s..\n",
+            TcpTmTcServer::DEFAULT_TCP_SERVER_PORT.c_str());
+    new TcpTmTcBridge(objects::TCPIP_BRIDGE, objects::CCSDS_PACKET_DISTRIBUTOR);
+    new TcpTmTcServer(objects::TCPIP_HELPER, objects::TCPIP_BRIDGE);
+#endif /* OBSW_TCPIP_SERVER_TYPE == OBSW_TCPIP_SERVER_UDP */
 
+    /* Controller */
     new AttitudeController(objects::ATTITUDE_CONTROLLER);
 
     /* PUS Service Base Services */
@@ -132,6 +150,8 @@ void Factory::produce(void) {
             pus::PUS_SERVICE_5);
     new Service11TelecommandScheduling(objects::PUS_SERVICE_11_TC_SCHED, apid::SOURCE_OBSW,
                 pus::PUS_SERVICE_11);
+    new Service9TimeManagement(objects::PUS_SERVICE_9_TIME_MGMT, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_9);
     new Service17CustomTest(objects::PUS_SERVICE_17_TEST, apid::SOURCE_OBSW,
             pus::PUS_SERVICE_17);
 
@@ -142,13 +162,15 @@ void Factory::produce(void) {
             apid::SOURCE_OBSW, pus::PUS_SERVICE_8);
     new CService200ModeCommanding(objects::PUS_SERVICE_200_MODE_MGMT,
             apid::SOURCE_OBSW,pus::PUS_SERVICE_200);
+    new Service20ParameterManagement(objects::PUS_SERVICE_20_PARAMETERS, apid::SOURCE_OBSW,
+            pus::PUS_SERVICE_20);
 
 
     /* Test Tasks */
-    CookieIF* dummyCookie = new TestCookie(0);
+    CookieIF* dummyCookie = new DummyCookie(0, 128);
     new TestEchoComIF(objects::DUMMY_INTERFACE);
-    new TestDevice(objects::DUMMY_HANDLER, objects::DUMMY_INTERFACE,
-            dummyCookie, true);
+    new TestDevice(objects::DUMMY_HANDLER_0, objects::DUMMY_INTERFACE,
+            dummyCookie, testdevice::DeviceIndex::DEVICE_0, true);
     new TestTaskHost(objects::TEST_TASK, false);
 }
 
@@ -165,8 +187,8 @@ void Factory::setStaticFrameworkObjectIds() {
     DeviceHandlerBase::rawDataReceiverId = objects::PUS_SERVICE_2_DEVICE_ACCESS;
     DeviceHandlerBase::powerSwitcherId = objects::NO_OBJECT;
 
-    TmPacketStored::timeStamperId = objects::PUS_TIME;
-    TmFunnel::downlinkDestination = objects::UDP_BRIDGE;
+    TmPacketBase::timeStamperId = objects::PUS_TIME;
+    TmFunnel::downlinkDestination = objects::TCPIP_BRIDGE;
 }
 
 

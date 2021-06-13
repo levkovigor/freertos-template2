@@ -30,7 +30,6 @@ __pycache__
 *.ini
 .swp 
 
-generators/*.csv
 .eclipsesettings/
 
 generators/.idea/*

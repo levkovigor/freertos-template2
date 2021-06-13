@@ -50,6 +50,7 @@
 		.global _flushDCache
 		.global _flushWriteBuffer
 		.global _invalidateIDTLBs
+		.global _invalidateICache
 		
 
 //------------------------------------------------------------------------------
@@ -155,6 +156,15 @@ _invalidateIDTLBs:
 		mov		r0, #0
 		MCR     p15,0,r0,c8,c7
 		bx      lr
+
+_invalidateICache:
+        mov     r0, #0
+        MCR     p15,0,r0,c7,c5,0
+        bx      lr
+
+// taken from https://patchwork.ozlabs.org/project/uboot/patch/1300391223-11879-2-git-send-email-mspang@csclub.uwaterloo.ca/
+/* invalidate icache for coherence with cleaned dcache */
+//asm("mcr p15, 0, %0, c7, c5, 0" : : "r" (0));
 
 #endif
 

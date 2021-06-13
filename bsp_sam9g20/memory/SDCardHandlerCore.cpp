@@ -6,6 +6,7 @@
 
 #include <mission/memory/FileSystemMessage.h>
 
+#include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/ipc/CommandMessage.h>
@@ -15,16 +16,16 @@
 
 
 #ifdef ISIS_OBC_G20
-#include <bsp_sam9g20/common/FRAMApi.h>
+#include <bsp_sam9g20/common/fram/FRAMApi.h>
 #else
-#include <bsp_sam9g20/common/VirtualFRAMApi.h>
+#include <bsp_sam9g20/common/fram/VirtualFRAMApi.h>
 #endif
 
 
 SDCardHandler::SDCardHandler(object_id_t objectId): SystemObject(objectId),
         commandQueue(QueueFactory::instance()->createMessageQueue(MAX_MESSAGE_QUEUE_DEPTH)),
         actionHelper(this, commandQueue), countdown(0), stateMachine(this, &countdown) {
-    ipcStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
+    ipcStore = ObjectManager::instance()->get<StorageManagerIF>(objects::IPC_STORE);
 }
 
 
@@ -242,7 +243,7 @@ ReturnValue_t SDCardHandler::executeAction(ActionId_t actionId,
         if (size < 1) {
             return HasActionsIF::INVALID_PARAMETERS;
         }
-        if (data[0] != 0 or data[0] != 1) {
+        if (data[0] > 1) {
             return HasActionsIF::INVALID_PARAMETERS;
         }
         bool enable = data[0];

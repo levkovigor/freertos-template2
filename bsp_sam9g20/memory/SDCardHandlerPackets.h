@@ -362,7 +362,7 @@ public:
     }
 
 private:
-    bool lockFile;
+    bool lockFile = false;
 };
 
 class FinishAppendReply: public SerialLinkedListAdapter<SerializeIF> {
@@ -434,7 +434,7 @@ public:
         return sequenceNumber;
     }
 private:
-    uint16_t sequenceNumber;
+    uint16_t sequenceNumber = 0;
 };
 
 

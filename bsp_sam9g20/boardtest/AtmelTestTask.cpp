@@ -1,11 +1,13 @@
 #include <fsfw/storagemanager/PoolManager.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
+#include <fsfw/globalfunctions/arrayprinter.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Stopwatch.h>
 
 #include <bsp_sam9g20/boardtest/AtmelTestTask.h>
 #include <bsp_sam9g20/comIF/GpioDeviceComIF.h>
 #include <bsp_sam9g20/common/SRAMApi.h>
+#include <bsp_sam9g20/memory/HCCFileGuard.h>
 #include <bsp_sam9g20/memory/SDCardAccess.h>
 #include <bsp_sam9g20/memory/SDCardHandler.h>
 
@@ -23,7 +25,8 @@ extern "C" {
 
 #ifdef ISIS_OBC_G20
 #include <hal/Storage/NORflash.h>
-#include <bsp_sam9g20/common/FRAMApi.h>
+#include <hal/Storage/FRAM.h>
+#include <bsp_sam9g20/common/fram/FRAMApi.h>
 #include <hal/supervisor.h>
 #endif
 
@@ -63,6 +66,12 @@ ReturnValue_t AtmelTestTask::performOneShotAction() {
     //moveFileTest();
     //int32_t test = get_sram0_status_field();
     //TRACE_INFO("SRAM status field: %d\n\r", (int) test);
+//    uint8_t read_buf[128];
+//    int retval = FRAM_read(read_buf, FRAM_END_ADDR - 64, 64);
+//    if(retval != 0) {
+//        sif::printWarning("FRAM read failed with %d\n", retval);
+//    }
+//    arrayprinter::print(read_buf, 64);
 
 #ifdef ISIS_OBC_G20
     performIOBCTest();
@@ -139,7 +148,30 @@ void AtmelTestTask::performIOBCTest() {
     //performNorFlashTest(false);
     //performSupervisorTest();
     //performFRAMTest();
+    //performIobcHammingTest();
+}
 
+void AtmelTestTask::performIobcHammingTest() {
+    SDCardAccess access;
+    f_chdir("/");
+    int retval = f_chdir("BIN/IOBC/OBSW");
+    if(retval != 0) {};
+    F_FILE* fileHandle = nullptr;
+    HCCFileGuard fg(&fileHandle, config::SW_FLASH_HAMMING_NAME, "r");
+    if(fg.getOpenResult(nullptr) != HasReturnvaluesIF::RETURN_OK) {
+        return;
+    }
+    uint8_t startHamming[4];
+    f_read(startHamming, sizeof(uint8_t), 4, fileHandle);
+    f_seek(fileHandle, -4,SEEK_END);
+    uint8_t endHamming[4];
+    f_read(endHamming, sizeof(uint8_t), 4, fileHandle);
+    arrayprinter::print(startHamming, 4);
+    arrayprinter::print(endHamming, 4);
+
+    size_t sizeRead = 0;
+    retval = fram_read_ham_code(FLASH_SLOT, startHamming, 4, 0, 4, &sizeRead);
+    if(retval != 0) {}
 }
 
 void AtmelTestTask::performSupervisorTest() {

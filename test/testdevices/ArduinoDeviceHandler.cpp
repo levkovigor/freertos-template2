@@ -57,7 +57,7 @@ void ArduinoHandler::printCommand(uint8_t* command, size_t command_size) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Arduino Handler sent to " << idString << ": " << command << std::endl;
 #else
-    sif::printInfo("Arduino Handler sent to %s: %s", idString, command);
+    sif::printInfo("Arduino Handler sent to %s: %s", idString.c_str(), command);
 #endif
 }
 
@@ -85,11 +85,12 @@ ReturnValue_t ArduinoHandler::scanForReply(const uint8_t *start,
         size_t remainingSize, DeviceCommandId_t *foundId, size_t *foundLen) {
 	size_t expectedSize = ArduinoHandler::awesomeMap[lastCommand].size();
 	if(remainingSize == expectedSize) {
-		char readString[remainingSize];
-		memcpy(readString, start, remainingSize);
+	    std::vector<char> readString(remainingSize);
+		//char readString[remainingSize];
+		memcpy(readString.data(), start, remainingSize);
 		readString[remainingSize] = '\0';
 		if(commandPrintCounter == commandPrintInterval) {
-			printReply((unsigned char*)readString, remainingSize);
+			printReply((unsigned char*)readString.data(), remainingSize);
 			commandPrintCounter = 1;
 		}
 		else {
@@ -110,10 +111,10 @@ ReturnValue_t ArduinoHandler::scanForReply(const uint8_t *start,
 
 void ArduinoHandler::printReply(uint8_t * reply, size_t reply_size) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-    sif::info  << "Arduino Handler received echo reply from " << idString << ": " << reply
+    sif::info << "Arduino Handler received echo reply from " << idString << ": " << reply
             << std::endl;
 #else
-    sif::printInfo("Arduino Handler received echo reply from %s: %s\n", idString, reply);
+    sif::printInfo("Arduino Handler received echo reply from %s: %s\n", idString.c_str(), reply);
 #endif
 }
 

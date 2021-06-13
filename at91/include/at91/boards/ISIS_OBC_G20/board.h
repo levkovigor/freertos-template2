@@ -109,6 +109,7 @@
 #if BOARD_MDIV==0
 	#define BOARD_MCK			((18432000 * 43) / (1<<BOARD_PRES))
 #else
+    /// =132096000
 	#define BOARD_MCK			((18432000 * 43) / ( BOARD_MDIV * 2 * (1<<BOARD_PRES) ))
 #endif
 

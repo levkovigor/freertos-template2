@@ -1064,6 +1064,18 @@ void USBD_RemoteWakeUp(void)
 }
 
 //------------------------------------------------------------------------------
+/// Forward call to SetAddress function.
+/// \param address New device address.
+//------------------------------------------------------------------------------
+void USBD_SetAddressCb(void *pArg,
+        unsigned char status,
+        unsigned int transferred,
+        unsigned int remaining) {
+    unsigned int address = (unsigned int) pArg;
+    USBD_SetAddress(address);
+}
+
+//------------------------------------------------------------------------------
 /// Sets the device address to the given value.
 /// \param address New device address.
 //------------------------------------------------------------------------------

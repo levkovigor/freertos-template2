@@ -1,16 +1,15 @@
 #include "FRAMHandler.h"
+#include "OBSWVersion.h"
+
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/timemanager/Stopwatch.h>
 
 #ifdef ISIS_OBC_G20
-#include <hal/Storage/FRAM.h>
+#include "hal/Storage/FRAM.h"
 #else
-#include <bsp_sam9g20/common/VirtualFRAMApi.h>
-#include <bsp_sam9g20/memory/SDCardAccess.h>
+#include "bsp_sam9g20/common/fram/VirtualFRAMApi.h"
+#include "bsp_sam9g20/memory/SDCardAccess.h"
 #endif
-
-
-#include <OBSWVersion.h>
 
 std::array<uint8_t, sizeof(CriticalDataBlock)> FRAMHandler::criticalBlock;
 
@@ -35,6 +34,9 @@ ReturnValue_t FRAMHandler::setAddress(uint32_t *startAddress) {
 }
 
 ReturnValue_t FRAMHandler::readBootloaderBlock(uint8_t** ptr) {
+#ifdef AT91SAM9G20_EK
+    SDCardAccess access;
+#endif
     int result = fram_read_bootloader_block_raw(criticalBlock.data(), sizeof(BootloaderGroup));
     if(result != 0) {
         return HasReturnvaluesIF::RETURN_FAILED;
@@ -46,6 +48,9 @@ ReturnValue_t FRAMHandler::readBootloaderBlock(uint8_t** ptr) {
 }
 
 void FRAMHandler::printBootloaderBlock() {
+#ifdef AT91SAM9G20_EK
+    SDCardAccess access;
+#endif
     int result = fram_read_bootloader_block_raw(criticalBlock.data(), sizeof(BootloaderGroup));
     if(result != 0) {
         return;
@@ -57,6 +62,9 @@ void FRAMHandler::printBootloaderBlock() {
 }
 
 void FRAMHandler::printCriticalBlock() {
+#ifdef AT91SAM9G20_EK
+    SDCardAccess access;
+#endif
     /* Read the critical block */
     int result = fram_read_critical_block(criticalBlock.data(), sizeof(CriticalDataBlock));
     if(result != 0) {

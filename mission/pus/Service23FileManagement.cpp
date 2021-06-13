@@ -1,9 +1,10 @@
 #include "Service23FileManagement.h"
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
-#include <fsfw/tmtcpacket/pus/TmPacketStored.h>
+#include <fsfw/tmtcpacket/pus/TmPacketStoredPusA.h>
 #include <fsfw/memory/HasFileSystemIF.h>
 #include <fsfw/action/ActionMessage.h>
+#include <fsfw/objectmanager/ObjectManager.h>
 #include <objects/systemObjectList.h>
 #include <mission/memory/FileSystemMessage.h>
 
@@ -56,7 +57,7 @@ ReturnValue_t Service23FileManagement::checkInterfaceAndAcquireMessageQueue(
         MessageQueueId_t* messageQueueToSet, object_id_t* objectId) {
 	// check hasActionIF property of target
 	HasFileSystemIF* possibleTarget =
-	        objectManager->get<HasFileSystemIF>(*objectId);
+	        ObjectManager::instance()->get<HasFileSystemIF>(*objectId);
 	if(possibleTarget == nullptr){
 	    return CommandingServiceBase::INVALID_OBJECT;
 
@@ -193,8 +194,7 @@ ReturnValue_t Service23FileManagement::handleReply(const CommandMessage* reply,
 }
 
 
-void Service23FileManagement::handleUnrequestedReply(
-        const CommandMessage *reply) {
+void Service23FileManagement::handleUnrequestedReply(CommandMessage *reply) {
     Command_t replyId = reply->getCommand();
     switch(replyId) {
     case FileSystemMessage::REPLY_READ_FINISHED_STOP: {

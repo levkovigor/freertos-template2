@@ -43,7 +43,7 @@ public:
 			uint8_t **buffer, size_t *size) override;
 
 private:
-	UARTgenericTransfer writeStruct;
+	UARTgenericTransfer writeStruct = {};
 	BinarySemaphore writeSemaphore;
 	UARTtransferStatus writeResult = UARTtransferStatus::done_uart;
 

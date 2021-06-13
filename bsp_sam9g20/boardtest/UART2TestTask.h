@@ -41,6 +41,7 @@ private:
 
 	void performReadSendTest();
 	void performSendTest();
+	void performSendRecvTest();
 
 	void performNonBlockingOperation();
 	void performNonBlockingWriteRead();
@@ -55,7 +56,8 @@ private:
 
 	enum UartMode: uint8_t {
 		SEND_TEST,
-		READ_SEND_TEST,
+		SEND_RECV_TEST,
+		READ_SEND_TEST_ISIS,
 		NON_BLOCKING
 	};
 

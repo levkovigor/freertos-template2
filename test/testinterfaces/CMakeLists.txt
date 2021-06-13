@@ -1,5 +1,5 @@
 target_sources(${TARGET_NAME} PRIVATE
     DummyCookie.cpp
-    DummyEchoComIF.cpp
+    TestEchoComIF.cpp
     DummyGPSComIF.cpp
 )
