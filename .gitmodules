@@ -12,7 +12,7 @@
 	url = https://github.com/ETLCPP/etl.git
 [submodule "generators/modgen"]
 	path = generators/modgen
-	url = https://git.ksat-stuttgart.de/source/generatore_core.git
+	url = https://egit.irs.uni-stuttgart.de/fsfw/fsfw-generators.git
 [submodule "thirdparty/Catch2"]
 	path = thirdparty/Catch2
 	url = https://github.com/catchorg/Catch2.git
