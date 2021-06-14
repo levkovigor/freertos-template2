@@ -10,7 +10,7 @@
 [submodule "etl"]
 	path = thirdparty/etl
 	url = https://github.com/ETLCPP/etl.git
-[submodule "generators/generatore_core"]
+[submodule "generators/modgen"]
 	path = generators/modgen
 	url = https://git.ksat-stuttgart.de/source/generatore_core.git
 [submodule "thirdparty/Catch2"]

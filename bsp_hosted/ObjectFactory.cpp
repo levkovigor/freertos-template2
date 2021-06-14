@@ -124,9 +124,13 @@ void Factory::produce(void) {
     new TmFunnel(objects::TM_FUNNEL);
 
 #if OBSW_TCPIP_SERVER_TYPE == OBSW_TCPIP_SERVER_UDP
+    sif::printInfo("Setting up UDP server with listener port %s..\n",
+            UdpTmTcBridge::DEFAULT_UDP_SERVER_PORT.c_str());
     new UdpTmTcBridge(objects::TCPIP_BRIDGE, objects::CCSDS_PACKET_DISTRIBUTOR);
     new UdpTcPollingTask(objects::TCPIP_HELPER, objects::TCPIP_BRIDGE);
 #elif OBSW_TCPIP_SERVER_TYPE == OBSW_TCPIP_SERVER_TCP
+    sif::printInfo("Setting up TCP server with listener port %s..\n",
+            TcpTmTcServer::DEFAULT_TCP_SERVER_PORT.c_str());
     new TcpTmTcBridge(objects::TCPIP_BRIDGE, objects::CCSDS_PACKET_DISTRIBUTOR);
     new TcpTmTcServer(objects::TCPIP_HELPER, objects::TCPIP_BRIDGE);
 #endif /* OBSW_TCPIP_SERVER_TYPE == OBSW_TCPIP_SERVER_UDP */

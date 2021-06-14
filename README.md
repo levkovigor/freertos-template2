@@ -40,7 +40,8 @@ The device specific documentation contains information on how to flash the built
 software to the boards as well. The host build can be run locally on the host computers but
 only Windows 10 and Ubuntu 20.04 were tested.
 The QEMU image can be run on a Linux computer as well, but requireds QEMU installed as specified
-in the QEMU documentation.
+in the QEMU documentation. It is also possible to build and run QEMU images on Windows using
+WSL (2).
 
 # Reference
 
