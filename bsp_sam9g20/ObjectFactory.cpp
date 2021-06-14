@@ -16,7 +16,7 @@
 #include <fsfw/fdir/FailureIsolationBase.h>
 #include <fsfw/health/HealthTable.h>
 
-#include <fsfw/tmtcpacket/pus/TmPacketStored.h>
+#include <fsfw/tmtcpacket/pus/tm.h>
 
 /* PUS Includes */
 #include <fsfw/tmtcservices/PusServiceBase.h>

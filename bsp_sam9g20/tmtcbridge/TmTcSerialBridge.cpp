@@ -5,7 +5,7 @@
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/timemanager/Stopwatch.h>
-#include <fsfw/tmtcpacket/pus/TcPacketStored.h>
+#include <fsfw/tmtcpacket/pus/tc.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
 #include <fsfw/globalfunctions/DleEncoder.h>
 
