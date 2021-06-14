@@ -225,7 +225,7 @@ int fram_read_bootloader_block_raw(uint8_t* buff, size_t max_size) {
     return 0;
 }
 
-int fram_arm_deployment_timer(bool disarm) {
+int fram_arm_deployment_timer(bool arm) {
     return 0;
 }
 
