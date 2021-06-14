@@ -1,7 +1,6 @@
 #include "Service23FileManagement.h"
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
-#include <fsfw/tmtcpacket/pus/TmPacketStoredPusA.h>
 #include <fsfw/memory/HasFileSystemIF.h>
 #include <fsfw/action/ActionMessage.h>
 #include <fsfw/objectmanager/ObjectManager.h>

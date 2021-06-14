@@ -4,7 +4,7 @@
 #include <fsfw/serialize/SerializeAdapter.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/tmtcservices/CommandingServiceBase.h>
-#include <fsfw/tmtcpacket/pus/TmPacketStored.h>
+#include <fsfw/tmtcpacket/pus/tm.h>
 
 
 TestEchoComIF::TestEchoComIF(object_id_t objectId):

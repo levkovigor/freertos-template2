@@ -32,7 +32,7 @@
 #include <fsfw/osal/common/UdpTmTcBridge.h>
 #include <fsfw/pus/Service20ParameterManagement.h>
 #include <fsfw/pus/Service9TimeManagement.h>
-#include <fsfw/tmtcpacket/pus/TmPacketBase.h>
+#include <fsfw/tmtcpacket/pus/tm.h>
 
 /* Mission includes*/
 #include <mission/pus/Service17CustomTest.h>
