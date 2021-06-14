@@ -187,7 +187,7 @@ int fram_set_to_load_softwareupdate(bool enable, VolumeId volume);
  */
 int fram_get_to_load_softwareupdate(bool* enable, VolumeId* volume);
 
-int fram_arm_deployment_timer(bool disarm);
+int fram_arm_deployment_timer(bool arm);
 int fram_is_deployment_timer_armed(bool* armed);
 
 int fram_get_seconds_on_deployment_timer(uint32_t* seconds);
