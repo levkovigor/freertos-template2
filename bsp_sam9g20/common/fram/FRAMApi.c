@@ -631,11 +631,8 @@ int fram_read_bootloader_block(BootloaderGroup* bl_info) {
     return FRAM_read((unsigned char*) bl_info, BL_GROUP_ADDR, sizeof(BootloaderGroup));
 }
 
-int fram_arm_deployment_timer(bool disarm) {
-    uint8_t value_to_write = true;
-    if(disarm) {
-        value_to_write = false;
-    }
+int fram_arm_deployment_timer(bool arm) {
+    uint8_t value_to_write = arm;
     return FRAM_writeAndVerify((unsigned char*) &value_to_write, FRAM_DEPLOY_TIMER_ARMED_ADDR,
             sizeof(uint8_t));
 }
