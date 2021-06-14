@@ -11,5 +11,3 @@ void messagetypes::clearMissionMessage(CommandMessage* message) {
 		break;
 	}
 }
-
-
