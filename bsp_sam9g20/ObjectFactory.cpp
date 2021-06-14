@@ -42,7 +42,6 @@
 #include <mission/devices/GyroHandler.h>
 #include <mission/devices/MGMHandlerLIS3MDL.h>
 #include <mission/fdir/PCDUFailureIsolation.h>
-#include <mission/controller/acs/AttitudeController.h>
 
 /* Test files */
 #include <test/testinterfaces/TestEchoComIF.h>
@@ -220,7 +219,6 @@ void Factory::produce(void* args) {
     new CoreController(objects::CORE_CONTROLLER, objects::SYSTEM_STATE_TASK);
     new SystemStateTask(objects::SYSTEM_STATE_TASK, objects::CORE_CONTROLLER);
     new ThermalController(objects::THERMAL_CONTROLLER);
-    new AttitudeController(objects::ATTITUDE_CONTROLLER);
 
     DummyCookie * dummyCookie2 = new DummyCookie(addresses::DUMMY_GPS0, 128);
 #if defined(VIRTUAL_BUILD)

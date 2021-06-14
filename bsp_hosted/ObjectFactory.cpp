@@ -6,6 +6,7 @@
 #include "fsfwconfig/tmtc/pusIds.h"
 
 #include <test/testinterfaces/TestEchoComIF.h>
+#include <test/testinterfaces/DummyCookie.h>
 #include <test/testdevices/TestDeviceHandler.h>
 
 #include <mission/pus/Service11TelecommandScheduling.h>
@@ -41,7 +42,7 @@
 /* Mission includes*/
 #include <mission/pus/Service17CustomTest.h>
 #include <mission/utility/TmFunnel.h>
-#include <mission/controller/acs/AttitudeController.h>
+//#include <mission/controller/acs/AttitudeController.h>
 #include <test/testdevices/devicedefinitions/testDeviceDefinitions.h>
 #include <test/testinterfaces/DummyCookie.h>
 
@@ -137,9 +138,6 @@ void Factory::produce(void* args) {
     new TcpTmTcBridge(objects::TCPIP_BRIDGE, objects::CCSDS_PACKET_DISTRIBUTOR);
     new TcpTmTcServer(objects::TCPIP_HELPER, objects::TCPIP_BRIDGE);
 #endif /* OBSW_TCPIP_SERVER_TYPE == OBSW_TCPIP_SERVER_UDP */
-
-    /* Controller */
-    new AttitudeController(objects::ATTITUDE_CONTROLLER);
 
     /* PUS Service Base Services */
     new Service1TelecommandVerification(objects::PUS_SERVICE_1_VERIFICATION,
