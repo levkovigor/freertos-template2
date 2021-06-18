@@ -338,12 +338,12 @@ void initTasks(void) {
         initmission::printAddObjectError("Thermal Controller", objects::THERMAL_CONTROLLER);
     }
 
-    PeriodicTaskIF *attitudeController = taskFactory->createPeriodicTask("ATTITUDE_CTRL", 6,
-                    2048 * 4, 0.4, genericMissedDeadlineFunc);
-    result = attitudeController->addComponent(objects::ATTITUDE_CONTROLLER);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        initmission::printAddObjectError("Attitude Controller", objects::ATTITUDE_CONTROLLER);
-    }
+//    PeriodicTaskIF *attitudeController = taskFactory->createPeriodicTask("ATTITUDE_CTRL", 6,
+//                    2048 * 4, 0.4, genericMissedDeadlineFunc);
+//    result = attitudeController->addComponent(objects::ATTITUDE_CONTROLLER);
+//    if (result != HasReturnvaluesIF::RETURN_OK) {
+//        initmission::printAddObjectError("Attitude Controller", objects::ATTITUDE_CONTROLLER);
+//    }
 
 #if OBSW_ADD_SPI_TEST_TASK == 0
     /* SPI Communication Interface*/
