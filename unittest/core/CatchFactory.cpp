@@ -1,13 +1,14 @@
+#include "CatchFactory.h"
+
 #include <fsfw/datapoollocal/LocalDataPoolManager.h>
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
-#include "CatchFactory.h"
 
 #include <fsfw/events/EventManager.h>
 #include <fsfw/health/HealthTable.h>
 #include <fsfw/internalError/InternalErrorReporter.h>
 #include <fsfw/objectmanager/frameworkObjects.h>
 #include <fsfw/storagemanager/PoolManager.h>
-#include <fsfw/tmtcpacket/pus/TmPacketStored.h>
+#include <fsfw/tmtcpacket/pus/tm.h>
 #include <fsfw/tmtcservices/CommandingServiceBase.h>
 #include <fsfw/tmtcservices/PusServiceBase.h>
 //#include <fsfw/unittest/tests/datapoollocal/LocalPoolOwnerBase.h>
@@ -26,7 +27,7 @@
  *
  * @ingroup init
  */
-void Factory::produce(void) {
+void Factory::produce(void* args) {
 	setStaticFrameworkObjectIds();
 	new EventManager(objects::EVENT_MANAGER);
 	new HealthTable(objects::HEALTH_TABLE);
