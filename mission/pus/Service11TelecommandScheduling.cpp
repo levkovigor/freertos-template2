@@ -289,10 +289,10 @@ ReturnValue_t Service11TelecommandScheduling::GetDeserializedTimestamp(uint32_t&
 void Service11TelecommandScheduling::GetRequestIdFromCurrentPacket(uint64_t& requestId) {
 
     uint8_t* data = (uint8_t*)currentPacket.getApplicationData();
-    data += sizeof(uint32_t);
+    data += sizeof(uint32_t);   // move data pointer past the timestamp
 
     TcPacketBase mask(data);
-    uint64_t sourceId = 0;  //TODO: Get this
+    uint64_t sourceId = mask.getSourceId();
     uint64_t apid = (uint64_t)mask.getAPID();
     uint64_t sequenceCount = (uint64_t)mask.getPacketSequenceCount();
 
