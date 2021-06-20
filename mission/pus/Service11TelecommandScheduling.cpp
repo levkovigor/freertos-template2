@@ -305,21 +305,30 @@ void Service11TelecommandScheduling::GetRequestIdFromCurrentPacket(uint64_t& req
 
 ReturnValue_t Service11TelecommandScheduling::ReStorePacket(store_address_t* const addrNew) {
 
-    size_t size = this->currentPacket.getApplicationDataSize();
-    uint8_t* pDataNew;
+//    size_t size = this->currentPacket.getApplicationDataSize();
+//    uint8_t* pDataNew;
+//
+//    const uint8_t* pDataCurrent = this->currentPacket.getApplicationData();
+//    if (pDataCurrent == nullptr) {
+//        return HasReturnvaluesIF::RETURN_FAILED;
+//    }
 
-    const uint8_t* pDataCurrent = this->currentPacket.getApplicationData();
-    if (pDataCurrent == nullptr) {
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
+    // re-implementation for "packed" packet:
+    size_t size = currentPacket.getApplicationDataSize();
+    uint8_t* dataNew;
+    const uint8_t* data = currentPacket.getApplicationData();
+
+    // remove release time from app data
+    data += sizeof(uint32_t);
+    size -= sizeof(uint32_t);
 
     // get new slot
-    auto ret = tcStore->getFreeElement(addrNew, size, &pDataNew, false);
+    auto ret = tcStore->getFreeElement(addrNew, size, &dataNew, false);
     if (ret != HasReturnvaluesIF::RETURN_OK) {
         return ret;
     }
 
-    std::memcpy(pDataNew, pDataCurrent, size);
+    std::memcpy(dataNew, data, size);
 
     return HasReturnvaluesIF::RETURN_OK;
 }
