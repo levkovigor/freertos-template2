@@ -164,7 +164,7 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
         return manipulateLocalHammingFlag(false, actionId, commandedBy, data, size);
     }
     case(ARM_DEPLOYMENT_TIMER): {
-        int result = fram_arm_deployment_timer(false);
+        int result = fram_arm_deployment_timer(true);
         if(result == 0) {
             return HasActionsIF::EXECUTION_FINISHED;
         }
