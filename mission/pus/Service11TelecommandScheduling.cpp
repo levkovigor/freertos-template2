@@ -82,6 +82,8 @@ ReturnValue_t Service11TelecommandScheduling::performService() {
         }
     }
 
+
+
     return HasReturnvaluesIF::RETURN_OK;
 }
 
