@@ -24,7 +24,9 @@ public:
     using EtlMapIter = typename EtlMap::iterator;
     using EtlMapConstIter = typename EtlMap::const_iterator;
 
-	EtlIMapWrapper() = default;
+	EtlIMapWrapper(etl::imap<TKey, TMapped>* mapPtr) {
+		map = mapPtr;
+	}
 	~EtlIMapWrapper() = default;
 
 	ReturnValue_t emplace(TKey key, TMapped value) {
@@ -76,10 +78,6 @@ public:
 
 	void clear() {
 		map->clear();
-	}
-
-	void insertMapPtr(etl::imap<TKey, TMapped>* ptr) {
-		map = ptr;
 	}
 
 	etl::imap<TKey, TMapped>* getMapPointer() {

@@ -27,7 +27,9 @@ class EtlIMultiMapWrapper{
 	etl::imultimap<TKey, TMapped> *multimap;
 
 public:
-	EtlIMultiMapWrapper() = default;
+	EtlIMultiMapWrapper(etl::imultimap<TKey, TMapped>* multiMapPtr) {
+		multimap = multiMapPtr;
+	}
 	~EtlIMultiMapWrapper() = default;
 
 	ReturnValue_t emplace(TKey key, TMapped value) {
@@ -75,10 +77,6 @@ public:
 
 	void clear() {
 		multimap->clear();
-	}
-
-	void insertMultiMapPtr(etl::imultimap<TKey, TMapped>* ptr) {
-		multimap = ptr;
 	}
 
 	etl::imultimap<TKey, TMapped>* getMultiMapPointer() {

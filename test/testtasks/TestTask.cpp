@@ -10,7 +10,6 @@
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
 
-#include <etl/vector.h>
 #include <array>
 #include <cstring>
 
@@ -169,3 +168,55 @@ void TestTask::examplePacketTest() {
         }
     }
 }
+
+/**
+ETLIMultiMapWrapper test, can be used later to create unit test. For testing
+EtlIMapWrapper, this test can be used as a guideline and with minor modifications
+(like only emplacing once for a key) can be used to test EtlIMapWrapper.
+
+#include <etl/map.h>
+#include <mission/memory/tmstore/EtlIMultiMapWrapper.h>
+
+void TestTask::performEtlTemplateTest() {
+	sif::printInfo("test ETLMultiMapWrapper\n");
+	etl::multimap<int, char, 3>* map = new etl::multimap<int, char, 3>();
+	EtlIMultiMapWrapper<int, char>* wrapper = new EtlIMultiMapWrapper<int, char>(map);
+	wrapper->emplace(1, 'a');
+	wrapper->emplace(2, 'b');
+	wrapper->emplace(3, 'c');
+
+	if((wrapper->emplace(4, 'a'))==HasReturnvaluesIF::RETURN_FAILED) {
+		sif::printInfo("works at point 1\n");
+	}
+
+	char returnval = wrapper->get(3).begin->second;
+	sif::printInfo("tttt %c\n", returnval);
+	if(returnval == 'c') {
+		sif::printInfo("works at point 2\n");
+	}
+
+	wrapper->erase(3, 'c');
+
+	if(wrapper->get(3).returnValue== HasReturnvaluesIF::RETURN_FAILED) {
+		sif::printInfo("works at point 3\n");
+	}
+
+	wrapper->clear();
+
+	if(wrapper->get(1).returnValue == HasReturnvaluesIF::RETURN_FAILED) {
+		sif::printInfo("works at point 4\n");
+	}
+
+	wrapper->emplace(1, 'a');
+	wrapper->emplace(1, 'b');
+
+	typename etl::imultimap<int, char>::const_iterator returnIt = wrapper->get(1).begin;
+	if(returnIt->second == 'a') {
+		sif::printInfo("works at point 5\n");
+	}
+	returnIt++;
+	if(returnIt->second == 'b') {
+		sif::printInfo("works at point 6\n");
+	}
+}
+**/
