@@ -19,7 +19,7 @@ from datetime import date
 from genmib.parserbase import FileParser
 from genmib.utility.mib_csv_writer import CsvWriter
 from genmib.utility.mib_printer import Printer
-from modgen.utility.file_management import copy_file
+from fsfwgen.utility.file_management import copy_file
 
 
 DATE_TODAY = date.today()

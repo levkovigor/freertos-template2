@@ -30,7 +30,7 @@ enum commonObjects: object_id_t {
     GPS1_HANDLER = 0x44202000,
 
     DLR_PVCH = 0x44104000,
-    GYRO1 = 0x44105000,
+    GYRO0_HANDLER = 0x44105000,
     DLR_IRAS = 0x44106000,
 
     /* fourth byte decoder output ID */
@@ -62,7 +62,7 @@ enum commonObjects: object_id_t {
     PT1000_SuS7_DEC3 = 0x44130305,
     PT1000_SuS8_DEC3 = 0x44130306,
     PT1000_PVCH_DEC3 = 0x44130307,
-    GYRO2 = 0x44130308,
+    GYRO1_HANDLER = 0x44130308,
 
     // Devices connected to decoder 4
     PT1000_PLOC_DEC4 = 0x44145401,
