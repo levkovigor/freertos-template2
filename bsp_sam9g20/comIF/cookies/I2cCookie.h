@@ -35,11 +35,12 @@ public:
 	/**
 	 * Costructor for I2C transfers using the queueTransfer with binary semaphore
 	 * as a signalling mechanism and separate write and read queue transfers
+	 * @param address       7-bit I2C address
+	 * @param maxReplyLen
 	 * @param i2cComType_
 	 * @param
 	 */
-	I2cCookie(address_t address, size_t maxReplyLen,
-			I2cCommunicationType i2cComType_ =
+	I2cCookie(address_t address, size_t maxReplyLen, I2cCommunicationType i2cComType_ =
 			I2cCommunicationType::SEPARATE_WRITE_READ);
 
 	virtual ~I2cCookie();
