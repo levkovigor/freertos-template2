@@ -31,6 +31,7 @@ ReturnValue_t PVCHTestTask::initialize() {
     if(result != HasReturnvaluesIF::RETURN_OK) {
         sif::printWarning("PVCHTestTask::initialize: I2C ComIF initialization failed!\n");
     }
+    // Set ports as output
     txBuf[0] = PCA9554Regs::CONFIG;
     txBuf[1] = 0x00;
     result = i2cComIF->sendMessage(i2cCookie, txBuf.data(), 2);
