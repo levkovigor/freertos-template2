@@ -1,6 +1,6 @@
 #include "PVCHTestTask.h"
 
-PVCHTestTask::PVCHTestTask(object_id_t objectId) {
+PVCHTestTask::PVCHTestTask(object_id_t objectId): SystemObject(objectId) {
 }
 
 ReturnValue_t PVCHTestTask::initialize() {
