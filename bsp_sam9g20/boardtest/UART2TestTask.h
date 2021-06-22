@@ -1,10 +1,3 @@
-/*
- * UART2TestTask.h
- *
- *  Created on: 20.10.2019
- *      Author: jakob
- */
-
 #ifndef _UART2TESTTASK_H_
 #define _UART2TESTTASK_H_
 

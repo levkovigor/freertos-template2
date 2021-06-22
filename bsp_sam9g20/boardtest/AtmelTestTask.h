@@ -20,9 +20,6 @@ private:
 
     void printDecoderOutput();
     ReturnValue_t performDataSetTesting(uint8_t testMode);
-    //void performNewPoolManagerAccessTests();
-
-    //GlobalTestDataSet testDataSet;
 
     void performExceptionTest();
     void performSDCardDemo();
