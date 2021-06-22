@@ -40,6 +40,7 @@ enum sourceObjects: object_id_t {
     AT91_UART0_TEST_TASK =  0x62007402,
     AT91_UART2_TEST_TASK = 0x62007403,
     AT91_SPI_TEST_TASK = 0x62007404,
+    PVCH_TEST_TASK= 0x62007405,
 
 
     /* 0x74 ('t') for Test objects  */
