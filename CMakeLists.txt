@@ -85,8 +85,9 @@ if(NOT HOST_BUILD)
     else()
         set(FSFW_CONFIG_PATH "${BSP_PATH}/fsfwconfig")
     endif()
+
     set(FSFW_CONFIG_PATH_FULL "${CMAKE_SOURCE_DIR}/${FSFW_CONFIG_PATH}")
-    
+
     set(FSFW_ADDITIONAL_LINK_LIBS ${LIB_AT91_NAME})
     if(BOOTLOADER)
         set(BOARD_CONFIG_PATH "${CMAKE_SOURCE_DIR}/${BOOTLOADER_PATH}/config")
@@ -121,6 +122,7 @@ if(NOT HOST_BUILD)
         ${COMMON_AT91_CONFIG_PATH}
         ${FREERTOS_PORT_MACRO_PATH}
         ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_BINARY_DIR}
         ${BOARD_CONFIG_PATH}
     )
 
@@ -163,6 +165,16 @@ elseif(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
     add_compile_options(/permissive- /d2SSAOptimizer-)
     # To avoid nameclashes with min and max macro
     add_compile_definitions(NOMINMAX)
+endif()
+
+set(FSFW_ADDITIONAL_INC_PATHS
+    ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+if(NOT BOOTLOADER)
+    configure_file("${FSFW_CONFIG_PATH}/OBSWConfig.h.in" OBSWConfig.h)
+    configure_file("${FSFW_CONFIG_PATH}/FSFWConfig.h.in" FSFWConfig.h)
+else()
 endif()
 
 set(LINK_HCC ON)
@@ -274,6 +286,7 @@ endif()
 # Add include paths for all sources.
 target_include_directories(${TARGET_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 # Compile options for all sources.

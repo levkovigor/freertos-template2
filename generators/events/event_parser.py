@@ -10,6 +10,9 @@ On Windows, Build Tools installation might be necessary
 @data   21.11.2019
 """
 import datetime
+from xml.etree import ElementTree as ElementTree
+from xml.dom import minidom
+from io import BytesIO
 
 from modgen.events.event_parser import handle_csv_export, handle_cpp_export, SubsystemDefinitionParser, EventParser
 from modgen.parserbase.file_list_parser import FileListParser
@@ -86,8 +89,34 @@ def parse_events():
     list_items = sorted(event_table.items())
     print(f"Found {len(list_items)} entries:")
     PrettyPrinter.pprint(list_items)
+    # xml_test()
     return list_items
 
 
+def xml_test():
+    root = ElementTree.Element('a')
+    root.append(ElementTree.Comment("Comment Block"))
+    b = ElementTree.SubElement(root, 'b', {"hallo": "hallo"})
+    b.text = "Hallo"
+    c = ElementTree.SubElement(root, 'c')
+    c.text = "Hallo"
+    d = ElementTree.SubElement(c, 'd')
+    d.text = "Hallo2"
+
+    tree = ElementTree.ElementTree(element=root)
+
+    xml_string_rep = ElementTree.tostring(root, method="xml", encoding='utf-8', xml_declaration=True)
+    xml_pretty_str = minidom.parseString(xml_string_rep).toprettyxml(indent="    ")
+    # with open("New_Database.xml", "w") as f:
+    #     f.write(xml_pretty_str)
+
+    tree.write("New_Database.xml", encoding='utf-8', xml_declaration=True)
+    print(xml_string_rep)
+    print(xml_pretty_str)
+    # your XML file, encoded as UTF-8
+
+
 if __name__ == "__main__":
-    main()
+    # main()
+    xml_test()
+

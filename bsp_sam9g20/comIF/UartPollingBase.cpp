@@ -1,7 +1,7 @@
 #include "UartPollingBase.h"
 #include "ComConstants.h"
 
-#include <fsfw/objectmanager/ObjectManagerIF.h>
+#include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
 #include <fsfw/osal/FreeRTOS/TaskManagement.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
@@ -26,7 +26,7 @@ ReturnValue_t UartPollingBase::initialize() {
 #endif
     }
 
-    sharedRingBuffer = objectManager->get<SharedRingBuffer>(sharedRingBufferId);
+    sharedRingBuffer = ObjectManager::instance()->get<SharedRingBuffer>(sharedRingBufferId);
     if(sharedRingBuffer == nullptr) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "TcSerialPollingTask::initialize: Passed ring buffer invalid!" << std::endl;

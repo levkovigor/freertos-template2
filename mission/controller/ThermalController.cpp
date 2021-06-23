@@ -43,7 +43,7 @@ ReturnValue_t ThermalController::initializeAfterTaskCreation() {
                 " class initialization failed!\n");
 #endif
     }
-    HasLocalDataPoolIF* testHkbHandler = objectManager->get<HasLocalDataPoolIF>(
+    HasLocalDataPoolIF* testHkbHandler = ObjectManager::instance()->get<HasLocalDataPoolIF>(
             TSensorDefinitions::ObjIds::TEST_HKB_HANDLER);
     //LocalDataPoolManager* hkManager = testHkbHandler->getHkManagerHandle();
     //testHkbHandler->getDataSetHandle()

@@ -33,7 +33,7 @@
 #include <fsfw/osal/common/UdpTmTcBridge.h>
 #include <fsfw/pus/Service20ParameterManagement.h>
 #include <fsfw/pus/Service9TimeManagement.h>
-#include <fsfw/tmtcpacket/pus/TmPacketBase.h>
+#include <fsfw/tmtcpacket/pus/tm.h>
 
 /* Mission includes*/
 #include <mission/pus/Service17CustomTest.h>
@@ -57,7 +57,7 @@
  *
  * @ingroup init
  */
-void Factory::produce(void) {
+void Factory::produce(void* args) {
     setStaticFrameworkObjectIds();
     new EventManager(objects::EVENT_MANAGER);
     new HealthTable(objects::HEALTH_TABLE);

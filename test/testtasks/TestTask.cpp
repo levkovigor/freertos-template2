@@ -6,7 +6,7 @@
 #include <tmtc/apid.h>
 
 #include <fsfw/unittest/internal/InternalUnitTester.h>
-#include <fsfw/objectmanager/ObjectManagerIF.h>
+#include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
 
@@ -28,7 +28,7 @@ TestTask::TestTask(object_id_t objectId_):
     if(testLock == nullptr) {
         testLock = MutexFactory::instance()->createMutex();
     }
-    IPCStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
+    IPCStore = ObjectManager::instance()->get<StorageManagerIF>(objects::IPC_STORE);
 
     //subscribeInTmManager(service, subservice);
 }
