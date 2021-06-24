@@ -1,8 +1,9 @@
 #include "Service6MemoryManagement.h"
 
 #include <fsfw/memory/AcceptsMemoryMessagesIF.h>
+#include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/globalfunctions/CRC.h>
-#include <fsfw/tmtcpacket/pus/TmPacketStoredPusA.h>
+#include <fsfw/tmtcpacket/pus/tm.h>
 #include <mission/pus/servicepackets/Service6Packets.h>
 
 Service6MemoryManagement::Service6MemoryManagement(object_id_t objectId,
@@ -37,7 +38,7 @@ ReturnValue_t Service6MemoryManagement::getMessageQueueAndObject(
 
 ReturnValue_t Service6MemoryManagement::checkInterfaceAndAcquireMessageQueue(
         MessageQueueId_t* messageQueueToSet, object_id_t* objectId) {
-    AcceptsMemoryMessagesIF * destination = objectManager->
+    AcceptsMemoryMessagesIF * destination = ObjectManager::instance()->
             get<AcceptsMemoryMessagesIF>(*objectId);
     if(destination == nullptr) {
         return CommandingServiceBase::INVALID_OBJECT;
@@ -165,9 +166,15 @@ ReturnValue_t Service6MemoryManagement::sendMemoryCheckPacket(
 	checkPacket.setLength(MemoryMessage::getLength(reply));
 	checkPacket.setChecksum(MemoryMessage::getCrc(reply));
 
+#if FSFW_USE_PUS_C_TELEMETRY == 0
 	TmPacketStoredPusA tmPacket(apid, service,
 			static_cast<uint8_t>(Subservice::MEMORY_CHECK_REPORT),
 			packetSubCounter++, &checkPacket);
+#else
+    TmPacketStoredPusC tmPacket(apid, service,
+            static_cast<uint8_t>(Subservice::MEMORY_CHECK_REPORT),
+            packetSubCounter++, &checkPacket);
+#endif
 	sendTmPacket(static_cast<uint8_t>(Subservice::MEMORY_CHECK_REPORT),
 			&checkPacket);
 	return CommandingServiceBase::EXECUTION_COMPLETE;

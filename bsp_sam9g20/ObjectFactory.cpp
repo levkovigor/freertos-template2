@@ -90,7 +90,7 @@
  *
  * @ingroup init
  */
-void Factory::produce(void) {
+void Factory::produce(void* args) {
     setStaticFrameworkObjectIds();
     new EventManager(objects::EVENT_MANAGER);
     new HealthTable(objects::HEALTH_TABLE);

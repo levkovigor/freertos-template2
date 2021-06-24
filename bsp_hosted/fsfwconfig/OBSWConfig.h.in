@@ -7,7 +7,7 @@
 #define OBSW_TCPIP_SERVER_UDP                   1
 #define OBSW_TCPIP_SERVER_TCP                   2
 
-#define OBSW_TCPIP_SERVER_TYPE                  OBSW_TCPIP_SERVER_TCP
+#define OBSW_TCPIP_SERVER_TYPE                  OBSW_TCPIP_SERVER_UDP
 #define OBSW_PRINT_MISSED_DEADLINES             1
 #define OBSW_VERBOSE_LEVEL                      1
 

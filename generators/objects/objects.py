@@ -112,8 +112,3 @@ def handle_file_export(list_items):
 
 if __name__ == "__main__":
     main()
-
-
-
-
-

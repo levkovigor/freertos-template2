@@ -1,33 +1,35 @@
 #include "CoreController.h"
 #include "SystemStateTask.h"
-#include <OBSWVersion.h>
-#include <objects/systemObjectList.h>
-#include <FreeRTOSConfig.h>
+#include "OBSWVersion.h"
+#include "objects/systemObjectList.h"
+#include "FreeRTOSConfig.h"
 
-#include <bsp_sam9g20/memory/FRAMHandler.h>
-#include <bsp_sam9g20/common/fram/FRAMApi.h>
-#include <bsp_sam9g20/common/SRAMApi.h>
+#include "bsp_sam9g20/memory/FRAMHandler.h"
+#include "bsp_sam9g20/common/fram/FRAMApi.h"
+#include "bsp_sam9g20/memory/SDCardAccess.h"
+#include "bsp_sam9g20/common/SRAMApi.h"
 
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
-#include <fsfw/ipc/QueueFactory.h>
-#include <fsfw/tasks/TaskFactory.h>
-#include <fsfw/timemanager/Clock.h>
-#include <fsfw/timemanager/Stopwatch.h>
+#include "fsfw/ipc/QueueFactory.h"
+#include "fsfw/tasks/TaskFactory.h"
+#include "fsfw/timemanager/Clock.h"
+#include "fsfw/timemanager/Stopwatch.h"
 
 
 extern "C" {
 #ifdef ISIS_OBC_G20
-#include <hal/Timing/Time.h>
+#include "hal/Timing/Time.h"
 #else
-#include <hal/Timing/RTT.h>
+#include "hal/Timing/RTT.h"
 #endif
 }
 
-#include <at91/utility/exithandler.h>
-#include <portwrapper.h>
-#include <bsp_sam9g20/utility/compile_time.h>
+#include "at91/utility/exithandler.h"
+#include "portwrapper.h"
+#include "bsp_sam9g20/utility/compile_time.h"
+
 #include <cinttypes>
 
 
@@ -38,8 +40,8 @@ MutexIF* CoreController::timeMutex = nullptr;
 
 CoreController::CoreController(object_id_t objectId,
         object_id_t systemStateTaskId):
-                                ExtendedControllerBase(objectId, objects::NO_OBJECT),
-                                systemStateTaskId(systemStateTaskId) {
+                        ExtendedControllerBase(objectId, objects::NO_OBJECT),
+                        systemStateTaskId(systemStateTaskId) {
     timeMutex = MutexFactory::instance()->createMutex();
 #ifdef ISIS_OBC_G20
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -52,9 +54,9 @@ CoreController::CoreController(object_id_t objectId,
 }
 
 void CoreController::performControlOperation() {
-    /* First task: Supervisor handling. */
+    // First task: Supervisor handling
     performSupervisorHandling();
-    /* Second task: All time related handling. */
+    // Second task: All time related handling
     performPeriodicTimeHandling();
 }
 
@@ -161,6 +163,14 @@ ReturnValue_t CoreController::executeAction(ActionId_t actionId,
     case(DISABLE_LOCAL_HAMMING_CODE_CHECKS): {
         return manipulateLocalHammingFlag(false, actionId, commandedBy, data, size);
     }
+    case(ARM_DEPLOYMENT_TIMER): {
+        int result = fram_arm_deployment_timer(true);
+        if(result == 0) {
+            return HasActionsIF::EXECUTION_FINISHED;
+        }
+        return HasReturnvaluesIF::RETURN_FAILED;
+        break;
+    }
     case(DUMP_BOOTLOADER_BLOCK): {
         uint8_t* dataPtr = nullptr;
         ReturnValue_t result = FRAMHandler::readBootloaderBlock(&dataPtr);
@@ -206,7 +216,11 @@ ReturnValue_t CoreController::initializeAfterTaskCreation() {
         return result;
     }
 
-#ifdef ISIS_OBC_G20
+#ifdef AT91SAM9G20_EK
+    // Virtualized FRAM on SD card requires access token.
+    SDCardAccess sdCardAccess;
+#endif
+
     uint32_t new_reboot_counter = 0;
     int retval = fram_increment_reboot_counter(&new_reboot_counter);
     if(retval != 0) {
@@ -219,22 +233,14 @@ ReturnValue_t CoreController::initializeAfterTaskCreation() {
 #endif
     }
     triggerEvent(BOOT_EVENT, new_reboot_counter, 0);
-#else
-    triggerEvent(BOOT_EVENT, 0, 0);
-#endif
 
-    result = initializeIsisTimerDrivers();
-//    size_t bin_size = 0;
-//    result = fram_read_binary_size(FLASH_SLOT, &bin_size);
-//    BootloaderGroup blBlock;
-//    result = fram_read_bootloader_block(&blBlock);
-//    uint16_t test = blBlock.global_hamming_flag;
+    result = initializeTimerDrivers();
     return result;
 }
 
 ReturnValue_t CoreController::initialize() {
 #ifdef ISIS_OBC_G20
-    framHandler = objectManager->get<FRAMHandler>(objects::FRAM_HANDLER);
+    framHandler = ObjectManager::instance()->get<FRAMHandler>(objects::FRAM_HANDLER);
     if(framHandler == nullptr) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "CoreController::initialize: No FRAM handler found!"
@@ -259,7 +265,7 @@ ReturnValue_t CoreController::initialize() {
 
 
 ReturnValue_t CoreController::setUpSystemStateTask() {
-    systemStateTask = objectManager->
+    systemStateTask = ObjectManager::instance()->
             get<SystemStateTask>(systemStateTaskId);
     if(systemStateTask == nullptr) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -274,94 +280,14 @@ ReturnValue_t CoreController::setUpSystemStateTask() {
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t CoreController::initializeIsisTimerDrivers() {
+ReturnValue_t CoreController::initializeTimerDrivers() {
+    ReturnValue_t result = HasReturnvaluesIF::RETURN_OK;
 #ifdef ISIS_OBC_G20
-#if FSFW_CPP_OSTREAM_ENABLED == 1
-    sif::info << "CoreController: Starting RTC and RTT." << std::endl;
-#else
-    sif::printInfo("CoreController: Starting RTC and RTT.\n");
+    result = initializeIobcTimerDrivers();
+#elif defined(AT91SAM9G20_EK)
+    result = initializeAt91TimerDrivers();
 #endif
-
-    /* Time will be set later, this just starts the synchronization task
-    with a frequency of 0.5 seconds. */
-    int retval = Time_start(NULL, RTC_RTT_SYNC_INTERVAL);
-    if(retval >> 8 == 0xFF) {
-#if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::error << "CoreController::initializeAfterTaskCreation:"
-                "ISIS RTC start failure!" << std::endl;
-#else
-        sif::printError("CoreController::initializeAfterTaskCreation:"
-                "ISIS RTC start failure!\n");
-#endif
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-    retval = retval & 0xFF;
-    if(retval == 1) {
-        /* RTT not ticking. Should not happen! Trigger event. */
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-    else if(retval == 2) {
-        /* Should not happen, we did not specify time.. */
-#if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::error << "CoreController::initializeAfterTaskCreation: Config"
-                << " error!" << std::endl;
-#else
-        sif::printError("CoreController::initializeAfterTaskCreation: Config"
-                " error!\n");
-#endif
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-    else if(retval == 3) {
-        /* Should not happen, the scheduler is already running */
-#if FSFW_CPP_OSTREAM_ENABLED == 1
-        sif::error << "CoreController::initializeAfterTaskCreation: Config"
-                << " error, FreeRTOS scheduler not running!" << std::endl;
-#else
-        sif::printError("CoreController::initializeAfterTaskCreation: Config"
-                " error, FreeRTOS scheduler not running!\n");
-#endif
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-    uint32_t secSinceEpoch = 0;
-    retval = fram_read_seconds_since_epoch(&secSinceEpoch);
-    if(retval != 0) {
-        return HasReturnvaluesIF::RETURN_FAILED;
-    }
-
-    /* If stored time is 0 or all ones, set the compile time of the binary */
-    if(secSinceEpoch == 0 or secSinceEpoch == 0xffffffff) {
-        secSinceEpoch = UNIX_TIMESTAMP;
-        retval = fram_update_seconds_since_epoch(secSinceEpoch);
-        if(retval != 0) {
-            /* FRAM issues */
-        }
-    }
-
-    timeval currentTime;
-    currentTime.tv_sec = secSinceEpoch;
-
-    /* Setting ISIS clock. */
-    Time_setUnixEpoch(secSinceEpoch);
-
-    /* Setting FSFW clock. */
-    Clock::setClock(&currentTime);
-
-#if FSFW_CPP_OSTREAM_ENABLED == 1
-    sif::info << "CoreController: Clock set." << std::endl;
-#else
-    sif::printInfo("CoreController: Clock set.\n");
-#endif
-
-#else
-    RTT_start();
-    timeval currentTime = {};
-    uint32_t secSinceEpoch = UNIX_TIMESTAMP;
-    currentTime.tv_sec = secSinceEpoch;
-    Clock::setClock(&currentTime);
-#endif
-
-    return HasReturnvaluesIF::RETURN_OK;
+    return result;
 }
 
 ReturnValue_t CoreController::storeSelect(StorageManagerIF** store, Stores storeType) {
@@ -372,15 +298,15 @@ ReturnValue_t CoreController::storeSelect(StorageManagerIF** store, Stores store
 
     switch(storeType) {
     case(TM_STORE): {
-        *store = objectManager->get<StorageManagerIF>(objects::TM_STORE);
+        *store = ObjectManager::instance()->get<StorageManagerIF>(objects::TM_STORE);
         break;
     }
     case(TC_STORE): {
-        *store = objectManager->get<StorageManagerIF>(objects::TC_STORE);
+        *store = ObjectManager::instance()->get<StorageManagerIF>(objects::TC_STORE);
         break;
     }
     case(IPC_STORE): {
-        *store = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
+        *store = ObjectManager::instance()->get<StorageManagerIF>(objects::IPC_STORE);
         break;
     }
     default: {
@@ -448,12 +374,14 @@ LocalPoolDataSetBase* CoreController::getDataSetHandle(sid_t sid) {
 
 
 void CoreController::performPeriodicTimeHandling() {
-    /* Update uptime second counter which is not subject to regular overflowing */
+    // Stopwatch stopwatch;
+
+    // Update uptime second counter which is not subject to regular overflowing
     timeMutex->lockMutex(MutexIF::TimeoutType::WAITING, 20);
     uint32_t currentUptimeSeconds = updateSecondsCounter();
     timeMutex->unlockMutex();
 
-    /* Dynamic memory allocation is only allowed at software startup */
+    // Dynamic memory allocation is only allowed at software startup
 #if OBSW_MONITOR_ALLOCATION == 1
     if(currentUptimeSeconds > 2 and not
             config::softwareInitializationComplete and not swInitCompleteFlagFlipped) {
@@ -462,27 +390,38 @@ void CoreController::performPeriodicTimeHandling() {
     }
 #endif
 
-    /* Check for overflows of 10kHz 32bit counter regularly
-    (currently every day). */
+    // Check for overflows of 10kHz 32bit counter regularly (currently every day)
     if(currentUptimeSeconds - lastFastCounterUpdateSeconds >= DAY_IN_SECONDS) {
         update64bit10kHzCounter();
         lastFastCounterUpdateSeconds = currentUptimeSeconds;
     }
 
+
+    // Store current time since epoch in seconds in FRAM, using the FRAM handler
+    int result = 0;
 #ifdef ISIS_OBC_G20
-    /* Store current time since epoch in seconds in FRAM, using the FRAM handler. */
-    unsigned int epochTime = 0;
-    Time_getUnixEpoch(&epochTime);
-    int result = fram_update_seconds_since_epoch(static_cast<uint32_t>(epochTime));
+    Time_getUnixEpoch(reinterpret_cast<unsigned int*>(&epochTime));
+    result = fram_update_seconds_since_epoch(static_cast<uint32_t>(epochTime));
     if(result != 0) {
-        /* Should not happen! */
+        sif::printWarning("CoreController::performPeriodicTimeHandling: "
+                "FRAM deployment timer read failure with code %d\n", result);
+    }
+#elif defined(AT91SAM9G20_EK)
+    /* For the AT91, we can add elapsed time since last check onto the time
+    First, check whether the different between last RTT check is above a certain
+    threshold and also check for overflows */
+    if(currentUptimeSeconds - lastRttSecondCount >= 2) {
+        epochTime += currentUptimeSeconds - lastRttSecondCount;
+        lastRttSecondCount = currentUptimeSeconds;
+    }
+#endif
+
+    if(result != 0) {
+        // Should not happen!
         triggerEvent(FRAM_FAILURE, result);
     }
 
-    uint32_t epoch = 0;
-    result = Time_getUnixEpoch(reinterpret_cast<unsigned int*>(&epoch));
-
-    /* Correct clock drift of FSFW clock (FreeRTOS/oscillator based) based on ISIS clock */
+    // Correct clock drift of FSFW clock (FreeRTOS/oscillator based) based on ISIS clock
     timeval currentFsfwTime;
     Clock::getClock_timeval(&currentFsfwTime);
     /* If we sync the ISIS clock and the FSFW clock with the GPS clock regularly, this should
@@ -493,7 +432,50 @@ void CoreController::performPeriodicTimeHandling() {
         Clock::setClock(&currentFsfwTime);
         triggerEvent(FSFW_CLOCK_SYNC);
     }
-#endif /* ISIS_OBC_G20 */
+
+    // Check whether deployment timer is armed. For the AT91SAM9G20EK, flag is only check
+    // occasionally because the filesystem is really slow.
+#ifdef ISIS_OBC_G20
+    bool deploymentTimerArmed = false;
+    result = fram_is_deployment_timer_armed(&deploymentTimerArmed);
+#endif
+    if(deploymentTimerArmed) {
+        if(currentUptimeSeconds - lastDeploymentTimerIncrement > 2) {
+#if defined(AT91SAM9G20_EK)
+            // Cache value for periodic SD card updates
+            deploymentTimerIncrement += currentUptimeSeconds - lastDeploymentTimerIncrement;
+#else
+            // Update FRAM value immediately
+            fram_increment_seconds_on_deployment_timer(
+                    currentUptimeSeconds - lastDeploymentTimerIncrement);
+#endif
+            lastDeploymentTimerIncrement = currentUptimeSeconds;
+        }
+    }
+
+#if defined(AT91SAM9G20_EK)
+    // Only perform this every 10 seconds, file system is slow.
+    if(currentUptimeSeconds - lastSdCardUpdate > 10) {
+        lastSdCardUpdate = currentUptimeSeconds;
+        SDCardAccess accessToken;
+        result = fram_is_deployment_timer_armed(&deploymentTimerArmed);
+        if(result != 0) {
+            sif::printWarning("CoreController::performPeriodicTimeHandling: "
+                    "FRAM deployment timer read failure with code %d\n", result);
+        }
+        result = fram_update_seconds_since_epoch(static_cast<uint32_t>(epochTime));
+        if(result != 0) {
+            sif::printWarning("CoreController::performPeriodicTimeHandling: "
+                    "FRAM update seconds read failure with code %d\n", result);
+        }
+        result = fram_increment_seconds_on_deployment_timer(deploymentTimerIncrement);
+        if(result != 0) {
+            sif::printWarning("CoreController::performPeriodicTimeHandling: "
+                    "FRAM increment seconds write failure with code %d\n", result);
+        }
+        deploymentTimerIncrement = 0;
+    }
+#endif
 }
 
 uint32_t CoreController::updateSecondsCounter() {
@@ -669,7 +651,114 @@ ReturnValue_t CoreController::resetRebootCounter(ActionId_t actionId, MessageQue
     return HasActionsIF::EXECUTION_FINISHED;
 }
 
+#ifdef ISIS_OBC_G20
+
+ReturnValue_t CoreController::initializeIobcTimerDrivers() {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+    sif::info << "CoreController: Starting RTC and RTT." << std::endl;
+#else
+    sif::printInfo("CoreController: Starting RTC and RTT.\n");
+#endif
+
+    /* Time will be set later, this just starts the synchronization task
+    with a frequency of 0.5 seconds. */
+    int retval = Time_start(NULL, RTC_RTT_SYNC_INTERVAL);
+    if(retval >> 8 == 0xFF) {
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "CoreController::initializeAfterTaskCreation:"
+                "ISIS RTC start failure!" << std::endl;
+#else
+        sif::printError("CoreController::initializeAfterTaskCreation:"
+                "ISIS RTC start failure!\n");
+#endif
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    retval = retval & 0xFF;
+    if(retval == 1) {
+        /* RTT not ticking. Should not happen! Trigger event. */
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    else if(retval == 2) {
+        /* Should not happen, we did not specify time.. */
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "CoreController::initializeAfterTaskCreation: Config"
+                << " error!" << std::endl;
+#else
+        sif::printError("CoreController::initializeAfterTaskCreation: Config"
+                " error!\n");
+#endif
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    else if(retval == 3) {
+        /* Should not happen, the scheduler is already running */
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "CoreController::initializeAfterTaskCreation: Config"
+                << " error, FreeRTOS scheduler not running!" << std::endl;
+#else
+        sif::printError("CoreController::initializeAfterTaskCreation: Config"
+                " error, FreeRTOS scheduler not running!\n");
+#endif
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    uint32_t secSinceEpoch = 0;
+    retval = fram_read_seconds_since_epoch(&secSinceEpoch);
+    if(retval != 0) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+
+    /* If stored time is 0 or all ones, set the compile time of the binary */
+    if(secSinceEpoch == 0 or secSinceEpoch == 0xffffffff) {
+        secSinceEpoch = UNIX_TIMESTAMP;
+        retval = fram_update_seconds_since_epoch(secSinceEpoch);
+        if(retval != 0) {
+            /* FRAM issues */
+        }
+    }
+
+    timeval currentTime;
+    currentTime.tv_sec = secSinceEpoch;
+
+    /* Setting ISIS clock. */
+    Time_setUnixEpoch(secSinceEpoch);
+
+    /* Setting FSFW clock. */
+    Clock::setClock(&currentTime);
+
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+    sif::info << "CoreController: Clock set." << std::endl;
+#else
+    sif::printInfo("CoreController: Clock set.\n");
+#endif
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+#elif defined(AT91SAM9G20_EK)
+
+ReturnValue_t CoreController::initializeAt91TimerDrivers() {
+    RTT_start();
+    // Initialize second count
+    lastRttSecondCount = RTT_GetTime();
+    int retval = fram_read_seconds_since_epoch(&epochTime);
+    if(retval != 0) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    uint32_t timeStampCompiledTime = UNIX_TIMESTAMP;
+    if(epochTime < timeStampCompiledTime) {
+        // Timer has not been updated in a long time, so just take more accurate time in this case
+        epochTime = timeStampCompiledTime;
+        fram_update_seconds_since_epoch(epochTime);
+    }
+    timeval currentTime = {};
+    currentTime.tv_sec = epochTime;
+    Clock::setClock(&currentTime);
+    return HasReturnvaluesIF::RETURN_OK;
+}
+
+#endif /* defined(AT91SAM9G20_EK) */
+
 #if OBSW_VERBOSE_LEVEL >= 1
+
 void CoreController::determinePrintoutType(SlotType slotType, char *printoutType,
         size_t printBuffLen) {
     if(slotType == FLASH_SLOT) {
@@ -691,4 +780,5 @@ void CoreController::determinePrintoutType(SlotType slotType, char *printoutType
         snprintf(printoutType, printBuffLen, "unknown slot");
     }
 }
-#endif
+
+#endif /* OBSW_VERBOSE_LEVEL >= 1*/

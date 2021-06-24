@@ -6,11 +6,10 @@
 #include <tmtc/apid.h>
 
 #include <fsfw/unittest/internal/InternalUnitTester.h>
-#include <fsfw/objectmanager/ObjectManagerIF.h>
+#include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
 
-#include <etl/vector.h>
 #include <array>
 #include <cstring>
 
@@ -29,7 +28,7 @@ TestTask::TestTask(object_id_t objectId_):
     if(testLock == nullptr) {
         testLock = MutexFactory::instance()->createMutex();
     }
-    IPCStore = objectManager->get<StorageManagerIF>(objects::IPC_STORE);
+    IPCStore = ObjectManager::instance()->get<StorageManagerIF>(objects::IPC_STORE);
 
     //subscribeInTmManager(service, subservice);
 }
@@ -65,7 +64,6 @@ ReturnValue_t TestTask::performOperation(uint8_t operationCode) {
 ReturnValue_t TestTask::performOneShotAction() {
     // triggerEvent(TEST_EVENT, 0, 0);
     // triggerEvent(TEST_EVENT_HIGH, 5, 4224);
-
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -171,19 +169,54 @@ void TestTask::examplePacketTest() {
     }
 }
 
+/**
+ETLIMultiMapWrapper test, can be used later to create unit test. For testing
+EtlIMapWrapper, this test can be used as a guideline and with minor modifications
+(like only emplacing once for a key) can be used to test EtlIMapWrapper.
+
+#include <etl/map.h>
+#include <mission/memory/tmstore/EtlIMultiMapWrapper.h>
 
 void TestTask::performEtlTemplateTest() {
-    const uint32_t poolId = 0;
-    insertNewTmManagerStruct<templateSizes[poolId]>(poolId);
-    // now we should be able to access it like this
-    auto iter = testMap.find(poolId);
-    if(iter == testMap.end()) {
-        return;
-    }
-    struct TmManagerStruct<templateSizes[poolId]>* test = dynamic_cast<
-            struct TmManagerStruct<templateSizes[poolId]>*>(iter->second);
-    if(test) {}
+	sif::printInfo("test ETLMultiMapWrapper\n");
+	etl::multimap<int, char, 3>* map = new etl::multimap<int, char, 3>();
+	EtlIMultiMapWrapper<int, char>* wrapper = new EtlIMultiMapWrapper<int, char>(map);
+	wrapper->emplace(1, 'a');
+	wrapper->emplace(2, 'b');
+	wrapper->emplace(3, 'c');
+
+	if((wrapper->emplace(4, 'a'))==HasReturnvaluesIF::RETURN_FAILED) {
+		sif::printInfo("works at point 1\n");
+	}
+
+	char returnval = wrapper->get(3).begin->second;
+	sif::printInfo("tttt %c\n", returnval);
+	if(returnval == 'c') {
+		sif::printInfo("works at point 2\n");
+	}
+
+	wrapper->erase(3, 'c');
+
+	if(wrapper->get(3).returnValue== HasReturnvaluesIF::RETURN_FAILED) {
+		sif::printInfo("works at point 3\n");
+	}
+
+	wrapper->clear();
+
+	if(wrapper->get(1).returnValue == HasReturnvaluesIF::RETURN_FAILED) {
+		sif::printInfo("works at point 4\n");
+	}
+
+	wrapper->emplace(1, 'a');
+	wrapper->emplace(1, 'b');
+
+	typename etl::imultimap<int, char>::const_iterator returnIt = wrapper->get(1).begin;
+	if(returnIt->second == 'a') {
+		sif::printInfo("works at point 5\n");
+	}
+	returnIt++;
+	if(returnIt->second == 'b') {
+		sif::printInfo("works at point 6\n");
+	}
 }
-
-
-
+**/

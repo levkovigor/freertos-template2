@@ -181,8 +181,8 @@ ReturnValue_t GyroAssembly::initialize() {
 		return result;
 	}
 
-	GyroHandler* gps1Handler = objectManager->get<GyroHandler>(gyro0Id);
-	GyroHandler* gps2Handler = objectManager->get<GyroHandler>(gyro1Id);
+	GyroHandler* gps1Handler = ObjectManager::instance()->get<GyroHandler>(gyro0Id);
+	GyroHandler* gps2Handler = ObjectManager::instance()->get<GyroHandler>(gyro1Id);
 	if((gps1Handler == nullptr) or (gps2Handler == nullptr)) {
 	    return HasReturnvaluesIF::RETURN_FAILED;
 	}
