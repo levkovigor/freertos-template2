@@ -4,7 +4,7 @@
 2203;STORE_READ_FAILED;LOW; ;../../fsfw/tmstorage/TmStoreBackendIF.h
 2204;UNEXPECTED_MSG;LOW; ;../../fsfw/tmstorage/TmStoreBackendIF.h
 2205;STORING_FAILED;LOW; ;../../fsfw/tmstorage/TmStoreBackendIF.h
-2206;TM_DUMP_FAILED;LOW;BlaBla;../../fsfw/tmstorage/TmStoreBackendIF.h
+2206;TM_DUMP_FAILED;LOW; ;../../fsfw/tmstorage/TmStoreBackendIF.h
 2207;STORE_INIT_FAILED;LOW; ;../../fsfw/tmstorage/TmStoreBackendIF.h
 2208;STORE_INIT_EMPTY;INFO; ;../../fsfw/tmstorage/TmStoreBackendIF.h
 2209;STORE_CONTENT_CORRUPTED;LOW; ;../../fsfw/tmstorage/TmStoreBackendIF.h
