@@ -10,8 +10,8 @@
 [submodule "etl"]
 	path = thirdparty/etl
 	url = https://github.com/ETLCPP/etl.git
-[submodule "generators/modgen"]
-	path = generators/modgen
+[submodule "generators/fsfwgen"]
+	path = generators/fsfwgen
 	url = https://egit.irs.uni-stuttgart.de/fsfw/fsfw-generators.git
 [submodule "thirdparty/Catch2"]
 	path = thirdparty/Catch2

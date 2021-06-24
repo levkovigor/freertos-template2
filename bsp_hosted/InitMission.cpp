@@ -219,16 +219,15 @@ void initTask() {
 #endif
     }
 
-    /* Core Controller task */
-#ifdef __unix__
-    taskPrio = 60;
-#endif
-    PeriodicTaskIF *attitudeController = TaskFactory::instance()->createPeriodicTask(
-            "ATTITUDE_CTRL", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE,  0.4, nullptr);
-    result = attitudeController->addComponent(objects::ATTITUDE_CONTROLLER);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        initmission::printAddObjectError("Attitude Controller", objects::ATTITUDE_CONTROLLER);
-    }
+//#ifdef __unix__
+//    taskPrio = 60;
+//#endif
+//    PeriodicTaskIF *attitudeController = TaskFactory::instance()->createPeriodicTask(
+//            "ATTITUDE_CTRL", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE,  0.4, nullptr);
+//    result = attitudeController->addComponent(objects::ATTITUDE_CONTROLLER);
+//    if (result != HasReturnvaluesIF::RETURN_OK) {
+//        initmission::printAddObjectError("Attitude Controller", objects::ATTITUDE_CONTROLLER);
+//    }
 
 #if FSFW_CPP_OSTREAM_ENABLED == 1
     sif::info << "Starting tasks.." << std::endl;
@@ -246,7 +245,7 @@ void initTask() {
     pusMedPrio->startTask();
     pusLowPrio->startTask();
 
-    attitudeController->startTask();
+    //attitudeController->startTask();
     testTask->startTask();
     pollingSequenceTableTaskDefault->startTask();
 }

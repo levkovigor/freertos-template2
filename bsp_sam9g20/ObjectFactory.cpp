@@ -1,79 +1,78 @@
 #include "ObjectFactory.h"
 #include "objects/systemObjectList.h"
-#include <OBSWConfig.h>
-#include <tmtc/apid.h>
-#include <tmtc/pusIds.h>
-#include <devices/logicalAddresses.h>
-#include <devices/powerSwitcherList.h>
+#include "OBSWConfig.h"
+#include "tmtc/apid.h"
+#include "tmtc/pusIds.h"
+#include "devices/logicalAddresses.h"
+#include "devices/powerSwitcherList.h"
 
 /* FSFW includes */
-#include <fsfw/serviceinterface/ServiceInterface.h>
-#include <fsfw/internalError/InternalErrorReporter.h>
-#include <fsfw/storagemanager/PoolManager.h>
-#include <fsfw/tcdistribution/CCSDSDistributor.h>
-#include <fsfw/tcdistribution/PUSDistributor.h>
-#include <fsfw/events/EventManager.h>
-#include <fsfw/fdir/FailureIsolationBase.h>
-#include <fsfw/health/HealthTable.h>
-
-#include <fsfw/tmtcpacket/pus/TmPacketStored.h>
-
+#include "fsfw/serviceinterface/ServiceInterface.h"
+#include "fsfw/internalError/InternalErrorReporter.h"
+#include "fsfw/storagemanager/PoolManager.h"
+#include "fsfw/tcdistribution/CCSDSDistributor.h"
+#include "fsfw/tcdistribution/PUSDistributor.h"
+#include "fsfw/events/EventManager.h"
+#include "fsfw/fdir/FailureIsolationBase.h"
+#include "fsfw/health/HealthTable.h"
+#include "fsfw/tmtcpacket/pus/tm.h"
 /* PUS Includes */
-#include <fsfw/tmtcservices/PusServiceBase.h>
-#include <fsfw/pus/Service1TelecommandVerification.h>
-#include <fsfw/pus/Service2DeviceAccess.h>
-#include <fsfw/pus/CService201HealthCommanding.h>
-#include <fsfw/pus/Service3Housekeeping.h>
-#include <fsfw/pus/Service5EventReporting.h>
-#include <fsfw/pus/Service8FunctionManagement.h>
-#include <fsfw/pus/CService200ModeCommanding.h>
-#include <fsfw/pus/Service20ParameterManagement.h>
-#include <fsfw/timemanager/TimeStamper.h>
+#include "fsfw/tmtcservices/PusServiceBase.h"
+#include "fsfw/pus/Service1TelecommandVerification.h"
+#include "fsfw/pus/Service2DeviceAccess.h"
+#include "fsfw/pus/CService201HealthCommanding.h"
+#include "fsfw/pus/Service3Housekeeping.h"
+#include "fsfw/pus/Service5EventReporting.h"
+#include "fsfw/pus/Service8FunctionManagement.h"
+#include "fsfw/pus/CService200ModeCommanding.h"
+#include "fsfw/pus/Service20ParameterManagement.h"
+#include "fsfw/timemanager/TimeStamper.h"
 
 /* Mission includes */
-#include <mission/controller/ThermalController.h>
-#include <mission/pus/Service6MemoryManagement.h>
-#include <mission/pus/Service17CustomTest.h>
-#include <mission/pus/Service23FileManagement.h>
-#include <mission/utility/TmFunnel.h>
-#include <mission/devices/PCDUHandler.h>
-#include <mission/devices/GPSHandler.h>
-#include <mission/devices/ThermalSensorHandler.h>
-#include <mission/devices/GyroHandler.h>
-#include <mission/devices/MGMHandlerLIS3MDL.h>
-#include <mission/fdir/PCDUFailureIsolation.h>
+#include "mission/controller/ThermalController.h"
+#include "mission/pus/Service6MemoryManagement.h"
+#include "mission/pus/Service17CustomTest.h"
+#include "mission/pus/Service23FileManagement.h"
+#include "mission/utility/TmFunnel.h"
+#include "mission/devices/PCDUHandler.h"
+#include "mission/devices/GPSHandler.h"
+#include "mission/devices/ThermalSensorHandler.h"
+#include "mission/devices/GyroHandler.h"
+#include "mission/devices/MGMHandlerLIS3MDL.h"
+#include "mission/fdir/PCDUFailureIsolation.h"
 
 /* Test files */
-#include <test/testinterfaces/TestEchoComIF.h>
-#include <test/testinterfaces/DummyGPSComIF.h>
-#include <test/testinterfaces/DummyCookie.h>
-#include <test/testdevices/ArduinoDeviceHandler.h>
-#include <test/testdevices/TestDeviceHandler.h>
+#include "test/testinterfaces/TestEchoComIF.h"
+#include "test/testinterfaces/DummyGPSComIF.h"
+#include "test/testinterfaces/DummyCookie.h"
+#include "test/testdevices/ArduinoDeviceHandler.h"
+#include "test/testdevices/TestDeviceHandler.h"
 
 /* Board Support Package Files */
-#include <bsp_sam9g20/boardtest/AtmelArduinoHandler.h>
-#include <bsp_sam9g20/boardtest/AtmelTestTask.h>
-#include <bsp_sam9g20/tmtcbridge/TmTcSerialBridge.h>
-#include <bsp_sam9g20/boardtest/TwiTestTask.h>
-#include <bsp_sam9g20/boardtest/UART0TestTask.h>
-#include <bsp_sam9g20/boardtest/UART2TestTask.h>
-#include <bsp_sam9g20/boardtest/SpiTestTask.h>
-#include <bsp_sam9g20/comIF/I2cDeviceComIF.h>
-#include <bsp_sam9g20/comIF/GpioDeviceComIF.h>
-#include <bsp_sam9g20/comIF/RS232DeviceComIF.h>
-#include <bsp_sam9g20/comIF/SpiDeviceComIF.h>
-#include <bsp_sam9g20/comIF/RS232PollingTask.h>
-#include <bsp_sam9g20/core/CoreController.h>
-#include <bsp_sam9g20/core/SoftwareImageHandler.h>
-#include <bsp_sam9g20/core/SystemStateTask.h>
-#include <bsp_sam9g20/memory/FRAMHandler.h>
-#include <bsp_sam9g20/memory/SDCardHandler.h>
-#include <bsp_sam9g20/pus/Service9CustomTimeManagement.h>
-#include <bsp_sam9g20/boardtest/LedTask.h>
+#include "bsp_sam9g20/boardtest/AtmelArduinoHandler.h"
+#include "bsp_sam9g20/boardtest/AtmelTestTask.h"
+#include "bsp_sam9g20/tmtcbridge/TmTcSerialBridge.h"
+#include "bsp_sam9g20/boardtest/TwiTestTask.h"
+#include "bsp_sam9g20/boardtest/UART0TestTask.h"
+#include "bsp_sam9g20/boardtest/UART2TestTask.h"
+#include "bsp_sam9g20/boardtest/SpiTestTask.h"
+#include "bsp_sam9g20/comIF/I2cDeviceComIF.h"
+#include "bsp_sam9g20/comIF/GpioDeviceComIF.h"
+#include "bsp_sam9g20/comIF/RS232DeviceComIF.h"
+#include "bsp_sam9g20/comIF/SpiDeviceComIF.h"
+#include "bsp_sam9g20/comIF/RS232PollingTask.h"
+#include "bsp_sam9g20/core/CoreController.h"
+#include "bsp_sam9g20/core/SoftwareImageHandler.h"
+#include "bsp_sam9g20/core/SystemStateTask.h"
+#include "bsp_sam9g20/memory/FRAMHandler.h"
+#include "bsp_sam9g20/memory/SDCardHandler.h"
+#include "bsp_sam9g20/pus/Service9CustomTimeManagement.h"
+#include "bsp_sam9g20/boardtest/LedTask.h"
+#include "bsp_sam9g20/boardtest/PVCHTestTask.h"
 
 #if defined(ETHERNET)
-#include <bsp_sam9g20/tmtcbridge/EmacPollingTask.h>
-#include <bsp_sam9g20/tmtcbridge/TmTcUdpBridge.h>
+#include "bsp_sam9g20/tmtcbridge/EmacPollingTask.h"
+#include "bsp_sam9g20/tmtcbridge/TmTcUdpBridge.h"
 #endif
 
 
@@ -282,6 +281,7 @@ void Factory::produce(void* args) {
 
     // I have no idea why we have to pick SPI mode 0 here (CPOL == 0 and
     // NCPHA == 1) instead of mode 3 (CPOL == 1 and NCPHA == 0) but we have to..
+    // UPDATE: Might be related to speed not being 10 MHz
     spiCookie = new SpiCookie(addresses::SPI_Test_MGM, 16,
             SlaveType::SLAVE_SELECT_1,
             DemultiplexerOutput::OWN_SLAVE_SELECT,
@@ -323,6 +323,10 @@ void Factory::produce(void* args) {
 
 #if OBSW_ADD_SPI_TEST_TASK == 1
     new SpiTestTask(objects::AT91_SPI_TEST_TASK, SpiTestTask::SpiTestMode::AT91_LIB_BLOCKING);
+#endif
+
+#if OBSW_ADD_PVCH_TEST == 1
+    new PVCHTestTask(objects::PVCH_TEST_TASK);
 #endif
 
 #endif /* OBSW_ADD_TEST_CODE == 1 */

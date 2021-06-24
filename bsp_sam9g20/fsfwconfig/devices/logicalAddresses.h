@@ -13,10 +13,11 @@ enum logicalAddresses: address_t {
     PCDU,
     /* I2C Addresses go from 0 to 128 ! */
     I2C_MGM = 0x1E,
+    PVCH_PCA9554 = 0x4e,
 
     /* SPI Addresses (= Object Address) */
     SPI_DLR_PVCH = objects::DLR_PVCH,
-    SPI_GYRO1 = objects::GYRO1,
+    SPI_GYRO1 = objects::GYRO0_HANDLER,
     SPI_DLR_IRAS = objects::DLR_IRAS,
 
     /* fourth byte decoder output ID */
@@ -47,7 +48,7 @@ enum logicalAddresses: address_t {
     SPI_PT1000_SuS7_DEC3 = objects::PT1000_SuS7_DEC3,
     SPI_PT1000_SuS8_DEC3 = objects::PT1000_SuS8_DEC3,
     SPI_PT1000_PVCH_DEC3 = objects::PT1000_PVCH_DEC3,
-    SPI_GYRO2 = objects::GYRO2,
+    SPI_GYRO2 = objects::GYRO1_HANDLER,
 
     // Devices connected to decoder 4
     SPI_PT1000_PLOC_DEC4 = objects::PT1000_PLOC_DEC4,

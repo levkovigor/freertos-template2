@@ -10,10 +10,10 @@ On Windows, Build Tools installation might be necessary
 """
 import datetime
 
-from modgen.objects.objects import ObjectDefinitionParser, sql_object_exporter, write_translation_file, \
+from fsfwgen.objects.objects import ObjectDefinitionParser, sql_object_exporter, write_translation_file, \
     export_object_file, write_translation_header_file
-from modgen.utility.printer import PrettyPrinter
-from modgen.utility.file_management import copy_file, move_file
+from fsfwgen.utility.printer import PrettyPrinter
+from fsfwgen.utility.file_management import copy_file, move_file
 from definitions import DATABASE_NAME
 
 DATE_TODAY = datetime.datetime.now()

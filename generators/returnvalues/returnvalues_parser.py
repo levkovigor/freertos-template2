@@ -9,10 +9,10 @@ Returnvalue exporter.
 To use MySQLdb, run pip install mysqlclient or install in IDE. On Windows, Build Tools installation might be necessary.
 :data:      21.11.2019
 """
-from modgen.parserbase.file_list_parser import FileListParser
-from modgen.returnvalues.returnvalues_parser import InterfaceParser, ReturnValueParser
-from modgen.utility.sql_writer import SqlWriter
-from modgen.utility.file_management import move_file
+from fsfwgen.parserbase.file_list_parser import FileListParser
+from fsfwgen.returnvalues.returnvalues_parser import InterfaceParser, ReturnValueParser
+from fsfwgen.utility.sql_writer import SqlWriter
+from fsfwgen.utility.file_management import move_file
 
 from definitions import DATABASE_NAME
 
