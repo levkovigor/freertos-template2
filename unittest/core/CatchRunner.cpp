@@ -6,7 +6,7 @@
  * from the eclipse market place to get colored characters.
  */
 
-#include <TestsConfig.h>
+#include <TestConfig.h>
 
 #define CATCH_CONFIG_COLOUR_WINDOWS
 

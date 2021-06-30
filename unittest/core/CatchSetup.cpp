@@ -24,13 +24,11 @@ ServiceInterfaceStream warning("WARNING");
 }
 #endif
 
-/* Global object manager */
-ObjectManagerIF *objectManager;
-
 int customSetup() {
     // global setup
-    objectManager = new ObjectManager(Factory::produce);
-    objectManager -> initialize();
+    auto objectManager = ObjectManager::instance();
+    objectManager->setObjectFactoryFunction(&Factory::produce, nullptr);
+    objectManager->initialize();
     return 0;
 }
 
