@@ -5,10 +5,12 @@
  */
 
 #include <fsfw/globalfunctions/constants.h>
+#include <fsfw/parameters/HasParametersIF.h>
 #include "AcsParameters.h"
 
 #include <stddef.h>
 #include <cmath>
+#include <fsfw/serviceinterface/ServiceInterface.h>
 
 AcsParameters::AcsParameters(uint8_t parameterModuleId) :
         testParam(0), parameterModuleId(parameterModuleId) {
@@ -41,57 +43,72 @@ ReturnValue_t AcsParameters::getParameter(uint8_t domainId, uint8_t uniqueIdenti
         uint16_t startAtIndex) {
 
     if (domainId == parameterModuleId) {
-        switch (uniqueIdentifier) {
-        case 0:
-            switch (uniqueIdentifier & 0xFF) {
-            case 0x0:
-                parameterWrapper->set(testParam);
-            break;
-            default:
-                return INVALID_IDENTIFIER_ID;
+        switch (uniqueIdentifier >> 4) {
+        case 0: {
+            switch (uniqueIdentifier & 0x0F) {
+            case 0: {
+                /*uint32_t newValue = 0;
+                 ReturnValue_t result = newValues->getElement<uint32_t>(&newValue, 0, 0);
+                 if (result == HasReturnvaluesIF::RETURN_OK) {
+                 sif::printInfo("TestDevice%d::getParameter: Setting parameter testSafeParamTwo to new value %lu\n",
+                 deviceIdx, static_cast<unsigned long>(newValue));
+                 }*/
+                parameterWrapper->set(safeModeParameters.testSafeParamTwo);
+                break;
             }
-        break;
-        case 0x1:
-            switch (uniqueIdentifier & 0xFF) {
-            case 0x0:
+            case 1: {
+                parameterWrapper->set(testParam);
+                break;
+            }
+            default:
+                return HasParametersIF::INVALID_IDENTIFIER_ID;
+            }
+            break;
+        }
+        case 1: {
+            switch (uniqueIdentifier & 0x0F) {
+            case 0:
                 parameterWrapper->set(safeModeParameters.testSafeParamOne);
             break;
-            case 0x1:
+            case 1:
                 parameterWrapper->set(safeModeParameters.testSafeParamTwo);
             break;
             default:
-                return INVALID_IDENTIFIER_ID;
+                return HasParametersIF::INVALID_IDENTIFIER_ID;
             }
-        break;
-        case 0x2:
-            switch (uniqueIdentifier & 0xFF) {
-            case 0x0:
+            break;
+        }
+        case 2: {
+            switch (uniqueIdentifier & 0x0F) {
+            case 0:
                 parameterWrapper->setVector(pointingModeParameters.testPointParamOne);
             break;
-            case 0x1:
+            case 1:
                 parameterWrapper->set(pointingModeParameters.testPointParamTwo);
             break;
             default:
-                return INVALID_IDENTIFIER_ID;
+                return HasParametersIF::INVALID_IDENTIFIER_ID;
             }
-        break;
-        case 0x3:
-            switch (uniqueIdentifier & 0xFF) {
-            case 0x0:
+            break;
+        }
+        case 3: {
+            switch (uniqueIdentifier & 0x0F) {
+            case 0:
                 parameterWrapper->setMatrix(kalmanFilterParameters.testKalmanParamOne);
             break;
-            case 0x1:
+            case 1:
                 parameterWrapper->set(kalmanFilterParameters.testKalmanParamTwo);
             break;
             default:
-                return INVALID_IDENTIFIER_ID;
+                return HasParametersIF::INVALID_IDENTIFIER_ID;
             }
-        break;
+            break;
+        }
         default:
-            return INVALID_IDENTIFIER_ID;
+            return HasParametersIF::INVALID_IDENTIFIER_ID;
         }
         return HasReturnvaluesIF::RETURN_OK;
     } else {
-        return INVALID_DOMAIN_ID;
+        return HasParametersIF::INVALID_DOMAIN_ID;
     }
 }

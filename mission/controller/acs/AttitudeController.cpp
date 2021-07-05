@@ -96,7 +96,8 @@ MessageQueueId_t AttitudeController::getCommandQueue() const {
 ReturnValue_t AttitudeController::getParameter(uint8_t domainId, uint8_t uniqueIdentifier,
                 ParameterWrapper *parameterWrapper, const ParameterWrapper *newValues,
                 uint16_t startAtIndex) {
-    return HasReturnvaluesIF::RETURN_OK;
+    return acsParameters.getParameter(domainId, uniqueIdentifier, parameterWrapper, newValues,
+            startAtIndex);
 }
 
 ReturnValue_t AttitudeController::checkModeCommand(Mode_t mode, Submode_t submode,
