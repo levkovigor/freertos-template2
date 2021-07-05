@@ -28,7 +28,7 @@ Service11TelecommandScheduling::~Service11TelecommandScheduling() { }
 
 ReturnValue_t Service11TelecommandScheduling::handleRequest(uint8_t subservice) {
 
-    sif::printWarning("........ HANDLING REQUEST ......\n");
+    sif::printDebug("........ HANDLING REQUEST ......\n");
 
     switch(subservice){
     case Subservice::INSERT_ACTIVITY:
@@ -159,8 +159,7 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
 
 
     //DEBUG
-    bool printDebug = false;
-    printDebug = true;
+    bool printDebug = true;
     if (printDebug) {
         sif::printInfo("MULTIMAP CONTENT: \n");
         for (auto dit = telecommandMap.begin(); dit != telecommandMap.end(); ++dit) {
