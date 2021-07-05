@@ -20,7 +20,8 @@
 #include "AcsParameters.h"
 #include <OBSWConfig.h>
 
-class AttitudeController: public ExtendedControllerBase {
+class AttitudeController: public ExtendedControllerBase,
+        public ReceivesParameterMessagesIF {
 
 public:
 
@@ -35,9 +36,15 @@ public:
 
     virtual ~AttitudeController();
 
+    virtual MessageQueueId_t getCommandQueue() const;
+
+    virtual ReturnValue_t getParameter(uint8_t domainId, uint8_t uniqueIdentifier,
+                ParameterWrapper *parameterWrapper, const ParameterWrapper *newValues,
+                uint16_t startAtIndex) override;
+
 protected:
 
-//    AcsParameters acsParameters;
+    AcsParameters acsParameters;
 
     // Sign correction matrix
     int8_t multFactor[QUATERNION_SIZE];
@@ -47,6 +54,9 @@ protected:
 
 #if OBSW_ACS_TEST == 1
     // only used for testing
+
+    double currentTestTime = 0;
+    const double testTimeInterval = 0.1;
 
     double multFactorTest[50][4] = { { 1, 1, 1, 1 }, { 1, 1, 1, 1 }, { 1, 1, 1, 1 },
             { 1, -1, -1, 1 }, { 1, -1, -1, 1 }, { 1, -1, -1, 1 }, { 1, -1, -1, 1 },
