@@ -2,7 +2,7 @@
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/objectmanager/SystemObject.h>
-#include <fsfw/tmtcpacket/pus/TmPacketStoredPusA.h>
+#include <fsfw/tmtcpacket/pus/tm.h>
 
 
 Service17CustomTest::Service17CustomTest(object_id_t object_id,

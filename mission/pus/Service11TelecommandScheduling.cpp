@@ -10,8 +10,8 @@
 #include <fsfw/storagemanager/ConstStorageAccessor.h>
 
 #include <fsfw/tmtcpacket/SpacePacketBase.h>
-#include <fsfw/tmtcpacket/pus/TmPacketBase.h>
-#include <fsfw/tmtcpacket/pus/TcPacketBase.h>
+#include <fsfw/tmtcpacket/pus/tm.h>
+#include <fsfw/tmtcpacket/pus/tc.h>
 
 #include <ctime>
 #include <cstring>
@@ -293,7 +293,7 @@ void Service11TelecommandScheduling::GetRequestIdFromCurrentPacket(uint64_t& req
     uint8_t* data = (uint8_t*)currentPacket.getApplicationData();
     data += sizeof(uint32_t);   // move data pointer past the timestamp
 
-    TcPacketBase mask(data);
+    TcPacketPus mask(data);
     uint64_t sourceId = mask.getSourceId();
     uint64_t apid = (uint64_t)mask.getAPID();
     uint64_t sequenceCount = (uint64_t)mask.getPacketSequenceCount();

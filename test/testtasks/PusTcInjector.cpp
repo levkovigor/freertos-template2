@@ -3,10 +3,9 @@
 #include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/tmtcservices/AcceptsTelecommandsIF.h>
 #include <fsfw/tmtcservices/TmTcMessage.h>
-#include <fsfw/tmtcpacket/pus/TcPacketBase.h>
+#include <fsfw/tmtcpacket/pus/tc.h>
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
-#include <fsfw/tmtcpacket/pus/TcPacketStored.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 
 PusTcInjector::PusTcInjector(object_id_t objectId, object_id_t destination,
@@ -28,7 +27,7 @@ ReturnValue_t PusTcInjector::injectPusTelecommand(uint8_t service,
 		uint8_t subservice,uint16_t apid, const uint8_t* appData,
 		size_t appDataLen) {
 	// Prepare TC packet. Store into TC store immediately.
-	TcPacketStored tcPacket(apid, service, subservice, sequenceCount++);
+	TcPacketStoredPus tcPacket(apid, service, subservice, sequenceCount++);
 
 	const uint8_t* packetPtr = nullptr;
 	size_t packetSize = 0;
