@@ -8,13 +8,13 @@ To use MySQLdb, run pip install mysqlclient or install in IDE.
 On Windows, Build Tools installation might be necessary
 @data   21.11.2019
 """
-import re
 import datetime
-from modgen.utility.mib_csv_writer import CsvWriter
-from modgen.utility.mib_printer import PrettyPrinter
-from utility.mib_file_management import copy_file
-from modgen.parserbase.parser import FileParser
-from modgen.utility.mib_sql_writer import SqlWriter, SQL_DATABASE_NAME
+
+from fsfwgen.objects.objects import ObjectDefinitionParser, sql_object_exporter, write_translation_file, \
+    export_object_file, write_translation_header_file
+from fsfwgen.utility.printer import PrettyPrinter
+from fsfwgen.utility.file_management import copy_file, move_file
+from definitions import DATABASE_NAME
 
 DATE_TODAY = datetime.datetime.now()
 DATE_STRING_FULL = DATE_TODAY.strftime("%Y-%m-%d %H:%M:%S")
@@ -24,6 +24,8 @@ MOVE_CSV = True
 
 GENERATE_CPP = True
 COPY_CPP = True
+
+GENERATE_HEADER = True
 
 PARSE_HOST_BSP = False
 
@@ -37,16 +39,18 @@ else:
 CPP_COPY_DESTINATION = f"../../{BSP_DIR_NAME}/fsfwconfig/objects/"
 CSV_MOVE_DESTINATION = "../"
 CPP_FILENAME = "translateObjects.cpp"
-CSV_OBJECT_FILENAME = "mib_objects.csv"
+CPP_H_FILENAME = "translateObjects.h"
+CSV_OBJECT_FILENAME = f"{BSP_DIR_NAME}_objects.csv"
 FILE_SEPARATOR = ";"
 
 if PARSE_HOST_BSP:
-    SUBSYSTEM_DEFINITION_DESTINATION = f"../../{BSP_DIR_NAME}/fsfwconfig/objects/systemObjectList.h"
+    OBJECTS_PATH = f"../../{BSP_DIR_NAME}/fsfwconfig/objects/systemObjectList.h"
 else:
-    SUBSYSTEM_DEFINITION_DESTINATION = f"../../{BSP_DIR_NAME}/fsfwconfig/objects/systemObjectList.h"
+    OBJECTS_PATH = f"../../{BSP_DIR_NAME}/fsfwconfig/objects/systemObjectList.h"
 
-FRAMEWORK_SUBSYSTEM_DEFINITION_DESTINATION = "../../fsfw/objectmanager/frameworkObjects.h"
-OBJECTS_DEFINITIONS = [SUBSYSTEM_DEFINITION_DESTINATION, FRAMEWORK_SUBSYSTEM_DEFINITION_DESTINATION]
+FRAMEWORK_OBJECTS_PATH = "../../fsfw/objectmanager/frameworkObjects.h"
+COMMON_OBJECTS_PATH = "../../common/objects/commonObjectsList.h"
+OBJECTS_DEFINITIONS = [OBJECTS_PATH, FRAMEWORK_OBJECTS_PATH, COMMON_OBJECTS_PATH]
 
 SQL_DELETE_OBJECTS_CMD = """
     DROP TABLE IF EXISTS Objects
@@ -72,7 +76,10 @@ def main():
     handle_file_export(list_items)
     if EXPORT_TO_SQL:
         print("ObjectParser: Exporting to SQL")
-        sql_object_exporter(list_items, "../" + SQL_DATABASE_NAME)
+        sql_object_exporter(
+            object_table=list_items, delete_cmd=SQL_DELETE_OBJECTS_CMD, insert_cmd=SQL_INSERT_INTO_OBJECTS_CMD,
+            create_cmd=SQL_CREATE_OBJECTS_CMD, db_filename=f"../{DATABASE_NAME}"
+        )
 
 
 def parse_objects():
@@ -87,76 +94,21 @@ def parse_objects():
 
 
 def handle_file_export(list_items):
-    csv_writer = CsvWriter(CSV_OBJECT_FILENAME)
     if GENERATE_CPP:
         print("ObjectParser: Generating translation C++ file.")
-        write_translation_file(CPP_FILENAME, list_items)
+        write_translation_file(filename=CPP_FILENAME, list_of_entries=list_items, date_string_full=DATE_STRING_FULL)
         if COPY_CPP:
             print("ObjectParser: Copying object file to " + CPP_COPY_DESTINATION)
             copy_file(CPP_FILENAME, CPP_COPY_DESTINATION)
+    if GENERATE_HEADER:
+        write_translation_header_file(filename=CPP_H_FILENAME)
+        copy_file(filename=CPP_H_FILENAME, destination=CPP_COPY_DESTINATION)
     if GENERATE_CSV:
         print("ObjectParser: Generating text export.")
-        export_object_file(CSV_OBJECT_FILENAME, list_items)
+        export_object_file(filename=CSV_OBJECT_FILENAME, object_list=list_items, file_separator=FILE_SEPARATOR)
         if MOVE_CSV:
-            csv_writer.move_csv(CSV_MOVE_DESTINATION)
-
-
-class ObjectDefinitionParser(FileParser):
-    def __init__(self, file_list: list):
-        super().__init__(file_list)
-
-    def _handle_file_parsing(self, file_name: str, *args, **kwargs):
-        file = open(file_name, "r", encoding="utf-8")
-        for line in file.readlines():
-            match = re.search('([\w]*)[\s]*=[\s]*(0[xX][0-9a-fA-F]+)', line)
-            if match:
-                self.mib_table.update({match.group(2): [match.group(1)]})
-
-    def _post_parsing_operation(self):
-        pass
-
-
-def export_object_file(filename, object_list):
-    file = open(filename, "w")
-    for entry in object_list:
-        file.write(str(entry[0]) + FILE_SEPARATOR + entry[1][0] + '\n')
-    file.close()
-
-
-def write_translation_file(filename, list_of_entries):
-    outputfile = open(filename, "w")
-    print('ObjectParser: Writing translation file ' + filename)
-    definitions = ""
-    function = "const char* translateObject(object_id_t object){\n\tswitch((object&0xFFFFFFFF)){\n"
-    for entry in list_of_entries:
-        # first part of translate file
-        definitions += "const char *" + entry[1][0] + "_STRING = \"" + entry[1][0] + "\";\n"
-        # second part of translate file. entry[i] contains 32 bit hexadecimal numbers
-        function += "\t\tcase " + str(entry[0]) + ":\n\t\t\treturn " + entry[1][0] + "_STRING;\n"
-    function += '\t\tdefault:\n\t\t\treturn "UNKNOWN_OBJECT";\n'
-    outputfile.write("/** \n * @brief\tAuto-generated object translation file. Contains "
-                     + str(len(list_of_entries)) + " translations. \n"
-                    " * Generated on: " + DATE_STRING_FULL + "\n **/ \n")
-    outputfile.write("#include \"translateObjects.h\"\n\n")
-    outputfile.write(definitions + "\n" + function + "\t}\n\treturn 0;\n}\n")
-    outputfile.close()
-
-
-def sql_object_exporter(object_table: list, sql_table: str = SQL_DATABASE_NAME):
-    sql_writer = SqlWriter(sql_table)
-    sql_writer.delete(SQL_DELETE_OBJECTS_CMD)
-    sql_writer.open(SQL_CREATE_OBJECTS_CMD)
-    for entry in object_table:
-        sql_writer.write_entries(
-            SQL_INSERT_INTO_OBJECTS_CMD, (entry[0], entry[1][0]))
-    sql_writer.commit()
-    sql_writer.close()
+            move_file(file_name=CSV_OBJECT_FILENAME, destination=CSV_MOVE_DESTINATION)
 
 
 if __name__ == "__main__":
     main()
-
-
-
-
-

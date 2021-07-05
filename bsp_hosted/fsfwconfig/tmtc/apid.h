@@ -13,6 +13,7 @@
  */
 namespace apid {
 	static const uint16_t SOURCE_OBSW = 0x73;
+	static const uint16_t SOURCE_CFDP = 0x74;
 }
 
 

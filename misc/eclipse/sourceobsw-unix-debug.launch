@@ -22,7 +22,7 @@
     <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="build-Debug-Host/sourceobsw-host-debug"/>
     <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="sourceobsw"/>
     <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="false"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.459364997"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.459364997.2006688884"/>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
         <listEntry value="/sourceobsw"/>
     </listAttribute>

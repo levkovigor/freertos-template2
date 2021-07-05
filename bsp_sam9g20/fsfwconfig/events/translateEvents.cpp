@@ -1,15 +1,10 @@
 /**
- * @brief    Auto-generated event translation file. Contains 84 translations.
- * Generated on: 2021-04-22 18:21:58
+ * @brief    Auto-generated event translation file. Contains 92 translations.
+ * @details
+ * Generated on: 2021-06-08 09:39:33
  */
 #include "translateEvents.h"
 
-const char *GPS_STARTUP_FAILED_STRING = "GPS_STARTUP_FAILED";
-const char *GPS_FIX_STRING = "GPS_FIX";
-const char *GPS_LOST_FIX_STRING = "GPS_LOST_FIX";
-const char *CHANGE_OF_SETUP_PARAMETER_STRING = "CHANGE_OF_SETUP_PARAMETER";
-const char *LOW_REM_STACK_STRING = "LOW_REM_STACK";
-const char *BOOT_EVENT_STRING = "BOOT_EVENT";
 const char *STORE_SEND_WRITE_FAILED_STRING = "STORE_SEND_WRITE_FAILED";
 const char *STORE_WRITE_FAILED_STRING = "STORE_WRITE_FAILED";
 const char *STORE_SEND_READ_FAILED_STRING = "STORE_SEND_READ_FAILED";
@@ -88,179 +83,209 @@ const char *FRAME_PROCESSING_FAILED_STRING = "FRAME_PROCESSING_FAILED";
 const char *CLOCK_SET_STRING = "CLOCK_SET";
 const char *CLOCK_SET_FAILURE_STRING = "CLOCK_SET_FAILURE";
 const char *TEST_STRING = "TEST";
+const char *GPS_STARTUP_FAILED_STRING = "GPS_STARTUP_FAILED";
+const char *GPS_FIX_STRING = "GPS_FIX";
+const char *GPS_LOST_FIX_STRING = "GPS_LOST_FIX";
+const char *CHANGE_OF_SETUP_PARAMETER_STRING = "CHANGE_OF_SETUP_PARAMETER";
+const char *TEST_EVENT_STRING = "TEST_EVENT";
+const char *TEST_EVENT_HIGH_STRING = "TEST_EVENT_HIGH";
+const char *BOOT_EVENT_STRING = "BOOT_EVENT";
+const char *FRAM_FAILURE_STRING = "FRAM_FAILURE";
+const char *SUPERVISOR_FAILURE_STRING = "SUPERVISOR_FAILURE";
+const char *RTT_RTC_FAILURE_STRING = "RTT_RTC_FAILURE";
+const char *FSFW_CLOCK_SYNC_STRING = "FSFW_CLOCK_SYNC";
+const char *LOW_REM_STACK_STRING = "LOW_REM_STACK";
+const char *FRAM_ISSUE_EVENT_STRING = "FRAM_ISSUE_EVENT";
+const char *ISIS_CLOCK_SET_FAILURE_STRING = "ISIS_CLOCK_SET_FAILURE";
 
-const char * translateEvents(Event event){
-	switch((event&0xFFFF)){
-		case 1200:
-			return GPS_STARTUP_FAILED_STRING;
-		case 1201:
-			return GPS_FIX_STRING;
-		case 1202:
-			return GPS_LOST_FIX_STRING;
-		case 1300:
-			return CHANGE_OF_SETUP_PARAMETER_STRING;
-		case 1600:
-			return LOW_REM_STACK_STRING;
-		case 1900:
-			return BOOT_EVENT_STRING;
-		case 2200:
-			return STORE_SEND_WRITE_FAILED_STRING;
-		case 2201:
-			return STORE_WRITE_FAILED_STRING;
-		case 2202:
-			return STORE_SEND_READ_FAILED_STRING;
-		case 2203:
-			return STORE_READ_FAILED_STRING;
-		case 2204:
-			return UNEXPECTED_MSG_STRING;
-		case 2205:
-			return STORING_FAILED_STRING;
-		case 2206:
-			return TM_DUMP_FAILED_STRING;
-		case 2207:
-			return STORE_INIT_FAILED_STRING;
-		case 2208:
-			return STORE_INIT_EMPTY_STRING;
-		case 2209:
-			return STORE_CONTENT_CORRUPTED_STRING;
-		case 2210:
-			return STORE_INITIALIZE_STRING;
-		case 2211:
-			return INIT_DONE_STRING;
-		case 2212:
-			return DUMP_FINISHED_STRING;
-		case 2213:
-			return DELETION_FINISHED_STRING;
-		case 2214:
-			return DELETION_FAILED_STRING;
-		case 2215:
-			return AUTO_CATALOGS_SENDING_FAILED_STRING;
-		case 2600:
-			return GET_DATA_FAILED_STRING;
-		case 2601:
-			return STORE_DATA_FAILED_STRING;
-		case 2800:
-			return DEVICE_BUILDING_COMMAND_FAILED_STRING;
-		case 2801:
-			return DEVICE_SENDING_COMMAND_FAILED_STRING;
-		case 2802:
-			return DEVICE_REQUESTING_REPLY_FAILED_STRING;
-		case 2803:
-			return DEVICE_READING_REPLY_FAILED_STRING;
-		case 2804:
-			return DEVICE_INTERPRETING_REPLY_FAILED_STRING;
-		case 2805:
-			return DEVICE_MISSED_REPLY_STRING;
-		case 2806:
-			return DEVICE_UNKNOWN_REPLY_STRING;
-		case 2807:
-			return DEVICE_UNREQUESTED_REPLY_STRING;
-		case 2808:
-			return INVALID_DEVICE_COMMAND_STRING;
-		case 2809:
-			return MONITORING_LIMIT_EXCEEDED_STRING;
-		case 2810:
-			return MONITORING_AMBIGUOUS_STRING;
-		case 4201:
-			return FUSE_CURRENT_HIGH_STRING;
-		case 4202:
-			return FUSE_WENT_OFF_STRING;
-		case 4204:
-			return POWER_ABOVE_HIGH_LIMIT_STRING;
-		case 4205:
-			return POWER_BELOW_LOW_LIMIT_STRING;
-		case 4300:
-			return SWITCH_WENT_OFF_STRING;
-		case 5000:
-			return HEATER_ON_STRING;
-		case 5001:
-			return HEATER_OFF_STRING;
-		case 5002:
-			return HEATER_TIMEOUT_STRING;
-		case 5003:
-			return HEATER_STAYED_ON_STRING;
-		case 5004:
-			return HEATER_STAYED_OFF_STRING;
-		case 5200:
-			return TEMP_SENSOR_HIGH_STRING;
-		case 5201:
-			return TEMP_SENSOR_LOW_STRING;
-		case 5202:
-			return TEMP_SENSOR_GRADIENT_STRING;
-		case 5901:
-			return COMPONENT_TEMP_LOW_STRING;
-		case 5902:
-			return COMPONENT_TEMP_HIGH_STRING;
-		case 5903:
-			return COMPONENT_TEMP_OOL_LOW_STRING;
-		case 5904:
-			return COMPONENT_TEMP_OOL_HIGH_STRING;
-		case 5905:
-			return TEMP_NOT_IN_OP_RANGE_STRING;
-		case 7101:
-			return FDIR_CHANGED_STATE_STRING;
-		case 7102:
-			return FDIR_STARTS_RECOVERY_STRING;
-		case 7103:
-			return FDIR_TURNS_OFF_DEVICE_STRING;
-		case 7201:
-			return MONITOR_CHANGED_STATE_STRING;
-		case 7202:
-			return VALUE_BELOW_LOW_LIMIT_STRING;
-		case 7203:
-			return VALUE_ABOVE_HIGH_LIMIT_STRING;
-		case 7204:
-			return VALUE_OUT_OF_RANGE_STRING;
-		case 7301:
-			return SWITCHING_TM_FAILED_STRING;
-		case 7400:
-			return CHANGING_MODE_STRING;
-		case 7401:
-			return MODE_INFO_STRING;
-		case 7402:
-			return FALLBACK_FAILED_STRING;
-		case 7403:
-			return MODE_TRANSITION_FAILED_STRING;
-		case 7404:
-			return CANT_KEEP_MODE_STRING;
-		case 7405:
-			return OBJECT_IN_INVALID_MODE_STRING;
-		case 7406:
-			return FORCING_MODE_STRING;
-		case 7407:
-			return MODE_CMD_REJECTED_STRING;
-		case 7506:
-			return HEALTH_INFO_STRING;
-		case 7507:
-			return CHILD_CHANGED_HEALTH_STRING;
-		case 7508:
-			return CHILD_PROBLEMS_STRING;
-		case 7509:
-			return OVERWRITING_HEALTH_STRING;
-		case 7510:
-			return TRYING_RECOVERY_STRING;
-		case 7511:
-			return RECOVERY_STEP_STRING;
-		case 7512:
-			return RECOVERY_DONE_STRING;
-		case 7900:
-			return RF_AVAILABLE_STRING;
-		case 7901:
-			return RF_LOST_STRING;
-		case 7902:
-			return BIT_LOCK_STRING;
-		case 7903:
-			return BIT_LOCK_LOST_STRING;
-		case 7905:
-			return FRAME_PROCESSING_FAILED_STRING;
-		case 8900:
-			return CLOCK_SET_STRING;
-		case 8901:
-			return CLOCK_SET_FAILURE_STRING;
-		case 9700:
-			return TEST_STRING;
-		default:
-			return "UNKNOWN_EVENT";
+const char * translateEvents(Event event) {
+	switch( (event & 0xffff) ) {
+	case(2200):
+		return STORE_SEND_WRITE_FAILED_STRING;
+	case(2201):
+		return STORE_WRITE_FAILED_STRING;
+	case(2202):
+		return STORE_SEND_READ_FAILED_STRING;
+	case(2203):
+		return STORE_READ_FAILED_STRING;
+	case(2204):
+		return UNEXPECTED_MSG_STRING;
+	case(2205):
+		return STORING_FAILED_STRING;
+	case(2206):
+		return TM_DUMP_FAILED_STRING;
+	case(2207):
+		return STORE_INIT_FAILED_STRING;
+	case(2208):
+		return STORE_INIT_EMPTY_STRING;
+	case(2209):
+		return STORE_CONTENT_CORRUPTED_STRING;
+	case(2210):
+		return STORE_INITIALIZE_STRING;
+	case(2211):
+		return INIT_DONE_STRING;
+	case(2212):
+		return DUMP_FINISHED_STRING;
+	case(2213):
+		return DELETION_FINISHED_STRING;
+	case(2214):
+		return DELETION_FAILED_STRING;
+	case(2215):
+		return AUTO_CATALOGS_SENDING_FAILED_STRING;
+	case(2600):
+		return GET_DATA_FAILED_STRING;
+	case(2601):
+		return STORE_DATA_FAILED_STRING;
+	case(2800):
+		return DEVICE_BUILDING_COMMAND_FAILED_STRING;
+	case(2801):
+		return DEVICE_SENDING_COMMAND_FAILED_STRING;
+	case(2802):
+		return DEVICE_REQUESTING_REPLY_FAILED_STRING;
+	case(2803):
+		return DEVICE_READING_REPLY_FAILED_STRING;
+	case(2804):
+		return DEVICE_INTERPRETING_REPLY_FAILED_STRING;
+	case(2805):
+		return DEVICE_MISSED_REPLY_STRING;
+	case(2806):
+		return DEVICE_UNKNOWN_REPLY_STRING;
+	case(2807):
+		return DEVICE_UNREQUESTED_REPLY_STRING;
+	case(2808):
+		return INVALID_DEVICE_COMMAND_STRING;
+	case(2809):
+		return MONITORING_LIMIT_EXCEEDED_STRING;
+	case(2810):
+		return MONITORING_AMBIGUOUS_STRING;
+	case(4201):
+		return FUSE_CURRENT_HIGH_STRING;
+	case(4202):
+		return FUSE_WENT_OFF_STRING;
+	case(4204):
+		return POWER_ABOVE_HIGH_LIMIT_STRING;
+	case(4205):
+		return POWER_BELOW_LOW_LIMIT_STRING;
+	case(4300):
+		return SWITCH_WENT_OFF_STRING;
+	case(5000):
+		return HEATER_ON_STRING;
+	case(5001):
+		return HEATER_OFF_STRING;
+	case(5002):
+		return HEATER_TIMEOUT_STRING;
+	case(5003):
+		return HEATER_STAYED_ON_STRING;
+	case(5004):
+		return HEATER_STAYED_OFF_STRING;
+	case(5200):
+		return TEMP_SENSOR_HIGH_STRING;
+	case(5201):
+		return TEMP_SENSOR_LOW_STRING;
+	case(5202):
+		return TEMP_SENSOR_GRADIENT_STRING;
+	case(5901):
+		return COMPONENT_TEMP_LOW_STRING;
+	case(5902):
+		return COMPONENT_TEMP_HIGH_STRING;
+	case(5903):
+		return COMPONENT_TEMP_OOL_LOW_STRING;
+	case(5904):
+		return COMPONENT_TEMP_OOL_HIGH_STRING;
+	case(5905):
+		return TEMP_NOT_IN_OP_RANGE_STRING;
+	case(7101):
+		return FDIR_CHANGED_STATE_STRING;
+	case(7102):
+		return FDIR_STARTS_RECOVERY_STRING;
+	case(7103):
+		return FDIR_TURNS_OFF_DEVICE_STRING;
+	case(7201):
+		return MONITOR_CHANGED_STATE_STRING;
+	case(7202):
+		return VALUE_BELOW_LOW_LIMIT_STRING;
+	case(7203):
+		return VALUE_ABOVE_HIGH_LIMIT_STRING;
+	case(7204):
+		return VALUE_OUT_OF_RANGE_STRING;
+	case(7301):
+		return SWITCHING_TM_FAILED_STRING;
+	case(7400):
+		return CHANGING_MODE_STRING;
+	case(7401):
+		return MODE_INFO_STRING;
+	case(7402):
+		return FALLBACK_FAILED_STRING;
+	case(7403):
+		return MODE_TRANSITION_FAILED_STRING;
+	case(7404):
+		return CANT_KEEP_MODE_STRING;
+	case(7405):
+		return OBJECT_IN_INVALID_MODE_STRING;
+	case(7406):
+		return FORCING_MODE_STRING;
+	case(7407):
+		return MODE_CMD_REJECTED_STRING;
+	case(7506):
+		return HEALTH_INFO_STRING;
+	case(7507):
+		return CHILD_CHANGED_HEALTH_STRING;
+	case(7508):
+		return CHILD_PROBLEMS_STRING;
+	case(7509):
+		return OVERWRITING_HEALTH_STRING;
+	case(7510):
+		return TRYING_RECOVERY_STRING;
+	case(7511):
+		return RECOVERY_STEP_STRING;
+	case(7512):
+		return RECOVERY_DONE_STRING;
+	case(7900):
+		return RF_AVAILABLE_STRING;
+	case(7901):
+		return RF_LOST_STRING;
+	case(7902):
+		return BIT_LOCK_STRING;
+	case(7903):
+		return BIT_LOCK_LOST_STRING;
+	case(7905):
+		return FRAME_PROCESSING_FAILED_STRING;
+	case(8900):
+		return CLOCK_SET_STRING;
+	case(8901):
+		return CLOCK_SET_FAILURE_STRING;
+	case(9700):
+		return TEST_STRING;
+	case(11300):
+		return GPS_STARTUP_FAILED_STRING;
+	case(11301):
+		return GPS_FIX_STRING;
+	case(11302):
+		return GPS_LOST_FIX_STRING;
+	case(11400):
+		return CHANGE_OF_SETUP_PARAMETER_STRING;
+	case(12000):
+		return TEST_EVENT_STRING;
+	case(12001):
+		return TEST_EVENT_HIGH_STRING;
+	case(12100):
+		return BOOT_EVENT_STRING;
+	case(12101):
+		return FRAM_FAILURE_STRING;
+	case(12102):
+		return SUPERVISOR_FAILURE_STRING;
+	case(12103):
+		return RTT_RTC_FAILURE_STRING;
+	case(12104):
+		return FSFW_CLOCK_SYNC_STRING;
+	case(16100):
+		return LOW_REM_STACK_STRING;
+	case(18100):
+		return FRAM_ISSUE_EVENT_STRING;
+	case(18128):
+		return ISIS_CLOCK_SET_FAILURE_STRING;
+	default:
+		return "UNKNOWN_EVENT";
 	}
 	return 0;
 }

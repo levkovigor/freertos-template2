@@ -1,191 +1,142 @@
 #ifndef TEST_TESTDEVICES_TESTDEVICEHANDLER_H_
 #define TEST_TESTDEVICES_TESTDEVICEHANDLER_H_
 
+#include "devicedefinitions/testDeviceDefinitions.h"
+
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
-#include <fsfw/datapoollocal/StaticLocalDataSet.h>
-#include <fsfw/datapoollocal/LocalPoolVariable.h>
-#include <fsfw/datapoollocal/LocalPoolVector.h>
 #include <fsfw/globalfunctions/PeriodicOperationDivider.h>
-#include <test/testinterfaces/DummyCookie.h>
-
-enum class LocalPoolIds {
-	TEST_VAR_1,
-	TEST_VEC_1,
-	TEST_VEC_2
-};
-
-class TestDataset: public StaticLocalDataSet<3> {
-public:
-	TestDataset(sid_t sid, bool setAllValid = true): StaticLocalDataSet(sid) {
-		if(setAllValid) {
-			this->setValidity(true, true);
-		}
-	}
-
-	// Can be used if data is changed regularly.
-	bool mode = false;
-
-	lp_var_t<uint8_t> testVar1 = lp_var_t<uint8_t>(sid.objectId,
-			static_cast<lp_id_t>(LocalPoolIds::TEST_VAR_1), this);
-	lp_vec_t<float, 3> testVar2 = lp_vec_t<float,3>(sid.objectId,
-			static_cast<lp_id_t>(LocalPoolIds::TEST_VEC_1), this);
-	lp_vec_t<uint32_t, 3> testVar3 = lp_vec_t<uint32_t, 3>(sid.objectId,
-			static_cast<lp_id_t>(LocalPoolIds::TEST_VEC_2), this);
-private:
-
-};
+#include <fsfw/timemanager/Countdown.h>
 
 /**
- * @brief 	Basic dummy device handler to test device commanding without a
- * 			physical device.
+ * @brief 	Basic dummy device handler to test device commanding without a physical device.
  * @details
- * Use ActionMessages for functional commanding (PUS Service 8) or
- * Device Handler Messages (PUS Service 2) for raw commanding
- * (sent buffer is simply returned).
+ * This test device handler provided a basic demo for the device handler object.
+ * It can also be commanded with the following PUS services, using
+ * the specified object ID of the test device handler.
+ *
+ * 	1. PUS Service 8 - Functional commanding
+ * 	2. PUS Service 2 - Device access, raw commanding
+ * 	3. PUS Service 20 - Parameter Management
+ * 	4. PUS Service 3 - Housekeeping
+
  * @author	R. Mueller
  * @ingroup devices
  */
 class TestDevice: public DeviceHandlerBase {
 public:
+	/**
+	 * Build the test device in the factory.
+	 * @param objectId This ID will be assigned to the test device handler.
+	 * @param comIF The ID of the Communication IF used by test device handler.
+	 * @param cookie Cookie object used by the test device handler. This is
+	 * also used and passed to the comIF object.
+	 * @param onImmediately This will start a transition to MODE_ON immediately
+	 * so the device handler jumps into #doStartUp. Should only be used
+	 * in development to reduce need of commanding while debugging.
+	 * @param changingDataset
+	 * Will be used later to change the local datasets containeds in the device.
+	 */
 	TestDevice(object_id_t objectId, object_id_t comIF, CookieIF * cookie,
-	        bool onImmediately = true, bool changingDataset = true);
-
-	virtual~ TestDevice();
-
-	virtual ReturnValue_t getParameter(uint8_t domainId, uint8_t uniqueId,
-			ParameterWrapper *parameterWrapper,
-			const ParameterWrapper *newValues, uint16_t startAtIndex) override;
-
-protected:
-	void performOperationHook() override;
-	virtual void doStartUp() override;
-	virtual void doShutDown() override;
-	/** No periodic commands for now */
-	virtual ReturnValue_t buildNormalDeviceCommand(
-			DeviceCommandId_t * id) override;
-	/** No transition commands for now */
-	virtual ReturnValue_t buildTransitionDeviceCommand(
-			DeviceCommandId_t * id) override;
+	        testdevice::DeviceIndex deviceIdx = testdevice::DeviceIndex::DEVICE_0,
+	        bool fullInfoPrintout = false, bool changingDataset = true);
 
 	/**
-	 * Three commands have been implemented and can be tested by using service 8
-	 * and sending object ID + action ID + data if required or needed.
-	 * Refer to command parameters and command IDs !
-	 * Commands are sent to a virtual com IF which simply returns sent data.
-	 * Refer to Dummy Communication Interface for more information.
-	 * @param deviceCommand
-	 * @param commandData
-	 * @param commandDataLen
-	 * @return
+	 * This can be used to enable and disable a lot of demo print output.
+	 * @param enable
 	 */
+	void enableFullDebugOutput(bool enable);
+
+	virtual ~ TestDevice();
+
+	//! Size of internal buffer used for communication.
+    static constexpr uint8_t MAX_BUFFER_SIZE = 255;
+
+    //! Unique index if the device handler is created multiple times.
+    testdevice::DeviceIndex deviceIdx = testdevice::DeviceIndex::DEVICE_0;
+
+protected:
+    testdevice::TestDataSet dataset;
+    //! This is used to reset the dataset after a commanded change has been made.
+    bool resetAfterChange = false;
+    bool commandSent = false;
+
+	/** DeviceHandlerBase overrides (see DHB documentation) */
+
+	/**
+	 * Hook into the DHB #performOperation call which is executed
+	 * periodically.
+	 */
+	void performOperationHook() override;
+
+	virtual void doStartUp() override;
+	virtual void doShutDown() override;
+
+	virtual ReturnValue_t buildNormalDeviceCommand(
+			DeviceCommandId_t * id) override;
+	virtual ReturnValue_t buildTransitionDeviceCommand(
+			DeviceCommandId_t * id) override;
 	virtual ReturnValue_t buildCommandFromCommand(DeviceCommandId_t
 			deviceCommand, const uint8_t * commandData,
 			size_t commandDataLen) override;
 
-	/**
-	 * Possible commands and replies are inserted in this function.
-	 */
 	virtual void fillCommandAndReplyMap() override;
 
-	/**
-	 * The returned data (echo reply) can be checked for formatting, length
-	 * or other parameters
-	 * @param start
-	 * @param len
-	 * @param foundId
-	 * @param foundLen
-	 * @return
-	 */
 	virtual ReturnValue_t scanForReply(const uint8_t *start, size_t len,
 			DeviceCommandId_t *foundId, size_t *foundLen) override;
-
-	/**
-	 * The returned data is interpreted. Action Messages are set to generate
-	 * TC verification or data replies
-	 * @param id
-	 * @param packet
-	 * @return
-	 */
 	virtual ReturnValue_t interpretDeviceReply(DeviceCommandId_t id,
 			const uint8_t *packet) override;
-
-	virtual void setNormalDatapoolEntriesInvalid() override;
-
-	/**
-	 * Used to track variables in performOperation() call of DHB
-	 */
-	virtual void debugInterface(uint8_t positionTracker = 0,
-			object_id_t objectId = 0, uint32_t parameter = 0) override;
-
-	/**
-	 * Transition delay, used for transition from MODE_START_UP to MODE_ON
-	 * @param modeFrom
-	 * @param modeTo
-	 * @return
-	 */
 	virtual uint32_t getTransitionDelayMs(Mode_t modeFrom,
 			Mode_t modeTo) override;
 
 	virtual void doTransition(Mode_t modeFrom, Submode_t subModeFrom) override;
 
-private:
-	static constexpr uint8_t MAX_BUFFER_SIZE = 255;
+    virtual ReturnValue_t initializeLocalDataPool(localpool::DataPool& localDataPoolMap,
+                LocalDataPoolManager& poolManager) override;
+    virtual LocalPoolObjectBase* getPoolObjectHandle(lp_id_t localPoolId) override;
 
-	static constexpr DeviceCommandId_t TEST_COMMAND_1 = 666; //!< Test completion reply
-	static constexpr DeviceCommandId_t TEST_COMMAND_2 = 0xC0C0BABE; //!< Test data reply
-	static constexpr DeviceCommandId_t TEST_COMMAND_3 = 0xBADEAFFE; //!< Test step and completion reply
-
-	/**
-	 * These parameters are sent back with the command ID as a data reply
-	 */
-
-	static constexpr uint16_t COMMAND_2_PARAM1 = 0xBAB0; //!< param1, 2 bytes
-	//! param2, 8 bytes
-	static constexpr uint64_t COMMAND_2_PARAM2 = 0x000000524F42494E;
-
-	static constexpr size_t TEST_COMMAND_2_SIZE = sizeof(TEST_COMMAND_2) +
-			sizeof(COMMAND_2_PARAM1) + sizeof(COMMAND_2_PARAM2);
+	/* HasParametersIF  overrides */
+	virtual ReturnValue_t getParameter(uint8_t domainId, uint8_t uniqueId,
+			ParameterWrapper *parameterWrapper,
+			const ParameterWrapper *newValues, uint16_t startAtIndex) override;
 
 	uint8_t commandBuffer[MAX_BUFFER_SIZE];
 
-	bool changingDatasets = false;
+	bool fullInfoPrintout = false;
 	bool oneShot = true;
 
-	// variables for parameter service
-	uint32_t testParameter1 = 0;
-	int32_t testParameter2 = -2;
-	float testParameter3 = 3.3;
+	/* Variables for parameter service */
+	uint32_t testParameter0 = 0;
+	int32_t testParameter1 = -2;
+	float vectorFloatParams2[3] = {};
 
-	ReturnValue_t buildTestCommand1(DeviceCommandId_t deviceCommand,
-			const uint8_t* commandData, size_t commandDataLen);
-	ReturnValue_t buildTestCommand2(DeviceCommandId_t deviceCommand,
-			const uint8_t* commandData, size_t commandDataLen);
-	ReturnValue_t buildTestCommand3(DeviceCommandId_t deviceCommand,
-			const uint8_t* commandData, size_t commandDataLen);
-	ReturnValue_t buildTestCommand4(DeviceCommandId_t deviceCommand,
-			const uint8_t* commandData, size_t commandDataLen);
+	/* Change device handler functionality, changeable via parameter service */
+	uint8_t periodicPrintout = false;
+	uint8_t changingDatasets = false;
 
-	ReturnValue_t interpretingReply1();
-	ReturnValue_t interpretingReply2(DeviceCommandId_t id, const uint8_t* packet);
-	ReturnValue_t interpretingReply3(DeviceCommandId_t id, const uint8_t* packet);
+	ReturnValue_t buildNormalModeCommand(DeviceCommandId_t deviceCommand,
+	        const uint8_t* commandData, size_t commandDataLen);
+	ReturnValue_t buildTestCommand0(DeviceCommandId_t deviceCommand, const uint8_t* commandData,
+	        size_t commandDataLen);
+	ReturnValue_t buildTestCommand1(DeviceCommandId_t deviceCommand, const uint8_t* commandData,
+	        size_t commandDataLen);
+	void passOnCommand(DeviceCommandId_t command, const uint8_t* commandData,
+	        size_t commandDataLen);
 
-	ReturnValue_t initializeLocalDataPool(localpool::DataPool& localDataPoolMap,
-	        LocalDataPoolManager& poolManager) override;
+	ReturnValue_t interpretingNormalModeReply();
+	ReturnValue_t interpretingTestReply0(DeviceCommandId_t id,
+			const uint8_t* packet);
+	ReturnValue_t interpretingTestReply1(DeviceCommandId_t id,
+			const uint8_t* packet);
+	ReturnValue_t interpretingTestReply2(DeviceCommandId_t id, const uint8_t* packet);
 
-	// Test datasets which use the LocalDataPool of the test device
-	sid_t testDatasetSid;
-	sid_t testDatasetSidDiag;
-	TestDataset testDataset;
-	TestDataset testDatasetDiag;
-	void changeDatasets();
-
-	// These operation dividers can be used to only perform actions every few
-	// cycles. They are initialized in the constructor with the operation
-	// divider.
-	PeriodicOperationDivider opDivider;
-	PeriodicOperationDivider opDivider2;
+	/* Some timer utilities */
+	static constexpr uint8_t divider1 = 2;
+	PeriodicOperationDivider opDivider1 = PeriodicOperationDivider(divider1);
+	static constexpr uint8_t divider2 = 10;
+	PeriodicOperationDivider opDivider2 = PeriodicOperationDivider(divider2);
+	static constexpr uint32_t initTimeout = 2000;
+	Countdown countdown1 = Countdown(initTimeout);
 };
-
 
 
 #endif /* TEST_TESTDEVICES_TESTDEVICEHANDLER_H_ */

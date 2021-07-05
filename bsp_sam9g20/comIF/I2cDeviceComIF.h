@@ -48,25 +48,27 @@ public:
 		RETURN_OK = 0
 	};
 
-	static constexpr ReturnValue_t I2C_DRIVER_ERROR = MAKE_RETURN_CODE(0x01);
+	static constexpr ReturnValue_t I2C_DRIVER_ERROR = MAKE_RETURN_CODE(1);
+	static constexpr ReturnValue_t I2C_TRANSFER_PENDING = MAKE_RETURN_CODE(2);
 
-	static constexpr ReturnValue_t I2C_QUEUE_CREATION_FAILURE = MAKE_RETURN_CODE(0xA1);
-	static constexpr ReturnValue_t I2C_PERIPHERAL_INIT_FAILURE = MAKE_RETURN_CODE(0xA2);
-	static constexpr ReturnValue_t I2C_TASK_CREATION_FAILURE = MAKE_RETURN_CODE(0xA3);
+	static constexpr ReturnValue_t I2C_QUEUE_CREATION_FAILURE = MAKE_RETURN_CODE(3);
+	static constexpr ReturnValue_t I2C_PERIPHERAL_INIT_FAILURE = MAKE_RETURN_CODE(4);
+	static constexpr ReturnValue_t I2C_TASK_CREATION_FAILURE = MAKE_RETURN_CODE(5);
 
-	static constexpr ReturnValue_t I2C_INVALID_TRANSFER_PARAMETERS = MAKE_RETURN_CODE(0xB1);
-	static constexpr ReturnValue_t I2C_QUEUE_TRANSFER_INIT_FAILURE = MAKE_RETURN_CODE(0xB2);
+	static constexpr ReturnValue_t I2C_INVALID_TRANSFER_PARAMETERS = MAKE_RETURN_CODE(10);
+	static constexpr ReturnValue_t I2C_QUEUE_TRANSFER_INIT_FAILURE = MAKE_RETURN_CODE(11);
 
-	static constexpr ReturnValue_t I2C_WRITE_SEMAPHORE_BLOCKED = MAKE_RETURN_CODE(0xC1);
-	static constexpr ReturnValue_t I2C_READ_ERROR = MAKE_RETURN_CODE(0xC2);
-	static constexpr ReturnValue_t I2C_WRITE_ERROR = MAKE_RETURN_CODE(0xC3);
-	static constexpr ReturnValue_t I2C_TRANSFER_GENERAL_ERROR = MAKE_RETURN_CODE(0xC4);
-	static constexpr ReturnValue_t I2C_TRANSFER_TIMEOUT_ERROR = MAKE_RETURN_CODE(0xC5);
+	static constexpr ReturnValue_t I2C_WRITE_SEMAPHORE_BLOCKED = MAKE_RETURN_CODE(15);
+	static constexpr ReturnValue_t I2C_READ_ERROR = MAKE_RETURN_CODE(16);
+	static constexpr ReturnValue_t I2C_WRITE_ERROR = MAKE_RETURN_CODE(17);
+	static constexpr ReturnValue_t I2C_TRANSFER_GENERAL_ERROR = MAKE_RETURN_CODE(18);
+	static constexpr ReturnValue_t I2C_TRANSFER_TIMEOUT_ERROR = MAKE_RETURN_CODE(19);
 
-	static constexpr ReturnValue_t I2C_UNKNOWN_ERROR = MAKE_RETURN_CODE(0xD1);
+	static constexpr ReturnValue_t I2C_UNKNOWN_ERROR = MAKE_RETURN_CODE(22);
 
-	static constexpr ReturnValue_t I2C_INVALID_ADDRESS = MAKE_RETURN_CODE(0xE1);
-	static constexpr ReturnValue_t I2C_ADDRESS_NOT_IN_RECEIVE_MAP = MAKE_RETURN_CODE(0xE2);
+	static constexpr ReturnValue_t I2C_INVALID_ADDRESS = MAKE_RETURN_CODE(23);
+	static constexpr ReturnValue_t I2C_ADDRESS_NOT_IN_RECEIVE_MAP = MAKE_RETURN_CODE(24);
+	static constexpr ReturnValue_t I2C_RX_BUFFER_TOO_SMALL = MAKE_RETURN_CODE(25);
 
 	/**
 	 * Called at system object initialization. Sets up the I2C communication
@@ -121,7 +123,7 @@ private:
 	ReturnValue_t assignReply(I2cCookie * i2cCookie, uint8_t ** buffer,
 			size_t * size);
 
-	void prepareI2cConsecutiveTransfer(I2CgenericTransfer& transferStruct,
+	ReturnValue_t prepareI2cConsecutiveTransfer(I2CgenericTransfer& transferStruct,
 	        const uint8_t * writeData, uint32_t writeLen);
 	ReturnValue_t prepareI2cReadTransfer(address_t slaveAddress,
 			I2CgenericTransfer& transferStruct, size_t requestLen);

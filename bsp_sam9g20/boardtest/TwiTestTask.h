@@ -1,10 +1,3 @@
-/*
- * twiTestTask.h
- *
- *  Created on: 20.06.2019
- *      Author: jakob
- */
-
 #ifndef MISSION_TWITESTTASK_H_
 #define MISSION_TWITESTTASK_H_
 
