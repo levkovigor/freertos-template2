@@ -8,7 +8,9 @@
 #include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/tmtcservices/CommandingServiceBase.h>
+
 #include <fsfw/tmtcpacket/pus/tm.h>
+
 #include <fsfw/ipc/QueueFactory.h>
 
 #include <cstring>

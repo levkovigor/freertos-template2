@@ -22,6 +22,8 @@ public:
     static void setClearSdCardCommand(CommandMessage* message);
     static void setFormatSdCardCommand(CommandMessage* message);
     static void setCeaseSdCardOperationNotification( CommandMessage* command);
+
+    static ReturnValue_t clear(CommandMessage* command);
 };
 
 #endif /* SAM9G20_MEMORY_FILESYSTEMMESSAGE_H_ */

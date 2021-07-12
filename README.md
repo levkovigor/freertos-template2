@@ -181,6 +181,18 @@ cmake -DBOOTLOADER=ON -DBOARD_IOBC=ON -DAT91_NO_FREERTOS_STARTER_FILE=ON -DCMAKE
 cmake --build . -j
 ```
 
+## Build unittests
+
+Unittests are built with the `Catch2` unittest framework which was included as a submodule.
+You can find the tests in the `unittest` folder and you can build the unit test binary with the
+following command
+
+```sh
+mkdir build-Unittest && cd build-Unittest
+cmake -DBUILD_UNITTEST=ON ..
+cmake --build . -j
+```
+
 ## Starting QEMU
 
 Command to start QEMU (inside sourceobsw folder). Please note this only works if the QEMU 

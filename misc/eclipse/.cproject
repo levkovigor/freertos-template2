@@ -960,7 +960,7 @@
 									<listOptionValue builtIn="false" value="ISIS_OBC_G20"/>
 									<listOptionValue builtIn="false" value="at91sam9g20"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.289126785" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.289126785" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sourceobsw/bsp_sam9g20/boardconfig}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1321520764" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
@@ -1562,6 +1562,66 @@
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 			<storageModule moduleId="ilg.gnumcueclipse.managedbuild.packs"/>
 		</cconfiguration>
+		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.459364997.240562458">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.459364997.240562458" moduleId="org.eclipse.cdt.core.settings" name="obsw-unittest-mingw">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.PE64" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="${ProjName}" buildProperties="" description="" id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.459364997.240562458" name="obsw-unittest-mingw" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="org.eclipse.cdt.build.core.emptycfg">
+					<folderInfo id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.459364997.240562458." name="/" resourcePath="">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.mingw.base.4771903" name="MinGW GCC" superClass="cdt.managedbuild.toolchain.gnu.mingw.base">
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.PE64" id="cdt.managedbuild.target.gnu.platform.mingw.base.762837198" name="Debug Platform" osList="win32" superClass="cdt.managedbuild.target.gnu.platform.mingw.base"/>
+							<builder arguments="--build . -j" buildPath="${workspace_loc:/sourceobsw/build-Unittest}" command="cmake" id="cdt.managedbuild.builder.gnu.cross.533186653" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="cdt.managedbuild.builder.gnu.cross"/>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.mingw.base.449614946" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.mingw.base">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1360091036" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.archiver.mingw.base.1949784867" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.mingw.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.base.1652276742" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.base">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.131245276" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sourceobsw}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sourceobsw/unittest/testcfg}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sourceobsw/thirdparty/Catch2/src}&quot;"/>
+								</option>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1030887552" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="AT91SAM9G20_EK=1"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.514747943" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.c.compiler.mingw.base.164436393" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.mingw.base">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.1805970632" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sourceobsw}&quot;"/>
+								</option>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.1355485573" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="__cplusplus=201703L"/>
+									<listOptionValue builtIn="false" value="AT91SAM9G20_EK=1"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1229529128" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.mingw.base.298189601" name="MinGW C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.mingw.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.mingw.base.451361234" name="MinGW C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.mingw.base">
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1090049965" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry excluding="framework/osal/rtems|fsfw/osal/FreeRTOS|misc|fsfw/unittest/testcfg|tmtc|fsfw/osal/linux|doc|fsfw/defaultcfg|framework/osal/linux|fsfwconfig|stm32|fsfw/osal/rtems" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+			<storageModule moduleId="ilg.gnumcueclipse.managedbuild.packs"/>
+		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="sourceobsw.null.597825287" name="sourceobsw"/>
@@ -1612,6 +1672,9 @@
 			<resource resourceType="PROJECT" workspacePath="/sourceobsw"/>
 		</configuration>
 		<configuration configurationName="obsw-bootloader-debug">
+			<resource resourceType="PROJECT" workspacePath="/sourceobsw"/>
+		</configuration>
+		<configuration configurationName="obsw-unittest-mingw">
 			<resource resourceType="PROJECT" workspacePath="/sourceobsw"/>
 		</configuration>
 		<configuration configurationName="obsw-iobc-debug">
@@ -1809,6 +1872,9 @@
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.352525802.586252832;ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.352525802.586252832.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.407017710;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.275166584">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.459364997.240562458;ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.459364997.240562458.;cdt.managedbuild.tool.gnu.cpp.compiler.mingw.base.1652276742;cdt.managedbuild.tool.gnu.cpp.compiler.input.514747943">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.1667046970.80339050.1948333335.171413460;ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.1667046970.80339050.1948333335.171413460.;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.912569734;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.2060918421">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
@@ -1849,6 +1915,9 @@
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.352525802.586252832.351917259;ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.352525802.586252832.351917259.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1152983522;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1258053757">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.459364997.240562458;ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.459364997.240562458.;cdt.managedbuild.tool.gnu.c.compiler.mingw.base.164436393;cdt.managedbuild.tool.gnu.c.compiler.input.1229529128">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.1558396074;ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.1558396074.;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.123779961;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.852281456">
