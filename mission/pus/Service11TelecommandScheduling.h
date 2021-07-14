@@ -5,6 +5,8 @@
 #include <etl/multimap.h>
 #include <OBSWConfig.h>
 
+#include <fsfw/tmtcservices/TmTcMessage.h>
+
 
 /**
  * @brief: PUS-Service 11 - Telecommand scheduling.
@@ -64,6 +66,8 @@ private:
     StorageManagerIF* tcStore = nullptr;
     AcceptsTelecommandsIF* tcRecipient = nullptr;
     MessageQueueId_t recipientMsgQueueId = 0;
+
+    TmTcMessage releaseMsg;
 
     static constexpr uint16_t MAX_STORED_TELECOMMANDS = 500;
     /**
