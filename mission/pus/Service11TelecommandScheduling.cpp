@@ -53,9 +53,9 @@ ReturnValue_t Service11TelecommandScheduling::performService() {
     if (printDebug) {
         sif::printInfo("MULTIMAP CONTENT: \n");
         for (auto it = telecommandMap.begin(); it != telecommandMap.end(); ++it) {
-                sif::printInfo("[%d]: uid: %d  storeAddr: %d\n", it->first, it->second.uid, it->second.storeAddr);
+                sif::printDebug("[%d]: uid: %d  storeAddr: %d\n", it->first, it->second.uid, it->second.storeAddr);
         }
-        sif::printInfo("END OF CONTENT\n\n");
+        sif::printDebug("END OF CONTENT\n\n");
     }
 
 
@@ -75,7 +75,7 @@ ReturnValue_t Service11TelecommandScheduling::performService() {
 
             telecommandMap.erase(it);
 
-            sif::printInfo("Sent message & erased from telecommandMap!\n");
+            sif::printDebug("Sent message & erased from telecommandMap!\n");
         }
         else {
             break;  //save some time as multimap is sorted anyway
@@ -122,7 +122,7 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
     }
 
     // DEBUG
-    sif::printInfo("Deserialized Timestamp: %d\n", deserializedTimestamp);
+    sif::printDebug("Deserialized Timestamp: %d\n", deserializedTimestamp);
 
 
     // Insert possible if sched. time is above margin...
@@ -134,7 +134,6 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
     // store currentPacket
     store_address_t addr;
     if (auto res = ReStorePacket(&addr) != HasReturnvaluesIF::RETURN_OK) {
-        sif::printWarning("ReStorePacket returned != RETURN_OK\n");
         return res;
     }
     if (addr.raw == storeId::INVALID_STORE_ADDRESS) {
@@ -142,7 +141,7 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
     }
 
     //DEBUG
-    sif::printInfo("new addr: %d\n", addr);
+    sif::printDebug("new addr: %d\n", addr);
 
     // insert into mm, with new store address
     //NOTE: addr is now different from currentPacket
@@ -161,11 +160,11 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest_InsertActivity() {
     //DEBUG
     bool printDebug = true;
     if (printDebug) {
-        sif::printInfo("MULTIMAP CONTENT: \n");
+        sif::printDebug("MULTIMAP CONTENT: \n");
         for (auto dit = telecommandMap.begin(); dit != telecommandMap.end(); ++dit) {
-                sif::printInfo("[%d]: uid: %d  storeAddr: %d\n", dit->first, dit->second.uid, dit->second.storeAddr);
+                sif::printDebug("[%d]: uid: %d  storeAddr: %d\n", dit->first, dit->second.uid, dit->second.storeAddr);
         }
-        sif::printInfo("END OF CONTENT\n\n");
+        sif::printDebug("END OF CONTENT\n\n");
     }
 
 
@@ -299,7 +298,7 @@ void Service11TelecommandScheduling::GetRequestIdFromCurrentPacket(uint64_t& req
 
     requestId = (sourceId << 32) | (apid << 16) | sequenceCount;
 
-    sif::printInfo("GetUidFromCurrentPacket: sourceId: %d  apid: %d  sequenceCount: %d requestId: %d\n",
+    sif::printDebug("...::GetUidFromCurrentPacket: sourceId: %d  apid: %d  sequenceCount: %d requestId: %d\n",
             sourceId, apid, sequenceCount, requestId);
 }
 
