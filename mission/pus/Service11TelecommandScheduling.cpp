@@ -326,6 +326,7 @@ ReturnValue_t Service11TelecommandScheduling::ReStorePacket(store_address_t* con
     // get new slot
     auto ret = tcStore->getFreeElement(addrNew, size, &dataNew, false);
     if (ret != HasReturnvaluesIF::RETURN_OK) {
+        sif::printDebug("Service11TelecommandScheduling::ReStorePacket: getFreeElement returned != RETURN_OK");
         return ret;
     }
 
