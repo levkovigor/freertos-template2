@@ -308,23 +308,30 @@ ReturnValue_t Service11TelecommandScheduling::ReStorePacket(store_address_t* con
 
     // re-implementation for "packed" packet:
     size_t size = currentPacket.getApplicationDataSize();
-    uint8_t* dataNew;
+    //uint8_t* dataNew;
     const uint8_t* data = currentPacket.getApplicationData();
 
     // remove release time from app data
     data += sizeof(uint32_t);
     size -= sizeof(uint32_t);
 
+    // =============================
     // get new slot
-    auto ret = tcStore->getFreeElement(addrNew, size, &dataNew, false);
-    if (ret != HasReturnvaluesIF::RETURN_OK) {
-        sif::printDebug("Service11TelecommandScheduling::ReStorePacket: getFreeElement returned != RETURN_OK");
-        return ret;
+//    auto ret = tcStore->getFreeElement(addrNew, size, &dataNew, false);
+//    if (ret != HasReturnvaluesIF::RETURN_OK) {
+//        sif::printDebug("Service11TelecommandScheduling::ReStorePacket: getFreeElement returned != RETURN_OK");
+//        return ret;
+//    }
+//
+//    std::memcpy(dataNew, data, size);
+    // =============================
+
+    auto ret = tcStore->addData(addrNew, data, size);
+    if (ret != RETURN_OK){
+        sif::printDebug("Service11TelecommandScheduling::ReStorePacket: addData returned != RETURN_OK");
     }
 
-    std::memcpy(dataNew, data, size);
-
-    return HasReturnvaluesIF::RETURN_OK;
+    return ret;
 }
 
 
