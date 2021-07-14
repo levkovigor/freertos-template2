@@ -306,14 +306,6 @@ void Service11TelecommandScheduling::GetRequestIdFromCurrentPacket(uint64_t& req
 
 ReturnValue_t Service11TelecommandScheduling::ReStorePacket(store_address_t* const addrNew) {
 
-//    size_t size = this->currentPacket.getApplicationDataSize();
-//    uint8_t* pDataNew;
-//
-//    const uint8_t* pDataCurrent = this->currentPacket.getApplicationData();
-//    if (pDataCurrent == nullptr) {
-//        return HasReturnvaluesIF::RETURN_FAILED;
-//    }
-
     // re-implementation for "packed" packet:
     size_t size = currentPacket.getApplicationDataSize();
     uint8_t* dataNew;
