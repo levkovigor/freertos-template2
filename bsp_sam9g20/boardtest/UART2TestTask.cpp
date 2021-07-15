@@ -1,5 +1,5 @@
 #include "UART2TestTask.h"
-#include <fsfw/osal/FreeRTOS/TaskManagement.h>
+#include <fsfw/osal/freertos/TaskManagement.h>
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
 

@@ -3,9 +3,9 @@
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/ipc/MutexGuard.h>
-#include <fsfw/osal/FreeRTOS/Mutex.h>
+#include <fsfw/osal/freertos/Mutex.h>
 #include <fsfw/timemanager/Stopwatch.h>
-#include <fsfw/osal/FreeRTOS/TaskManagement.h>
+#include <fsfw/osal/freertos/TaskManagement.h>
 #include <devices/logicalAddresses.h>
 
 extern "C" {

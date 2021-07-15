@@ -8,7 +8,7 @@
 
 /* FSFW includes */
 #include "fsfw/serviceinterface/ServiceInterface.h"
-#include "fsfw/internalError/InternalErrorReporter.h"
+#include "fsfw/internalerror/InternalErrorReporter.h"
 #include "fsfw/storagemanager/PoolManager.h"
 #include "fsfw/tcdistribution/CCSDSDistributor.h"
 #include "fsfw/tcdistribution/PUSDistributor.h"

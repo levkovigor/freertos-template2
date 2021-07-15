@@ -3,8 +3,8 @@
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/tmtcservices/TmTcMessage.h>
-#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
-#include <fsfw/osal/FreeRTOS/TaskManagement.h>
+#include <fsfw/osal/freertos/BinarySemaphore.h>
+#include <fsfw/osal/freertos/TaskManagement.h>
 
 volatile bool RS232PollingTask::uart0Started = false;
 

@@ -21,11 +21,11 @@ option(DISABLE_AGGRESSIVE_OPTIMIZATION
     "Enable to use O2 instead of O3 optimization for the release build" OFF
 )
 
-if(NOT OS_FSFW)
+if(NOT FSFW_OSAL)
     if(HOST_BUILD)
-        set(OS_FSFW host CACHE STRING "OS for the FSFW.")
+        set(FSFW_OSAL host CACHE STRING "OS for the FSFW.")
     else()
-        set(OS_FSFW freertos CACHE STRING "OS for the FSFW.")
+        set(FSFW_OSAL freertos CACHE STRING "OS for the FSFW.")
     endif()
 endif()
 

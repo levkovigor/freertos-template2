@@ -6,7 +6,7 @@
 #include <fsfw/objectmanager/SystemObjectIF.h>
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
-#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
+#include <fsfw/osal/freertos/BinarySemaphore.h>
 #include <objects/systemObjectList.h>
 
 extern "C" {

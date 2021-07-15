@@ -12,8 +12,8 @@
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
-#include <fsfw/unittest/internal/InternalUnitTester.h>
-#include <fsfw/osal/FreeRTOS/TaskManagement.h>
+#include <fsfw/tests/internal/InternalUnitTester.h>
+#include <fsfw/osal/freertos/TaskManagement.h>
 
 #include <freertos/FreeRTOS.h>
 
