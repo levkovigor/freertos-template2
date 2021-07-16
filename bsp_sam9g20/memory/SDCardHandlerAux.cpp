@@ -515,4 +515,11 @@ void SDCardHandler::sendCompletionMessage(bool success, MessageQueueId_t queueId
     }
 }
 
+ReturnValue_t SDCardHandler::createDirectory(const char *repositoryPath, void *args) {
+    return HasReturnvaluesIF::RETURN_OK;
+}
 
+ReturnValue_t SDCardHandler::removeDirectory(const char *repositoryPath, bool deleteRecurively,
+        void *args) {
+    return HasReturnvaluesIF::RETURN_OK;
+}

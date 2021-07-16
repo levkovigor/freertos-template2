@@ -1,6 +1,6 @@
 #include <mission/devices/GPSHandler.h>
 
-#include <fsfw/osal/FreeRTOS/TaskManagement.h>
+#include <fsfw/osal/freertos/TaskManagement.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <bsp_sam9g20/boardtest/TwiTestTask.h>
 extern "C" {

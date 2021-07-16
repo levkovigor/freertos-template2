@@ -12,8 +12,8 @@
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
-#include <fsfw/unittest/internal/InternalUnitTester.h>
-#include <fsfw/osal/FreeRTOS/TaskManagement.h>
+#include <fsfw/tests/internal/InternalUnitTester.h>
+#include <fsfw/osal/freertos/TaskManagement.h>
 
 #include <freertos/FreeRTOS.h>
 
@@ -338,6 +338,7 @@ void initTasks(void) {
         initmission::printAddObjectError("Thermal Controller", objects::THERMAL_CONTROLLER);
     }
 
+    // Commented because the ACS controller is not finished yet
 //    PeriodicTaskIF *attitudeController = taskFactory->createPeriodicTask("ATTITUDE_CTRL", 6,
 //                    2048 * 4, 0.4, genericMissedDeadlineFunc);
 //    result = attitudeController->addComponent(objects::ATTITUDE_CONTROLLER);

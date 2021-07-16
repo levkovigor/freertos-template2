@@ -5,8 +5,8 @@
 #include <fsfw/devicehandlers/DeviceCommunicationIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/ipc/MessageQueueIF.h>
-#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
-#include <fsfw/osal/FreeRTOS/Mutex.h>
+#include <fsfw/osal/freertos/BinarySemaphore.h>
+#include <fsfw/osal/freertos/Mutex.h>
 #include <OBSWConfig.h>
 #include <bsp_sam9g20/comIF/cookies/SpiCookie.h>
 

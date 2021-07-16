@@ -1,6 +1,6 @@
 #include "USBPolling.h"
 
-#include <fsfw/osal/FreeRTOS/TaskManagement.h>
+#include <fsfw/osal/freertos/TaskManagement.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 

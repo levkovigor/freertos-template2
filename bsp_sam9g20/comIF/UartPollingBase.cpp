@@ -2,8 +2,8 @@
 #include "ComConstants.h"
 
 #include <fsfw/objectmanager/ObjectManager.h>
-#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
-#include <fsfw/osal/FreeRTOS/TaskManagement.h>
+#include <fsfw/osal/freertos/BinarySemaphore.h>
+#include <fsfw/osal/freertos/TaskManagement.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 
 UartPollingBase::UartPollingBase(object_id_t objectId,

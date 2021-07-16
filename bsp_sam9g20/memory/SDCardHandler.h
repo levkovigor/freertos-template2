@@ -159,6 +159,10 @@ private:
     ReturnValue_t deleteDirectory(const char* repositoryPath, const char* dirname);
     ReturnValue_t changeDirectory(const char* repositoryPath);
 
+    ReturnValue_t createDirectory(const char* repositoryPath, void* args = nullptr) override;
+    ReturnValue_t removeDirectory(const char* repositoryPath,
+            bool deleteRecurively = false, void* args = nullptr) override;
+
     ReturnValue_t handleCreateFileCommand(CommandMessage* message);
     ReturnValue_t handleDeleteFileCommand(CommandMessage* message);
 
