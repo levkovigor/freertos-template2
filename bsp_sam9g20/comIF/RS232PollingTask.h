@@ -9,7 +9,7 @@
 #include <fsfw/container/SharedRingBuffer.h>
 #include <fsfw/objectmanager/SystemObjectIF.h>
 #include <fsfw/objectmanager/frameworkObjects.h>
-#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
+#include <fsfw/osal/freertos/BinarySemaphore.h>
 #include <OBSWConfig.h>
 
 extern "C" {

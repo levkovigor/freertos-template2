@@ -2,8 +2,8 @@
 #include "bsp_hosted/ObjectFactory.h"
 #include "boardtest/TestTaskHost.h"
 #include "fsfwconfig/objects/systemObjectList.h"
-#include "fsfwconfig/tmtc/apid.h"
-#include "fsfwconfig/tmtc/pusIds.h"
+#include "tmtc/apid.h"
+#include "tmtc/pusIds.h"
 
 #include <test/testinterfaces/TestEchoComIF.h>
 #include <test/testinterfaces/DummyCookie.h>
@@ -11,7 +11,7 @@
 
 #include <fsfw/events/EventManager.h>
 #include <fsfw/health/HealthTable.h>
-#include <fsfw/internalError/InternalErrorReporter.h>
+#include <fsfw/internalerror/InternalErrorReporter.h>
 #include <fsfw/objectmanager/frameworkObjects.h>
 #include <fsfw/osal/common/TcpTmTcBridge.h>
 #include <fsfw/osal/common/TcpTmTcServer.h>

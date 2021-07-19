@@ -68,15 +68,16 @@ set(LIB_FREERTOS_PATH ${LIB_OS_NAME})
 set(LIB_AT91_PATH ${LIB_AT91_NAME})
 set(LIB_PRIVLIB_PATH ${LIB_PRIVAT_LIB_NAME})
 
-if(OS_FSFW MATCHES "host" OR OS_FSFW MATCHES "linux")
+if(FSFW_OSAL MATCHES "host" OR FSFW_OSAL MATCHES "linux")
     set(BSP_PATH ${HOST_BSP_PATH})
-elseif(OS_FSFW MATCHES "freertos")
+elseif(FSFW_OSAL MATCHES "freertos")
     set(BSP_PATH ${SAM9G20_PATH})
 endif()
 
 # Analyse different OS and architecture/target options, determine BSP_PATH,
 # display information about compiler etc.
 set(COMMON_AT91_CONFIG_PATH "${CMAKE_SOURCE_DIR}/${SAM9G20_PATH}/common/config")
+set(FSFW_HAL_ADDITIONAL_INC_PATHS ${COMMON_AT91_CONFIG_PATH})
 
 if(NOT HOST_BUILD)
     if(BOOTLOADER)
@@ -387,7 +388,7 @@ endif()
 
 string(CONCAT POST_BUILD_COMMENT
     "Build directory: ${CMAKE_BINARY_DIR}\n"
-    "Target OSAL: ${OS_FSFW}\n"
+    "Target OSAL: ${FSFW_OSAL}\n"
     "Target Build Type: ${CMAKE_BUILD_TYPE}\n"
     "Target Build: ${TARGET_STRING}"
 )

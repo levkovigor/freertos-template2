@@ -3,7 +3,7 @@
 
 #include <fsfw/devicehandlers/DeviceCommunicationIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
-#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
+#include <fsfw/osal/freertos/BinarySemaphore.h>
 #include <bsp_sam9g20/comIF/UartPollingBase.h>
 
 extern "C" {

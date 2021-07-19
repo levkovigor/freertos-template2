@@ -106,7 +106,7 @@ def main():
     print(f"Navigating into build directory: {build_path}")
     os.chdir(cmake_build_folder)
 
-    cmake_command = f"cmake {generator_cmake_arg} -DOS_FSFW=\"{cmake_fsfw_osal}\" " \
+    cmake_command = f"cmake {generator_cmake_arg} -DFSFW_OSAL=\"{cmake_fsfw_osal}\" " \
                     f"-DCMAKE_BUILD_TYPE=\"{cmake_build_type}\" {define_string} {source_location}"
     # Remove redundant spaces
     cmake_command = ' '.join(cmake_command.split())
