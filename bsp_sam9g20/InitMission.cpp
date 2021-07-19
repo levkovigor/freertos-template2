@@ -20,6 +20,7 @@
 extern "C" {
 #include <board.h>
 #include <AT91SAM9G20.h>
+#include <hal/Drivers/I2C.h>
 }
 
 #include <cstring>
@@ -571,12 +572,23 @@ void genericMissedDeadlineFunc() {
 }
 
 void runMinimalTask(void) {
+    int result = I2C_start(100000, portMAX_DELAY);
     while(1) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::info << "Alive" << std::endl;
 #else
         sif::printInfo("Alive\n");
 #endif
+        uint8_t txBuf[6];
+        txBuf[0] = 3;
+        txBuf[1] = 0x00;
+        //I2C_setTransferTimeout(1000);
+        I2CdriverState drvState = I2C_getDriverState();
+        int result = I2C_write(0x74, txBuf, 2);
+        if(result != 0) {
+            sif::printWarning("PVCHTestTask::simplePca9554Init: "
+                    "I2C_read failed with code %d\n", result);
+        }
         vTaskDelay(1000);
     }
 }

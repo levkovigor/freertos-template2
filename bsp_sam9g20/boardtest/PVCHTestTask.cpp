@@ -91,7 +91,14 @@ void PVCHTestTask::simplePca9554Init() {
     txBuf[1] = 0x00;
     //I2C_setTransferTimeout(1000);
     I2CdriverState drvState = I2C_getDriverState();
-    int result = I2C_read(addresses::PVCH_PCA9554, txBuf.data(), 2);
+    int result = I2C_write(addresses::PVCH_PCA9554, txBuf.data(), 2);
+    if(result != 0) {
+        sif::printWarning("PVCHTestTask::simplePca9554Init: "
+                "I2C_write failed with code %d\n", result);
+    }
+
+    std::array<uint8_t, 16> rxBuf = {};
+    result = I2C_read(addresses::PVCH_PCA9554, rxBuf.data(), 1);
     if(result != 0) {
         sif::printWarning("PVCHTestTask::simplePca9554Init: "
                 "I2C_read failed with code %d\n", result);
