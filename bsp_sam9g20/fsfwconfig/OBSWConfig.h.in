@@ -97,7 +97,9 @@ static const uint16_t RS485_MUTEX_TIMEOUT =             20;
  * Set timeout for I2C transfers, specified as 1/10th of ticks.
  * Is set to one for values less than 1. Set to portMAXDELAY for debugging.
  */
-static const uint32_t I2C_TRANSFER_TIMEOUT =            portMAX_DELAY;
+static const uint32_t I2C_TRANSFER_TIMEOUT =            500; // 50ms default timeout
+//! Speed of the I2C bus in Hertz. (Minimum: 10000, Maximum 400000)
+static constexpr uint32_t OBSW_I2C_BUS_SPEED =          100000;
 
 /**
  * Consider setting this higher if some SPI devices take a longer time

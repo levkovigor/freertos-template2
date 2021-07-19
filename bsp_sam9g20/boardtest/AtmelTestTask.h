@@ -1,8 +1,13 @@
 #ifndef SAM9G20_BOARDTEST_ATMELTESTTASK_H_
 #define SAM9G20_BOARDTEST_ATMELTESTTASK_H_
 
+#include "OBSWConfig.h"
+
 #include <test/testtasks/TestTask.h>
 #include <fsfw/timemanager/Countdown.h>
+#if OBSW_ADD_PVCH_TEST == 1
+#include <bsp_sam9g20/boardtest/PVCHTestTask.h>
+#endif
 
 extern "C" {
 #include <board.h>

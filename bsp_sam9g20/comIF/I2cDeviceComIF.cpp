@@ -13,18 +13,18 @@ extern "C" {
 
 I2cDeviceComIF::I2cDeviceComIF(object_id_t objectId): SystemObject(objectId),
 		i2cCookie(nullptr) {
+    setTrace(3);
+    int startResult = I2C_start(I2C_BUS_SPEED_HZ, I2C_TRANSFER_TIMEOUT);
+    setTrace(5);
+    if(startResult != RETURN_OK) {
+        sif::printError("I2cDeviceComIF::I2cDeviceComIF: "
+                "I2C_start call failed with code %d\n", startResult);
+        initResult = handleI2cInitError(static_cast<I2cInitResult>(startResult));
+    }
 }
 
 ReturnValue_t I2cDeviceComIF::initialize() {
-	setTrace(3);
-	int startResult = I2C_start(I2C_BUS_SPEED_HZ, I2C_TRANSFER_TIMEOUT);
-	setTrace(5);
-	if(startResult != RETURN_OK) {
-		ReturnValue_t result = handleI2cInitError(
-		        static_cast<I2cInitResult>(startResult));
-		return result;
-	}
-	return RETURN_OK;
+    return RETURN_OK;
 }
 
 I2cDeviceComIF::~I2cDeviceComIF() {}

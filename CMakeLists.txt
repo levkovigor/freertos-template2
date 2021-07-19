@@ -23,6 +23,9 @@ set(CMAKE_SCRIPT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(${CMAKE_SCRIPT_PATH}/PreProjectConfig.cmake)
 options_config()
 
+# Required for ACS controller
+set(FSFW_ADD_COORDINATES ON)
+
 # Project Name
 if(BOOTLOADER)
     project(sourcebl ASM C)
