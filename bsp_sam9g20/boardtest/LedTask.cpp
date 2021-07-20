@@ -1,5 +1,5 @@
 #include "LedTask.h"
-#include <fsfw/ipc/QueueFactory.h>
+#include "fsfw/ipc/QueueFactory.h"
 
 extern "C" {
 #ifdef ISIS_OBC_G20

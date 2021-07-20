@@ -1,4 +1,3 @@
-
 #include "SpiTestTask.h"
 #include <bsp_sam9g20/comIF/GpioDeviceComIF.h>
 #include <fsfw/osal/freertos/BinarySemaphore.h>

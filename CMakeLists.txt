@@ -23,6 +23,15 @@ set(CMAKE_SCRIPT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(${CMAKE_SCRIPT_PATH}/PreProjectConfig.cmake)
 options_config()
 
+# This sets some variables passed to the configure file OBSWConfig.h.in so DO NOT DELETE THIS.
+if(NOT HOST_BUILD)
+    if(BOARD_IOBC)
+        set(ISIS_OBC_G20 ON)
+    else()
+        set(AT91SAM9G20_EK ON)
+    endif()
+endif()
+
 # Required for ACS controller
 set(FSFW_ADD_COORDINATES ON)
 

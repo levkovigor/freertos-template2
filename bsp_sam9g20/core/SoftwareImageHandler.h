@@ -1,6 +1,7 @@
 #ifndef SAM9G20_CORE_SOFTWAREIMAGEHANDLER_H_
 #define SAM9G20_CORE_SOFTWAREIMAGEHANDLER_H_
 
+#include "OBSWConfig.h"
 #include "imageHandlerDefintions.h"
 
 #include <fsfw/action/HasActionsIF.h>

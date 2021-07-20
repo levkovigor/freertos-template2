@@ -1,6 +1,7 @@
 #include "faultHandler.h"
-#include <OBSWConfig.h>
-#include <fsfw/serviceinterface/ServiceInterfaceStream.h>
+#include "OBSWConfig.h"
+
+#include <fsfw/serviceinterface/ServiceInterface.h>
 #include <at91/utility/exithandler.h>
 #include <at91/utility/trace.h>
 #ifdef ISIS_OBC_G20

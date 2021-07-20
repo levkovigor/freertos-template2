@@ -2,28 +2,36 @@
 #define FSFWCONFIG_OBSWCONFIG_H_
 
 #ifdef __cplusplus
-#include <cstdint>
-#include <cstddef>
 
 #include "returnvalues/classIds.h"
 #include "events/subsystemIdRanges.h"
 #include "objects/systemObjectList.h"
 
+#include <cstdint>
+#include <cstddef>
+
 #else
+
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#endif
+
+#endif /* ! __cplusplus */
+
+#include "portmacro.h"
+
+// Board Type
+#cmakedefine ISIS_OBC_G20
+#cmakedefine AT91SAM9G20_EK
 
 #ifdef AT91SAM9G20_EK
-#include <commonAt91Config.h>
+#include "commonAt91Config.h"
 #else
-#include <commonIOBCConfig.h>
+#include "commonIOBCConfig.h"
 #endif
 
-#include <portmacro.h>
-
 #define OBSW_RS485_WITH_TERMINATION             1
+#define OBSW_SD_CARD_PRESENT                    1
 
 //! All of these should be disabled for mission code but are very helpful
 //! for development

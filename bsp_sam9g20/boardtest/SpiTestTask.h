@@ -1,6 +1,8 @@
 #ifndef SAM9G20_BOARDTEST_SPITESTTASK_H_
 #define SAM9G20_BOARDTEST_SPITESTTASK_H_
 
+#include "OBSWConfig.h"
+
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>

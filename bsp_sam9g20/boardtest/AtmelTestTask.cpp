@@ -1,10 +1,11 @@
+#include "AtmelTestTask.h"
+
 #include <fsfw/storagemanager/PoolManager.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Stopwatch.h>
 
-#include <bsp_sam9g20/boardtest/AtmelTestTask.h>
 #include <bsp_sam9g20/boardtest/PVCHTestTask.h>
 #include <bsp_sam9g20/comIF/GpioDeviceComIF.h>
 #include <bsp_sam9g20/common/SRAMApi.h>
@@ -14,7 +15,7 @@
 #include <mission/devices/PCVHHandler.h>
 
 extern "C" {
-#if defined(AT91SAM9G20_EK)
+#ifdef AT91SAM9G20_EK
 #include <led_ek.h>
 #endif
 
