@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#!/usr/bin/env python3
 """
 @file   event_parser.py
 @brief  Part of the Mission Information Base Exporter for the SOURCE project by KSat.
@@ -47,7 +47,7 @@ CPP_COPY_DESTINATION = f"../../{BSP_FOLDER}/fsfwconfig/events/"
 FILE_SEPARATOR = ";"
 SUBSYSTEM_DEFINITION_DESTINATIONS = [
     f"../../{BSP_FOLDER}/fsfwconfig/events/subsystemIdRanges.h",
-    "../../fsfw/events/fwSubsystemIdRanges.h",
+    "../../fsfw/src/fsfw/events/fwSubsystemIdRanges.h",
     "../../common/events/commonSubsystemIds.h"
 ]
 HEADER_DEFINITION_DESTINATIONS = ["../../mission/", "../../fsfw/", f"../../{BSP_FOLDER}", "../../test/"]
@@ -117,6 +117,6 @@ def xml_test():
 
 
 if __name__ == "__main__":
-    # main()
-    xml_test()
+    main()
+    # xml_test()
 
