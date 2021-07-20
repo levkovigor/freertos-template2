@@ -50,7 +50,9 @@ SUBSYSTEM_DEFINITION_DESTINATIONS = [
     "../../fsfw/src/fsfw/events/fwSubsystemIdRanges.h",
     "../../common/events/commonSubsystemIds.h"
 ]
-HEADER_DEFINITION_DESTINATIONS = ["../../mission/", "../../fsfw/", f"../../{BSP_FOLDER}", "../../test/"]
+HEADER_DEFINITION_DESTINATIONS = [
+    "../../mission/", "../../fsfw/src/fsfw", f"../../{BSP_FOLDER}", "../../test/"
+]
 
 
 def main():
