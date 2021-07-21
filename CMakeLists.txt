@@ -187,6 +187,7 @@ set(FSFW_ADDITIONAL_INC_PATHS
 if(NOT BOOTLOADER)
     configure_file("${FSFW_CONFIG_PATH}/OBSWConfig.h.in" OBSWConfig.h)
     configure_file("${FSFW_CONFIG_PATH}/FSFWConfig.h.in" FSFWConfig.h)
+    configure_file("${COMMON_PATH}/commonConfig.h.in" commonConfig.h)
     if(BUILD_UNITTEST)
         configure_file("${FSFW_CONFIG_PATH}/TestConfig.h.in" TestConfig.h)
     endif()

@@ -30,6 +30,8 @@
 #include "commonIOBCConfig.h"
 #endif
 
+#include "commonConfig.h"
+
 #define OBSW_RS485_WITH_TERMINATION             1
 #define OBSW_SD_CARD_PRESENT                    1
 
