@@ -3,10 +3,10 @@
 
 #include "OBSWConfig.h"
 #include "sdcardDefinitions.h"
-#include <events/subsystemIdRanges.h>
+#include "events/subsystemIdRanges.h"
 
-#include <bsp_sam9g20/common/SDCardApi.h>
-#include <bsp_sam9g20/memory/SDCHStateMachine.h>
+#include "bsp_sam9g20/common/SDCardApi.h"
+#include "SDCHStateMachine.h"
 
 #include <fsfw/action/HasActionsIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
@@ -147,21 +147,24 @@ private:
 
     /** HasFilesystemIF overrides */
     ReturnValue_t createFile(const char* repositoryPath, const char* filename, const uint8_t* data,
-            size_t size, void* args = nullptr) override;
+            size_t size, FileSystemArgsIF* args = nullptr) override;
     ReturnValue_t appendToFile(const char* repositoryPath, const char* filename,
-            const uint8_t* data, size_t size, uint16_t packetNumber, void* args = nullptr) override;
+            const uint8_t* data, size_t size, uint16_t packetNumber,
+            FileSystemArgsIF* args = nullptr) override;
     ReturnValue_t handleSequenceNumberWrite(uint16_t sequenceNumber, uint16_t* packetSeqIfMissing);
 
-    ReturnValue_t deleteFile(const char* repositoryPath, const char* filename,
-            void* args = nullptr) override;
+    ReturnValue_t removeFile(const char* repositoryPath, const char* filename,
+            FileSystemArgsIF* args = nullptr) override;
 
-    ReturnValue_t createDirectory(const char* repositoryPath, const char* dirname);
     ReturnValue_t deleteDirectory(const char* repositoryPath, const char* dirname);
     ReturnValue_t changeDirectory(const char* repositoryPath);
 
-    ReturnValue_t createDirectory(const char* repositoryPath, void* args = nullptr) override;
+    ReturnValue_t createDirectory(const char* repositoryPath, bool createParentDirs,
+            FileSystemArgsIF* args = nullptr) override;
     ReturnValue_t removeDirectory(const char* repositoryPath,
-            bool deleteRecurively = false, void* args = nullptr) override;
+            bool deleteRecurively = false, FileSystemArgsIF* args = nullptr) override;
+    ReturnValue_t renameFile(const char* repositoryPath, const char* oldFilename,
+            const char* newFilename, FileSystemArgsIF* args = nullptr) override;
 
     ReturnValue_t handleCreateFileCommand(CommandMessage* message);
     ReturnValue_t handleDeleteFileCommand(CommandMessage* message);
