@@ -12,6 +12,7 @@
 #include "fsfw/storagemanager/PoolManager.h"
 #include "fsfw/tcdistribution/CCSDSDistributor.h"
 #include "fsfw/tcdistribution/PUSDistributor.h"
+#include "fsfw/tcdistribution/CFDPDistributor.h"
 #include "fsfw/events/EventManager.h"
 #include "fsfw/fdir/FailureIsolationBase.h"
 #include "fsfw/health/HealthTable.h"
@@ -154,6 +155,8 @@ void Factory::produce(void* args) {
     /* Distributor Tasks */
     new CCSDSDistributor(apid::SOURCE_OBSW,objects::CCSDS_PACKET_DISTRIBUTOR);
     new PUSDistributor(apid::SOURCE_OBSW,objects::PUS_PACKET_DISTRIBUTOR,
+            objects::CCSDS_PACKET_DISTRIBUTOR);
+    new CFDPDistributor(apid::SOURCE_CFDP, objects::CFDP_PACKET_DISTRIBUTOR,
             objects::CCSDS_PACKET_DISTRIBUTOR);
 
     /* UDP Server */

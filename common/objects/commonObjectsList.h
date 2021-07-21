@@ -9,6 +9,8 @@ enum commonObjects: object_id_t {
     /* First Byte 0x50-0x52 reserved for PUS Services **/
     CCSDS_PACKET_DISTRIBUTOR = 0x50000100,
     PUS_PACKET_DISTRIBUTOR = 0x50000200,
+
+	CFDP_HANDLER = 0x50001300,
     TCPIP_BRIDGE = 0x50000300,
     TCPIP_HELPER = 0x50000400,
 
@@ -17,9 +19,6 @@ enum commonObjects: object_id_t {
 
     PUS_TIME = 0x52000001,
     TM_FUNNEL = 0x52000002,
-
-	/* CFDP Distributer */
-	CFDP_PACKET_DISTRIBUTOR = 0x53000100,
 
     /* 0x43 ('C') for Controllers */
     THERMAL_CONTROLLER = 0x43002000,

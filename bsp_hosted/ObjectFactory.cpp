@@ -18,6 +18,7 @@
 #include <fsfw/timemanager/TimeStamper.h>
 
 #include <fsfw/storagemanager/PoolManager.h>
+#include <fsfw/cfdp/CFDPHandler.h>
 #include <fsfw/tcdistribution/CCSDSDistributor.h>
 #include <fsfw/tcdistribution/PUSDistributor.h>
 #include <fsfw/tcdistribution/CFDPDistributor.h>
@@ -120,8 +121,10 @@ void Factory::produce(void* args) {
     new CCSDSDistributor(apid::SOURCE_OBSW, objects::CCSDS_PACKET_DISTRIBUTOR);
     new PUSDistributor(apid::SOURCE_OBSW, objects::PUS_PACKET_DISTRIBUTOR,
             objects::CCSDS_PACKET_DISTRIBUTOR);
-    new CFDPDistributor(apid::SOURCE_CFDP, objects::CFDP_PACKET_DISTRIBUTOR,
+    auto cfdpDistributor = new CFDPDistributor(apid::SOURCE_CFDP, objects::CFDP_PACKET_DISTRIBUTOR,
             objects::CCSDS_PACKET_DISTRIBUTOR);
+
+    new CFDPHandler(objects::CFDP_HANDLER, cfdpDistributor);
 
     /* TM Destination */
     new TmFunnel(objects::TM_FUNNEL);
