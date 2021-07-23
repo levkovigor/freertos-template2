@@ -48,7 +48,7 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest(uint8_t subservice) 
 ReturnValue_t Service11TelecommandScheduling::performService() {
 
     //DEBUG
-    bool printDebug = false;
+    bool printDebug = true;
     //printDebug = true;
     if (printDebug) {
         sif::printInfo("MULTIMAP CONTENT: \n");
