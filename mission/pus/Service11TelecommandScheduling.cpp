@@ -66,9 +66,7 @@ ReturnValue_t Service11TelecommandScheduling::performService() {
 
         if (it->first <= tCurrent){
             // release tc
-            //TmTcMessage releaseMsg(it->second.storeAddr);
-            releaseMsg.clear();
-            releaseMsg = TmTcMessage(it->second.storeAddr);
+            TmTcMessage releaseMsg(it->second.storeAddr);
             auto sendRet = this->requestQueue->sendMessage(recipientMsgQueueId, &releaseMsg, false);
 
             if (sendRet != HasReturnvaluesIF::RETURN_OK){

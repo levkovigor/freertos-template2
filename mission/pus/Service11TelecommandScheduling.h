@@ -67,8 +67,6 @@ private:
     AcceptsTelecommandsIF* tcRecipient = nullptr;
     MessageQueueId_t recipientMsgQueueId = 0;
 
-    TmTcMessage releaseMsg;
-
     static constexpr uint16_t MAX_STORED_TELECOMMANDS = 500;
     /**
      * The telecommand map uses the exectution time as a Unix time stamp as
