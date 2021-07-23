@@ -50,7 +50,7 @@ ReturnValue_t Service11TelecommandScheduling::performService() {
     //DEBUG
     bool printDebug = false;
     if (printDebug) {
-        sif::printInfo("MULTIMAP CONTENT: \n");
+        sif::printDebug("MULTIMAP CONTENT: \n");
         for (auto it = telecommandMap.begin(); it != telecommandMap.end(); ++it) {
                 sif::printDebug("[%d]: uid: %d  storeAddr: %d\n", it->first, it->second.uid, it->second.storeAddr);
         }
