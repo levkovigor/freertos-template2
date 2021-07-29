@@ -48,7 +48,7 @@ if PARSE_HOST_BSP:
 else:
     OBJECTS_PATH = f"../../{BSP_DIR_NAME}/fsfwconfig/objects/systemObjectList.h"
 
-FRAMEWORK_OBJECTS_PATH = "../../fsfw/objectmanager/frameworkObjects.h"
+FRAMEWORK_OBJECTS_PATH = "../../fsfw/src/fsfw/objectmanager/frameworkObjects.h"
 COMMON_OBJECTS_PATH = "../../common/objects/commonObjectsList.h"
 OBJECTS_DEFINITIONS = [OBJECTS_PATH, FRAMEWORK_OBJECTS_PATH, COMMON_OBJECTS_PATH]
 
