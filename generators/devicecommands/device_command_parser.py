@@ -10,10 +10,10 @@
 """
 import re
 from enum import Enum
-from modgen.parserbase.parser import FileParser
-from modgen.parserbase.file_list_parser import FileListParser
-from modgen.utility.csv_writer import CsvWriter
-from modgen.utility.printer import Printer
+from fsfwgen.parserbase.parser import FileParser
+from fsfwgen.parserbase.file_list_parser import FileListParser
+from fsfwgen.utility.csv_writer import CsvWriter
+from fsfwgen.utility.printer import Printer
 
 
 DH_COMMAND_PACKET_DEFINITION_DESTINATION = "../../mission/devices/devicedefinitions/"

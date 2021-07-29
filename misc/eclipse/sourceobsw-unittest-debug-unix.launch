@@ -18,10 +18,10 @@
     <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_START_MODE" value="run"/>
     <booleanAttribute key="org.eclipse.cdt.launch.DEBUGGER_STOP_AT_MAIN" value="true"/>
     <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_STOP_AT_MAIN_SYMBOL" value="main"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="build-Unittest/sourceobsw-unittest-debug.exe"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="build-Unittest/sourceobsw-unittest-debug"/>
     <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="sourceobsw"/>
     <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="false"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.459364997.240562458"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.524408991.459364997.2006688884.747230854"/>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
         <listEntry value="/sourceobsw"/>
     </listAttribute>

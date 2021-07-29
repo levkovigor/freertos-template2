@@ -471,7 +471,41 @@ void boardTestTaskInit() {
     if(result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("test task", objects::TEST_TASK);
     }
-
+    // Don't run the UART test tasks together with the respective communication interfaces!
+    // UART0 Test Task
+#if OBSW_ADD_UART_0_TEST_TASK == 1
+    result = testTask->addComponent(objects::AT91_UART0_TEST_TASK);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        sif::error << "Add component UART0 Task failed" << std::endl;
+    }
+#endif
+    // UART2 Test Task
+#if OBSW_ADD_UART_2_TEST_TASK == 1
+    result = testTask->addComponent(objects::AT91_UART2_TEST_TASK);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        initmission::printAddObjectError("UART2 Test Task", objects::AT91_UART2_TEST_TASK);
+    }
+#endif
+    // I2C Test Task
+#if OBSW_ADD_I2C_TEST_TASK == 1
+    result = testTask->addComponent(objects::AT91_I2C_TEST_TASK);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        sif::error << "Add component I2C Task failed" << std::endl;
+    }
+#endif
+    // SPI Test Task
+#if OBSW_ADD_SPI_TEST_TASK == 1
+    result = testTask->addComponent(objects::AT91_SPI_TEST_TASK);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        initmission::printAddObjectError("SPI test task", objects::AT91_SPI_TEST_TASK);
+    }
+#endif
+#if OBSW_ADD_PVCH_TEST == 1
+    result = testTask->addComponent(objects::PVCH_TEST_TASK);
+    if (result != HasReturnvaluesIF::RETURN_OK) {
+        initmission::printAddObjectError("PVCH Test Task", objects::PVCH_TEST_TASK);
+    }
+#endif
 
     /* LED Task */
 #if OBSW_ADD_LED_TASK == 1
@@ -480,48 +514,6 @@ void boardTestTaskInit() {
     result = ledTask->addComponent(objects::LED_TASK);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("LED task", objects::LED_TASK);
-    }
-#endif
-
-    /* Don't run the UART test tasks together with the respective communication interfaces! */
-
-    /* UART0 Test Task */
-#if OBSW_ADD_UART_0_TEST_TASK == 1
-    PeriodicTaskIF* UART0Task = taskFactory->createPeriodicTask(
-            "UART0_TASK", 1, 2048, 2, nullptr);
-    result = UART0Task->addComponent(objects::AT91_UART0_TEST_TASK);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component UART0 Task failed" << std::endl;
-    }
-#endif
-
-    /* UART2 Test Task */
-#if OBSW_ADD_UART_2_TEST_TASK == 1
-    PeriodicTaskIF* UART2Task = taskFactory->createPeriodicTask(
-            "UART2_TASK", 3, 2048, 5.0, genericMissedDeadlineFunc);
-    result = UART2Task->addComponent(objects::AT91_UART2_TEST_TASK);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        initmission::printAddObjectError("UART2 Test Task", objects::AT91_UART2_TEST_TASK);
-    }
-#endif
-
-    /* I2C Test Task */
-#if OBSW_ADD_I2C_TEST_TASK == 1
-    PeriodicTaskIF* i2cTestTask = taskFactory->createPeriodicTask(
-            "I2C_TASK", 4, 2048 * 4, 0.1, nullptr);
-    result = i2cTestTask->addComponent(objects::AT91_I2C_TEST_TASK);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        sif::error << "Add component I2C Task failed" << std::endl;
-    }
-#endif
-
-    /* SPI Test Task */
-#if OBSW_ADD_SPI_TEST_TASK == 1
-    PeriodicTaskIF* spiTestTask = taskFactory->createPeriodicTask(
-            "SPI_TASK", 6, 2048, 1, nullptr);
-    result = spiTestTask->addComponent(objects::AT91_SPI_TEST_TASK);
-    if (result != HasReturnvaluesIF::RETURN_OK) {
-        initmission::printAddObjectError("SPI test task", objects::AT91_SPI_TEST_TASK);
     }
 #endif
 
@@ -539,22 +531,6 @@ void boardTestTaskInit() {
 
 #if OBSW_ADD_TEST_PST == 1
     pollingSequenceTableTaskTest -> startTask ();
-#endif
-
-#if OBSW_ADD_SPI_TEST_TASK == 1
-    spiTestTask -> startTask();
-#endif
-
-#if OBSW_ADD_I2C_TEST_TASK == 1
-    i2cTestTask -> startTask();
-#endif
-
-#if OBSW_ADD_UART_2_TEST_TASK == 1
-    UART2Task -> startTask();
-#endif
-
-#if OBSW_ADD_UART_0_TEST_TASK == 1
-    UART0Task -> startTask();
 #endif
 
 }
@@ -587,11 +563,9 @@ void* operator new(size_t size) {
 void genericMissedDeadlineFunc() {
 #if OBSW_PRINT_MISSED_DEADLINES == 1
 #if FSFW_CPP_OSTREAM_ENABLED == 1
-    sif::debug << "PeriodicTask: " << pcTaskGetName(NULL) <<
-            " missed deadline!" << std::endl;
+    sif::debug << "PeriodicTask: " << pcTaskGetName(NULL) << " missed deadline!" << std::endl;
 #else
-    sif::printDebug("PeriodicTask: %s missed deadline.\n",
-            pcTaskGetName(NULL));
+    sif::printDebug("PeriodicTask: %s missed deadline.\n", pcTaskGetName(NULL));
 #endif
 #endif
 }

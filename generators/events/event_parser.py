@@ -14,10 +14,10 @@ from xml.etree import ElementTree as ElementTree
 from xml.dom import minidom
 from io import BytesIO
 
-from modgen.events.event_parser import handle_csv_export, handle_cpp_export, SubsystemDefinitionParser, EventParser
-from modgen.parserbase.file_list_parser import FileListParser
-from modgen.utility.printer import PrettyPrinter
-from modgen.utility.file_management import copy_file, move_file
+from fsfwgen.events.event_parser import handle_csv_export, handle_cpp_export, SubsystemDefinitionParser, EventParser
+from fsfwgen.parserbase.file_list_parser import FileListParser
+from fsfwgen.utility.printer import PrettyPrinter
+from fsfwgen.utility.file_management import copy_file, move_file
 
 DATE_TODAY = datetime.datetime.now()
 DATE_STRING_FULL = DATE_TODAY.strftime("%Y-%m-%d %H:%M:%S")
