@@ -1,8 +1,8 @@
-/** 
+/**
  * @brief	Auto-generated object translation file.
  * @details
- * Contains 95 translations.
- * Generated on: 2021-05-18 16:36:33
+ * Contains 98 translations.
+ * Generated on: 2021-07-29 12:54:39
  */
 #include "translateObjects.h"
 
@@ -23,7 +23,7 @@ const char *DUMMY_HANDLER_1_STRING = "DUMMY_HANDLER_1";
 const char *SuS_ADC1_DEC2_STRING = "SuS_ADC1_DEC2";
 const char *GPS0_HANDLER_STRING = "GPS0_HANDLER";
 const char *DLR_PVCH_STRING = "DLR_PVCH";
-const char *GYRO1_STRING = "GYRO1";
+const char *GYRO0_HANDLER_STRING = "GYRO0_HANDLER";
 const char *DLR_IRAS_STRING = "DLR_IRAS";
 const char *SPI_Test_PT1000_STRING = "SPI_Test_PT1000";
 const char *SPI_Test_Gyro_STRING = "SPI_Test_Gyro";
@@ -45,7 +45,7 @@ const char *PT1000_CCSDS2_DEC3_STRING = "PT1000_CCSDS2_DEC3";
 const char *PT1000_SuS7_DEC3_STRING = "PT1000_SuS7_DEC3";
 const char *PT1000_SuS8_DEC3_STRING = "PT1000_SuS8_DEC3";
 const char *PT1000_PVCH_DEC3_STRING = "PT1000_PVCH_DEC3";
-const char *GYRO2_STRING = "GYRO2";
+const char *GYRO1_HANDLER_STRING = "GYRO1_HANDLER";
 const char *PT1000_PLOC_DEC4_STRING = "PT1000_PLOC_DEC4";
 const char *PT1000_SuS9_DEC4_STRING = "PT1000_SuS9_DEC4";
 const char *PT1000_SuS10_DEC4_STRING = "PT1000_SuS10_DEC4";
@@ -69,6 +69,7 @@ const char *TCPIP_HELPER_STRING = "TCPIP_HELPER";
 const char *SERIAL_TMTC_BRIDGE_STRING = "SERIAL_TMTC_BRIDGE";
 const char *SERIAL_RING_BUFFER_STRING = "SERIAL_RING_BUFFER";
 const char *SERIAL_POLLING_TASK_STRING = "SERIAL_POLLING_TASK";
+const char *CFDP_HANDLER_STRING = "CFDP_HANDLER";
 const char *PUS_SERVICE_6_MEM_MGMT_STRING = "PUS_SERVICE_6_MEM_MGMT";
 const char *PUS_SERVICE_23_FILE_MGMT_STRING = "PUS_SERVICE_23_FILE_MGMT";
 const char *PUS_TIME_STRING = "PUS_TIME";
@@ -84,6 +85,7 @@ const char *PUS_SERVICE_17_TEST_STRING = "PUS_SERVICE_17_TEST";
 const char *PUS_SERVICE_20_PARAMETERS_STRING = "PUS_SERVICE_20_PARAMETERS";
 const char *PUS_SERVICE_200_MODE_MGMT_STRING = "PUS_SERVICE_200_MODE_MGMT";
 const char *PUS_SERVICE_201_HEALTH_STRING = "PUS_SERVICE_201_HEALTH";
+const char *CFDP_PACKET_DISTRIBUTOR_STRING = "CFDP_PACKET_DISTRIBUTOR";
 const char *HEALTH_TABLE_STRING = "HEALTH_TABLE";
 const char *MODE_STORE_STRING = "MODE_STORE";
 const char *EVENT_MANAGER_STRING = "EVENT_MANAGER";
@@ -98,6 +100,7 @@ const char *AT91_I2C_TEST_TASK_STRING = "AT91_I2C_TEST_TASK";
 const char *AT91_UART0_TEST_TASK_STRING = "AT91_UART0_TEST_TASK";
 const char *AT91_UART2_TEST_TASK_STRING = "AT91_UART2_TEST_TASK";
 const char *AT91_SPI_TEST_TASK_STRING = "AT91_SPI_TEST_TASK";
+const char *PVCH_TEST_TASK_STRING = "PVCH_TEST_TASK";
 const char *TC_INJECTOR_STRING = "TC_INJECTOR";
 const char *DUMMY_INTERFACE_STRING = "DUMMY_INTERFACE";
 const char *NO_OBJECT_STRING = "NO_OBJECT";
@@ -139,7 +142,7 @@ const char* translateObject(object_id_t object) {
 	case 0x44104000:
 		return DLR_PVCH_STRING;
 	case 0x44105000:
-		return GYRO1_STRING;
+		return GYRO0_HANDLER_STRING;
 	case 0x44106000:
 		return DLR_IRAS_STRING;
 	case 0x44115000:
@@ -183,7 +186,7 @@ const char* translateObject(object_id_t object) {
 	case 0x44130307:
 		return PT1000_PVCH_DEC3_STRING;
 	case 0x44130308:
-		return GYRO2_STRING;
+		return GYRO1_HANDLER_STRING;
 	case 0x44145401:
 		return PT1000_PLOC_DEC4_STRING;
 	case 0x44145404:
@@ -230,6 +233,8 @@ const char* translateObject(object_id_t object) {
 		return SERIAL_RING_BUFFER_STRING;
 	case 0x50000600:
 		return SERIAL_POLLING_TASK_STRING;
+	case 0x50001300:
+		return CFDP_HANDLER_STRING;
 	case 0x51000500:
 		return PUS_SERVICE_6_MEM_MGMT_STRING;
 	case 0x51002300:
@@ -260,6 +265,8 @@ const char* translateObject(object_id_t object) {
 		return PUS_SERVICE_200_MODE_MGMT_STRING;
 	case 0x53000201:
 		return PUS_SERVICE_201_HEALTH_STRING;
+	case 0x53001000:
+		return CFDP_PACKET_DISTRIBUTOR_STRING;
 	case 0x53010000:
 		return HEALTH_TABLE_STRING;
 	case 0x53010100:
@@ -288,6 +295,8 @@ const char* translateObject(object_id_t object) {
 		return AT91_UART2_TEST_TASK_STRING;
 	case 0x62007404:
 		return AT91_SPI_TEST_TASK_STRING;
+	case 0x62007405:
+		return PVCH_TEST_TASK_STRING;
 	case 0x99000001:
 		return TC_INJECTOR_STRING;
 	case 0xCAFECAFE:
