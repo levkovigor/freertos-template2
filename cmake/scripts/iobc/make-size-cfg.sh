@@ -17,9 +17,9 @@ fi
 
 build_generator=""
 os_fsfw="freertos"
-builddir="build-Mission-BL-AT91EK"
-defines="BOOTLOADER=ON"
-build_type="debug"
+build_type="size"
+builddir="build-Release-iOBC"
+defines="BOARD_IOBC=ON"
 if [ "${OS}" = "Windows_NT" ]; then
     build_generator="MinGW Makefiles"
     python="py"
@@ -31,8 +31,6 @@ fi
 
 echo "Running command (without the leading +):"
 set -x # Print command 
-${python} ${cfg_script_name} -o "${os_fsfw}" -g "${build_generator}" -l "${builddir}" \
-    -b "${build_type}"
-# Use this if commands are added which should not be printed
+${python} ${cfg_script_name} -o "${os_fsfw}" -g "${build_generator}" -b "${build_type}" \
+        -d "${defines}" -l "${builddir}"
 # set +x
-
