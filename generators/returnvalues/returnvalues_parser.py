@@ -1,20 +1,18 @@
-#! /usr/bin/python3
 # -*- coding: utf-8 -*-
-"""
-:file:      returnvalues_parser.py
-:brief:     Part of the MOD export tools for the SOURCE project by KSat.
-TODO: Integrate into Parser Structure instead of calling this file (no cpp file generated yet)
-:details:
+"""Part of the MOD export tools for the SOURCE project by KSat.
 Returnvalue exporter.
-To use MySQLdb, run pip install mysqlclient or install in IDE. On Windows, Build Tools installation might be necessary.
+To use MySQLdb, run pip install mysqlclient or install in IDE. On Windows,
+Build Tools installation might be necessary.
 :data:      21.11.2019
 """
+from fsfwgen.core import get_console_logger
 from fsfwgen.parserbase.file_list_parser import FileListParser
 from fsfwgen.returnvalues.returnvalues_parser import InterfaceParser, ReturnValueParser
 from fsfwgen.utility.sql_writer import SqlWriter
-from fsfwgen.utility.file_management import move_file
 
-from definitions import DATABASE_NAME
+from definitions import DATABASE_NAME, ROOT_DIR, OBSW_ROOT_DIR
+
+LOGGER = get_console_logger()
 
 EXPORT_TO_FILE = True
 MOVE_CSV_FILE = True
@@ -22,16 +20,16 @@ EXPORT_TO_SQL = True
 PRINT_TABLES = True
 
 CSV_RETVAL_FILENAME = f"mod_returnvalues.csv"
-CSV_MOVE_DESTINATION = "../"
 FILE_SEPARATOR = ';'
 MAX_STRING_LENGTH = 32
 INTERFACE_DEFINITION_FILES = [
-    "../../fsfw/returnvalues/FwClassIds.h",
-    "../../common/returnvalues/commonClassIds.h",
-    "../../bsp_sam9g20/fsfwconfig/returnvalues/classIds.h"
+    f"{OBSW_ROOT_DIR}/fsfw/src/fsfw/returnvalues/FwClassIds.h",
+    f"{OBSW_ROOT_DIR}/common/returnvalues/commonClassIds.h",
+    f"{OBSW_ROOT_DIR}/bsp_sam9g20/fsfwconfig/returnvalues/classIds.h"
 ]
 RETURNVALUE_DESTINATIONS = [
-    "../../mission/", "../../fsfw/", "../../bsp_sam9g20/", "../../bsp_hosted/"
+    f"{OBSW_ROOT_DIR}/mission/", f"{OBSW_ROOT_DIR}/fsfw/", f"{OBSW_ROOT_DIR}/bsp_sam9g20/",
+    f"{OBSW_ROOT_DIR}/bsp_hosted/"
 ]
 
 SQL_DELETE_RETURNVALUES_CMD = """
@@ -55,29 +53,29 @@ VALUES(?,?,?,?,?)
 """
 
 
-def main():
-    returnvalue_table = parse_returnvalues()
-    print("")
+def parse_returnvalues():
+    returnvalue_table = generate_returnvalue_table()
     if EXPORT_TO_FILE:
         ReturnValueParser.export_to_file(CSV_RETVAL_FILENAME, returnvalue_table, FILE_SEPARATOR)
-        if MOVE_CSV_FILE:
-            move_file(file_name=CSV_RETVAL_FILENAME, destination=CSV_MOVE_DESTINATION)
+        # if MOVE_CSV_FILE:
+        #    move_file(file_name=CSV_RETVAL_FILENAME, destination=CSV_MOVE_DESTINATION)
     if EXPORT_TO_SQL:
-        print("ReturnvalueParser: Exporting to SQL")
-        sql_retval_exporter(returnvalue_table, db_filename=f"../{DATABASE_NAME}")
+        LOGGER.info('ReturnvalueParser: Exporting to SQL')
+        sql_retval_exporter(returnvalue_table, db_filename=f"{ROOT_DIR}/{DATABASE_NAME}")
 
 
-def parse_returnvalues():
+def generate_returnvalue_table():
     """ Core function to parse for the return values """
-    interface_parser = InterfaceParser(file_list=INTERFACE_DEFINITION_FILES, print_table=PRINT_TABLES)
+    interface_parser = InterfaceParser(
+        file_list=INTERFACE_DEFINITION_FILES, print_table=PRINT_TABLES
+    )
     interfaces = interface_parser.parse_files()
     header_parser = FileListParser(RETURNVALUE_DESTINATIONS)
     header_list = header_parser.parse_header_files(True, "Parsing header file list: ")
-    print("")
     returnvalue_parser = ReturnValueParser(interfaces, header_list, PRINT_TABLES)
     returnvalue_parser.set_moving_window_mode(moving_window_size=7)
     returnvalue_table = returnvalue_parser.parse_files(True)
-    print(f"ReturnvalueParser: Found {len(returnvalue_table)} returnvalues.")
+    LOGGER.info(f"ReturnvalueParser: Found {len(returnvalue_table)} returnvalues")
     return returnvalue_table
 
 
@@ -93,7 +91,3 @@ def sql_retval_exporter(returnvalue_table, db_filename: str):
                                           entry[1][1]))
     sql_writer.commit()
     sql_writer.close()
-
-
-if __name__ == "__main__":
-    main()
