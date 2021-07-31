@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 from objects.objects import parse_objects
+from events.event_parser import parse_events
 
 
 def main():
@@ -13,6 +14,8 @@ def main():
     args = parser.parse_args()
     if args.type == 'objects':
         parse_objects()
+    elif args.type == 'events':
+        parse_events()
     pass
 
 

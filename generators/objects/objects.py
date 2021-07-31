@@ -81,7 +81,7 @@ def parse_objects():
         sql_object_exporter(
             object_table=list_items, delete_cmd=SQL_DELETE_OBJECTS_CMD,
             insert_cmd=SQL_INSERT_INTO_OBJECTS_CMD,
-            create_cmd=SQL_CREATE_OBJECTS_CMD, db_filename=f"../{DATABASE_NAME}"
+            create_cmd=SQL_CREATE_OBJECTS_CMD, db_filename=f"{ROOT_DIR}/{DATABASE_NAME}"
         )
 
 
