@@ -4,7 +4,15 @@ from objects.objects import parse_objects
 
 
 def main():
-    parse_objects()
+    parser = argparse.ArgumentParser('Arguments for FSFW MOD generation')
+    choices = ("events", "objects", "returnvalues", "subservices")
+    parser.add_argument(
+        'type', metavar='type', choices=choices,
+        help=f'Type of MOD data to generate. Choices: {choices}'
+    )
+    args = parser.parse_args()
+    if args.type == 'objects':
+        parse_objects()
     pass
 
 
