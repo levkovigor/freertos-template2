@@ -5,11 +5,14 @@ On Windows, Build Tools installation might be necessary
 """
 import datetime
 
+from fsfwgen.core import get_console_logger
 from fsfwgen.objects.objects import ObjectDefinitionParser, sql_object_exporter, \
     write_translation_file, export_object_file, write_translation_header_file
 from fsfwgen.utility.printer import PrettyPrinter
 from fsfwgen.utility.file_management import copy_file, move_file
 from definitions import DATABASE_NAME, OBSW_ROOT_DIR, ROOT_DIR
+
+LOGGER = get_console_logger()
 
 DATE_TODAY = datetime.datetime.now()
 DATE_STRING_FULL = DATE_TODAY.strftime("%Y-%m-%d %H:%M:%S")
@@ -65,19 +68,20 @@ VALUES(?,?)
 """
 
 
-def parse_objects():
-    print("Parsing objects: ")
+def parse_objects(print_object_list: bool = True):
     # fetch objects
     object_parser = ObjectDefinitionParser(OBJECTS_DEFINITIONS)
     subsystem_definitions = object_parser.parse_files()
     # id_subsystem_definitions.update(framework_subsystem_definitions)
     list_items = sorted(subsystem_definitions.items())
-    PrettyPrinter.pprint(list_items)
-    print("ObjectParser: Number of objects: ", len(list_items))
+    LOGGER.info(f'ObjectParser: Number of objects: {len(list_items)}')
+
+    if print_object_list:
+        PrettyPrinter.pprint(list_items)
 
     handle_file_export(list_items)
     if EXPORT_TO_SQL:
-        print("ObjectParser: Exporting to SQL")
+        LOGGER.info('ObjectParser: Exporting to SQL')
         sql_object_exporter(
             object_table=list_items, delete_cmd=SQL_DELETE_OBJECTS_CMD,
             insert_cmd=SQL_INSERT_INTO_OBJECTS_CMD,
@@ -87,7 +91,7 @@ def parse_objects():
 
 def handle_file_export(list_items):
     if GENERATE_CPP:
-        print("ObjectParser: Generating translation C++ file.")
+        LOGGER.info('ObjectParser: Generating translation C++ file')
         write_translation_file(
             filename=CPP_FILENAME, list_of_entries=list_items, date_string_full=DATE_STRING_FULL
         )

@@ -5,6 +5,7 @@ On Windows, Build Tools installation might be necessary
 @data   21.11.2019
 """
 import datetime
+import time
 from xml.etree import ElementTree as ElementTree
 from xml.dom import minidom
 
@@ -12,10 +13,12 @@ from fsfwgen.events.event_parser import handle_csv_export, handle_cpp_export, \
     SubsystemDefinitionParser, EventParser
 from fsfwgen.parserbase.file_list_parser import FileListParser
 from fsfwgen.utility.printer import PrettyPrinter
-from fsfwgen.utility.file_management import copy_file, move_file
+from fsfwgen.utility.file_management import copy_file
+from fsfwgen.core import get_console_logger
 
 from definitions import ROOT_DIR, OBSW_ROOT_DIR
 
+LOGGER = get_console_logger()
 DATE_TODAY = datetime.datetime.now()
 DATE_STRING_FULL = DATE_TODAY.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -51,11 +54,18 @@ HEADER_DEFINITION_DESTINATIONS = [
 ]
 
 
-def parse_events(generate_csv: bool = True, generate_cpp: bool = True):
-    print("EventParser: Parsing events: ")
+def parse_events(
+        generate_csv: bool = True, generate_cpp: bool = True, print_events: bool = True
+):
+    LOGGER.info("EventParser: Parsing events: ")
+    # Small delay for clean printout
+    time.sleep(0.01)
     event_list = generate_event_list()
+    if print_events:
+        PrettyPrinter.pprint(event_list)
+        # Delay for clean printout
+        time.sleep(0.1)
     # xml_test()
-
     if generate_csv:
         handle_csv_export(
             file_name=CSV_FILENAME, event_list=event_list, file_separator=FILE_SEPARATOR
@@ -66,16 +76,15 @@ def parse_events(generate_csv: bool = True, generate_cpp: bool = True):
             generate_header=GENERATE_CPP_H, header_file_name=CPP_H_FILENAME
         )
         if COPY_CPP_FILE:
-            print(f"EventParser: Copying file to {CPP_COPY_DESTINATION}")
+            LOGGER.info(f'EventParser: Copying file to {CPP_COPY_DESTINATION}')
             copy_file(CPP_FILENAME, CPP_COPY_DESTINATION)
             copy_file(CPP_H_FILENAME, CPP_COPY_DESTINATION)
-    print("")
 
 
 def generate_event_list() -> list:
     subsystem_parser = SubsystemDefinitionParser(SUBSYSTEM_DEFINITION_DESTINATIONS)
     subsystem_table = subsystem_parser.parse_files()
-    print(f"Found {len(subsystem_table)} subsystem definitions.")
+    LOGGER.info(f'Found {len(subsystem_table)} subsystem definitions.')
     PrettyPrinter.pprint(subsystem_table)
     event_header_parser = FileListParser(HEADER_DEFINITION_DESTINATIONS)
     event_headers = event_header_parser.parse_header_files(
@@ -87,8 +96,7 @@ def generate_event_list() -> list:
     event_parser.set_moving_window_mode(moving_window_size=7)
     event_table = event_parser.parse_files()
     event_list = sorted(event_table.items())
-    print(f"Found {len(event_list)} entries:")
-    PrettyPrinter.pprint(event_list)
+    LOGGER.info(f'Found {len(event_list)} entries')
     return event_list
 
 

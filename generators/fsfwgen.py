@@ -1,20 +1,25 @@
 #!/usr/bin/env python3
-import argparse
+import time
+
 from objects.objects import parse_objects
 from events.event_parser import parse_events
+from fsfwgen.core import return_generic_args_parser, init_printout, get_console_logger, ParserTypes
+
+
+LOGGER = get_console_logger()
 
 
 def main():
-    parser = argparse.ArgumentParser('Arguments for FSFW MOD generation')
-    choices = ("events", "objects", "returnvalues", "subservices")
-    parser.add_argument(
-        'type', metavar='type', choices=choices,
-        help=f'Type of MOD data to generate. Choices: {choices}'
-    )
+    init_printout()
+    parser = return_generic_args_parser()
     args = parser.parse_args()
     if args.type == 'objects':
+        LOGGER.info(f'Generating objects data..')
+        time.sleep(0.05)
         parse_objects()
     elif args.type == 'events':
+        LOGGER.info(f'Generating event data')
+        time.sleep(0.05)
         parse_events()
     pass
 
