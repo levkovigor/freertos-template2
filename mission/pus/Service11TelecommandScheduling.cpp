@@ -48,7 +48,7 @@ ReturnValue_t Service11TelecommandScheduling::handleRequest(uint8_t subservice) 
 ReturnValue_t Service11TelecommandScheduling::performService() {
 
     //DEBUG
-    bool printDebug = false;
+    bool printDebug = true;
     if (printDebug) {
         sif::printInfo("MULTIMAP CONTENT: \n");
         for (auto it = telecommandMap.begin(); it != telecommandMap.end(); ++it) {
@@ -61,7 +61,7 @@ ReturnValue_t Service11TelecommandScheduling::performService() {
     // get current time as UNIX timestamp
     uint32_t tCurrent = static_cast<uint32_t>(std::time(nullptr));
 
-    for (auto it = telecommandMap.begin(); it != telecommandMap.end() && true; ++it) {
+    for (auto it = telecommandMap.begin(); it != telecommandMap.end(); ) {
 
         if (it->first <= tCurrent){
             // release tc
@@ -72,13 +72,12 @@ ReturnValue_t Service11TelecommandScheduling::performService() {
                 return sendRet;
             }
 
-            telecommandMap.erase(it);
+            telecommandMap.erase(it++);
 
             sif::printDebug("Sent message & erased from telecommandMap!\n");
+            continue;
         }
-        else {
-            break;  //save some time as multimap is sorted anyway
-        }
+        it++;
     }
 
     return HasReturnvaluesIF::RETURN_OK;
