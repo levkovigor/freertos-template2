@@ -2,7 +2,7 @@
  * @brief	Auto-generated object translation file.
  * @details
  * Contains 98 translations.
- * Generated on: 2021-07-31 20:54:16
+ * Generated on: 2021-08-03 18:27:22
  */
 #include "translateObjects.h"
 
