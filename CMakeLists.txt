@@ -34,6 +34,7 @@ endif()
 
 # Required for ACS controller
 set(FSFW_ADD_COORDINATES ON)
+set(FSFW_ADD_SGP4_PROPAGATOR ON)
 
 # Project Name
 if(BOOTLOADER)
