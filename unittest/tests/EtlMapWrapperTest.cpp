@@ -15,9 +15,11 @@ TEST_CASE( "ETL Map Test", "[etl]" ) {
     CHECK(wrapper.emplace(0, 932) == (int) HasReturnvaluesIF::RETURN_OK);
     CHECK(wrapper.emplace(0, 932) == (int) HasReturnvaluesIF::RETURN_FAILED);
 
-    MultiMapGetReturn<int, int> getReturnIter = wrapper.get(0);
-    for(;iter != iter.end; iter++) {
-        std::cout << iter << std::endl;
+    MultiMapGetReturn<int, int> getResult = wrapper.get(0);
+    for(auto startIter = getResult.begin; startIter != getResult.end; startIter++) {
+        auto value = *startIter;
+        // std::cout << "key: " << value.first << ", value: " <<
+        //      value.second << std::endl;
     }
 
 }
