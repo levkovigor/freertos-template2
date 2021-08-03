@@ -12,7 +12,7 @@
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
-#include <fsfw/tests/internal/InternalUnitTester.h>
+#include <fsfw_tests/internal/InternalUnitTester.h>
 #include <fsfw/osal/freertos/TaskManagement.h>
 
 #include <freertos/FreeRTOS.h>
