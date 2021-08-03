@@ -6,13 +6,13 @@
 
 #include <fsfw/events/EventManager.h>
 #include <fsfw/health/HealthTable.h>
-#include <fsfw/internalError/InternalErrorReporter.h>
+#include <fsfw/internalerror/InternalErrorReporter.h>
 #include <fsfw/objectmanager/frameworkObjects.h>
 #include <fsfw/storagemanager/PoolManager.h>
 #include <fsfw/tmtcpacket/pus/tm.h>
 #include <fsfw/tmtcservices/CommandingServiceBase.h>
 #include <fsfw/tmtcservices/PusServiceBase.h>
-#include <fsfw/unittest/tests/mocks/HkReceiverMock.h>
+#include <fsfw_tests/unit/mocks/HkReceiverMock.h>
 
 /**
  * @brief Produces system objects.
