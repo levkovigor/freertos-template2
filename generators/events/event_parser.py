@@ -1,8 +1,5 @@
 """Part of the Mission Information Base Exporter for the SOURCE project by KSat.
 Event exporter.
-To use MySQLdb, run pip install mysqlclient or install in IDE.
-On Windows, Build Tools installation might be necessary
-@data   21.11.2019
 """
 import datetime
 import time

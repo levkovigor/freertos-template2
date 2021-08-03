@@ -1,7 +1,5 @@
 """Part of the Mission Information Base Exporter for the SOURCE project by KSat.
 Object exporter.
-To use MySQLdb, run pip install mysqlclient or install in IDE.
-On Windows, Build Tools installation might be necessary
 """
 import datetime
 
@@ -106,5 +104,3 @@ def handle_file_export(list_items):
         export_object_file(
             filename=CSV_OBJECT_FILENAME, object_list=list_items, file_separator=FILE_SEPARATOR
         )
-        if MOVE_CSV:
-            move_file(file_name=CSV_OBJECT_FILENAME, destination=CSV_MOVE_DESTINATION)
