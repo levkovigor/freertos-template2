@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 """Part of the MOD export tools for the SOURCE project by KSat.
 Returnvalue exporter.
-To use MySQLdb, run pip install mysqlclient or install in IDE. On Windows,
-Build Tools installation might be necessary.
-:data:      21.11.2019
 """
 from fsfwgen.core import get_console_logger
 from fsfwgen.parserbase.file_list_parser import FileListParser
@@ -23,9 +20,9 @@ CSV_RETVAL_FILENAME = f"mod_returnvalues.csv"
 FILE_SEPARATOR = ';'
 MAX_STRING_LENGTH = 32
 INTERFACE_DEFINITION_FILES = [
-    f"{OBSW_ROOT_DIR}/fsfw/src/fsfw/returnvalues/FwClassIds.h",
-    f"{OBSW_ROOT_DIR}/common/returnvalues/commonClassIds.h",
-    f"{OBSW_ROOT_DIR}/bsp_sam9g20/fsfwconfig/returnvalues/classIds.h"
+    f'{OBSW_ROOT_DIR}/fsfw/src/fsfw/returnvalues/FwClassIds.h',
+    f'{OBSW_ROOT_DIR}/common/returnvalues/commonClassIds.h',
+    f'{OBSW_ROOT_DIR}/bsp_sam9g20/fsfwconfig/returnvalues/classIds.h'
 ]
 RETURNVALUE_DESTINATIONS = [
     f"{OBSW_ROOT_DIR}/mission/", f"{OBSW_ROOT_DIR}/fsfw/", f"{OBSW_ROOT_DIR}/bsp_sam9g20/",

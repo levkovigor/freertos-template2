@@ -11,7 +11,7 @@ LOGGER = get_console_logger()
 
 
 def main():
-    init_printout()
+    init_printout(project_string='SOURCE')
     parser = return_generic_args_parser()
     args = parser.parse_args()
     if args.type == 'objects':

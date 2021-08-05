@@ -188,7 +188,7 @@ You can find the tests in the `unittest` folder and you can build the unit test 
 following command
 
 ```sh
-mkdir build-Unittest && cd build-Unittest
+mkdir build-Debug-Unittest && cd build-Debug-Unittest
 cmake -DBUILD_UNITTEST=ON ..
 cmake --build . -j
 ```

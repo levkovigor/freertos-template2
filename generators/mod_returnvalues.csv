@@ -1,5 +1,16 @@
 0x0;OK;System-wide code for ok.;RETURN_OK;HasReturnvaluesIF.h;HasReturnvaluesIF
 0x1;Failed;Unspecified system-wide code for failed.;RETURN_FAILED;HasReturnvaluesIF.h;HasReturnvaluesIF
+0x4c02;MGML_OperationDone;;2;/home/rmueller/SOURCE/sourceobsw/mission/utility/TaskMonitor.h;MGM_LIS3MDL
+0x4100;HSPI_HalTimeoutRetval;;0;/home/rmueller/SOURCE/sourceobsw/fsfw/hal/src/fsfw_hal/stm32h7/spi/spiDefinitions.h;HAL_SPI
+0x4101;HSPI_HalBusyRetval;;1;/home/rmueller/SOURCE/sourceobsw/fsfw/hal/src/fsfw_hal/stm32h7/spi/spiDefinitions.h;HAL_SPI
+0x4102;HSPI_HalErrorRetval;;2;/home/rmueller/SOURCE/sourceobsw/fsfw/hal/src/fsfw_hal/stm32h7/spi/spiDefinitions.h;HAL_SPI
+0x4201;HURT_UartReadFailure;;1;/home/rmueller/SOURCE/sourceobsw/fsfw/hal/src/fsfw_hal/linux/uart/UartComIF.h;HAL_UART
+0x4202;HURT_UartReadSizeMissmatch;;2;/home/rmueller/SOURCE/sourceobsw/fsfw/hal/src/fsfw_hal/linux/uart/UartComIF.h;HAL_UART
+0x4203;HURT_UartRxBufferTooSmall;;3;/home/rmueller/SOURCE/sourceobsw/fsfw/hal/src/fsfw_hal/linux/uart/UartComIF.h;HAL_UART
+0x4401;HGIO_UnknownGpioId;;1;/home/rmueller/SOURCE/sourceobsw/fsfw/hal/src/fsfw_hal/linux/gpio/LinuxLibgpioIF.h;HAL_GPIO
+0x4402;HGIO_DriveGpioFailure;;2;/home/rmueller/SOURCE/sourceobsw/fsfw/hal/src/fsfw_hal/linux/gpio/LinuxLibgpioIF.h;HAL_GPIO
+0x4403;HGIO_GpioTypeFailure;;3;/home/rmueller/SOURCE/sourceobsw/fsfw/hal/src/fsfw_hal/linux/gpio/LinuxLibgpioIF.h;HAL_GPIO
+0x4404;HGIO_GpioInvalidInstance;;4;/home/rmueller/SOURCE/sourceobsw/fsfw/hal/src/fsfw_hal/linux/gpio/LinuxLibgpioIF.h;HAL_GPIO
 0x2b01;CCS_BcIsSetVrCommand;;0x01;/home/rmueller/SOURCE/sourceobsw/fsfw/src/fsfw/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
 0x2b02;CCS_BcIsUnlockCommand;;0x02;/home/rmueller/SOURCE/sourceobsw/fsfw/src/fsfw/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
 0x2bb0;CCS_BcIllegalCommand;;0xB0;/home/rmueller/SOURCE/sourceobsw/fsfw/src/fsfw/datalinklayer/CCSDSReturnValuesIF.h;CCSDS_HANDLER_IF
@@ -368,6 +379,7 @@
 0x1402;SE_StreamTooShort;;2;/home/rmueller/SOURCE/sourceobsw/fsfw/src/fsfw/serialize/SerializeIF.h;SERIALIZE_IF
 0x1403;SE_TooManyElements;;3;/home/rmueller/SOURCE/sourceobsw/fsfw/src/fsfw/serialize/SerializeIF.h;SERIALIZE_IF
 0x5c01;SERA_NoPacketFound;;1;/home/rmueller/SOURCE/sourceobsw/bsp_sam9g20/core/RingBufferAnalyzer.h;SERIAL_ANALYZER
+0x5c02;SERA_PossiblePacketLoss;;2;/home/rmueller/SOURCE/sourceobsw/bsp_sam9g20/core/RingBufferAnalyzer.h;SERIAL_ANALYZER
 0x5b00;SWIH_OperationFinished;;0;/home/rmueller/SOURCE/sourceobsw/bsp_sam9g20/core/imageHandlerDefintions.h;SW_IMAGE_HANDLER
 0x5b01;SWIH_TaskPeriodOverSoon;;1;/home/rmueller/SOURCE/sourceobsw/bsp_sam9g20/core/imageHandlerDefintions.h;SW_IMAGE_HANDLER
 0x5b02;SWIH_Busy;;2;/home/rmueller/SOURCE/sourceobsw/bsp_sam9g20/core/imageHandlerDefintions.h;SW_IMAGE_HANDLER
@@ -375,7 +387,8 @@
 0x5800;PUSP_NoPacketFound;;0x00;/home/rmueller/SOURCE/sourceobsw/bsp_sam9g20/tmtcbridge/PusParser.h;PUS_PARSER
 0x5801;PUSP_SplitPacket;;0x01;/home/rmueller/SOURCE/sourceobsw/bsp_sam9g20/tmtcbridge/PusParser.h;PUS_PARSER
 0x5a00;SDCH_OperationFinished;;0;/home/rmueller/SOURCE/sourceobsw/bsp_sam9g20/memory/sdcardHandlerDefinitions.h;SD_CARD_HANDLER
-0x5a01;SDCH_TaskPeriodOverSoon;;1;/home/rmueller/SOURCE/sourceobsw/bsp_sam9g20/memory/sdcardHandlerDefinitions.h;SD_CARD_HANDLER
+0x5a01;SDCH_SdCardChangeOngoing;;1;/home/rmueller/SOURCE/sourceobsw/bsp_sam9g20/memory/SDCardAccess.h;SD_CARD_HANDLER
+0x5a02;SDCH_Busy;;2;/home/rmueller/SOURCE/sourceobsw/bsp_sam9g20/memory/sdcardHandlerDefinitions.h;SD_CARD_HANDLER
 0x5200;RS232C_Rs232Inactive;;0x00;/home/rmueller/SOURCE/sourceobsw/bsp_sam9g20/comIF/RS232DeviceComIF.h;RS232_COM_IF
 0x5601;I2C_I2cDriverError;;1;/home/rmueller/SOURCE/sourceobsw/bsp_sam9g20/comIF/I2cDeviceComIF.h;I2C_COM_IF
 0x5602;I2C_I2cTransferPending;;2;/home/rmueller/SOURCE/sourceobsw/bsp_sam9g20/comIF/I2cDeviceComIF.h;I2C_COM_IF

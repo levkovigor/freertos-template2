@@ -5,7 +5,7 @@
 #include <devices/logicalAddresses.h>
 #include <tmtc/apid.h>
 
-#include <fsfw/tests/internal/InternalUnitTester.h>
+#include <fsfw_tests/internal/InternalUnitTester.h>
 #include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/globalfunctions/arrayprinter.h>

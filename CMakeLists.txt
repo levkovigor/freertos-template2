@@ -34,6 +34,7 @@ endif()
 
 # Required for ACS controller
 set(FSFW_ADD_COORDINATES ON)
+set(FSFW_ADD_SGP4_PROPAGATOR ON)
 
 # Project Name
 if(BOOTLOADER)
@@ -52,7 +53,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Set names and variables
 set(TARGET_NAME ${CMAKE_PROJECT_NAME})
-if(CUSTOM_UNITTEST_RUNNER)
+
+if(FSFW_CUSTOM_UNITTEST_RUNNER OR FSFW_ADD_UNITTESTS)
     set(CATCH2_TARGET Catch2)
 else()
     set(CATCH2_TARGET Catch2WithMain)
