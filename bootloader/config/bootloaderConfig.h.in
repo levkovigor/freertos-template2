@@ -18,7 +18,7 @@
 #endif
 
 #define BL_VERSION      2
-#define BL_SUBVERSION   2
+#define BL_SUBVERSION   3
 
 //! Can be used if SAM-BA is used to flash the bootloader, which is not able to write
 //! the CRC expected written at the end of the NOR-Flash memory.
