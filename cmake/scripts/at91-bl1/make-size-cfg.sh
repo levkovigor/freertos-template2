@@ -19,7 +19,7 @@ build_generator=""
 os_fsfw="freertos"
 builddir="build-Mission-BL-AT91EK"
 defines="BOOTLOADER=ON"
-build_type="debug"
+build_type="size"
 if [ "${OS}" = "Windows_NT" ]; then
     build_generator="MinGW Makefiles"
     python="py"
