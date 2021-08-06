@@ -199,7 +199,7 @@ Command to start QEMU (inside sourceobsw folder). Please note this only works if
 repository was cloned and built inside the same folder the OBSW was cloned.
 
 ```sh
-./StartQEMU.sh
+./scripts/start-qemu.sh
 ```
    
 ## Build Host Software
