@@ -70,10 +70,10 @@ static const uint32_t SDRAM_DESTINATION = 0x20000000;
 
 //! This should translate to the third block of the NAND flash.
 static const size_t PRIMARY_IMAGE_NAND_OFFSET = 0x20000;
-static const size_t PRIMARY_IMAGE_SDRAM_OFFSET = 0x0;
 static const size_t PRIMARY_IMAGE_RESERVED_SIZE = 0x100000; /* 1.007.616 bytes */
+static const size_t PRIMARY_IMAGE_SDRAM_OFFSET = PRIMARY_IMAGE_RESERVED_SIZE;
 
-static const size_t SECOND_STAGE_BL_JUMP_ADDR = SDRAM_DESTINATION;
+static const size_t SECOND_STAGE_BL_JUMP_ADDR = SDRAM_DESTINATION + PRIMARY_IMAGE_RESERVED_SIZE;
 
 //! This should translate to the second block of the NAND flash.
 static const size_t SECOND_STAGE_BL_NAND_OFFSET = PRIMARY_IMAGE_NAND_OFFSET;
@@ -95,7 +95,7 @@ static const size_t PRIMARY_IMAGE_NAND_OFFSET = 0x40000;
 static const size_t PRIMARY_IMAGE_SDRAM_OFFSET = 0x0;
 static const size_t PRIMARY_IMAGE_RESERVED_SIZE = 0x100000; /* 1.007.616 bytes */
 
-static const size_t SECOND_STAGE_BL_JUMP_ADDR = SDRAM_DESTINATION + SECOND_STAGE_SDRAM_OFFSET;
+static const size_t SECOND_STAGE_BL_JUMP_ADDR = SDRAM_DESTINATION;
 #endif /* BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE */
 
 #else
