@@ -165,7 +165,7 @@ void initTasks(void) {
     }
     /* Serial Bridge Task for UART Communication */
     tmTcBridge = TaskFactory::instance()->createPeriodicTask(
-            "SERIAL_TMTC_TASK", 7, 2048 * 4, 0.1, genericMissedDeadlineFunc);
+            "SERIAL_TMTC_TASK", 7, 2048 * 4, 0.2, genericMissedDeadlineFunc);
     result = tmTcBridge->addComponent(objects::SERIAL_TMTC_BRIDGE);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("Serial TMTC bridge", objects::SERIAL_TMTC_BRIDGE);
