@@ -94,10 +94,9 @@ void runMinimalTask(void);
  */
 void initMission(void) {
     printf("\r\n-- FreeRTOS task scheduler started --\n\r");
-    printf("-- SOURCE On-Board Software --\n\r");
-    printf("-- %s --\n\r", BOARD_NAME_PRINT);
-    printf("-- Software version %s v%d.%d.%d --\n\r", SW_NAME, SW_VERSION, SW_SUBVERSION,
+    printf("-- SOURCE On-Board Software v%d.%d.%d --\n\r", SW_VERSION, SW_SUBVERSION,
             SW_SUBSUBVERSION);
+    printf("-- %s --\n\r", BOARD_NAME_PRINT);
     printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 
 #if FSFW_CPP_OSTREAM_ENABLED == 0
