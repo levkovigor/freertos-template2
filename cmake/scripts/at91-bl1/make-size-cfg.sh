@@ -32,7 +32,7 @@ fi
 echo "Running command (without the leading +):"
 set -x # Print command 
 ${python} ${cfg_script_name} -o "${os_fsfw}" -g "${build_generator}" -l "${builddir}" \
-    -b "${build_type}"
+    -d "${defines}" -b "${build_type}"
 # Use this if commands are added which should not be printed
 # set +x
 

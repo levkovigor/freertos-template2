@@ -1,6 +1,6 @@
 #include "../common/at91_boot_from_nand.h"
-#include <bootloaderConfig.h>
-#include <bootloader/core/timer.h>
+#include "bootloaderConfig.h"
+#include "bootloader/core/timer.h"
 
 #include <board.h>
 #include <AT91SAM9G20.h>

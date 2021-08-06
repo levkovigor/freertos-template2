@@ -194,6 +194,7 @@ if(NOT BOOTLOADER)
         configure_file("${FSFW_CONFIG_PATH}/TestConfig.h.in" TestConfig.h)
     endif()
 else()
+    configure_file("${BOOTLOADER_PATH}/config/bootloaderConfig.h.in" bootloaderConfig.h)
 endif()
 
 set(LINK_HCC ON)

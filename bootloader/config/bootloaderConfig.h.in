@@ -4,6 +4,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+// Board Type
+#cmakedefine ISIS_OBC_G20
+#cmakedefine AT91SAM9G20_EK
+
 #ifdef ISIS_OBC_G20
 #include <commonIOBCConfig.h>
 #else
