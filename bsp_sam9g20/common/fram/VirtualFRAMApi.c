@@ -1,7 +1,9 @@
+#include "OBSWConfig.h"
 #include "VirtualFRAMApi.h"
 #include "CommonFRAM.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <hcc/api_fat.h>
 #include <hcc/api_hcc_mem.h>
 
@@ -22,6 +24,12 @@ int FRAM_start() {
 int create_generic_fram_file() {
     int result = change_directory(VIRT_FRAM_PATH , true);
     if(result != 0) {
+        if(result == F_ERR_NOTFOUND) {
+#if OBSW_VERBOSE_LEVEL >= 1
+            printf("Directory %s does not exist, creating it..\n\r", VIRT_FRAM_PATH);
+#endif
+            create_directory(VIRT_FRAM_PATH, "MISC");
+        }
         return result;
     }
 
