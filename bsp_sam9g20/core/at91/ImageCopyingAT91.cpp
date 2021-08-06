@@ -401,6 +401,8 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
             helperCounter1 = 0;
         }
 #if BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE
+        // Two-stage bootloader, so second page is reserved for second-stage bootloader
+        // and third stage is reserved for regular image
         else if(sourceSlot == image::ImageSlot::BOOTLOADER_1) {
             // This will be the page in the NAND-Flash. The first-stage bootloader is
             helperCounter1 = 1;
