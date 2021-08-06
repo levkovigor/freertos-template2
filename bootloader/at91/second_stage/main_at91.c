@@ -162,7 +162,7 @@ int perform_bootloader_core_operation() {
     LED_Set(0);
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-    TRACE_INFO("Jumping to SDRAM application address 0x%08x!\n\r",
+    TRACE_INFO("Jumping to SDRAM application address 0x%08x..\n\r",
             (unsigned int) SDRAM_DESTINATION);
 #endif
 
