@@ -14,8 +14,8 @@ typedef enum {
 namespace config {
 #endif
 
-static const char* const BOOTLOADER_REPOSITORY =         "bin/bl";
-static const char* const SW_REPOSITORY =                 "bin/obsw";
+static const char* const BOOTLOADER_REPOSITORY =         "BIN/BL";
+static const char* const SW_REPOSITORY =                 "BIN/OBSW";
 
 static const char* const BOOTLOADER_NAME =              "bl.bin";
 static const char* const SW_SLOT_0_NAME =               "obsw_sl0.bin";
