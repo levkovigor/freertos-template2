@@ -2,8 +2,7 @@
 # CMake support for the SOURCE OBSW.
 # 
 # Developed in an effort to replace Make with a modern build system.
-# Currently only works for the hosted build.
-# 
+#
 # Author: R. Mueller
 ################################################################################
 
@@ -21,87 +20,21 @@ set(CMAKE_SCRIPT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # Options
 ################################################################################
 
-option(ADD_ETL_LIB "Add ETL library" ON)
-option(BOOTLOADER "Build bootloader" OFF)
-option(HOST_BUILD "Build for host" OFF)
-option(USE_LTO "Enable link-time optimization" OFF)
-# This option can also decrease binary size.
-option(DISABLE_AGGRESSIVE_OPTIMIZATION 
-    "Enable to use O2 instead of O3 optimization for the release build" OFF
-)
+include(${CMAKE_SCRIPT_PATH}/PreProjectConfig.cmake)
+options_config()
 
-if(NOT OS_FSFW)
-    if(HOST_BUILD)
-        set(OS_FSFW host CACHE STRING "OS for the FSFW.")
-    else()
-        set(OS_FSFW freertos CACHE STRING "OS for the FSFW.")
-    endif()
-endif()
-
+# This sets some variables passed to the configure file OBSWConfig.h.in so DO NOT DELETE THIS.
 if(NOT HOST_BUILD)
-    set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SCRIPT_PATH}/Arm926ejsCrossCompile.cmake)
-    
-    option(BOARD_IOBC "iOBC target hardware instead of AT91SAM9G20-EK development board" OFF)
-    option(SAT_BUILD
-        "If the iOBC is not connected to the flatsat or integrated into the satellite" ON
-    )
-    
-    if(BOOTLOADER)
-        if(NOT BOARD_IOBC)
-            option(BL_STAGE_TWO 
-                "Build second stage bootloader instead of first stage bootloader" OFF
-             )
-        endif()
-        option(BL_USE_FREERTOS
-            "Use FreeRTOS for iOBC or AT91 second-stage bootloader" ON
-        )
-        
-        if(NOT BOARD_IOBC AND NOT BL_STAGE_TWO)
-             set(SIMPLE_AT91_BL ON CACHE INTERNAL "Simple flag to detect simple bootloader")
-             set(BL_USE_FREERTOS OFF)
-        endif() 
-    endif()
-endif()
-
-if(BOOTLOADER)
-    set(AT91_USE_AT91_STDIO ON)
-endif()
-
-if(BOARD_IOBC)
-    add_definitions(-DISIS_OBC_G20)
-    set(BOARD_PRINTOUT "iOBC")
-    if(BOOTLOADER)
-        add_definitions(-DISIS_BL)
-        set(AT91_MEMORY norflash)
+    if(BOARD_IOBC)
+        set(ISIS_OBC_G20 ON)
     else()
-        set(AT91_MEMORY sdram)
-        if(SAT_BUILD)
-            add_definitions(-DSAT_BUILD)
-        endif()
-    endif()
-else()
-    add_definitions(-DAT91SAM9G20_EK)
-    set(BOARD_PRINTOUT "AT91SAM9G20-EK")
-    if(BOOTLOADER)
-        add_definitions(-DBOOTLOADER)
-        if(USE_LTO)
-            set(AT91_USE_LINK_TIME_OPTIMIZATION ON)
-        endif()
-        set(AT91_ISOLATE_ERRONEOUS_PATHS OFF)
-        if(NOT BL_STAGE_TWO)
-            add_definitions(-DAT91_BL_ST1)
-
-            set(AT91_MEMORY sram)
-        else()
-            add_definitions(-DAT91_BL_ST2)
-            set(AT91_MEMORY sdram)
-        endif()
-    else()
-        set(AT91_MEMORY sdram)
+        set(AT91SAM9G20_EK ON)
     endif()
 endif()
 
-# Perform steps like loading toolchain files where applicable.
+# Required for ACS controller
+set(FSFW_ADD_COORDINATES ON)
+set(FSFW_ADD_SGP4_PROPAGATOR ON)
 
 # Project Name
 if(BOOTLOADER)
@@ -119,7 +52,14 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Set names and variables
-set(TARGET_NAME ${CMAKE_PROJECT_NAME}) 
+set(TARGET_NAME ${CMAKE_PROJECT_NAME})
+
+if(FSFW_CUSTOM_UNITTEST_RUNNER OR FSFW_ADD_UNITTESTS)
+    set(CATCH2_TARGET Catch2)
+else()
+    set(CATCH2_TARGET Catch2WithMain)
+endif()
+
 set(LIB_FSFW_NAME fsfw)
 set(LIB_ETL_NAME etl)
 set(LIB_OS_NAME freertos)
@@ -130,25 +70,28 @@ set(LIB_PRIVAT_LIB_NAME privlib)
 set(FSFW_PATH fsfw)
 set(MISSION_PATH mission)
 set(TEST_PATH test)
-set(ETL_PATH etl)
+set(ETL_PATH thirdparty/etl)
+set(CATCH2_PATH thirdparty/Catch2)
 set(SAM9G20_PATH bsp_sam9g20)
 set(HOST_BSP_PATH bsp_hosted)
 set(BOOTLOADER_PATH bootloader)
 set(COMMON_PATH common)
+set(UNITTEST_PATH unittest)
 
 set(LIB_FREERTOS_PATH ${LIB_OS_NAME})
 set(LIB_AT91_PATH ${LIB_AT91_NAME})
 set(LIB_PRIVLIB_PATH ${LIB_PRIVAT_LIB_NAME})
 
-if(OS_FSFW MATCHES "host" OR OS_FSFW MATCHES "linux")
+if(FSFW_OSAL MATCHES "host" OR FSFW_OSAL MATCHES "linux")
     set(BSP_PATH ${HOST_BSP_PATH})
-elseif(OS_FSFW MATCHES "freertos")
+elseif(FSFW_OSAL MATCHES "freertos")
     set(BSP_PATH ${SAM9G20_PATH})
 endif()
 
 # Analyse different OS and architecture/target options, determine BSP_PATH,
 # display information about compiler etc.
 set(COMMON_AT91_CONFIG_PATH "${CMAKE_SOURCE_DIR}/${SAM9G20_PATH}/common/config")
+set(FSFW_HAL_ADDITIONAL_INC_PATHS ${COMMON_AT91_CONFIG_PATH})
 
 if(NOT HOST_BUILD)
     if(BOOTLOADER)
@@ -157,8 +100,9 @@ if(NOT HOST_BUILD)
     else()
         set(FSFW_CONFIG_PATH "${BSP_PATH}/fsfwconfig")
     endif()
+
     set(FSFW_CONFIG_PATH_FULL "${CMAKE_SOURCE_DIR}/${FSFW_CONFIG_PATH}")
-    
+
     set(FSFW_ADDITIONAL_LINK_LIBS ${LIB_AT91_NAME})
     if(BOOTLOADER)
         set(BOARD_CONFIG_PATH "${CMAKE_SOURCE_DIR}/${BOOTLOADER_PATH}/config")
@@ -193,6 +137,7 @@ if(NOT HOST_BUILD)
         ${COMMON_AT91_CONFIG_PATH}
         ${FREERTOS_PORT_MACRO_PATH}
         ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_BINARY_DIR}
         ${BOARD_CONFIG_PATH}
     )
 
@@ -204,16 +149,22 @@ if(NOT HOST_BUILD)
             set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/${BOOTLOADER_PATH}/norflash.lds)
         else()
             if(BL_STAGE_TWO)
+                set(BOOTLOADER_SECOND_STAGE ON)
                 set(LINKER_SCRIPT 
                     ${CMAKE_CURRENT_SOURCE_DIR}/${BOOTLOADER_PATH}/sdram_second_stage_bl.lds
                 )
             else()
+                set(BOOTLOADER_FIRST_STAGE ON)
                 set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/${BOOTLOADER_PATH}/sram.lds)
             endif()
         endif()
     endif()
 else()
-    set(FSFW_CONFIG_PATH "${BSP_PATH}/fsfwconfig")
+    if(BUILD_UNITTEST)
+        set(FSFW_CONFIG_PATH "${UNITTEST_PATH}/testcfg")
+    else()
+        set(FSFW_CONFIG_PATH "${BSP_PATH}/fsfwconfig")
+    endif()
 endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -233,6 +184,21 @@ elseif(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
     add_compile_definitions(NOMINMAX)
 endif()
 
+set(FSFW_ADDITIONAL_INC_PATHS
+    ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+if(NOT BOOTLOADER)
+    configure_file("${FSFW_CONFIG_PATH}/OBSWConfig.h.in" OBSWConfig.h)
+    configure_file("${FSFW_CONFIG_PATH}/FSFWConfig.h.in" FSFWConfig.h)
+    configure_file("${COMMON_PATH}/commonConfig.h.in" commonConfig.h)
+    if(BUILD_UNITTEST)
+        configure_file("${FSFW_CONFIG_PATH}/TestConfig.h.in" TestConfig.h)
+    endif()
+else()
+    configure_file("${BOOTLOADER_PATH}/config/bootloaderConfig.h.in" bootloaderConfig.h)
+endif()
+
 set(LINK_HCC ON)
 set(LINK_HAL ON)
 
@@ -244,7 +210,9 @@ set(LINK_HAL ON)
 add_executable(${TARGET_NAME})
 
 # Add subdirectories
-add_subdirectory(${BSP_PATH})
+if(NOT BUILD_UNITTEST)
+    add_subdirectory(${BSP_PATH})
+endif()
 
 if(NOT HOST_BUILD)
     if(NOT BOOTLOADER)
@@ -261,12 +229,16 @@ if(BOOTLOADER)
 else()
     add_subdirectory(${MISSION_PATH})
     add_subdirectory(${TEST_PATH})
-    # add_subdirectory(${FSFW_CONFIG_PATH})
     add_subdirectory(${FSFW_PATH})
     add_subdirectory(${COMMON_PATH})
     if(ADD_ETL_LIB)
         add_subdirectory(${ETL_PATH})
     endif()
+endif()
+
+if(BUILD_UNITTEST)
+    add_subdirectory(${CATCH2_PATH})
+    add_subdirectory(${UNITTEST_PATH})
 endif()
 
 ################################################################################
@@ -327,10 +299,16 @@ if(NOT HOST_BUILD)
     endif()
 endif()
     
+if(BUILD_UNITTEST)
+    target_link_libraries(${TARGET_NAME} PRIVATE
+        ${CATCH2_TARGET}
+    )
+endif()
+
 # Add include paths for all sources.
 target_include_directories(${TARGET_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${FSFW_CONFIG_PATH}
+    ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 # Compile options for all sources.
@@ -378,6 +356,7 @@ if(NOT HOST_BUILD)
             if(BL_STAGE_TWO)
                 set(TYPE_PRINTOUT "${TYPE_PRINTOUT} (second stage)")
             else()
+
                 set(TYPE_PRINTOUT "${TYPE_PRINTOUT} (first stage)")
             endif()
         endif()
@@ -405,10 +384,17 @@ if(NOT HOST_BUILD)
         )
     endif()
 else()
-    set(TARGET_STRING "Hosted")
-    set_target_properties(${TARGET_NAME} PROPERTIES
-        OUTPUT_NAME "${TARGET_NAME}-host-${BUILD_TYPE_STR}"
-    )
+    if(BUILD_UNITTEST)
+        set(TARGET_STRING "unittest")
+        set_target_properties(${TARGET_NAME} PROPERTIES
+            OUTPUT_NAME "${TARGET_NAME}-unittest-${BUILD_TYPE_STR}"
+        )
+    else()
+        set(TARGET_STRING "Hosted")
+        set_target_properties(${TARGET_NAME} PROPERTIES
+            OUTPUT_NAME "${TARGET_NAME}-host-${BUILD_TYPE_STR}"
+        )
+    endif()
 endif()
 
 get_target_property(OUTPUT_NAME_VAR ${TARGET_NAME} OUTPUT_NAME)
@@ -421,7 +407,7 @@ endif()
 
 string(CONCAT POST_BUILD_COMMENT
     "Build directory: ${CMAKE_BINARY_DIR}\n"
-    "Target OSAL: ${OS_FSFW}\n"
+    "Target OSAL: ${FSFW_OSAL}\n"
     "Target Build Type: ${CMAKE_BUILD_TYPE}\n"
     "Target Build: ${TARGET_STRING}"
 )
@@ -444,8 +430,3 @@ endif()
 
 include (${CMAKE_SCRIPT_PATH}/BuildType.cmake)
 set_build_type()
-
-
-
-
-

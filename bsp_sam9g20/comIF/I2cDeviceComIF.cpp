@@ -2,7 +2,7 @@
 #include <devices/logicalAddresses.h>
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
-#include <fsfw/osal/FreeRTOS/TaskManagement.h>
+#include <fsfw/osal/freertos/TaskManagement.h>
 
 extern "C" {
 #include <at91/utility/trace.h>
@@ -13,18 +13,18 @@ extern "C" {
 
 I2cDeviceComIF::I2cDeviceComIF(object_id_t objectId): SystemObject(objectId),
 		i2cCookie(nullptr) {
+    setTrace(3);
+    int startResult = I2C_start(I2C_BUS_SPEED_HZ, I2C_TRANSFER_TIMEOUT);
+    setTrace(5);
+    if(startResult != RETURN_OK) {
+        sif::printError("I2cDeviceComIF::I2cDeviceComIF: "
+                "I2C_start call failed with code %d\n", startResult);
+        initResult = handleI2cInitError(static_cast<I2cInitResult>(startResult));
+    }
 }
 
 ReturnValue_t I2cDeviceComIF::initialize() {
-	setTrace(3);
-	int startResult = I2C_start(I2C_BUS_SPEED_HZ, I2C_TRANSFER_TIMEOUT);
-	setTrace(5);
-	if(startResult != RETURN_OK) {
-		ReturnValue_t result = handleI2cInitError(
-		        static_cast<I2cInitResult>(startResult));
-		return result;
-	}
-	return RETURN_OK;
+    return RETURN_OK;
 }
 
 I2cDeviceComIF::~I2cDeviceComIF() {}
@@ -69,6 +69,7 @@ ReturnValue_t I2cDeviceComIF::checkAddress(address_t address) {
 	case(addresses::I2C_ARDUINO_2):
 	case(addresses::I2C_ARDUINO_3):
 	case(addresses::I2C_ARDUINO_4):
+	case(addresses::PVCH_PCA9554):
 		return RETURN_OK;
 	default:
 		return I2C_INVALID_ADDRESS;
@@ -101,7 +102,10 @@ ReturnValue_t I2cDeviceComIF::sendMessage(CookieIF *cookie,
 	I2CgenericTransfer& i2cTransfer = i2cCookie->getI2cGenericTransferStructHandle();
 	if(i2cCookie->getI2cComType() == I2cCommunicationType::CONSECUTIVE_WRITE_READ) {
 		// This function prepares the generic i2cTransfer structure
-		prepareI2cConsecutiveTransfer(i2cTransfer, sendData, sendLen);
+		ReturnValue_t result = prepareI2cConsecutiveTransfer(i2cTransfer, sendData, sendLen);
+		if(result != HasReturnvaluesIF::RETURN_OK) {
+		    return result;
+		}
 	}
 	else {
 		prepareI2cWriteTransfer(i2cTransfer, sendData, sendLen);
@@ -133,7 +137,40 @@ ReturnValue_t I2cDeviceComIF::sendMessage(CookieIF *cookie,
 }
 
 ReturnValue_t I2cDeviceComIF::getSendSuccess(CookieIF *cookie) {
-	// Transfer status is checked in requestReceiveMessage. Less overhead.
+    i2cCookie = dynamic_cast<I2cCookie*>(cookie);
+    if(i2cCookie == nullptr) {
+        return HasReturnvaluesIF::RETURN_FAILED;
+    }
+    // check transfer status.
+    I2CtransferStatus transferStatus = i2cCookie->getI2cTransferStatusHandle();
+    switch(transferStatus) {
+    case(I2CtransferStatus::done_i2c): {
+        return RETURN_OK;
+    }
+    case(I2CtransferStatus::pending_i2c): {
+        return I2C_TRANSFER_PENDING;
+    }
+    case(I2CtransferStatus::readError_i2c):
+        return I2C_READ_ERROR;
+    case(I2CtransferStatus::writeError_i2c):
+        return I2C_WRITE_ERROR;
+    case(I2CtransferStatus::error_i2c):
+        return I2C_TRANSFER_GENERAL_ERROR;
+    case(I2CtransferStatus::timeoutError_i2c):
+        return I2C_TRANSFER_TIMEOUT_ERROR;
+    // This should never happen for separate read/write calls.
+    case(I2CtransferStatus::writeDoneReadStarted_i2c):
+    case(I2CtransferStatus::writeDone_i2c):
+    default:
+#if FSFW_CPP_OSTREAM_ENABLED == 1
+        sif::error << "I2CDeviceComIF: Configuration error reading message with "
+                "error code "  << transferStatus << std::endl;
+#else
+        sif::printError("I2CDeviceComIF: Configuration error reading message with "
+                "error code %d\n", transferStatus);
+#endif
+        return PROTOCOL_ERROR;
+    }
 	return RETURN_OK;
 }
 
@@ -147,8 +184,8 @@ ReturnValue_t I2cDeviceComIF::requestReceiveMessage(CookieIF *cookie,
 
 	i2cCookie->setReceiveDataSize(requestLen);
 
-	if(requestLen == 0 or i2cCookie->getI2cComType() ==
-			I2cCommunicationType::CONSECUTIVE_WRITE_READ)
+	if((requestLen == 0) or
+	        (i2cCookie->getI2cComType() == I2cCommunicationType::CONSECUTIVE_WRITE_READ))
 	{
 		return RETURN_OK;
 	}
@@ -159,9 +196,9 @@ ReturnValue_t I2cDeviceComIF::requestReceiveMessage(CookieIF *cookie,
 	case(I2CtransferStatus::done_i2c): {
 		return requestReply(i2cCookie, requestLen);
 	}
-
-	case(I2CtransferStatus::pending_i2c):
-		return RETURN_OK;
+	case(I2CtransferStatus::pending_i2c): {
+        return I2C_TRANSFER_PENDING;
+	}
 	case(I2CtransferStatus::readError_i2c):
 		return I2C_READ_ERROR;
 	case(I2CtransferStatus::writeError_i2c):
@@ -189,16 +226,13 @@ ReturnValue_t I2cDeviceComIF::requestReceiveMessage(CookieIF *cookie,
 ReturnValue_t I2cDeviceComIF::requestReply(I2cCookie * i2cCookie,
 		size_t requestLen) {
 	address_t slaveAddress = i2cCookie->getAddress();
-	I2CgenericTransfer & i2cTransfer =
-			i2cCookie->getI2cGenericTransferStructHandle();
-	ReturnValue_t result =
-			prepareI2cReadTransfer(slaveAddress, i2cTransfer, requestLen);
+	I2CgenericTransfer & i2cTransfer = i2cCookie->getI2cGenericTransferStructHandle();
+	ReturnValue_t result = prepareI2cReadTransfer(slaveAddress, i2cTransfer, requestLen);
 	if(result != RETURN_OK) {
 		return result;
 	}
 	// Take the semaphore, should have been released by the callback.
-	result = i2cCookie->getSemaphoreObjectHandle().acquire(
-	        SemaphoreIF::TimeoutType::WAITING, 10);
+	result = i2cCookie->getSemaphoreObjectHandle().acquire(SemaphoreIF::TimeoutType::WAITING, 10);
 	if(result == SemaphoreIF::SEMAPHORE_TIMEOUT) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::warning << "I2cDeviceComIF::requestReply: Possible configuration"
@@ -286,7 +320,7 @@ ReturnValue_t I2cDeviceComIF::assignReply(I2cCookie * i2cCookie,
 	return result;
 }
 
-void I2cDeviceComIF::prepareI2cConsecutiveTransfer(I2CgenericTransfer& transferStruct,
+ReturnValue_t I2cDeviceComIF::prepareI2cConsecutiveTransfer(I2CgenericTransfer& transferStruct,
 		const uint8_t * writeData, uint32_t writeLen) {
 	// somewhere here, we prepare and initiate a queue transfer
 	address_t slaveAddress = i2cCookie->getAddress();
@@ -295,11 +329,13 @@ void I2cDeviceComIF::prepareI2cConsecutiveTransfer(I2CgenericTransfer& transferS
 	transferStruct.writeData = const_cast<uint8_t *>(writeData);
 	transferStruct.writeSize = writeLen;
 	transferStruct.writeReadDelay = i2cCookie->getWriteReadDelay();
-	// read size is set by device handler beforehand !
-	i2cVectorMap[slaveAddress].reserve(32);
+	// read size is set by device handler beforehand!
 	transferStruct.readData = i2cVectorMap[slaveAddress].data();
+    if(transferStruct.readSize > i2cVectorMap[slaveAddress].size()) {
+        return I2C_RX_BUFFER_TOO_SMALL;
+    }
 	transferStruct.readSize = i2cCookie->getReceiveDataSize();
-
+	return HasReturnvaluesIF::RETURN_OK;
 }
 
 void I2cDeviceComIF::prepareI2cWriteTransfer(I2CgenericTransfer& transferStruct,
@@ -318,6 +354,9 @@ ReturnValue_t I2cDeviceComIF::prepareI2cReadTransfer(address_t slaveAddress,
 	vectorBufferIter iter = i2cVectorMap.find(slaveAddress);
 	if(iter == i2cVectorMap.end()) {
 		return I2C_ADDRESS_NOT_IN_RECEIVE_MAP;
+	}
+	if(transferStruct.readSize > i2cVectorMap[slaveAddress].size()) {
+	    return I2C_RX_BUFFER_TOO_SMALL;
 	}
 	// The read buffer and size needs to be set by the device handler beforehand !
 	transferStruct.readData = i2cVectorMap[slaveAddress].data();

@@ -45,6 +45,15 @@ int fram_write_software_version(uint8_t software_version, uint8_t software_subve
 int fram_read_software_version(uint8_t *software_version, uint8_t* software_subversion,
         uint8_t* sw_subsubversion);
 
+int fram_increment_reboot_counter(uint32_t* new_reboot_counter);
+
+int fram_is_deployment_timer_armed(bool *armed);
+int fram_arm_deployment_timer(bool arm);
+
+int fram_get_seconds_on_deployment_timer(uint32_t* seconds);
+int fram_set_seconds_on_deployment_timer(uint32_t seconds);
+int fram_increment_seconds_on_deployment_timer(uint32_t incrementSeconds);
+
 #ifdef __cplusplus
 }
 #endif

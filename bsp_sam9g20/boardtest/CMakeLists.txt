@@ -8,4 +8,5 @@ target_sources(${TARGET_NAME} PRIVATE
     TwiTestTask.cpp
     UART0TestTask.cpp
     UART2TestTask.cpp
+    PVCHTestTask.cpp
 )

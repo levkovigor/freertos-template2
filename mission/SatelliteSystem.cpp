@@ -15,7 +15,7 @@ ReturnValue_t SatelliteSystem::initialize() {
     if (result != HasReturnvaluesIF::RETURN_OK) {
         return result;
     }
-    EventManagerIF* eventManager = objectManager->get<EventManagerIF>(
+    EventManagerIF* eventManager = ObjectManager::instance()->get<EventManagerIF>(
             objects::EVENT_MANAGER);
     if (eventManager == nullptr) {
         return HasReturnvaluesIF::RETURN_FAILED;

@@ -8,8 +8,11 @@
 	path = fsfw
 	url = https://egit.irs.uni-stuttgart.de/KSat/fsfw.git
 [submodule "etl"]
-	path = etl
+	path = thirdparty/etl
 	url = https://github.com/ETLCPP/etl.git
-[submodule "generators/generatore_core"]
-	path = generators/modegen
-	url = https://git.ksat-stuttgart.de/source/generatore_core.git
+[submodule "generators/fsfwgen"]
+	path = generators/fsfwgen
+	url = https://egit.irs.uni-stuttgart.de/fsfw/fsfw-generators.git
+[submodule "thirdparty/Catch2"]
+	path = thirdparty/Catch2
+	url = https://github.com/catchorg/Catch2.git

@@ -1,9 +1,10 @@
 #include "Service23FileManagement.h"
 
+#include "fsfw/serialize/SerializeAdapter.h"
 #include <fsfw/serviceinterface/ServiceInterface.h>
-#include <fsfw/tmtcpacket/pus/TmPacketStoredPusA.h>
 #include <fsfw/memory/HasFileSystemIF.h>
 #include <fsfw/action/ActionMessage.h>
+#include <fsfw/objectmanager/ObjectManager.h>
 #include <objects/systemObjectList.h>
 #include <mission/memory/FileSystemMessage.h>
 
@@ -56,7 +57,7 @@ ReturnValue_t Service23FileManagement::checkInterfaceAndAcquireMessageQueue(
         MessageQueueId_t* messageQueueToSet, object_id_t* objectId) {
 	// check hasActionIF property of target
 	HasFileSystemIF* possibleTarget =
-	        objectManager->get<HasFileSystemIF>(*objectId);
+	        ObjectManager::instance()->get<HasFileSystemIF>(*objectId);
 	if(possibleTarget == nullptr){
 	    return CommandingServiceBase::INVALID_OBJECT;
 
@@ -121,7 +122,7 @@ ReturnValue_t Service23FileManagement::prepareCommand(CommandMessage* message,
 		break;
 	}
 	case(Subservice::DELETE_DIRECTORY): {
-	    FileSystemMessage::setDeleteDirectoryCommand(message, storeId);
+	    FileSystemMessage::setDeleteDirectoryCommand(message, storeId, false);
 		break;
 	}
 	case(Subservice::FINISH_APPEND_TO_FILE): {

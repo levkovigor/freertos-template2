@@ -1,18 +1,21 @@
+#include "AtmelTestTask.h"
+
 #include <fsfw/storagemanager/PoolManager.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Stopwatch.h>
 
-#include <bsp_sam9g20/boardtest/AtmelTestTask.h>
+#include <bsp_sam9g20/boardtest/PVCHTestTask.h>
 #include <bsp_sam9g20/comIF/GpioDeviceComIF.h>
 #include <bsp_sam9g20/common/SRAMApi.h>
 #include <bsp_sam9g20/memory/HCCFileGuard.h>
 #include <bsp_sam9g20/memory/SDCardAccess.h>
 #include <bsp_sam9g20/memory/SDCardHandler.h>
+#include <mission/devices/PCVHHandler.h>
 
 extern "C" {
-#if defined(AT91SAM9G20_EK)
+#ifdef AT91SAM9G20_EK
 #include <led_ek.h>
 #endif
 
@@ -29,17 +32,11 @@ extern "C" {
 #include <bsp_sam9g20/common/fram/FRAMApi.h>
 #include <hal/supervisor.h>
 #endif
-
-//#include <memories/sdmmc/MEDSdcard.h>
-//#include <bsp_sam9g20/at91/tinyfatfs/include/tinyfatfs/tff.h>
-//#include <peripherals/pio/pio.h>
-//#include <utility/trace.h>
-
 }
 
 #include <cstring>
 
-//Media medias[1];
+
 
 AtmelTestTask::AtmelTestTask(object_id_t object_id): TestTask(object_id) {
     countdown.setTimeout(3000);
@@ -47,37 +44,22 @@ AtmelTestTask::AtmelTestTask(object_id_t object_id): TestTask(object_id) {
 
 AtmelTestTask::~AtmelTestTask() {}
 
+ReturnValue_t AtmelTestTask::performOneShotAction() {
+#ifdef ISIS_OBC_G20
+    performIOBCTest();
+#endif
+
+    return TestTask::performOneShotAction();
+}
+
 ReturnValue_t AtmelTestTask::performPeriodicAction() {
     //performDataSetTesting(testMode);
     // This leads to a crash!
     //performExceptionTest();
 #ifdef ISIS_OBC_G20
 #endif
-
     //sif::info << "Hello, I am alive!" << std::endl;
     return TestTask::performPeriodicAction();
-}
-
-
-ReturnValue_t AtmelTestTask::performOneShotAction() {
-    //Stopwatch stopwatch;
-    //performSDCardDemo();
-    //printFilesTest();
-    //moveFileTest();
-    //int32_t test = get_sram0_status_field();
-    //TRACE_INFO("SRAM status field: %d\n\r", (int) test);
-//    uint8_t read_buf[128];
-//    int retval = FRAM_read(read_buf, FRAM_END_ADDR - 64, 64);
-//    if(retval != 0) {
-//        sif::printWarning("FRAM read failed with %d\n", retval);
-//    }
-//    arrayprinter::print(read_buf, 64);
-
-#ifdef ISIS_OBC_G20
-    performIOBCTest();
-#endif
-    //performHammingTest();
-    return TestTask::performOneShotAction();
 }
 
 ReturnValue_t AtmelTestTask::performActionA() {
@@ -92,41 +74,6 @@ void AtmelTestTask::performExceptionTest() {
     AtmelTestTask* exceptTest = nullptr;
     exceptTest->getObjectId();
 }
-
-
-//void AtmelTestTask::performNewPoolManagerAccessTests() {
-//	uint16_t numberOfElements[1] = {1};
-//	uint16_t sizeofElements[1] = {10};
-//	PoolManager<1> testPool = PoolManager<1>(0, sizeofElements, numberOfElements);
-//	std::array<uint8_t, 20> testDataArray;
-//	std::array<uint8_t, 20> receptionArray;
-//	store_address_t testStoreId;
-//	ReturnValue_t result = HasReturnvaluesIF::RETURN_FAILED;
-//
-//	for(size_t i = 0; i < testDataArray.size(); i++) {
-//		testDataArray[i] = i;
-//	}
-//	size_t size = 10;
-//
-//	result = testPool.addData(&testStoreId, testDataArray.data(), size);
-//	if(result != RETURN_OK) {
-//		sif::error << "Error when adding data" << std::endl;
-//	}
-//
-//	auto accessorPair = testPool.modifyData(testStoreId);
-//	if(accessorPair.first != RETURN_OK) {
-//		sif::error << "Error when modifying data" << std::endl;
-//	}
-//	accessorPair.second.print();
-//	accessorPair.second.getDataCopy(receptionArray.data(), receptionArray.size());
-//	accessorPair.second.release();
-//
-//	auto constAccess = testPool.getData(testStoreId);
-//	if(constAccess.first != RETURN_OK) {
-//		sif::error << "Error when modifying data" << std::endl;
-//	}
-//	accessorPair.second.print();
-//}
 
 void AtmelTestTask::performSDCardDemo() {
     /* Demo for SD Card 0, SD card slot J35 at at91sam9g20-ek */
@@ -548,82 +495,3 @@ void AtmelTestTask::moveFileTest() {
     if(result) {}
     SDCardHandler::printSdCard();
 }
-
-// name-clash with HCC lib.
-//void AtmelTestTask::tinyfatFsTest(void) {
-//    FATFS fs;
-//    FIL fileObject;
-//
-//#ifdef ISIS_OBC_G20
-//    uint8_t sdCard = 0;
-//    Pin sdSelectPin[1] = {PIN_SDSEL};
-//    PIO_Configure(sdSelectPin, PIO_LISTSIZE(sdSelectPin));
-//    bool high = PIO_Get(sdSelectPin);
-//    if(high) {
-//        PIO_Clear(sdSelectPin);
-//    }
-//    else {
-//        PIO_Set(sdSelectPin);
-//    }
-//    if(sdCard == 0) {
-//        PIO_Set(sdSelectPin);
-//    }
-//    else {
-//        PIO_Clear(sdSelectPin);
-//    }
-//
-//
-//    Pin npWrPins[2] = {PIN_NPWR_SD0, PIN_NPWR_SD1};
-//    PIO_Configure(npWrPins, PIO_LISTSIZE(npWrPins));
-//    if(sdCard == 0) {
-//        PIO_Clear(npWrPins);
-//    }
-//    if(sdCard == 1) {
-//        PIO_Clear(npWrPins + 1);
-//    }
-
-//    Pin pinsMci1Off[2] = {PINS_MCI1_OFF};
-//    PIO_Configure(pinsMci1Off, PIO_LISTSIZE(pinsMci1Off));
-//    PIO_Set(pinsMci1Off);
-//    PIO_Set(pinsMci1Off +  1);
-
-//#endif
-//
-//    const int ID_DRV = 0;
-//    MEDSdcard_Initialize(&medias[ID_DRV], 0);
-//
-//    memset(&fs, 0, sizeof(FATFS));  // Clear file system object
-//    int res = f_mount(0, &fs);
-//    if( res != FR_OK ) {
-//        printf("f_mount pb: 0x%X\n\r", res);
-//    }
-
-//    char file_name [strlen(config::SW_REPOSITORY) + strlen(config::SW_UPDATE_SLOT_NAME) + 2];
-//    snprintf(file_name, sizeof (file_name) + 1, "/%s/%s", config::SW_REPOSITORY,
-//            config::SW_UPDATE_SLOT_NAME);
-
-//#ifdef ISIS_OBC_G20
-//    PIO_Set(npWrPins);
-//    for(int idx = 0; idx < 100000; idx++) {};
-//    PIO_Clear(npWrPins);
-//#endif
-
-//    res = f_open(&fileObject, "test.bin", FA_OPEN_EXISTING|FA_READ);
-//    if( res != FR_OK ) {
-//        TRACE_ERROR("f_open read pb: 0x%X\n\r", res);
-//    }
-
-//    res = f_open(&fileObject, file_name, FA_OPEN_EXISTING|FA_READ);
-//    if( res != FR_OK ) {
-//        TRACE_ERROR("f_open read pb: 0x%X\n\r", res);
-//    }
-
-//    size_t bytes_read = 0;
-//    uint8_t* alotofMemory= new uint8_t[200000];
-//    res = f_read(&fileObject, (void*) alotofMemory, 3, &bytes_read);
-//    if(res != FR_OK) {
-//        TRACE_ERROR("f_read pb: 0x%X\n\r", res);
-//    }
-
-//    delete(alotofMemory);
-//}

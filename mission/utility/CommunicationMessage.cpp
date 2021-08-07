@@ -197,7 +197,7 @@ void CommunicationMessage::clearCommunicationMessage() {
 	case(messageType::REPLY_DATA_IPC_STORE):
 	case(messageType::SEND_DATA_FROM_IPC_STORE): {
 		store_address_t storeId = getStoreId();
-		StorageManagerIF *ipcStore = objectManager->
+		StorageManagerIF *ipcStore = ObjectManager::instance()->
 				get<StorageManagerIF>(objects::IPC_STORE);
 		if (ipcStore != NULL) {
 			ipcStore->deleteData(storeId);

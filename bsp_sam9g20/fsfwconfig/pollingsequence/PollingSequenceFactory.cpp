@@ -46,15 +46,15 @@ ReturnValue_t pst::pollingSequenceInitDefault(
 	thisSequence->addSlot(objects::GPS1_HANDLER,
 			length * 0.85,  DeviceHandlerIF::GET_READ);
 
-    thisSequence->addSlot(objects::DUMMY_HANDLER,
+    thisSequence->addSlot(objects::DUMMY_HANDLER_0,
             length * 0, DeviceHandlerIF::PERFORM_OPERATION);
-    thisSequence->addSlot(objects::DUMMY_HANDLER,
+    thisSequence->addSlot(objects::DUMMY_HANDLER_0,
             length * 0.4,  DeviceHandlerIF::SEND_WRITE);
-    thisSequence->addSlot(objects::DUMMY_HANDLER,
+    thisSequence->addSlot(objects::DUMMY_HANDLER_0,
             length * 0.55, DeviceHandlerIF::GET_WRITE);
-    thisSequence->addSlot(objects::DUMMY_HANDLER,
+    thisSequence->addSlot(objects::DUMMY_HANDLER_0,
             length * 0.7,  DeviceHandlerIF::SEND_READ);
-    thisSequence->addSlot(objects::DUMMY_HANDLER,
+    thisSequence->addSlot(objects::DUMMY_HANDLER_0,
             length * 0.85, DeviceHandlerIF::GET_READ);
 
 	if (thisSequence->checkSequence() == HasReturnvaluesIF::RETURN_OK) {

@@ -1,6 +1,6 @@
 #include "SDCardAccess.h"
 #include "SDCAccessManager.h"
-#include <OBSWConfig.h>
+#include "OBSWConfig.h"
 
 #include <fsfw/ipc/MutexFactory.h>
 #include <fsfw/ipc/MutexGuard.h>

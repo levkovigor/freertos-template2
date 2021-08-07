@@ -1,16 +1,15 @@
 #include "FRAMHandler.h"
+#include "OBSWVersion.h"
+
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/timemanager/Stopwatch.h>
 
 #ifdef ISIS_OBC_G20
-#include <hal/Storage/FRAM.h>
+#include "hal/Storage/FRAM.h"
 #else
-#include <bsp_sam9g20/common/fram/VirtualFRAMApi.h>
-#include <bsp_sam9g20/memory/SDCardAccess.h>
+#include "bsp_sam9g20/common/fram/VirtualFRAMApi.h"
+#include "bsp_sam9g20/memory/SDCardAccess.h"
 #endif
-
-
-#include <OBSWVersion.h>
 
 std::array<uint8_t, sizeof(CriticalDataBlock)> FRAMHandler::criticalBlock;
 

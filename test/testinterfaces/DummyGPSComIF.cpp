@@ -1,13 +1,14 @@
 #include "DummyGPSComIF.h"
+#include "objects/systemObjectList.h"
+#include "devices/logicalAddresses.h"
+#include "tmtc/apid.h"
+#include "tmtc/pusIds.h"
 
 #include <fsfw/serialize/SerializeAdapter.h>
+#include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/tmtcservices/CommandingServiceBase.h>
-#include <fsfw/tmtcpacket/pus/TmPacketStoredPusA.h>
 #include <fsfw/ipc/QueueFactory.h>
-#include <devices/logicalAddresses.h>
-#include <tmtc/apid.h>
-#include <tmtc/pusIds.h>
 
 #include <cstring>
 
@@ -17,7 +18,7 @@ gpsReplyBufferSize(0), gpsReplyRingBuffer(1024,true),gpsDataBufferSize(0),
 gpsReplyCounter(0), packetSubCounter(0)
 {
     tmQueue = QueueFactory::instance()->createMessageQueue();
-    funnel = objectManager->get<AcceptsTelemetryIF>(objects::TM_FUNNEL);
+    funnel = ObjectManager::instance()->get<AcceptsTelemetryIF>(objects::TM_FUNNEL);
     tmQueue->setDefaultDestination(funnel->getReportReceptionQueue());
 }
 
@@ -145,7 +146,7 @@ ReturnValue_t DummyGPSComIF::readReceivedMessage(CookieIF *cookie,
 
 void DummyGPSComIF::generateGpsPacket(CookieIF * cookie, uint8_t ** gpsPacket,
         size_t * packetSize) {
-    TestCookie * dummyCookie = dynamic_cast<TestCookie*>(cookie);
+    DummyCookie * dummyCookie = dynamic_cast<DummyCookie*>(cookie);
     if(dummyCookie == nullptr) {
         return;
     }

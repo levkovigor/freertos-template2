@@ -1,10 +1,3 @@
-/*
- * UART2TestTask.h
- *
- *  Created on: 20.10.2019
- *      Author: jakob
- */
-
 #ifndef _UART2TESTTASK_H_
 #define _UART2TESTTASK_H_
 
@@ -13,7 +6,7 @@
 #include <fsfw/objectmanager/SystemObjectIF.h>
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
-#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
+#include <fsfw/osal/freertos/BinarySemaphore.h>
 #include <objects/systemObjectList.h>
 
 extern "C" {
@@ -41,6 +34,7 @@ private:
 
 	void performReadSendTest();
 	void performSendTest();
+	void performSendRecvTest();
 
 	void performNonBlockingOperation();
 	void performNonBlockingWriteRead();
@@ -55,7 +49,8 @@ private:
 
 	enum UartMode: uint8_t {
 		SEND_TEST,
-		READ_SEND_TEST,
+		SEND_RECV_TEST,
+		READ_SEND_TEST_ISIS,
 		NON_BLOCKING
 	};
 

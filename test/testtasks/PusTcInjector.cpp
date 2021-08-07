@@ -1,12 +1,11 @@
 #include <test/testtasks/PusTcInjector.h>
 
-#include <fsfw/objectmanager/ObjectManagerIF.h>
+#include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/tmtcservices/AcceptsTelecommandsIF.h>
 #include <fsfw/tmtcservices/TmTcMessage.h>
-#include <fsfw/tmtcpacket/pus/TcPacketBase.h>
+#include <fsfw/tmtcpacket/pus/tc.h>
 #include <fsfw/ipc/QueueFactory.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
-#include <fsfw/tmtcpacket/pus/TcPacketStored.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 
 PusTcInjector::PusTcInjector(object_id_t objectId, object_id_t destination,
@@ -28,7 +27,7 @@ ReturnValue_t PusTcInjector::injectPusTelecommand(uint8_t service,
 		uint8_t subservice,uint16_t apid, const uint8_t* appData,
 		size_t appDataLen) {
 	// Prepare TC packet. Store into TC store immediately.
-	TcPacketStored tcPacket(apid, service, subservice, sequenceCount++);
+	TcPacketStoredPus tcPacket(apid, service, subservice, sequenceCount++);
 
 	const uint8_t* packetPtr = nullptr;
 	size_t packetSize = 0;
@@ -52,7 +51,7 @@ ReturnValue_t PusTcInjector::initialize() {
 	// Prepare message queue which is used to send telecommands.
 	injectionQueue = QueueFactory::instance()->
 			createMessageQueue(INJECTION_QUEUE_DEPTH);
-	AcceptsTelecommandsIF* targetQueue = objectManager->
+	AcceptsTelecommandsIF* targetQueue = ObjectManager::instance()->
 			get<AcceptsTelecommandsIF>(destination);
 	if(targetQueue == nullptr) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -67,7 +66,7 @@ ReturnValue_t PusTcInjector::initialize() {
 	}
 
 	// Prepare store used to store TC messages
-	tcStore = objectManager->get<StorageManagerIF>(tcStoreId);
+	tcStore = ObjectManager::instance()->get<StorageManagerIF>(tcStoreId);
 	if(tcStore == nullptr) {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "PusTcInjector: TC Store not initialized!" << std::endl;

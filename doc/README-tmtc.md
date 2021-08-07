@@ -53,7 +53,11 @@ only need to be set once.
    - Hamming code for bootloader
 8. Transfer the bootloader to the FRAM
 9. Dump the critical block and verify everything is set correctly. Check whether hamming codes
-   are set by checking size fields
+are set by checking size fields
+10. Arm the critical timer. This timer is used by the OBSW top determine when to burn the deployment
+mechanism and whether there is still a communication blackout.  This timer will count up seconds
+as long as  the OBSW is running. Please keep in mind the timer will increment as long as the
+OBSW is running!
 
 ### SD-Card
 
@@ -95,26 +99,28 @@ For the first example, the prefix will be shown in addition to the arguments (in
 
 ```sh
 python3 tmtc_client_cli.py -h
-``` 
+```
 
-You can also just run the `tmtc_client_cli.py` file directly.
+You can also just run the `tmtc_client_cli.py` file directly. Unless specifically specified,
+commands are sent using `-c ser_dle` and `-m seqcmd`. You don't have to specify these,
+`seqcmd` is the default mode and you can cache the user communication interface.
  
 ### Ping software
 
 A ping command uses the PUS test service (17)
 ```sh
--m seqcmd -s 17 -c ser_dle
+-s 17 -o 0
 ```
 
 Enable periodic printout, using PUS test service 17
 ```sh
--m seqcmd -s 17 -o 129 -c ser_dle
+-s 17 -o 129
 ```
 
 Disable periodic printout
 
 ```sh
--m seqcmd -s 17 -o 130 -c ser_dle
+-s 17 -o 130
 ```
 
 ### Core Management
@@ -124,34 +130,30 @@ or its supervisor.
 
 Software reset or supervisor reset
 ```sh
--m seqcmd -s Core -o a10 -c ser_dle
+-s core -o a10
 ```
 
 Supervisor power cycle
 ```sh
--m seqcmd -s Core -o a11 -c ser_dle
+-s core -o a11
 ```
 
 Print run time stats
 
 ```sh
--m seqcmd -s Core -o a0 -c ser_dle
+-s core -o a0
 ```
 
 Trigger a software exception which should lead to a restart
 
 ```sh
--m seqcmd -s 17 -o 150 -c ser_dle
+-s 17 -o 150
 ```
 
 ### Service tests
 
 Perform a service test which should work without connected hardware.
 Service tests were implemented for the services 2, 5, 8, 9, 17 and 200.
-
-```sh
--m seqcmd -s <serviceNumber> -c ser_dle
-```
 
 ## SD-Card and Image Handling
 
@@ -160,36 +162,36 @@ Service tests were implemented for the services 2, 5, 8, 9, 17 and 200.
 Print contents of active SD card
 
 ```sh
--m seqcmd -s sd -o a2 -c ser_dle
+-s sd -o a2
 ``` 
 
 Clear active SD card
 ```sh
--m seqcmd -s sd -o a20 -c ser_dle
+-s sd -o a20
 ``` 
 
 Format active SD card
 
 ```sh
--m seqcmd -s sd -o a21 -c ser_dle
+-s sd -o a21
 ```
 
 Generate generic folder structure, `-o c0a` for AT91, `-o c0i` for iOBC
 
 ```sh
--m seqcmd -s sd -o c0a -c ser_dle
+-s sd -o c0a
 ```
 
 Lock file on SD card. Locked files are read-only and can not be deleted.
 The all directories containing a locked file can not be deleted as well.
 ```sh
--m seqcmd -s sd -o 5 -c ser_dle
+-s sd -o 5
 ```
 
 Unlock file on SD card
 
 ```sh
--m seqcmd -s sd -o 6 -c ser_dle
+-s sd -o 6
 ```
 
 ###  Software Update Procedure
@@ -219,6 +221,5 @@ Copy bootloader image to boot memory. Use `a16a1` to copy the second-stage bootl
 -m seqcmd -s img -o a16a0 -c ser_dle
 ```
 
-Test whether binary was uploaded successfully: 
-Power cycle the OBC, either externally or via following commands
-shown above for core management.
+Test whether binary was uploaded successfully: Power cycle the OBC, either externally or via
+following commands shown above for core management.

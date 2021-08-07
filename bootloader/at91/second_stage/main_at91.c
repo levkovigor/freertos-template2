@@ -1,7 +1,7 @@
 #include "../common/at91_boot_from_nand.h"
-#include <bootloader/common/boot_sd.h>
-#include <bootloaderConfig.h>
-#include <bootloader/core/timer.h>
+#include "bootloader/common/boot_sd.h"
+#include "bootloaderConfig.h"
+#include "bootloader/core/timer.h"
 
 #include <bsp_sam9g20/common/SRAMApi.h>
 #include <bsp_sam9g20/common/fram/VirtualFRAMApi.h>
@@ -162,7 +162,7 @@ int perform_bootloader_core_operation() {
     LED_Set(0);
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-    TRACE_INFO("Jumping to SDRAM application address 0x%08x!\n\r",
+    TRACE_INFO("Jumping to SDRAM application address 0x%08x..\n\r",
             (unsigned int) SDRAM_DESTINATION);
 #endif
 

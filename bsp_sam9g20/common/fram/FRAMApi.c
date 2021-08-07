@@ -1,6 +1,6 @@
 #include "FRAMApi.h"
 #include "CommonFRAM.h"
-#include <hal/Storage/FRAM.h>
+#include "hal/Storage/FRAM.h"
 
 #include <string.h>
 
@@ -154,7 +154,7 @@ int fram_write_software_version(uint8_t software_version,
         uint8_t software_subversion, uint8_t sw_subsubversion) {
     uint8_t write_buffer[3] = {software_version, software_subversion, sw_subsubversion};
     return FRAM_writeAndVerify((unsigned char*) write_buffer,
-            SOFTWARE_VERSION_ADDR, sizeof(write_buffer));
+            FRAM_SOFTWARE_VERSION_ADDR, sizeof(write_buffer));
 }
 
 int fram_read_software_version(uint8_t *software_version,
@@ -165,7 +165,7 @@ int fram_read_software_version(uint8_t *software_version,
 
     uint8_t read_buffer[3];
     int result = FRAM_read((unsigned char*) read_buffer,
-            SOFTWARE_VERSION_ADDR, 3);
+            FRAM_SOFTWARE_VERSION_ADDR, 3);
     if(result != 0) {
         return result;
     }
@@ -629,4 +629,46 @@ int fram_read_bootloader_block_raw(uint8_t* buff, size_t max_size) {
 
 int fram_read_bootloader_block(BootloaderGroup* bl_info) {
     return FRAM_read((unsigned char*) bl_info, BL_GROUP_ADDR, sizeof(BootloaderGroup));
+}
+
+int fram_arm_deployment_timer(bool arm) {
+    uint8_t value_to_write = arm;
+    return FRAM_writeAndVerify((unsigned char*) &value_to_write, FRAM_DEPLOY_TIMER_ARMED_ADDR,
+            sizeof(uint8_t));
+}
+
+int fram_is_deployment_timer_armed(bool *armed) {
+    if(armed != NULL) {
+        return FRAM_read((unsigned char*) armed, FRAM_DEPLOY_TIMER_ARMED_ADDR, sizeof(uint8_t));
+    }
+    return -3;
+}
+
+int fram_get_seconds_on_deployment_timer(uint32_t* seconds) {
+    uint32_t seconds_local = 0;
+    int result = FRAM_read((unsigned char*) &seconds_local, FRAM_SECONDS_SINCE_TIMER_ARMED_ADDR,
+            sizeof(uint32_t));
+    if(result != 0) {
+        return result;
+    }
+
+    if(seconds != NULL) {
+        *seconds = seconds_local;
+    }
+    return 0;
+}
+
+int fram_increment_seconds_on_deployment_timer(uint32_t incrementSeconds) {
+    uint32_t newSecValue = 0;
+    int result = fram_get_seconds_on_deployment_timer(&newSecValue);
+    if(result != 0) {
+        return result;
+    }
+    newSecValue += incrementSeconds;
+    return fram_set_seconds_on_deployment_timer(newSecValue);
+}
+
+int fram_set_seconds_on_deployment_timer(uint32_t seconds) {
+    return FRAM_writeAndVerify((unsigned char*) &seconds, FRAM_SECONDS_SINCE_TIMER_ARMED_ADDR,
+            sizeof(uint32_t));
 }

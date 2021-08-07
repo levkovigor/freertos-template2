@@ -3,7 +3,7 @@
 
 #include <fsfw/container/SharedRingBuffer.h>
 #include <fsfw/objectmanager/SystemObject.h>
-#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
+#include <fsfw/osal/freertos/BinarySemaphore.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <OBSWConfig.h>
 #include <array>

@@ -1,10 +1,11 @@
 #include <bsp_sam9g20/tmtcbridge/TmTcSerialBridge.h>
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
+#include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/timemanager/Stopwatch.h>
-#include <fsfw/tmtcpacket/pus/TcPacketStored.h>
+#include <fsfw/tmtcpacket/pus/tc.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
 #include <fsfw/globalfunctions/DleEncoder.h>
 
@@ -22,8 +23,8 @@ TmTcSerialBridge::~TmTcSerialBridge() {
 }
 
 ReturnValue_t TmTcSerialBridge::initialize() {
-	SharedRingBuffer* ringBuffer =
-			objectManager->get<SharedRingBuffer>(sharedRingBufferId);
+	SharedRingBuffer* ringBuffer = ObjectManager::instance()->
+	        get<SharedRingBuffer>(sharedRingBufferId);
 	if(ringBuffer == nullptr) {
 		return HasReturnvaluesIF::RETURN_FAILED;
 	}

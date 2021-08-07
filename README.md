@@ -40,7 +40,8 @@ The device specific documentation contains information on how to flash the built
 software to the boards as well. The host build can be run locally on the host computers but
 only Windows 10 and Ubuntu 20.04 were tested.
 The QEMU image can be run on a Linux computer as well, but requireds QEMU installed as specified
-in the QEMU documentation.
+in the QEMU documentation. It is also possible to build and run QEMU images on Windows using
+WSL (2).
 
 # Reference
 
@@ -121,7 +122,8 @@ If the boards are flashed for the first time, the SDRAM needs to be configured w
 the following command
 
 ```sh
-./sdramCfg
+cd scripts
+./sdram-cfg.sh
 ```
 
 It is recommended to use Eclipse to flash the boards conveniently.
@@ -180,18 +182,31 @@ cmake -DBOOTLOADER=ON -DBOARD_IOBC=ON -DAT91_NO_FREERTOS_STARTER_FILE=ON -DCMAKE
 cmake --build . -j
 ```
 
+## Build unittests
+
+Unittests are built with the `Catch2` unittest framework which was included as a submodule.
+You can find the tests in the `unittest` folder and you can build the unit test binary with the
+following command
+
+```sh
+mkdir build-Debug-Unittest && cd build-Debug-Unittest
+cmake -DBUILD_UNITTEST=ON ..
+cmake --build . -j
+```
+
 ## Starting QEMU
 
 Command to start QEMU (inside sourceobsw folder). Please note this only works if the QEMU 
 repository was cloned and built inside the same folder the OBSW was cloned.
 
 ```sh
-./StartQEMU.sh
+./scripts/start-qemu.sh
 ```
    
 ## Build Host Software
 
-Perform the following steps to build the hosted software
+Perform the following steps to build the hosted software. It is recommended to read
+[the separate README](doc/README-hosted.md#top) as well.
 
 ### Windows
 
@@ -201,7 +216,7 @@ Now you can run the following commands in the `sourceobsw` folder to build the s
 
 ```sh
 mkdir build-Debug-Host && cd build-Debug-Host
-cmake .. -G "MinGW Makefiles"
+cmake -G "MinGW Makefiles" -DHOST_BUILD=ON .. 
 cmake --build . -j
 ```
 
@@ -213,7 +228,7 @@ Linux OSAL instead
 
 ```sh
 mkdir build-Debug-Host && cd build-Debug-Host
-cmake ..
+cmake -DHOST_BUILD=ON ..
 cmake --build . -j
 ```
 

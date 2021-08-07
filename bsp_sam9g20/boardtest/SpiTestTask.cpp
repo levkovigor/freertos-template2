@@ -1,7 +1,6 @@
-
 #include "SpiTestTask.h"
 #include <bsp_sam9g20/comIF/GpioDeviceComIF.h>
-#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
+#include <fsfw/osal/freertos/BinarySemaphore.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/globalfunctions/arrayprinter.h>

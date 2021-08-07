@@ -1,7 +1,7 @@
 #ifndef SAM9G20_SYSTEMSTATETASK_H_
 #define SAM9G20_SYSTEMSTATETASK_H_
 
-#include <fsfw/osal/FreeRTOS/BinSemaphUsingTask.h>
+#include <fsfw/osal/freertos/BinSemaphUsingTask.h>
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/events/Event.h>

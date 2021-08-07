@@ -1,9 +1,12 @@
 #ifndef TEST_LEDTASK_H_
 #define TEST_LEDTASK_H_
 
+#include "OBSWConfig.h"
+
 #include <fsfw/action/HasActionsIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/tasks/ExecutableObjectIF.h>
+
 #include <cstdint>
 #include <map>
 #include <string>
