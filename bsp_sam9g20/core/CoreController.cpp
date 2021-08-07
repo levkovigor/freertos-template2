@@ -445,15 +445,17 @@ void CoreController::performPeriodicTimeHandling() {
             // Cache value for periodic SD card updates
             deploymentTimerIncrement += currentUptimeSeconds - lastDeploymentTimerIncrement;
 #else
+#if OBSW_SD_CARD_PRESENT == 1
             // Update FRAM value immediately
             fram_increment_seconds_on_deployment_timer(
                     currentUptimeSeconds - lastDeploymentTimerIncrement);
+#endif
 #endif
             lastDeploymentTimerIncrement = currentUptimeSeconds;
         }
     }
 
-#if defined(AT91SAM9G20_EK)
+#if defined(AT91SAM9G20_EK) && OBSW_SD_CARD_PRESENT == 1
     // Only perform this every 10 seconds, file system is slow.
     if(currentUptimeSeconds - lastSdCardUpdate > 10) {
         lastSdCardUpdate = currentUptimeSeconds;

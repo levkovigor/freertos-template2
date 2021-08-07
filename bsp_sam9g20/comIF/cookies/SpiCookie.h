@@ -3,7 +3,7 @@
 
 #include <fsfw/devicehandlers/CookieIF.h>
 #include <fsfw/ipc/MutexIF.h>
-#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
+#include <fsfw/osal/freertos/BinarySemaphore.h>
 
 extern "C" {
 #include <hal/Drivers/SPI.h>

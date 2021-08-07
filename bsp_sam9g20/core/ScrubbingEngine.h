@@ -1,7 +1,9 @@
 #ifndef SAM9G20_CORE_SCRUBBINGENGINE_H_
 #define SAM9G20_CORE_SCRUBBINGENGINE_H_
 
-#include <bsp_sam9g20/core/SoftwareImageHandler.h>
+#include <cstdint>
+
+class SoftwareImageHandler;
 
 class ScrubbingEngine {
 public:

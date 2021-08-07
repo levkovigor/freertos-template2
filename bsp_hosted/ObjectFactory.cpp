@@ -2,8 +2,8 @@
 #include "bsp_hosted/ObjectFactory.h"
 #include "boardtest/TestTaskHost.h"
 #include "fsfwconfig/objects/systemObjectList.h"
-#include "fsfwconfig/tmtc/apid.h"
-#include "fsfwconfig/tmtc/pusIds.h"
+#include "tmtc/apid.h"
+#include "tmtc/pusIds.h"
 
 #include <test/testinterfaces/TestEchoComIF.h>
 #include <test/testinterfaces/DummyCookie.h>
@@ -11,13 +11,14 @@
 
 #include <fsfw/events/EventManager.h>
 #include <fsfw/health/HealthTable.h>
-#include <fsfw/internalError/InternalErrorReporter.h>
+#include <fsfw/internalerror/InternalErrorReporter.h>
 #include <fsfw/objectmanager/frameworkObjects.h>
 #include <fsfw/osal/common/TcpTmTcBridge.h>
 #include <fsfw/osal/common/TcpTmTcServer.h>
 #include <fsfw/timemanager/TimeStamper.h>
 
 #include <fsfw/storagemanager/PoolManager.h>
+#include <fsfw/cfdp/CFDPHandler.h>
 #include <fsfw/tcdistribution/CCSDSDistributor.h>
 #include <fsfw/tcdistribution/PUSDistributor.h>
 #include <fsfw/tcdistribution/CFDPDistributor.h>
@@ -120,20 +121,22 @@ void Factory::produce(void* args) {
     new CCSDSDistributor(apid::SOURCE_OBSW, objects::CCSDS_PACKET_DISTRIBUTOR);
     new PUSDistributor(apid::SOURCE_OBSW, objects::PUS_PACKET_DISTRIBUTOR,
             objects::CCSDS_PACKET_DISTRIBUTOR);
-    new CFDPDistributor(apid::SOURCE_CFDP, objects::CFDP_PACKET_DISTRIBUTOR,
+    auto cfdpDistributor = new CFDPDistributor(apid::SOURCE_CFDP, objects::CFDP_PACKET_DISTRIBUTOR,
             objects::CCSDS_PACKET_DISTRIBUTOR);
+
+    new CFDPHandler(objects::CFDP_HANDLER, cfdpDistributor);
 
     /* TM Destination */
     new TmFunnel(objects::TM_FUNNEL);
 
 #if OBSW_TCPIP_SERVER_TYPE == OBSW_TCPIP_SERVER_UDP
     sif::printInfo("Setting up UDP server with listener port %s..\n",
-            UdpTmTcBridge::DEFAULT_UDP_SERVER_PORT.c_str());
+            UdpTmTcBridge::DEFAULT_SERVER_PORT.c_str());
     new UdpTmTcBridge(objects::TCPIP_BRIDGE, objects::CCSDS_PACKET_DISTRIBUTOR);
     new UdpTcPollingTask(objects::TCPIP_HELPER, objects::TCPIP_BRIDGE);
 #elif OBSW_TCPIP_SERVER_TYPE == OBSW_TCPIP_SERVER_TCP
     sif::printInfo("Setting up TCP server with listener port %s..\n",
-            TcpTmTcServer::DEFAULT_TCP_SERVER_PORT.c_str());
+            TcpTmTcServer::DEFAULT_SERVER_PORT.c_str());
     new TcpTmTcBridge(objects::TCPIP_BRIDGE, objects::CCSDS_PACKET_DISTRIBUTOR);
     new TcpTmTcServer(objects::TCPIP_HELPER, objects::TCPIP_BRIDGE);
 #endif /* OBSW_TCPIP_SERVER_TYPE == OBSW_TCPIP_SERVER_UDP */

@@ -81,16 +81,16 @@ void initTask() {
     if(result != HasReturnvaluesIF::RETURN_OK){
         initmission::printAddObjectError("CCSDS distributor", objects::CCSDS_PACKET_DISTRIBUTOR);
     }
-    result = packetDistributorTask->
-            addComponent(objects::PUS_PACKET_DISTRIBUTOR);
+    result = packetDistributorTask->addComponent(objects::PUS_PACKET_DISTRIBUTOR);
     if(result != HasReturnvaluesIF::RETURN_OK){
-        initmission::printAddObjectError("PUS packet distributor", objects::PUS_PACKET_DISTRIBUTOR);
+        initmission::printAddObjectError("PUS packet distributor",
+                objects::PUS_PACKET_DISTRIBUTOR);
 
     }
-    result = packetDistributorTask->
-            addComponent(objects::CFDP_PACKET_DISTRIBUTOR);
+    result = packetDistributorTask->addComponent(objects::CFDP_PACKET_DISTRIBUTOR);
     if(result != HasReturnvaluesIF::RETURN_OK){
-        initmission::printAddObjectError("CFDP packet distributor", objects::CFDP_PACKET_DISTRIBUTOR);
+        initmission::printAddObjectError("CFDP packet distributor",
+                objects::CFDP_PACKET_DISTRIBUTOR);
 
     }
     result = packetDistributorTask->addComponent(objects::TM_FUNNEL);

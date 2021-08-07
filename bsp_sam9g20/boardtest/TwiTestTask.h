@@ -4,7 +4,7 @@
 #include <fsfw/tasks/ExecutableObjectIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
 #include <fsfw/returnvalues/HasReturnvaluesIF.h>
-#include <fsfw/osal/FreeRTOS/BinarySemaphore.h>
+#include <fsfw/osal/freertos/BinarySemaphore.h>
 extern "C" {
 #include <hal/Drivers/I2C.h>
 }

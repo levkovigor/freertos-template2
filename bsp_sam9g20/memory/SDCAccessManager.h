@@ -1,7 +1,7 @@
 #ifndef SAM9G20_MEMORY_SDCACCESSMANAGER_H_
 #define SAM9G20_MEMORY_SDCACCESSMANAGER_H_
 
-#include <OBSWConfig.h>
+#include "OBSWConfig.h"
 #include <bsp_sam9g20/common/SDCardApi.h>
 
 class MutexIF;

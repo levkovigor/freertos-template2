@@ -24,8 +24,8 @@ OpenVPN GUI
 3. Go to Settings &rarr; Network &rarr; VPN and press + &rarr; Import From File.
 4. Select the .ovpn file previous stored somewhere
 5. Now you can activate the VPN via the network button on the top right. Go to the VPN settings to 
-the IPv4 settings and set a tick at "Use this connection only resources on its network" to allow
-other services like Mattermost.
+   the IPv4 settings and set a tick at "Use this connection only resources on its network" to allow
+   other services like Mattermost.
    
 
 ### Connecting to the flatsat computer
@@ -37,23 +37,32 @@ other services like Mattermost.
    ssh -X source@flatsat.source.absatvirt.lw
    ```
    
-   You can also use the IP address (this is required for PyCharm remote configurations)
+   You can also use the IPv6 address:
+
+   ```sh
+   ssh -X source@2001:7c0:2018:1099:babe:0:50ce:f1a5
+   ```
+
+   or the IPv4 but this one is not static
    
    ```sh
    ssh -X source@192.168.199.178
    ```
    
-3. It is recommended to set up SSH configuration either in Eclipse (cross-platform
-and convenient solution) via the terminal feature (terminal button at the top) or
-via Putty or Unix Alias. -X is optional for graphical applications.
-There is also another command for port forwarding:
+3. If you want to perform remote debugging, you need to set up port forwarding. The port forwarding
+   will cause requests sent to localhost port 2336 on the development host to be sent to the port
+   2331 of the flatsat, which is used by the J-Link GDB Server application
 
    ```sh
-   ssh -L <localPort>:localhost:<remotePort> source@flatsat.source.absatvirt.lw
+   ssh -L 2336:localhost:2331 \
+       source@flatsat.source.absatvirt.lw -t \
+       'CONSOLE_PREFIX="[SOURCE Port] /bin/bash'
    ```
-   to tunnel from <localPort> to the <remotePort> on the flatsat.
+
+   A shell script to do this can be found in the `scripts` folder.
 
 ### Common commands
+
 When building on the flatsat computer directly, it is recommended to add
 ADD\_CR=1 so that debug output is readable.
  
@@ -141,13 +150,13 @@ tmux new -s 0_iobc
 gdb_iobc.sh
 ```
 
-`vor_iobc.sh` is a shell script which will run the GDB Server with the correct configuration. 
+`gdb_iobc.sh` is a shell script which will run the GDB Server with the correct configuration.
 It runs the following command. Please note that the USB S/N number can change depending on J-Link
 adapter used:
 
 ```sh
-JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=20127716
- -nogui
+JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly \
+    -select USB=20127716 -nogui
 ```
 
 Then type `CTRL` + `B` and `d` to detach from the tmux session.
@@ -155,11 +164,10 @@ Set up the debug session with the following commands:
 
 ```sh
 tmux new -s 2_iobc_dbg
-listen_iobc.sh
+listen_iobc.sh <devPort>
 ```
 
-You will be prompted for a USB serial port. Select the port named 
-`TTL232R-3V3` to listen to the iOBC serial output.
+Specify the port named  `TTL232R-3V3` to listen to the iOBC serial output.
 
 The shell script will start the `screen` utility to read the USB port 
 with the correct settings.
@@ -184,8 +192,8 @@ use `k` instead of `d` instead. In some cases, it can becomes necessary to resta
 the J-Link GDB Server. The GDB Server should be run with the following command
 
 ```sh
-JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto -noLocalhostOnly -select USB=20127716
- -nogui
+JLinkGDBServerCLExe -device AT91SAM9G20 -endian little -ir JTAG -speed auto \
+   -noLocalhostOnly -select USB=20127716 -nogui
 ```
 
 Background processes can be listed with `ps -aux` and killed with `kill <processId>`
@@ -249,48 +257,3 @@ to write the  bootloader or OBSW image from SD-card to the NOR-Flash.
 
 4. Another command can be used to power cycle or reset the core to test the flashed
 software
-
-
-### Preparing the Eclipse without provided run configurations
-
-It is recommended to use the supplied launch configurations and project files
-instead of rerunning these steps.
-
-1. The current IP address of the flatsat computer is 
-   192.168.199.228 . That address could change, and it can be checked
-   by logging into the flatsat like explained above and running: 
- 
-   ```sh
-   ifconfig
-   ```
-  
-It is also assumed the the JLinkGDBServerCLExe application
-is already running on the interface computer (either directly
-in a shell instance, in the background, or in a tmux)
-
-2. The IP address is used to set up Eclipse for remote development.
-A set-up build system for the on-board software in Eclipse is a
-pre-requisite and is explained in [AT91SAM9G20 getting started](../sam9g20/README-at91.md#top)
-inside the build target section. If the launch configuration has been set-up, it is simply copied by
-clicking on "Duplicate" inside the launch configuration settings.
-
-3. Setup a new build configuration. The steps required in `CMake` are shown above.
-
-4. The debugger tab should be set up like show below. The IP address
-is the IP address of the iOBC interface computer and can be retrieved
-like explained in point 1. 
-<img src="./readme_img/flatsat/eclipse-setup1.jpg" width="50%">
-
-5. The startup tab should be set up like below. Right now, the 
-SAM-ICE can not handle monitor reset or monitor halt commands
-and the reason is unknown.
-<img src="./readme_img/flatsat/eclipse-setup2.jpg" width="50%">
-
-6.  The serial output from the iOBC can be read from the dev path of the
-interface computer directly. It is possible in Eclipse to open a ssh
-session like shown in the following picture.
-<img src="./readme_img/flatsat/eclipse-setup3.jpg" width="50%">
-It is recommended to listen to the debug output by connecting
-to the tmux session with
-
-

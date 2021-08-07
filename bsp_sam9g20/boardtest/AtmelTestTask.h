@@ -1,6 +1,8 @@
 #ifndef SAM9G20_BOARDTEST_ATMELTESTTASK_H_
 #define SAM9G20_BOARDTEST_ATMELTESTTASK_H_
 
+#include "OBSWConfig.h"
+
 #include <test/testtasks/TestTask.h>
 #include <fsfw/timemanager/Countdown.h>
 

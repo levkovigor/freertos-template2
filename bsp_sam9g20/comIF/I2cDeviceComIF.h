@@ -18,7 +18,7 @@ public:
 	I2cDeviceComIF(object_id_t objectId);
 
 	virtual ~I2cDeviceComIF();
-	static constexpr uint32_t I2C_BUS_SPEED_HZ = 100000;
+	static constexpr uint32_t I2C_BUS_SPEED_HZ = config::OBSW_I2C_BUS_SPEED;
 	//! Occasinally, bus state is checked
 	static constexpr uint8_t BUS_CHECK_TRIGGER = 10;
 
@@ -100,7 +100,7 @@ private:
 	VectorBufferMap i2cVectorMap;
 	//! This will hold the current cookie instance passed from DHB
 	I2cCookie * i2cCookie = nullptr;
-
+	ReturnValue_t initResult = HasReturnvaluesIF::RETURN_OK;
 	uint8_t busCheckCounter = 1;
 
 	ReturnValue_t checkAddress(address_t address);

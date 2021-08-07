@@ -1,6 +1,8 @@
 #ifndef SAM9G20_MEMORY_FRAMHANDLER_H_
 #define SAM9G20_MEMORY_FRAMHANDLER_H_
 
+#include "OBSWConfig.h"
+
 #include "bsp_sam9g20/common/fram/FRAMApi.h"
 #include "bsp_sam9g20/common/fram/CommonFRAM.h"
 

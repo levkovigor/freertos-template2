@@ -23,6 +23,19 @@ set(CMAKE_SCRIPT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(${CMAKE_SCRIPT_PATH}/PreProjectConfig.cmake)
 options_config()
 
+# This sets some variables passed to the configure file OBSWConfig.h.in so DO NOT DELETE THIS.
+if(NOT HOST_BUILD)
+    if(BOARD_IOBC)
+        set(ISIS_OBC_G20 ON)
+    else()
+        set(AT91SAM9G20_EK ON)
+    endif()
+endif()
+
+# Required for ACS controller
+set(FSFW_ADD_COORDINATES ON)
+set(FSFW_ADD_SGP4_PROPAGATOR ON)
+
 # Project Name
 if(BOOTLOADER)
     project(sourcebl ASM C)
@@ -40,7 +53,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Set names and variables
 set(TARGET_NAME ${CMAKE_PROJECT_NAME})
-if(CUSTOM_UNITTEST_RUNNER)
+
+if(FSFW_CUSTOM_UNITTEST_RUNNER OR FSFW_ADD_UNITTESTS)
     set(CATCH2_TARGET Catch2)
 else()
     set(CATCH2_TARGET Catch2WithMain)
@@ -68,15 +82,16 @@ set(LIB_FREERTOS_PATH ${LIB_OS_NAME})
 set(LIB_AT91_PATH ${LIB_AT91_NAME})
 set(LIB_PRIVLIB_PATH ${LIB_PRIVAT_LIB_NAME})
 
-if(OS_FSFW MATCHES "host" OR OS_FSFW MATCHES "linux")
+if(FSFW_OSAL MATCHES "host" OR FSFW_OSAL MATCHES "linux")
     set(BSP_PATH ${HOST_BSP_PATH})
-elseif(OS_FSFW MATCHES "freertos")
+elseif(FSFW_OSAL MATCHES "freertos")
     set(BSP_PATH ${SAM9G20_PATH})
 endif()
 
 # Analyse different OS and architecture/target options, determine BSP_PATH,
 # display information about compiler etc.
 set(COMMON_AT91_CONFIG_PATH "${CMAKE_SOURCE_DIR}/${SAM9G20_PATH}/common/config")
+set(FSFW_HAL_ADDITIONAL_INC_PATHS ${COMMON_AT91_CONFIG_PATH})
 
 if(NOT HOST_BUILD)
     if(BOOTLOADER)
@@ -134,10 +149,12 @@ if(NOT HOST_BUILD)
             set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/${BOOTLOADER_PATH}/norflash.lds)
         else()
             if(BL_STAGE_TWO)
+                set(BOOTLOADER_SECOND_STAGE ON)
                 set(LINKER_SCRIPT 
                     ${CMAKE_CURRENT_SOURCE_DIR}/${BOOTLOADER_PATH}/sdram_second_stage_bl.lds
                 )
             else()
+                set(BOOTLOADER_FIRST_STAGE ON)
                 set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/${BOOTLOADER_PATH}/sram.lds)
             endif()
         endif()
@@ -174,10 +191,12 @@ set(FSFW_ADDITIONAL_INC_PATHS
 if(NOT BOOTLOADER)
     configure_file("${FSFW_CONFIG_PATH}/OBSWConfig.h.in" OBSWConfig.h)
     configure_file("${FSFW_CONFIG_PATH}/FSFWConfig.h.in" FSFWConfig.h)
+    configure_file("${COMMON_PATH}/commonConfig.h.in" commonConfig.h)
     if(BUILD_UNITTEST)
         configure_file("${FSFW_CONFIG_PATH}/TestConfig.h.in" TestConfig.h)
     endif()
 else()
+    configure_file("${BOOTLOADER_PATH}/config/bootloaderConfig.h.in" bootloaderConfig.h)
 endif()
 
 set(LINK_HCC ON)
@@ -337,6 +356,7 @@ if(NOT HOST_BUILD)
             if(BL_STAGE_TWO)
                 set(TYPE_PRINTOUT "${TYPE_PRINTOUT} (second stage)")
             else()
+
                 set(TYPE_PRINTOUT "${TYPE_PRINTOUT} (first stage)")
             endif()
         endif()
@@ -387,7 +407,7 @@ endif()
 
 string(CONCAT POST_BUILD_COMMENT
     "Build directory: ${CMAKE_BINARY_DIR}\n"
-    "Target OSAL: ${OS_FSFW}\n"
+    "Target OSAL: ${FSFW_OSAL}\n"
     "Target Build Type: ${CMAKE_BUILD_TYPE}\n"
     "Target Build: ${TARGET_STRING}"
 )

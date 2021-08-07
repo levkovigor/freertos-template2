@@ -11,7 +11,7 @@ RUN set -ex; \
     rm -rf build-hosted; \
     mkdir build-hosted; \
     cd build-hosted; \
-    cmake -DCMAKE_BUILD_TYPE=Release -DOS_FSFW=host -DHOST_BUILD=ON ..;
+    cmake -DCMAKE_BUILD_TYPE=Release -DFSFW_OSAL=host -DHOST_BUILD=ON ..;
 
 ENTRYPOINT ["cmake", "--build", "build-hosted"]
 CMD ["-j"]

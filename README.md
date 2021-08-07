@@ -122,7 +122,7 @@ If the boards are flashed for the first time, the SDRAM needs to be configured w
 the following command
 
 ```sh
-./sdramCfg
+./scripts/sdram-cfg.sh
 ```
 
 It is recommended to use Eclipse to flash the boards conveniently.
@@ -188,7 +188,7 @@ You can find the tests in the `unittest` folder and you can build the unit test 
 following command
 
 ```sh
-mkdir build-Unittest && cd build-Unittest
+mkdir build-Debug-Unittest && cd build-Debug-Unittest
 cmake -DBUILD_UNITTEST=ON ..
 cmake --build . -j
 ```
@@ -199,7 +199,7 @@ Command to start QEMU (inside sourceobsw folder). Please note this only works if
 repository was cloned and built inside the same folder the OBSW was cloned.
 
 ```sh
-./StartQEMU.sh
+./scripts/start-qemu.sh
 ```
    
 ## Build Host Software

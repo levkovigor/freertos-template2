@@ -31,6 +31,7 @@ private:
 
     std::array<uint8_t, 3> txBuf;
 
+    void simplePca9554Init();
 };
 
 #endif /* BSP_SAM9G20_BOARDTEST_PVCHTESTTASK_H_ */

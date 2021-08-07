@@ -1,18 +1,21 @@
+#include "AtmelTestTask.h"
+
 #include <fsfw/storagemanager/PoolManager.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Stopwatch.h>
 
-#include <bsp_sam9g20/boardtest/AtmelTestTask.h>
+#include <bsp_sam9g20/boardtest/PVCHTestTask.h>
 #include <bsp_sam9g20/comIF/GpioDeviceComIF.h>
 #include <bsp_sam9g20/common/SRAMApi.h>
 #include <bsp_sam9g20/memory/HCCFileGuard.h>
 #include <bsp_sam9g20/memory/SDCardAccess.h>
 #include <bsp_sam9g20/memory/SDCardHandler.h>
+#include <mission/devices/PCVHHandler.h>
 
 extern "C" {
-#if defined(AT91SAM9G20_EK)
+#ifdef AT91SAM9G20_EK
 #include <led_ek.h>
 #endif
 
@@ -41,23 +44,22 @@ AtmelTestTask::AtmelTestTask(object_id_t object_id): TestTask(object_id) {
 
 AtmelTestTask::~AtmelTestTask() {}
 
+ReturnValue_t AtmelTestTask::performOneShotAction() {
+#ifdef ISIS_OBC_G20
+    performIOBCTest();
+#endif
+
+    return TestTask::performOneShotAction();
+}
+
 ReturnValue_t AtmelTestTask::performPeriodicAction() {
     //performDataSetTesting(testMode);
     // This leads to a crash!
     //performExceptionTest();
 #ifdef ISIS_OBC_G20
 #endif
-
     //sif::info << "Hello, I am alive!" << std::endl;
     return TestTask::performPeriodicAction();
-}
-
-
-ReturnValue_t AtmelTestTask::performOneShotAction() {
-#ifdef ISIS_OBC_G20
-    performIOBCTest();
-#endif
-    return TestTask::performOneShotAction();
 }
 
 ReturnValue_t AtmelTestTask::performActionA() {

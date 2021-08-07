@@ -5,10 +5,11 @@
 #include <devices/logicalAddresses.h>
 #include <tmtc/apid.h>
 
-#include <fsfw/unittest/internal/InternalUnitTester.h>
+#include <fsfw_tests/internal/InternalUnitTester.h>
 #include <fsfw/objectmanager/ObjectManager.h>
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
+#include "fsfw/serialize/EndianConverter.h"
 
 #include <array>
 #include <cstring>

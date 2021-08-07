@@ -2,28 +2,38 @@
 #define FSFWCONFIG_OBSWCONFIG_H_
 
 #ifdef __cplusplus
-#include <cstdint>
-#include <cstddef>
 
 #include "returnvalues/classIds.h"
 #include "events/subsystemIdRanges.h"
 #include "objects/systemObjectList.h"
 
+#include <cstdint>
+#include <cstddef>
+
 #else
+
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#endif
+
+#endif /* ! __cplusplus */
+
+#include "portmacro.h"
+
+// Board Type
+#cmakedefine ISIS_OBC_G20
+#cmakedefine AT91SAM9G20_EK
 
 #ifdef AT91SAM9G20_EK
-#include <commonAt91Config.h>
+#include "commonAt91Config.h"
 #else
-#include <commonIOBCConfig.h>
+#include "commonIOBCConfig.h"
 #endif
 
-#include <portmacro.h>
+#include "commonConfig.h"
 
 #define OBSW_RS485_WITH_TERMINATION             1
+#define OBSW_SD_CARD_PRESENT                    1
 
 //! All of these should be disabled for mission code but are very helpful
 //! for development
@@ -97,7 +107,9 @@ static const uint16_t RS485_MUTEX_TIMEOUT =             20;
  * Set timeout for I2C transfers, specified as 1/10th of ticks.
  * Is set to one for values less than 1. Set to portMAXDELAY for debugging.
  */
-static const uint32_t I2C_TRANSFER_TIMEOUT =            portMAX_DELAY;
+static const uint32_t I2C_TRANSFER_TIMEOUT =            500; // 50ms default timeout
+//! Speed of the I2C bus in Hertz. (Minimum: 10000, Maximum 400000)
+static const uint32_t OBSW_I2C_BUS_SPEED =              100000;
 
 /**
  * Consider setting this higher if some SPI devices take a longer time

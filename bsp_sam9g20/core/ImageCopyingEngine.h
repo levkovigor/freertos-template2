@@ -1,16 +1,16 @@
 #ifndef SAM9G20_CORE_IMAGECOPYINGENGINE_H_
 #define SAM9G20_CORE_IMAGECOPYINGENGINE_H_
 
+#include "OBSWConfig.h"
 #include "imageHandlerDefintions.h"
-#include <OBSWConfig.h>
 
-#include <hcc/api_fat.h>
-#include <bsp_sam9g20/common/SDCardApi.h>
+#include "hcc/api_fat.h"
+#include "bsp_sam9g20/common/SDCardApi.h"
 
 #ifdef AT91SAM9G20_EK
-#include <bsp_sam9g20/common/config/commonAt91Config.h>
+#include "commonAt91Config.h"
 #else /* iOBC */
-#include <bsp_sam9g20/common/config/commonIOBCConfig.h>
+#include "commonIOBCConfig.h"
 #endif
 
 class SoftwareImageHandler;

@@ -1,4 +1,4 @@
-#include <fsfw/osal/FreeRTOS/MessageQueue.h>
+#include <fsfw/osal/freertos/MessageQueue.h>
 #include <fsfw/serviceinterface/ServiceInterfaceStream.h>
 #include <bsp_sam9g20/tmtcbridge/EmacPollingTask.h>
 

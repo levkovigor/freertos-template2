@@ -7,9 +7,15 @@ option(USE_LTO "Enable link-time optimization" OFF)
 option(BUILD_UNITTEST "Build Catch2 unit tests" OFF)
 
 if(BUILD_UNITTEST)
-    # set(LINK_CATCH2 ON)
-    option(CUSTOM_UNITTEST_RUNNER 
-        "Specify whether custom main or Catch2 main is used" TRUE
+    option(FSFW_ADD_UNITTESTS "Specify whether FSFW tests are added" OFF)
+    if(FSFW_ADD_UNITTESTS)
+        set(FSFW_CUSTOM_UNITTEST_RUNNER_DEF_VAL ON)
+    else()
+        set(FSFW_CUSTOM_UNITTEST_RUNNER_DEF_VAL OFF)
+    endif()
+    option(FSFW_CUSTOM_UNITTEST_RUNNER
+        "Specify whether custom main or Catch2 main is used"
+        ${FSFW_CUSTOM_UNITTEST_RUNNER_DEF_VAL}
     )
     set(HOST_BUILD ON CACHE BOOL "Host build set to on for unit tests")
 else()
@@ -21,11 +27,11 @@ option(DISABLE_AGGRESSIVE_OPTIMIZATION
     "Enable to use O2 instead of O3 optimization for the release build" OFF
 )
 
-if(NOT OS_FSFW)
+if(NOT FSFW_OSAL)
     if(HOST_BUILD)
-        set(OS_FSFW host CACHE STRING "OS for the FSFW.")
+        set(FSFW_OSAL host CACHE STRING "OS for the FSFW.")
     else()
-        set(OS_FSFW freertos CACHE STRING "OS for the FSFW.")
+        set(FSFW_OSAL freertos CACHE STRING "OS for the FSFW.")
     endif()
 endif()
 
@@ -59,7 +65,6 @@ if(BOOTLOADER)
 endif()
 
 if(BOARD_IOBC)
-    add_definitions(-DISIS_OBC_G20)
     set(BOARD_PRINTOUT "iOBC" PARENT_SCOPE)
     if(BOOTLOADER)
         add_definitions(-DISIS_BL)
@@ -71,7 +76,6 @@ if(BOARD_IOBC)
         endif()
     endif()
 else()
-    add_definitions(-DAT91SAM9G20_EK)
     set(BOARD_PRINTOUT "AT91SAM9G20-EK" PARENT_SCOPE)
     if(BOOTLOADER)
         add_definitions(-DBOOTLOADER)
