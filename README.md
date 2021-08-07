@@ -122,7 +122,8 @@ If the boards are flashed for the first time, the SDRAM needs to be configured w
 the following command
 
 ```sh
-./scripts/sdram-cfg.sh
+cd scripts
+./sdram-cfg.sh
 ```
 
 It is recommended to use Eclipse to flash the boards conveniently.
