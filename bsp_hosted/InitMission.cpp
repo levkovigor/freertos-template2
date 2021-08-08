@@ -219,6 +219,7 @@ void initTask() {
 #endif
     }
 
+    // Commented because the ACS controller is not finished yet
 //#ifdef __unix__
 //    taskPrio = 60;
 //#endif
