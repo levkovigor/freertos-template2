@@ -12,6 +12,7 @@ do
     if [ -d ${dir_to_search} ];then
         break
     fi
+    counter=$((counter=counter + 1))
     cd ..
 done
 
