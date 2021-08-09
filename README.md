@@ -66,7 +66,7 @@ WSL (2).
 2. Development board binaries: [GNU ARM Toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/) 
    installed, hardware or QEMU set-up available. 
 3. On Windows: [MSYS2 MinGW64](https://www.msys2.org/) installed to provide a Unix environment.
-4. For development boards:[SEGGER J-Link Software and Documentation Pack](https://www.segger.com/downloads/jlink/)
+4. For development boards: [SEGGER J-Link Software and Documentation Pack](https://www.segger.com/downloads/jlink/)
 5. For QEMU: QEMU repository cloned and set up in same folder in which
    this repository was cloned
 
