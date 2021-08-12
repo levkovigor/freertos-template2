@@ -137,7 +137,7 @@ If these sessions don't show up (e.g. after flatsat reboot), here are the
 commands to get everything working again with the following command
 
 ```py
-setup_flatsat_tmux.py
+setup-flatsat-tmux.py
 ```
 
 This will run a script located in the `$HOME/scripts` to set up all tmux sessions. 
@@ -147,10 +147,10 @@ Alternatively, all steps can be performed manually.
 Initiate the iOBC GDB Server in a new tmux session
 ```sh
 tmux new -s 0_iobc
-gdb_iobc.sh
+gdb-iobc.sh
 ```
 
-`gdb_iobc.sh` is a shell script which will run the GDB Server with the correct configuration.
+`gdb-iobc.sh` is a shell script which will run the GDB Server with the correct configuration.
 It runs the following command. Please note that the USB S/N number can change depending on J-Link
 adapter used:
 
@@ -164,12 +164,12 @@ Set up the debug session with the following commands:
 
 ```sh
 tmux new -s 2_iobc_dbg
-listen_iobc.sh <devPort>
+listen-iobc.sh <devPort>
 ```
 
 Specify the port named  `TTL232R-3V3` to listen to the iOBC serial output.
 
-The shell script will start the `screen` utility to read the USB port 
+The shell script will start the `picocom` utility to read the USB port 
 with the correct settings.
 Now the debug output can be read in this session.
 To exit the session, use `CTRL` + `B` and `d`.
@@ -202,7 +202,7 @@ Background processes can be listed with `ps -aux` and killed with `kill <process
 
 4. Perform sdramCfg (only needs to be once after power cycle)
    ```sh
-   ./sdramCfg.sh
+   ./sdram-cfg.sh
    ```
 
 5. Connect to the tmux session which is listening to the USB port. 

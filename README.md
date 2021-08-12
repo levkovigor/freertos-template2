@@ -305,7 +305,7 @@ RS232 cable can be used (or UART jumper wires..).
    This is just an example, correct the path for your use-case with the correct
    version and user name!
 
-   ```sh 
+   ```sh
    export PATH="/c/Users/Robin/AppData/Roaming/xPacks/@xpack-dev-tools/arm-none-eabi-gcc/10.2.1-1.1.2/.content/bin":$PATH
    ```
    
