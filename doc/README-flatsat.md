@@ -1,23 +1,24 @@
-<a id="top"></a> <a name="flatsat"></a> 
+<a id="top"></a> <a name="flatsat"></a> SOURCE Flatsat
+======
 
 The OBC engineering model was set up in the clean room at a flatsat computer which allows remote
 development and software deployment.
 
-## Basic instructions for Flatsat
+# Basic instructions for Flatsat
 
-### Setting up the VPN
+## Setting up the VPN
 
 1. Set up VPN, [IRS  mail account](https://cube18.irs.uni-stuttgart.de/) required: 
 After that, write mail to zert@irs.uni-stuttgart.de to get OpenVPN configuration files.
 
-#### Windows
+### Windows
 
 1. Download [OpenVPN](https://openvpn.net/download-open-vpn/) and install it and configure it with 
 the configuration files.
 2. Put OVPN configuration files into the OpenVPN config folder or add the configuration in the 
 OpenVPN GUI
    
-#### Ubuntu
+### Ubuntu
 
 1. Install the ubuntu gnome version of OpenVPN
 2. Store the VPN files into some folder, for example a VPN folder in the DOocuments folder
@@ -28,10 +29,10 @@ OpenVPN GUI
    other services like Mattermost.
    
 
-### Connecting to the flatsat computer
+# Connecting to the flatsat computer
    
 1. Connect to the VPN
-2. Connect to Flatsat (password needed, ask Jonas Burgdorf on Mattermost):
+2. Connect to the flatsat (password needed, ask Jonas Burgdorf on Mattermost):
 
    ```sh
    ssh -X source@flatsat.source.absatvirt.lw
@@ -49,22 +50,34 @@ OpenVPN GUI
    ssh -X source@192.168.199.178
    ```
    
-3. If you want to perform remote debugging, you need to set up port forwarding. The port forwarding
+3. It is strongly recommended to set up a `ssh` tunnel for TMTC commanding. The port forwarding
    will cause requests sent to localhost port 2336 on the development host to be sent to the port
-   2331 of the flatsat, which is used by the J-Link GDB Server application
+   2331 of the flatsat, which is used by the J-Link GDB Server application. It will also cause
+   TMTC requests sent to port 2336 of localhost or address 127.0.0.1 to be forwarded to port
+   7301 of the flatsat computer. As long as the `tmtc-agent` utility is running on the flatsat
+   computer, you can command run the `tmtc` application on your host machine with the TCP
+   communication interface. You can set up the port forwarding by running
+
+   ```sh
+   ./scripts/source-port.sh
+   ```
+
+   Or run the full command:
 
    ```sh
    ssh -L 2336:localhost:2331 \
+       -L 2337:localhost:7301 \
        source@flatsat.source.absatvirt.lw -t \
        'CONSOLE_PREFIX="[SOURCE Port] /bin/bash'
    ```
 
-   A shell script to do this can be found in the `scripts` folder.
+4. Check whether all required `tmux` sessions are running on the flatsat.
+   If not, run `setup-flatsat-tmux.py`. See the [setup](#gdb-debug) chapter for more details.
 
-### Common commands
+5. Check that the `tmtc-agent` systemd service is running by running
+   `systemctl status tmtc-agent`. See the [TMTC Agent](#tmtc-agent) chapter for more details.
 
-When building on the flatsat computer directly, it is recommended to add
-ADD\_CR=1 so that debug output is readable.
+# Common commands
  
 Build software for debugging:
 
@@ -89,8 +102,24 @@ cmake -DBOOTLOADER=ON -DBOARD_IOBC=ON -DAT91_NO_FREERTOS_STARTER_FILE=ON -DCMAKE
 cmake --build . -j
 ```
 
+# <a id="setup"></a> Setting up the Flatsat computer for Remote Deployment
 
-### Setting up the Flatsat computer for remote deployment
+## <a id="tmtc-agent"></a> TMTC Agent for convenient TMTC commanding
+
+The `tmtc-agent` systemd service will start the TCPIP to Serial Agent for the iOBC. The application
+can be found in the in the `scripts` folder.
+
+The configuration of this application can be found at the
+`KSat/tcpip-to-serial-agent/agent_conf.json` file. The most important configuration pairs
+are the `serial_port` or the `serial_hint` configuration option. 
+
+It is recommended to add `"serial_hint" : "EVAL232 Board"` to this JSON. This will cause the agent
+to forward TCP requests via the correct serial port.
+
+You can find the source code for the application
+[here](https://git.ksat-stuttgart.de/source/tcpip-to-serial-agent)
+
+## <a id="gdb-debug"></a> GDB Server and Debug Terminal
 
 Under normal circumstances, it should not be necessary to change anything on
 the flatsat computer directly because all necessary additional tools run in
@@ -176,7 +205,7 @@ To exit the session, use `CTRL` + `B` and `d`.
 
 All scripts are located inside the scripts folder in the home folder.
 
-### Building and flashing software on flatsat computer using the flatsat computer
+# Building and flashing software on flatsat computer using the flatsat computer
 
 1. Navigate to obsw folder
 ```sh
@@ -233,7 +262,7 @@ to create a new tmux serial listener session.
    ```
 and press c to start
 
-### Loading binaries built locally to the non-volatile memory
+# Loading binaries built locally to the non-volatile memory
 
 It is recommended to flash the software to the SDRAM directly for development purposes. 
 To test the binary and the bootloader on  the non-volatile memories, the images need to be written
@@ -243,17 +272,17 @@ Windows PC and the ISIS SAM-BA application installed or by uploading the binary 
 way is currently possible. A recent software version needs to 
 be running to perform this step as well. Following general steps need to be taken:
 
-1. Transfer the file with to the \_bin folder of
-the remote OBSW folder with SFTP. It is recommended to use FileZilla for this.
-It is possible to set common operations as favorites in Filezilla.
+1. Transfer the file with to the `sourceobsw` folder of the remote OBSW folder with SFTP. 
+   It is recommended to use FileZilla for this. It is possible to set common operations as
+   favorites in Filezilla.
 
-2. Transfer the binary to the SD-Card first. The `tmtcclient` Python application
-inside the `tmtc` folder can be used to either transfer an OBSW Update or a bootloader.
-This mode is provided as a PyCharm run configuration when loading
-the `tmtc` folder as a PyCharm project.
+2. Transfer the binary to the SD-Card first. The TMTC Python application
+   inside the `tmtc` folder can be used to either transfer an OBSW Update or a bootloader.
+   This mode is provided as a PyCharm run configuration when loading
+   the `tmtc` folder as a PyCharm project.
 
-3. After that, a specific command provided by the `tmtmcclient` can be used 
-to write the  bootloader or OBSW image from SD-card to the NOR-Flash.
+3. After that, a specific command provided by the TMTC application can be used 
+   to write the  bootloader or OBSW image from SD-card to the NOR-Flash.
 
 4. Another command can be used to power cycle or reset the core to test the flashed
-software
+   software
