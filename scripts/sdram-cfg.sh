@@ -5,20 +5,35 @@ trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
 
 echo "Performing SDRAM configuration"
 
-obsw_folder=".."
+dir_to_search="bsp_sam9g20"
+counter=0
+while [ ${counter} -lt 5 ]
+do
+    if [ -d ${dir_to_search} ];then
+        break
+    fi
+    counter=$((counter=counter + 1))
+    cd ..
+done
+
+if [ "${counter}" -ge 5 ];then
+    echo "${dir_to_search} not found in upper directories!"
+    echo "Make sure to run script from correct path"
+    exit 1
+fi
 
 if [ "${OS}" = "Windows_NT" ]; then
 	gdb="arm-none-eabi-gdb.exe"
 	jlink_cmd="JLinkGDBServerCL.exe -USB -device AT91SAM9G20 \
 		-endian little -if JTAG -speed auto -noLocalhostOnly &"
 	gdb_cmd="${gdb} -nx --batch -ex 'target remote localhost:2331' \
-		-ex 'source ${obsw_folder}/at91/gdb/at91sam9g20-ek-sdram.gdb'"
+		-ex 'source at91/gdb/at91sam9g20-ek-sdram.gdb'"
 else
 	gdb="arm-none-eabi-gdb"
 	jlink_cmd="JLinkGDBServerCLExe -USB -device AT91SAM9G20 -endian little -if JTAG \
 		-speed adaptive -noLocalhostOnly &"
 	gdb_cmd="${gdb} -nx --batch -ex 'target remote localhost:2331' -ex \
-		'source ${obsw_folder}/at91/gdb/at91sam9g20-ek-sdram.gdb'"
+		'source at91/gdb/at91sam9g20-ek-sdram.gdb'"
 fi
 
 if ! command -v ${gdb} &> /dev/null
