@@ -66,7 +66,7 @@ WSL (2).
 2. Development board binaries: [GNU ARM Toolchain](https://xpack.github.io/arm-none-eabi-gcc/install/) 
    installed, hardware or QEMU set-up available. 
 3. On Windows: [MSYS2 MinGW64](https://www.msys2.org/) installed to provide a Unix environment.
-4. For development boards:[SEGGER J-Link Software and Documentation Pack](https://www.segger.com/downloads/jlink/)
+4. For development boards: [SEGGER J-Link Software and Documentation Pack](https://www.segger.com/downloads/jlink/)
 5. For QEMU: QEMU repository cloned and set up in same folder in which
    this repository was cloned
 
@@ -122,7 +122,8 @@ If the boards are flashed for the first time, the SDRAM needs to be configured w
 the following command
 
 ```sh
-./sdramCfg
+cd scripts
+./sdram-cfg.sh
 ```
 
 It is recommended to use Eclipse to flash the boards conveniently.
@@ -188,7 +189,7 @@ You can find the tests in the `unittest` folder and you can build the unit test 
 following command
 
 ```sh
-mkdir build-Unittest && cd build-Unittest
+mkdir build-Debug-Unittest && cd build-Debug-Unittest
 cmake -DBUILD_UNITTEST=ON ..
 cmake --build . -j
 ```
@@ -199,7 +200,7 @@ Command to start QEMU (inside sourceobsw folder). Please note this only works if
 repository was cloned and built inside the same folder the OBSW was cloned.
 
 ```sh
-./StartQEMU.sh
+./scripts/start-qemu.sh
 ```
    
 ## Build Host Software
@@ -304,7 +305,7 @@ RS232 cable can be used (or UART jumper wires..).
    This is just an example, correct the path for your use-case with the correct
    version and user name!
 
-   ```sh 
+   ```sh
    export PATH="/c/Users/Robin/AppData/Roaming/xPacks/@xpack-dev-tools/arm-none-eabi-gcc/10.2.1-1.1.2/.content/bin":$PATH
    ```
    

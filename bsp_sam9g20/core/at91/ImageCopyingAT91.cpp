@@ -290,9 +290,10 @@ ReturnValue_t ImageCopyingEngine::handleErasingForObsw() {
         int retval = SkipBlockNandFlash_EraseBlock(&skipBlockNf,
                 helperCounter1 + 1, NORMAL_ERASE);
 #else
+        // For the two-stage bootloader, the first two blocks are reserved for bootloaders
         int retval = SkipBlockNandFlash_EraseBlock(&skipBlockNf,
                 helperCounter1 + 2, NORMAL_ERASE);
-#endif /* BOOTLOADER_TYPE == BOOTLOADER_ONE_STAGE */
+#endif /* BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE */
         if(retval != 0) {
             // skip the block.
 #if FSFW_CPP_OSTREAM_ENABLED == 1
@@ -320,8 +321,7 @@ ReturnValue_t ImageCopyingEngine::handleSdToNandCopyOperation(
 
     F_FILE* binaryFile = nullptr;
 
-    // Get file information like binary size, open the file, seek correct
-    // position etc.
+    // Get file information like binary size, open the file, seek correct position etc.
     ReturnValue_t result = prepareGenericFileInformation(
             sdCardAccess.getActiveVolume(), &binaryFile);
     if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -358,8 +358,7 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
     size_t sizeToRead = NAND_PAGE_SIZE;
     if(currentFileSize - currentByteIdx < NAND_PAGE_SIZE) {
         sizeToRead = currentFileSize - currentByteIdx;
-        // set the rest of the buffer which will not be overwritten
-        // to 0.
+        // set the rest of the buffer which will not be overwritten to 0.
         std::memset(imgBuffer->data() + sizeToRead, 0,
                 NAND_PAGE_SIZE - sizeToRead);
     }
@@ -398,14 +397,27 @@ ReturnValue_t ImageCopyingEngine::performNandCopyAlgorithm(
             // vectors can make optimized applications unstable.
             std::memcpy(imgBuffer->data() + 0x14, &currentFileSize,
                     sizeof(uint32_t));
+            // This will be the page in the NAND-Flash. The first-stage bootloader is
             helperCounter1 = 0;
         }
+#if BOOTLOADER_TYPE == BOOTLOADER_TWO_STAGE
+        // Two-stage bootloader, so second page is reserved for second-stage bootloader
+        // and third stage is reserved for regular image
+        else if(sourceSlot == image::ImageSlot::BOOTLOADER_1) {
+            // This will be the page in the NAND-Flash. The first-stage bootloader is
+            helperCounter1 = 1;
+        }
+        else {
+            helperCounter1 = 2;
+        }
+#else
+        // One-stage bootloader, so first page is reserved for bootloader
         else {
             // This counter will be used to specify written block, and first
             // block is reserved for bootloader.
             helperCounter1 = 1;
         }
-
+#endif
         helperCounter2 = 0;
         currentByteIdx = 0;
     }

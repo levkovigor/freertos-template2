@@ -1,5 +1,10 @@
 # <a id="top"></a> <a name="at91"></a> AT91SAM9G20-EK getting started
 
+The SD card needs to be inserted into slot MCI A for the AT91 board.
+Furthermore, unless an image and the bootloaders were already uploded to the
+non-volatile memories, you have to execute the `sdram-cfg.sh` script
+in the `scripts` folder before flashing the RAM.
+
 ## Options to execute binaries on board
 
 The AT91SAM9G20-EK board is similar to the iOBC but lacks some of the peripherals

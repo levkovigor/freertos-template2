@@ -1,7 +1,7 @@
 /**
  * @brief    Auto-generated event translation file. Contains 95 translations.
  * @details
- * Generated on: 2021-07-20 18:21:13
+ * Generated on: 2021-08-03 18:27:26
  */
 #include "translateEvents.h"
 
@@ -287,7 +287,7 @@ const char * translateEvents(Event event) {
 		return BOOT_MULTIBIT_ERROR_DETECTED_STRING;
 	case(12107):
 		return BOOT_ECC_ERROR_DETECTED_STRING;
-	case(14128):
+	case(12228):
 		return ISIS_CLOCK_SET_FAILURE_STRING;
 	case(16100):
 		return LOW_REM_STACK_STRING;

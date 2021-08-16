@@ -159,9 +159,9 @@ private:
     ReturnValue_t deleteDirectory(const char* repositoryPath, const char* dirname);
     ReturnValue_t changeDirectory(const char* repositoryPath);
 
-    ReturnValue_t createDirectory(const char* repositoryPath, bool createParentDirs,
-            FileSystemArgsIF* args = nullptr) override;
-    ReturnValue_t removeDirectory(const char* repositoryPath,
+    ReturnValue_t createDirectory(const char* repositoryPath, const char* dirname,
+            bool createParentDirs = false, FileSystemArgsIF* args = nullptr) override;
+    ReturnValue_t removeDirectory(const char* repositoryPath, const char* dirname,
             bool deleteRecurively = false, FileSystemArgsIF* args = nullptr) override;
     ReturnValue_t renameFile(const char* repositoryPath, const char* oldFilename,
             const char* newFilename, FileSystemArgsIF* args = nullptr) override;

@@ -7,9 +7,15 @@ option(USE_LTO "Enable link-time optimization" OFF)
 option(BUILD_UNITTEST "Build Catch2 unit tests" OFF)
 
 if(BUILD_UNITTEST)
-    # set(LINK_CATCH2 ON)
-    option(CUSTOM_UNITTEST_RUNNER 
-        "Specify whether custom main or Catch2 main is used" TRUE
+    option(FSFW_ADD_UNITTESTS "Specify whether FSFW tests are added" OFF)
+    if(FSFW_ADD_UNITTESTS)
+        set(FSFW_CUSTOM_UNITTEST_RUNNER_DEF_VAL ON)
+    else()
+        set(FSFW_CUSTOM_UNITTEST_RUNNER_DEF_VAL OFF)
+    endif()
+    option(FSFW_CUSTOM_UNITTEST_RUNNER
+        "Specify whether custom main or Catch2 main is used"
+        ${FSFW_CUSTOM_UNITTEST_RUNNER_DEF_VAL}
     )
     set(HOST_BUILD ON CACHE BOOL "Host build set to on for unit tests")
 else()

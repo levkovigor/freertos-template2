@@ -12,7 +12,7 @@
 #include <fsfw/tasks/TaskFactory.h>
 #include <fsfw/timemanager/Clock.h>
 #include <fsfw/serviceinterface/ServiceInterface.h>
-#include <fsfw/tests/internal/InternalUnitTester.h>
+#include <fsfw_tests/internal/InternalUnitTester.h>
 #include <fsfw/osal/freertos/TaskManagement.h>
 
 #include <freertos/FreeRTOS.h>
@@ -94,10 +94,9 @@ void runMinimalTask(void);
  */
 void initMission(void) {
     printf("\r\n-- FreeRTOS task scheduler started --\n\r");
-    printf("-- SOURCE On-Board Software --\n\r");
-    printf("-- %s --\n\r", BOARD_NAME_PRINT);
-    printf("-- Software version %s v%d.%d.%d --\n\r", SW_NAME, SW_VERSION, SW_SUBVERSION,
+    printf("-- SOURCE On-Board Software v%d.%d.%d --\n\r", SW_VERSION, SW_SUBVERSION,
             SW_SUBSUBVERSION);
+    printf("-- %s --\n\r", BOARD_NAME_PRINT);
     printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 
 #if FSFW_CPP_OSTREAM_ENABLED == 0
@@ -165,7 +164,7 @@ void initTasks(void) {
     }
     /* Serial Bridge Task for UART Communication */
     tmTcBridge = TaskFactory::instance()->createPeriodicTask(
-            "SERIAL_TMTC_TASK", 7, 2048 * 4, 0.1, genericMissedDeadlineFunc);
+            "SERIAL_TMTC_TASK", 7, 2048 * 4, 0.2, genericMissedDeadlineFunc);
     result = tmTcBridge->addComponent(objects::SERIAL_TMTC_BRIDGE);
     if (result != HasReturnvaluesIF::RETURN_OK) {
         initmission::printAddObjectError("Serial TMTC bridge", objects::SERIAL_TMTC_BRIDGE);

@@ -1,6 +1,6 @@
 #include "../common/at91_boot_from_nand.h"
-#include <bootloaderConfig.h>
-#include <bootloader/core/timer.h>
+#include "bootloaderConfig.h"
+#include "bootloader/core/timer.h"
 
 #include <board.h>
 #include <AT91SAM9G20.h>
@@ -102,7 +102,7 @@ int perform_bootloader_core_operation() {
     LED_Set(0);
 
 #if BOOTLOADER_VERBOSE_LEVEL >= 1
-    TRACE_INFO("Jumping to SDRAM application address 0x%08x!\n\r", SECOND_STAGE_BL_JUMP_ADDR);
+    TRACE_INFO("Jumping to SDRAM application address 0x%08x..\n\r", SECOND_STAGE_BL_JUMP_ADDR);
 #endif
 
     CP15_Disable_I_Cache();
