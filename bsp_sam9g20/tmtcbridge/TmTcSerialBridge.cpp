@@ -7,7 +7,6 @@
 #include <fsfw/timemanager/Stopwatch.h>
 #include <fsfw/tmtcpacket/pus/tc.h>
 #include <fsfw/globalfunctions/arrayprinter.h>
-#include <fsfw/globalfunctions/DleEncoder.h>
 
 #include <cmath>
 
@@ -88,8 +87,8 @@ ReturnValue_t TmTcSerialBridge::handleTcReception(size_t foundLen) {
 ReturnValue_t TmTcSerialBridge::sendTm(const uint8_t *data, size_t dataLen) {
     //Stopwatch stopwatch;
     size_t encodedLen = 0;
-    ReturnValue_t result = DleEncoder::encode(data, dataLen, tmArray.data(),
-            tmArray.size(), &encodedLen, true);
+    ReturnValue_t result = dleEncoder.encode(data, dataLen, tmArray.data(),
+            tmArray.size(), &encodedLen);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         return result;
     }

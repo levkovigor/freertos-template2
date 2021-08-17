@@ -20,8 +20,17 @@ RingBufferAnalyzer::RingBufferAnalyzer(SharedRingBuffer *ringBuffer,
 #endif
         return;
     }
+    if(mode == AnalyzerModes::DLE_ENCODING) {
+        dleEncoder = new DleEncoder();
+    }
     analysisVector = std::vector<uint8_t>(ringBuffer->getMaxSize());
 
+}
+
+RingBufferAnalyzer::~RingBufferAnalyzer() {
+    if(mode == AnalyzerModes::DLE_ENCODING) {
+        delete dleEncoder;
+    }
 }
 
 ReturnValue_t RingBufferAnalyzer::checkForPackets(uint8_t* receptionBuffer,
@@ -112,7 +121,7 @@ ReturnValue_t RingBufferAnalyzer::parseForDleEncodedPackets(
             if(stxFound) {
                 // This is propably a packet, so we decode it.
 
-                ReturnValue_t result = DleEncoder::decode(
+                ReturnValue_t result = dleEncoder->decode(
                         &analysisVector[stxIdx],
                         bytesToRead - stxIdx, readSize,
                         receptionBuffer, maxSize, packetSize);
