@@ -41,20 +41,29 @@ ReturnValue_t PVCHTestTask::initialize() {
     if(result != HasReturnvaluesIF::RETURN_OK) {
         sif::printWarning("PVCHTestTask::initialize: Configuring ports as output failed!\n");
     }
+    // Semaphore will be unblocked on transfer finish
+    result = semaphHandle.acquire();
+    if(result == HasReturnvaluesIF::RETURN_OK) {
+        semaphHandle.release();
+        auto transferStatus = i2cCookie->getI2cTransferStatusHandle();
+        if(transferStatus != I2CtransferStatus::done_i2c) {
+            sif::printWarning("PVCHTestTask:: Configuring PCA9554 config reg failed!\n");
+            return HasReturnvaluesIF::RETURN_FAILED;
+        }
+    }
 
     // Read back registers to check whether it was set correctly
-    result = i2cComIF->requestReceiveMessage(i2cCookie, 1);
+    result = i2cComIF->requestReceiveMessage(i2cCookie, 2);
     // Semaphore will be unblocked on transfer finish
     result = semaphHandle.acquire();
     if(result == HasReturnvaluesIF::RETURN_OK) {
         semaphHandle.release();
+        auto transferStatus = i2cCookie->getI2cTransferStatusHandle();
+        if(transferStatus != I2CtransferStatus::done_i2c) {
+            sif::printWarning("PVCHTestTask:: Reading back PCA9554 config reg failed!\n");
+        }
     }
 
-    // Semaphore will be unblocked on transfer finish
-    result = semaphHandle.acquire();
-    if(result == HasReturnvaluesIF::RETURN_OK) {
-        semaphHandle.release();
-    }
     txBuf[0] = PCA9554Regs::OUTPUT_PORT;
     txBuf[1] = 0xff;
     result = i2cComIF->sendMessage(i2cCookie, txBuf.data(), 2);
@@ -65,18 +74,29 @@ ReturnValue_t PVCHTestTask::initialize() {
     result = semaphHandle.acquire();
     if(result == HasReturnvaluesIF::RETURN_OK) {
         semaphHandle.release();
+        auto transferStatus = i2cCookie->getI2cTransferStatusHandle();
+        if(transferStatus != I2CtransferStatus::done_i2c) {
+            sif::printWarning("PVCHTestTask:: Configuring PCA9554 output reg failure!\n");
+        }
     }
 
     // Read back
-    i2cComIF->requestReceiveMessage(i2cCookie, 1);
+    result = i2cComIF->requestReceiveMessage(i2cCookie, 1);
     if(result != HasReturnvaluesIF::RETURN_OK) {
-        sif::printWarning("PVCHTestTask::initialize: Reading output failed!\n");
+        sif::printWarning("PVCHTestTask::initialize: Reading output reg failed!\n");
     }
     // Semaphore will be unblocked on transfer finish
     result = semaphHandle.acquire();
     if(result == HasReturnvaluesIF::RETURN_OK) {
         semaphHandle.release();
+        auto transferStatus = i2cCookie->getI2cTransferStatusHandle();
+        if(transferStatus != I2CtransferStatus::done_i2c) {
+            sif::printWarning("PVCHTestTask:: Reading back PCA9554 output reg failure!\n");
+        }
     }
+    uint8_t* buf = nullptr;
+    size_t readSize = 0;
+    result = i2cComIF->readReceivedMessage(i2cCookie, &buf, &readSize);
     return HasReturnvaluesIF::RETURN_OK;
 }
 
@@ -87,13 +107,16 @@ ReturnValue_t PVCHTestTask::performOperation(uint8_t opCode) {
 }
 
 void PVCHTestTask::simplePca9554Init() {
+    int result = 0;
     txBuf[0] = PCA9554Regs::CONFIG;
     txBuf[1] = 0x00;
-    //I2C_setTransferTimeout(1000);
+    I2C_setTransferTimeout(1000);
+    result = I2C_write(addresses::PVCH_PCA9554, txBuf.data(), 2);
     I2CdriverState drvState = I2C_getDriverState();
-    int result = I2C_read(addresses::PVCH_PCA9554, txBuf.data(), 2);
+    sif::printInfo("Current driver state: 0x%02x\n", drvState);
+    //int result = I2C_read(addresses::PVCH_PCA9554, txBuf.data(), 2);
     if(result != 0) {
         sif::printWarning("PVCHTestTask::simplePca9554Init: "
-                "I2C_read failed with code %d\n", result);
+                "I2C_write failed with code %d\n", result);
     }
 }
