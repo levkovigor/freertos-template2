@@ -75,9 +75,9 @@ def main():
         for define in define_list:
             define_string += f"-D{define} "
     
+    os_set = False
+    set_freertos = False
     if args.target is not None:
-        os_set = False
-        set_freertos = False
         if args.target == "at91":
             set_freertos = True
             os_set = True
