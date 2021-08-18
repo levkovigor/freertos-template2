@@ -33,15 +33,19 @@ def main():
              "(Release with Debug Information)", default="debug"
     )
     parser.add_argument("-l", "--builddir", type=str, help="Specify build directory.")
-    parser.add_argument("-g", "--generator", type=str, help="CMake Generator")
+    parser.add_argument(
+        "-g", "--generator", type=str, help="CMake Generator",
+        choices=["ninja", "make"]
+    )
     parser.add_argument(
         "-d", "--defines", 
         help="Additional custom defines passed to CMake (supply without -D prefix!)",
         nargs="*", type=str
     )
     parser.add_argument(
-        "-t", "--target-bsp", type=str,
-        help="Target BSP, combination of architecture and machine"
+        "-t", "--target", type=str,
+        help="Target", choices=["at91", "at91-bl1", "at91-bl2", 
+        "iobc", "iobc-bl", "host", "linux"]
     )
 
     args = parser.parse_args()
@@ -56,22 +60,14 @@ def main():
         generator = determine_build_generator()
         generator_cmake_arg = f"-G \"{generator}\""
     else:
-        generator_cmake_arg = f"-G \"{args.generator}\""
-
-    if args.osal is None:
-        print("No FSFW OSAL specified.")
-        cmake_fsfw_osal = determine_fsfw_osal()
-    else:
-        cmake_fsfw_osal = args.osal
-
-    cmake_build_type = determine_build_type(args.buildtype)
-
-    """
-    if args.target_bsp is not None:
-        cmake_target_cfg_cmd = f"-DTGT_BSP=\"{args.target_bsp}\""
-    else:
-        cmake_target_cfg_cmd = determine_tgt_bsp(cmake_fsfw_osal)
-    """
+        if args.generator == "ninja":
+            generator_cmake_arg = "-G \"Ninja\""
+        elif args.generator == "make":
+            if sys.platform == 'win32':
+                generator_cmake_arg = "-G \"Unix Makefiles\""
+            else:
+                generator_cmake_arg = "-G \"MinGW Makefiles\""
+    
     
     define_string = ""
     if args.defines is not None:
@@ -79,15 +75,78 @@ def main():
         for define in define_list:
             define_string += f"-D{define} "
     
+    if args.target is not None:
+        os_set = False
+        set_freertos = False
+        if args.target == "at91":
+            set_freertos = True
+            os_set = True
+        if args.target == "at91-bl1":
+            set_freertos = True
+            os_set = True
+            define_string += f"-DBOOTLOADER=ON "
+        if args.target == "at91-bl2":
+            set_freertos = True
+            os_set = True
+            define_string += f"-DBOOTLOADER=ON -DBL_STAGE_TWO=ON "
+        elif args.target == "iobc":
+            set_freertos = True
+            os_set = True
+            define_string += f"-DBOARD_IOBC=ON "
+        elif args.target == "host":
+            os_set = True
+            cmake_fsfw_osal = "host"
+            define_string += "-DHOST_BUILD=ON "
+        elif args.target == "linux":
+            os_set = True
+            cmake_fsfw_osal = "linux"
+            define_string += "-DHOST_BUILD=ON "
+    if set_freertos:
+        cmake_fsfw_osal = "freertos"
+    if not os_set:
+        if args.osal is None:
+            print("No FSFW OSAL specified.")
+            cmake_fsfw_osal = determine_fsfw_osal()
+        else:
+            cmake_fsfw_osal = args.osal
+    cmake_build_type = determine_build_type(args.buildtype)
     if args.builddir is None:
-        cmake_build_folder = determine_build_folder(cmake_build_type)
+        if args.target == "at91":
+            if cmake_build_type == "Debug":
+                cmake_build_folder = "build-Debug-AT91"
+            else:
+                cmake_build_folder = "build-Release-AT91"
+        elif args.target == "at91-bl2":
+            if cmake_build_type == "Debug":
+                cmake_build_folder = "build-Debug-BL2-AT91EK"
+            else:
+                cmake_build_folder = "build-Release-BL2-AT91EK"
+        elif args.target == "iobc":
+            if cmake_build_type == "Debug":
+                cmake_build_folder = "build-Debug-iOBC"
+            else:
+                cmake_build_folder = "build-Release-iOBC"
+        elif args.target == "iobc-bl":
+            if cmake_build_type == "Debug":
+                cmake_build_folder = "build-Debug-BL-iOBC"
+            else:
+                cmake_build_folder = "build-Release-BL-iOBC"
+        elif args.target == "host" or args.target == "linux":
+            if cmake_build_type == "Debug":
+                cmake_build_folder = "build-Debug-Host"
+            else:
+                cmake_build_folder = "build-Release-Host"
+        else:
+            cmake_build_folder = determine_build_folder(cmake_build_type)
     else:
         cmake_build_folder = args.builddir
 
     build_path = source_location + os.path.sep + cmake_build_folder
     if os.path.isdir(build_path):
-        remove_old_dir = input(f"{cmake_build_folder} folder already exists. "
-                               f"Remove old directory? [y/n]: ")
+        remove_old_dir = input(
+            f"{cmake_build_folder} folder already exists. "
+            f"Remove old directory? [y/n]: "
+        )
         if str(remove_old_dir).lower() in ["yes", "y", 1]:
             remove_old_dir = True
         else:
@@ -106,8 +165,9 @@ def main():
     print(f"Navigating into build directory: {build_path}")
     os.chdir(cmake_build_folder)
 
-    cmake_command = f"cmake {generator_cmake_arg} -DFSFW_OSAL=\"{cmake_fsfw_osal}\" " \
-                    f"-DCMAKE_BUILD_TYPE=\"{cmake_build_type}\" {define_string} {source_location}"
+    cmake_command = \
+        f"cmake {generator_cmake_arg} -DFSFW_OSAL=\"{cmake_fsfw_osal}\" " \
+        f"-DCMAKE_BUILD_TYPE=\"{cmake_build_type}\" {define_string} {source_location}"
     # Remove redundant spaces
     cmake_command = ' '.join(cmake_command.split())
     print("Running CMake command (without +): ")
