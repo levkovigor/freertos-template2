@@ -91,13 +91,20 @@ void initTask() {
     if(result != HasReturnvaluesIF::RETURN_OK){
         initmission::printAddObjectError("CFDP packet distributor",
                 objects::CFDP_PACKET_DISTRIBUTOR);
-
     }
     result = packetDistributorTask->addComponent(objects::TM_FUNNEL);
     if(result != HasReturnvaluesIF::RETURN_OK){
         initmission::printAddObjectError("TM funnel", objects::TM_FUNNEL);
     }
 
+    PeriodicTaskIF* cfdpHandlerTask = TaskFactory::instance()-> createPeriodicTask(
+                "CFDP_HANDLER_TASK", taskPrio, PeriodicTaskIF::MINIMUM_STACK_SIZE, 0.4,
+                deadlineMissedFunc);
+        result = cfdpHandlerTask->
+                addComponent(objects::CFDP_HANDLER);
+        if(result != HasReturnvaluesIF::RETURN_OK){
+            initmission::printAddObjectError("CFDP Handler", objects::CFDP_HANDLER);
+        }
 #ifdef __unix__
     taskPrio = 50;
 #endif
@@ -238,6 +245,7 @@ void initTask() {
 
     eventTask-> startTask();
     packetDistributorTask->startTask();
+    cfdpHandlerTask->startTask();
     tcpipBridgeTask->startTask();
     tcpipPollingTask->startTask();
 
