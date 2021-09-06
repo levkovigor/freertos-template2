@@ -1,6 +1,6 @@
 #include "PollingSequenceFactory.h"
 
-#include <TestConfig.h>
+#include <TestsConfig.h>
 
 #include <fsfw/serviceinterface/ServiceInterface.h>
 #include <fsfw/devicehandlers/DeviceHandlerIF.h>

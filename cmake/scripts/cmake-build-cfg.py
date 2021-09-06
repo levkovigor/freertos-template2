@@ -64,9 +64,9 @@ def main():
             generator_cmake_arg = "-G \"Ninja\""
         elif args.generator == "make":
             if sys.platform == 'win32':
-                generator_cmake_arg = "-G \"Unix Makefiles\""
-            else:
                 generator_cmake_arg = "-G \"MinGW Makefiles\""
+            else:
+                generator_cmake_arg = "-G \"Unix Makefiles\""
     
     
     define_string = ""

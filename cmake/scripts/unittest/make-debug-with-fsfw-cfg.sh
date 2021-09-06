@@ -19,15 +19,14 @@ build_generator=""
 build_type="debug"
 builddir="build-Debug-Unittest"
 defines="BUILD_UNITTEST=ON FSFW_ADD_UNITTESTS=ON"
+build_generator="make"
 
 if [ "${OS}" = "Windows_NT" ]; then
-	build_generator="MinGW Makefiles"
 	os_fsfw="host"
 	python="py"
 # Could be other OS but this works for now.
 else
     os_fsfw="linux"
-	build_generator="Unix Makefiles"
 	python="python3"
 fi
 
