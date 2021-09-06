@@ -7,7 +7,7 @@
 //! Used to determine whether C++ ostreams are used which can increase
 //! the binary size significantly. If this is disabled,
 //! the C stdio functions can be used alternatively
-#define FSFW_CPP_OSTREAM_ENABLED 	    1
+#define FSFW_CPP_OSTREAM_ENABLED 	    0
 
 //! More FSFW related printouts depending on level. Useful for development.
 #define FSFW_VERBOSE_LEVEL			    1
