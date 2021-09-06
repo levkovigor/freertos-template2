@@ -2,7 +2,9 @@
 
 # -- Command Line Interface Definitions ----------------------------------------
 
-scriptname="StartQEMU.sh"
+scriptname="start-qemu.sh"
+obsw_root_path=".."
+root_path="../.."
 
 # help text
 read -r -d '' cli_help <<EOD
@@ -127,8 +129,8 @@ fi
 
 # -- Main Logic ----------------------------------------------------------------
 
-req_directory="../obc-qemu"
-build_directory="../obc-qemu/build"
+req_directory="${root_path}/obc-qemu"
+build_directory="${root_path}/obc-qemu/build"
 if [ ! -d "$req_directory" ] || [ ! -d "$build_directory" ]; then
 	echo "Error: Requirements to start QEMU not met."
 	echo "       obc-qemu directory has to exist in same folder as the OBSW folder."
@@ -136,8 +138,8 @@ if [ ! -d "$req_directory" ] || [ ! -d "$build_directory" ]; then
 	exit
 fi
 
-directory=".."
-files=$(find . -type f -name "*.bin")
+directory=${qemu_root_path}
+files=$(find ${obsw_root_path} -type f -name "*.bin")
 
 index=0
 declare -a fileArray
@@ -187,24 +189,24 @@ else
 fi
 
 # Generate SD card image automatically after checking whether it already exists.
-sdc_img_0="../obc-qemu/build/sd0.img"
-sdc_img_1="../obc-qemu/build/sd1.img"
+sdc_img_0="${build_directory}/sd0.img"
+sdc_img_1="${build_directory}/sd1.img"
 if [ ! -f "$sdc_img_0" ]; then
 	echo "Info: SD-Card image 0 does not exist yet, creating it.."
-	../obc-qemu/build/qemu-img create -f raw "$sdc_img_0" 2G
+	${build_directory}/qemu-img create -f raw "$sdc_img_0" 2G
 fi
 
 if [ ! -f "$sdc_img_1" ]; then
 	echo "Info: SD-Card image 1 does not exist yet, creating it.."
-	../obc-qemu/build/qemu-img create -f raw "$sdc_img_1" 2G 
+	${build_directory}/qemu-img create -f raw "$sdc_img_1" 2G 
 fi
 
 	
 # Everything after -- is passed to QEMU directly, everything before
 # is passed to separate loader program.
-../obc-qemu/iobc-loader "${loader_flags[@]}" \
+${root_path}/obc-qemu/iobc-loader "${loader_flags[@]}" \
 	-- -serial stdio -monitor none \
-	-drive if=sd,index=0,format=raw,file=../obc-qemu/build/sd0.img \
-	-drive if=sd,index=1,format=raw,file=../obc-qemu/build/sd1.img \
+	-drive if=sd,index=0,format=raw,file=${build_directory}/sd0.img \
+	-drive if=sd,index=1,format=raw,file=${build_directory}/sd1.img \
 	${dbgu_flags}
 

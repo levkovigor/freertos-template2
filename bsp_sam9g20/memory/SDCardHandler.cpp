@@ -796,9 +796,9 @@ ReturnValue_t SDCardHandler::createFile(const char* dirname,
     }
 }
 
-ReturnValue_t SDCardHandler::createDirectory(const char* repositoryPath,
+ReturnValue_t SDCardHandler::createDirectory(const char* repositoryPath, const char* dirname,
         bool createParentDirs, FileSystemArgsIF* args) {
-    int result = create_directory(nullptr, repositoryPath);
+    int result = create_directory(repositoryPath, dirname);
     if(result == F_ERR_DUPLICATED) {
         return HasFileSystemIF::DIRECTORY_ALREADY_EXISTS;
     }
@@ -814,9 +814,9 @@ ReturnValue_t SDCardHandler::renameFile(const char* repositoryPath, const char* 
     return HasReturnvaluesIF::RETURN_OK;
 }
 
-ReturnValue_t SDCardHandler::removeDirectory(const char* repositoryPath,
+ReturnValue_t SDCardHandler::removeDirectory(const char* repositoryPath, const char* dirname,
         bool deleteRecurively, FileSystemArgsIF* args) {
-    int result = delete_directory(nullptr, repositoryPath);
+    int result = delete_directory(repositoryPath, dirname);
     if(result == F_ERR_NOTEMPTY) {
         return HasFileSystemIF::DIRECTORY_NOT_EMPTY;
     }

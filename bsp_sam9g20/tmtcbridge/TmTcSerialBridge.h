@@ -5,6 +5,8 @@
 #include <fsfw/tmtcservices/AcceptsTelecommandsIF.h>
 #include <bsp_sam9g20/core/RingBufferAnalyzer.h>
 
+#include "fsfw/globalfunctions/DleEncoder.h"
+
 extern "C" {
 	#include <board.h>
 	#include <AT91SAM9G20.h>
@@ -49,6 +51,7 @@ public:
 	 */
 	ReturnValue_t sendTm(const uint8_t * data, size_t dataLen) override;
 private:
+	DleEncoder dleEncoder;
 	std::array<uint8_t, TMTC_FRAME_MAX_LEN + 5> tcArray;
 	std::array<uint8_t, TMTC_FRAME_MAX_LEN + 5> tmArray;
 	object_id_t sharedRingBufferId;

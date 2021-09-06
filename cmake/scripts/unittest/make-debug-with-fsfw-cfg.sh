@@ -16,23 +16,23 @@ if [ "${counter}" -ge 5 ];then
 fi
 
 build_generator=""
-os_fsfw="freertos"
-builddir="build-Mission-BL-AT91EK"
-defines="BOOTLOADER=ON"
-build_type="size"
+build_type="debug"
+builddir="build-Debug-Unittest"
+defines="BUILD_UNITTEST=ON FSFW_ADD_UNITTESTS=ON"
+
 if [ "${OS}" = "Windows_NT" ]; then
-    build_generator="MinGW Makefiles"
-    python="py"
+	build_generator="MinGW Makefiles"
+	os_fsfw="host"
+	python="py"
 # Could be other OS but this works for now.
 else
-    build_generator="Unix Makefiles"
-    python="python3"
+    os_fsfw="linux"
+	build_generator="Unix Makefiles"
+	python="python3"
 fi
 
 echo "Running command (without the leading +):"
 set -x # Print command 
-${python} ${cfg_script_name} -o "${os_fsfw}" -g "${build_generator}" -l "${builddir}" \
-    -d "${defines}" -b "${build_type}"
-# Use this if commands are added which should not be printed
+${python} ${cfg_script_name} -o "${os_fsfw}" -g "${build_generator}" -b "${build_type}" \
+        -l "${builddir}" -d "${defines}"
 # set +x
-

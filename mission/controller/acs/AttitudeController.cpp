@@ -47,6 +47,10 @@ void AttitudeController::performControlOperation() {
     double rotationRate[3] = { 0, 0, 0 };
     double positionTargetI[3] = { 0,0,0};
     double quatLastPointing[4] = { 0, 0, 0, 1 };
+    static_cast<void>(quatBX);
+    static_cast<void>(rotationRate);
+    static_cast<void>(positionTargetI);
+    static_cast<void>(quatLastPointing);
 #if OBSW_ACS_TEST == 1
     // test code work in progress
     calcQuatAndRefRot(timevalOperations::toTimeval(currentTimeJDTest[1]), positionFTest[1],

@@ -14,10 +14,6 @@
 namespace config {
 #endif
 
-
-static const char* const BOOTLOADER_REPOSITORY =         "BIN/IOBC/BL";
-static const char* const SW_REPOSITORY =                 "BIN/IOBC/OBSW";
-
 #ifdef __cplusplus
 }
 #endif

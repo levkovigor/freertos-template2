@@ -53,7 +53,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Set names and variables
 set(TARGET_NAME ${CMAKE_PROJECT_NAME})
-if(CUSTOM_UNITTEST_RUNNER)
+
+if(FSFW_CUSTOM_UNITTEST_RUNNER OR FSFW_ADD_UNITTESTS)
     set(CATCH2_TARGET Catch2)
 else()
     set(CATCH2_TARGET Catch2WithMain)
@@ -148,10 +149,12 @@ if(NOT HOST_BUILD)
             set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/${BOOTLOADER_PATH}/norflash.lds)
         else()
             if(BL_STAGE_TWO)
+                set(BOOTLOADER_SECOND_STAGE ON)
                 set(LINKER_SCRIPT 
                     ${CMAKE_CURRENT_SOURCE_DIR}/${BOOTLOADER_PATH}/sdram_second_stage_bl.lds
                 )
             else()
+                set(BOOTLOADER_FIRST_STAGE ON)
                 set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/${BOOTLOADER_PATH}/sram.lds)
             endif()
         endif()
@@ -193,6 +196,7 @@ if(NOT BOOTLOADER)
         configure_file("${FSFW_CONFIG_PATH}/TestConfig.h.in" TestConfig.h)
     endif()
 else()
+    configure_file("${BOOTLOADER_PATH}/config/bootloaderConfig.h.in" bootloaderConfig.h)
 endif()
 
 set(LINK_HCC ON)
@@ -352,6 +356,7 @@ if(NOT HOST_BUILD)
             if(BL_STAGE_TWO)
                 set(TYPE_PRINTOUT "${TYPE_PRINTOUT} (second stage)")
             else()
+
                 set(TYPE_PRINTOUT "${TYPE_PRINTOUT} (first stage)")
             endif()
         endif()
