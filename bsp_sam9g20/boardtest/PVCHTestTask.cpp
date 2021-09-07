@@ -7,6 +7,7 @@
 
 #include "fsfw/objectmanager/ObjectManager.h"
 #include "fsfw/serviceinterface/ServiceInterface.h"
+#include "fsfw/globalfunctions/arrayprinter.h"
 
 PVCHTestTask::PVCHTestTask(object_id_t objectId): SystemObject(objectId) {
 }
@@ -18,7 +19,7 @@ PVCHTestTask::~PVCHTestTask() {
 }
 
 ReturnValue_t PVCHTestTask::initialize() {
-    simplePca9554Init();
+    //simplePca9554Init();
     i2cComIF = ObjectManager::instance()->get<I2cDeviceComIF>(objects::I2C_DEVICE_COM_IF);
     if(i2cComIF == nullptr) {
         sif::printWarning("PVCHTestTask::initialize: I2C ComIF invalid!\n");
@@ -35,7 +36,7 @@ ReturnValue_t PVCHTestTask::initialize() {
     BinarySemaphore& semaphHandle = i2cCookie->getSemaphoreObjectHandle();
     // Set ports as output
     txBuf[0] = PCA9554Regs::CONFIG;
-    txBuf[1] = 0x00;
+    txBuf[1] = 0xff;
 
     result = i2cComIF->sendMessage(i2cCookie, txBuf.data(), 2);
     if(result != HasReturnvaluesIF::RETURN_OK) {
@@ -65,7 +66,7 @@ ReturnValue_t PVCHTestTask::initialize() {
     }
 
     txBuf[0] = PCA9554Regs::OUTPUT_PORT;
-    txBuf[1] = 0xff;
+    txBuf[1] = 0x5;
     result = i2cComIF->sendMessage(i2cCookie, txBuf.data(), 2);
     if(result != HasReturnvaluesIF::RETURN_OK) {
         sif::printWarning("PVCHTestTask::initialize: Setting all outputs high failed!\n");
@@ -97,6 +98,8 @@ ReturnValue_t PVCHTestTask::initialize() {
     uint8_t* buf = nullptr;
     size_t readSize = 0;
     result = i2cComIF->readReceivedMessage(i2cCookie, &buf, &readSize);
+    sif::printInfo("Read back I2C output port: ");
+    arrayprinter::print(buf, readSize);
     return HasReturnvaluesIF::RETURN_OK;
 }
 

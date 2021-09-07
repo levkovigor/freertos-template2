@@ -13,7 +13,7 @@ enum logicalAddresses: address_t {
     PCDU,
     /* I2C Addresses go from 0 to 128 ! */
     I2C_MGM = 0x1E,
-    PVCH_PCA9554 = 0x4e,
+    PVCH_PCA9554 = 0x27,//0x4e,
 
     /* SPI Addresses (= Object Address) */
     SPI_DLR_PVCH = objects::DLR_PVCH,
