@@ -17,7 +17,7 @@ fi
 
 build_generator=""
 os_fsfw="freertos"
-builddir="build-Release-AT91"
+builddir="build-Release-AT91EK"
 build_type="size"
 if [ "${OS}" = "Windows_NT" ]; then
     build_generator="MinGW Makefiles"
