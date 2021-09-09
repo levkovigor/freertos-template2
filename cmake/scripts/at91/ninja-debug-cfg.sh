@@ -17,7 +17,7 @@ fi
 
 build_generator=""
 os_fsfw="freertos"
-builddir="build-Debug-AT91"
+builddir="build-Debug-AT91EK"
 build_type="debug"
 build_generator="ninja"
 if [ "${OS}" = "Windows_NT" ]; then

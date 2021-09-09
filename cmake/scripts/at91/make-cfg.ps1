@@ -40,10 +40,10 @@ if ("${counter}" -ge 5) {
 }
 
 if ($BuildType -eq 'debug')  {
-	$BuildDir = 'build-Debug-AT91'
+	$BuildDir = 'build-Debug-AT91EK'
 }
 else {
-	$BuildDir = 'build-Release-AT91'
+	$BuildDir = 'build-Release-AT91EK'
 }
 cd ${script_loc}
 
