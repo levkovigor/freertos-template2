@@ -19,12 +19,11 @@ build_generator=""
 os_fsfw="freertos"
 builddir="build-Debug-AT91"
 build_type="debug"
+build_generator="make"
 if [ "${OS}" = "Windows_NT" ]; then
-    build_generator="MinGW Makefiles"
     python="py"
 # Could be other OS but this works for now.
 else
-    build_generator="Unix Makefiles"
     python="python3"
 fi
 

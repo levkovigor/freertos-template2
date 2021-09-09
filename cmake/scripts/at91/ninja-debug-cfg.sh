@@ -19,7 +19,7 @@ build_generator=""
 os_fsfw="freertos"
 builddir="build-Debug-AT91"
 build_type="debug"
-build_generator="Ninja"
+build_generator="ninja"
 if [ "${OS}" = "Windows_NT" ]; then
     python="py"
 # Could be other OS but this works for now.
