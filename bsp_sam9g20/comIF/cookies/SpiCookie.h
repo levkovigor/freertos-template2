@@ -30,7 +30,7 @@ enum class SlaveType: uint8_t {
 	DEMULTIPLEXER_1,
 	DEMULTIPLEXER_2,
 	DEMULTIPLEXER_3,
-	DEMULTIPLEXER_4,
+	DEMULTIPLEXER_4
 };
 
 enum class DemultiplexerOutput: uint8_t {
@@ -58,8 +58,9 @@ public:
 	        (SPI_MAX_BUS_SPEED + SPI_MIN_BUS_SPEED) / 2;
 
 	SpiCookie(address_t logicalAddress, size_t maxReplyLen,
-			SlaveType slaveType, DemultiplexerOutput demuxOutput,
-			SPImode spiMode, uint8_t delayBetweenChars = 1,
+			SlaveType slaveType, SPImode spiMode,
+			DemultiplexerOutput demuxOutput = DemultiplexerOutput::UNASSIGNED,
+			uint8_t delayBetweenChars = 1,
 			uint32_t busSpeedHz = SPI_DEFAULT_SPEED ,
 			uint8_t delayBeforeSpck = 1, portTickType postTransferDelay = 0);
 

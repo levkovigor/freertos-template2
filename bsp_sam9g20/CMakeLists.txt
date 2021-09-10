@@ -14,6 +14,7 @@ if(NOT BOOTLOADER)
     add_subdirectory(boardtest)
     add_subdirectory(core)
     add_subdirectory(fsfwconfig)
+    add_subdirectory(devices)
 endif()
 
 add_subdirectory(common)

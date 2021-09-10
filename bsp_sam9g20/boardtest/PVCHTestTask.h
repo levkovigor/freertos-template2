@@ -4,10 +4,10 @@
 #include "fsfw/objectmanager/SystemObject.h"
 #include "fsfw/tasks/ExecutableObjectIF.h"
 
-#include <array>
+#include "bsp_sam9g20/devices/pvch/Pca9554.h"
+#include "bsp_sam9g20/comIF/cookies/I2cCookie.h"
 
-class I2cDeviceComIF;
-class I2cCookie;
+#include <array>
 
 class PVCHTestTask: public SystemObject,
         public ExecutableObjectIF {
@@ -18,20 +18,8 @@ public:
     ReturnValue_t initialize() override;
     ReturnValue_t performOperation(uint8_t opCode) override;
 private:
-    // Cookie required to use the I2C communication interface
-    I2cCookie* i2cCookie = nullptr;
-    I2cDeviceComIF* i2cComIF = nullptr;
+    Pca9554 i2cMux;
 
-    enum PCA9554Regs: uint8_t {
-        INPUT_PORT = 0,
-        OUTPUT_PORT = 1,
-        POLARITY_INVERSION = 2,
-        CONFIG = 3
-    };
-
-    std::array<uint8_t, 3> txBuf;
-
-    void simplePca9554Init();
 };
 
 #endif /* BSP_SAM9G20_BOARDTEST_PVCHTESTTASK_H_ */

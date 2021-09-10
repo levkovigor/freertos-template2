@@ -286,9 +286,8 @@ void Factory::produce(void* args) {
     // NCPHA == 1) instead of mode 3 (CPOL == 1 and NCPHA == 0) but we have to..
     // UPDATE: Might be related to speed not being 10 MHz
     spiCookie = new SpiCookie(addresses::SPI_Test_MGM, 16,
-            SlaveType::SLAVE_SELECT_1,
-            DemultiplexerOutput::OWN_SLAVE_SELECT,
-            SPImode::mode0_spi, 0, 3'900'000, 0);
+            SlaveType::SLAVE_SELECT_1, SPImode::mode0_spi,
+            DemultiplexerOutput::OWN_SLAVE_SELECT, 0, 3'900'000, 0);
     MGMHandlerLIS3MDL* mgmHandler = new MGMHandlerLIS3MDL(objects::SPI_Test_MGM,
             objects::SPI_DEVICE_COM_IF, spiCookie);
     mgmHandler->setStartUpImmediately();
@@ -296,8 +295,8 @@ void Factory::produce(void* args) {
     //CookieIF * i2cCookie_0 = new I2cCookie(addresses::I2C_ARDUINO_0,
     //        I2C_MAX_REPLY_LEN);
     spiCookie = new SpiCookie(addresses::SPI_ARDUINO_0,
-            SPI_MAX_REPLY_LEN, SlaveType::SLAVE_SELECT_0,
-            DemultiplexerOutput::OWN_SLAVE_SELECT, SPImode::mode0_spi,
+            SPI_MAX_REPLY_LEN, SlaveType::SLAVE_SELECT_0, SPImode::mode0_spi,
+            DemultiplexerOutput::OWN_SLAVE_SELECT,
             delayBetweenChars, SPI_MIN_BUS_SPEED, delayBeforeSpck);
     new AtmelArduinoHandler(objects::ARDUINO_0, objects::SPI_DEVICE_COM_IF,
             spiCookie, switches::DUMMY, std::string("Arduino 0"));

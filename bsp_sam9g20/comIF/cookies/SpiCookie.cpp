@@ -4,8 +4,8 @@
 #include <fsfw/serviceinterface/ServiceInterface.h>
 
 SpiCookie::SpiCookie(address_t logicalAddress, size_t maxReplyLen,
-		SlaveType slaveType, DemultiplexerOutput demuxOutput,
-		SPImode spiMode, uint8_t delayBetweenChars, uint32_t busSpeedHz,
+		SlaveType slaveType, SPImode spiMode, DemultiplexerOutput demuxOutput,
+		uint8_t delayBetweenChars, uint32_t busSpeedHz,
 		uint8_t delayBeforeSpck, portTickType postTransferDelay):
 		spiAddress(logicalAddress), maxReplyLen(maxReplyLen),
 		slaveType(slaveType), demuxOutput(demuxOutput) {
