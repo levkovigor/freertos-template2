@@ -12,7 +12,7 @@ class SpiDeviceComIF;
 /**
  * @brief   MAX7301 GPIO expander control software used on the PVCH board supplied by the DLR
  * @details
- * This GPIO expander is used to control the Switchable Resistor Network (SRN) of the PVBCH board.
+ * This GPIO expander is used to control the Switchable Resistor Network (SRN) of the PVCH board.
  * 8 Resistors are located on ports 4 to 11.
  */
 class Max7301 {
