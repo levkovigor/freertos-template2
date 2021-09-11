@@ -125,6 +125,7 @@ void SpiCookie::determineSpiSlave(SlaveType slaveType) {
 	case(SlaveType::DEMULTIPLEXER_2):
 	case(SlaveType::DEMULTIPLEXER_3):
 	case(SlaveType::DEMULTIPLEXER_4):
+	case(SlaveType::PVCH): {
 	    // The slave variable should not matter for demultiplexer devices.
 	    // The slave select logic will be performed with GPIO pins.
 	    // Still set to valid value because ISIS driver expects this.
@@ -133,6 +134,7 @@ void SpiCookie::determineSpiSlave(SlaveType slaveType) {
 	    // Also see SpiDeviceComIF.h
 	    spiParameters.slave = SPIslave::slave0_spi;
 		return;
+	}
 	default: {
         // The device handler must check for the slave number, we can't / don't
         // want to use exceptions.

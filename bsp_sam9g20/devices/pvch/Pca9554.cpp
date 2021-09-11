@@ -87,42 +87,42 @@ ReturnValue_t Pca9554::clearAdcModeHigh() {
 ReturnValue_t Pca9554::setCsLoadSw() {
     // Apparently the DLR does not want this output state to persist
     uint8_t tmpCmd = outputState;
-    bitutil::bitSet(&outputState, 2);
+    bitutil::bitSet(&tmpCmd, 2);
     return blockingWriteWrapper(PCA9554Regs::OUTPUT_PORT, tmpCmd);
 }
 
 ReturnValue_t Pca9554::clearCsLoadSw() {
     // Apparently the DLR does not want this output state to persist
     uint8_t tmpCmd = outputState;
-    bitutil::bitClear(&outputState, 2);
+    bitutil::bitClear(&tmpCmd, 2);
     return blockingWriteWrapper(PCA9554Regs::OUTPUT_PORT, tmpCmd);
 }
 
 ReturnValue_t Pca9554::setMuxSync() {
     // Apparently the DLR does not want this output state to persist
     uint8_t tmpCmd = outputState;
-    bitutil::bitSet(&outputState, 3);
+    bitutil::bitSet(&tmpCmd, 3);
     return blockingWriteWrapper(PCA9554Regs::OUTPUT_PORT, tmpCmd);
 }
 
 ReturnValue_t Pca9554::clearMuxSync() {
     // Apparently the DLR does not want this output state to persist
     uint8_t tmpCmd = outputState;
-    bitutil::bitClear(&outputState, 3);
+    bitutil::bitClear(&tmpCmd, 3);
     return blockingWriteWrapper(PCA9554Regs::OUTPUT_PORT, tmpCmd);
 }
 
 ReturnValue_t Pca9554::setAdcSync() {
     // Apparently the DLR does not want this output state to persist
     uint8_t tmpCmd = outputState;
-    bitutil::bitSet(&outputState, 4);
+    bitutil::bitSet(&tmpCmd, 4);
     return blockingWriteWrapper(PCA9554Regs::OUTPUT_PORT, tmpCmd);
 }
 
 ReturnValue_t Pca9554::clearAdcSync() {
     // Apparently the DLR does not want this output state to persist
     uint8_t tmpCmd = outputState;
-    bitutil::bitClear(&outputState, 4);
+    bitutil::bitClear(&tmpCmd, 4);
     return blockingWriteWrapper(PCA9554Regs::OUTPUT_PORT, tmpCmd);
 }
 

@@ -87,6 +87,7 @@ public:
 	 * @return
 	 */
 	static ReturnValue_t checkAddress(address_t spiAddress);
+	BinarySemaphore& getSpiSemaphoreHandle();
 
 private:
 	BinarySemaphore spiSemaphore;

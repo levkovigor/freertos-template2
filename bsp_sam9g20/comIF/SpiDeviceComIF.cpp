@@ -37,6 +37,7 @@ ReturnValue_t SpiDeviceComIF::checkAddress(address_t spiAddress) {
     case(addresses::SPI_ARDUINO_2):
     case(addresses::SPI_ARDUINO_3):
     case(addresses::SPI_ARDUINO_4):
+    case(addresses::SPI_DLR_PVCH):
     return RETURN_OK;
     default:
         return SPI_INVALID_ADDRESS;
@@ -376,6 +377,9 @@ void SpiDeviceComIF::handleGpioOutputSwitching(DemultiplexerOutput demuxOutput) 
     case(DemultiplexerOutput::OWN_SLAVE_SELECT): {
         return;
     }
+    case(DemultiplexerOutput::UNASSIGNED): {
+        return;
+    }
     default: {
 #if FSFW_CPP_OSTREAM_ENABLED == 1
         sif::error << "SPI ComIF: Invalid decoder output"
@@ -409,6 +413,11 @@ void SpiDeviceComIF::handleGpioDecoderSelect(SlaveType slave) {
     case(SlaveType::DEMULTIPLEXER_4): {
         GpioDeviceComIF::enableDecoder4();
         pullDummySlaveSelectLow = true;
+        return;
+    }
+    case(SlaveType::PVCH): {
+        pullDummySlaveSelectLow = true;
+        return;
     }
     return;
     default: {
@@ -419,3 +428,6 @@ void SpiDeviceComIF::handleGpioDecoderSelect(SlaveType slave) {
     }
 }
 
+BinarySemaphore& SpiDeviceComIF::getSpiSemaphoreHandle() {
+    return spiSemaphore;
+}

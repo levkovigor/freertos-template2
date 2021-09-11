@@ -30,7 +30,8 @@ enum class SlaveType: uint8_t {
 	DEMULTIPLEXER_1,
 	DEMULTIPLEXER_2,
 	DEMULTIPLEXER_3,
-	DEMULTIPLEXER_4
+	DEMULTIPLEXER_4,
+	PVCH
 };
 
 enum class DemultiplexerOutput: uint8_t {

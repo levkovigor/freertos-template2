@@ -11,11 +11,6 @@ class SpiDeviceComIF;
 
 class Max7301 {
 public:
-    Max7301(SpiDeviceComIF* comIF, Pca9554& i2cMux);
-
-    ReturnValue_t initialize();
-
-private:
     enum RegisterData: uint8_t {
         OUTPUT = 0x01,
         INPUT = 0x02,
@@ -76,10 +71,21 @@ private:
 
     };
 
+    Max7301(Pca9554& i2cMux);
+
+    ReturnValue_t initialize();
+
     ReturnValue_t set(CmdAddr cmdAddr, RegisterData data);
+
+    ReturnValue_t read(CmdAddr cmdAddr, uint8_t& readByte);
+
+private:
+    static constexpr uint8_t READ_MSK = 0b10000000;
+
     std::array <uint8_t, 3> txBuf = {};
     Pca9554& i2cMux;
     SpiCookie spiCookie;
+    BinarySemaphore* spiSemaph = nullptr;
     SpiDeviceComIF* spiComIF;
 };
 

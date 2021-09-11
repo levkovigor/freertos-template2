@@ -1,15 +1,22 @@
-#include <fsfw/tasks/TaskFactory.h>
 #include "Max7301.h"
 #include "devices/logicalAddresses.h"
+
+#include "fsfw/tasks/TaskFactory.h"
+#include "fsfw/objectmanager.h"
 #include "bsp_sam9g20/comIF/SpiDeviceComIF.h"
 
-Max7301::Max7301(SpiDeviceComIF *comIF, Pca9554& i2cMux):
+Max7301::Max7301(Pca9554& i2cMux):
     i2cMux(i2cMux),
-    spiCookie(addresses::SPI_DLR_PVCH, 16, SlaveType::UNASSIGNED, SPImode::mode0_spi),
-    spiComIF(comIF) {
+    spiCookie(addresses::SPI_DLR_PVCH, 16, SlaveType::PVCH, SPImode::mode0_spi) {
+    spiComIF = ObjectManager::instance()->get<SpiDeviceComIF>(objects::SPI_DEVICE_COM_IF);
     if(spiComIF == nullptr) {
         sif::printWarning("Max7301: SPI communication interface is invalid\n");
     }
+    ReturnValue_t result = spiComIF->initializeInterface(&spiCookie);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        sif::printWarning("MAx7301: SPI ComIF initialization failed!\n");
+    }
+    spiSemaph = &spiComIF->getSpiSemaphoreHandle();
 }
 
 ReturnValue_t Max7301::initialize() {
@@ -69,4 +76,39 @@ ReturnValue_t Max7301::set(CmdAddr cmdAddr, RegisterData data) {
         return result;
     }
     return i2cMux.setCsLoadSw();
+}
+
+ReturnValue_t Max7301::read(CmdAddr cmdAddr, uint8_t &readByte) {
+    ReturnValue_t result = i2cMux.clearCsLoadSw();
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+    txBuf[0] = cmdAddr | READ_MSK;
+    txBuf[1] = 0x00;
+    result = spiComIF->sendMessage(&spiCookie, txBuf.data(), 2);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        sif::printWarning("Max7301: SPI transfer failed\n");
+        return result;
+    }
+
+    result = spiSemaph->acquire(SemaphoreIF::TimeoutType::WAITING, 50);
+    if(result == HasReturnvaluesIF::RETURN_OK) {
+        spiSemaph->release();
+    }
+    else {
+        sif::printWarning("Max7301: SPI transfer timed out\n");
+    }
+    result = spiComIF->getSendSuccess(&spiCookie);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+    uint8_t rxBuf[2] = {};
+    size_t readLen = 0;
+    uint8_t* rxPtr = rxBuf;
+    result = spiComIF->readReceivedMessage(&spiCookie, &rxPtr, &readLen);
+    if(result != HasReturnvaluesIF::RETURN_OK) {
+        return result;
+    }
+    readByte = rxBuf[1];
+    return HasReturnvaluesIF::RETURN_OK;
 }
