@@ -75,6 +75,13 @@ ReturnValue_t Max7301::set(CmdAddr cmdAddr, RegisterData data) {
         sif::printWarning("Max7301: SPI transfer failed\n");
         return result;
     }
+    result = spiSemaph->acquire(SemaphoreIF::TimeoutType::WAITING, 50);
+    if(result == HasReturnvaluesIF::RETURN_OK) {
+        spiSemaph->release();
+    }
+    else {
+        sif::printWarning("Max7301: SPI transfer timed out\n");
+    }
     return i2cMux.setCsLoadSw();
 }
 

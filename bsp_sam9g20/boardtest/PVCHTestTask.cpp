@@ -21,6 +21,7 @@ ReturnValue_t PVCHTestTask::initialize() {
 
     switch(testMode) {
     case(TestModes::MAX_7301): {
+        result = gpioExpander.initialize();
         uint8_t readByte = 0;
         result = gpioExpander.read(Max7301::CmdAddr::P_CONF_7_TO_4, readByte);
         if(result != HasReturnvaluesIF::RETURN_OK) {
