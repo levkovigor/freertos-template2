@@ -12,9 +12,11 @@
 class I2cDeviceComIF;
 
 /**
- * @brief   Wrapper for the PCA9554 I2C demultiplexer used on the PVCH board supplied by the DLR
+ * @brief   PCA9554 I2C demultiplexer control software used on the PVCH board supplied by the DLR
  * @details
- * Based on code provided by the DLR
+ * This expander is required because there are not enough GPIO pins available on the iOBC to
+ * switch the other SPI devices on the PVCH board otherwise.
+ * Based on code provided by the DLR.
  *
  * @author  R. Mueller
  */
