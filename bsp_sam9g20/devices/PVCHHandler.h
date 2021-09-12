@@ -1,5 +1,6 @@
-#include <bsp_sam9g20/devices/pvch/PvchWorker.h>
-#include <fsfw/controller/ExtendedControllerBase.h>
+#include "pvch/PvchWorker.h"
+
+#include "fsfw/controller/ExtendedControllerBase.h"
 
 /**
  * @brief       Device Handler for the DLR PVCH device
