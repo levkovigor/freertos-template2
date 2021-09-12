@@ -1,8 +1,12 @@
 #include "PVCHHandler.h"
+#include "objects/systemObjectList.h"
 
-PVCHHandler::PVCHHandler(object_id_t objectId, object_id_t comIF,
+#include "fsfw/devicehandlers/DeviceCommunicationIF.h"
+
+PVCHHandler::PVCHHandler(object_id_t objectId, object_id_t pvchWorkerId,
 		CookieIF * comCookie, uint8_t switchId):
-		DeviceHandlerBase(objectId, comIF, comCookie), switchId(switchId) {
+        DeviceHandlerBase(objectId, objects::SPI_DEVICE_COM_IF, comCookie),
+		pvchWorker(pvchWorkerId), switchId(switchId) {
 }
 
 PVCHHandler::~PVCHHandler() {

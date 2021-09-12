@@ -1,3 +1,4 @@
+#include <bsp_sam9g20/devices/pvch/PvchWorker.h>
 #include <fsfw/devicehandlers/DeviceHandlerBase.h>
 
 /**
@@ -11,7 +12,7 @@
  */
 class PVCHHandler: public DeviceHandlerBase {
 public:
-	PVCHHandler(object_id_t objectId, object_id_t comIF, CookieIF * comCookie,
+	PVCHHandler(object_id_t objectId, object_id_t pvchWorkerId, CookieIF * comCookie,
 			uint8_t switchId);
 	virtual~ PVCHHandler();
 protected:
@@ -36,6 +37,7 @@ protected:
 	ReturnValue_t getSwitches(const uint8_t **switches,
 			uint8_t *numberOfSwitches) override;
 private:
+	PvchWorker pvchWorker;
 	const uint8_t switchId;
 };
 
