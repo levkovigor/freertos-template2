@@ -6,6 +6,8 @@
  * @details
  * The Voltage and Current measurements in the PVCH experiment are fed and converted to digital
  * values by this ADC.
+ * Based on code provided by the DLR.
+ * @author  R. Mueller
  */
 class Ads1278 {
 public:

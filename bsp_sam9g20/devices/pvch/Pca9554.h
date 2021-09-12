@@ -16,8 +16,8 @@ class I2cDeviceComIF;
  * @details
  * This expander is required because there are not enough GPIO pins available on the iOBC to
  * switch the other SPI devices on the PVCH board otherwise.
- * Based on code provided by the DLR.
  *
+ * Based on code provided by the DLR.
  * @author  R. Mueller
  */
 class Pca9554 {

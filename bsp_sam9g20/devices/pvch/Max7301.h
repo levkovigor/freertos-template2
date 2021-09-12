@@ -14,6 +14,9 @@ class SpiDeviceComIF;
  * @details
  * This GPIO expander is used to control the Switchable Resistor Network (SRN) of the PVCH board.
  * 8 Resistors are located on ports 4 to 11.
+ *
+ * Based on code provided by the DLR.
+ * @author  R. Mueller
  */
 class Max7301 {
 public:

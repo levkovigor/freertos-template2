@@ -3,4 +3,5 @@ target_sources(${TARGET_NAME} PRIVATE
     Max7301.cpp
     Adg731.cpp
     Ads1278.cpp
+    PvchWorker.cpp
 )

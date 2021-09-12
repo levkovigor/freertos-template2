@@ -14,6 +14,9 @@ class SpiDeviceComIF;
  * @details
  * This device switches the Current and Voltage measurement channels for the characterization
  * experiment.
+ *
+ * Based on code provided by the DLR.
+ * @author  R. Mueller
  */
 class Adg731 {
 public:

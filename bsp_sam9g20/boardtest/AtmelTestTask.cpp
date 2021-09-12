@@ -12,7 +12,7 @@
 #include <bsp_sam9g20/memory/HCCFileGuard.h>
 #include <bsp_sam9g20/memory/SDCardAccess.h>
 #include <bsp_sam9g20/memory/SDCardHandler.h>
-#include <mission/devices/PCVHHandler.h>
+#include "bsp_sam9g20/devices/PVCHHandler.h"
 
 extern "C" {
 #ifdef AT91SAM9G20_EK
