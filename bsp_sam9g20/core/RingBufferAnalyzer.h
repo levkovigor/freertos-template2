@@ -2,6 +2,7 @@
 #define SAM9G20_UTILITY_SERIALANALYZERHELPER_H_
 
 #include <fsfw/container/SharedRingBuffer.h>
+#include <fsfw/globalfunctions/DleEncoder.h>
 #include <vector>
 
 enum class AnalyzerModes {
@@ -29,6 +30,8 @@ public:
 	RingBufferAnalyzer(SharedRingBuffer* buffer,
 			AnalyzerModes mode = AnalyzerModes::DLE_ENCODING);
 
+	virtual ~RingBufferAnalyzer();
+
 	/**
 	 * Search for DLE encoded packets
 	 * @param buffer If a packet is found, it will be copied into that buffer
@@ -45,6 +48,7 @@ public:
 			size_t maxData, size_t* packetSize);
 
 private:
+	DleEncoder* dleEncoder = nullptr;
 	AnalyzerModes mode;
 	SharedRingBuffer* ringBuffer;
 	std::vector<uint8_t> analysisVector;
