@@ -1,6 +1,8 @@
 #ifndef MISSION_DEVICES_PVCH_PCA9554_H_
 #define MISSION_DEVICES_PVCH_PCA9554_H_
 
+#include "PvchIF.h"
+
 #include "fsfw/devicehandlers/CookieIF.h"
 #include "fsfw/devicehandlers/DeviceCommunicationIF.h"
 #include "fsfw/returnvalues/HasReturnvaluesIF.h"

@@ -7,21 +7,23 @@ extern "C" {
 #include <board.h>
 }
 
+std::vector<Pin> GpioDeviceComIF::pins = {
+        PIN_GPIO00, PIN_GPIO01, PIN_GPIO02, PIN_GPIO03, PIN_GPIO04, PIN_GPIO05, PIN_GPIO06,
+        PIN_GPIO07, PIN_GPIO08, PIN_GPIO09, PIN_GPIO10, PIN_GPIO11,PIN_GPIO12, PIN_GPIO13,
+        PIN_GPIO14, PIN_GPIO15, PIN_GPIO16, PIN_GPIO17, PIN_GPIO18, PIN_GPIO19, PIN_GPIO20,
+        PIN_GPIO21, PIN_GPIO22, PIN_GPIO23, PIN_GPIO24, PIN_GPIO25, PIN_GPIO26
+};
+
+Pin GpioDeviceComIF::invalidPin = {0, nullptr, 0, 0, 0};
+
 GpioDeviceComIF::GpioDeviceComIF(object_id_t objectId_):
 		SystemObject(objectId_) {
-    /* I think configuring these GPIO pins disables the ethernet capabilities. This
-    might be due to a multiplexed pin because the iOBC does not use have an ethernet port */
+    // I think configuring these GPIO pins disables the ethernet capabilities. This
+    // might be due to a multiplexed pin because the iOBC does not use have an ethernet port
 #if OBSW_ENABLE_ETHERNET == 0
-	/* Configure all pins which were designated as GPIO pins by ISIS.
-    The pins are configured to be output pins by default. */
-	Pin pin[] = {PIN_GPIO00, PIN_GPIO01, PIN_GPIO02, PIN_GPIO03, PIN_GPIO04,
-			PIN_GPIO05, PIN_GPIO06, PIN_GPIO07, PIN_GPIO08, PIN_GPIO09,
-			PIN_GPIO10, PIN_GPIO11,PIN_GPIO12, PIN_GPIO13, PIN_GPIO14,
-			PIN_GPIO15, PIN_GPIO16, PIN_GPIO17, PIN_GPIO18, PIN_GPIO19,
-			PIN_GPIO20, PIN_GPIO21, PIN_GPIO22, PIN_GPIO23, PIN_GPIO24,
-			PIN_GPIO25, PIN_GPIO26};
-	unsigned int pinSize = PIO_LISTSIZE(pin);
-	PIO_Configure(pin,pinSize);
+	// Configure all pins which were designated as GPIO pins by ISIS
+    // The pins are configured to be output pins by default
+	PIO_Configure(pins.data(), pins.size());
 #endif /* OBSW_ENABLE_ETHERNET == 0 */
 }
 
@@ -30,149 +32,148 @@ GpioDeviceComIF::~GpioDeviceComIF() {
 
 /* Hardware Abstraction */
 
-void GpioDeviceComIF::setGPIO(addresses::LogAddr address) {
-	Pin pin[1] = {pinSelect(address)};
-	PIO_Set(pin);
+void GpioDeviceComIF::setGpio(addresses::LogAddr address) {
+	auto pin = pinSelect(address);
+	PIO_Set(&pin);
 }
 
-void GpioDeviceComIF::clearGPIO(addresses::LogAddr address) {
-	Pin pin[1] = {pinSelect(address)};
-	PIO_Clear(pin);
+void GpioDeviceComIF::clearGpio(addresses::LogAddr address) {
+	auto pin = pinSelect(address);
+	PIO_Clear(&pin);
 }
 
-bool GpioDeviceComIF::getGPIO(addresses::LogAddr address, uint8_t outputPin) {
-    Pin pin[1] = {pinSelect(address)};
-    if(outputPin) {
-        pin[0].type = PIO_OUTPUT_0;
-    }
-    else {
-        pin[0].type = PIO_INPUT;
-    }
-    return PIO_Get(pin);
+bool GpioDeviceComIF::getGpio(addresses::LogAddr address) {
+    auto pin = pinSelect(address);
+    return PIO_Get(&pin);
+}
+
+bool GpioDeviceComIF::configurePin(addresses::LogAddr address, PinType pinType, uint8_t pinCfg) {
+    auto pin = pinSelect(address);
+    pin.type = pinType;
+    pin.attribute = pinCfg;
+    return PIO_Configure(&pin, 1);
 }
 
 /* Decoder Select. See truth table of Housekeeping Board. */
 void GpioDeviceComIF::enableDecoder1() {
     // Low, Low, High configuration.
-    clearGPIO(addresses::DEC_SELECT_0_GPIO00);
-    clearGPIO(addresses::DEC_SELECT_1_GPIO01);
-    setGPIO(addresses::DEC_SELECT_2_GPIO02);
+    clearGpio(addresses::DEC_SELECT_0_GPIO00);
+    clearGpio(addresses::DEC_SELECT_1_GPIO01);
+    setGpio(addresses::DEC_SELECT_2_GPIO02);
 }
 void GpioDeviceComIF::enableDecoder2() {
     // High, High, Low configuration.
-    setGPIO(addresses::DEC_SELECT_0_GPIO00);
-    setGPIO(addresses::DEC_SELECT_1_GPIO01);
-    clearGPIO(addresses::DEC_SELECT_2_GPIO02);
+    setGpio(addresses::DEC_SELECT_0_GPIO00);
+    setGpio(addresses::DEC_SELECT_1_GPIO01);
+    clearGpio(addresses::DEC_SELECT_2_GPIO02);
 }
 void GpioDeviceComIF::enableDecoder3() {
     // High, Low, High configuration.
-    setGPIO(addresses::DEC_SELECT_0_GPIO00);
-    clearGPIO(addresses::DEC_SELECT_1_GPIO01);
-    setGPIO(addresses::DEC_SELECT_2_GPIO02);
+    setGpio(addresses::DEC_SELECT_0_GPIO00);
+    clearGpio(addresses::DEC_SELECT_1_GPIO01);
+    setGpio(addresses::DEC_SELECT_2_GPIO02);
 }
 void GpioDeviceComIF::enableDecoder4() {
     // Dec1 and Dec4 will be on simultaneously in current configuration.
     // shall be fixed soon hopefully.
-    clearGPIO(addresses::DEC_SELECT_0_GPIO00);
-    clearGPIO(addresses::DEC_SELECT_1_GPIO01);
-    setGPIO(addresses::DEC_SELECT_2_GPIO02);
+    clearGpio(addresses::DEC_SELECT_0_GPIO00);
+    clearGpio(addresses::DEC_SELECT_1_GPIO01);
+    setGpio(addresses::DEC_SELECT_2_GPIO02);
 }
 
 void GpioDeviceComIF::disableDecoders() {
-    clearGPIO(addresses::DEC_SELECT_0_GPIO00);
-    clearGPIO(addresses::DEC_SELECT_1_GPIO01);
-    clearGPIO(addresses::DEC_SELECT_2_GPIO02);
+    clearGpio(addresses::DEC_SELECT_0_GPIO00);
+    clearGpio(addresses::DEC_SELECT_1_GPIO01);
+    clearGpio(addresses::DEC_SELECT_2_GPIO02);
 }
 
 
 /* Decoder output select, see SN74LVC138A-EP function table */
 void GpioDeviceComIF::enableDecoderOutput1() {
-    clearGPIO(addresses::DEC_OUTPUT_SELECT_0_GPIO03);
-    clearGPIO(addresses::DEC_OUTPUT_SELECT_1_GPIO04);
-    clearGPIO(addresses::DEC_OUTPUT_SELECT_2_GPIO05);
+    clearGpio(addresses::DEC_OUTPUT_SELECT_0_GPIO03);
+    clearGpio(addresses::DEC_OUTPUT_SELECT_1_GPIO04);
+    clearGpio(addresses::DEC_OUTPUT_SELECT_2_GPIO05);
 }
 
 void GpioDeviceComIF::enableDecoderOutput2() {
-    clearGPIO(addresses::DEC_OUTPUT_SELECT_0_GPIO03);
-    clearGPIO(addresses::DEC_OUTPUT_SELECT_1_GPIO04);
-    setGPIO(addresses::DEC_OUTPUT_SELECT_2_GPIO05);
+    clearGpio(addresses::DEC_OUTPUT_SELECT_0_GPIO03);
+    clearGpio(addresses::DEC_OUTPUT_SELECT_1_GPIO04);
+    setGpio(addresses::DEC_OUTPUT_SELECT_2_GPIO05);
 }
 
 void GpioDeviceComIF::enableDecoderOutput3() {
-    clearGPIO(addresses::DEC_OUTPUT_SELECT_0_GPIO03);
-    setGPIO(addresses::DEC_OUTPUT_SELECT_1_GPIO04);
-    clearGPIO(addresses::DEC_OUTPUT_SELECT_2_GPIO05);
+    clearGpio(addresses::DEC_OUTPUT_SELECT_0_GPIO03);
+    setGpio(addresses::DEC_OUTPUT_SELECT_1_GPIO04);
+    clearGpio(addresses::DEC_OUTPUT_SELECT_2_GPIO05);
 }
 
 void GpioDeviceComIF::enableDecoderOutput4() {
-    clearGPIO(addresses::DEC_OUTPUT_SELECT_0_GPIO03);
-    setGPIO(addresses::DEC_OUTPUT_SELECT_1_GPIO04);
-    setGPIO(addresses::DEC_OUTPUT_SELECT_2_GPIO05);
+    clearGpio(addresses::DEC_OUTPUT_SELECT_0_GPIO03);
+    setGpio(addresses::DEC_OUTPUT_SELECT_1_GPIO04);
+    setGpio(addresses::DEC_OUTPUT_SELECT_2_GPIO05);
 }
 
 void GpioDeviceComIF::enableDecoderOutput5() {
-    setGPIO(addresses::DEC_OUTPUT_SELECT_0_GPIO03);
-    clearGPIO(addresses::DEC_OUTPUT_SELECT_1_GPIO04);
-    clearGPIO(addresses::DEC_OUTPUT_SELECT_2_GPIO05);
+    setGpio(addresses::DEC_OUTPUT_SELECT_0_GPIO03);
+    clearGpio(addresses::DEC_OUTPUT_SELECT_1_GPIO04);
+    clearGpio(addresses::DEC_OUTPUT_SELECT_2_GPIO05);
 }
 
 void GpioDeviceComIF::enableDecoderOutput6() {
-    setGPIO(addresses::DEC_OUTPUT_SELECT_0_GPIO03);
-    clearGPIO(addresses::DEC_OUTPUT_SELECT_1_GPIO04);
-    setGPIO(addresses::DEC_OUTPUT_SELECT_2_GPIO05);
+    setGpio(addresses::DEC_OUTPUT_SELECT_0_GPIO03);
+    clearGpio(addresses::DEC_OUTPUT_SELECT_1_GPIO04);
+    setGpio(addresses::DEC_OUTPUT_SELECT_2_GPIO05);
 }
 
 void GpioDeviceComIF::enableDecoderOutput7() {
-    setGPIO(addresses::DEC_OUTPUT_SELECT_0_GPIO03);
-    setGPIO(addresses::DEC_OUTPUT_SELECT_1_GPIO04);
-    clearGPIO(addresses::DEC_OUTPUT_SELECT_2_GPIO05);
+    setGpio(addresses::DEC_OUTPUT_SELECT_0_GPIO03);
+    setGpio(addresses::DEC_OUTPUT_SELECT_1_GPIO04);
+    clearGpio(addresses::DEC_OUTPUT_SELECT_2_GPIO05);
 }
 
 void GpioDeviceComIF::enableDecoderOutput8() {
-    setGPIO(addresses::DEC_OUTPUT_SELECT_0_GPIO03);
-    setGPIO(addresses::DEC_OUTPUT_SELECT_1_GPIO04);
-    setGPIO(addresses::DEC_OUTPUT_SELECT_2_GPIO05);
+    setGpio(addresses::DEC_OUTPUT_SELECT_0_GPIO03);
+    setGpio(addresses::DEC_OUTPUT_SELECT_1_GPIO04);
+    setGpio(addresses::DEC_OUTPUT_SELECT_2_GPIO05);
 }
 
-Pin GpioDeviceComIF::pinSelect(addresses::LogAddr address) {
-	Pin pin = {};
+Pin& GpioDeviceComIF::pinSelect(addresses::LogAddr address) {
 	switch(address) {
-	case(addresses::DEC_SELECT_0_GPIO00): pin = PIN_GPIO00; break;
-	case(addresses::DEC_SELECT_1_GPIO01): pin = PIN_GPIO01; break;
-	case(addresses::DEC_SELECT_2_GPIO02): pin = PIN_GPIO02; break;
-	case(addresses::DEC_OUTPUT_SELECT_0_GPIO03): pin = PIN_GPIO03; break;
-	case(addresses::DEC_OUTPUT_SELECT_1_GPIO04): pin = PIN_GPIO04; break;
-	case(addresses::DEC_OUTPUT_SELECT_2_GPIO05): pin = PIN_GPIO05; break;
-	case(addresses::GPIO06): pin = PIN_GPIO06; break;
-	case(addresses::GPIO07): pin = PIN_GPIO07; break;
-	case(addresses::GPIO08): pin = PIN_GPIO08; break;
-	case(addresses::GPIO09): pin = PIN_GPIO09; break;
-	case(addresses::GPIO10): pin = PIN_GPIO10; break;
-	case(addresses::GPIO11): pin = PIN_GPIO11; break;
-	case(addresses::GPIO12): pin = PIN_GPIO12; break;
-	case(addresses::GPIO13): pin = PIN_GPIO13; break;
-	case(addresses::GPIO14): pin = PIN_GPIO14; break;
-	case(addresses::GPIO15): pin = PIN_GPIO15; break;
-	case(addresses::GPIO16): pin = PIN_GPIO16; break;
-	case(addresses::GPIO17): pin = PIN_GPIO17; break;
-	case(addresses::GPIO18): pin = PIN_GPIO18; break;
-	case(addresses::GPIO19): pin = PIN_GPIO19; break;
-	case(addresses::GPIO20): pin = PIN_GPIO20; break;
-	case(addresses::GPIO21): pin = PIN_GPIO21; break;
-	case(addresses::GPIO22): pin = PIN_GPIO22; break;
-	case(addresses::GPIO23): pin = PIN_GPIO23; break;
-	case(addresses::GPIO24): pin = PIN_GPIO24; break;
-	case(addresses::GPIO25): pin = PIN_GPIO25; break;
-	case(addresses::GPIO26): pin = PIN_GPIO26; break;
+	case(addresses::DEC_SELECT_0_GPIO00): return pins[0];
+	case(addresses::DEC_SELECT_1_GPIO01): return pins[1];
+	case(addresses::DEC_SELECT_2_GPIO02): return pins[2];
+	case(addresses::DEC_OUTPUT_SELECT_0_GPIO03): return pins[3];
+	case(addresses::DEC_OUTPUT_SELECT_1_GPIO04): return pins[4];
+	case(addresses::DEC_OUTPUT_SELECT_2_GPIO05): return pins[5];
+	case(addresses::GPIO06): return pins[6];
+	case(addresses::GPIO07): return pins[7];
+	case(addresses::GPIO08): return pins[8];
+	case(addresses::GPIO09): return pins[9];
+	case(addresses::GPIO10): return pins[10];
+	case(addresses::GPIO11): return pins[11];
+	case(addresses::GPIO12): return pins[12];
+	case(addresses::GPIO13): return pins[13];
+	case(addresses::GPIO14): return pins[14];
+	case(addresses::GPIO15): return pins[15];
+	case(addresses::GPIO16): return pins[16];
+	case(addresses::GPIO17): return pins[17];
+	case(addresses::GPIO18): return pins[18];
+	case(addresses::GPIO19): return pins[19];
+	case(addresses::GPIO20): return pins[20];
+	case(addresses::GPIO21): return pins[21];
+	case(addresses::GPIO22): return pins[22];
+	case(addresses::GPIO23): return pins[23];
+	case(addresses::GPIO24): return pins[24];
+	case(addresses::GPIO25): return pins[25];
+	case(addresses::GPIO26): return pins[26];
 	default:
 #if FSFW_CPP_OSTREAM_ENABLED == 1
 		sif::error << "GpioDeviceComIF: Invalid GPIO Address!" << std::endl;
 #else
 		sif::printError("GpioDeviceComIF: Invalid GPIO Address!\n");
 #endif
-		return pin;
+		return invalidPin;
 	}
-	return pin;
 }
 
 /* Device ComIF Functions */

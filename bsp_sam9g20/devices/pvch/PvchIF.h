@@ -8,6 +8,8 @@ class PvchIF {
 public:
     static constexpr ReturnValue_t ADC_DRDY_ERROR =
             HasReturnvaluesIF::makeReturnCode(CLASS_ID::PVCH, 0);
+    static constexpr ReturnValue_t I2C_DEMUX_ERROR =
+            HasReturnvaluesIF::makeReturnCode(CLASS_ID::PVCH, 1);
 
 };
 

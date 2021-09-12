@@ -5,9 +5,10 @@
 #include <fsfw/devicehandlers/DeviceCommunicationIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
 
-extern "C" {
-#include <at91/peripherals/pio/pio.h>
-}
+#include "at91/peripherals/pio/pio.h"
+
+#include <array>
+#include <vector>
 
 /**
  * @brief   Encapsulates access to the GPIO pins of the iOBC
@@ -16,14 +17,25 @@ class GpioDeviceComIF: public DeviceCommunicationIF,
 public SystemObject
 {
 public:
+
+    enum PinType: uint8_t {
+        PERIPH_A = PIO_PERIPH_A,
+        PERIPH_B = PIO_PERIPH_B,
+        INPUT = PIO_INPUT,
+        OUTPUT_DEFAULT_LOW = PIO_OUTPUT_0,
+        OUTPUT_DEFAULT_HIGH = PIO_OUTPUT_1
+    };
+
 	GpioDeviceComIF(object_id_t objectId_);
 	virtual ~GpioDeviceComIF();
 
-	static void setGPIO(addresses::LogAddr address);
-	static void clearGPIO(addresses::LogAddr address);
-	static bool getGPIO(addresses::LogAddr address, uint8_t outputPin);
+	static void setGpio(addresses::LogAddr address);
+	static void clearGpio(addresses::LogAddr address);
+	static bool getGpio(addresses::LogAddr address);
+	static bool configurePin(addresses::LogAddr address, PinType pinType,
+	        uint8_t pinCfg = PIO_DEFAULT);
 
-	static Pin pinSelect(addresses::LogAddr address);
+	static Pin& pinSelect(addresses::LogAddr address);
 
 	/**
 	 * Used to SPI slave select decoder. See truth table of Housekeeping Board.
@@ -57,6 +69,9 @@ public:
 	        uint8_t **buffer, size_t *size) override;
 
 private:
+	static Pin invalidPin;
+
+	static std::vector<Pin> pins;
 
 };
 

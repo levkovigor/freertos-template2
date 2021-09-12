@@ -67,6 +67,10 @@
 #ifndef PIO_H
 #define PIO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //------------------------------------------------------------------------------
 //         Headers
 //------------------------------------------------------------------------------
@@ -159,6 +163,10 @@ extern unsigned char PIO_Get(const Pin *pin);
 extern unsigned int PIO_GetISR(const Pin *pin);
 
 extern unsigned char PIO_GetOutputDataStatus(const Pin *pin);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //#ifndef PIO_H
 
