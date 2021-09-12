@@ -30,17 +30,17 @@ GpioDeviceComIF::~GpioDeviceComIF() {
 
 /* Hardware Abstraction */
 
-void GpioDeviceComIF::setGPIO(uint32_t address) {
+void GpioDeviceComIF::setGPIO(addresses::LogAddr address) {
 	Pin pin[1] = {pinSelect(address)};
 	PIO_Set(pin);
 }
 
-void GpioDeviceComIF::clearGPIO(uint32_t address) {
+void GpioDeviceComIF::clearGPIO(addresses::LogAddr address) {
 	Pin pin[1] = {pinSelect(address)};
 	PIO_Clear(pin);
 }
 
-bool GpioDeviceComIF::getGPIO(uint32_t address, uint8_t outputPin) {
+bool GpioDeviceComIF::getGPIO(addresses::LogAddr address, uint8_t outputPin) {
     Pin pin[1] = {pinSelect(address)};
     if(outputPin) {
         pin[0].type = PIO_OUTPUT_0;
@@ -134,7 +134,7 @@ void GpioDeviceComIF::enableDecoderOutput8() {
     setGPIO(addresses::DEC_OUTPUT_SELECT_2_GPIO05);
 }
 
-Pin GpioDeviceComIF::pinSelect(uint32_t address) {
+Pin GpioDeviceComIF::pinSelect(addresses::LogAddr address) {
 	Pin pin = {};
 	switch(address) {
 	case(addresses::DEC_SELECT_0_GPIO00): pin = PIN_GPIO00; break;

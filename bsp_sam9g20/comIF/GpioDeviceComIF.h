@@ -1,6 +1,7 @@
 #ifndef SAM9G20_COMIF_GPIODEVICECOMIF_H_
 #define SAM9G20_COMIF_GPIODEVICECOMIF_H_
 
+#include "devices/logicalAddresses.h"
 #include <fsfw/devicehandlers/DeviceCommunicationIF.h>
 #include <fsfw/objectmanager/SystemObject.h>
 
@@ -18,11 +19,11 @@ public:
 	GpioDeviceComIF(object_id_t objectId_);
 	virtual ~GpioDeviceComIF();
 
-	static void setGPIO(uint32_t address);
-	static void clearGPIO(uint32_t address);
-	static bool getGPIO(uint32_t address, uint8_t outputPin);
+	static void setGPIO(addresses::LogAddr address);
+	static void clearGPIO(addresses::LogAddr address);
+	static bool getGPIO(addresses::LogAddr address, uint8_t outputPin);
 
-	static Pin pinSelect(uint32_t address);
+	static Pin pinSelect(addresses::LogAddr address);
 
 	/**
 	 * Used to SPI slave select decoder. See truth table of Housekeeping Board.

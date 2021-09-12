@@ -9,7 +9,7 @@
 
 namespace addresses {
 /* Logical addresses have uint32_t datatype */
-enum logicalAddresses: address_t {
+enum LogAddr: address_t {
     PCDU,
     /* I2C Addresses go from 0 to 128 ! */
     I2C_MGM = 0x1E,
@@ -67,6 +67,7 @@ enum logicalAddresses: address_t {
     DEC_OUTPUT_SELECT_0_GPIO03 = 0x0300130b, //! EK: PIOB 13, iOBC: ?
     DEC_OUTPUT_SELECT_1_GPIO04 = 0x0400200b, //! EK: PIOB 20, iOBC: ?
     DEC_OUTPUT_SELECT_2_GPIO05 = 0x0500210b, //!< EK: PIOB 21, iOBC: ?
+
     GPIO06 = 0x0600220b, //!< EK: PIOB 22, iOBC: ?
     GPIO07 = 0x0700230b,
     GPIO08 = 0x0800240b,
