@@ -56,7 +56,7 @@ ReturnValue_t Adg731::set(AdgChannels channel) {
         sif::printWarning("Adg731: SPI transfer failed\n");
         return result;
     }
-    // Block until operation is finished
+    // Block until operation is finished or timeout occurs
     result = spiSemaph->acquire(SemaphoreIF::TimeoutType::WAITING, 50);
     if(result == HasReturnvaluesIF::RETURN_OK) {
         spiSemaph->release();

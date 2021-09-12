@@ -149,7 +149,7 @@ ReturnValue_t Pca9554::blockingWriteWrapper(uint8_t reg, uint8_t val) {
         sif::printWarning("Pca9554: Sending I2C failed\n");
         return HasReturnvaluesIF::RETURN_FAILED;
     }
-    // Semaphore will be unblocked on transfer finish
+    // Block until operation is finished or timeout occurs
     result = semaphHandle->acquire(SemaphoreIF::TimeoutType::WAITING, 50);
     if(result == HasReturnvaluesIF::RETURN_OK) {
         semaphHandle->release();
@@ -163,7 +163,7 @@ ReturnValue_t Pca9554::blockingReadbackWrapper(uint8_t** buf, size_t *readSize) 
     if(result != HasReturnvaluesIF::RETURN_OK) {
         sif::printWarning("Pca9554: Error requesting reply\n");
     }
-    // Semaphore will be unblocked on transfer finish
+    // Block until operation is finished or timeout occurs
     result = semaphHandle->acquire(SemaphoreIF::TimeoutType::WAITING, 50);
     if(result == HasReturnvaluesIF::RETURN_OK) {
         semaphHandle->release();
