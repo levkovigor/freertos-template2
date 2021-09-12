@@ -75,7 +75,7 @@ ReturnValue_t Max7301::set(CmdAddr cmdAddr, RegisterData data) {
         sif::printWarning("Max7301: SPI transfer failed\n");
         return result;
     }
-    // Block until operation is finished
+    // Semaphore will be unblocked by a transfer callback
     result = spiSemaph->acquire(SemaphoreIF::TimeoutType::WAITING, 50);
     if(result == HasReturnvaluesIF::RETURN_OK) {
         spiSemaph->release();
@@ -99,6 +99,7 @@ ReturnValue_t Max7301::read(CmdAddr cmdAddr, uint8_t &readByte) {
         return result;
     }
 
+    // Semaphore will be unblocked by a transfer callback
     result = spiSemaph->acquire(SemaphoreIF::TimeoutType::WAITING, 50);
     if(result == HasReturnvaluesIF::RETURN_OK) {
         spiSemaph->release();
