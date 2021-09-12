@@ -118,6 +118,6 @@ ReturnValue_t Max7301::read(CmdAddr cmdAddr, uint8_t &readByte) {
         return result;
     }
     readByte = rxBuf[1];
-    return HasReturnvaluesIF::RETURN_OK;
+    return i2cMux.setCsLoadSw();
 }
 
